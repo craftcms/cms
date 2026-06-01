@@ -48,10 +48,12 @@ function markdownReferenceFixture(string $value)
         ->createElementWithFields();
 }
 
-it('tracks valid numeric markdown reference tags', function () {
+it('tracks valid numeric and named markdown reference tags', function () {
     $target = EntryModel::factory()->createElement();
+    $slugTarget = EntryModel::factory()->createElement(['slug' => 'slug-target']);
+    $slugRef = $slugTarget->getSection()->handle.'/'.$slugTarget->slug;
 
-    $result = markdownReferenceFixture("Valid {entry:$target->id:url}\nSlug {entry:news/post:url}\nDecimal {entry:{$target->id}.5:url}\nWrong {asset:$target->id:url}\nMissing {entry:999999:url}");
+    $result = markdownReferenceFixture("Valid {entry:$target->id:url}\nSlug {entry:$slugRef:url}\nDecimal {entry:{$target->id}.5:url}\nWrong {asset:$target->id:url}\nMissing {entry:999999:url}");
     $field = $result->field('body');
     $source = $result->element;
 
@@ -62,6 +64,13 @@ it('tracks valid numeric markdown reference tags', function () {
             'sourceId' => $source->id,
             'sourceSiteId' => $source->siteId,
             'targetId' => $target->id,
+        ],
+        [
+            'fieldId' => $field->id,
+            'fieldInstanceUid' => $source->getFieldLayout()->getFieldByHandle('body')->layoutElement->uid,
+            'sourceId' => $source->id,
+            'sourceSiteId' => $source->siteId,
+            'targetId' => $slugTarget->id,
         ],
     ]);
 });

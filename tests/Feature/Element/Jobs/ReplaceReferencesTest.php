@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\Jobs\ReplaceReferences;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -59,8 +60,10 @@ it('queries the configured source ids for a source site', function () {
 
 it('replaces markdown references while preserving tag syntax', function () {
     $oldTargets = EntryModel::factory(2)->create()->pluck('id')->all();
+    $slugTarget = EntryModel::factory()->createElement(['slug' => 'slug-target']);
+    $slugRef = $slugTarget->getSection()->handle.'/'.$slugTarget->slug;
     $newTarget = EntryModel::factory()->createElement();
-    $result = replaceReferencesMarkdownFixture("{entry:{$oldTargets[0]}@1:url} {entry:{$oldTargets[1]}:title || Fallback} {entry:{$oldTargets[0]}.5:url} {entry:news/post:url}");
+    $result = replaceReferencesMarkdownFixture("{entry:{$oldTargets[0]}@1:url} {entry:{$oldTargets[1]}:title || Fallback} {entry:$slugRef:uri} {entry:{$oldTargets[0]}.5:url} {entry:news/post:url}");
     $source = $result->element;
 
     $job = new TestReplaceReferences(
@@ -73,14 +76,14 @@ it('replaces markdown references while preserving tag syntax', function () {
                 'sourceId' => $source->id,
             ],
         ],
-        oldTargetIds: $oldTargets,
+        oldTargetIds: [...$oldTargets, $slugTarget->id],
         newTargetId: $newTarget->id,
     );
 
     $job->process($source);
 
     expect($source->getFieldValue('body')->getRaw())
-        ->toBe("{entry:$newTarget->id@1:url} {entry:$newTarget->id:title || Fallback} {entry:{$oldTargets[0]}.5:url} {entry:news/post:url}");
+        ->toBe("{entry:$newTarget->id@1:url} {entry:$newTarget->id:title || Fallback} {entry:$newTarget->id:uri} {entry:{$oldTargets[0]}.5:url} {entry:news/post:url}");
 });
 
 it('refreshes tracked reference rows after saving changed content', function () {
@@ -164,9 +167,12 @@ it('continues when saving a changed element fails', function () {
     $result = replaceReferencesMarkdownFixture("{entry:$oldTarget->id:url}");
     $source = $result->element;
 
-    Elements::shouldReceive('saveElement')
+    $realElements = app(ElementsService::class);
+    $elements = Mockery::mock($realElements)->makePartial();
+    $elements->shouldReceive('saveElement')
         ->once()
         ->andThrow(new RuntimeException('Save failed'));
+    Elements::swap($elements);
 
     $job = new TestReplaceReferences(
         sourceElementType: EntryElement::class,
@@ -182,7 +188,11 @@ it('continues when saving a changed element fails', function () {
         newTargetId: $newTarget->id,
     );
 
-    $job->process($source);
+    try {
+        $job->process($source);
+    } finally {
+        Elements::swap($realElements);
+    }
 
     expect($source->getFieldValue('body')->getRaw())->toBe("{entry:$newTarget->id:url}");
 });

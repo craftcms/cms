@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Operations\ElementRefs;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -20,7 +20,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 readonly class FieldReferences
 {
     public function __construct(
-        private Elements $elements,
+        private ElementRefs $elementRefs,
     ) {}
 
     public function updateReferences(TracksReferencesFieldInterface $field, ElementInterface $element): void
@@ -29,10 +29,8 @@ readonly class FieldReferences
             return;
         }
 
-        $targetIds = $this->targetIdsInValue($field->serializeValue(
-            $element->getFieldValue($field->handle),
-            $element,
-        ));
+        $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
+        $targetIds = is_string($value) ? $this->elementRefs->targetIds($value, $element->siteId) : [];
         $sourceSiteId = $element->siteId;
 
         DB::transaction(function () use ($field, $element, $sourceSiteId, $targetIds) {
@@ -108,7 +106,7 @@ readonly class FieldReferences
             return false;
         }
 
-        $newValue = $this->valueWithReplacedTargetIds($value, $oldTargetIds, $newTargetId);
+        $newValue = $this->elementRefs->replaceTargetRefs($value, $oldTargetIds, $newTargetId, $element->siteId);
 
         if ($newValue === $value) {
             return false;
@@ -187,74 +185,6 @@ readonly class FieldReferences
             ->whereIn('fr.targetId', $targetIds)
             ->whereNull('e.dateDeleted')
             ->whereNull('e.revisionId');
-    }
-
-    private function targetIdsInValue(mixed $value): array
-    {
-        if (! is_string($value) || ! str_contains($value, '{')) {
-            return [];
-        }
-
-        preg_match_all(Elements::REF_TAG_PATTERN, $value, $matches, PREG_SET_ORDER);
-
-        if ($matches === []) {
-            return [];
-        }
-
-        $idsByType = [];
-
-        foreach ($matches as $match) {
-            if (! ctype_digit($match['ref'])) {
-                continue;
-            }
-
-            $elementType = $this->elements->getElementTypeByRefHandle($match['elementType']);
-
-            if ($elementType === null) {
-                continue;
-            }
-
-            $idsByType[$elementType][] = (int) $match['ref'];
-        }
-
-        if ($idsByType === []) {
-            return [];
-        }
-
-        $validIds = [];
-
-        foreach ($idsByType as $elementType => $ids) {
-            DB::table(Table::ELEMENTS)
-                ->whereIn('id', array_unique($ids))
-                ->where('type', $elementType)
-                ->pluck('id')
-                ->each(function ($id) use (&$validIds) {
-                    $validIds[(int) $id] = true;
-                });
-        }
-
-        return array_keys($validIds);
-    }
-
-    /**
-     * @param  int[]  $oldTargetIds
-     */
-    private function valueWithReplacedTargetIds(string $value, array $oldTargetIds, int $newTargetId): string
-    {
-        $oldTargetIds = array_flip(array_map(intval(...), $oldTargetIds));
-
-        return preg_replace_callback(Elements::REF_TAG_PATTERN, function (array $matches) use ($oldTargetIds, $newTargetId) {
-            if (! ctype_digit($matches['ref']) || ! isset($oldTargetIds[(int) $matches['ref']])) {
-                return $matches[0];
-            }
-
-            return substr_replace(
-                $matches[0],
-                (string) $newTargetId,
-                strlen($matches['elementType']) + 2,
-                strlen($matches['ref']),
-            );
-        }, $value) ?? $value;
     }
 
     private function customFieldUidsInConfig(?array $config): array
