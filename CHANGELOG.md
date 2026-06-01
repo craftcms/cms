@@ -13,6 +13,9 @@
 - Fixed a bug where sections’ Min Authors settings were defaulting to `1` when blank. ([#19001](https://github.com/craftcms/cms/pull/19001))
 - Fixes a bug where the “View entry” permission was listed twice for Single sections, causing a SQL error when both were selected. ([#19002](https://github.com/craftcms/cms/pull/19002))
 - Fixes a bug where user group handles weren’t getting auto-generated. ([#19002](https://github.com/craftcms/cms/pull/19002))
+- Fixed a JavaScript error that could occur in the Control Panel when a custom element was registered more than once.
+- Fixed a bug where Control Panel action menu items could trigger their action twice when clicked.
+- Fixed a bug where legacy Control Panel JavaScript wasn’t loaded and initialized on all Control Panel pages.
 
 ## 6.0.0-alpha.5 - 2026-05-27
 
