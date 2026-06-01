@@ -28,6 +28,7 @@ interface NestedElementInterface extends ElementInterface
      *
      * @return int|null
      * @throws InvalidConfigException if the element is misconfigured
+     * @phpstan-impure
      */
     #[AllowedInSandbox]
     public function getPrimaryOwnerId(): ?int;
@@ -59,6 +60,7 @@ interface NestedElementInterface extends ElementInterface
      *
      * @return int|null
      * @throws InvalidConfigException if the element is misconfigured
+     * @phpstan-impure
      */
     #[AllowedInSandbox]
     public function getOwnerId(): ?int;
