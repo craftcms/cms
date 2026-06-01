@@ -52,6 +52,19 @@ export default css`
     );
   }
 
+  :host([active]) {
+    background-color: var(
+      --c-color-fill-loud,
+      var(--c-color-neutral-fill-loud)
+    );
+    border-color: var(
+      --c-color-border-loud,
+      var(--c-color-neutral-border-loud)
+    );
+    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+    box-shadow: inset 0 1px 3px var(--c-color-mix-active);
+  }
+
   /*
   Sizes
    */
@@ -151,6 +164,19 @@ export default css`
     );
   }
 
+  :host([appearance='inline'][active]) {
+    background-color: var(
+      --c-color-fill-normal,
+      var(--c-color-neutral-fill-normal)
+    );
+    border-color: var(
+      --c-color-border-normal,
+      var(--c-color-neutral-border-normal)
+    );
+    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+    box-shadow: none;
+  }
+
   /* None */
   :host([appearance~='none']),
   :host([appearance~='none']:hover),
@@ -196,6 +222,13 @@ export default css`
     );
   }
 
+  :host([appearance='plain'][active]) {
+    background-color: var(--c-color-fill-normal);
+    border-color: var(--c-color-border-normal);
+    color: var(--c-color-on-normal);
+    box-shadow: none;
+  }
+
   /* Filled */
   :host([appearance~='filled']) {
     background-color: var(
@@ -224,6 +257,12 @@ export default css`
     );
   }
 
+  :host([appearance='filled'][active]) {
+    background-color: var(--c-color-fill-loud);
+    border-color: var(--c-color-border-loud);
+    color: var(--c-color-on-loud);
+  }
+
   /* Dashed */
   :host([appearance~='dashed']) {
     background-color: transparent;
@@ -248,6 +287,12 @@ export default css`
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
       var(--c-color-mix-active)
     );
+  }
+
+  :host([appearance='dashed'][active]) {
+    background-color: var(--c-color-fill-loud);
+    border-color: var(--c-color-border-loud);
+    color: var(--c-color-on-loud);
   }
 
   /*

@@ -76,6 +76,12 @@ export default class CraftButton extends LionButtonSubmit {
   @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =
     'medium';
 
+  /** The value submitted with the form or used for selection in a radio button-group */
+  @property({reflect: true}) value: string;
+
+  /** Whether the button is in a selected/active state (e.g. inside a radio button-group) */
+  @property({reflect: true, type: Boolean}) active: boolean = false;
+
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
 
