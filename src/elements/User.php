@@ -1434,19 +1434,24 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
+        $authService = Craft::$app->getAuth();
         // Validate the security key
         try {
-            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response);
+            $keyValid = $authService->verifyPasskey($this, $requestOptions, $response);
         } catch (InvalidUserHandleException $e) {
-            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response, true);
+            $keyValid = $authService->verifyPasskey($this, $requestOptions, $response, true);
         } catch (InvalidArgumentException) {
             $keyValid = false;
         }
+
+        $updatedPublicKeyCredentialSource = Session::remove($authService->passkeyCredSourceParam);
 
         if (!$keyValid) {
             $this->handleInvalidLoginParam();
             return false;
         }
+
+        $authService->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedPublicKeyCredentialSource);
 
         $this->authError = $this->_getAuthError();
         return !isset($this->authError);
