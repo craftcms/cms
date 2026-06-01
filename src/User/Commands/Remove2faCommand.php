@@ -9,25 +9,21 @@ use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Console\Attributes\Aliases;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
-use Override;
 
 use function Laravel\Prompts\multiselect;
 
+#[Aliases(['users/remove-2fa'])]
+#[Description('Removes user\'s two-step verification method(s)')]
+#[Signature('craft:users:remove-2fa {user} {--method= : The two-step verification method to remove.}')]
 class Remove2faCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use PromptsForMissingUser;
-
-    #[Override]
-    protected $signature = 'craft:users:remove-2fa {user} {--method= : The two-step verification method to remove.}';
-
-    #[Override]
-    protected $description = 'Removes user\'s two-step verification method(s)';
-
-    #[Override]
-    protected $aliases = ['users/remove-2fa'];
 
     public function handle(AuthMethods $auth): int
     {
@@ -52,6 +48,10 @@ class Remove2faCommand extends Command implements PromptsForMissingInput
             $this->components->info("User “{$user->username}” doesn’t have the “{$method}” two-step verification method.");
 
             return self::SUCCESS;
+        }
+
+        if (! $method && ! $this->input->isInteractive()) {
+            $method = 'all';
         }
 
         if ($method === 'all') {
