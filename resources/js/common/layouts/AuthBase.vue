@@ -7,7 +7,7 @@
 
 <template>
   <main class="cp-login">
-    <div class="grid gap-3 justify-items-center">
+    <div class="cp-login__wrapper grid gap-3 justify-items-center">
       <h1 class="flex justify-center">
         <img
           v-if="general.cpLogoUrl"
@@ -21,19 +21,18 @@
         </template>
       </h1>
 
-      <div class="w-sm">
+      <div class="cp-login__form-wrapper">
         <slot></slot>
       </div>
 
       <a
         class="cp-login__powered-by"
-        href="http://craftcms.com/"
+        href="https://craftcms.com/"
         title="Powered by Craft CMS"
-        aria-label="Craft CMS"
       >
         <img
           :src="craftCmsLogoUrl"
-          alt=""
+          alt="Craft CMS"
           class="cp-login__craft-logo"
           width="104"
           height="26"
@@ -50,12 +49,22 @@
     height: 100vh;
     place-items: center;
     gap: var(--c-spacing-md);
+    padding: var(--c-spacing-lg);
+  }
+
+  .cp-login__wrapper {
+    width: 100%;
+    max-width: var(--container-sm);
   }
 
   .cp-login__logo {
     display: inline-block;
     width: calc(288rem / 16);
     height: auto;
+  }
+
+  .cp-login__form-wrapper {
+    width: 100%;
   }
 
   .cp-login__powered-by {
