@@ -4046,6 +4046,8 @@ class Elements extends Component
                             $element->uri = str_replace($element->tempId, (string)$element->id, $element->uri);
                             $element->tempId = null;
                         }
+
+                        $element->afterNewRecordSaved();
                     }
                 }
 

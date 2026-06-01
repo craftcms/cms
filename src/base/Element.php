@@ -6653,6 +6653,17 @@ JS,
         }
     }
 
+    /**
+     * Triggered after a new record is successfully saved.
+     *
+     * @return void
+     * @since 5.10.5
+     */
+    public function afterNewRecordSaved(): void
+    {
+        // by default we don't have to do anything when a new element record is saved
+    }
+
     private function updateRelations(bool $isNew): void
     {
         if (!$this->hasFieldLayout()) {
