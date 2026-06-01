@@ -81,14 +81,14 @@ class ReplaceRelations extends BaseBatchedElementJob
         /** @var ElementInterface $item */
         $customFields = Collection::make($item->getFieldLayout()?->getCustomFields());
 
-        /** @var BaseRelationField[] $relationFields */
+        /** @var Collection<BaseRelationField> $relationFields */
         $relationFields = $customFields->filter(fn($field) => (
             $field instanceof BaseRelationField &&
             $field::elementType() === $this->targetElementType
         ));
 
         $targetRefHandle = $this->targetElementType::refHandle();
-        /** @var Link[] $linkFields */
+        /** @var Collection<Link> $linkFields */
         $linkFields = $customFields->filter(fn($field) => (
             $field instanceof Link &&
             Collection::make($field->getLinkTypes())->contains(fn(BaseLinkType $linkType) => (
@@ -97,7 +97,7 @@ class ReplaceRelations extends BaseBatchedElementJob
             ))
         ));
 
-        if (empty($relationFields) && empty($linkFields)) {
+        if ($relationFields->isEmpty() && $linkFields->isEmpty()) {
             return;
         }
 
