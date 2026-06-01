@@ -6,15 +6,19 @@
 </script>
 
 <template>
-  <div class="cp-login">
+  <main class="cp-login">
     <div class="grid gap-3 justify-items-center">
-      <h1 class="flex justify-center" v-if="general.cpLogoUrl">
+      <h1 class="flex justify-center">
         <img
+          v-if="general.cpLogoUrl"
           :src="general.cpLogoUrl"
           :alt="system.name"
           class="cp-login__logo"
           width="288px"
         />
+        <template v-else>
+          {{ system.name }}
+        </template>
       </h1>
 
       <div class="w-sm">
@@ -36,7 +40,7 @@
         />
       </a>
     </div>
-  </div>
+  </main>
 </template>
 
 <style scoped lang="scss">

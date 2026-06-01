@@ -1,1 +1,0 @@
-import{E as e,R as t,U as n,_ as r,b as i,y as a}from"./_plugin-vue_export-helper-B5xWb4v9.js";var o=e({__name:`DynamicHtmlRenderer`,props:{html:{}},setup(o){let s=o,c=r(()=>e({template:s.html}));return(e,r)=>o.html?(t(),a(n(c.value),{key:0})):i(``,!0)}});export{o as t};

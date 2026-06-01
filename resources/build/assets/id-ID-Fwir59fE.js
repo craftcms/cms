@@ -1,0 +1,1 @@
+import e from"./id-KMg-nMT_.js";var t={...e};export{t as default};
