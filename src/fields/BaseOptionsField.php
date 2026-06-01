@@ -24,7 +24,6 @@ use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -116,22 +115,46 @@ abstract class BaseOptionsField extends Field implements
             $condition = [$param->operator];
             $qb = Craft::$app->getDb()->getQueryBuilder();
             $valueSql = static::valueSql($instances);
+            // empty value can be stored as a null, empty string or empty array
+            $emptyCondition = ['or', [$valueSql => null], [$valueSql => ''], [$valueSql => '[]']];
 
             foreach ($param->values as $value) {
                 if (
                     is_string($value) &&
                     in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
                 ) {
-                    $condition[] = Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+                    $condition[] = strtolower($value) === ':empty:'
+                        ? $emptyCondition
+                        : ['not', $emptyCondition];
                 } else {
                     $condition[] = $qb->jsonContains($valueSql, $value);
                 }
             }
 
-            return $negate ? ['not', $condition] : $condition;
+            // if we're negating, include elements with empty value (or no value) as they don't match any of the values that can be specified
+            return $negate ? ['or', $emptyCondition, ['not', $condition]] : $condition;
         }
 
-        return parent::queryCondition($instances, $value, $params);
+        $condition = parent::queryCondition($instances, $value, $params);
+
+        $param = QueryParam::parse($value);
+        if ($param->operator === QueryParam::NOT) {
+            $negate = true;
+        } else {
+            $negate = false;
+        }
+
+        // same as with multi options;
+        // if we're negating, include elements with empty value (or no value)
+        // as they don't match any of the values that could have been specified
+        if ($negate) {
+            $valueSql = static::valueSql($instances);
+            $emptyCondition = ['or', [$valueSql => null], [$valueSql => '']];
+
+            return ['or', $emptyCondition, $condition];
+        }
+
+        return $condition;
     }
 
     /**
