@@ -116,8 +116,6 @@ abstract class BaseOptionsField extends Field implements
             $condition = [$param->operator];
             $qb = Craft::$app->getDb()->getQueryBuilder();
             $valueSql = static::valueSql($instances);
-            // empty value can be stored as a null, empty string or empty array
-            $emptyCondition = ['or', [$valueSql => null], [$valueSql => ''], [$valueSql => '[]']];
 
             foreach ($param->values as $value) {
                 if (
@@ -131,7 +129,7 @@ abstract class BaseOptionsField extends Field implements
             }
 
             // if we're negating, include elements with empty value (or no value) as they don't match any of the values that can be specified
-            return $negate ? ['or', $emptyCondition, ['not', $condition]] : $condition;
+            return $negate ? ['or', [$valueSql => null], ['not', $condition]] : $condition;
         }
 
         return parent::queryCondition($instances, $value, $params);
