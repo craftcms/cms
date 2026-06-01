@@ -49,17 +49,23 @@ trait HasRoutes
 
     protected function registerActionRoutes(string|Closure $routes): void
     {
+        $handle = self::getInstance()->handle;
+
         $this->app['router']
             ->middleware(['web', 'craft', 'craft.cp'])
             ->prefix(implode('/', [
                 Cms::config()->cpTrigger,
                 Cms::config()->actionTrigger,
+                $handle,
             ]))
             ->group($routes);
 
         $this->app['router']
             ->middleware(['craft', 'craft.web'])
-            ->prefix(Cms::config()->actionTrigger)
+            ->prefix(implode('/', [
+                Cms::config()->actionTrigger,
+                $handle,
+            ]))
             ->group($routes);
     }
 }
