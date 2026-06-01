@@ -6,6 +6,8 @@ export interface BaseOption {
 }
 export interface CheckboxOption extends BaseOption {
   info?: string;
+  checked?: boolean;
+  disabled?: boolean;
 }
 export interface SelectOption<
   T = Record<string, any> | null | undefined,

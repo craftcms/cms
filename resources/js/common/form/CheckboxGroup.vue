@@ -35,7 +35,11 @@
     <template v-if="allowSelectAll">
       <craft-checkbox-indeterminate :label="t('All')">
         <template v-for="option in options" :key="option.value">
-          <craft-checkbox .choice-value="option.value">
+          <craft-checkbox
+            .choice-value="option.value"
+            .checked="option.checked"
+            .disabled="option.disabled"
+          >
             <label slot="label"
               ><slot name="label" :option="option">{{
                 option.label
@@ -48,7 +52,11 @@
     </template>
     <template v-else>
       <template v-for="option in options" :key="option.value">
-        <craft-checkbox .choice-value="option.value">
+        <craft-checkbox
+          .choice-value="option.value"
+          .checked="option.checked"
+          .disabled="option.disabled"
+        >
           <label slot="label"
             ><slot name="label" :option="option">{{
               option.label
