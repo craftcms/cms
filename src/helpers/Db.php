@@ -715,7 +715,15 @@ class Db
 
         // Skip the glue if there's only one condition
         if (count($condition) === 2) {
-            return $condition[1];
+            $condition = $condition[1];
+        }
+
+        if ($negate) {
+            return [
+                'or',
+                [$column => null],
+                $condition,
+            ];
         }
 
         return $condition;
