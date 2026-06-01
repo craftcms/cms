@@ -438,7 +438,11 @@ class DbHelperTest extends TestCase
                 ['or', 'field_1', 'field_2'],
             ],
             [
-                ['not', ['foo' => ['field_1', 'field_2']]],
+                [
+                    'or',
+                    ['foo' => null],
+                    ['not', ['foo' => ['field_1', 'field_2']]],
+                ],
                 'foo',
                 ['not', 'field_1', 'field_2'],
             ],
@@ -467,11 +471,19 @@ class DbHelperTest extends TestCase
                 Schema::TYPE_BOOLEAN,
             ],
             [
-                ['foo' => true],
+                [
+                    'or',
+                    ['foo' => null],
+                    ['foo' => true],
+                ],
                 'foo', 'not 0', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['foo' => true],
+                [
+                    'or',
+                    ['foo' => null],
+                    ['foo' => true],
+                ],
                 'foo',
                 'not :empty:',
                 '=',
@@ -503,7 +515,11 @@ class DbHelperTest extends TestCase
                 Schema::TYPE_BOOLEAN,
             ],
             [
-                ['foo' => false],
+                [
+                    'or',
+                    ['foo' => null],
+                    ['foo' => false],
+                ],
                 'foo',
                 'not 1',
                 '=',
