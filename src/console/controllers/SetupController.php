@@ -287,7 +287,6 @@ EOD;
             }
         }
 
-        /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
             goto test;
@@ -325,7 +324,6 @@ EOD;
 
         test:
 
-        /** @phpstan-ignore-next-line */
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();
