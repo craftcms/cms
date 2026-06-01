@@ -30,7 +30,7 @@ readonly class Cms
 
     public const string VERSION = '6.0.0-alpha.5';
 
-    public const string SCHEMA_VERSION = '6.0.0.2';
+    public const string SCHEMA_VERSION = '6.0.0.3';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 

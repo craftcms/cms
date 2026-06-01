@@ -602,6 +602,16 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
+        $logger?->subLabel('fieldreferences');
+        Schema::create(Table::FIELDREFERENCES, function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->integer('fieldId');
+            $table->uuid('fieldInstanceUid');
+            $table->integer('sourceId');
+            $table->integer('sourceSiteId')->nullable();
+            $table->integer('targetId');
+        });
+
         $logger?->subLabel('gqltokens');
         Schema::create('gqltokens', function (Blueprint $table) {
             $table->integer('id', true);
@@ -1069,6 +1079,8 @@ class Install extends Migration
         Schema::createIndex(Table::ENTRYTYPES, ['dateDeleted']);
         Schema::createIndex(Table::FIELDLAYOUTS, ['dateDeleted']);
         Schema::createIndex(Table::FIELDLAYOUTS, ['type']);
+        Schema::createIndex(Table::FIELDREFERENCES, ['fieldId', 'fieldInstanceUid', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
+        Schema::createIndex(Table::FIELDREFERENCES, ['targetId']);
         Schema::createIndex(Table::FIELDS, ['handle', 'context']);
         Schema::createIndex(Table::FIELDS, ['context']);
         Schema::createIndex(Table::FIELDS, ['dateDeleted']);
@@ -1213,6 +1225,9 @@ class Install extends Migration
         Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ENTRYTYPES, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
+        Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('sourceId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('sourceSiteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::GQLTOKENS, fn (Blueprint $table) => $table->foreign('schemaId')->references('id')->on(Table::GQLSCHEMAS)->nullOnDelete());
         Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('sourceId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());

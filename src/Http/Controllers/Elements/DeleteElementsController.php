@@ -13,8 +13,10 @@ use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Jobs\ReplaceReferences;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Field\FieldReferences;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpModalResponse;
@@ -130,7 +132,7 @@ readonly class DeleteElementsController
                 'single' => true,
             ]).
                 Html::hiddenInput('elementType', $this->elementType).
-                $targetElementIds->map(fn (int $id) => Html::hiddenInput('elementIds[]', (string) $id))->join('').
+                $targetElementIds->map(fn (int $id) => (string) Html::hiddenInput('elementIds[]', (string) $id))->join('').
                 Html::hiddenInput('hardDelete', $this->hardDelete ? '1' : '0').
                 Html::hiddenInput('sourceElementType', $sourceElementType)
             )
@@ -175,6 +177,90 @@ readonly class DeleteElementsController
 
         return $this->asSuccess(t('{numRelations, plural, =1{Relation} other{Relations}} queued to be replaced.', [
             'numRelations' => count($sourceIds),
+        ]));
+    }
+
+    public function replaceReferencesModal(): CpModalResponse
+    {
+        $targetElementIds = $this->elements->ids();
+
+        return new CpModalResponse()
+            ->action('delete-elements/replace-references')
+            ->contentHtml(fn () => FormFields::elementSelectFieldHtml([
+                'label' => t('Choose a new {type}', [
+                    'type' => $this->elementType::lowerDisplayName(),
+                ]),
+                'name' => 'newTargetId',
+                'elementType' => $this->elementType,
+                'criteria' => [
+                    'id' => $targetElementIds->map(fn (int $id) => "not $id")->all(),
+                ],
+                'single' => true,
+            ]).
+                Html::hiddenInput('elementType', $this->elementType).
+                $targetElementIds->map(fn (int $id) => (string) Html::hiddenInput('elementIds[]', (string) $id))->join('').
+                Html::hiddenInput('hardDelete', $this->hardDelete ? '1' : '0')
+            )
+            ->submitButtonLabel(t('Replace'));
+    }
+
+    public function replaceReferences(FieldReferences $fieldReferences): Response
+    {
+        $this->request->validate([
+            'newTargetId' => ['required', 'integer'],
+        ]);
+
+        $newTargetId = $this->request->integer('newTargetId');
+
+        if (! $newTargetId) {
+            return $this->asFailure(t('No new {type} selected.', [
+                'type' => $this->elementType::lowerDisplayName(),
+            ]));
+        }
+
+        $newTarget = $this->elementType::find()
+            ->id($newTargetId)
+            ->siteId('*')
+            ->unique()
+            ->drafts(false)
+            ->revisions(false)
+            ->trashed(false)
+            ->status(null)
+            ->one();
+
+        if (! $newTarget) {
+            return $this->asFailure(t('The selected {type} could not be found.', [
+                'type' => $this->elementType::lowerDisplayName(),
+            ]));
+        }
+
+        $oldTargetIds = $this->elements->ids()->all();
+        $refCount = $fieldReferences->referenceCountForTargets($oldTargetIds);
+
+        foreach ($fieldReferences->replacementGroupsForTargets($oldTargetIds) as $sourceElementType => $typeRefs) {
+            foreach ($typeRefs as $sourceSiteId => $siteRefs) {
+                $refs = [];
+
+                foreach ($siteRefs as $ref) {
+                    $refs[] = [
+                        'fieldInstanceUid' => $ref->fieldInstanceUid,
+                        'sourceId' => (int) $ref->sourceId,
+                    ];
+                }
+
+                dispatch(new ReplaceReferences(
+                    sourceElementType: $sourceElementType,
+                    targetElementType: $this->elementType,
+                    sourceSiteId: $sourceSiteId === '*' ? null : (int) $sourceSiteId,
+                    refs: $refs,
+                    oldTargetIds: $oldTargetIds,
+                    newTargetId: $newTargetId,
+                ));
+            }
+        }
+
+        return $this->asSuccess(t('{numReferences, plural, =1{Reference} other{References}} queued to be replaced.', [
+            'numReferences' => $refCount,
         ]));
     }
 
