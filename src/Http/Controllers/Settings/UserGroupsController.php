@@ -74,6 +74,7 @@ readonly class UserGroupsController
             ->redirectUrl('settings/users')
             ->inertiaPage('settings/UserGroupsEdit', [
                 'group' => new UserGroup,
+                'brandNew' => true,
                 'permissions' => $userPermissions->getAllPermissions(),
             ]);
     }
@@ -107,6 +108,7 @@ readonly class UserGroupsController
                     'id' => $group->id,
                     ...$group->getConfig(true),
                 ],
+                'brandNew' => false,
                 'permissions' => $userPermissions->getAllPermissions(),
             ])
             ->prepareScreen(function (CpScreenResponse $response, string $containerId) {

@@ -361,8 +361,8 @@
     "file": "assets/cp-DjytCPhP.css",
     "src": "_cp-DjytCPhP.css"
   },
-  "_cp-JBHEwgkq.js": {
-    "file": "assets/cp-JBHEwgkq.js",
+  "_cp-wDqAiSu2.js": {
+    "file": "assets/cp-wDqAiSu2.js",
     "name": "cp",
     "imports": [
       "__plugin-vue_export-helper-B5xWb4v9.js",
@@ -1191,25 +1191,25 @@
     "isEntry": true
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-DMiKNmHz.js",
+    "file": "assets/cp-BMPy3KhX.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "_cp-DdGjhisW.js",
-      "_cp-JBHEwgkq.js",
+      "_cp-wDqAiSu2.js",
       "_CpQueueIndicator-Dvcn0peV.js",
       "_CpGlobalSidebar-DCHlPFlX.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-B_schpBK.js",
+    "file": "assets/legacy-vheJGYCr.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
       "_cp-DdGjhisW.js",
-      "_cp-JBHEwgkq.js",
+      "_cp-wDqAiSu2.js",
       "_login-form-D4iZYHEp.js"
     ],
     "dynamicImports": [
@@ -1564,7 +1564,7 @@
     ]
   },
   "resources/js/pages/settings/UserGroupsEdit.vue": {
-    "file": "assets/UserGroupsEdit-CXpSSM9e.js",
+    "file": "assets/UserGroupsEdit-BB5WL7IY.js",
     "name": "UserGroupsEdit",
     "src": "resources/js/pages/settings/UserGroupsEdit.vue",
     "isDynamicEntry": true,
@@ -1578,6 +1578,7 @@
       "_UserGroupsController-CGeKH4IE.js",
       "_AppLayout-CMfRP4dO.js",
       "_Pane-CukoaDZn.js",
+      "_useInputGenerator-CoRT24tj.js",
       "_useSettingsSave-Ddp2zTwK.js"
     ],
     "css": [
