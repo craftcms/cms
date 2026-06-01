@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where checking the elevated session timeout could overwrite newer session data, which could prevent passkeys from being created.
 - Fixed a bug where legacy plugin-defined `actions.php` routes could collide between plugins. ([#18994](https://github.com/craftcms/cms/pull/18994))
 - Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility
   pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
