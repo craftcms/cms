@@ -10,10 +10,7 @@ export default class CraftSelectInvoker extends LionSelectInvoker {
 
   override _afterTemplate() {
     return html`${!this.singleOption
-      ? html`<craft-icon
-          class="indicator"
-          name="chevron-down"
-        ></craft-icon>`
+      ? html`<craft-icon class="indicator" name="chevron-down"></craft-icon>`
       : ''}`;
   }
 }

@@ -557,11 +557,6 @@ const ALL_COMPONENTS = [
     importPath: '../components/dialog/dialog',
   },
   {
-    tagName: 'craft-disclosure',
-    className: 'CraftDisclosure',
-    importPath: '../components/disclosure/disclosure',
-  },
-  {
     tagName: 'craft-drawer',
     className: 'CraftDrawer',
     importPath: '../components/drawer/drawer',
