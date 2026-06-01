@@ -8,10 +8,10 @@ use CraftCms\Cms\Element\ElementIndexParams;
 use CraftCms\Cms\Element\ElementIndexService;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 use function CraftCms\Cms\t;
 
@@ -29,16 +29,16 @@ class ContentIndexController
     public function __invoke(Request $request, string $page, ?string $sectionHandle = null)
     {
         $elementType = Entry::class;
-
         $context = [
-            'elementType' => $elementType,
             'page' => $page,
+            'sectionHandle' => $sectionHandle ?? '',
+            'elementType' => $elementType,
         ];
 
         ($this->prepareElementIndexVariables)($context);
 
         // Determine the initial source key from the resolved sources
-        $sourceKey = null;
+        $sourceKey = $request->input('source');
         if (! empty($context['sources'])) {
             // If a section handle is provided, find the matching source
             if ($sectionHandle) {
@@ -65,6 +65,10 @@ class ContentIndexController
             $criteria['status'] = $request->input('status');
         }
 
+        if ($request->has('search')) {
+            $criteria['search'] = $request->input('search');
+        }
+
         $params = ElementIndexParams::fromContext(
             elementType: $elementType,
             sourceKey: $sourceKey,
@@ -75,35 +79,20 @@ class ContentIndexController
             sort: $sort,
         );
 
-        $result = $this->elementIndexService->getElementsJson($params);
         $elementStatuses = $elementType::statuses();
-
         $statusOptions = collect($elementStatuses)
             ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
+            ->prepend(['label' => t('All'), 'value' => ''])
             ->values()
             ->all();
 
-        return new CpScreenResponse()
-            ->title(t('Entries'))
-            ->crumbs([
-                [
-                    'label' => t('Content'),
-                    'url' => 'content',
-                ],
-                [
-                    'label' => t('Entries'),
-                ],
-            ])
-            ->inertiaPage('content/Index', Arr::merge($context, [
-                'sectionHandle' => $sectionHandle,
-                'elements' => $result['elements'],
-                'pagination' => $result['pagination'],
-                'sort' => $sort,
-                'q' => $request->input('q'),
-                'viewMode' => $request->input('viewMode', 'table'),
-                'status' => $request->input('status'),
-                'elementStatuses' => $elementStatuses,
-                'statusOptions' => $statusOptions,
-            ]));
+        return Inertia::render('content/Index', Arr::merge($context, [
+            'source' => $this->elementSources->findSource($context['elementType'], $sourceKey, $context['context']),
+            'status' => $request->input('status', ''),
+            'search' => $request->input('search'),
+            'statusOptions' => $statusOptions,
+            'viewMode' => $request->input('viewMode', 'table'),
+            'contentHtml' => $this->elementIndexService->getElementsHtml($params)['html'],
+        ]));
     }
 }

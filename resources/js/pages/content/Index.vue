@@ -1,107 +1,47 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
+  import {useForm} from '@inertiajs/vue3';
   import ElementSources from '@/modules/elements/ElementSources.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
-  import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
-  import {router, useForm} from '@inertiajs/vue3';
-  import {computed, h} from 'vue';
-  import type {PaginationData, SortItem} from '@/common/types';
+  import type {Source} from '@/modules/elements/types/sources';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import CraftSelectRich from '@craftcms/cp/vue/CraftSelectRich.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import {index} from '@/routes/craft/cp/content/index.js';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
 
-  type Source = any;
-
-  interface EntryElement {
-    id: number;
-    title: string | null;
-    slug: string | null;
-    uri: string | null;
-    url: string | null;
-    status: string | null;
-    enabled: boolean;
-    cpEditUrl: string | null;
-    dateCreated: string | null;
-    dateUpdated: string | null;
-    attributes?: Record<string, string>;
-  }
-
   const props = withDefaults(
     defineProps<{
-      sources: Array<Source>;
-      sectionHandle?: string | number;
-      page: string;
-      source?: Source | null;
-      elements: Array<EntryElement>;
-      pagination: PaginationData;
-      elementStatuses: Record<string, string>;
-      statusOptions: Array<{label: string; value: string}>;
-      sort: Array<SortItem>;
-      q?: string | null;
-      status?: string | null;
+      elementType: string;
+      elementDisplayName: string;
+      elementPluralDisplayName: string;
+      context?: string;
+      canHaveDrafts?: boolean;
+      criteria?: Record<any, any>;
+      defaultSource?: string | null;
+      defaultSourcePath?: string | null;
+      page?: string | null;
+      sources?: Array<Source>;
+      source?: Source;
+      contentHtml?: string;
+      search?: string | null;
+      status: string;
       viewMode?: string | null;
+      statusOptions?: Array<{label: string; value: string}>;
+      sectionHandle?: string | null;
     }>(),
     {
-      source: null,
-      viewMode: 'table',
-      q: null,
-      status: '',
+      context: 'index',
+      canHaveDrafts: false,
+      criteria: Craft.defaultIndexCriteria,
+      defaultSource: null,
+      defaultSourcePath: null,
+      page: null,
     }
   );
 
-  const statusOptions = computed(() => {
-    return Object.entries({all: 'All', ...props.elementStatuses}).map(
-      ([key, value]) => {
-        if (key === 'all') {
-          return {
-            label: t('All'),
-            value: '',
-          };
-        }
-
-        return {
-          label: value,
-          value: key,
-        };
-      }
-    );
-  });
-
-  const {paginationState, paginationConfig} = useServerPagination({
-    initialState: props.pagination,
-    onChange: ({query}) => {
-      router.visit(
-        index({page: props.page, sectionHandle: props.sectionHandle}),
-        {
-          data: query,
-          only: ['elements', 'pagination'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
-
-  const {sortingState, sortingConfig} = useServerSort({
-    initialState: props.sort,
-    onChange: ({query}) => {
-      router.visit(
-        index({page: props.page, sectionHandle: props.sectionHandle}),
-        {
-          data: query,
-          only: ['elements', 'pagination', 'sort'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
-
   const searchForm = useForm({
-    q: props.q ?? '',
+    search: props.search ?? '',
     status: props.status,
     viewMode: props.viewMode,
   });
@@ -111,59 +51,6 @@
       index({page: props.page, sectionHandle: props.sectionHandle})
     );
   }
-
-  const columnHelper = createCraftColumnHelper<EntryElement>();
-  const elementTable = useVueTable({
-    get data() {
-      return props.elements ?? [];
-    },
-    get columns() {
-      return [
-        columnHelper.link('title', {
-          header: t('Title'),
-          props: ({row}) => ({
-            href: row.original.cpEditUrl,
-          }),
-        }),
-        columnHelper.accessor('slug', {
-          header: t('Slug'),
-        }),
-        columnHelper.date('dateCreated', {
-          header: t('Date Created'),
-        }),
-        columnHelper.date('dateUpdated', {
-          header: t('Date Updated'),
-        }),
-        columnHelper.accessor('status', {
-          header: t('Status'),
-          cell: ({getValue}) =>
-            getValue()
-              ? h(ElementStatus, {value: getValue(), mode: 'badge'})
-              : 'N/A',
-        }),
-      ];
-    },
-    state: {
-      get pagination() {
-        return paginationState.value;
-      },
-      get sorting() {
-        return sortingState.value;
-      },
-      get columnVisibility() {
-        return {
-          title: true,
-          slug: true,
-          dateCreated: true,
-          dateUpdated: true,
-          status: true,
-        };
-      },
-    },
-    getCoreRowModel: getCoreRowModel<EntryElement>(),
-    ...paginationConfig,
-    ...sortingConfig,
-  });
 </script>
 
 <template>
@@ -179,13 +66,8 @@
       <div id="source-actions"></div>
     </template>
 
-    <AdminTable
-      :table="elementTable"
-      :from="pagination.from"
-      :to="pagination.to"
-      :total="pagination.total"
-    >
-      <template #search-form>
+    <div id="elements" v-if="contentHtml">
+      <div class="p-1">
         <form @submit="handleSearch" class="w-full">
           <div class="flex gap-2 items-center">
             <div>
@@ -205,7 +87,7 @@
               class="flex-1"
               name="search"
               :label="t('Search term')"
-              v-model="searchForm.q"
+              v-model="searchForm.search"
               label-sr-only
             >
               <craft-button
@@ -222,14 +104,20 @@
               </craft-button>
             </CraftInput>
 
-            <craft-button-group v-model="searchForm.viewMode">
+            <craft-button-group
+              v-model="searchForm.viewMode"
+              name="viewMode"
+              @change="
+                (event: CustomEvent) =>
+                  (searchForm.viewMode = event.detail.value)
+              "
+            >
               <craft-button
                 type="button"
                 appearance="filled"
                 icon="list"
                 :aria-label="t('Display in a table')"
                 value="table"
-                :active="searchForm.viewMode === 'table'"
               ></craft-button>
               <craft-button
                 type="button"
@@ -237,7 +125,6 @@
                 icon="custom-icons/element-cards"
                 :aria-label="t('Display as cards')"
                 value="cards"
-                :active="searchForm.viewMode === 'cards'"
               ></craft-button>
             </craft-button-group>
 
@@ -261,8 +148,10 @@
             </div>
           </div>
         </form>
-      </template>
-    </AdminTable>
+      </div>
+
+      <DynamicHtmlRenderer :html="contentHtml" />
+    </div>
   </IndexLayout>
 </template>
 

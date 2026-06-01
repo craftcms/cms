@@ -7,7 +7,7 @@
   const props = withDefaults(
     defineProps<{
       label?: string;
-      value: string;
+      value: string | number;
       mode?: 'badge' | 'inline';
       color?: Color;
     }>(),

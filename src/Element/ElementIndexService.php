@@ -184,9 +184,7 @@ class ElementIndexService
         }
 
         if (! $params->sourceKey) {
-            $responseData['html'] = Html::tag('div', t('Nothing yet.'), [
-                'class' => ['zilch', 'small'],
-            ]);
+            $responseData['html'] = Html::tag('craft-empty', attributes: ['label' => t('Nothing yet.')]);
 
             return $responseData;
         }

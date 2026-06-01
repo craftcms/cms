@@ -2,8 +2,7 @@
   import {index} from '@routes/cp/content/index.js';
   import {Link} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
-
-  type Source = any;
+  import type {Source} from '@/modules/elements/types/sources';
 
   withDefaults(
     defineProps<{
