@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Database\Expressions\JsonContains;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
@@ -27,6 +28,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
@@ -96,22 +98,46 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $negate = false;
         }
 
-        $valueSql = static::valueSql($instances);
+        $valueSql = self::valueColumn($instances);
 
-        return $query->where(function (Builder $query) use ($param, $valueSql) {
+        if ($valueSql === null) {
+            return $query;
+        }
+
+        $isEmptyValueParam = fn (mixed $value): bool => is_string($value) &&
+            in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'], true);
+
+        $applyConditions = function (Builder $query) use ($param, $valueSql, $isEmptyValueParam) {
             foreach ($param->values as $value) {
-                if (
-                    is_string($value) &&
-                    in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
-                ) {
+                if ($isEmptyValueParam($value)) {
                     $query->whereParam($valueSql, $value, columnType: Query::TYPE_JSON, boolean: $param->operator);
 
                     continue;
                 }
 
-                $query->whereJsonContains($valueSql, $value, $param->operator);
+                is_string($valueSql)
+                    ? $query->whereJsonContains($valueSql, $value, boolean: $param->operator)
+                    : $query->where(new JsonContains($valueSql, $value), boolean: $param->operator);
             }
-        }, boolean: $negate ? 'and not' : 'and');
+        };
+
+        if ($negate && Collection::make($param->values)->doesntContain($isEmptyValueParam)) {
+            return $query->where(function (Builder $query) use ($valueSql, $applyConditions) {
+                $query->whereNull($valueSql)
+                    ->orWhereNot($applyConditions);
+            });
+        }
+
+        return $query->where($applyConditions, boolean: $negate ? 'and not' : 'and');
+    }
+
+    private static function valueColumn(array $instances): string|Expression|null
+    {
+        if (count($instances) === 1 && isset($instances[0]->layoutElement)) {
+            return "elements_sites.content->{$instances[0]->layoutElement->uid}";
+        }
+
+        return static::valueSql($instances);
     }
 
     /**

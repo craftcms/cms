@@ -549,30 +549,24 @@ class UserPermissions
                     label: mb_ucfirst(t('Save {type}', ['type' => $type])),
                 ),
                 new Permission(
-                    key: "viewEntries:$section->uid",
-                    label: mb_ucfirst(t('View {type}', ['type' => $type])),
+                    key: "viewPeerEntryDrafts:$section->uid",
+                    label: mb_ucfirst(t('View other users’ {type}', [
+                        'type' => t('drafts'),
+                    ])),
                     nested: collect([
                         new Permission(
-                            key: "viewPeerEntryDrafts:$section->uid",
-                            label: mb_ucfirst(t('View other users’ {type}', [
+                            key: "savePeerEntryDrafts:$section->uid",
+                            label: mb_ucfirst(t('Save other users’ {type}', [
                                 'type' => t('drafts'),
                             ])),
-                            nested: collect([
-                                new Permission(
-                                    key: "savePeerEntryDrafts:$section->uid",
-                                    label: mb_ucfirst(t('Save other users’ {type}', [
-                                        'type' => t('drafts'),
-                                    ])),
-                                ),
-                                new Permission(
-                                    key: "deletePeerEntryDrafts:$section->uid",
-                                    label: t('Delete other users’ {type}', [
-                                        'type' => t('drafts'),
-                                    ]),
-                                ),
-                            ])
                         ),
-                    ]),
+                        new Permission(
+                            key: "deletePeerEntryDrafts:$section->uid",
+                            label: t('Delete other users’ {type}', [
+                                'type' => t('drafts'),
+                            ]),
+                        ),
+                    ])
                 ),
             ])
         );

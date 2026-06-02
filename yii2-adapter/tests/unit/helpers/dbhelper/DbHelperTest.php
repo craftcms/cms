@@ -444,6 +444,18 @@ class DbHelperTest extends TestCase
                 ['not', 'field_1', 'field_2'],
             ],
             [
+                [
+                    'or',
+                    ['foo' => null],
+                    ['not', ['foo' => ['field_1', 'field_2']]],
+                ],
+                'foo',
+                ['not', 'field_1', 'field_2'],
+                '=',
+                false,
+                Schema::TYPE_JSON,
+            ],
+            [
                 ['foo' => true],
                 'foo',
                 true,

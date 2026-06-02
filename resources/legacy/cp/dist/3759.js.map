@@ -1,1 +1,0 @@
-{"version":3,"file":"3759.js","mappings":"iGAAA,WACEA,aAAc,iD","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/bg.js"],"sourcesContent":["export default {\n  optionsPopup: 'Изскачащ прозорец за опции за комбинирано поле',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

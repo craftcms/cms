@@ -1,1 +1,0 @@
-{"version":3,"file":"1496.js","mappings":"iGAAA,WACEA,aAAc,qC","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/pl.js"],"sourcesContent":["export default {\n  optionsPopup: 'Wyskakujące okno opcji pola wyboru',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[4272],{4272:function(e,p,o){o.r(p),p.default={optionsPopup:"Fenêtre popup des options de la boîte combinée"}}}]);
-//# sourceMappingURL=4272.js.map

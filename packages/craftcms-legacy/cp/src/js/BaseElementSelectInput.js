@@ -1019,8 +1019,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     selectStructuredElements: async function (elements) {
-      // Get the new element HTML
-      var selectedElementIds = this.getSelectedElementIds();
+      // when branchLimit is 1, a new selection needs to replace the existing one;
+      // in that case, don't include old IDs, so Structures::applyBranchLimitToElements() keeps the new element;
+      // (it's called from relational-fields/structured-input-html)
+      var selectedElementIds = this.settings.branchLimit == 1 ? [] : this.getSelectedElementIds();
 
       for (var i = 0; i < elements.length; i++) {
         selectedElementIds.push(elements[i].id);
