@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
@@ -97,7 +98,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $negate = false;
         }
 
-        $valueSql = static::valueSql($instances);
+        $valueSql = self::valueColumn($instances);
+
+        if ($valueSql === null) {
+            return $query;
+        }
+
         $isEmptyValueParam = fn (mixed $value): bool => is_string($value) &&
             in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'], true);
 
@@ -109,7 +115,9 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     continue;
                 }
 
-                $query->where(new JsonContains($valueSql, $value), boolean: $param->operator);
+                is_string($valueSql)
+                    ? $query->whereJsonContains($valueSql, $value, boolean: $param->operator)
+                    : $query->where(new JsonContains($valueSql, $value), boolean: $param->operator);
             }
         };
 
@@ -121,6 +129,15 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
 
         return $query->where($applyConditions, boolean: $negate ? 'and not' : 'and');
+    }
+
+    private static function valueColumn(array $instances): string|Expression|null
+    {
+        if (count($instances) === 1 && isset($instances[0]->layoutElement)) {
+            return "elements_sites.content->{$instances[0]->layoutElement->uid}";
+        }
+
+        return static::valueSql($instances);
     }
 
     /**
