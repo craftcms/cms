@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {Head} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
   import craftCmsLogoUrl from '@public/images/craftcms.svg';
 
@@ -6,6 +7,7 @@
 </script>
 
 <template>
+  <Head title="Login"></Head>
   <main class="cp-login">
     <div class="cp-login__wrapper grid gap-3 justify-items-center">
       <h1 class="flex justify-center">
