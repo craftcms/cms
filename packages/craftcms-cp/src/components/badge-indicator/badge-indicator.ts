@@ -8,8 +8,17 @@ import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden
  * @summary A badge indicator component. Used in various places to indicate that
  * something is new or has been updated. The indicator can have an optional
  * notification count.
+ *
+ * @since 1.0
+ *
+ * @dependency sl-visually-hidden
+ *
+ * @csspart badge - The badge container.
+ *
+ * @cssproperty [--badge-color=var(--c-color-accent-fill-loud)] - Background color of the badge.
+ * @cssproperty [--text-color=white] - Color of the count text.
+ * @cssproperty [--badge-size=calc(8rem / 16)] - Minimum size of the badge. Defaults to 8px.
  */
-
 export default class CraftBadgeIndicator extends LitElement {
   static override styles = [styles];
 

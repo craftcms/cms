@@ -1,0 +1,146 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import IndicatorMeta, {
+  Default,
+  ArbitraryColor,
+  ArbitrarySize,
+} from './indicator.stories';
+
+<Meta of={IndicatorMeta} name="Docs" />
+
+# Indicator
+
+`<craft-indicator>` is a small dot used to visually represent the status of an
+object — for example, the live/draft state of an entry or a "has updates" marker
+in a list.
+
+> **Reach for a status component first.** Most features should use a
+> higher-level status component (which sets the right `fill` and `label` for a
+> known state) rather than placing `<craft-indicator>` directly. Use the
+> indicator on its own when you need a one-off dot that an existing status
+> component doesn't cover.
+
+<Canvas of={Default} />
+
+## Usage
+
+```html
+<craft-indicator fill="success" label="Live"></craft-indicator>
+```
+
+The element renders a single `role="img"` dot. It has no slot — all of its
+appearance is driven by attributes.
+
+## Properties
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Attribute</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>fill</code></td>
+      <td><code>string</code></td>
+      <td><code>var(--c-color-fill-loud)</code></td>
+      <td>The dot color. Accepts a semantic keyword (see below) or any CSS color.</td>
+    </tr>
+    <tr>
+      <td><code>appearance</code></td>
+      <td><code>appearance</code></td>
+      <td><code>'solid' | 'empty'</code></td>
+      <td><code>'solid'</code></td>
+      <td><code>solid</code> fills the dot; <code>empty</code> draws only the colored ring (hollow).</td>
+    </tr>
+    <tr>
+      <td><code>size</code></td>
+      <td><code>size</code></td>
+      <td><code>'md' | 'lg'</code></td>
+      <td><code>'md'</code></td>
+      <td><code>md</code> ≈ 0.5em, <code>lg</code> ≈ 1em. Scales with the surrounding font size.</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>label</code></td>
+      <td><code>string | null</code></td>
+      <td><code>null</code></td>
+      <td>Accessible name, exposed as <code>aria-label</code>. Provide it for non-decorative dots.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Fill keywords
+
+`fill` accepts a set of semantic keywords that map to design tokens. Anything
+that isn't a recognized keyword is passed through verbatim, so raw CSS values
+(hex, `rgb()`, `var(...)`, gradients) work too.
+
+<table>
+  <thead>
+    <tr>
+      <th>Keyword</th>
+      <th>Token</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>success</code> / <code>live</code></td>
+      <td><code>--c-color-success-fill-loud</code></td>
+    </tr>
+    <tr>
+      <td><code>warning</code></td>
+      <td><code>--c-color-warning-fill-loud</code></td>
+    </tr>
+    <tr>
+      <td><code>danger</code></td>
+      <td><code>--c-color-danger-fill-loud</code></td>
+    </tr>
+    <tr>
+      <td><code>info</code></td>
+      <td><code>--c-color-info-fill-loud</code></td>
+    </tr>
+    <tr>
+      <td><code>default</code> / <code>draft</code></td>
+      <td><code>--c-color-neutral-fill-loud</code></td>
+    </tr>
+  </tbody>
+</table>
+
+Prefer the semantic keywords so indicators stay consistent with the rest of the
+palette. Use an arbitrary value only when a status genuinely falls outside the
+token set.
+
+<Canvas of={ArbitraryColor} />
+
+## Sizing
+
+`size` switches between two preset sizes. Because the dimensions are defined in
+`em`, the dot scales with the font size of its container — set `font-size` on a
+wrapper to fine-tune it.
+
+<Canvas of={ArbitrarySize} />
+
+## Accessibility
+
+- The dot is exposed as `role="img"`, and `label` becomes its `aria-label`.
+- A status dot conveys meaning through color alone, so set `label` whenever the
+  indicator isn't purely decorative. If it only repeats adjacent visible text,
+  it's fine to leave `label` unset.
+
+## Styling
+
+The visible color is resolved from `fill` and applied through the private
+`--fill` custom property at render time, so target the host element to adjust
+layout:
+
+```css
+craft-indicator {
+  /* the dot is sized in em — change the font size to scale it */
+  font-size: 1.25rem;
+}
+```

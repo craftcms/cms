@@ -20,3 +20,5 @@ export const Color = {
   Gray: 'gray',
   Black: 'black',
 } as const;
+
+export type ColorKey = (typeof Color)[keyof typeof Color];

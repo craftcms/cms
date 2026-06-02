@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Html;
 
 use CraftCms\Cms\Component\Contracts\Statusable;
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -20,7 +20,6 @@ readonly class StatusHtml
         $attributes += [
             'color' => null,
             'label' => ucfirst($status),
-            'class' => $status,
         ];
 
         if ($status === 'draft') {
@@ -41,20 +40,10 @@ readonly class StatusHtml
             $attributes['color'] = $attributes['color']->value;
         }
 
-        $options = [
-            'class' => array_filter([
-                'status',
-                $attributes['class'],
-                $attributes['color'],
-            ]),
-        ];
-
-        if ($attributes['label'] !== null) {
-            $options['role'] = 'img';
-            $options['aria']['label'] = sprintf('%s %s', t('Status:'), $attributes['label']);
-        }
-
-        return Html::tag('span', '', $options);
+        return Html::tag('craft-indicator', '', Arr::merge($attributes, [
+            'fill' => $attributes['color'] ?? $status,
+            'label' => sprintf('%s %s', t('Status:'), $attributes['label']),
+        ]));
     }
 
     public function componentStatusIndicatorHtml(Statusable $component): ?string
@@ -89,25 +78,23 @@ readonly class StatusHtml
         }
 
         if ($config['icon']) {
-            $html = Html::tag('span', Icons::svg($config['icon']), [
-                'class' => ['cp-icon', 'puny', $config['color']],
+            $html = Html::tag('craft-icon', '', [
+                'slot' => 'prefix',
+                'name' => $config['icon'],
             ]);
         } else {
             $html = $this->statusIndicatorHtml($config['color'], [
+                'slot' => 'prefix',
                 'label' => null,
-                'class' => $config['indicatorClass'] ?? $config['color'],
             ]);
         }
 
         if ($config['label']) {
-            $html .= ' '.Html::tag('span', Html::encode($config['label']), ['class' => 'status-label-text']);
+            $html .= Html::encode($config['label']);
         }
 
-        return Html::tag('span', $html, [
-            'class' => array_filter([
-                'status-label',
-                $config['color'],
-            ]),
+        return Html::tag('craft-status-badge', $html, [
+            'data-color' => $config['color'],
         ]);
     }
 
