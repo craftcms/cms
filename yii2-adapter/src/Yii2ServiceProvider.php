@@ -99,25 +99,13 @@ class Yii2ServiceProvider extends ServiceProvider
         defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
         defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', app()->environmentPath());
         defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));
-
-        if (is_dir(resource_path('views'))) {
-            defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', resource_path('views'));
-        } else {
-            defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', base_path('templates'));
-        }
     }
 
     private function registerLegacySiteTemplateRoot(): void
     {
         Event::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event): void {
-            $templatesPath = base_path('templates');
-
-            if (CRAFT_TEMPLATES_PATH !== resource_path('views') || !is_dir($templatesPath)) {
-                return;
-            }
-
             $event->roots[''] ??= [];
-            $event->roots[''] = array_merge((array)$event->roots[''], [$templatesPath]);
+            $event->roots[''] = array_merge((array)$event->roots[''], [base_path('templates')]);
         });
     }
 
