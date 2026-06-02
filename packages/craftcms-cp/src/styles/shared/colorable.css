@@ -231,27 +231,16 @@
   --c-color-neutral-on-normal: var(--color-slate-950);
   --c-color-neutral-on-loud: var(--color-slate-50);
 
-  /* Semantics colors - brand */
-  --c-color-brand-fill-quiet: var(--color-red-50);
-  --c-color-brand-fill-normal: var(--color-red-100);
-  --c-color-brand-fill-loud: var(--color-red-600);
-  --c-color-brand-border-quiet: var(--color-red-400);
-  --c-color-brand-border-normal: var(--color-red-600);
-  --c-color-brand-border-loud: var(--color-red-800);
-  --c-color-brand-on-quiet: var(--color-red-800);
-  --c-color-brand-on-normal: var(--color-red-950);
-  --c-color-brand-on-loud: var(--color-red-50);
-
   /* Semantics colors - accent */
-  --c-color-accent-fill-quiet: var(--color-blue-50);
-  --c-color-accent-fill-normal: var(--color-blue-100);
-  --c-color-accent-fill-loud: var(--color-blue-600);
-  --c-color-accent-border-quiet: var(--color-blue-400);
-  --c-color-accent-border-normal: var(--color-blue-600);
-  --c-color-accent-border-loud: var(--color-blue-800);
-  --c-color-accent-on-quiet: var(--color-blue-800);
-  --c-color-accent-on-normal: var(--color-blue-950);
-  --c-color-accent-on-loud: var(--color-blue-50);
+  --c-color-accent-fill-quiet: var(--color-red-50);
+  --c-color-accent-fill-normal: var(--color-red-100);
+  --c-color-accent-fill-loud: var(--color-red-600);
+  --c-color-accent-border-quiet: var(--color-red-400);
+  --c-color-accent-border-normal: var(--color-red-600);
+  --c-color-accent-border-loud: var(--color-red-800);
+  --c-color-accent-on-quiet: var(--color-red-800);
+  --c-color-accent-on-normal: var(--color-red-950);
+  --c-color-accent-on-loud: var(--color-red-50);
 
   /* Semantics colors - info */
   --c-color-info-fill-quiet: var(--color-blue-50);
@@ -298,24 +287,7 @@
   --c-color-danger-on-loud: var(--color-red-50);
 }
 
-.c-colorable,
-[data-color] {
-  --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
-  --c-color-fill-normal: var(--c-color-neutral-fill-normal);
-  --c-color-fill-loud: var(--c-color-neutral-fill-loud);
-  --c-color-border-quiet: var(--c-color-neutral-border-quiet);
-  --c-color-border-normal: var(--c-color-neutral-border-normal);
-  --c-color-border-loud: var(--c-color-neutral-border-loud);
-  --c-color-on-quiet: var(--c-color-neutral-on-quiet);
-  --c-color-on-normal: var(--c-color-neutral-on-normal);
-  --c-color-on-loud: var(--c-color-neutral-on-loud);
-
-  background-color: var(--c-color-fill-quiet);
-  border-color: var(--c-color-border-quiet);
-  color: var(--c-color-on-quiet);
-}
-
-.c-colorable--red,
+.cp-color-red,
 [data-color='red'] {
   --c-color-fill-quiet: var(--c-color-red-fill-quiet);
   --c-color-border-quiet: var(--c-color-red-border-quiet);
@@ -566,18 +538,6 @@
   --c-color-fill-loud: var(--c-color-neutral-fill-loud);
   --c-color-border-loud: var(--c-color-neutral-border-loud);
   --c-color-on-loud: var(--c-color-neutral-on-loud);
-}
-.cp-color-brand,
-[data-color='brand'] {
-  --c-color-fill-quiet: var(--c-color-brand-fill-quiet);
-  --c-color-border-quiet: var(--c-color-brand-border-quiet);
-  --c-color-on-quiet: var(--c-color-brand-on-quiet);
-  --c-color-fill-normal: var(--c-color-brand-fill-normal);
-  --c-color-border-normal: var(--c-color-brand-border-normal);
-  --c-color-on-normal: var(--c-color-brand-on-normal);
-  --c-color-fill-loud: var(--c-color-brand-fill-loud);
-  --c-color-border-loud: var(--c-color-brand-border-loud);
-  --c-color-on-loud: var(--c-color-brand-on-loud);
 }
 .cp-color-accent,
 [data-color='accent'] {

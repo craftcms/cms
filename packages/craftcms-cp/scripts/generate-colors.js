@@ -35,8 +35,7 @@ const availableColors = [
 
 const semanticColors = {
   neutral: 'slate',
-  brand: 'red',
-  accent: 'blue',
+  accent: 'red',
   info: 'blue',
   success: 'emerald',
   warning: 'yellow',
@@ -169,7 +168,7 @@ ${buildColorableTokens()}
 ${buildSemanticTokens()}
 }
 
-${[...availableColors, ...semanticColors].map((c) => buildStyleBlock(c)).join('\n')}
+${[...availableColors, ...Object.keys(semanticColors)].map((c) => buildStyleBlock(c)).join('\n')}
 `;
 }
 
