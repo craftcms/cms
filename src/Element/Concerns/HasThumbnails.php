@@ -80,6 +80,7 @@ trait HasThumbnails
         return Html::tag('div', $thumbSvg, [
             'class' => [
                 'thumb',
+                'w-[24px] h-[24px]',
                 $this->hasRoundedThumb() ? 'rounded' : null,
             ],
         ]);

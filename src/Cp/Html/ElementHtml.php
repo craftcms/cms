@@ -115,7 +115,12 @@ readonly class ElementHtml
         $html = Html::beginTag('craft-chip', $attributes);
 
         if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
-            $html .= Html::beginTag('div', ['slot' => 'prefix']);
+            $html .= Html::beginTag('div', ['slot' => 'prefix', 'class' => 'flex items-center gap-1']);
+        }
+
+        if ($config['showStatus']) {
+            /** @var Chippable&Statusable $component */
+            $html .= $this->statusHtml->componentStatusIndicatorHtml($component) ?? '';
         }
 
         if ($config['showThumb']) {
@@ -133,11 +138,6 @@ readonly class ElementHtml
 
         if ($config['selectable']) {
             $html .= $this->componentCheckboxHtml(sprintf('%s-label', $config['id']));
-        }
-
-        if ($config['showStatus']) {
-            /** @var Chippable&Statusable $component */
-            $html .= $this->statusHtml->componentStatusIndicatorHtml($component) ?? '';
         }
 
         if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
