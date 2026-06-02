@@ -131,20 +131,12 @@ class MysqlDbHelperTest extends TestCase
                 ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':NOTEMPTY:',
             ],
             [
-                [
-                    'or',
-                    ['foo' => null],
-                    ['not', ['or', ['foo' => null], ['foo' => '']]],
-                ],
+                ['not', ['or', ['foo' => null], ['foo' => '']]],
                 'foo',
                 'not :empty:',
             ],
             [
-                [
-                    'or',
-                    ['foo' => null],
-                    ['not', ['or', ['foo' => null], ['foo' => '']]],
-                ],
+                ['not', ['or', ['foo' => null], ['foo' => '']]],
                 'foo',
                 'NOT :EMPTY:',
             ],
