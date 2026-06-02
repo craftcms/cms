@@ -104,7 +104,7 @@
   <AppLayout>
     <template #actions>
       <CpLink
-        variant="primary"
+        variant="accent"
         appearance="button"
         :href="create().url"
         :inertia="false"
