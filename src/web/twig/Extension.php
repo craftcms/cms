@@ -73,6 +73,7 @@ use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Money\Money;
 use SimpleXMLElement;
+use SplFileObject;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Traversable;
@@ -1552,6 +1553,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             FnStream::class,
             Process::class,
             SimpleXMLElement::class,
+            SplFileObject::class,
         ];
 
         foreach ($blocklist as $c) {

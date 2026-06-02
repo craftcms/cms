@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
 
 ## 5.10.5 - 2026-06-02
