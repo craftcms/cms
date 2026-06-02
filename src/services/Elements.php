@@ -4047,7 +4047,7 @@ class Elements extends Component
                             $element->tempId = null;
                         }
 
-                        $element->afterNewRecordSaved();
+                        $element->afterAssignedId();
                     }
                 }
 

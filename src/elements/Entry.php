@@ -2994,7 +2994,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function afterNewRecordSaved(): void
+    public function afterAssignedId(): void
     {
         if (ElementHelper::isDraftOrRevision($this)) {
             return;
