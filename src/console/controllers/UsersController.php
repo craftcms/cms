@@ -98,6 +98,12 @@ class UsersController extends Controller
     public bool $hard = false;
 
     /**
+     * @var string|null The name of the two-step verification method you would like to remove for user, e.g. Authenticator App, Recovery Codes. Use "all" to remove all 2FA methods.
+     * @since 5.9.21
+     */
+    public ?string $method = null;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
@@ -121,6 +127,9 @@ class UsersController extends Controller
                 break;
             case 'set-password':
                 $options[] = 'password';
+                break;
+            case 'remove-2fa':
+                $options[] = 'method';
                 break;
         }
 
@@ -549,13 +558,24 @@ class UsersController extends Controller
             return ExitCode::OK;
         }
 
-        $methodToRemove = $this->select(
-            "Which two-step verification method would you like to remove for user “{$user->username}”",
-            [
-                'all' => 'all',
-                ...array_combine(array_keys($activeMethods), array_keys($activeMethods)),
-            ],
-        );
+        // if method was provided, check if it's in the active methods; if so - use it
+        if ($this->method) {
+            if ($this->method !== 'all' && !isset($activeMethods[$this->method])) {
+                $this->stdout("User “{$user->username}” doesn’t have the “{$this->method}” two-step verification method." . PHP_EOL);
+                return ExitCode::OK;
+            }
+            $methodToRemove = $this->method;
+        } elseif ($this->interactive && count($activeMethods) > 1) {
+            $methodToRemove = $this->select(
+                "Which two-step verification method would you like to remove for user “{$user->username}”",
+                [
+                    'all' => 'all',
+                    ...array_combine(array_keys($activeMethods), array_keys($activeMethods)),
+                ],
+            );
+        } else {
+            $methodToRemove = 'all';
+        }
 
         if ($methodToRemove === 'all') {
             $this->stdout('Removing all two-step verification methods for the user ...' . PHP_EOL);

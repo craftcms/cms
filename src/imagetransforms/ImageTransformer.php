@@ -166,7 +166,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
                 // Generate the transform
                 try {
-                    $this->generateTransform($index);
+                    $this->generateTransform($index, $asset);
                 } catch (Exception $e) {
                     $index->inProgress = false;
                     $index->fileExists = false;
@@ -449,9 +449,9 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * @throws ImageTransformException
      */
-    private function generateTransform(ImageTransformIndex $index): void
+    private function generateTransform(ImageTransformIndex $index, ?Asset $asset = null): void
     {
-        $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
+        $asset ??= Craft::$app->getAssets()->getAssetById($index->assetId);
 
         if (!$asset) {
             throw new ImageTransformException('Asset not found - ' . $index->assetId);

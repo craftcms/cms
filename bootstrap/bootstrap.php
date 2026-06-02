@@ -135,10 +135,6 @@ if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
 $createFolder($storagePath);
 $ensureFolderIsReadable($storagePath, true);
 
-// Create the storage/runtime/ folder if it doesn't already exist
-$createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
-$ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
-
 // Create the storage/logs/ folder if it doesn't already exist
 if (!App::isStreamLog()) {
     $createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
@@ -300,6 +296,11 @@ $config = ArrayHelper::merge($config, $localConfig);
 if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
 }
+
+// Create the runtime folder if it doesn't already exist
+$runtimePath = Craft::getAlias($config['runtimePath']);
+$createFolder($runtimePath);
+$ensureFolderIsReadable($runtimePath, true);
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

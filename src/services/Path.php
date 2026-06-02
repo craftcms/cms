@@ -215,20 +215,13 @@ class Path extends Component
     /**
      * Returns the path to the `storage/runtime/` directory.
      *
-     * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
      * @throws Exception
+     * @deprecated in 5.10.3. [[\yii\base\Application::getRuntimePath()]] should be used instead.
      */
-    public function getRuntimePath(bool $create = true): string
+    public function getRuntimePath(): string
     {
-        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'runtime';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
-        }
-
-        return $path;
+        return Craft::$app->getRuntimePath();
     }
 
     /**
@@ -257,7 +250,7 @@ class Path extends Component
      */
     public function getTempPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'temp';
+        $path = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'temp';
 
         if ($create) {
             FileHelper::createDirectory($path);
@@ -274,7 +267,7 @@ class Path extends Component
      */
     public function getAssetsPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'assets';
+        $path = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'assets';
 
         if ($create) {
             FileHelper::createDirectory($path);
@@ -377,7 +370,7 @@ class Path extends Component
      */
     public function getPluginIconsPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'pluginicons';
+        $path = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'pluginicons';
 
         if ($create) {
             FileHelper::createDirectory($path);
@@ -454,7 +447,7 @@ class Path extends Component
      */
     public function getCompiledClassesPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'compiled_classes';
+        $path = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'compiled_classes';
 
         if ($create) {
             FileHelper::createDirectory($path);
@@ -471,7 +464,7 @@ class Path extends Component
      */
     public function getCompiledTemplatesPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'compiled_templates';
+        $path = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'compiled_templates';
 
         if ($create) {
             FileHelper::createDirectory($path);
@@ -488,7 +481,7 @@ class Path extends Component
      */
     public function getSessionPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'sessions';
+        $path = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'sessions';
 
         if ($create) {
             FileHelper::createDirectory($path);
@@ -508,7 +501,7 @@ class Path extends Component
      */
     public function getCachePath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'cache';
+        $path = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'cache';
 
         if ($create) {
             FileHelper::createDirectory($path);
@@ -545,11 +538,11 @@ class Path extends Component
             $this->getDbBackupPath(false),
             $this->getLogPath(false),
             $this->getRebrandPath(false),
-            $this->getRuntimePath(false),
             $this->getSiteTemplatesPath(),
             $this->getSiteTranslationsPath(),
             $this->getTestsPath(),
             $this->getVendorPath(),
+            Craft::$app->getRuntimePath(),
         ];
     }
 }

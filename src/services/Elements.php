@@ -526,6 +526,20 @@ class Elements extends Component
     public const EVENT_AFTER_DELETE_FOR_SITE = 'afterDeleteForSite';
 
     /**
+     * @var string
+     * @since 5.10.0
+     */
+    public const REF_TAG_PATTERN = '/
+        \{                                      # Tags always begin with a `{`
+            (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
+            \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
+            (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
+            (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
+            (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
+        \}                                      # Tags always close with a `}`
+    /x';
+
+    /**
      * @var array|null
      */
     private ?array $_placeholderElements = null;
@@ -3113,15 +3127,7 @@ class Elements extends Component
         $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
-            '/
-                \{                                      # Tags always begin with a {
-                    (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
-                    \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
-                    (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
-                    (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
-                    (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
-                \}                                      # Tags always close with a }
-            /x',
+            self::REF_TAG_PATTERN,
             function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
@@ -4040,6 +4046,8 @@ class Elements extends Component
                             $element->uri = str_replace($element->tempId, (string)$element->id, $element->uri);
                             $element->tempId = null;
                         }
+
+                        $element->afterAssignedId();
                     }
                 }
 

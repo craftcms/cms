@@ -11,6 +11,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\deletionblockers\DeletionBlockerInterface;
 use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
@@ -649,6 +650,16 @@ interface ElementInterface extends
      * exist, or null if the result should be ignored
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
+
+    /**
+     * Returns any deletion blockers for the given elements.
+     *
+     * @param ElementCollection $elements The elements to be deleted
+     * @param bool $hardDelete Whether the elements will be hard-deleted
+     * @return DeletionBlockerInterface[]
+     * @since 5.10.0
+     */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array;
 
     /**
      * Returns the base GraphQL type name that represents elements of this type.
@@ -1524,6 +1535,15 @@ interface ElementInterface extends
     public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
 
     /**
+     * Enables or disables dirty field tracking.
+     *
+     * @param bool $enabled
+     * @see getDirtyFields()
+     * @since 5.10.0
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void;
+
+    /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
      * merged into this element.
      *
@@ -1854,6 +1874,13 @@ interface ElementInterface extends
      * @param bool $isNew Whether the element is brand new
      */
     public function afterSave(bool $isNew): void;
+
+    /**
+     * Performs actions after the element is assigned an ID.
+     *
+     * @since 5.10.5
+     */
+    public function afterAssignedId(): void;
 
     /**
      * Performs actions after an element is fully saved and propagated to other sites.

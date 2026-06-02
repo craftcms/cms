@@ -29,6 +29,7 @@ use craft\filters\IpRateLimitIdentity;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -154,6 +155,7 @@ class UsersController extends Controller
      * ```
      *
      * @since 3.0.13
+     * @deprecated in 5.10.0
      */
     public const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
 
@@ -317,7 +319,12 @@ class UsersController extends Controller
         $duration = Craft::$app->getConfig()->getGeneral()->userSessionDuration;
 
         // PublicKeyCredentialRequestOptions
-        $requestOptions = $this->request->getRequiredBodyParam('requestOptions');
+        $requestOptions = SessionHelper::remove(Craft::$app->getAuth()->passkeyRequestOptionsParam);
+
+        if (!$requestOptions) {
+            return $this->asFailure(Craft::t('app', 'Passkey authentication failed.'));
+        }
+
         // PublicKeyCredential
         $response = $this->request->getRequiredBodyParam('response');
         $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
@@ -1351,6 +1358,7 @@ class UsersController extends Controller
         $response = $this->asEditUserScreen($user, self::SCREEN_PREFERENCES);
 
         $i18n = Craft::$app->getI18n();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         // user language
         $userLanguage = $user->getPreferredLanguage();
@@ -1369,13 +1377,19 @@ class UsersController extends Controller
             !$userLocale ||
             !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
         ) {
-            $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
+            $userLocale = $generalConfig->defaultCpLocale;
         }
+
+        // time zone
+        // (can't call `Craft::$app->getTimeZone()` here because that could be set to the user preference)
+        $timeZone = $generalConfig->timezone ?? Craft::$app->getProjectConfig()->get('system.timeZone');
+        $timeZoneAbbr = $timeZone ? DateTimeHelper::timeZoneAbbreviation(App::parseEnv($timeZone)) : 'UTC';
 
         $response->action('users/save-preferences');
         $response->contentTemplate('users/_preferences', compact(
             'userLanguage',
             'userLocale',
+            'timeZoneAbbr',
         ));
 
         return $response;
@@ -1396,10 +1410,15 @@ class UsersController extends Controller
         if ($preferredLocale === '__blank__') {
             $preferredLocale = null;
         }
+        $timeZone = $this->request->getBodyParam('timeZone', $user->getPreference('timezone')) ?: null;
+        if ($timeZone === '__blank__') {
+            $timeZone = null;
+        }
         $preferences = [
             'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
             'locale' => $preferredLocale,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
+            'timeZone' => $timeZone,
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
             'disableAutofocus' => $this->request->getBodyParam('disableAutofocus', $user->getPreference('disableAutofocus')),
@@ -2197,6 +2216,7 @@ JS);
      * Deletes a user.
      *
      * @return Response|null
+     * @deprecated in 5.10.0
      */
     public function actionDeleteUser(): ?Response
     {

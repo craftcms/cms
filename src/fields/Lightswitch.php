@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -30,7 +31,12 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Lightswitch extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @inheritdoc
@@ -175,6 +181,14 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
                 'on' => $this->showLabelsInCards,
                 'disabled' => $readOnly,
             ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): bool
+    {
+        return $this->default;
     }
 
     /**

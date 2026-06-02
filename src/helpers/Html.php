@@ -903,6 +903,7 @@ class Html extends \yii\helpers\Html
                 foreach ($matchIds as $i => $id) {
                     if (
                         $i % 2 === 0 && // not a delimiter
+                        $id !== '' && // check if it's not an empty string, or the next line will error
                         $id[0] !== '.' // not a class name
                     ) {
                         $isHash = $id[0] === '#';
@@ -1271,5 +1272,18 @@ class Html extends \yii\helpers\Html
         }
 
         return $svg;
+    }
+
+    /**
+     * Returns JavaScript code with the given variables, pre-JSON-encoded.
+     *
+     * @param callable $jsFn callback function that returns the JS code to be registered.
+     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     * @since 5.10.0
+     */
+    public static function jsWithVars(callable $jsFn, array $vars): string
+    {
+        $jsVars = array_map(fn($variable) => Json::encode($variable), $vars);
+        return call_user_func($jsFn, ...array_values($jsVars));
     }
 }

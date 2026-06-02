@@ -422,6 +422,21 @@ class CustomField extends BaseField
     }
 
     /**
+     * Sets the ID of the field this layout field is based on.
+     *
+     * @param int $id
+     * @since 5.10.0
+     */
+    public function setFieldId(int $id): void
+    {
+        $field = Craft::$app->getFields()->getFieldById($id);
+        if (!$field) {
+            throw new FieldNotFoundException($id);
+        }
+        $this->setField($field);
+    }
+
+    /**
      * Returns the field’s original handle.
      *
      * @return string

@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\MergeableFieldInterface;
@@ -37,7 +38,11 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+abstract class BaseOptionsField extends Field implements
+    PreviewableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
@@ -123,7 +128,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 }
             }
 
-            return $negate ? ['not', $condition] : $condition;
+            // if we're negating, include elements with empty value (or no value) as they don't match any of the values that can be specified
+            return $negate ? ['or', [$valueSql => null], ['not', $condition]] : $condition;
         }
 
         return parent::queryCondition($instances, $value, $params);
@@ -351,6 +357,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public function getDefaultValue(): array|string|null
+    {
+        return $this->defaultValue();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof MultiOptionsFieldData || $value instanceof SingleOptionFieldData) {
@@ -466,7 +480,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 }
             }
 
-            return $serialized;
+            // return null if there are no selected options
+            // (see https://github.com/craftcms/cms/pull/19019)
+            return $serialized ?: null;
         }
 
         return parent::serializeValue($value, $element);

@@ -33,6 +33,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
+use craft\elements\deletionblockers\RelationDeletionBlocker;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
@@ -47,6 +48,7 @@ use craft\events\DefineAltActionsEvent;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
+use craft\events\DefineElementDeletionBlockersEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMenuItemsEvent;
 use craft\events\DefineMetadataEvent;
@@ -80,6 +82,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -99,6 +102,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ReflectionClass;
 use Traversable;
+use Twig\Extension\SandboxExtension;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ArrayableTrait;
@@ -755,6 +759,24 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
     /**
+     * @event DefineElementDeletionBlockersEvent The event that is triggered when defining any blockers that should prevent a user from being deleted
+     *
+     * ---
+     * ```php
+     * use craft\elements\User;
+     * use craft\events\DefineUserDeletionBlockersEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(User::class, User::EVENT_DEFINE_DELETION_BLOCKERS, function(DefineElementDeletionBlockersEvent $event) {
+     *     $event->blockers[] = // ...
+     * });
+     * ```
+     *
+     * @since 5.10.0
+     */
+    public const EVENT_DEFINE_DELETION_BLOCKERS = 'defineDeletionBlockers';
+
+    /**
      * @event ModelEvent The event that is triggered before the element is deleted.
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
@@ -1285,6 +1307,7 @@ abstract class Element extends Component implements ElementInterface
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
             'tableName' => static::pluralDisplayName(),
             'elementQuery' => self::elementQueryWithAllDescendants($elementQuery),
+            'returnUrl' => $viewState['returnUrl'] ?? null,
         ];
 
         $db = Craft::$app->getDb();
@@ -2215,6 +2238,36 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
+    {
+        $blockers = [
+            new RelationDeletionBlocker(Entry::class, $elements, $hardDelete, [
+                'elementIndexSettings' => [
+                    'defaultTableColumns' => [
+                        ['section'],
+                    ],
+                    'defaultSort' => ['section', 'asc'],
+                ],
+            ]),
+        ];
+
+        // Fire a 'defineDeletionBlockers' event
+        if (Event::hasHandlers(static::class, self::EVENT_DEFINE_DELETION_BLOCKERS)) {
+            $event = new DefineElementDeletionBlockersEvent([
+                'elements' => $elements,
+                'hardDelete' => $hardDelete,
+                'blockers' => $blockers,
+            ]);
+            Event::trigger(static::class, self::EVENT_DEFINE_DELETION_BLOCKERS, $event);
+            $blockers = $event->blockers;
+        }
+
+        return $blockers;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function baseGqlType(): Type
     {
         return ElementGqlType::getType();
@@ -2399,7 +2452,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var bool
      */
-    private bool $_initialized = false;
+    private bool $_trackDirtyFields = false;
 
     /**
      * @var string|null
@@ -2722,7 +2775,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_savedTitle = $this->title;
         }
 
-        $this->_initialized = true;
+        $this->_trackDirtyFields = true;
 
         // Stop allowing setting custom field values directly on the behavior
         /** @var CustomFieldBehavior $behavior */
@@ -2859,14 +2912,21 @@ abstract class Element extends Component implements ElementInterface
     {
         $attributes = $this->getAttributes();
 
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
+        // Include custom fields, unless this is coming from Twig’s SandboxExtension
+        // (see https://github.com/craftcms/cms/issues/19004)
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, limit: 3);
+        if (!(
+            ($backtrace[2]['class'] ?? null) === SandboxExtension::class &&
+            $backtrace[2]['function'] === 'doEnsureToStringAllowed'
+        )) {
+            $fieldLayout = $this->getFieldLayout();
 
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (!isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+            if ($fieldLayout !== null) {
+                foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                    $field = $layoutElement->getField();
+                    if (!isset($attributes[$field->handle])) {
+                        $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                    }
                 }
             }
         }
@@ -3946,12 +4006,20 @@ abstract class Element extends Component implements ElementInterface
         $elementsService = Craft::$app->getElements();
         $canSaveCanonical = $elementsService->canSaveCanonical($this);
 
+        $returnUrl = Craft::$app->getRequest()->getQueryParam('returnUrl');
+        $redirectParams = array_filter([
+            'returnUrl' => $returnUrl,
+        ]);
+
         $altActions = [
             [
                 'label' => $isUnpublishedDraft && $canSaveCanonical
                     ? Craft::t('app', 'Create and continue editing')
                     : Craft::t('app', 'Save and continue editing'),
                 'redirect' => '{cpEditUrl}',
+                'params' => array_filter([
+                    'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
+                ]),
                 'shortcut' => true,
                 'retainScroll' => true,
                 'eventData' => ['autosave' => false],
@@ -3968,7 +4036,10 @@ abstract class Element extends Component implements ElementInterface
                     'shortcut' => true,
                     'shift' => true,
                     'eventData' => ['autosave' => false],
-                    'params' => ['addAnother' => 1],
+                    'params' => [
+                        'addAnother' => 1,
+                        'returnUrl' => $returnUrl,
+                    ],
                 ];
             }
 
@@ -3993,9 +4064,19 @@ abstract class Element extends Component implements ElementInterface
                     'params' => [
                         'asUnpublishedDraft' => true,
                         'deleteProvisionalDraft' => true,
+                        'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
                     ],
                 ];
             }
+        }
+
+        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft() && !$this->isProvisionalDraft) {
+            $altActions[] = [
+                'label' => Craft::t('app', 'Save as a new {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]),
+                'action' => 'elements/duplicate',
+            ];
         }
 
         // Fire a 'defineAltActions' event
@@ -4242,22 +4323,47 @@ JS, [
 
             // Delete
             if ($canDeleteCanonical) {
+                $view = Craft::$app->getView();
+                $deleteId = sprintf('action-delete-%s', mt_rand());
                 $items[] = [
+                    'id' => $deleteId,
                     'icon' => 'trash',
                     'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ])),
-                    'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
-                    'params' => [
-                        'elementId' => $this->getCanonicalId(),
-                        'siteId' => $this->siteId,
-                    ],
-                    'redirect' => "$redirectUrl#",
-                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
-                    ]),
-                    'destructive' => true,
                 ];
+
+                $view->registerJsWithVars(fn(
+                    $id,
+                    $elementType,
+                    $elementId,
+                    $siteId,
+                    $ownerId,
+                    $confirmationMessage,
+                    $redirect,
+                ) => <<<JS
+$('#' + $id).on('activate', async () => {
+  new Craft.ElementDeletionManager($elementType, [$elementId], {
+    siteId: $siteId,
+    ownerId: $ownerId,
+    confirmationMessage: $confirmationMessage,
+    onSuccess: () => {
+      document.location.href = $redirect;
+    },
+  });
+});
+JS,
+                    [
+                        $view->namespaceInputId($deleteId),
+                        static::class,
+                        $this->id,
+                        $this->siteId,
+                        $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                            'type' => $isDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                        ]),
+                        "$redirectUrl#",
+                    ]);
             }
         } elseif ($isDraft && $canDeleteDraft) {
             // Delete draft for site
@@ -5305,7 +5411,7 @@ JS, [
         unset($this->_normalizedFieldValues[$fieldHandle]);
 
         // If the element is fully initialized, mark the value as dirty
-        if ($this->_initialized) {
+        if ($this->_trackDirtyFields) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
 
@@ -5333,6 +5439,14 @@ JS, [
         $value = $field->normalizeValueFromRequest($value, $this);
         $this->setFieldValue($field->handle, $value);
         $this->_normalizedFieldValues[$field->handle] = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void
+    {
+        $this->_trackDirtyFields = $enabled;
     }
 
     /**
@@ -6454,10 +6568,10 @@ JS, [
             },
         ], $metadata, [
             Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             Craft::t('app', 'Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             Craft::t('app', 'Notes') => function() {
                 if ($this->getIsRevision()) {
@@ -6545,6 +6659,13 @@ JS, [
                 'isNew' => $isNew,
             ]));
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterAssignedId(): void
+    {
     }
 
     private function updateRelations(bool $isNew): void

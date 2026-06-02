@@ -73,7 +73,7 @@ class LogTarget extends \yii\debug\LogTarget
         $content = $this->module->fs->read($indexFile);
 
         if ($content !== '') {
-            return array_reverse(unserialize($content), true);
+            return array_reverse(unserialize($content, ['allowed_classes' => false]), true);
         }
 
         return [];
@@ -89,12 +89,12 @@ class LogTarget extends \yii\debug\LogTarget
         }
 
         $dataFile = $this->module->dataPath . "/$tag.data";
-        $data = unserialize($this->module->fs->read($dataFile));
+        $data = unserialize($this->module->fs->read($dataFile), ['allowed_classes' => false]);
         $exceptions = $data['exceptions'];
         foreach ($this->module->panels as $id => $panel) {
             if (isset($data[$id])) {
                 $panel->tag = $tag;
-                $panel->load(unserialize($data[$id]));
+                $panel->load(unserialize($data[$id], ['allowed_classes' => false]));
             }
             if (isset($exceptions[$id])) {
                 $panel->setError($exceptions[$id]);
@@ -168,7 +168,7 @@ class LogTarget extends \yii\debug\LogTarget
     private function _updateIndexFile(string $indexFile, array $summary): void
     {
         try {
-            $manifest = unserialize($this->module->fs->read($indexFile));
+            $manifest = unserialize($this->module->fs->read($indexFile), ['allowed_classes' => false]);
         } catch (FsException $e) {
             $manifest = [];
         }

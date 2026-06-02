@@ -31,6 +31,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Markdown;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -54,7 +55,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
-use yii\helpers\Markdown;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -273,7 +273,7 @@ class Entries extends Component
      */
     private function _createSectionQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -296,6 +296,13 @@ class Entries extends Component
             ->from(['sections' => Table::SECTIONS])
             ->where(['sections.dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
+
+        // todo: remove this after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::SECTIONS, 'minAuthors')) {
+            $query->addSelect('sections.minAuthors');
+        }
+
+        return $query;
     }
 
     /**
@@ -649,6 +656,7 @@ class Entries extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
+            $sectionRecord->minAuthors = $data['minAuthors'] ?? 0;
             $sectionRecord->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
@@ -1017,6 +1025,7 @@ class Entries extends Component
             $entry->sectionId = $section->id;
             $entry->setTypeId($entryTypeIds[0]);
             $entry->title = $section->name;
+            $entry->postDate = new DateTime();
         }
 
         // Validate first
@@ -1684,7 +1693,7 @@ SQL)->execute();
                 $entryTypeRecord->description = $data['description'] ?? null;
             }
             if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
-                $entryTypeRecord->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
+                $entryTypeRecord->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
             }
             if ($db->columnExists(Table::ENTRYTYPES, 'allowLineBreaksInTitles')) {
                 $entryTypeRecord->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
@@ -2330,5 +2339,38 @@ SQL)->execute();
         }
 
         return true;
+    }
+
+    /**
+     * Reassigns entries to a new author.
+     *
+     * @param int|int[] $oldUserId
+     * @param int $newUserId
+     * @return int The number of affected entries
+     * @since 5.10.0
+     */
+    public function reassignEntries(int|array $oldUserId, int $newUserId): int
+    {
+        $count = Db::update(Table::ENTRIES_AUTHORS, [
+            'authorId' => $newUserId,
+        ], [
+            'and',
+            ['authorId' => $oldUserId],
+            [
+                'not exists',
+                (new Query())
+                    ->from(
+                        (new Query())
+                            ->from(['ea2' => Table::ENTRIES_AUTHORS])
+                            ->where(sprintf('[[ea2.entryId]] = %s.[[entryId]]', Table::ENTRIES_AUTHORS))
+                            ->andWhere(['ea2.authorId' => $newUserId])
+                    ),
+            ],
+        ], [], false);
+
+        // Invalidate all entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+
+        return $count;
     }
 }

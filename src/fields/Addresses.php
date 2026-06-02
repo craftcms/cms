@@ -26,6 +26,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\Color as ColorEnum;
 use craft\enums\ElementIndexViewMode;
 use craft\errors\InvalidFieldException;
 use craft\events\CancelableEvent;
@@ -36,8 +37,8 @@ use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Db;
 use craft\helpers\Gql;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
-use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\web\assets\cp\CpAsset;
 use GraphQL\Type\Definition\Type;
@@ -640,6 +641,76 @@ class Addresses extends Field implements
 
     /**
      * @inheritdoc
+     */
+    protected function actionMenuItems(): array
+    {
+        $items = [];
+
+        if ($this->viewMode === self::VIEW_MODE_CARDS && $this->maxAddresses !== 1) {
+            $items[] = $this->copyAction();
+        }
+
+        $parentItems = parent::actionMenuItems();
+
+        if (!empty($items) && !empty($parentItems)) {
+            return [
+                ...$items,
+                ['type' => 'hr'],
+                ...$parentItems,
+            ];
+        }
+
+        return [...$items, ...$parentItems];
+    }
+
+    private function copyAction(): array
+    {
+        $view = Craft::$app->getView();
+        $id = sprintf('action-copy-%s', mt_rand());
+
+        $view->registerJsWithVars(fn($id, $fieldId) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  const field = $('#' + $fieldId);
+  const menu = btn.closest('.menu');
+
+  if (!field.length) {
+    setTimeout(() => {
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
+    }, 1);
+    return;
+  }
+
+  const getAddresses = () => field.find(' > .nested-element-cards > .elements > li > .element');
+
+  btn.on('activate', () => {
+    Craft.cp.copyElements(getAddresses());
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu?.on('show', () => {
+      disclosureMenu.toggleItem(btn[0], !!getAddresses().length);
+    });
+  }, 1);
+})();
+JS, [
+            $view->namespaceInputId($id),
+            $view->namespaceInputId($this->getInputId()),
+        ]);
+
+        return [
+            'id' => $id,
+            'icon' => 'clone-dashed',
+            'color' => ColorEnum::Fuchsia,
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
+                'type' => Address::pluralLowerDisplayName(),
+            ])),
+        ];
+    }
+
+    /**
+     * @inheritdoc
      * @throws InvalidConfigException
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
@@ -672,7 +743,9 @@ class Addresses extends Field implements
         }
 
         if ($this->viewMode === self::VIEW_MODE_CARDS) {
-            return $this->addressManager()->getCardsHtml($owner, $config);
+            return Html::tag('div', $this->addressManager()->getCardsHtml($owner, $config), [
+                'id' => $this->getInputId(),
+            ]);
         }
 
         $config += [
@@ -823,6 +896,9 @@ class Addresses extends Field implements
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
             ],
+            'createElement' => fn(AddressQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 

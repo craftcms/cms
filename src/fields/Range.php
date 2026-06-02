@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -28,7 +29,11 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
  */
-class Range extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Range extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @inheritdoc
@@ -161,6 +166,14 @@ class Range extends Field implements InlineEditableFieldInterface, SortableField
     public function useFieldset(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): int|float|null
+    {
+        return $this->defaultValue;
     }
 
     /**

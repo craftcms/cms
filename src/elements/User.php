@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
@@ -23,6 +22,7 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\elements\deletionblockers\EntryAuthorsBlocker;
 use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\MenuItemType;
@@ -56,7 +56,6 @@ use craft\web\View;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
-use Throwable;
 use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Exception;
@@ -380,11 +379,6 @@ class User extends Element implements IdentityInterface
 
             // Unsuspend
             $actions[] = UnsuspendUsers::class;
-        }
-
-        if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
-            // Delete
-            $actions[] = DeleteUsers::class;
         }
 
         // Restore
@@ -789,6 +783,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @var self|null The user who should take over the user’s content if the user is deleted.
+     * @deprecated in 5.10.0
      */
     public ?User $inheritorOnDelete = null;
 
@@ -1439,19 +1434,24 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
+        $authService = Craft::$app->getAuth();
         // Validate the security key
         try {
-            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response);
+            $keyValid = $authService->verifyPasskey($this, $requestOptions, $response);
         } catch (InvalidUserHandleException $e) {
-            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response, true);
+            $keyValid = $authService->verifyPasskey($this, $requestOptions, $response, true);
         } catch (InvalidArgumentException) {
             $keyValid = false;
         }
+
+        $updatedPublicKeyCredentialSource = Session::remove($authService->passkeyCredSourceParam);
 
         if (!$keyValid) {
             $this->handleInvalidLoginParam();
             return false;
         }
+
+        $authService->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedPublicKeyCredentialSource);
 
         $this->authError = $this->_getAuthError();
         return !isset($this->authError);
@@ -1820,14 +1820,17 @@ XML;
      */
     public function canDelete(User $user): bool
     {
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            return false;
+        }
+
         if (parent::canDelete($user)) {
             return true;
         }
 
         return (
-            $user->id !== $this->id &&
-            $user->can('deleteUsers') &&
-            (!$this->admin || $user->admin)
+            $user->id === $this->id ||
+            ($user->can('deleteUsers') && (!$this->admin || $user->admin))
         );
     }
 
@@ -2187,9 +2190,6 @@ JS, [
             return parent::destructiveActionMenuItems();
         }
 
-        // Intentionally not calling parent::destructiveActionMenuItems() here,
-        // because we want to override the user deletion UX.
-
         $currentUser = Craft::$app->getUser()->getIdentity();
         $usersService = Craft::$app->getUsers();
 
@@ -2226,41 +2226,13 @@ JS, [
                         'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
                     ];
                 }
-
-                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-                    $view = Craft::$app->getView();
-                    $deleteId = sprintf('action-delete-%s', mt_rand());
-                    $items[] = [
-                        'id' => $deleteId,
-                        'icon' => 'trash',
-                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
-                            'type' => static::lowerDisplayName(),
-                        ])),
-                    ];
-
-                    $view->registerJsWithVars(fn($id, $userId, $redirect) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.sendActionRequest('POST', 'users/user-content-summary', {
-    data: {userId: $userId}
-  }).then((response) => {
-    new Craft.DeleteUserModal($userId, {
-      contentSummary: response.data,
-      redirect: $redirect,
-    });
-  });
-});
-JS,
-                    [
-                        $view->namespaceInputId($deleteId),
-                        $this->id,
-                        /** @phpstan-ignore-next-line */
-                        Craft::$app->getSecurity()->hashData(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
-                    ]);
-                }
             }
         }
 
-        return $items;
+        return [
+            ...$items,
+            ...parent::destructiveActionMenuItems(),
+        ];
     }
 
     private function _copyPasswordResetUrlActionItem(string $label, View $view): array
@@ -2522,7 +2494,7 @@ JS, [
                 }
                 return $formatter->asDuration($duration);
             },
-            Craft::t('app', 'Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
+            Craft::t('app', 'Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true),
             Craft::t('app', 'Last login') => function() use ($formatter) {
                 if ($this->pending) {
                     return false;
@@ -2530,13 +2502,13 @@ JS, [
                 if (!$this->lastLoginDate) {
                     return Craft::t('app', 'Never');
                 }
-                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             Craft::t('app', 'Last login fail') => function() use ($formatter) {
                 if (!$this->locked || !$this->lastInvalidLoginDate) {
                     return false;
                 }
-                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             Craft::t('app', 'Login fail count') => function() use ($formatter) {
                 if (!$this->locked) {
@@ -2544,6 +2516,17 @@ JS, [
                 }
                 return $formatter->asDecimal($this->invalidLoginCount, 0);
             },
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
+    {
+        return [
+            new EntryAuthorsBlocker($elements, $hardDelete),
+            ...parent::deletionBlockers($elements, $hardDelete),
         ];
     }
 
@@ -2718,52 +2701,9 @@ JS, [
             return false;
         }
 
-        $elementsService = Craft::$app->getElements();
-
-        // Do all this stuff within a transaction
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            // Should we transfer the content to a new user?
-            if ($this->inheritorOnDelete) {
-                // Invalidate all entry caches
-                $elementsService->invalidateCachesForElementType(Entry::class);
-
-                // Update the entry/version/draft tables to point to the new user
-                $userRefs = [
-                    Table::DRAFTS => 'creatorId',
-                    Table::REVISIONS => 'creatorId',
-                    Table::ENTRIES_AUTHORS => 'authorId',
-                ];
-
-                foreach ($userRefs as $table => $column) {
-                    Db::update($table, [
-                        $column => $this->inheritorOnDelete->id,
-                    ], [
-                        $column => $this->id,
-                    ], [], false);
-                }
-            } else {
-                // Delete the entries
-                $entryQuery = Entry::find()
-                    ->authorId($this->id)
-                    ->status(null)
-                    ->site('*')
-                    ->unique();
-
-                foreach (Db::each($entryQuery) as $entry) {
-                    /** @var Entry $entry */
-                    // only delete their entry if they're the sole author
-                    if ($entry->getAuthorIds() === [$this->id]) {
-                        $elementsService->deleteElement($entry);
-                    }
-                }
-            }
-
-            $transaction->commit();
-        } catch (Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
+        // Reassign the user's entries?
+        if ($this->inheritorOnDelete) {
+            Craft::$app->getEntries()->reassignEntries($this->id, $this->inheritorOnDelete->id);
         }
 
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);

@@ -171,8 +171,8 @@ class Composer extends Component
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
-        // Copy composer.phar into storage/
-        $pharPath = sprintf('%s/composer.phar', Craft::$app->getPath()->getRuntimePath());
+        // Copy composer.phar into the runtime folder
+        $pharPath = sprintf('%s/composer.phar', Craft::$app->getRuntimePath());
         copy(Craft::getAlias('@lib/composer.phar'), $pharPath);
 
         $command = array_merge([
@@ -186,7 +186,7 @@ class Composer extends Component
             '--no-interaction',
         ]);
 
-        $homePath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+        $homePath = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
         FileHelper::createDirectory($homePath);
 
         $process = new Process($command, null, [

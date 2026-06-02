@@ -155,6 +155,7 @@ class Asset extends ElementMutationResolver
     public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $assetId = $arguments['id'];
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $elementService = Craft::$app->getElements();
         /** @var AssetElement|null $asset */
@@ -167,7 +168,7 @@ class Asset extends ElementMutationResolver
         $volumeUid = Db::uidById(Table::VOLUMES, $asset->getVolumeId());
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
 
-        return $elementService->deleteElementById($assetId);
+        return $elementService->deleteElementById($assetId, hardDelete: $hardDelete);
     }
 
     /**
