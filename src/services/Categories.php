@@ -36,7 +36,7 @@ use yii\base\Exception;
 /**
  * Categories service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getCategories()|`Craft::$app->categories`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getCategories()|`Craft::$app->getCategories()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -157,9 +157,7 @@ class Categories extends Component
             return [];
         }
 
-        return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($user) {
-            return $user->can("viewCategories:$group->uid");
-        }, true, true, false);
+        return ArrayHelper::where($this->getAllGroups(), fn(CategoryGroup $group) => $user->can("viewCategories:$group->uid"), true, true, false);
     }
 
     /**
@@ -274,7 +272,7 @@ class Categories extends Component
             return false;
         }
 
-        if ($isNewCategoryGroup) {
+        if ($isNewCategoryGroup && !$group->uid) {
             $group->uid = StringHelper::UUID();
         }
 

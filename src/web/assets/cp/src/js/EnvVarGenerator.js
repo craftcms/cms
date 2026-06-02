@@ -9,7 +9,7 @@ Craft.EnvVarGenerator = Craft.BaseInputGenerator.extend({
     let name = sourceVal.replace(/<(.*?)>/g, '');
 
     // Remove inner-word punctuation
-    name = name.replace(/['"‘’“”\[\]\(\)\{\}:]/g, '');
+    name = name.replace(/['"‘’“”ʻ\[\]\(\)\{\}:]/g, '');
 
     // Make it lowercase
     name = name.toLowerCase();

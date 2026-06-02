@@ -80,6 +80,8 @@ class UrlHelper
     /**
      * Returns a query string based on the given params.
      *
+     * Param values will be encoded, except for `/`, `{`, and `}` characters.
+     *
      * @param array $params
      * @return string
      * @since 3.3.0
@@ -94,11 +96,11 @@ class UrlHelper
         if ($query === '') {
             return '';
         }
-        // Decode the param names and a few select chars in param values
+        // Decode a few select chars
         $params = [];
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
-            $n = urldecode($n);
+            $n = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $n);
             $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
             $params[] = $v !== '' ? "$n=$v" : $n;
         }
@@ -126,7 +128,7 @@ class UrlHelper
 
         // Combine them
         $params = array_merge($baseParams, $params);
-        $fragment = $fragment ?? $baseFragment;
+        $fragment ??= $baseFragment;
 
         // Append to the base URL and return
         if (($query = static::buildQuery($params)) !== '') {
@@ -209,7 +211,7 @@ class UrlHelper
     }
 
     /**
-     * Encodes a URL’s query string params.
+     * Encodes a URL’s query string param values, except for `/`, `{`, and `}` characters.
      *
      * @param string $url
      * @return string
@@ -219,6 +221,27 @@ class UrlHelper
     {
         [$url, $params, $fragment] = self::_extractParams($url);
         return self::_buildUrl($url, $params, $fragment);
+    }
+
+    /**
+     * Encodes non-alphanumeric characters in a URL, except reserved characters and already-encoded characters.
+     *
+     * @param string $url
+     * @return string
+     * @since 5.5.0
+     */
+    public static function encodeUrl(string $url): string
+    {
+        $parts = preg_split('/([:\/?#\[\]@!$&\'()*+,;=%])/', $url, flags: PREG_SPLIT_DELIM_CAPTURE);
+        $url = '';
+        foreach ($parts as $i => $part) {
+            if ($i % 2 === 0) {
+                $url .= urlencode($part);
+            } else {
+                $url .= $part;
+            }
+        }
+        return $url;
     }
 
     /**
@@ -552,6 +575,38 @@ class UrlHelper
     }
 
     /**
+     * Returns a CP referral URL.
+     *
+     * @return string|null
+     * @since 5.9.0
+     * @deprecated in 5.10.0
+     */
+    public static function cpReferralUrl(): ?string
+    {
+        $referrer = Craft::$app->getRequest()->getReferrer();
+
+        if ($referrer === null) {
+            return null;
+        }
+
+        // Make sure the CP referred it
+        if (!str_starts_with($referrer, self::baseCpUrl())) {
+            return null;
+        }
+
+        // to ensure we're comparing uris strip base cp url and query string from the referrer first
+        $referrerFullUri = ltrim(StringHelper::removeLeft($referrer, self::baseCpUrl()), '/');
+        $referrerFullUri = substr($referrerFullUri, 0, strpos($referrerFullUri, '?') ?: null);
+
+        // Make sure it didn't refer itself
+        if ($referrerFullUri === Craft::$app->getRequest()->getFullUri()) {
+            return null;
+        }
+
+        return $referrer;
+    }
+
+    /**
      * Parses a URL for the host info.
      *
      * @param string $url
@@ -619,7 +674,7 @@ class UrlHelper
 
         // Combine them
         $params = array_merge($baseParams, $params);
-        $fragment = $fragment ?? $baseFragment;
+        $fragment ??= $baseFragment;
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $request = Craft::$app->getRequest();
@@ -631,17 +686,29 @@ class UrlHelper
             }
         } else {
             // token/siteToken/preview params
-            if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
-                $params[$generalConfig->tokenParam] = $token;
-            }
             if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {
                 $params[$generalConfig->siteToken] = $siteToken;
             }
-            if (!isset($params['x-craft-preview']) && !isset($params['x-craft-live-preview'])) {
-                if (($previewToken = $request->getQueryParam('x-craft-preview')) !== null) {
-                    $params['x-craft-preview'] = $previewToken;
-                } elseif (($previewToken = $request->getQueryParam('x-craft-live-preview')) !== null) {
-                    $params['x-craft-live-preview'] = $previewToken;
+            if ($request->getIsSiteRequest()) {
+                if (
+                    $addToken &&
+                    !isset($params[$generalConfig->tokenParam]) &&
+                    ($token = $request->getToken()) !== null &&
+                    Craft::$app->getTokens()->getRemainingTokenUsages($token) !== 0
+                ) {
+                    $params[$generalConfig->tokenParam] = $token;
+                }
+
+                if (
+                    !isset($params['x-craft-preview']) &&
+                    !isset($params['x-craft-live-preview']) &&
+                    $request->getIsPreview()
+                ) {
+                    if (($previewToken = $request->getQueryParam('x-craft-preview')) !== null) {
+                        $params['x-craft-preview'] = $previewToken;
+                    } elseif (($previewToken = $request->getQueryParam('x-craft-live-preview')) !== null) {
+                        $params['x-craft-live-preview'] = $previewToken;
+                    }
                 }
             }
         }

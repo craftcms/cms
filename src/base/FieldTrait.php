@@ -101,4 +101,10 @@ trait FieldTrait
      * @since 5.0.0
      */
     public ?CustomField $layoutElement = null;
+
+    /**
+     * @var bool Whether the field is being displayed statically.
+     * @since 5.7.0
+     */
+    public bool $static = false;
 }

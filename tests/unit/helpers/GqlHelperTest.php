@@ -72,7 +72,6 @@ class GqlHelperTest extends TestCase
         self::assertFalse(GqlHelper::canSchema('something'));
 
         $result = GqlHelper::extractAllowedEntitiesFromSchema();
-        self::assertIsArray($result);
         self::assertEmpty($result);
     }
 
@@ -104,9 +103,7 @@ class GqlHelperTest extends TestCase
      */
     public function testUnionTypes(): void
     {
-        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function() {
-            return 'one';
-        });
+        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], fn() => 'one');
         self::assertInstanceOf(UnionType::class, $unionType);
     }
 

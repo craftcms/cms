@@ -46,7 +46,7 @@ class DeleteForSite extends ElementAction
         type: $type,
         validateSelection: (selectedItems, elementIndex) => {
             for (let i = 0; i < selectedItems.length; i++) {
-                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable')) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable-for-site')) {
                     return false;
                 }
             }
@@ -81,15 +81,8 @@ JS, [static::class]);
      */
     public function getConfirmationMessage(): ?string
     {
-        if (isset($this->confirmationMessage)) {
-            return $this->confirmationMessage;
-        }
-
-        /** @var ElementInterface|string $elementType */
-        $elementType = $this->elementType;
-
-        return Craft::t('app', 'Are you sure you want to delete the selected {type} for this site?', [
-            'type' => $elementType::pluralLowerDisplayName(),
+        return $this->confirmationMessage ?? Craft::t('app', 'Are you sure you want to delete the selected {type} for this site?', [
+            'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }
 
@@ -115,10 +108,8 @@ JS, [static::class]);
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
-            /** @var ElementInterface|string $elementType */
-            $elementType = $this->elementType;
             $this->setMessage(Craft::t('app', '{type} deleted for site.', [
-                'type' => $elementType::pluralDisplayName(),
+                'type' => $this->elementType::pluralDisplayName(),
             ]));
         }
 

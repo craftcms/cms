@@ -8,8 +8,8 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use craft\base\Event;
 use craft\elements\User;
-use yii\base\Event;
 
 /**
  * Authorization Check Event.

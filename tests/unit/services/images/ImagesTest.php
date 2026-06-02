@@ -208,7 +208,7 @@ class ImagesTest extends TestCase
      */
     private function _skipIfNoImagick()
     {
-        if (!($this->images->getIsImagick() && method_exists(Imagick::class, 'getImageOrientation'))) {
+        if (!($this->images->getIsImagick())) {
             $this->markTestSkipped('Need Imagick to test this function.');
         }
     }

@@ -39,7 +39,7 @@ use yii\di\Instance;
 /**
  * Image Transforms service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->imageTransforms`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->getImageTransforms()`]].
  *
  * @property-read ImageTransform[] $allTransforms
  * @property-read array $pendingTransformIndexIds
@@ -128,7 +128,10 @@ class ImageTransforms extends Component
         if (!isset($this->_transforms)) {
             $this->_transforms = new MemoizableArray(
                 $this->_createTransformQuery()->all(),
-                fn(array $result) => new ImageTransform($result),
+                fn(array $result) => Craft::createObject([
+                    'class' => ImageTransform::class,
+                    ...$result,
+                ]),
             );
         }
 
@@ -231,7 +234,6 @@ class ImageTransforms extends Component
         $data = $event->newValue;
 
         $transaction = $this->db->beginTransaction();
-        $deleteTransformIndexes = false;
 
         try {
             $transformRecord = $this->_getTransformRecord($transformUid);
@@ -245,11 +247,10 @@ class ImageTransforms extends Component
             $qualityChanged = $transformRecord->quality !== $data['quality'];
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
             $fillChanged = $transformRecord->fill !== ($data['fill'] ?? null);
-            $upscaleChanged = $transformRecord->upscale !== ($data['upscale'] ?? null);
+            $upscaleChanged = ($transformRecord->upscale !== null ? (bool)$transformRecord->upscale : null) !== ($data['upscale'] ?? null);
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
                 $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
-                $deleteTransformIndexes = true;
             }
 
             $transformRecord->mode = $data['mode'];
@@ -269,12 +270,6 @@ class ImageTransforms extends Component
         } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
-        }
-
-        if ($deleteTransformIndexes) {
-            Db::delete(Table::IMAGETRANSFORMINDEX, [
-                'transformString' => '_' . $transformRecord->handle,
-            ], [], $this->db);
         }
 
         // Clear caches
@@ -420,13 +415,12 @@ class ImageTransforms extends Component
                     throw new InvalidArgumentException("Can’t eager-load transform “{$transform}” without a prior transform that specifies the base width");
                 }
 
-                $transform = new ImageTransform($refTransform->toArray([
-                    'format',
-                    'interlace',
-                    'mode',
-                    'position',
-                    'quality',
-                ]));
+                $transform = Craft::createObject([
+                    'class' => ImageTransform::class,
+                        ...$refTransform->toArray(),
+                ]);
+
+                unset($transform->name, $transform->handle);
 
                 if ($sizeUnit === 'w') {
                     $transform->width = (int)$sizeValue;
@@ -463,8 +457,7 @@ class ImageTransforms extends Component
 
     /**
      * @template T of ImageTransformerInterface
-     * @param string $type
-     * @phpstan-param class-string<T> $type
+     * @param class-string<T> $type
      * @param array $config
      * @return T
      * @throws InvalidConfigException

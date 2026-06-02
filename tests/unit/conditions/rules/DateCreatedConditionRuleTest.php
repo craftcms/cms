@@ -35,7 +35,7 @@ class DateCreatedConditionRuleTest extends TestCase
      */
     public function testSetAttributes(array $config, ?array $expected = null): void
     {
-        $expected = $expected ?? $config;
+        $expected ??= $config;
         $rule = Craft::$app->getConditions()->createConditionRule(array_merge([
             'condition' => Entry::createCondition(),
             'class' => DateCreatedConditionRule::class,

@@ -17,6 +17,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $photoId Photo ID
+ * @property int $affiliatedSiteId Affiliated Site ID
  * @property bool $active Active
  * @property bool $pending Pending
  * @property bool $locked Locked
@@ -112,5 +113,30 @@ class User extends ActiveRecord
     {
         return $this->hasMany(UserGroup::class, ['id' => 'groupId'])
             ->viaTable(Table::USERGROUPS_USERS, ['userId' => 'id']);
+    }
+
+    /**
+     * Returns whether any properties that affect the user's status have changed.
+     *
+     * @retrun bool
+     * @since 5.7.0
+     */
+    public function haveIndexAttributesChanged(): bool
+    {
+        if ($this->getIsNewRecord()) {
+            return false;
+        }
+
+        return !empty($this->getDirtyAttributes([
+            'active',
+            'email',
+            'firstName',
+            'fullName',
+            'lastLoginDate',
+            'lastName',
+            'pending',
+            'suspended',
+            'username',
+        ]));
     }
 }

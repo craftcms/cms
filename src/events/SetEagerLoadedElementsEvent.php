@@ -8,8 +8,8 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use craft\base\Event;
 use craft\elements\db\EagerLoadPlan;
-use yii\base\Event;
 
 /**
  * SetEagerLoadedElementsEvent class.

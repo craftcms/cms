@@ -12,14 +12,17 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\base\UtilityInterface;
+use craft\elements\db\NestedElementQueryInterface;
 use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
+use craft\filters\UtilityAccess;
 use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -30,6 +33,7 @@ use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
 use craft\models\Updates;
+use craft\utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
@@ -67,6 +71,21 @@ class AppController extends Controller
     /**
      * @inheritdoc
      */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => UpdatesUtility::class,
+                'only' => ['check-for-updates', 'cache-updates'],
+                'when' => fn() => !Craft::$app->getUser()->checkPermission('performUpdates'),
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action): bool
     {
         if ($action->id === 'migrate') {
@@ -90,23 +109,19 @@ class AppController extends Controller
     }
 
     /**
-     * Loads the given JavaScript resource URL and returns it.
+     * Returns the HTML for a control panel icon.
      *
-     * @param string $url
      * @return Response
+     * @since 5.7.0
      */
-    public function actionResourceJs(string $url): Response
+    public function actionIconSvg(): Response
     {
         $this->requireCpRequest();
+        $this->requireAcceptsJson();
 
-        if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
-            throw new BadRequestHttpException("$url does not appear to be a resource URL");
-        }
-
-        $response = Craft::createGuzzleClient()->get($url);
-        $this->response->setCacheHeaders();
-        $this->response->getHeaders()->set('content-type', 'application/javascript');
-        return $this->asRaw($response->getBody());
+        return $this->asJson([
+            'iconSvg' => Cp::iconSvg($this->request->getRequiredParam('icon')),
+        ]);
     }
 
     /**
@@ -150,12 +165,6 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        // Require either the 'performUpdates' or 'utility:updates' permission
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
-        }
-
         $updatesService = Craft::$app->getUpdates();
 
         if ($this->request->getParam('onlyIfCached') && !$updatesService->getIsUpdateInfoCached()) {
@@ -179,12 +188,6 @@ class AppController extends Controller
     public function actionCacheUpdates(): Response
     {
         $this->requireAcceptsJson();
-
-        // Require either the 'performUpdates' or 'utility:updates' permission
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
-        }
 
         $updateData = $this->request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();
@@ -259,7 +262,7 @@ class AppController extends Controller
 
         $projectConfigService = Craft::$app->getProjectConfig();
         if ($applyProjectConfigChanges) {
-            $applyProjectConfigChanges = $projectConfigService->areChangesPending();
+            $applyProjectConfigChanges = $projectConfigService->areChangesPending(force: true);
         }
 
         if (!$runMigrations && !$applyProjectConfigChanges) {
@@ -435,6 +438,7 @@ class AppController extends Controller
             default => 1597,
         };
 
+        $this->response->setNoCacheHeaders();
         return $this->renderTemplate('_special/licensing-issues.twig', [
             'issues' => $issues,
             'hash' => $hash,
@@ -749,9 +753,11 @@ class AppController extends Controller
         $elementHtml = [];
 
         foreach ($criteria as $criterion) {
-            /** @var string|ElementInterface $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementType = $criterion['type'];
             $id = $criterion['id'];
+            $fieldId = $criterion['fieldId'] ?? null;
+            $ownerId = $criterion['ownerId'] ?? null;
             $siteId = $criterion['siteId'];
             $instances = $criterion['instances'];
 
@@ -759,17 +765,29 @@ class AppController extends Controller
                 throw new BadRequestHttpException('Invalid element ID');
             }
 
-            $elements = $elementType::find()
+            $query = $elementType::find()
                 ->id($id)
                 ->fixedOrder()
                 ->drafts(null)
                 ->revisions(null)
                 ->siteId($siteId)
-                ->status(null)
-                ->all();
+                ->status(null);
 
-            // See if there are any provisional drafts we should swap these out with
-            ElementHelper::swapInProvisionalDrafts($elements);
+            if ($query instanceof NestedElementQueryInterface) {
+                $query
+                    ->fieldId($fieldId)
+                    ->ownerId($ownerId);
+            }
+
+            // if we have revisionId, then we might need to look through soft-deleted elements too
+            if (isset($criterion['revisionId'])) {
+                $query->trashed(null);
+            }
+
+            $elements = $query->all();
+
+            // See if there are any provisional changes we should show
+            ElementHelper::loadProvisionalChanges($elements);
 
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
@@ -813,7 +831,7 @@ class AppController extends Controller
         $menuItemHtml = [];
 
         foreach ($components as $componentInfo) {
-            /** @var string|Chippable $componentType */
+            /** @var class-string<Chippable> $componentType */
             $componentType = $componentInfo['type'];
             $id = $componentInfo['id'];
 
@@ -824,6 +842,9 @@ class AppController extends Controller
             $component = $componentType::get($id);
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
+                    if (!empty($config['overrides'])) {
+                        Craft::configure($component, Component::cleanseConfig($config['overrides']));
+                    }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
                 }
 

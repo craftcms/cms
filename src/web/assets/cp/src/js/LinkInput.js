@@ -1,12 +1,19 @@
 /** global: Craft */
 /** global: Garnish */
+const punycode = require('punycode/');
+
 /**
- * Handle Generator
+ * Link Input
  */
 Craft.LinkInput = Garnish.Base.extend(
   {
+    /** @type Craft.LinkField */
+    field: null,
+
     /** @type {jQuery} */
     $container: null,
+    /** @type {jQuery} */
+    $field: null,
     /** @type {jQuery|null} */
     $chip: null,
     /** @type {jQuery|null} */
@@ -21,12 +28,19 @@ Craft.LinkInput = Garnish.Base.extend(
       this.setSettings(settings, Craft.LinkInput.defaults);
 
       this.$container.data('linkInput', this);
+      this.field = this.$container
+        .closest('[data-link-field]')
+        .parent()
+        .data('linkField');
       this.$chip = this.$container.children('.chip');
       this.$textInput = this.$container.children('.text');
       this.$hiddenInput = this.$container.children('input[type=hidden]');
 
       if (this.$chip.length) {
-        this.menu = this.$chip.find('.action-btn').data('disclosureMenu');
+        this.menu = this.$chip
+          .find('.action-btn')
+          .disclosureMenu()
+          .data('disclosureMenu');
         this.initChip();
       } else {
         this.initTextInput();
@@ -75,21 +89,28 @@ Craft.LinkInput = Garnish.Base.extend(
     },
 
     createChip: function (value) {
-      const label = this.removePrefix(value);
+      let label = this.removePrefix(value);
+      if (label.match(/^[^\/]+\/$/)) {
+        label = Craft.removeRight(label, '/');
+      }
       const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
 
       this.reset();
       this.$chip = $(`
-<div class="chip small">
+<div class="chip chromeless">
   <div class="chip-content">
-    <a href="${Craft.escapeHtml(value)}" rel="noopener" target="_blank">
+    <a href="${Craft.escapeHtml(
+      value.replace(/ /g, '+')
+    )}" rel="noopener" target="_blank" class="truncate">
       ${Craft.escapeHtml(label)}
     </a>
+    <div class="chip-actions">
+      <button class="btn action-btn" type="button" aria-controls="${menuId}"
+          aria-label="${Craft.t('app', 'Actions')}"
+          data-disclosure-trigger data-icon="ellipsis"></button>
+      <div id="${menuId}" class="menu menu--disclosure"></div>
+    </div>
   </div>
-  <button class="btn action-btn" type="button" aria-controls="${menuId}"
-      aria-label="${Craft.t('app', 'Actions')}"
-      data-disclosure-trigger data-icon="ellipsis"></button>
-  <div id="${menuId}" class="menu menu--disclosure"></div>
 </div>
 `).prependTo(this.$container);
 
@@ -113,13 +134,15 @@ Craft.LinkInput = Garnish.Base.extend(
 
     switchToTextInput: function () {
       // only remove the first prefix, if set; otherwise the wrong prefix will get added back.
-      const value = this.removeFirstPrefix(this.$chip.find('a').attr('href'));
+      const value = this.removeFirstPrefix(this.$hiddenInput.val());
       this.createTextInput(value);
     },
 
     initTextInput: function () {
       this.addListener(this.$textInput, 'input', () => {
-        this.$hiddenInput.val(this.normalize(this.$textInput.val()));
+        const value = this.normalize(this.$textInput.val());
+        this.$hiddenInput.val(value);
+        this.field.updateLabel(this.removePrefix(value));
       });
 
       this.addListener(this.$textInput, 'blur', () => {
@@ -143,6 +166,7 @@ Craft.LinkInput = Garnish.Base.extend(
     },
 
     validate: function (value) {
+      value = punycode.toASCII(value);
       return !!value.match(new RegExp(this.settings.pattern, 'i'));
     },
 
@@ -163,18 +187,29 @@ Craft.LinkInput = Garnish.Base.extend(
     initChip: function () {
       const viewAction = this.menu.addItem({
         label: Craft.t('app', 'View in a new tab'),
-        icon: 'share',
+        icon: async () => await Craft.ui.icon('share'),
       });
       const editAction = this.menu.addItem({
         label: Craft.t('app', 'Edit'),
-        icon: 'pencil',
+        icon: async () => await Craft.ui.icon('pencil'),
+      });
+      const viewFullUrl = this.menu.addItem({
+        label: Craft.t('app', 'Copy URL'),
+        icon: async () => await Craft.ui.icon('link'),
       });
       this.menu.addHr();
       this.menu.addGroup();
       const removeAction = this.menu.addItem({
         label: 'Remove',
-        icon: 'xmark',
+        icon: async () => await Craft.ui.icon('xmark'),
         destructive: true,
+      });
+
+      this.addListener(viewFullUrl, 'activate', () => {
+        Craft.ui.createCopyTextPrompt({
+          label: 'Full URL',
+          value: this.$hiddenInput.val().replace(/ /g, '+'),
+        });
       });
 
       this.addListener(viewAction, 'activate', () => {

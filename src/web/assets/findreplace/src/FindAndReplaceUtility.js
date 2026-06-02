@@ -21,7 +21,7 @@
           this.progressBar.resetProgressBar();
         }
 
-        this.progressBar.$progressBar.removeClass('hidden');
+        this.progressBar.showProgressBar();
 
         this.progressBar.$progressBar.velocity('stop').velocity(
           {
@@ -70,17 +70,11 @@
         this.$allDone.css('opacity', 0);
       }
 
-      this.progressBar.$progressBar.velocity(
-        {opacity: 0},
-        {
-          duration: 'fast',
-          complete: () => {
-            this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
-            this.$trigger.removeClass('disabled');
-            this.$trigger.focus();
-          },
-        }
-      );
+      this.progressBar.hideProgressBar();
+      this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
+      Craft.cp.announce(Craft.t('app', 'Success'));
+      this.$trigger.removeClass('disabled');
+      this.$trigger.focus();
 
       // Just in case the tool created a new task...
       Craft.cp.trackJobProgress(false, true);

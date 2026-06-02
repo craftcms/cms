@@ -35,7 +35,7 @@
 
             <li>
                 {{ checkbox({
-                    label: props.label,
+                    label: raw(props.label|md(inlineOnly=true, encode=true)),
                     name: 'permissions[]',
                     value: permissionName,
                     checked: checked,
@@ -93,26 +93,47 @@
     {% set schemaComponents = craft.app.gql.getAllSchemaComponents %}
 
     {% for category, catPermissions in schemaComponents.queries|filter %}
+        {% set headingId = "content-heading-#{random()}" %}
         <div class="user-permissions">
-            <h3>{{ category }}</h3>
-            <div class="select-all"></div>
+            <h3 id="{{ headingId }}">{{ category }}</h3>
+            <button type="button" class="select-all" aria-describedby="{{ headingId }}"></button>
 
             {{ permissionList(schema, catPermissions) }}
         </div>
     {% endfor %}
 
-    <hr/>
+    <hr>
     <h2>{{ 'Choose the available mutations for this schema:'|t('app') }}</h2>
 
     {% for category, catPermissions in schemaComponents.mutations|filter %}
+        {% set headingId = "mutation-heading-#{random()}" %}
         <div class="user-permissions">
-            <h3>{{ category }}</h3>
-            <div class="select-all"></div>
+            <h3 id="{{ headingId }}">{{ category }}</h3>
+            <button type="button" class="select-all" aria-describedby="{{ headingId }}"></button>
 
             {{ permissionList(schema, catPermissions) }}
         </div>
     {% endfor %}
 
+  <hr>
+  <h2>{{ 'Choose optional features available to this schema:'|t('app') }}</h2>
+
+  <div class="user-permissions">
+    {{ permissionList(schema, {
+      'directive:parseRefs': {
+        label: '{name} directive'|t('app', {
+          name: '`@parseRefs`',
+        }),
+        warning: 'Can be exploited to reveal sensitive content by information disclosure attacks.'|t('app'),
+      },
+      'directive:transform': not craft.app.config.general.disableGraphqlTransformDirective ? {
+        label: '{name} directive'|t('app', {
+          name: '`@transform`',
+        }),
+        warning: 'Can be exploited by DoS attacks.'|t('app'),
+      },
+    }|filter) }}
+  </div>
 
 {% endblock %}
 
@@ -138,5 +159,9 @@
 {% endblock %}
 
 {% js %}
+    $('.user-permissions').each((i, wrapper) => {
+        new Craft.UserPermissions(wrapper);
+    });
+
     new Craft.ElevatedSessionForm('#main-form');
 {% endjs %}

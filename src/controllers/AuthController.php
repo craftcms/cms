@@ -11,8 +11,10 @@ use Craft;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\helpers\Html;
+use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\web\Controller;
+use craft\web\View;
 use yii\base\InvalidConfigException;
 use yii\web\Response;
 
@@ -36,20 +38,6 @@ class AuthController extends Controller
     ];
 
     /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
-    {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
-        $this->requireCpRequest();
-        ;
-        return true;
-    }
-
-    /**
      * Returns the HTML for an authentication method’s setup slideout.
      *
      * @return Response
@@ -64,14 +52,20 @@ class AuthController extends Controller
         $containerId = sprintf('auth-method-setup-%s', mt_rand());
         $displayName = $method::displayName();
         $view = Craft::$app->getView();
+        $templateMode = $view->getTemplateMode();
+        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
 
-        $html = Html::tag('h1', Craft::t('app', '{name} Setup', [
-                'name' => $displayName,
-            ])) .
-            $view->namespaceInputs(
-                fn() => $method->getSetupHtml($containerId),
-                $containerId,
-            );
+        try {
+            $html = Html::tag('h1', Craft::t('app', '{name} Setup', [
+                    'name' => $displayName,
+                ])) .
+                $view->namespaceInputs(
+                    fn() => $method->getSetupHtml($containerId),
+                    $containerId,
+                );
+        } finally {
+            $view->setTemplateMode($templateMode);
+        }
 
         return $this->asJson([
             'containerId' => $containerId,
@@ -93,7 +87,7 @@ class AuthController extends Controller
         $this->requireAcceptsJson();
 
         $view = Craft::$app->getView();
-        $html = $view->renderTemplate('users/_auth-methods.twig');
+        $html = $view->renderTemplate('users/_auth-methods.twig', templateMode: View::TEMPLATE_MODE_CP);
 
         return $this->asJson([
             'html' => $html,
@@ -111,6 +105,7 @@ class AuthController extends Controller
      */
     public function actionRemoveMethod(): ?Response
     {
+        $this->requireCpRequest();
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
@@ -142,9 +137,10 @@ class AuthController extends Controller
         $this->requireAcceptsJson();
 
         $code = $this->request->getRequiredBodyParam('code');
+        $authService = Craft::$app->getAuth();
 
-        if (!Craft::$app->getAuth()->verify(TOTP::class, $code)) {
-            return $this->asFailure(Craft::t('app', 'Invalid verification code.'));
+        if (!$authService->verify(TOTP::class, $code)) {
+            return $this->asFailure($authService->getAuthErrorMessage());
         }
 
         return $this->asSuccess(Craft::t('app', 'Verification successful.'));
@@ -161,9 +157,10 @@ class AuthController extends Controller
         $this->requireAcceptsJson();
 
         $code = $this->request->getRequiredBodyParam('code');
+        $authService = Craft::$app->getAuth();
 
-        if (!Craft::$app->getAuth()->verify(RecoveryCodes::class, $code)) {
-            return $this->asFailure(Craft::t('app', 'Invalid recovery code.'));
+        if (!$authService->verify(RecoveryCodes::class, $code)) {
+            return $this->asFailure($authService->getAuthErrorMessage(Craft::t('app', 'Invalid recovery code.')));
         }
 
         return $this->asSuccess(Craft::t('app', 'Verification successful.'));
@@ -176,14 +173,19 @@ class AuthController extends Controller
      */
     public function actionPasskeyCreationOptions(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $options = Craft::$app->getAuth()->getPasskeyCreationOptions(static::currentUser());
+        $authService = Craft::$app->getAuth();
+        $options = $authService->getPasskeyCreationOptions(static::currentUser());
+
+        $serializer = $authService->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($options, 'json');
 
         return $this->asJson([
-            'options' => $options,
+            'options' => $serializedData,
         ]);
     }
 
@@ -197,10 +199,15 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $options = Craft::$app->getAuth()->getPasskeyRequestOptions();
+        $authService = Craft::$app->getAuth();
+        $options = $authService->getPasskeyRequestOptions();
+        $serializer = $authService->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($options, 'json');
+
+        SessionHelper::set($authService->passkeyRequestOptionsParam, $serializedData);
 
         return $this->asJson([
-            'options' => $options,
+            'options' => $serializedData,
         ]);
     }
 
@@ -211,6 +218,7 @@ class AuthController extends Controller
      */
     public function actionVerifyPasskeyCreation(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requireElevatedSession();
@@ -236,6 +244,7 @@ class AuthController extends Controller
      */
     public function actionDeletePasskey(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requirePostRequest();
 

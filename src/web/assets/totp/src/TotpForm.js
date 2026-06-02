@@ -7,12 +7,6 @@
         const codeInput = form.querySelector('input.auth-totp-code');
         const submitBtn = form.querySelector('button.submit');
 
-        this.addListener(codeInput, 'input', (ev) => {
-          if (codeInput.value.length === 6) {
-            form.requestSubmit();
-          }
-        });
-
         this.addListener(form, 'submit', (ev) => {
           ev.preventDefault();
 
@@ -21,6 +15,7 @@
           }
 
           submitBtn.classList.add('loading');
+          Craft.cp.announce(Craft.t('app', 'Loading'));
 
           Craft.sendActionRequest('POST', 'auth/verify-totp', {
             data: {

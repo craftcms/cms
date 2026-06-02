@@ -10,6 +10,7 @@
         {label: 'Enlarged'|t('app'), value: 'enlarged'},
     ],
     value: field.uiMode,
+    disabled: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -18,14 +19,16 @@
     id: 'placeholder',
     name: 'placeholder',
     value: field.placeholder,
-    errors: field.getErrors('placeholder')
+    errors: field.getErrors('placeholder'),
+    disabled: readOnly,
 }) }}
 
 {% embed '_includes/forms/field' with {
     label: 'Field Limit'|t('app'),
     instructions: "The maximum number of characters or bytes the field is allowed to have."|t('app'),
     id: 'fieldLimit',
-    errors: field.getErrors(field.byteLimit ? 'byteLimit' : 'charLimit')
+    errors: field.getErrors(field.byteLimit ? 'byteLimit' : 'charLimit'),
+    disabled: readOnly,
 } %}
     {% import "_includes/forms" as forms %}
     {% block input %}
@@ -35,6 +38,7 @@
                 name: 'fieldLimit',
                 value: field.charLimit ?? field.byteLimit,
                 size: 3,
+                disabled: readOnly,
             }) }}
             {{ forms.select({
                 id: 'limitUnit',
@@ -43,7 +47,8 @@
                     { value: 'chars', label: 'Characters'|t('app') },
                     { value: 'bytes', label: 'Bytes'|t('app') },
                 ],
-                value: field.byteLimit ? 'bytes' : 'chars'
+                value: field.byteLimit ? 'bytes' : 'chars',
+                disabled: readOnly,
             }) }}
         </div>
     {% endblock %}
@@ -54,13 +59,15 @@
         label: "Use a monospaced font"|t('app'),
         name: 'code',
         on: field.code,
+        disabled: readOnly,
     }) }}
 
     {{ forms.lightswitchField({
         label: "Allow line breaks"|t('app'),
         name: 'multiline',
         on: field.multiline,
-        toggle: 'initialRowsContainer'
+        toggle: 'initialRowsContainer',
+        disabled: readOnly,
     }) }}
 </fieldset>
 
@@ -72,5 +79,6 @@
         value: field.initialRows,
         size: 3,
         errors: field.getErrors('initialRows'),
+        disabled: readOnly,
     }) }}
 </div>

@@ -7,6 +7,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\services\ProjectConfig;
 use Illuminate\Support\Collection;
 
@@ -25,6 +26,8 @@ class m230524_220029_global_entry_types extends Migration
             'sectionId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
+            'name' => $this->string(),
+            'handle' => $this->string(),
             'PRIMARY KEY([[sectionId]], [[typeId]])',
         ]);
         $this->addForeignKey(null, Table::SECTIONS_ENTRYTYPES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
@@ -59,6 +62,7 @@ class m230524_220029_global_entry_types extends Migration
         $projectConfig->muteEvents = true;
         $entryTypeConfigs = $projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES) ?? [];
         $sectionConfigs = $projectConfig->get(ProjectConfig::PATH_SECTIONS) ?? [];
+        $sectionUidsByEntryTypeUid = [];
 
         foreach ($entryTypeConfigs as $entryTypeUid => &$entryTypeConfig) {
             $entryTypePath = sprintf('%s.%s', ProjectConfig::PATH_ENTRY_TYPES, $entryTypeUid);
@@ -67,8 +71,9 @@ class m230524_220029_global_entry_types extends Migration
                 $projectConfig->remove($entryTypePath);
                 continue;
             }
-            $sectionConfigs[$sectionUid]['entryTypes'][] = $entryTypeUid;
+            $sectionConfigs[$sectionUid]['entryTypes'][] = ['uid' => $entryTypeUid];
             $projectConfig->set($entryTypePath, $entryTypeConfig);
+            $sectionUidsByEntryTypeUid[$entryTypeUid] = $sectionUid;
         }
         unset($entryTypeConfig);
 
@@ -81,49 +86,58 @@ class m230524_220029_global_entry_types extends Migration
 
         $projectConfig->muteEvents = $muteEvents;
 
-        // check for duplicate entry type names/handles
-        $entryTypeNames = [];
+        // check for duplicate entry type handles
         $entryTypeHandles = [];
         foreach ($entryTypeConfigs as $entryTypeUid => $entryTypeConfig) {
-            if (
-                isset($entryTypeNames[$entryTypeConfig['name']]) ||
-                isset($entryTypeHandles[$entryTypeConfig['handle']])
-            ) {
+            if (isset($entryTypeHandles[$entryTypeConfig['handle']])) {
+                $originalHandle = $entryTypeConfig['handle'];
+
                 // find the section that was using it
                 $sectionConfig = ArrayHelper::firstWhere(
                     $sectionConfigs,
-                    fn(array $config) => in_array($entryTypeUid, $config['entryTypes'] ?? [])
+                    fn(array $config) => ArrayHelper::contains(
+                        $config['entryTypes'] ?? [],
+                        fn(array $entryType) => $entryType['uid'] === $entryTypeUid,
+                    ),
                 );
 
-                if (isset($entryTypeNames[$entryTypeConfig['name']])) {
-                    $baseName = sprintf('%s - %s', $sectionConfig['name'], $entryTypeConfig['name']);
-                    $i = 1;
-                    do {
-                        $entryTypeConfig['name'] = $baseName;
-                        if ($i !== 1) {
-                            $entryTypeConfig['name'] .= " $i";
-                        }
-                        $i++;
-                    } while (isset($entryTypeNames[$entryTypeConfig['name']]));
-                }
-
-                if (isset($entryTypeHandles[$entryTypeConfig['handle']])) {
-                    $baseHandle = sprintf('%s_%s', $sectionConfig['handle'], $entryTypeConfig['handle']);
-                    $i = 1;
-                    do {
-                        $entryTypeConfig['handle'] = $baseHandle;
-                        if ($i !== 1) {
-                            $entryTypeConfig['handle'] .= $i;
-                        }
-                        $i++;
-                    } while (isset($entryTypeHandles[$entryTypeConfig['handle']]));
-                }
+                $baseHandle = sprintf('%s_%s', $sectionConfig['handle'], $entryTypeConfig['handle']);
+                $i = 1;
+                do {
+                    $entryTypeConfig['handle'] = $baseHandle;
+                    if ($i !== 1) {
+                        $entryTypeConfig['handle'] .= $i;
+                    }
+                    $i++;
+                } while (isset($entryTypeHandles[$entryTypeConfig['handle']]));
 
                 $entryTypePath = sprintf('%s.%s', ProjectConfig::PATH_ENTRY_TYPES, $entryTypeUid);
                 $projectConfig->set($entryTypePath, $entryTypeConfig);
+
+                // Preserve the original handle on the section
+                $entryTypeId = Db::idByUid(Table::ENTRYTYPES, $entryTypeUid);
+                if ($entryTypeId) {
+                    $this->update(Table::SECTIONS_ENTRYTYPES, [
+                        'handle' => $originalHandle,
+                    ], ['typeId' => $entryTypeId]);
+                }
+
+                $sectionEntryTypesPath = sprintf(
+                    '%s.%s.entryTypes',
+                    ProjectConfig::PATH_SECTIONS,
+                    $sectionUidsByEntryTypeUid[$entryTypeUid],
+                );
+                $projectConfig->set($sectionEntryTypesPath, array_map(
+                    function(array $config) use ($entryTypeUid, $originalHandle) {
+                        if ($config['uid'] === $entryTypeUid) {
+                            $config['handle'] = $originalHandle;
+                        }
+                        return $config;
+                    },
+                    $projectConfig->get($sectionEntryTypesPath),
+                ));
             }
 
-            $entryTypeNames[$entryTypeConfig['name']] = true;
             $entryTypeHandles[$entryTypeConfig['handle']] = true;
         }
 
@@ -145,7 +159,9 @@ class m230524_220029_global_entry_types extends Migration
                 unset($scope["sections.$sectionUid:read"]);
 
                 $can = array_combine($actions, array_map(fn() => true, $actions));
-                foreach ($sectionConfig['entryTypes'] as $entryTypeUid) {
+                foreach ($sectionConfig['entryTypes'] as $entryType) {
+                    $entryTypeUid = $entryType['uid'];
+
                     // unset the entry type's `edit` component because it's pointless
                     unset($scope["entrytypes.$entryTypeUid:edit"]);
 

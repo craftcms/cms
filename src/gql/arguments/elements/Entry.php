@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\StructureElementArguments;
 use craft\gql\types\QueryArgument;
+use craft\helpers\Gql;
 use craft\models\EntryType;
 use GraphQL\Type\Definition\Type;
 
@@ -27,7 +28,7 @@ class Entry extends StructureElementArguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), self::getContentArguments(), [
+        return array_merge(parent::getArguments(), [
             'editable' => [
                 'name' => 'editable',
                 'type' => Type::boolean(),
@@ -118,13 +119,27 @@ class Entry extends StructureElementArguments
     {
         $gqlService = Craft::$app->getGql();
         return $gqlService->getOrSetContentArguments(EntryElement::class, function() use ($gqlService): array {
-            // include all entry types' field layouts, not just the ones from sections in the schema
-            // because they could be used by Matrix fields
-            $fieldLayouts = array_map(
-                fn(EntryType $entryType) => $entryType->getFieldLayout(),
-                Craft::$app->getEntries()->getAllEntryTypes(),
-            );
-            return $gqlService->defineContentArgumentsForFieldLayouts(EntryElement::class, $fieldLayouts);
+            /** @var EntryType[] $entryTypes */
+            $entryTypes = [];
+
+            foreach (Gql::getSchemaContainedSections() as $section) {
+                foreach ($section->getEntryTypes() as $entryType) {
+                    $entryTypes[$entryType->id] = $entryType;
+                }
+            }
+
+            foreach (Gql::getSchemaContainedNestedEntryFields() as $field) {
+                foreach ($field->getFieldLayoutProviders() as $entryType) {
+                    /** @var EntryType $entryType */
+                    $entryTypes[$entryType->id] = $entryType;
+                }
+            }
+
+            $arguments = [];
+            foreach ($entryTypes as $entryType) {
+                $arguments += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
+            }
+            return $arguments;
         });
     }
 }

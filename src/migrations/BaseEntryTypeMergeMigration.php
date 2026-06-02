@@ -8,6 +8,7 @@ use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\models\Section;
 use craft\records\EntryType as EntryTypeRecord;
 
 /**
@@ -52,6 +53,41 @@ class BaseEntryTypeMergeMigration extends Migration
             ->andWhere(['not', ['es.content' => null]]);
 
         $total = (string)$query->count();
+        $this->updateContentAndRestore($query, $outgoingEntryTypeRecord, $total);
+
+
+        // and now special case for singles
+        $query = (new Query())
+            ->select(['es.id', 'es.content'])
+            ->from(['es' => Table::ELEMENTS_SITES])
+            ->innerJoin(['e' => Table::ENTRIES], '[[e.id]] = [[es.elementId]]')
+            ->leftJoin(['s' => Table::SECTIONS], '[[e.sectionId]] = [[s.id]]')
+            ->where(['e.typeId' => $persistingEntryTypeRecord->id])
+            ->andWhere(['not', ['es.content' => null]])
+            ->andWhere(['s.type' => Section::TYPE_SINGLE]);
+
+        $total = $query->count();
+        if ($total > 0) {
+            echo "    > Updating singles\n";
+            $this->updateContentAndRestore($query, $persistingEntryTypeRecord, (string)$total);
+        }
+
+        echo '    > Reassigning entries … ';
+        Db::update(
+            Table::ENTRIES,
+            [
+                'typeId' => $persistingEntryTypeRecord->id,
+                'deletedWithEntryType' => false,
+            ],
+            ['typeId' => $outgoingEntryTypeRecord->id],
+        );
+        echo "✓\n";
+
+        return true;
+    }
+
+    private function updateContentAndRestore(Query $query, EntryTypeRecord $entryTypeRecord, string $total): void
+    {
         $totalLen = strlen($total);
         $i = 0;
         $rawTableName = $this->db->getSchema()->getRawTableName(Table::ELEMENTS_SITES);
@@ -94,7 +130,7 @@ class BaseEntryTypeMergeMigration extends Migration
 UPDATE $elementsTable [[elements]]
 INNER JOIN $entriesTable [[entries]] ON [[entries.id]] = [[elements.id]]
 SET [[elements.dateDeleted]] = NULL
-WHERE [[entries.typeId]] = $outgoingEntryTypeRecord->id
+WHERE [[entries.typeId]] = $entryTypeRecord->id
 AND [[entries.deletedWithEntryType]] = 1
 SQL)->execute();
         } else {
@@ -103,23 +139,10 @@ UPDATE $elementsTable [[elements]]
 SET [[dateDeleted]] = NULL
 FROM $entriesTable [[entries]]
 WHERE [[entries.id]] = [[elements.id]]
-AND [[entries.typeId]] = $outgoingEntryTypeRecord->id
+AND [[entries.typeId]] = $entryTypeRecord->id
 AND [[entries.deletedWithEntryType]] = TRUE
 SQL)->execute();
         }
         echo "✓\n";
-
-        echo '    > Reassigning entries … ';
-        Db::update(
-            Table::ENTRIES,
-            [
-                'typeId' => $persistingEntryTypeRecord->id,
-                'deletedWithEntryType' => false,
-            ],
-            ['typeId' => $outgoingEntryTypeRecord->id],
-        );
-        echo "✓\n";
-
-        return true;
     }
 }

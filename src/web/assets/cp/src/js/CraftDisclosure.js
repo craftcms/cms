@@ -1,38 +1,55 @@
 /**
  * Very simple disclosure trigger.
  *
- * Allows you to wrap a button[type="button"] and target an element to toggle the `is-open` class on.
+ * Allows you to wrap a button[type="button"] and target an element to toggle the `data-state` attribute on.
  * Set `aria-expanded` on the button
  */
 class CraftDisclosure extends HTMLElement {
+  static observedAttributes = ['state'];
+
+  get trigger() {
+    return this.querySelector('button[type="button"]');
+  }
+
+  get target() {
+    const trigger = this.trigger;
+    if (trigger) {
+      return document.getElementById(trigger.getAttribute('aria-controls'));
+    }
+  }
+
   connectedCallback() {
-    this.trigger = this.querySelector('button[type="button"]');
-    if (!this.trigger) {
+    const trigger = this.trigger;
+    if (!trigger) {
       console.error(`craft-disclosure elements must include a button`, this);
       return;
     }
 
-    this.target = document.getElementById(
-      this.trigger.getAttribute('aria-controls')
-    );
     if (!this.target) {
       console.error(
-        `No target with id ${this.trigger.getAttribute(
+        `No target with id ${trigger.getAttribute(
           'aria-controls'
         )} found for disclosure. `,
-        this.trigger
+        trigger
       );
       return;
     }
 
-    if (!this.trigger.getAttribute('aria-expanded')) {
-      this.trigger.setAttribute('aria-expanded', 'false');
+    this.storageKey =
+      this.getAttribute('storage-key') ||
+      `disclosure:${trigger.getAttribute('aria-controls')}`;
+    this.storageMode = this.getAttribute('storage-mode') || 'localStorage';
+    this.persist = this.hasAttribute('persist');
+
+    this.state = this.getInitialState();
+
+    if (!trigger.getAttribute('aria-expanded')) {
+      trigger.setAttribute('aria-expanded', 'false');
     }
 
-    this.trigger.addEventListener('click', this.toggle.bind(this));
+    trigger.addEventListener('click', this.toggle.bind(this));
 
-    this.expanded = this.trigger.getAttribute('aria-expanded') === 'true';
-    this.expanded ? this.open() : this.close();
+    this.state === 'expanded' ? this.open() : this.close();
   }
 
   disconnectedCallback() {
@@ -40,7 +57,19 @@ class CraftDisclosure extends HTMLElement {
     this.trigger.removeEventListener('click', this.toggle.bind(this));
   }
 
-  toggle() {
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'state') {
+      if (newValue === 'expanded') {
+        this.handleOpen();
+      } else {
+        this.handleClose();
+      }
+    }
+  }
+
+  toggle(event) {
+    event.preventDefault();
+
     if (this.expanded) {
       this.close();
     } else {
@@ -48,18 +77,66 @@ class CraftDisclosure extends HTMLElement {
     }
   }
 
-  open() {
-    this.trigger.setAttribute('aria-expanded', 'true');
-    this.expanded = true;
-    this.target.dataset.state = 'expanded';
-    this.dispatchEvent(new CustomEvent('open'));
+  getInitialState() {
+    if (this.persist) {
+      if (this.storageMode === 'localStorage') {
+        return localStorage.getItem(this.storageKey) || 'expanded';
+      } else if (this.storageMode === 'cookies') {
+        return Craft.getCookie(this.storageKey) || 'expanded';
+      }
+    }
+
+    if (this.getAttribute('state')) {
+      return this.getAttribute('state');
+    }
+
+    return 'expanded';
   }
 
-  close() {
-    this.trigger.setAttribute('aria-expanded', 'false');
+  storeState(state) {
+    if (this.storageMode === 'localStorage') {
+      localStorage.setItem(this.storageKey, state);
+    } else if (this.storageMode === 'cookies') {
+      Craft.setCookie(this.storageKey, state);
+    }
+  }
+
+  handleOpen = () => {
+    const trigger = this.trigger;
+    const target = this.target;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+    this.expanded = true;
+    if (target) {
+      target.dataset.state = 'expanded';
+    }
+    this.dispatchEvent(new CustomEvent('open'));
+
+    this.storeState('expanded');
+  };
+
+  open() {
+    this.setAttribute('state', 'expanded');
+  }
+
+  handleClose = () => {
+    const trigger = this.trigger;
+    const target = this.target;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'false');
+    }
     this.expanded = false;
-    this.target.dataset.state = 'collapsed';
+    if (target) {
+      target.dataset.state = 'collapsed';
+    }
     this.dispatchEvent(new CustomEvent('close'));
+
+    this.storeState('collapsed');
+  };
+
+  close() {
+    this.setAttribute('state', 'collapsed');
   }
 }
 

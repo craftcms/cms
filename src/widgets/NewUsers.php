@@ -38,7 +38,7 @@ class NewUsers extends Widget
     public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
-        return Craft::$app->edition === CmsEdition::Pro;
+        return Craft::$app->edition->value >= CmsEdition::Pro->value;
     }
 
     /**
@@ -84,7 +84,7 @@ class NewUsers extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
+        if (Craft::$app->edition < CmsEdition::Pro) {
             return null;
         }
 

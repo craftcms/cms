@@ -25,7 +25,7 @@ use yii\db\Exception;
 
 /**
  * Deprecator service.
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->deprecator`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->getDeprecator()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -451,6 +451,7 @@ class Deprecator extends Component
                 } else {
                     $strValue = '"' . $value . '"';
                 }
+                $strValue = mb_convert_encoding($strValue, 'UTF-8');
             } elseif (is_array($value)) {
                 $strValue = '[' . $this->_argsToString($value) . ']';
             } elseif ($value === null) {

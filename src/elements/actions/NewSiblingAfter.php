@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\base\ElementInterface;
 
 /**
  * NewSibling represents a “Create a new X after” element action.
@@ -34,8 +33,6 @@ class NewSiblingAfter extends ElementAction
      */
     public function setElementType(string $elementType): void
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface> $elementType */
         parent::setElementType($elementType);
 
         if (!isset($this->label)) {

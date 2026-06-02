@@ -11,9 +11,14 @@
     sources: sources,
     condition: condition ? condition.getConfig() : null,
     referenceElementId: referenceElement.id ?? null,
+    referenceElementOwnerId: (referenceElement ?? null) is instance of('craft\\base\\NestedElementInterface')
+        ? referenceElement.getOwnerId()
+        : null,
     referenceElementSiteId: referenceElement.siteId ?? null,
     criteria: criteria,
+    searchCriteria: searchCriteria ?? null,
     sourceElementId: sourceElementId,
+    defaultPlacement,
     viewMode: viewMode,
     limit: limit,
     modalStorageKey: storageKey,

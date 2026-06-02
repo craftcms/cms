@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\base\ElementInterface;
 use craft\elements\Entry;
 use yii\base\Exception;
 
@@ -34,11 +33,7 @@ class MoveToSection extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
-
-        if ($elementType !== Entry::class) {
+        if ($this->elementType !== Entry::class) {
             throw new Exception("Move to section is only available for Entries.");
         }
 

@@ -11,7 +11,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
     settings: null,
 
     listening: null,
-    timeout: null,
+    sourceVal: null,
 
     init: function (source, target, settings) {
       this.$source = $(source);
@@ -41,10 +41,11 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
       }
 
       this.listening = true;
+      this.sourceVal = this.$source.val();
 
       this.addListener(this.$source, 'input', 'onSourceTextChange');
       this.addListener(this.$target, 'input', 'onTargetTextChange');
-      this.addListener(this.$form, 'submit', 'onFormSubmit');
+      this.addListener(this.$form, 'submit', 'updateTarget');
     },
 
     stopListening: function () {
@@ -54,35 +55,22 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
       this.listening = false;
 
-      if (this.timeout) {
-        clearTimeout(this.timeout);
-      }
-
       this.removeAllListeners(this.$source);
       this.removeAllListeners(this.$target);
       this.removeAllListeners(this.$form);
     },
 
     onSourceTextChange: function () {
-      if (this.timeout) {
-        clearTimeout(this.timeout);
+      const val = this.$source.val();
+      if (this.sourceVal !== (this.sourceVal = val)) {
+        this.updateTarget();
       }
-
-      this.timeout = setTimeout(this.updateTarget.bind(this), 250);
     },
 
     onTargetTextChange: function () {
       if (this.$target.get(0) === document.activeElement) {
         this.stopListening();
       }
-    },
-
-    onFormSubmit: function () {
-      if (this.timeout) {
-        clearTimeout(this.timeout);
-      }
-
-      this.updateTarget();
     },
 
     updateTarget: function () {

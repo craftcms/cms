@@ -8,6 +8,7 @@
 namespace craft\i18n;
 
 use Craft;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
@@ -238,6 +239,7 @@ class Locale extends BaseObject
     /**
      * @var string|null The locale ID.
      */
+    #[AllowedInSandbox]
     public ?string $id = null;
 
     /**
@@ -291,6 +293,7 @@ class Locale extends BaseObject
      *
      * @return string This locale’s language ID.
      */
+    #[AllowedInSandbox]
     public function getLanguageID(): string
     {
         if (($pos = strpos($this->id, '-')) !== false) {
@@ -307,6 +310,7 @@ class Locale extends BaseObject
      *
      * @return string|null The locale’s script ID, if it has one.
      */
+    #[AllowedInSandbox]
     public function getScriptID(): ?string
     {
         // Find sub tags
@@ -329,6 +333,7 @@ class Locale extends BaseObject
      *
      * @return string|null The locale’s territory ID, if it has one.
      */
+    #[AllowedInSandbox]
     public function getTerritoryID(): ?string
     {
         // Find sub tags
@@ -357,6 +362,7 @@ class Locale extends BaseObject
      * @param string|null $inLocale
      * @return string
      */
+    #[AllowedInSandbox]
     public function getDisplayName(?string $inLocale = null): string
     {
         if (isset($this->_displayName)) {
@@ -387,6 +393,7 @@ class Locale extends BaseObject
      *
      * @return string The language’s orientation.
      */
+    #[AllowedInSandbox]
     public function getOrientation(): string
     {
         if (in_array($this->getLanguageID(), self::$_rtlLanguages, true)) {
@@ -666,6 +673,20 @@ class Locale extends BaseObject
         $locale = $this->aliasOf ?? $this->id;
         $formatter = new NumberFormatter("$locale@currency=$currency", NumberFormatter::CURRENCY);
         return $formatter->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
+    }
+
+    /**
+     * Returns the default currency for the locale.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function getDefaultCurrency(): string
+    {
+        // h/t: https://stackoverflow.com/a/8325456
+        $locale = $this->aliasOf ?? $this->id;
+        $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
+        return $formatter->getTextAttribute(NumberFormatter::CURRENCY_CODE);
     }
 
     /**

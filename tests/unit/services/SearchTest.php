@@ -23,7 +23,7 @@ use crafttests\fixtures\UserFixture;
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/4.x/searching.html
+ * https://craftcms.com/docs/5.x/system/searching.html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>

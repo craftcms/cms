@@ -64,6 +64,17 @@ abstract class BaseLinkType extends ConfigurableComponent
     abstract public function linkLabel(string $value): string;
 
     /**
+     * Returns the default download filename for [[\craft\fields\data\LinkData::getFilename()]].
+     *
+     * @return string|null
+     * @since 5.7.0
+     */
+    public function filename(string $value): ?string
+    {
+        return null;
+    }
+
+    /**
      * Returns the input HTML that should be shown when this link type is selected.
      *
      * @param Link $field The Link field
@@ -81,4 +92,16 @@ abstract class BaseLinkType extends ConfigurableComponent
      * @return bool
      */
     abstract public function validateValue(string $value, ?string &$error = null): bool;
+
+    /**
+     * Returns whether given value is empty.
+     *
+     * @param string $value
+     * @return bool
+     * @since 5.7.11
+     */
+    public function isValueEmpty(string $value): bool
+    {
+        return empty($value);
+    }
 }

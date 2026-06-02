@@ -34,6 +34,12 @@ class Email extends BaseTextLinkType
         return 'mailto:';
     }
 
+    public function normalizeValue(string $value): string
+    {
+        $value = str_replace(' ', '+', $value);
+        return parent::normalizeValue($value);
+    }
+
     protected function inputAttributes(): array
     {
         return [

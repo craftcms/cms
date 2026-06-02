@@ -14,19 +14,24 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\SectionEvent;
+use craft\fields\BaseRelationField;
 use craft\fields\Categories;
 use craft\fields\Entries;
 use craft\fields\Tags;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\models\TagGroup;
 use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
+use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -92,28 +97,47 @@ class EntrifyController extends Controller
     /**
      * Converts categories to entries.
      *
-     * @param string $categoryGroup The category group handle
+     * @param string|null $categoryGroup The category group handle
      * @return int
      */
-    public function actionCategories(string $categoryGroup): int
+    public function actionCategories(?string $categoryGroup = null): int
     {
-        $categoryGroupHandle = $categoryGroup;
+        $categoriesService = Craft::$app->getCategories();
 
-        $categoryGroup = Craft::$app->getCategories()->getGroupByHandle($categoryGroupHandle, true);
-        if (!$categoryGroup) {
-            $this->stderr("Invalid category group handle: $categoryGroupHandle\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+        if ($categoryGroup) {
+            $categoryGroupHandle = $categoryGroup;
+            $categoryGroup = $categoriesService->getGroupByHandle($categoryGroupHandle, true);
+
+            if (!$categoryGroup) {
+                $this->stderr("Invalid category group handle: $categoryGroupHandle\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } else {
+            if (!$this->interactive) {
+                throw new InvalidConfigException('A category group handle is required when this command is run non-interactively.');
+            }
+
+            /** @var Collection<CategoryGroup> $categoryGroups */
+            $categoryGroups = Collection::make($categoriesService->getAllGroups())
+                ->keyBy(fn(CategoryGroup $group) => $group->handle);
+
+            if (empty($categoryGroups)) {
+                $this->output('No category groups exist.', Console::FG_YELLOW);
+                return ExitCode::OK;
+            }
+
+            $categoryGroupHandle = $this->select(
+                'Choose a category group:',
+                $categoryGroups->map(fn(CategoryGroup $group) => $group->name)->all(),
+            );
+            $categoryGroup = $categoryGroups->get($categoryGroupHandle);
         }
 
         $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
         $sectionCreated = false;
 
-        if (
-            !isset($this->section) &&
-            !$this->confirm("Have you already created a section to replace the “{$categoryGroup->name}” category group?")
-        ) {
-            $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
+        if (!isset($this->section)) {
             // Capture the new section handle
             Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
@@ -121,6 +145,10 @@ class EntrifyController extends Controller
             $this->run('sections/create', [
                 'fromCategoryGroup' => $categoryGroup->handle,
             ]);
+
+            // Add it to a “Categories” page
+            $this->_addSectionToPage('Categories', 'sitemap');
+
             $projectConfigChanged = true;
             $sectionCreated = true;
         }
@@ -272,7 +300,7 @@ class EntrifyController extends Controller
                     foreach ($fields as [$path, $config]) {
                         $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Categories filed'), function() use ($section, $projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
-                            $config['settings']['maintainHierarchy'] = $config['settings']['maintainHierarchy'] ?? true;
+                            $config['settings']['maintainHierarchy'] ??= true;
                             $config['settings']['sources'] = ["section:$section->uid"];
                             unset(
                                 $config['settings']['source'],
@@ -300,34 +328,57 @@ class EntrifyController extends Controller
     /**
      * Converts tags to entries.
      *
-     * @param string $tagGroup The tag group handle
+     * @param string|null $tagGroup The tag group handle
      * @return int
      */
-    public function actionTags(string $tagGroup): int
+    public function actionTags(?string $tagGroup = null): int
     {
-        $tagGroupHandle = $tagGroup;
+        $tagsService = Craft::$app->getTags();
 
-        $tagGroup = Craft::$app->getTags()->getTagGroupByHandle($tagGroupHandle, true);
-        if (!$tagGroup) {
-            $this->stderr("Invalid tag group handle: $tagGroupHandle\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+        if ($tagGroup) {
+            $tagGroupHandle = $tagGroup;
+
+            $tagGroup = $tagsService->getTagGroupByHandle($tagGroupHandle, true);
+            if (!$tagGroup) {
+                $this->stderr("Invalid tag group handle: $tagGroupHandle\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } else {
+            if (!$this->interactive) {
+                throw new InvalidConfigException('A tag group handle is required when this command is run non-interactively.');
+            }
+
+            /** @var Collection<TagGroup> $tagGroups */
+            $tagGroups = Collection::make($tagsService->getAllTagGroups())
+                ->keyBy(fn(TagGroup $group) => $group->handle);
+
+            if (empty($tagGroups)) {
+                $this->output('No tag groups exist.', Console::FG_YELLOW);
+                return ExitCode::OK;
+            }
+
+            $tagGroupHandle = $this->select(
+                'Choose a tag group:',
+                $tagGroups->map(fn(TagGroup $group) => $group->name)->all(),
+            );
+            $tagGroup = $tagGroups->get($tagGroupHandle);
         }
 
         $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
 
-        if (
-            !isset($this->section) &&
-            !$this->confirm("Have you already created a section to replace the “{$tagGroup->name}” tag group?")
-        ) {
-            $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
+        if (!isset($this->section)) {
             // Capture the new section handle
-            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
                 'fromTagGroup' => $tagGroup->handle,
             ]);
+
+            // Add it to a “Tags” page
+            $this->_addSectionToPage('Tags', 'tags');
+
             $projectConfigChanged = true;
         }
 
@@ -421,6 +472,7 @@ class EntrifyController extends Controller
                         $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Tags filed'), function() use ($section, $projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
                             $config['settings']['sources'] = ["section:$section->uid"];
+                            $config['settings']['viewMode'] = BaseRelationField::VIEW_MODE_LIST_INLINE;
                             unset(
                                 $config['settings']['source'],
                                 $config['settings']['allowMultipleSources'],
@@ -447,29 +499,48 @@ class EntrifyController extends Controller
     /**
      * Converts a global set to a Single section.
      *
-     * @param string $globalSet The global set handle
+     * @param string|null $globalSet The global set handle
      * @return int
      */
-    public function actionGlobalSet(string $globalSet): int
+    public function actionGlobalSet(?string $globalSet = null): int
     {
-        $globalSetHandle = $globalSet;
+        $globalsService = Craft::$app->getGlobals();
 
-        $globalSet = Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, withTrashed: true);
-        if (!$globalSet) {
-            $this->stderr("Invalid global set handle: $globalSetHandle\n", Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+        if ($globalSet) {
+            $globalSetHandle = $globalSet;
+
+            $globalSet = Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, withTrashed: true);
+            if (!$globalSet) {
+                $this->stderr("Invalid global set handle: $globalSetHandle\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } else {
+            if (!$this->interactive) {
+                throw new InvalidConfigException('A global set handle is required when this command is run non-interactively.');
+            }
+
+            /** @var Collection<GlobalSet> $globalSets */
+            $globalSets = Collection::make($globalsService->getAllSets())
+                ->keyBy(fn(GlobalSet $globalSet) => $globalSet->handle);
+
+            if (empty($globalSets)) {
+                $this->output('No global sets exist.', Console::FG_YELLOW);
+                return ExitCode::OK;
+            }
+
+            $globalSetHandle = $this->select(
+                'Choose a global set:',
+                $globalSets->map(fn(GlobalSet $globalSet) => $globalSet->name)->all(),
+            );
+            $globalSet = $globalSets->get($globalSetHandle);
         }
 
         $projectConfigChanged = false;
         $sectionCreated = false;
 
-        if (
-            !isset($this->section) &&
-            !$this->confirm("Have you already created a section to replace the “{$globalSet->name}” global set")
-        ) {
-            $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
+        if (!isset($this->section)) {
             // Capture the new section handle
-            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -561,38 +632,22 @@ class EntrifyController extends Controller
     private function _section(): Section
     {
         if (!isset($this->_section)) {
-            if ($this->section) {
-                $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
-                if (!$section) {
-                    throw new InvalidConfigException("Invalid section handle: $this->section");
-                }
-                if ($this->_forSingle) {
-                    if ($section->type !== Section::TYPE_SINGLE) {
-                        throw new InvalidConfigException("“{$section->name}” isn’t a Single section. You must specify a Single section.", Console::FG_RED);
-                    }
-                } elseif ($section->type === Section::TYPE_SINGLE) {
-                    throw new InvalidConfigException("“{$section->name}” is a Single section. You must specify a Structure or Channel section.", Console::FG_RED);
-                }
-                $this->_section = $section;
-            } else {
-                if (!$this->interactive) {
-                    throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
-                }
-                $allSections = ArrayHelper::index(Craft::$app->getEntries()->getAllSections(), 'handle');
-                if ($this->_forSingle) {
-                    $allSections = array_filter($allSections, fn(Section $section) => $section->type === Section::TYPE_SINGLE);
-                } else {
-                    $allSections = array_filter($allSections, fn(Section $section) => $section->type !== Section::TYPE_SINGLE);
-                }
-                if (empty($allSections)) {
-                    throw new InvalidConfigException(sprintf('No %s sections exist yet.', $this->_forSingle ? 'Single' : 'Channel/Structure'));
-                }
-                $sectionHandle = $this->select("Which section should entries be saved to?", array_map(
-                    fn(Section $section) => $section->name,
-                    $allSections,
-                ));
-                $this->_section = $allSections[$sectionHandle];
+            if (!$this->section) {
+                throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
             }
+
+            $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
+            if (!$section) {
+                throw new InvalidConfigException("Invalid section handle: $this->section");
+            }
+            if ($this->_forSingle) {
+                if ($section->type !== Section::TYPE_SINGLE) {
+                    throw new InvalidConfigException("“{$section->name}” isn’t a Single section. You must specify a Single section.", Console::FG_RED);
+                }
+            } elseif ($section->type === Section::TYPE_SINGLE) {
+                throw new InvalidConfigException("“{$section->name}” is a Single section. You must specify a Structure or Channel section.", Console::FG_RED);
+            }
+            $this->_section = $section;
         }
 
         return $this->_section;
@@ -760,5 +815,29 @@ Run this command on other environments immediately after deploying these changes
 $command
 ```
 MD);
+    }
+
+    private function _addSectionToPage(string $name, string $icon): void
+    {
+        $sourcesService = Craft::$app->getElementSources();
+
+        $sourceKey = sprintf('section:%s', $this->_section()->uid);
+        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, withDisabled: true))
+            ->map(function(array $config) use ($sourceKey, $name) {
+                if (($config['key'] ?? null) === $sourceKey) {
+                    $config['page'] = $name;
+                } else {
+                    $config['page'] ??= 'Entries';
+                }
+                return $config;
+            })
+            ->all();
+        $sourcesService->saveSources(Entry::class, $sourceConfigs);
+
+        $pageSettings = $sourcesService->getPageSettings(Entry::class);
+        $pageSettings[$name] = [
+            'icon' => $icon,
+        ];
+        $sourcesService->savePageSettings(Entry::class, $pageSettings);
     }
 }

@@ -171,18 +171,6 @@ class FileHelperTest extends TestCase
     }
 
     /**
-     *
-     */
-    public function testGetMimeTypeExceptions(): void
-    {
-        if (PHP_VERSION_ID < 80100) {
-            $this->tester->expectThrowable(ErrorException::class, function() {
-                FileHelper::getMimeType('notafile');
-            });
-        }
-    }
-
-    /**
      * @dataProvider getExtensionByMimeTypeDataProvider
      *
      * @param string $expected
@@ -324,6 +312,8 @@ class FileHelperTest extends TestCase
             [' +HostName[@SSL][@Port]+SharedFolder+Resource', ' \\HostName[@SSL][@Port]\SharedFolder\Resource', '+'],
             ['|?|C:|my_dir', '\\?\C:\my_dir', '|'],
             ['==stuff', '\\\\stuff', '='],
+            ['foo/bar', 'file://foo/bar', '/'],
+            ['foo/bar', 'file://FILE://foo/bar', '/'],
         ];
     }
 

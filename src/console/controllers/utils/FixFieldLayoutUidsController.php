@@ -10,7 +10,9 @@ namespace craft\console\controllers\utils;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use craft\helpers\ProjectConfig;
 use craft\helpers\StringHelper;
+use craft\services\ProjectConfig as ProjectConfigService;
 use yii\console\ExitCode;
 
 /**
@@ -21,6 +23,8 @@ use yii\console\ExitCode;
  */
 class FixFieldLayoutUidsController extends Controller
 {
+    private array $topLevelUids = [];
+
     /**
      * Fixes any duplicate UUIDs found within field layout components in the project config.
      *
@@ -31,6 +35,8 @@ class FixFieldLayoutUidsController extends Controller
         $this->stdout("Looking for duplicate UUIDs ...\n");
         $count = 0;
         $this->_fixUids(Craft::$app->getProjectConfig()->get(), $count);
+
+        $this->fixFieldLayoutUids($count);
 
         if ($count) {
             $summary = sprintf('Fixed %s duplicate or missing %s.', $count, $count === 1 ? 'UUID' : 'UUIDs');
@@ -49,11 +55,21 @@ class FixFieldLayoutUidsController extends Controller
     {
         if (is_array($config['fieldLayouts'] ?? null)) {
             $modified = false;
+            $packed = isset($config['fieldLayouts'][ProjectConfigService::ASSOC_KEY]);
+            if ($packed) {
+                $config['fieldLayouts'] = ProjectConfig::unpackAssociativeArray($config['fieldLayouts']);
+            }
             foreach ($config['fieldLayouts'] as $fieldLayoutUid => &$fieldLayoutConfig) {
-                $fieldLayoutPath = sprintf('%sfieldLayouts.%s', $path ? "$path." : '', $fieldLayoutUid);
-                $this->_fixUidsInLayout($fieldLayoutConfig, $count, $fieldLayoutPath, $uids, $modified);
+                $this->topLevelUids[$fieldLayoutUid][] = $path;
+                if (is_array($fieldLayoutConfig)) {
+                    $fieldLayoutPath = sprintf('%sfieldLayouts.%s', $path ? "$path." : '', $fieldLayoutUid);
+                    $this->_fixUidsInLayout($fieldLayoutConfig, $count, $fieldLayoutPath, $uids, $modified);
+                }
             }
             if ($modified) {
+                if ($packed) {
+                    $config['fieldLayouts'] = ProjectConfig::packAssociativeArray($config['fieldLayouts']);
+                }
                 Craft::$app->getProjectConfig()->set($path, $config);
             }
             return;
@@ -61,9 +77,16 @@ class FixFieldLayoutUidsController extends Controller
 
         if (is_array($config['fieldLayout'] ?? null)) {
             $modified = false;
+            $packed = isset($config['fieldLayout'][ProjectConfigService::ASSOC_KEY]);
+            if ($packed) {
+                $config['fieldLayout'] = ProjectConfig::unpackAssociativeArray($config['fieldLayout']);
+            }
             $fieldLayoutPath = sprintf('%sfieldLayout', $path ? "$path." : '');
             $this->_fixUidsInLayout($config['fieldLayout'], $count, $fieldLayoutPath, $uids, $modified);
             if ($modified) {
+                if ($packed) {
+                    $config['fieldLayout'] = ProjectConfig::packAssociativeArray($config['fieldLayout']);
+                }
                 Craft::$app->getProjectConfig()->set($path, $config);
             }
             return;
@@ -101,9 +124,9 @@ class FixFieldLayoutUidsController extends Controller
     private function _checkUid(array &$config, int &$count, array &$uids, bool &$modified, string $path): void
     {
         if (empty($config['uid'])) {
-            $reason = 'Duplicate UUID found at';
+            $reason = 'Missing UUID found at';
         } elseif (isset($uids[$config['uid']])) {
-            $reason = 'Missing UUID at';
+            $reason = 'Duplicate UUID at';
         } else {
             $uids[$config['uid']] = true;
             return;
@@ -118,5 +141,39 @@ class FixFieldLayoutUidsController extends Controller
         $this->stdout(".\n    Setting to ");
         $this->stdout($config['uid'], Console::FG_CYAN);
         $this->stdout(".\n");
+    }
+
+    private function fixFieldLayoutUids(int &$count): void
+    {
+        foreach ($this->topLevelUids as $fieldLayoutUid => $paths) {
+            if (count($paths) == 1) {
+                unset($this->topLevelUids[$fieldLayoutUid]);
+            }
+        }
+
+        // we still have some duplicates remaining
+        if (!empty($this->topLevelUids)) {
+            foreach ($this->topLevelUids as $fieldLayoutUid => $paths) {
+                // leave the first path as is
+                array_shift($paths);
+                // all others need to have their UIDs adjusted
+                foreach ($paths as $path) {
+                    $newUid = StringHelper::UUID();
+                    $config = Craft::$app->getProjectConfig()->get($path);
+                    $innerConfig = $config['fieldLayouts'][$fieldLayoutUid];
+                    unset($config['fieldLayouts'][$fieldLayoutUid]);
+                    $config['fieldLayouts'][$newUid] = $innerConfig;
+
+                    $this->stdout("    > Duplicate UUID at ");
+                    $this->stdout($path . ".fieldLayouts." . $fieldLayoutUid, Console::FG_CYAN);
+                    $this->stdout(".\n    Setting to ");
+                    $this->stdout($newUid, Console::FG_CYAN);
+                    $this->stdout(".\n");
+
+                    Craft::$app->getProjectConfig()->set($path, $config);
+                    $count++;
+                }
+            }
+        }
     }
 }

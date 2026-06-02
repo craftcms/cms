@@ -8,7 +8,10 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
+use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
+use yii\base\InvalidConfigException;
 
 /**
  * Relational field condition rule.
@@ -77,13 +80,21 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
+    protected function allowMultiple(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function operators(): array
     {
-        return array_filter([
+        return [
             self::OPERATOR_RELATED_TO,
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
-        ]);
+        ];
     }
 
     /**
@@ -102,6 +113,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function inputHtml(): string
     {
+        if (!$this->field() instanceof BaseRelationField) {
+            throw new InvalidConfigException();
+        }
+
         return match ($this->operator) {
             self::OPERATOR_RELATED_TO => parent::inputHtml(),
             default => '',
@@ -113,13 +128,55 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
+        $field = $this->field();
+        if (!$field instanceof BaseRelationField) {
+            return;
+        }
+
+        // If this is one of multiple instances of the relation field in the layout,
+        // look at the JSON values rather than the `relations` table data
+        // (see https://github.com/craftcms/cms/issues/17290)
+        $allInstances = $field->layoutElement?->getLayout()->getFields(fn(BaseField $field) => (
+            $field instanceof CustomField &&
+            $field->getFieldUid() === $this->_fieldUid
+        ));
+        if ($allInstances && count($allInstances) > 1) {
+            $valueSql = $field->getValueSql();
+            switch ($this->operator) {
+                case self::OPERATOR_RELATED_TO:
+                    $qb = Craft::$app->getDb()->getQueryBuilder();
+                    $query->andWhere([
+                        'or',
+                        ...array_map(fn(int $id) => $qb->jsonContains($valueSql, $id), $this->getElementIds()),
+                    ]);
+                    break;
+                case self::OPERATOR_NOT_EMPTY:
+                    $query->andWhere(
+                        [
+                            'and',
+                            ['not', [$valueSql => null]],
+                            ['not', [$valueSql => '[]']],
+                        ]
+                    );
+                    break;
+                case self::OPERATOR_EMPTY:
+                    $query->andWhere(
+                        [
+                            'or',
+                            [$valueSql => null],
+                            [$valueSql => '[]'],
+                        ]
+                    );
+                    break;
+            }
+            return;
+        }
+
         if ($this->operator === self::OPERATOR_RELATED_TO) {
             $this->traitModifyQuery($query);
         } else {
             // Add the condition manually so we can ignore the related elements’ statuses and the field’s target site
             // so conditions reflect what authors see in the UI
-            /** @var BaseRelationField $field */
-            $field = $this->field();
             $query->andWhere(
                 $this->operator === self::OPERATOR_NOT_EMPTY
                     ? $field::existsQueryCondition($field, false, false)
@@ -131,10 +188,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): int|string|null
+    protected function elementQueryParam(): array|null
     {
         // $this->operator will always be OPERATOR_RELATED_TO at this point
-        return $this->getElementId();
+        return $this->getElementIds();
     }
 
     /**
@@ -142,6 +199,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function matchFieldValue($value): bool
     {
+        if (!$this->field() instanceof BaseRelationField) {
+            return true;
+        }
+
         if ($value instanceof ElementQueryInterface) {
             // Ignore the related elements’ statuses and target site
             // so conditions reflect what authors see in the UI

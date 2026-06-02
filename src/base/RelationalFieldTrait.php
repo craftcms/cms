@@ -15,11 +15,17 @@ namespace craft\base;
  */
 trait RelationalFieldTrait
 {
+    /**
+     * @see RelationalFieldInterface::localizeRelations()
+     */
     public function localizeRelations(): bool
     {
         return true;
     }
 
+    /**
+     * @see RelationalFieldInterface::forceUpdateRelations()
+     */
     public function forceUpdateRelations(ElementInterface $element): bool
     {
         return false;

@@ -33,6 +33,16 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
     /**
      * @inheritdoc
      */
+    protected static bool $optionIcons = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optionColors = true;
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Dropdown');
@@ -102,10 +112,10 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface, Inlin
             if (!$static) {
                 Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
             }
-            $default = $this->defaultValue();
 
+            $default = $this->defaultValue();
             if ($default !== null) {
-                $value = $this->normalizeValue($this->defaultValue(), null);
+                $value = $this->normalizeValue($default, null);
             } else {
                 $value = null;
 

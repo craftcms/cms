@@ -24,6 +24,8 @@ use yii\web\AssetBundle;
  */
 class SessionBehavior extends Behavior
 {
+    private const AUTH_LOCK_NAME = 'authAccess';
+
     /**
      * @var string|null The session variable name used to store the authorization keys for the current session.
      * @see authorize()
@@ -171,8 +173,7 @@ class SessionBehavior extends Behavior
      * Asset bundles that were queued with this method can be registered using [[getAssetBundleFlashes()]] or
      * [[\craft\web\View::getBodyHtml()]].
      *
-     * @param string $name the class name of the asset bundle
-     * @phpstan-param class-string<AssetBundle> $name
+     * @param class-string<AssetBundle> $name the class name of the asset bundle
      * @param int|null $position if set, this forces a minimum position for javascript files.
      * @throws Exception if $name isn't an asset bundle class name
      * @see getAssetBundleFlashes()
@@ -264,11 +265,18 @@ JS
      */
     public function authorize(string $action): void
     {
+        $mutex = Craft::$app->getMutex();
+        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
+
         $access = $this->owner->get($this->authAccessParam, []);
 
         if (!in_array($action, $access, true)) {
             $access[] = $action;
             $this->owner->set($this->authAccessParam, $access);
+        }
+
+        if ($locked) {
+            $mutex->release(self::AUTH_LOCK_NAME);
         }
     }
 
@@ -279,12 +287,19 @@ JS
      */
     public function deauthorize(string $action): void
     {
+        $mutex = Craft::$app->getMutex();
+        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
+
         $access = $this->owner->get($this->authAccessParam, []);
         $index = array_search($action, $access, true);
 
         if ($index !== false) {
             array_splice($access, $index, 1);
             $this->owner->set($this->authAccessParam, $access);
+        }
+
+        if ($locked) {
+            $mutex->release(self::AUTH_LOCK_NAME);
         }
     }
 

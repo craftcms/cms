@@ -46,14 +46,24 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
             this.$container.data('elementEditorSettings')
           )
         );
+
+        // if it's supposed to be static, e.g. it's a revision,
+        // don't show the save button and change wording on the cancel one
+        if (this.elementEditor.settings.isStatic) {
+          this.$saveBtn.remove();
+          this.$cancelBtn[0].innerText = Craft.t('app', 'Close');
+        }
+
         this.elementEditor.on('beforeSubmit', () => {
-          Object.keys(this.settings.saveParams).forEach((name) => {
-            $('<input/>', {
-              class: 'hidden',
-              name: this.elementEditor.namespaceInputName(name),
-              value: this.settings.saveParams[name],
-            }).appendTo(this.$container);
-          });
+          if (this.settings.saveParams) {
+            Object.keys(this.settings.saveParams).forEach((name) => {
+              $('<input/>', {
+                class: 'hidden',
+                name: this.elementEditor.namespaceInputName(name),
+                value: this.settings.saveParams[name],
+              }).appendTo(this.$container);
+            });
+          }
           this.showSubmitSpinner();
         });
         this.elementEditor.on('afterSubmit', () => {
@@ -100,14 +110,26 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         params.elementId = this.$element.data('id');
       }
 
-      if (this.settings.draftId) {
-        params.draftId = this.settings.draftId;
+      if (this.settings.draftId !== null) {
+        params.draftId = this.settings.draftId || null; // could be false
       } else if (this.$element?.data('draft-id')) {
         params.draftId = this.$element.data('draft-id');
-      } else if (this.settings.revisionId) {
-        params.revisionId = this.settings.revisionId;
+      } else if (this.settings.revisionId !== null) {
+        params.revisionId = this.settings.revisionId || null; // could be false
       } else if (this.$element?.data('revision-id')) {
         params.revisionId = this.$element.data('revision-id');
+      }
+
+      if (this.settings.fieldId !== null) {
+        params.fieldId = this.settings.fieldId || null; // could be false
+      } else if (this.$element?.data('field-id')) {
+        params.fieldId = this.$element.data('field-id');
+      }
+
+      if (this.settings.ownerId !== null) {
+        params.ownerId = this.settings.ownerId || null; // could be false
+      } else if (this.$element?.data('owner-id')) {
+        params.ownerId = this.$element.data('owner-id');
       }
 
       if (this.settings.siteId) {
@@ -123,6 +145,12 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       return params;
     },
 
+    reload: function () {
+      this.elementEditor?.destroy();
+      delete this.elementEditor;
+      this.base();
+    },
+
     handleSubmit: async function (ev) {
       if (ev.type !== 'submit' && this.elementEditor.settings.canCreateDrafts) {
         // first, we have to save the draft and then fully save;
@@ -130,7 +158,14 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         await this.elementEditor.saveDraft();
       }
 
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
+
+      this.showSubmitSpinner();
+      await this.settings.onBeforeSubmit();
       this.elementEditor.handleSubmit(ev);
+      this.hideSubmitSpinner();
     },
 
     handleSubmitError: function (e) {
@@ -173,13 +208,17 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       elementId: null,
       draftId: null,
       revisionId: null,
+      fieldId: null,
+      ownerId: null,
       elementType: null,
       siteId: null,
       prevalidate: false,
-      saveParams: {},
+      saveParams: null,
       onSaveElement: null,
       validators: [],
       expandData: [],
+      isStatic: false,
+      onBeforeSubmit: async () => {},
     },
   }
 );

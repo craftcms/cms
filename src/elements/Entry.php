@@ -10,17 +10,22 @@ namespace craft\elements;
 use Craft;
 use craft\base\Colorable;
 use craft\base\Element;
+use craft\base\ElementContainerFieldInterface;
+use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\base\Iconic;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\controllers\ElementsController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\actions\Copy;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
 use craft\elements\actions\Duplicate;
@@ -41,13 +46,18 @@ use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\DefineEntryTypesEvent;
+use craft\events\DefineMetaFields;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\entries\EntryTitleField;
+use craft\fields\Matrix;
+use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
@@ -60,10 +70,14 @@ use craft\services\Structures;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
+use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
@@ -106,6 +120,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @since 4.4.0
      */
     public const EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
+
+    /**
+     * @event DefineMetaFields The event that is triggered when defining the meta fields.
+     * @see metaFieldsHtml()
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_META_FIELDS = 'defineEntryMetaFields';
 
     /**
      * @inheritdoc
@@ -229,6 +250,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public static function multiPageSources(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function defineSources(string $context): array
     {
         if ($context === ElementSources::CONTEXT_INDEX) {
@@ -297,6 +326,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'data' => [
                             'type' => $type,
                             'handle' => $section->handle,
+                            'section-id' => $section->id,
+                            'entry-type-ids' => array_map(fn(EntryType $entryType) => $entryType->id, $section->getEntryTypes()),
                         ],
                         'criteria' => [
                             'sectionId' => $section->id,
@@ -367,21 +398,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected static function defineFieldLayouts(?string $source): array
     {
-        if ($source !== null) {
-            if ($source === '*') {
-                $sections = Craft::$app->getEntries()->getAllSections();
-            } elseif ($source === 'singles') {
-                $sections = Craft::$app->getEntries()->getSectionsByType(Section::TYPE_SINGLE);
-            } else {
-                $sections = [];
-                if (preg_match('/^section:(.+)$/', $source, $matches)) {
-                    $section = Craft::$app->getEntries()->getSectionByUid($matches[1]);
-                    if ($section) {
-                        $sections[] = $section;
-                    }
-                }
-            }
+        if ($source === '*') {
+            $sections = Craft::$app->getEntries()->getAllSections();
+        } elseif ($source === 'singles') {
+            $sections = Craft::$app->getEntries()->getSectionsByType(Section::TYPE_SINGLE);
+        } elseif ($source !== null && preg_match('/^section:(.+)$/', $source, $matches)) {
+            $sections = array_filter([
+                Craft::$app->getEntries()->getSectionByUid($matches[1]),
+            ]);
+        }
 
+        if (isset($sections)) {
             $entryTypes = array_values(array_unique(array_merge(
                 ...array_map(fn(Section $section) => $section->getEntryTypes(), $sections),
             )));
@@ -431,6 +458,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 $user->can('createEntries:' . $section->uid)
             ) {
                 $newEntryUrl = 'entries/' . $section->handle . '/new';
+                //$newEntryUrl = sprintf('%s/new', $section->getCpIndexUri());
 
                 if (Craft::$app->getIsMultiSite()) {
                     $newEntryUrl .= '?site=' . $site->handle;
@@ -455,20 +483,28 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 }
             }
 
-            // Duplicate
             if (
                 $user->can("createEntries:$section->uid") &&
                 $user->can("saveEntries:$section->uid")
             ) {
-                $actions[] = Duplicate::class;
+                // Duplicate
+                $actions[] = [
+                    'type' => Duplicate::class,
+                    'asDrafts' => true,
+                ];
 
                 if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels != 1) {
                     $actions[] = [
                         'type' => Duplicate::class,
+                        'asDrafts' => true,
                         'deep' => true,
                     ];
                 }
 
+                // Copy
+                $actions[] = Copy::class;
+
+                // Move to section
                 $actions[] = MoveToSection::class;
             }
 
@@ -486,11 +522,27 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'withDescendants' => true,
                     ];
                 }
-
-                if ($section->propagationMethod === PropagationMethod::Custom && $section->getHasMultiSiteEntries()) {
-                    $actions[] = DeleteForSite::class;
-                }
             }
+        } else {
+            $actions[] = Copy::class;
+        }
+
+        if (
+            (
+                $section &&
+                $section->propagationMethod === PropagationMethod::Custom &&
+                $section->getHasMultiSiteEntries() &&
+                $user->can("deleteEntriesForSite:$section->uid")
+            ) ||
+            (
+                !$section &&
+                str_starts_with($source, 'custom:') &&
+                Craft::$app->getIsMultiSite() &&
+                Collection::make(Craft::$app->getEntries()->getEditableSections())
+                    ->contains(fn(Section $section) => $section->propagationMethod === PropagationMethod::Custom)
+            )
+        ) {
+            $actions[] = DeleteForSite::class;
         }
 
         // Restore
@@ -505,6 +557,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected static function includeSetStatusAction(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function baseBulkDuplicateAttributes(): array
+    {
+        return [
+            ...parent::baseBulkDuplicateAttributes(),
+            'sectionId' => null,
+        ];
     }
 
     /**
@@ -576,7 +639,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            'id' => Craft::t('app', 'ID'),
         ];
     }
 
@@ -631,22 +693,94 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    protected static function defineCardAttributes(): array
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+
+        $attributes = array_merge(parent::defineCardAttributes(), [
+            'section' => [
+                'label' => Craft::t('app', 'Section'),
+                'placeholder' => fn() => Craft::t('app', 'Section'),
+            ],
+            'type' => [
+                'label' => Craft::t('app', 'Entry Type'),
+                'placeholder' => fn() => Craft::t('app', 'Entry Type'),
+            ],
+            'authors' => [
+                'label' => Craft::t('app', 'Authors'),
+                'placeholder' => fn() => $currentUser ? Cp::elementChipHtml($currentUser) : '',
+            ],
+            'parent' => [
+                'label' => Craft::t('app', 'Parent'),
+                'placeholder' => fn() => Html::tag(
+                    'span',
+                    Craft::t('app', 'Parent {type} Title', ['type' => self::displayName()]),
+                    ['class' => 'card-placeholder'],
+                ),
+            ],
+            'postDate' => [
+                'label' => Craft::t('app', 'Post Date'),
+                'placeholder' => fn() => (new \DateTime())->sub(new \DateInterval('P15D')),
+            ],
+            'expiryDate' => [
+                'label' => Craft::t('app', 'Expiry Date'),
+                'placeholder' => fn() => (new \DateTime())->add(new \DateInterval('P15D')),
+            ],
+            'revisionNotes' => [
+                'label' => Craft::t('app', 'Revision Notes'),
+                'placeholder' => fn() => Craft::t('app', 'Revision Notes'),
+            ],
+            'revisionCreator' => [
+                'label' => Craft::t('app', 'Last Edited By'),
+                'placeholder' => fn() => $currentUser ? Cp::elementChipHtml($currentUser) : '',
+            ],
+            'drafts' => [
+                'label' => Craft::t('app', 'Drafts'),
+                'placeholder' => fn() => Html::tag(
+                    'span',
+                    Craft::t('app', 'Draft {num}', ['num' => 1]),
+                    ['class' => 'card-placeholder'],
+                ),
+            ],
+        ]);
+
+        // Hide Author & Last Edited By from Craft Solo
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            unset($attributes['authors'], $attributes['revisionCreator']);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'authors', 'parent', 'revisionCreator', 'drafts' => $attribute['placeholder'],
+            default => parent::attributePreviewHtml($attribute),
+        };
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         switch ($handle) {
             case 'author':
             case 'authors':
-                $map = [];
-
-                /** @var self[] $sourceElements */
-                foreach ($sourceElements as $entry) {
-                    foreach ($entry->getAuthorIds() as $authorId) {
-                        $map[] = [
-                            'source' => $entry->id,
-                            'target' => $authorId,
-                        ];
-                    }
-                }
+                $entryIds = array_map(fn(ElementInterface $entry) => $entry->id, $sourceElements);
+                $map = (new Query())
+                    ->select([
+                        'source' => 'entryId',
+                        'target' => 'authorId',
+                    ])
+                    ->from(Table::ENTRIES_AUTHORS)
+                    ->where(['entryId' => $entryIds])
+                    ->orderBy(['sortOrder' => SORT_ASC])
+                    ->all();
 
                 return [
                     'elementType' => User::class,
@@ -668,7 +802,18 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public static function gqlTypeName(EntryType $entryType): string
     {
+        // Don't use override data
+        $entryType = $entryType->original ?? $entryType;
+
         return sprintf('%s_Entry', $entryType->handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function baseGqlType(): Type
+    {
+        return EntryInterface::getType();
     }
 
     /**
@@ -725,6 +870,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * {{ entry.postDate|date('short') }}
      * ```
      */
+    #[AllowedInSandbox]
     public ?DateTime $postDate = null;
 
     /**
@@ -741,7 +887,18 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * {% endif %}
      * ```
      */
+    #[AllowedInSandbox]
     public ?DateTime $expiryDate = null;
+
+    /**
+     * @var self::STATUS_*|null The entry’s previous status, if it had one
+     */
+    public ?string $oldStatus = null;
+
+    /**
+     * @var self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
+     */
+    private string $status;
 
     /**
      * @var bool Whether the entry was deleted along with its entry type
@@ -749,6 +906,19 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @internal
      */
     public bool $deletedWithEntryType = false;
+
+    /**
+     * @var bool Whether the entry was deleted along with its section
+     * @see beforeDelete()
+     * @internal
+     */
+    public bool $deletedWithSection = false;
+
+    /**
+     * @var bool Whether to force-place the entry within its structure.
+     * @since 5.7.0
+     */
+    public bool $placeInStructure = false;
 
     /**
      * @var int[] Entry author IDs
@@ -782,12 +952,21 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     private ?int $_oldTypeId = null;
 
     /**
+     * @var EntryType|null Entry Type
+     * @see getType()
+     */
+    private ?EntryType $_type = null;
+
+    /**
      * @inheritdoc
      * @since 3.5.0
      */
     public function init(): void
     {
         parent::init();
+        if (isset($this->id)) {
+            $this->oldStatus = $this->getStatus();
+        }
         $this->_oldTypeId = $this->_typeId;
     }
 
@@ -798,6 +977,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $names = array_flip($this->traitAttributes());
         unset($names['deletedWithEntryType']);
+        unset($names['deletedWithSection']);
         $names['authorId'] = true;
         $names['authorIds'] = true;
         $names['typeId'] = true;
@@ -822,12 +1002,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function attributeLabels(): array
     {
+        $authorLabel = Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+            'max' => $this->getSection()->maxAuthors ?? PHP_INT_MAX,
+        ]);
+
         return array_merge(parent::attributeLabels(), [
-            'authorIds' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
-                'max' => $this->getSection()?->maxAuthors ?? 1,
-            ]),
-            'postDate' => Craft::t('app', 'Post Date'),
+            'authorId' => $authorLabel,
+            'authorIds' => $authorLabel,
             'expiryDate' => Craft::t('app', 'Expiry Date'),
+            'postDate' => Craft::t('app', 'Post Date'),
+            'typeId' => Craft::t('app', 'Entry Type'),
         ]);
     }
 
@@ -836,25 +1020,36 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function defineRules(): array
     {
+        $section = $this->getSection();
+
         $rules = parent::defineRules();
         $rules[] = [['sectionId', 'fieldId', 'ownerId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
         $rules[] = [['authorIds'], 'each', 'rule' => ['number', 'integerOnly' => true]];
+        $rules[] = [['placeInStructure'], 'safe'];
         $rules[] = [
             ['sectionId'],
             'required',
             'when' => fn() => !isset($this->fieldId),
         ];
+        $rules[] = [['typeId'], 'required'];
         $rules[] = [
             ['typeId'],
             function(string $attribute) {
                 if (!$this->isEntryTypeAllowed()) {
-                    $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this section. Please choose a different entry type.', [
-                        'type' => $this->getType()->getUiLabel(),
-                    ]));
+                    if (isset($this->sectionId)) {
+                        $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this section. Please choose a different entry type.', [
+                            'type' => $this->getType()->getUiLabel(),
+                        ]));
+                    } else {
+                        $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this field. Please choose a different entry type.', [
+                            'type' => $this->getType()->getUiLabel(),
+                        ]));
+                    }
                 }
             },
             'skipOnEmpty' => false,
             'when' => fn() => $this->getIsCanonical(),
+            'on' => self::SCENARIO_LIVE,
         ];
         $rules[] = [['fieldId'], function(string $attribute) {
             if (isset($this->sectionId)) {
@@ -871,19 +1066,63 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'when' => fn() => $this->postDate && $this->expiryDate,
             'on' => self::SCENARIO_LIVE,
         ];
-
-        $section = $this->getSection();
-        if ($section && $section->type !== Section::TYPE_SINGLE) {
-            $rules[] = [['authorIds'], 'required', 'on' => self::SCENARIO_LIVE];
+        if ($section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0) {
             $rules[] = [
                 ['authorIds'],
                 ArrayValidator::class,
+                'min' => $section->minAuthors,
                 'max' => $section->maxAuthors,
-                'tooMany' => Craft::t('app', '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
-                    'num' => $section->maxAuthors,
-                ]),
+                'on' => self::SCENARIO_LIVE,
             ];
         }
+        $rules[] = [
+            ['typeId'],
+            function(string $attribute) {
+                $typeId = $this->getTypeId();
+                foreach ($this->getAvailableEntryTypes() as $entryType) {
+                    if ($entryType->id === $typeId) {
+                        return;
+                    }
+                }
+                $this->addError($attribute, Craft::t('yii', '{attribute} is invalid.', [
+                    'attribute' => $this->getAttributeLabel($attribute),
+                ]));
+            },
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+        ];
+        $rules[] = [
+            ['authorIds'],
+            function(string $attribute) {
+                $authors = $this->getAuthors();
+                $section = $this->getSection();
+                if (count($authors) > $section->maxAuthors) {
+                    $this->addError($attribute, Craft::t('app', '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
+                        'num' => $section->maxAuthors,
+                    ]));
+                }
+                if (isset($this->_oldAuthorIds)) {
+                    foreach ($authors as $author) {
+                        if (
+                            !in_array($author->id, $this->_oldAuthorIds) &&
+                            !$author->can(sprintf("viewEntries:%s", $this->getSection()->uid))
+                        ) {
+                            $this->addError($attribute, Craft::t('app', 'This user doesn’t have permission to author entries in this section.'));
+                            break;
+                        }
+                    }
+                }
+            },
+            'when' => function() {
+                $section = $this->getSection();
+                return (
+                    $section &&
+                    $section->type !== Section::TYPE_SINGLE &&
+                    isset($section->maxAuthors) &&
+                    $section->maxAuthors !== 0
+                );
+            },
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+        ];
 
         return $rules;
     }
@@ -891,9 +1130,52 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function setAttributesFromRequest(array $values): void
+    {
+        $authorIds = ArrayHelper::remove($values, 'authorIds');
+        $authorId = ArrayHelper::remove($values, 'authorId');
+
+        parent::setAttributesFromRequest($values);
+
+        // Only set the author if the user has permission to change it
+        if (
+            ($authorIds !== null || $authorId !== null) &&
+            isset($this->sectionId)
+        ) {
+            $authorIds = $this->normalizeAuthorIds($authorIds ?? $authorId);
+            $oldAuthorIds = $this->getAuthorIds();
+            if (
+                $authorIds !== $oldAuthorIds &&
+                $this->canChangeAuthor()
+            ) {
+                $this->_oldAuthorIds = $oldAuthorIds;
+                $this->setAuthorIds($authorIds);
+            }
+        }
+
+        // Did the entry type just change?
+        if (isset($this->_typeId, $this->_oldTypeId) && $this->_typeId !== $this->_oldTypeId) {
+            $this->handleChangedTypeId();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function shouldValidateTitle(): bool
     {
-        return $this->getType()->hasTitleField;
+        $entryType = $this->getType();
+        if (!$entryType->hasTitleField) {
+            return false;
+        }
+        try {
+            /** @var EntryTitleField $titleField */
+            $titleField = $entryType->getFieldLayout()->getField('title');
+        } catch (InvalidArgumentException) {
+            return true;
+        }
+
+        return $titleField->required && $titleField->showInForm($this);
     }
 
     /**
@@ -1091,44 +1373,87 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return [];
         }
 
-        $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
-        /** @var Collection $sectionOptions */
-        $sectionOptions = $sections
-            ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
-            ->map(fn(Section $s) => [
-                'label' => Craft::t('site', $s->name),
-                'url' => "entries/$s->handle",
-                'selected' => $s->id === $section->id,
-            ]);
-
-        if ($sections->contains(fn(Section $s) => $s->type === Section::TYPE_SINGLE)) {
-            $sectionOptions->prepend([
-                'label' => Craft::t('app', 'Singles'),
-                'url' => 'entries/singles',
-                'selected' => $section->type === Section::TYPE_SINGLE,
-            ]);
-        }
-
+        $page = $section->getPage();
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Entries'),
-                'url' => 'entries',
-            ],
-            [
-                'menu' => [
-                    'label' => Craft::t('app', 'Select section'),
-                    'items' => $sectionOptions->all(),
-                ],
+                'label' => $page && $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
+                'url' => sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries'),
             ],
         ];
+
+        // Is the section’s source enabled?
+        $elementSourcesService = Craft::$app->getElementSources();
+        $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
+        if ($elementSourcesService->sourceExists(Entry::class, $sourceKey)) {
+            $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
+
+            // Filter out any sections that aren’t enabled for this site
+            $requestedSite = Cp::requestedSite();
+            if ($requestedSite) {
+                $sections = $sections->filter(fn(Section $s) => in_array($requestedSite->id, $s->getSiteIds()));
+            }
+
+            // Filter out any sections that don’t have an enabled source / don’t belong in this page
+            $sources = $elementSourcesService->getSources(Entry::class, page: $page);
+            $sourceKeys = array_flip(array_filter(array_map(fn(array $source) => $source['key'] ?? null, $sources)));
+            $sections = $sections->filter(function(Section $s) use ($sourceKeys) {
+                $key = $s->type === Section::TYPE_SINGLE ? 'singles' : "section:$s->uid";
+                return isset($sourceKeys[$key]);
+            });
+
+            /** @var Collection $sectionOptions */
+            $sectionOptions = $sections
+                ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
+                ->map(fn(Section $s) => [
+                    'label' => $s->getUiLabel(),
+                    'url' => $s->getCpIndexUri(),
+                    'selected' => $s->id === $section->id,
+                ]);
+
+            /** @var Section|null $firstSingle */
+            $firstSingle = $sections->first(fn(Section $s) => $s->type === Section::TYPE_SINGLE);
+            if ($firstSingle) {
+                $sectionOptions->prepend([
+                    'label' => Craft::t('app', 'Singles'),
+                    'url' => $firstSingle->getCpIndexUri(),
+                    'selected' => $section->type === Section::TYPE_SINGLE,
+                ]);
+            }
+
+            if ($sectionOptions->count() > 1) {
+                $crumbs[] = [
+                    'menu' => [
+                        'label' => Craft::t('app', 'Select section'),
+                        'items' => $sectionOptions->all(),
+                    ],
+                ];
+            } else {
+                $crumbs[] = $sectionOptions->first();
+            }
+        } elseif ($section->type !== Section::TYPE_SINGLE) {
+            // Just show its name w/o a link
+            $crumbs[] = [
+                'label' => $section->getUiLabel(),
+            ];
+        }
 
         if ($section->type === Section::TYPE_STRUCTURE) {
             $elementsService = Craft::$app->getElements();
             $user = Craft::$app->getUser()->getIdentity();
 
-            foreach ($this->getAncestors()->all() as $ancestor) {
+            $ancestors = $this->getAncestors();
+            if ($ancestors instanceof ElementQueryInterface) {
+                $ancestors->status(null);
+            }
+
+            foreach ($ancestors->all() as $ancestor) {
                 if ($elementsService->canView($ancestor, $user)) {
-                    $crumbs[] = ['html' => Cp::elementChipHtml($ancestor)];
+                    $crumbs[] = [
+                        'html' => Cp::elementChipHtml($ancestor, [
+                            'class' => 'chromeless',
+                            'hyperlink' => true,
+                        ]),
+                    ];
                 }
             }
         }
@@ -1143,7 +1468,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         if ($this->fieldId) {
             $entryType = $this->getType();
-            if (!$entryType->hasTitleField && !$entryType->titleFormat) {
+            if (
+                !$entryType->hasTitleField &&
+                !$entryType->titleFormat &&
+                (!$entryType->uiLabelFormat || $entryType->uiLabelFormat === '{title}')
+            ) {
                 return '';
             }
         }
@@ -1156,6 +1485,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function uiLabel(): ?string
     {
+        $entryType = $this->getType();
+
+        if ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}') {
+            $uiLabel = Craft::$app->getView()->renderObjectTemplate($entryType->uiLabelFormat, $this);
+            if ($uiLabel !== '') {
+                return $uiLabel;
+            }
+        }
+
         if (!$this->fieldId && (!isset($this->title) || trim($this->title) === '')) {
             $section = $this->getSection();
             if ($section?->type === Section::TYPE_SINGLE) {
@@ -1187,13 +1525,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
-    public function getCardBodyHtml(): ?string
+    public function showStatusIndicator(): bool
     {
-        $html = parent::getCardBodyHtml();
-        if ($html === '') {
-            return Html::tag('div', Html::tag('em', Craft::t('site', $this->getType()->name)));
-        }
-        return $html;
+        return $this->getType()->showStatusField;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCardTitle(): ?string
+    {
+        return $this->getType()->getUiLabel();
     }
 
     /**
@@ -1208,7 +1550,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         return array_map(function($previewTarget) {
             $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
             return $previewTarget;
-        }, $this->getSection()?->previewTargets ?? []);
+        }, $this->getSection()->previewTargets ?? []);
     }
 
     /**
@@ -1351,27 +1693,34 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public function setTypeId(int $typeId): void
     {
         $this->_typeId = $typeId;
+        $this->_type = null;
         $this->fieldLayoutId = null;
     }
 
     /**
      * Returns the available entry types for the entry.
      *
+     * @param bool $triggerEvent
      * @return EntryType[]
      * @throws InvalidConfigException
      * @since 3.6.0
      */
-    public function getAvailableEntryTypes(): array
+    public function getAvailableEntryTypes(bool $triggerEvent = true): array
     {
         if (isset($this->fieldId)) {
             /** @var EntryType[] $entryTypes */
-            $entryTypes = $this->getField()->getFieldLayoutProviders();
-        } else {
+            $entryTypes = array_values(array_filter(
+                $this->getField()->getFieldLayoutProviders(),
+                fn($provider) => $provider instanceof EntryType,
+            ));
+        } elseif (isset($this->sectionId)) {
             $entryTypes = $this->getSection()->getEntryTypes();
+        } else {
+            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
         // Fire a 'defineEntryTypes' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+        if ($triggerEvent && $this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
             $event = new DefineEntryTypesEvent(['entryTypes' => $entryTypes]);
             $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
             $entryTypes = $event->entryTypes;
@@ -1401,20 +1750,31 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getType(): EntryType
     {
-        if (!isset($this->_typeId)) {
-            // Default to the section/field's first entry type
-            $entryTypes = $this->getAvailableEntryTypes();
-            if (!$entryTypes) {
-                throw new InvalidConfigException('Entry is missing its type ID');
+        if (!isset($this->_type)) {
+            if (isset($this->_typeId)) {
+                $entryType = ArrayHelper::firstWhere(
+                    $this->getAvailableEntryTypes(false),
+                    fn(EntryType $entryType) => $entryType->id === $this->_typeId,
+                );
+                if (!$entryType) {
+                    // Maybe the section/field no longer allows this type,
+                    // so get it directly from the Entries service instead
+                    $entryType = Craft::$app->getEntries()->getEntryTypeById($this->_typeId, true);
+                    if (!$entryType) {
+                        throw new InvalidConfigException("Invalid entry type ID: $this->_typeId");
+                    }
+                }
+            } else {
+                // Default to the section/field's first entry type
+                $entryType = ArrayHelper::firstValue($this->getAvailableEntryTypes());
+                if (!$entryType) {
+                    throw new InvalidConfigException('Entry is missing its type ID');
+                }
             }
-            $this->_typeId = $entryTypes[0]->id;
+            $this->_type = $entryType;
         }
 
-        $entryType = Craft::$app->getEntries()->getEntryTypeById($this->_typeId);
-        if (!$entryType) {
-            throw new InvalidConfigException("Invalid entry type ID: $this->_typeId");
-        }
-        return $entryType;
+        return $this->_type;
     }
 
     /**
@@ -1423,6 +1783,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return int|null
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getAuthorId(): ?int
     {
         return $this->getAuthorIds()[0] ?? null;
@@ -1446,6 +1807,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return int[]
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function getAuthorIds(): array
     {
         if (!isset($this->_authorIds)) {
@@ -1468,11 +1830,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         if (isset($this->_authorIds)) {
             if ($authorIds === $this->_authorIds) {
                 return;
-            }
-
-            if (!isset($this->_oldAuthorIds)) {
-                // remember the old IDs so we know if this has been modified
-                $this->_oldAuthorIds = $this->_authorIds;
             }
         }
 
@@ -1508,6 +1865,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
+    #[AllowedInSandbox]
     public function getAuthor(): ?User
     {
         return $this->getAuthors()[0] ?? null;
@@ -1539,16 +1897,25 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return User[]
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function getAuthors(): array
     {
         if (!isset($this->_authors)) {
-            if (isset($this->_authorIds)) {
+            if (!isset($this->sectionId)) {
+                $authors = [];
+            } elseif (isset($this->_authorIds)) {
                 $authors = User::find()
                     ->id($this->_authorIds)
                     ->fixedOrder()
                     ->status(null)
                     ->all();
             } else {
+                if (isset($this->elementQueryResult) && count($this->elementQueryResult) > 1) {
+                    // eager-load authors for all queried entries
+                    Craft::$app->getElements()->eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
+                    return $this->_authors ?? [];
+                }
+
                 $authors = User::find()
                     ->authorOf($this)
                     ->status(null)
@@ -1586,23 +1953,35 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         $status = parent::getStatus();
 
-        if ($status == self::STATUS_ENABLED && $this->postDate) {
-            $currentTime = DateTimeHelper::currentTimeStamp();
-            $postDate = $this->postDate->getTimestamp();
-            $expiryDate = $this->expiryDate?->getTimestamp();
-
-            if ($postDate <= $currentTime && ($expiryDate === null || $expiryDate > $currentTime)) {
-                return self::STATUS_LIVE;
-            }
-
-            if ($postDate > $currentTime) {
-                return self::STATUS_PENDING;
-            }
-
-            return self::STATUS_EXPIRED;
+        if ($status !== self::STATUS_ENABLED) {
+            return $status;
         }
 
-        return $status;
+        return $this->status ?? $this->_status();
+    }
+
+    /**
+     * @return self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
+     */
+    private function _status(): string
+    {
+        $now = DateTimeHelper::now();
+        return match (true) {
+            !$this->postDate || $this->postDate > $now => self::STATUS_PENDING,
+            $this->expiryDate && $this->expiryDate <= $now => self::STATUS_EXPIRED,
+            default => self::STATUS_LIVE,
+        };
+    }
+
+    /**
+     * Sets the status, if it’s stored statically.
+     *
+     * @param self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED $status
+     * @since 5.7.0
+     */
+    public function setStatus(string $status): void
+    {
+        $this->status = $status;
     }
 
     /**
@@ -1616,7 +1995,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'sectionId' => $this->sectionId,
             'fieldId' => $this->fieldId,
             'primaryOwnerId' => $this->getPrimaryOwnerId(),
-            'ownerId' => $this->getPrimaryOwnerId(),
+            'ownerId' => $this->getOwnerId(),
             'sortOrder' => null,
             'typeId' => $this->typeId,
             'siteId' => $this->siteId,
@@ -1669,7 +2048,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore-next-line
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("viewPeerEntryDrafts:$section->uid")
@@ -1706,7 +2088,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore-next-line
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("savePeerEntryDrafts:$section->uid")
@@ -1770,6 +2155,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    public function canCopy(User $user): bool
+    {
+        return Craft::$app->getElements()->canView($this, $user);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canDelete(User $user): bool
     {
         if (parent::canDelete($user)) {
@@ -1787,7 +2180,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore-next-line
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("deletePeerEntryDrafts:$section->uid")
@@ -1819,7 +2215,29 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return false;
         }
 
-        return $section->propagationMethod === PropagationMethod::Custom;
+        if ($section->propagationMethod === PropagationMethod::Custom) {
+            if ($this->getIsDraft()) {
+                /**
+                 * @var static|DraftBehavior $this
+                 * @phpstan-ignore varTag.nativeType
+                 */
+                return (
+                    $this->creatorId === $user->id ||
+                    $user->can("deletePeerEntryDrafts:$section->uid")
+                );
+            }
+
+            if (!$user->can("deleteEntriesForSite:$section->uid")) {
+                return false;
+            }
+
+            return (
+                in_array($user->id, $this->getAuthorIds(), true) ||
+                $user->can("deletePeerEntriesForSite:$section->uid")
+            );
+        }
+
+        return false;
     }
 
     /**
@@ -1836,7 +2254,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function hasRevisions(): bool
     {
-        return $this->getSection()?->enableVersioning ?? false;
+        $section = $this->getSection();
+        if ($section) {
+            return $section->enableVersioning;
+        }
+
+        $field = $this->getField();
+        return $field instanceof Matrix && $field->enableVersioning;
     }
 
     /**
@@ -1851,7 +2275,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return ElementHelper::elementEditorUrl($this, false);
         }
 
-        $path = sprintf('entries/%s/%s', $section->handle, $this->getCanonicalId());
+        $path = sprintf('%s/%s', $section->getCpIndexUri(), $this->getCanonicalId());
 
         // Ignore homepage/temp slugs
         if ($this->slug && !str_starts_with($this->slug, '__')) {
@@ -1866,7 +2290,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getPostEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('entries');
+        $page = $this->getSection()?->getPage();
+        return UrlHelper::cpUrl(sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries'));
     }
 
     /**
@@ -1874,7 +2299,100 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function cpRevisionsUrl(): ?string
     {
+        if (!$this->sectionId) {
+            return ElementHelper::elementRevisionsUrl($this);
+        }
+
         return sprintf('%s/revisions', $this->cpEditUrl());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function safeActionMenuItems(): array
+    {
+        $actions = parent::safeActionMenuItems();
+
+        if (
+            Craft::$app->controller instanceof ElementsController &&
+            Craft::$app->controller->element === $this &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            // Entry type settings
+            $entryTypeEditId = sprintf('edit-entry-type-%s', mt_rand());
+            $actions[] = [
+                'id' => $entryTypeEditId,
+                'icon' => 'gear',
+                'label' => Craft::t('app', 'Entry type settings'),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $params, $isNestedEntry) => <<<JS
+(() => {
+  $('#' + $id).on('activate', function() {
+    const params = $params;
+    if (!$isNestedEntry) {
+        const input = $(this).closest('.menu').data('disclosureMenu').\$trigger.closest('form').find('.entry-type-select').find('input');
+        if (input.length) {
+          params.entryTypeId = input.val();
+        }
+    }
+    new Craft.CpScreenSlideout('entry-types/edit', {params});
+  });
+})();
+JS, [
+                $view->namespaceInputId($entryTypeEditId),
+                ['entryTypeId' => $this->typeId],
+                isset($this->fieldId),
+            ]);
+
+            // Section settings
+            if (!empty($this->sectionId)) {
+                $sectionEditId = sprintf('edit-section-%s', mt_rand());
+                $actions[] = [
+                    'id' => $sectionEditId,
+                    'icon' => 'gear',
+                    'label' => Craft::t('app', 'Section settings'),
+                ];
+
+                $view = Craft::$app->getView();
+                $view->registerJsWithVars(fn($id, $params) => <<<JS
+    (() => {
+      $('#' + $id).on('activate', function() {
+        new Craft.CpScreenSlideout('sections/edit-section', {params: $params});
+      });
+    })();
+    JS, [
+                    $view->namespaceInputId($sectionEditId),
+                    ['sectionId' => $this->sectionId],
+                ]);
+            }
+
+            // Field settings
+            if (!empty($this->fieldId)) {
+                $fieldEditId = sprintf('edit-field-%s', mt_rand());
+                $actions[] = [
+                    'id' => $fieldEditId,
+                    'icon' => 'gear',
+                    'label' => Craft::t('app', 'Field settings'),
+                ];
+
+                $view = Craft::$app->getView();
+                $view->registerJsWithVars(fn($id, $params) => <<<JS
+    (() => {
+      $('#' + $id).on('activate', function() {
+        new Craft.CpScreenSlideout('fields/edit-field', {params: $params});
+      });
+    })();
+    JS, [
+                    $view->namespaceInputId($fieldEditId),
+                    ['fieldId' => $this->fieldId],
+                ]);
+            }
+        }
+
+        return $actions;
     }
 
     /**
@@ -1912,20 +2430,22 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         switch ($attribute) {
             case 'authors':
-                $authors = $this->getAuthors();
-                $html = '';
-                if (!empty($authors)) {
-                    foreach ($authors as $author) {
-                        $html .= Cp::elementChipHtml($author);
-                    }
-                }
-                return $html;
+                return Cp::elementPreviewHtml($this->getAuthors());
             case 'section':
                 $section = $this->getSection();
-                return $section ? Html::encode(Craft::t('site', $section->name)) : '';
+                if (!$section) {
+                    return '';
+                }
+                return Cp::chipHtml($section, [
+                    'class' => 'chromeless',
+                    'showThumb' => false,
+                ]);
             case 'type':
                 try {
-                    return Html::encode(Craft::t('site', $this->getType()->name));
+                    return Cp::chipHtml($this->getType(), [
+                        'class' => 'chromeless',
+                        'showThumb' => $this->viewMode !== 'cards',
+                    ]);
                 } catch (InvalidConfigException) {
                     return Craft::t('app', 'Unknown');
                 }
@@ -1937,19 +2457,71 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     /**
      * @inheritdoc
      */
+    protected function inlineAttributeInputHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'postDate':
+                return Cp::dateTimeFieldHtml([
+                    'name' => 'postDate',
+                    'value' => $this->postDate,
+                ]);
+            case 'expiryDate':
+                return Cp::dateTimeFieldHtml([
+                    'name' => 'expiryDate',
+                    'value' => $this->expiryDate,
+                ]);
+            case 'slug':
+                return Cp::textHtml([
+                    'name' => 'slug',
+                    'value' => $this->slug,
+                ]);
+            case 'authors':
+                $authors = $this->getAuthors();
+                $section = $this->getSection();
+                return Cp::elementSelectHtml([
+                    'status' => $this->getAttributeStatus('authorIds'),
+                    'label' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+                        'max' => $section->maxAuthors ?? PHP_INT_MAX,
+                    ]),
+                    'id' => 'authorIds',
+                    'name' => 'authorIds',
+                    'elementType' => User::class,
+                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'criteria' => [
+                        'can' => "viewEntries:$section->uid",
+                    ],
+                    'single' => false,
+                    'elements' => $authors ?: null,
+                    'disabled' => !$this->canChangeAuthor(),
+                    'errors' => $this->getErrors('authorIds'),
+                    'limit' => $section->maxAuthors,
+                ]);
+            default:
+                return parent::inlineAttributeInputHtml($attribute);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function htmlAttributes(string $context): array
     {
         return [
             'data' => [
-                'movable' => $this->_canMove(),
+                'entry-type-id' => $this->getType()->id,
+                'movable' => $this->canMove(),
             ],
         ];
     }
 
     /**
-     * Returns whether the given user is authorized to move this entry.
+     * Returns whether the given user is authorized to move this entry to a different section.
+     *
+     * @param User|null $user
+     * @return bool
+     * @since 5.9.14
      */
-    private function _canMove(?User $user = null): bool
+    public function canMove(?User $user = null): bool
     {
         if (!$user) {
             $user = Craft::$app->getUser()->getIdentity();
@@ -1975,7 +2547,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         if ($this->getIsDraft()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore-next-line
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("savePeerEntryDrafts:$section->uid")
@@ -2027,44 +2602,43 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $this->_applyActionBtnEntryTypeCompatibility();
 
-        if ($section?->type !== Section::TYPE_SINGLE) {
-            // Type
-            $fields[] = (function() use ($static) {
-                $entryTypes = $this->getAvailableEntryTypes();
-                if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
-                    $entryTypes[] = $this->getType();
-                }
-                if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
-                    return null;
-                }
+        // Type
+        $fields['type'] = (function() use ($static) {
+            $entryTypes = $this->getAvailableEntryTypes();
+            if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
+                $entryTypes[] = $this->getType();
+            }
+            if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
+                return null;
+            }
 
-                return Cp::customSelectFieldHtml([
-                    'status' => $this->getAttributeStatus('typeId'),
-                    'label' => Craft::t('app', 'Entry Type'),
-                    'id' => 'entryType',
-                    'name' => 'typeId',
-                    'value' => $this->getType()->id,
-                    'options' => array_map(fn(EntryType $et) => [
-                        'icon' => $et->icon,
-                        'iconColor' => $et->color,
-                        'label' => Craft::t('site', $et->name),
-                        'value' => $et->id,
-                    ], $entryTypes),
-                    'disabled' => $static,
-                    'attribute' => 'typeId',
-                    'errors' => $this->getErrors('typeId'),
-                ]);
-            })();
-        }
+            return Cp::customSelectFieldHtml([
+                'fieldClass' => 'entry-type-select',
+                'status' => $this->getAttributeStatus('typeId'),
+                'label' => Craft::t('app', 'Entry Type'),
+                'id' => 'entryType',
+                'name' => 'typeId',
+                'value' => $this->getType()->id,
+                'options' => array_map(fn(EntryType $et) => [
+                    'icon' => $et->icon,
+                    'iconColor' => $et->color,
+                    'label' => Craft::t('site', $et->name),
+                    'value' => $et->id,
+                ], $entryTypes),
+                'disabled' => $static,
+                'attribute' => 'typeId',
+                'errors' => $this->getErrors('typeId'),
+            ]);
+        })();
 
         // Slug
         if ($this->getType()->showSlugField) {
-            $fields[] = $this->slugFieldHtml($static);
+            $fields['slug'] = $this->slugFieldHtml($static);
         }
 
         // Parent
         if ($section?->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
-            $fields[] = (function() use ($static, $section) {
+            $fields['parent'] = (function() use ($static, $section) {
                 if ($parentId = $this->getParentId()) {
                     $parent = Craft::$app->getEntries()->getEntryById($parentId, $this->siteId, [
                         'drafts' => null,
@@ -2102,13 +2676,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if ($section && $section->type !== Section::TYPE_SINGLE) {
             // Author
-            if (Craft::$app->edition !== CmsEdition::Solo && $user->can("viewPeerEntries:$section->uid")) {
-                $fields[] = (function() use ($static, $section) {
+            if (
+                $section->maxAuthors !== 0 &&
+                Craft::$app->edition !== CmsEdition::Solo
+            ) {
+                $fields['authors'] = (function() use ($static, $section, $user) {
                     $authors = $this->getAuthors();
-                    $html = Cp::elementSelectFieldHtml([
+                    return Cp::elementSelectFieldHtml([
                         'status' => $this->getAttributeStatus('authorIds'),
                         'label' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
-                            'max' => $section->maxAuthors,
+                            'max' => $section->maxAuthors ?? PHP_INT_MAX,
                         ]),
                         'id' => 'authorIds',
                         'name' => 'authorIds',
@@ -2119,11 +2696,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         ],
                         'single' => false,
                         'elements' => $authors ?: null,
-                        'disabled' => $static,
+                        'disabled' => $static || !$this->canChangeAuthor($user),
                         'errors' => $this->getErrors('authorIds'),
                         'limit' => $section->maxAuthors,
                     ]);
-                    return $html;
                 })();
             }
 
@@ -2134,18 +2710,18 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
             // Post Date
-            $fields[] = Cp::dateTimeFieldHtml([
+            $fields['postDate'] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('postDate'),
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
-                'value' => $this->_userPostDate(),
+                'value' => $this->postDate,
                 'errors' => $this->getErrors('postDate'),
                 'disabled' => $static,
             ]);
 
             // Expiry Date
-            $fields[] = Cp::dateTimeFieldHtml([
+            $fields['expiryDate'] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => Craft::t('app', 'Expiry Date'),
                 'id' => 'expiryDate',
@@ -2157,6 +2733,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         $fields[] = parent::metaFieldsHtml($static);
+
+        // Fire a 'defineEntryMetaFields' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS)) {
+            $event = new DefineMetaFields([
+                'element' => $this,
+                'static' => $static,
+                'fields' => $fields,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_META_FIELDS, $event);
+            $fields = $event->fields;
+        }
 
         return implode("\n", $fields);
     }
@@ -2201,6 +2788,29 @@ if (revertRevisionBtn.length > 0) {
 JS;
             Craft::$app->getView()->registerJs($js);
         }
+    }
+
+    /**
+     * Returns whether the current user has permission to change this entry’s author.
+     */
+    private function canChangeAuthor(?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        $section = $this->getSection();
+
+        $authorIds = $this->getAuthorIds();
+
+        return (
+            empty($authorIds) ||
+            in_array($user->id, $authorIds) ||
+            $user->can("changeAuthorForPeerEntries:$section->uid")
+        );
     }
 
     /**
@@ -2275,7 +2885,8 @@ JS;
     {
         $entryType = $this->getType();
 
-        if ($entryType->hasTitleField) {
+        // Leave the title alone if the layout has a Title field, and it's already set to something
+        if ($entryType->hasTitleField && trim($this->title ?? '') !== '') {
             return;
         }
 
@@ -2304,59 +2915,8 @@ JS;
         Craft::$app->set('formattingLocale', $formattingLocale);
     }
 
-    /**
-     * Returns the Post Date value that should be shown on the edit form.
-     *
-     * @return DateTime|null
-     */
-    private function _userPostDate(): ?DateTime
-    {
-        if (!$this->postDate || ($this->getIsUnpublishedDraft() && $this->postDate == $this->dateCreated)) {
-            // Pretend the post date hasn't been set yet, even if it has
-            return null;
-        }
-
-        return $this->postDate;
-    }
-
     // Events
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeValidate(): bool
-    {
-        if (
-            (!isset($this->_authorIds) || empty($this->_authorIds)) &&
-            !isset($this->fieldId) &&
-            $this->getSection()->type !== Section::TYPE_SINGLE
-        ) {
-            $user = Craft::$app->getUser()->getIdentity();
-            if ($user) {
-                $this->setAuthor($user);
-            }
-        }
-
-        if (
-            !$this->_userPostDate() &&
-            (
-                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
-                (!$this->getIsDraft() && !$this->getIsRevision())
-            )
-        ) {
-            // Default the post date to the current date/time
-            $this->postDate = new DateTime();
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
-            // ...unless an expiry date is set in the past
-            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
-                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
-            }
-        }
-
-        return parent::beforeValidate();
-    }
 
     /**
      * @inheritdoc
@@ -2364,31 +2924,35 @@ JS;
      */
     public function beforeSave(bool $isNew): bool
     {
-        $section = $this->getSection();
-        if ($section) {
-            // Make sure the entry has at least one revision if the section has versioning enabled
-            if ($this->_shouldSaveRevision()) {
-                $hasRevisions = self::find()
-                    ->revisionOf($this)
+        if ($this->_shouldSaveRevision()) {
+            // Make sure the entry has at least one revision
+            $hasRevisions = static::find()
+                ->revisionOf($this)
+                ->site('*')
+                ->status(null)
+                ->exists();
+
+            if (!$hasRevisions) {
+                /** @var self|null $current */
+                $current = static::find()
+                    ->id($this->id)
                     ->site('*')
                     ->status(null)
-                    ->exists();
-                if (!$hasRevisions) {
-                    /** @var self|null $currentEntry */
-                    $currentEntry = self::find()
-                        ->id($this->id)
-                        ->site('*')
-                        ->status(null)
-                        ->one();
+                    ->one();
 
-                    // May be null if the entry is currently stored as an unpublished draft
-                    if ($currentEntry) {
-                        $revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($currentEntry->dateUpdated);
-                        Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->getAuthorId(), $revisionNotes);
-                    }
+                // May be null if the entry is currently stored as an unpublished draft
+                if ($current) {
+                    Craft::$app->getRevisions()->createRevision(
+                        $current,
+                        $current->getAuthorId(),
+                        sprintf('Revision from %s', Craft::$app->getFormatter()->asDatetime($current->dateUpdated, withTimeZone: true)),
+                    );
                 }
             }
+        }
 
+        $section = $this->getSection();
+        if ($section) {
             // Set the structure ID for Element::attributes() and afterSave()
             if ($section->type === Section::TYPE_STRUCTURE) {
                 $this->structureId = $section->structureId;
@@ -2420,9 +2984,66 @@ JS;
             }
         }
 
+        $this->maybeSetDefaultAttributes();
+
         $this->updateTitle();
 
         return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterAssignedId(): void
+    {
+        if (ElementHelper::isDraftOrRevision($this)) {
+            return;
+        }
+
+        $this->updateTitle();
+    }
+
+    /**
+     * Set the default values for attributes if certain conditions are met.
+     *
+     * @return void
+     */
+    private function maybeSetDefaultAttributes(): void
+    {
+        // if we're resaving, we shouldn't be setting the defaults
+        if ($this->resaving || $this->getIsRevision()) {
+            return;
+        }
+
+        $section = $this->getSection();
+        if (
+            $section?->type !== Section::TYPE_SINGLE &&
+            $section?->minAuthors === 1 &&
+            empty($this->getAuthors())
+        ) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if ($user) {
+                $this->setAuthor($user);
+            }
+        }
+
+        if (
+            !$this->postDate &&
+            $this->enabled &&
+            (
+                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
+                isset($this->fieldId)
+            )
+        ) {
+            // Default the post date to the current date/time
+            $this->postDate = new DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            // ...unless an expiry date is set in the past
+            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
+                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
+            }
+        }
     }
 
     /**
@@ -2453,13 +3074,22 @@ JS;
             $record->postDate = Db::prepareDateForDb($this->postDate);
             $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
 
+            // todo: update after the next breakpoint
+            if (Craft::$app->getDb()->columnExists(Table::ENTRIES, 'status')) {
+                $status = $this->_status();
+                $record->status = $status;
+                // only update $this->status if it's already set, indicating that staticStatuses is enabled
+                if (isset($this->status)) {
+                    $this->status = $status;
+                }
+            }
+
             // Capture the dirty attributes from the record
             $dirtyAttributes = array_keys($record->getDirtyAttributes());
-
             $record->save(false);
 
             // save authors
-            if (isset($this->_authorIds)) {
+            if (isset($this->sectionId) && isset($this->_authorIds)) {
                 // save & add to dirty attributes
                 $this->_saveAuthors();
 
@@ -2468,74 +3098,25 @@ JS;
                 }
             }
 
-            // ownerId will be null when creating a revision
-            $ownerId = $this->getOwnerId();
-            if (isset($this->fieldId) && $ownerId && $this->saveOwnership) {
-                if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
-                    // figure out if we should proceed this way
-                    // if we're dealing with an element that's being duplicated, and it has a draftId
-                    // it means we're creating a draft of something
-                    // if we're duplicating element via duplicate action - draftId would be empty
-                    $elementId = null;
-                    if ($this->duplicateOf) {
-                        if ($this->draftId) {
-                            $elementId = $this->duplicateOf->id;
-                        }
-                    } else {
-                        // if we're not duplicating - use element's id
-                        $elementId = $this->id;
-                    }
-                    if ($elementId) {
-                        $this->sortOrder = (new Query())
-                            ->select('sortOrder')
-                            ->from(Table::ELEMENTS_OWNERS)
-                            ->where([
-                                'elementId' => $elementId,
-                                'ownerId' => $ownerId,
-                            ])
-                            ->scalar() ?: null;
-                    }
-                }
-                if (!isset($this->sortOrder)) {
-                    $max = (new Query())
-                        ->from(['eo' => Table::ELEMENTS_OWNERS])
-                        ->innerJoin(['e' => Table::ENTRIES], '[[e.id]] = [[eo.elementId]]')
-                        ->where([
-                            'eo.ownerId' => $ownerId,
-                            'e.fieldId' => $this->fieldId,
-                        ])
-                        ->max('[[eo.sortOrder]]');
-                    $this->sortOrder = $max ? $max + 1 : 1;
-                }
-                if ($isNew) {
-                    Db::insert(Table::ELEMENTS_OWNERS, [
-                        'elementId' => $this->id,
-                        'ownerId' => $ownerId,
-                        'sortOrder' => $this->sortOrder,
-                    ]);
-                } else {
-                    Db::update(Table::ELEMENTS_OWNERS, [
-                        'sortOrder' => $this->sortOrder,
-                    ], [
-                        'elementId' => $this->id,
-                        'ownerId' => $ownerId,
-                    ]);
-                }
-            }
+            $this->setDirtyAttributes($dirtyAttributes);
 
-            if ($this->getIsCanonical() && isset($this->sectionId) && $section->type == Section::TYPE_STRUCTURE) {
+            $this->saveOwnership($isNew, Table::ENTRIES);
+
+            if (
+                (!$this->duplicateOf || $this->updatingFromDerivative || $this->placeInStructure) &&
+                isset($this->sectionId) &&
+                $section->type == Section::TYPE_STRUCTURE
+            ) {
                 // Has the parent changed?
-                if ($this->hasNewParent()) {
+                if ($this->placeInStructure || $this->hasNewParent()) {
                     $this->_placeInStructure($isNew, $section);
                 }
 
                 // Update the entry’s descendants, who may be using this entry’s URI in their own URIs
-                if (!$isNew) {
+                if (!$isNew && $this->getIsCanonical()) {
                     Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
                 }
             }
-
-            $this->setDirtyAttributes($dirtyAttributes);
         }
 
         parent::afterSave($isNew);
@@ -2550,6 +3131,17 @@ JS;
      */
     private function _saveAuthors(): void
     {
+        if (!isset($this->_oldAuthorIds)) {
+            // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
+            $oldAuthorIds = (new Query())
+                ->select('authorId')
+                ->from(Table::ENTRIES_AUTHORS)
+                ->where(['entryId' => $this->duplicateOf->id ?? $this->id])
+                ->orderBy(['sortOrder' => SORT_ASC])
+                ->column();
+            $this->_oldAuthorIds = array_map(fn($id) => (int)$id, $oldAuthorIds);
+        }
+
         Db::delete(Table::ENTRIES_AUTHORS, ['entryId' => $this->id]);
 
         if (!empty($this->_authorIds)) {
@@ -2573,6 +3165,8 @@ JS;
                 ->ancestorOf($this->getCanonicalId())
                 ->ancestorDist(1)
                 ->status(null)
+                ->site('*')
+                ->unique()
                 ->scalar();
 
             if ($parentId == $canonicalParentId) {
@@ -2622,12 +3216,14 @@ JS;
 
         $data = [
             'deletedWithEntryType' => $this->deletedWithEntryType,
+            'deletedWithSection' => $this->deletedWithSection,
             'parentId' => null,
         ];
 
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
-            $parentId = $this->getAncestors(1)
+            $parentId = $this->ancestors()
+                ->ancestorDist(1)
                 ->status(null)
                 ->select(['elements.id'])
                 ->scalar();
@@ -2648,6 +3244,13 @@ JS;
      */
     public function afterRestore(): void
     {
+        $this->deletedWithEntryType = false;
+        $this->deletedWithSection = false;
+        Db::update(Table::ENTRIES, [
+            'deletedWithEntryType' => null,
+            'deletedWithSection' => null,
+        ], ['id' => $this->id]);
+
         $section = $this->getSection();
         if ($section?->type === Section::TYPE_STRUCTURE) {
             // Add the entry back into its structure
@@ -2714,7 +3317,7 @@ JS;
             !$this->resaving &&
             !$this->getIsDraft() &&
             !$this->getIsRevision() &&
-            $this->getSection()?->enableVersioning
+            $this->hasRevisions()
         );
     }
 
@@ -2756,5 +3359,58 @@ JS;
         }
 
         return in_array($this->typeId, array_map(fn($entryType) => $entryType->id, $entryTypes));
+    }
+
+    private function handleChangedTypeId(): void
+    {
+        $oldLayout = Craft::$app->getEntries()->getEntryTypeById($this->_oldTypeId)?->getFieldLayout();
+        if (!$oldLayout) {
+            return;
+        }
+
+        $newFields = $this->getType()->getFieldLayout()->getCustomFields();
+        $oldFields = Arr::keyBy($oldLayout->getCustomFields(), fn(FieldInterface $field) => $field->handle);
+        $fieldsService = Craft::$app->getFields();
+
+        foreach ($newFields as $newField) {
+            if (isset($oldFields[$newField->handle])) {
+                $oldField = $oldFields[$newField->handle];
+                if (
+                    !$fieldsService->areFieldTypesCompatible($newField::class, $oldField::class) ||
+                    (
+                        (
+                            $newField instanceof ElementContainerFieldInterface ||
+                            $oldField instanceof ElementContainerFieldInterface
+                        ) &&
+                        $newField->id !== $oldField->id
+                    )
+                ) {
+                    $this->setFieldValue($newField->handle, null);
+                }
+            }
+        }
+    }
+
+    protected function partialTemplatePathCandidates(): array
+    {
+        $templates = parent::partialTemplatePathCandidates();
+
+        $entryType = $this->getType();
+        if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
+            return [
+                [
+                    'template' => sprintf(
+                        '%s/%s/%s',
+                        Craft::$app->getConfig()->getGeneral()->partialTemplatesPath,
+                        static::refHandle(),
+                        $entryType->handle,
+                    ),
+                    'priority' => 5,
+                ],
+                ...$templates,
+            ];
+        }
+
+        return $templates;
     }
 }

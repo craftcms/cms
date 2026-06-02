@@ -54,6 +54,7 @@ class AuthMethodSetupAsset extends AssetBundle
         if ($view instanceof View) {
             $view->registerTranslations('app', [
                 'Download codes',
+                'QR Code',
                 '{name} added successfully.',
             ]);
         }

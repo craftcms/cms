@@ -28,8 +28,7 @@ interface ElementExporterInterface extends ComponentInterface
     /**
      * Sets the element type on the exporter.
      *
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      */
     public function setElementType(string $elementType): void;
 

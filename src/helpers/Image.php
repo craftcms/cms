@@ -24,8 +24,18 @@ use yii\base\InvalidArgumentException;
  */
 class Image
 {
+    /** @since 5.6.0 */
+    public const EXIF_IFD0_ROTATE_0 = 1;
+    /** @since 5.6.0 */
+    public const EXIF_IFD0_ROTATE_0_MIRRORED = 2;
     public const EXIF_IFD0_ROTATE_180 = 3;
+    /** @since 5.6.0 */
+    public const EXIF_IFD0_ROTATE_180_MIRRORED = 4;
+    /** @since 5.6.0 */
+    public const EXIF_IFD0_ROTATE_90_MIRRORED = 5;
     public const EXIF_IFD0_ROTATE_90 = 6;
+    /** @since 5.6.0 */
+    public const EXIF_IFD0_ROTATE_270_MIRRORED = 7;
     public const EXIF_IFD0_ROTATE_270 = 8;
 
     /**
@@ -427,6 +437,7 @@ class Image
 
         if (!$config->preserveExifData) {
             $iccProfiles = null;
+            /** @phpstan-ignore-next-line */
             $supportsImageProfiles = method_exists($imagick, 'getimageprofiles');
 
             if ($config->preserveImageColorProfiles && $supportsImageProfiles) {

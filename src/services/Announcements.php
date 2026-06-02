@@ -13,17 +13,17 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\Html;
+use craft\helpers\Markdown;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
 use craft\queue\jobs\Announcement;
 use DateTime;
 use yii\base\Component;
-use yii\helpers\Markdown;
 
 /**
  * Announcements service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getAnnouncements()|`Craft::$app->announcements`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAnnouncements()|`Craft::$app->getAnnouncements()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.0

@@ -38,6 +38,7 @@
         labelledby: labelledBy ?? labelId ?? false,
         describedby: [describedBy ?? null, hasLabels ? descriptionId : null]|filter|join(' ') ?: false,
     },
+    disabled: disabled ?? false
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}

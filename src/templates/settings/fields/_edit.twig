@@ -1,6 +1,8 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% if fieldId is defined and fieldId %}
+{% set readOnly = readOnly ?? false %}
+
+{% if not readOnly and fieldId is defined and fieldId %}
   {{ hiddenInput('fieldId', fieldId) }}
 {% endif %}
 
@@ -15,6 +17,7 @@
   autofocus: true,
   errors: field.getErrors('name'),
   data: {'error-key': 'name'},
+  disabled: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -30,6 +33,7 @@
   required: true,
   errors: field.getErrors('handle'),
   data: {'error-key': 'handle'},
+  disabled: readOnly,
 }) }}
 
 {{ forms.textareaField({
@@ -43,13 +47,15 @@
   data: {
     'error-key': 'instructions',
   },
+  disabled: readOnly,
 }) }}
 
 {{ forms.lightswitchField({
   label: 'Use this field’s values as search keywords'|t('app'),
   id: 'searchable',
   name: 'searchable',
-  on: field.searchable
+  on: field.searchable,
+  disabled: readOnly,
 }) }}
 
 {{ forms.customSelectField({
@@ -64,6 +70,7 @@
   data: {
     'error-key': 'type',
   },
+  disabled: readOnly,
 }) }}
 
 {{ missingFieldPlaceholder|raw }}
@@ -86,7 +93,8 @@
         ]|filter,
         value: field.translationMethod,
         toggle: true,
-        targetPrefix: 'translation-method-'
+        targetPrefix: 'translation-method-',
+        disabled: readOnly,
       }) }}
 
       {% if 'custom' in translationMethods %}
@@ -103,6 +111,7 @@
             value: field.translationKeyFormat,
             errors: field.getErrors('translationKeyFormat'),
             data: {'error-key': 'translationKeyFormat'},
+            disabled: readOnly,
           }) }}
         {% endtag %}
       {% endif %}

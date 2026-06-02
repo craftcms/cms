@@ -9,9 +9,6 @@ namespace craft\fields\linktypes;
 
 use Craft;
 use craft\elements\Category as CategoryElement;
-use craft\helpers\Cp;
-use craft\models\CategoryGroup;
-use Illuminate\Support\Collection;
 
 /**
  * Category link type.
@@ -28,10 +25,26 @@ class Category extends BaseElementLinkType
 
     protected function availableSourceKeys(): array
     {
-        return Collection::make(Craft::$app->getCategories()->getAllGroups())
-            ->filter(fn(CategoryGroup $group) => $group->getSiteSettings()[Cp::requestedSite()->id]?->hasUrls ?? false)
-            ->map(fn(CategoryGroup $group) => "group:$group->uid")
-            ->values()
-            ->all();
+        $sources = [];
+        $groups = Craft::$app->getCategories()->getAllGroups();
+        $sites = Craft::$app->getSites()->getAllSites();
+
+        foreach ($groups as $group) {
+            $siteSettings = $group->getSiteSettings();
+            foreach ($sites as $site) {
+                if (isset($siteSettings[$site->id]) && $siteSettings[$site->id]->hasUrls) {
+                    $sources[] = "group:$group->uid";
+                    break;
+                }
+            }
+        }
+
+        $sources = array_values(array_unique($sources));
+
+        if (!empty($sources)) {
+            array_unshift($sources, '*');
+        }
+
+        return $sources;
     }
 }

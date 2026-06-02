@@ -18,27 +18,25 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
 
     load: function ($elements) {
       // Only immediately load the visible images
-      let $thumbs = $elements.find('.thumb[data-sizes]');
+      const $thumbs = $elements.find('.thumb[data-sizes]');
       for (let i = 0; i < $thumbs.length; i++) {
-        let $thumb = $thumbs.eq(i);
+        const $thumb = $thumbs.eq(i);
         if ($thumb.is(':visible')) {
           this.addToQueue($thumb[0]);
         } else {
-          let key = 'thumb' + Math.floor(Math.random() * 1000000);
+          const key = `thumb${Math.floor(Math.random() * 1000000)}`;
           Craft.ElementThumbLoader.invisibleThumbs[key] = [this, $thumb];
-          Garnish.$doc.on(
-            `scroll.${key}`,
-            {
-              $thumb: $thumb,
-              key: key,
-            },
-            (ev) => {
-              if ($thumb) {
-                delete Craft.ElementThumbLoader.invisibleThumbs[ev.data.key];
-                this.addToQueue(ev.data.$thumb[0]);
-              }
+          const handler = () => {
+            if (
+              Craft.ElementThumbLoader.invisibleThumbs[key] &&
+              $thumb.is(':visible')
+            ) {
+              delete Craft.ElementThumbLoader.invisibleThumbs[key];
+              this.addToQueue($thumb[0]);
             }
-          );
+          };
+          Garnish.$doc.on(`scroll.${key}`, handler);
+          Garnish.$win.on(`resize.${key}`, handler);
         }
       }
     },
@@ -65,8 +63,8 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
   {
     invisibleThumbs: {},
     retryAll: function () {
-      for (let key in Craft.ElementThumbLoader.invisibleThumbs) {
-        let [queue, $thumb] = Craft.ElementThumbLoader.invisibleThumbs[key];
+      for (const key in Craft.ElementThumbLoader.invisibleThumbs) {
+        const [queue, $thumb] = Craft.ElementThumbLoader.invisibleThumbs[key];
         delete Craft.ElementThumbLoader.invisibleThumbs[key];
         queue.load($thumb.parent());
       }
@@ -150,6 +148,7 @@ Craft.ElementThumbLoader.Worker = Garnish.Base.extend({
       sizes: $container.attr('data-sizes'),
       srcset: $container.attr('data-srcset'),
       alt: $container.attr('data-alt') || '',
+      'data-animated': $container.attr('data-animated'),
     });
     this.addListener($img, 'load,abort,error', 'loadNext');
     $img.appendTo($container);

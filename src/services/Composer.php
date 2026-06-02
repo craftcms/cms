@@ -20,7 +20,7 @@ use yii\base\Exception;
 /**
  * Composer service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getComposer()|`Craft::$app->composer`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getComposer()|`Craft::$app->getComposer()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -118,7 +118,7 @@ class Composer extends Component
 
         if ($requirements !== null) {
             $this->updateRequirements($jsonPath, $requirements);
-            $command = array_merge(['update'], array_keys($requirements), ['--with-all-dependencies']);
+            $command = array_merge(['update'], array_keys($requirements), ['--with-dependencies']);
         } else {
             $command = ['install'];
         }
@@ -171,8 +171,8 @@ class Composer extends Component
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
-        // Copy composer.phar into storage/
-        $pharPath = sprintf('%s/composer.phar', Craft::$app->getPath()->getRuntimePath());
+        // Copy composer.phar into the runtime folder
+        $pharPath = sprintf('%s/composer.phar', Craft::$app->getRuntimePath());
         copy(Craft::getAlias('@lib/composer.phar'), $pharPath);
 
         $command = array_merge([
@@ -186,7 +186,7 @@ class Composer extends Component
             '--no-interaction',
         ]);
 
-        $homePath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+        $homePath = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
         FileHelper::createDirectory($homePath);
 
         $process = new Process($command, null, [

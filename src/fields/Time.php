@@ -8,11 +8,13 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
@@ -28,7 +30,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12
  */
-class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -113,7 +115,6 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     {
         $rules = parent::defineRules();
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
-        $rules[] = [['max'], TimeValidator::class, 'min' => $this->min];
 
         return $rules;
     }
@@ -123,6 +124,19 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
@@ -131,6 +145,7 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'field' => $this,
             'min' => $this->min ? DateTimeHelper::toDateTime(['time' => $this->min], true) : null,
             'max' => $this->max ? DateTimeHelper::toDateTime(['time' => $this->max], true) : null,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -152,8 +167,8 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
-            'minTime' => $this->min,
-            'maxTime' => $this->max,
+            'minTime' => DateTimeHelper::timeToSeconds($this->min),
+            'maxTime' => DateTimeHelper::timeToSeconds($this->max),
             'minuteIncrement' => $this->minuteIncrement,
         ]);
     }
@@ -191,6 +206,17 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = new DateTime();
+        }
+        return $this->getPreviewHtml($value, $element ?? new Entry());
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (!$value) {
@@ -219,6 +245,15 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     {
         /** @var DateTime|null $value */
         return $value?->format('H:i:s');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValueForDb(mixed $value, ?ElementInterface $element): mixed
+    {
+        // Bypass Db::prepareDateForDb()
+        return $this->serializeValue($value, $element);
     }
 
     /**

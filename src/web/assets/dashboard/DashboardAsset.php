@@ -52,7 +52,6 @@ class DashboardAsset extends AssetBundle
         if ($view instanceof View) {
             $view->registerTranslations('app', [
                 'Couldn’t save widget.',
-                'Number of columns',
                 'Unable to fetch updates at this time.',
                 'Widget saved.',
                 'You don’t have any widgets yet.',

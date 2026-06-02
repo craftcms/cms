@@ -16,6 +16,7 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\enums\PropagationMethod;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
@@ -23,6 +24,7 @@ use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
@@ -33,7 +35,7 @@ use yii\db\Exception;
 /**
  * User Permissions service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->userPermissions`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->getUserPermissions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -56,6 +58,18 @@ class UserPermissions extends Component
      * @since 4.3.0
      */
     public const EVENT_AFTER_SAVE_GROUP_PERMISSIONS = 'afterSaveGroupPermissions';
+
+    /**
+     * @var array|null
+     * @see getAllPermissions()
+     */
+    private array|null $_allPermissions = null;
+
+    /**
+     * @var string[]|null
+     * @see validatePermission()
+     */
+    private array|null $_allPermissionNames = null;
 
     /**
      * @var string[][]
@@ -88,25 +102,29 @@ class UserPermissions extends Component
      */
     public function getAllPermissions(): array
     {
-        $permissions = [];
+        if (!isset($this->_allPermissions)) {
+            $this->_allPermissions = [];
 
-        $this->_generalPermissions($permissions);
-        $this->_userPermissions($permissions);
-        $this->_sitePermissions($permissions);
-        $this->_entryPermissions($permissions);
-        $this->_globalSetPermissions($permissions);
-        $this->_categoryPermissions($permissions);
-        $this->_volumePermissions($permissions);
-        $this->_utilityPermissions($permissions);
+            $this->_generalPermissions($this->_allPermissions);
+            $this->_userPermissions($this->_allPermissions);
+            $this->_sitePermissions($this->_allPermissions);
+            $this->_entryPermissions($this->_allPermissions);
+            $this->_globalSetPermissions($this->_allPermissions);
+            $this->_categoryPermissions($this->_allPermissions);
+            $this->_volumePermissions($this->_allPermissions);
+            $this->_utilityPermissions($this->_allPermissions);
 
-        // Fire a 'registerPermissions' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_PERMISSIONS)) {
-            $event = new RegisterUserPermissionsEvent(['permissions' => $permissions]);
-            $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
-            return $event->permissions;
+            // Fire a 'registerPermissions' event
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_PERMISSIONS)) {
+                $event = new RegisterUserPermissionsEvent([
+                    'permissions' => $this->_allPermissions,
+                ]);
+                $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
+                $this->_allPermissions = $event->permissions;
+            }
         }
 
-        return $permissions;
+        return $this->_allPermissions;
     }
 
     /**
@@ -149,13 +167,10 @@ class UserPermissions extends Component
     public function getPermissionsByGroupId(int $groupId): array
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
-            /** @var string[] $groupPermissions */
-            $groupPermissions = $this->_createUserPermissionsQuery()
+            $this->_permissionsByGroupId[$groupId] = $this->_createUserPermissionsQuery()
                 ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
                 ->column();
-
-            $this->_permissionsByGroupId[$groupId] = $groupPermissions;
         }
 
         return $this->_permissionsByGroupId[$groupId];
@@ -244,7 +259,7 @@ class UserPermissions extends Component
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-            if (Craft::$app->edition === CmsEdition::Pro) {
+            if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
                 /** @var string[] $userPermissions */
                 $userPermissions = $this->_createUserPermissionsQuery()
                     ->innerJoin(['p_u' => Table::USERPERMISSIONS_USERS], '[[p_u.permissionId]] = [[p.id]]')
@@ -258,6 +273,34 @@ class UserPermissions extends Component
         }
 
         return $this->_permissionsByUserId[$userId];
+    }
+
+    /**
+     * @param string $permission
+     * @return bool
+     * @since 5.8.13.2
+     */
+    public function validatePermission(string $permission): bool
+    {
+        if (!isset($this->_allPermissionNames)) {
+            $this->_allPermissionNames = [];
+            foreach ($this->getAllPermissions() as $group) {
+                $this->collectPermissionNames($group['permissions']);
+            }
+        }
+
+        return isset($this->_allPermissionNames[strtolower($permission)]);
+    }
+
+    private function collectPermissionNames(array &$permissions): void
+    {
+        foreach ($permissions as $name => $permission) {
+            $this->_allPermissionNames[strtolower($name)] = true;
+
+            if (isset($permission['nested'])) {
+                $this->collectPermissionNames($permission['nested']);
+            }
+        }
     }
 
     /**
@@ -399,6 +442,7 @@ class UserPermissions extends Component
                 $generalPermissions = array_merge($generalPermissions, $cpPermissions);
                 break;
             case CmsEdition::Pro:
+            case CmsEdition::Enterprise:
                 $generalPermissions['accessCp'] = [
                     'label' => Craft::t('app', 'Access the control panel'),
                     'warning' => Craft::t('app', 'Includes read-only access to user data and most content, via element selector modals and other means.'),
@@ -417,7 +461,7 @@ class UserPermissions extends Component
     {
         $assignGroupPermissions = [];
 
-        if (Craft::$app->edition === CmsEdition::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
                 $assignGroupPermissions["assignUserGroup:$group->uid"] = [
                     'label' => Craft::t('app', 'Assign users to “{group}”', [
@@ -430,40 +474,47 @@ class UserPermissions extends Component
         $permissions[] = [
             'heading' => Craft::t('app', 'Users'),
             'permissions' => [
-                'editUsers' => [
-                    'label' => Craft::t('app', 'Edit {type}', [
+                'viewUsers' => [
+                    'label' => Craft::t('app', 'View {type}', [
                         'type' => User::pluralLowerDisplayName(),
                     ]),
-                    'nested' => array_merge(
-                        array_filter([
-                            'registerUsers' => [
-                                'label' => Craft::t('app', 'Register users'),
-                            ],
-                            'moderateUsers' => [
-                                'label' => Craft::t('app', 'Moderate users'),
-                                'info' => Craft::t('app', 'Includes suspending, unsuspending, and unlocking user accounts.'),
-                            ],
-                            'administrateUsers' => [
-                                'label' => Craft::t('app', 'Administrate users'),
-                                'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
-                                'warning' => Craft::$app->edition === CmsEdition::Pro
-                                    ? Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.')
-                                    : null,
-                            ],
-                            'impersonateUsers' => [
-                                'label' => Craft::t('app', 'Impersonate users'),
-                            ],
-                            'assignUserPermissions' => Craft::$app->edition === CmsEdition::Pro
-                                ? [
-                                    'label' => Craft::t('app', 'Assign user permissions'),
-                                ]
-                                : null,
-                        ]),
-                        $assignGroupPermissions
-                    ),
-                ],
-                'deleteUsers' => [
-                    'label' => Craft::t('app', 'Delete users'),
+                    'nested' => [
+                        'editUsers' => [
+                            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                                'type' => User::pluralLowerDisplayName(),
+                            ])),
+                            'nested' => array_merge(
+                                array_filter([
+                                    'registerUsers' => [
+                                        'label' => Craft::t('app', 'Register users'),
+                                    ],
+                                    'moderateUsers' => [
+                                        'label' => Craft::t('app', 'Moderate users'),
+                                        'info' => Craft::t('app', 'Includes suspending, unsuspending, and unlocking user accounts.'),
+                                    ],
+                                    'administrateUsers' => [
+                                        'label' => Craft::t('app', 'Administrate users'),
+                                        'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
+                                        'warning' => Craft::$app->edition->value >= CmsEdition::Pro->value
+                                            ? Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.')
+                                            : null,
+                                    ],
+                                    'impersonateUsers' => [
+                                        'label' => Craft::t('app', 'Impersonate users'),
+                                    ],
+                                    'assignUserPermissions' => Craft::$app->edition->value >= CmsEdition::Pro->value
+                                        ? [
+                                            'label' => Craft::t('app', 'Assign user permissions'),
+                                        ]
+                                        : null,
+                                ]),
+                                $assignGroupPermissions
+                            ),
+                        ],
+                        'deleteUsers' => [
+                            'label' => Craft::t('app', 'Delete users'),
+                        ],
+                    ],
                 ],
             ],
         ];
@@ -506,20 +557,20 @@ class UserPermissions extends Component
             if ($section->type == Section::TYPE_SINGLE) {
                 $sectionPermissions = [
                     "viewEntries:$section->uid" => [
-                        'label' => Craft::t('app', 'View {type}', ['type' => $type]),
+                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View {type}', ['type' => $type])),
                         'nested' => [
                             "saveEntries:$section->uid" => [
-                                'label' => Craft::t('app', 'Save {type}', ['type' => $type]),
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save {type}', ['type' => $type])),
                             ],
                             "viewPeerEntryDrafts:$section->uid" => [
-                                'label' => Craft::t('app', 'View other users’ {type}', [
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View other users’ {type}', [
                                     'type' => Craft::t('app', 'drafts'),
-                                ]),
+                                ])),
                                 'nested' => [
                                     "savePeerEntryDrafts:$section->uid" => [
-                                        'label' => Craft::t('app', 'Save other users’ {type}', [
+                                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save other users’ {type}', [
                                             'type' => Craft::t('app', 'drafts'),
-                                        ]),
+                                        ])),
                                     ],
                                     "deletePeerEntryDrafts:$section->uid" => [
                                         'label' => Craft::t('app', 'Delete other users’ {type}', [
@@ -532,46 +583,74 @@ class UserPermissions extends Component
                     ],
                 ];
             } else {
+                $hasCustomPropagation = (
+                    $section->propagationMethod === PropagationMethod::Custom &&
+                    Craft::$app->getIsMultiSite()
+                );
+
                 $sectionPermissions = [
                     "viewEntries:$section->uid" => [
-                        'label' => Craft::t('app', 'View {type}', ['type' => $pluralType]),
+                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View {type}', ['type' => $pluralType])),
                         'info' => Craft::t('app', 'Allows viewing existing {type} and creating drafts for them.', [
                             'type' => $pluralType,
                         ]),
-                        'nested' => [
+                        'nested' => array_filter([
                             "createEntries:$section->uid" => [
-                                'label' => Craft::t('app', 'Create {type}', ['type' => $pluralType]),
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Create {type}', ['type' => $pluralType])),
                                 'info' => Craft::t('app', 'Allows creating drafts of new {type}.', ['type' => $pluralType]),
                             ],
                             "saveEntries:$section->uid" => [
-                                'label' => Craft::t('app', 'Save {type}', ['type' => $pluralType]),
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save {type}', ['type' => $pluralType])),
                                 'info' => Craft::t('app', 'Allows fully saving canonical {type} (directly or by applying drafts).', [
                                     'type' => $pluralType,
                                 ]),
                             ],
+                            "deleteEntriesForSite:$section->uid" => $hasCustomPropagation ? [
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type} for site', ['type' => $pluralType])),
+                                'info' => Craft::t('app', 'Allows deleting {type} for individual sites, provided the user has access to them.', [
+                                    'type' => $pluralType,
+                                ]),
+                            ] : null,
                             "deleteEntries:$section->uid" => [
-                                'label' => Craft::t('app', 'Delete {type}', ['type' => $pluralType]),
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', ['type' => $pluralType])),
+                                'info' => Craft::t('app', 'Allows deleting {type} for all sites.', [
+                                    'type' => $pluralType,
+                                ]),
                             ],
                             "viewPeerEntries:$section->uid" => [
-                                'label' => Craft::t('app', 'View other users’ {type}', ['type' => $pluralType]),
-                                'nested' => [
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View other users’ {type}', ['type' => $pluralType])),
+                                'nested' => array_filter([
                                     "savePeerEntries:$section->uid" => [
-                                        'label' => Craft::t('app', 'Save other users’ {type}', ['type' => $pluralType]),
+                                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save other users’ {type}', ['type' => $pluralType])),
+                                        'nested' => [
+                                            "changeAuthorForPeerEntries:$section->uid" => [
+                                                'label' => Craft::t('app', 'Change the author of other users’ entries'),
+                                            ],
+                                        ],
                                     ],
+                                    "deletePeerEntriesForSite:$section->uid" => $hasCustomPropagation ? [
+                                        'label' => Craft::t('app', 'Delete other users’ {type} for site', ['type' => $pluralType]),
+                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for individual sites, provided the user has access to them.', [
+                                            'type' => $pluralType,
+                                        ]),
+                                    ] : null,
                                     "deletePeerEntries:$section->uid" => [
                                         'label' => Craft::t('app', 'Delete other users’ {type}', ['type' => $pluralType]),
+                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for all sites.', [
+                                            'type' => $pluralType,
+                                        ]),
                                     ],
-                                ],
+                                ]),
                             ],
                             "viewPeerEntryDrafts:$section->uid" => [
-                                'label' => Craft::t('app', 'View other users’ {type}', [
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View other users’ {type}', [
                                     'type' => Craft::t('app', 'drafts'),
-                                ]),
+                                ])),
                                 'nested' => [
                                     "savePeerEntryDrafts:$section->uid" => [
-                                        'label' => Craft::t('app', 'Save other users’ {type}', [
+                                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save other users’ {type}', [
                                             'type' => Craft::t('app', 'drafts'),
-                                        ]),
+                                        ])),
                                     ],
                                     "deletePeerEntryDrafts:$section->uid" => [
                                         'label' => Craft::t('app', 'Delete other users’ {type}', [
@@ -580,7 +659,7 @@ class UserPermissions extends Component
                                     ],
                                 ],
                             ],
-                        ],
+                        ]),
                     ],
                 ];
             }
@@ -635,23 +714,23 @@ class UserPermissions extends Component
                 ]),
                 'permissions' => [
                     "viewCategories:$group->uid" => [
-                        'label' => Craft::t('app', 'View {type}', ['type' => $type]),
+                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View {type}', ['type' => $type])),
                         'nested' => [
                             "saveCategories:$group->uid" => [
-                                'label' => Craft::t('app', 'Save {type}', ['type' => $type]),
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save {type}', ['type' => $type])),
                             ],
                             "deleteCategories:$group->uid" => [
-                                'label' => Craft::t('app', 'Delete {type}', ['type' => $type]),
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', ['type' => $type])),
                             ],
                             "viewPeerCategoryDrafts:$group->uid" => [
-                                'label' => Craft::t('app', 'View other users’ {type}', [
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View other users’ {type}', [
                                     'type' => Craft::t('app', 'drafts'),
-                                ]),
+                                ])),
                                 'nested' => [
                                     "savePeerCategoryDrafts:$group->uid" => [
-                                        'label' => Craft::t('app', 'Save other users’ {type}', [
+                                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save other users’ {type}', [
                                             'type' => Craft::t('app', 'drafts'),
-                                        ]),
+                                        ])),
                                     ],
                                     "deletePeerCategoryDrafts:$group->uid" => [
                                         'label' => Craft::t('app', 'Delete other users’ {type}', [
@@ -684,13 +763,13 @@ class UserPermissions extends Component
                 ]),
                 'permissions' => [
                     "viewAssets:$volume->uid" => [
-                        'label' => Craft::t('app', 'View {type}', ['type' => $type]),
+                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View {type}', ['type' => $type])),
                         'nested' => [
                             "saveAssets:$volume->uid" => [
-                                'label' => Craft::t('app', 'Save {type}', ['type' => $type]),
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save {type}', ['type' => $type])),
                             ],
                             "deleteAssets:$volume->uid" => [
-                                'label' => Craft::t('app', 'Delete {type}', ['type' => $type]),
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', ['type' => $type])),
                             ],
                             "replaceFiles:$volume->uid" => [
                                 'label' => Craft::t('app', 'Replace files'),
@@ -864,5 +943,18 @@ class UserPermissions extends Component
         return (new Query())
             ->select(['p.name'])
             ->from(['p' => Table::USERPERMISSIONS]);
+    }
+
+    /**
+     * Resets the internal state
+     *
+     * @since 5.8.13
+     */
+    public function reset(): void
+    {
+        $this->_allPermissions = null;
+        $this->_allPermissionNames = null;
+        $this->_permissionsByGroupId = [];
+        $this->_permissionsByUserId = [];
     }
 }

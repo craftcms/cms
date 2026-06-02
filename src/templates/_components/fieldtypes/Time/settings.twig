@@ -7,6 +7,7 @@
     name: 'minuteIncrement',
     options: incrementOptions,
     value: field.minuteIncrement ? field.minuteIncrement : 30,
+    disabled: readOnly,
 }) }}
 
 {{ forms.timeField({
@@ -16,6 +17,7 @@
     value: min,
     errors: field.getErrors('min'),
     data: {'error-key': 'min'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.timeField({
@@ -25,4 +27,5 @@
     value: max,
     errors: field.getErrors('max'),
     data: {'error-key': 'max'},
+    disabled: readOnly,
 }) }}

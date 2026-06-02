@@ -9,6 +9,7 @@ namespace craft\cache;
 
 use Craft;
 use craft\db\Connection;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use Exception;
 use PDO;
@@ -60,7 +61,7 @@ class DbCache extends YiiDbCache
             $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
                 Db::upsert($this->cacheTable, [
                     'id' => $key,
-                    'expire' => $duration > 0 ? $duration + time() : 0,
+                    'expire' => $duration > 0 ? DateTimeHelper::currentTimeStamp() + $duration : 0,
                     'data' => new PdoValue($value, PDO::PARAM_LOB),
                 ], db: $db);
             });
@@ -83,7 +84,7 @@ class DbCache extends YiiDbCache
             $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
                 Db::insert($this->cacheTable, [
                     'id' => $key,
-                    'expire' => $duration > 0 ? $duration + time() : 0,
+                    'expire' => $duration > 0 ? DateTimeHelper::currentTimeStamp() + $duration : 0,
                     'data' => new PdoValue($value, PDO::PARAM_LOB),
                 ], $db);
             });

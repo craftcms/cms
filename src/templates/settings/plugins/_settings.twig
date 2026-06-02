@@ -1,9 +1,10 @@
-{% requireAdmin %}
+{% requireAdmin false %}
 
 {% extends "_layouts/cp" %}
 {% set title = plugin.name %}
 {% set docTitle = title ~ ' - ' ~ "Plugins"|t('app') %}
-{% set fullPageForm = true %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') },
@@ -19,10 +20,15 @@
     },
 ] %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
-    {{ actionInput('plugins/save-plugin-settings') }}
-    {{ hiddenInput('pluginHandle', plugin.handle) }}
-    {{ redirectInput('settings') }}
+    {% if not readOnly %}
+        {{ actionInput('plugins/save-plugin-settings') }}
+        {{ hiddenInput('pluginHandle', plugin.handle) }}
+        {{ redirectInput('settings') }}
+    {% endif %}
     {{ settingsHtml|raw }}
 {% endblock %}

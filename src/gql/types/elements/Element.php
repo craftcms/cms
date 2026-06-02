@@ -63,17 +63,9 @@ class Element extends ObjectType
         }
 
         if ($fieldName === 'revisionNotes') {
-            $revision = $source->getCurrentRevision();
-            if (!$revision) {
-                return null;
-            }
-
             /** @var RevisionBehavior|null $behavior */
-            $behavior = $revision->getBehavior('revision');
-            if (!$behavior) {
-                return null;
-            }
-            return $behavior->revisionNotes;
+            $behavior = $source->getBehavior('revision') ?? $source->getCurrentRevision()?->getBehavior('revision');
+            return $behavior?->revisionNotes;
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

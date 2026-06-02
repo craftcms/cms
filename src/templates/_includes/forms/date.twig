@@ -8,6 +8,7 @@
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set isDateTime = isDateTime ?? false %}
+{% set disabled = disabled ?? false %}
 
 {% set containerAttributes = {
     class: ['datewrapper']|merge((class ?? [])|explodeClass),
@@ -52,7 +53,7 @@
 
 {% if not hasOuterContainer %}</div>{% endif %}
 
-{%- if not isMobile -%}
+{%- if not isMobile and not disabled -%}
     {%- js -%}
         $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
             defaultDate: new Date({% if value %}{{ value.format('Y') }}, {{ value.format('n')-1 }}, {{ value.format('j') }}{% endif %})

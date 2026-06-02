@@ -32,7 +32,7 @@ use yii\base\InvalidConfigException;
 /**
  * Volumes service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getVolumes()|`Craft::$app->volumes()`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getVolumes()|`Craft::$app->getVolumes()`]].
  *
  * @property-read int[] $allVolumeIds
  * @property-read string[] $allVolumeTypes
@@ -127,9 +127,7 @@ class Volumes extends Component
         }
 
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::where($this->getAllVolumes(), function(Volume $volume) use ($userSession) {
-            return $userSession->checkPermission("viewAssets:$volume->uid");
-        }, true, true, false);
+        return ArrayHelper::where($this->getAllVolumes(), fn(Volume $volume) => $userSession->checkPermission("viewAssets:$volume->uid"), true, true, false);
     }
 
     /**
@@ -296,7 +294,10 @@ class Volumes extends Component
         }
 
         if ($isNewVolume) {
-            $volume->uid = StringHelper::UUID();
+            if (!$volume->uid) {
+                $volume->uid = StringHelper::UUID();
+            }
+
             $volume->sortOrder = (new Query())
                     ->from([Table::VOLUMES])
                     ->max('[[sortOrder]]') + 1;

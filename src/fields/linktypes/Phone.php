@@ -33,10 +33,9 @@ class Phone extends BaseTextLinkType
         return 'tel:';
     }
 
-    public function normalizeValue(string $value): string
+    public function renderValue(string $value): string
     {
-        $value = str_replace(' ', '-', $value);
-        return parent::normalizeValue($value);
+        return str_replace(' ', '-', $value);
     }
 
     protected function inputAttributes(): array
@@ -49,6 +48,6 @@ class Phone extends BaseTextLinkType
 
     protected function pattern(): string
     {
-        return "^tel:[\d\+\(\)\-,;]+$";
+        return "^tel:[\d\+\(\)\-,; ]+$";
     }
 }

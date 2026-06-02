@@ -27,7 +27,7 @@ use yii\base\Component;
 /**
  * Tags service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getTags()|`Craft::$app->tags`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getTags()|`Craft::$app->getTags()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -219,7 +219,9 @@ class Tags extends Component
         }
 
         if ($isNewTagGroup) {
-            $tagGroup->uid = StringHelper::UUID();
+            if (!$tagGroup->uid) {
+                $tagGroup->uid = StringHelper::UUID();
+            }
         } elseif (!$tagGroup->uid) {
             $tagGroup->uid = Db::uidById(Table::TAGGROUPS, $tagGroup->id);
         }

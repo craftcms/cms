@@ -8,6 +8,7 @@
 namespace craft\elements\db;
 
 use Craft;
+use craft\controllers\GraphqlController;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\GlobalSet;
@@ -156,5 +157,16 @@ class GlobalSetQuery extends ElementQuery
             $editableSetIds = Craft::$app->getGlobals()->getEditableSetIds();
             $this->subQuery->andWhere(['elements.id' => $editableSetIds]);
         }
+    }
+
+    public function getCacheTags(): array
+    {
+        // no need to register cache tags for global set queries,
+        // unless this is a GraphQL request
+        if (Craft::$app->controller instanceof GraphqlController) {
+            return parent::getCacheTags();
+        }
+
+        return [];
     }
 }

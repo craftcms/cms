@@ -28,9 +28,7 @@ class Tag extends InputObjectType
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() {
-                return TagArguments::getArguments();
-            },
+            'fields' => fn() => TagArguments::getArguments(),
         ]));
     }
 }

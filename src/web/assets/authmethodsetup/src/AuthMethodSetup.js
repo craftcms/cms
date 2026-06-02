@@ -5,6 +5,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 Craft.AuthMethodSetup = Garnish.Base.extend(
   {
     methodListings: null,
+    showingSlideout: false,
 
     init(settings) {
       this.setSettings(settings, Craft.AuthMethodSetup.defaults);
@@ -17,7 +18,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
         (container) => container.getAttribute('data-method')
       );
 
-      for (let container of Object.values(this.methodListings)) {
+      for (const container of Object.values(this.methodListings)) {
         this.initListing(container);
       }
     },
@@ -35,6 +36,9 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
     },
 
     showSetupSlideout(method) {
+      if (this.showingSlideout) {
+        return;
+      }
       const button = this.methodListings[method].querySelector(
         '.auth-method-setup-btn'
       );
@@ -43,6 +47,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
       }
 
       button.classList.add('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
       Craft.elevatedSessionManager.requireElevatedSession(
         () => {
@@ -50,7 +55,11 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
             data: {method},
           })
             .then(async ({data}) => {
+              this.showingSlideout = true;
               const slideout = new Craft.AuthMethodSetup.Slideout(data);
+              slideout.on('close', () => {
+                this.showingSlideout = false;
+              });
               await Craft.appendHeadHtml(data.headHtml);
               await Craft.appendBodyHtml(data.bodyHtml);
               this.addListener(
@@ -82,7 +91,9 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
         () => {
           button.classList.remove('loading');
         },
-        // give them 5 minutes to complete setup
+        // Re-request elevated session even if user just logged in
+        // to ensure they have full elevated session duration time or 5 minutes (whichever's lower)
+        // to complete the setup.
         Math.min(Craft.elevatedSessionDuration, 300)
       );
     },
@@ -135,6 +146,16 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
         id: data.containerId,
       },
     });
+
+    // Add alt text to QR code image
+    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
+
+    if ($qrCodeImg.length) {
+      $qrCodeImg.attr({
+        role: 'img',
+        'aria-label': Craft.t('app', 'QR Code'),
+      });
+    }
   },
 
   showSuccess() {

@@ -94,7 +94,14 @@ class Entry extends ElementMutationResolver
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
-        $entry = $this->saveElement($entry);
+
+        if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            Craft::$app->getDrafts()->saveElementAsDraft($entry);
+        } else {
+            $entry = $this->saveElement($entry);
+        }
+
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
@@ -106,6 +113,9 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             $query = $this->identifyEntry($query, $arguments);
         } else {
+            if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+                $query->drafts(null);
+            }
             $query->id($entry->id);
         }
 
@@ -126,6 +136,7 @@ class Entry extends ElementMutationResolver
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $elementService = Craft::$app->getElements();
         /** @var EntryElement|null $entry */
@@ -138,7 +149,7 @@ class Entry extends ElementMutationResolver
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
 
-        return $elementService->deleteElementById($entryId);
+        return $elementService->deleteElementById($entryId, hardDelete: $hardDelete);
     }
 
     /**

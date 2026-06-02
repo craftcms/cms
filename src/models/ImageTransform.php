@@ -108,8 +108,7 @@ class ImageTransform extends Model
     public ?bool $upscale = null;
 
     /**
-     * @var string The image transformer to use.
-     * @phpstan-var class-string<ImageTransformerInterface>
+     * @var class-string<ImageTransformerInterface> The image transformer to use.
      */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
 
@@ -176,6 +175,7 @@ class ImageTransform extends Model
         $rules = parent::defineRules();
         $rules[] = [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true];
         $rules[] = [['parameterChangeTime'], DateTimeValidator::class];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
         $rules[] = [['handle'], 'string', 'max' => 255];

@@ -127,9 +127,7 @@ class DbHelperTest extends TestCase
         $group1 = new UserGroup(['id' => 1]);
         $group2 = new UserGroup(['id' => 2]);
 
-        $normalizeUserGroup = function($item) {
-            return $item instanceof UserGroup ? $item->id : null;
-        };
+        $normalizeUserGroup = fn($item) => $item instanceof UserGroup ? $item->id : null;
 
         $value = $group1;
         self::assertEquals(true, Db::normalizeParam($value, $normalizeUserGroup));
@@ -445,6 +443,18 @@ class DbHelperTest extends TestCase
                 ['not', 'field_1', 'field_2'],
             ],
             [
+                [
+                    'or',
+                    ['foo' => null],
+                    ['not', ['foo' => ['field_1', 'field_2']]],
+                ],
+                'foo',
+                ['not', 'field_1', 'field_2'],
+                '=',
+                false,
+                Schema::TYPE_JSON,
+            ],
+            [
                 ['foo' => true],
                 'foo',
                 true,
@@ -644,10 +654,6 @@ class DbHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws \Exception
-     */
     public static function prepareValueForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
@@ -763,10 +769,6 @@ class DbHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws \Exception
-     */
     public static function prepareValuesForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];

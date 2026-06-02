@@ -53,11 +53,7 @@ class Image
      */
     public function getSize(): array
     {
-        if (isset($this->size)) {
-            return $this->size;
-        }
-
-        return $this->size = ImageHelper::imageSize($this->path);
+        return $this->size ?? ($this->size = ImageHelper::imageSize($this->path));
     }
 
     /**

@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Chippable;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\i18n\Locale;
@@ -16,6 +17,7 @@ use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use yii\base\InvalidConfigException;
 
@@ -29,11 +31,18 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Site extends Model
+class Site extends Model implements Chippable
 {
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getSites()->getSiteById($id);
+    }
+
     /**
      * @var int|null ID
      */
+    #[AllowedInSandbox]
     public ?int $id = null;
 
     /**
@@ -44,16 +53,19 @@ class Site extends Model
     /**
      * @var string|null Handle
      */
+    #[AllowedInSandbox]
     public ?string $handle = null;
 
     /**
      * @var bool Primary site?
      */
+    #[AllowedInSandbox]
     public bool $primary = false;
 
     /**
      * @var bool Has URLs
      */
+    #[AllowedInSandbox]
     public bool $hasUrls = true;
 
     /**
@@ -105,12 +117,29 @@ class Site extends Model
     private ?string $_language = null;
 
     /**
+     * @inheritdoc
+     */
+    public function getId(): string|int|null
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->getName());
+    }
+
+    /**
      * Returns the site’s name.
      *
      * @param bool $parse Whether to parse the name for an environment variable
      * @return string
      * @since 3.6.0
      */
+    #[AllowedInSandbox]
     public function getName(bool $parse = true): string
     {
         return ($parse ? App::parseEnv($this->_name) : $this->_name) ?? '';
@@ -134,6 +163,7 @@ class Site extends Model
      * @return string|null
      * @since 3.1.0
      */
+    #[AllowedInSandbox]
     public function getBaseUrl(bool $parse = true): ?string
     {
         if ($this->_baseUrl) {
@@ -166,6 +196,7 @@ class Site extends Model
      * @return bool|string
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getEnabled(bool $parse = true): bool|string
     {
         if ($this->primary) {
@@ -173,7 +204,7 @@ class Site extends Model
         }
 
         if ($parse) {
-            return App::parseBooleanEnv($this->_enabled) ?? true;
+            return App::parseBooleanEnv($this->_enabled) ?? false;
         }
         return $this->_enabled;
     }
@@ -196,6 +227,7 @@ class Site extends Model
      * @return string
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function getLanguage(bool $parse = true): string
     {
         return ($parse ? App::parseEnv($this->_language) : $this->_language) ?? '';
@@ -228,9 +260,26 @@ class Site extends Model
     /**
      * @inheritdoc
      */
+    public function beforeValidate(): bool
+    {
+        if (!parent::beforeValidate()) {
+            return false;
+        }
+
+        // Can't use the `trim` rule because it replaces env vars
+        // see https://github.com/craftcms/cms/pull/18789
+        $this->setName(trim($this->getName(false)));
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
+        $rules[] = [['handle'], 'trim'];
         $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
         $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];
@@ -264,7 +313,7 @@ class Site extends Model
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->getName()) ?: static::class;
+        return $this->getUiLabel() ?: static::class;
     }
 
     /**
@@ -292,6 +341,7 @@ class Site extends Model
      * @return Locale
      * @since 3.5.8
      */
+    #[AllowedInSandbox]
     public function getLocale(): Locale
     {
         if ($this->language === Craft::$app->language) {

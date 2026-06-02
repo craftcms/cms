@@ -55,4 +55,32 @@
       },
     }) }}
   {% endblock %}
+
+  {% block tipField %}
+    {{ forms.textareaField({
+      label: 'Tip'|t('app'),
+      id: 'tip',
+      class: 'nicetext',
+      name: 'tip',
+      value: field.tip,
+      rows: 1,
+      data: {
+        'error-key': 'tip'
+      },
+    }) }}
+  {% endblock %}
+
+  {% block warningField %}
+    {{ forms.textareaField({
+      label: 'Warning'|t('app'),
+      id: 'warning',
+      class: 'nicetext',
+      name: 'warning',
+      value: field.warning,
+      rows: 1,
+      data: {
+        'error-key': 'warning'
+      },
+    }) }}
+  {% endblock %}
 {% endblock %}

@@ -53,7 +53,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
             return false;
         }
 
-        $isEmpty = $this->field()->isValueEmpty($value, $element);
+        $isEmpty = $field->isValueEmpty($value, $element);
 
         if ($this->operator === self::OPERATOR_EMPTY) {
             return $isEmpty;

@@ -136,9 +136,7 @@ class UserElementTest extends TestCase
         Session::reset();
 
         $this->tester->mockCraftMethods('session', [
-            'getHasSessionId' => function() {
-                return true;
-            },
+            'getHasSessionId' => fn() => true,
             'get' => function($tokenParam) {
                 self::assertSame(Craft::$app->getUser()->tokenParam, $tokenParam);
 

@@ -11,6 +11,7 @@ use craft\helpers\Html;
 use craft\helpers\MoneyHelper;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
+use yii\base\InvalidConfigException;
 
 /**
  * Money field condition rule.
@@ -21,6 +22,18 @@ use Money\Money as MoneyLibrary;
 class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
+
+    /**
+     * @inerhitdoc
+     */
+    protected function operators(): array
+    {
+        return array_filter(
+            parent::operators(),
+            // Remove IN/NOT IN operators as they don't fit with the implementation of money inputs
+            fn(string $operator) => !in_array($operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])
+        );
+    }
 
     /**
      * @inheritdoc
@@ -40,8 +53,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 
         parent::setAttributes($values, $safeOnly);
 
-        /** @var Money $field */
         $field = $this->field();
+        if (!$field instanceof Money) {
+            throw new InvalidConfigException();
+        }
 
         if (isset($value) && isset($this->_fieldUid)) {
             if (!isset($value['currency'])) {
@@ -63,12 +78,19 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
      */
     protected function inputHtml(): string
     {
+        $field = $this->field();
+        if (!$field instanceof Money) {
+            throw new InvalidConfigException();
+        }
+
         // don't show the value input if the condition checks for empty/notempty
         if ($this->operator === self::OPERATOR_EMPTY || $this->operator === self::OPERATOR_NOT_EMPTY) {
             return '';
         }
 
         if ($this->operator === self::OPERATOR_BETWEEN) {
+            $maxValue = is_numeric($this->maxValue) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->maxValue, 'currency' => $field->currency])) : $this->maxValue;
+
             return Html::tag('div',
                 Html::hiddenLabel(Craft::t('app', 'Min Value'), 'min') .
                 // Min value (value) input
@@ -78,7 +100,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
                 // Max value input
                 Cp::moneyInputHtml(array_merge(
                     $this->inputOptions(),
-                    ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $this->maxValue]
+                    ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
                 )) .
                 Html::tag('span', Craft::t('app', 'The values are matched inclusively.'), ['class' => 'info']),
                 ['class' => 'flex flex-center']
@@ -100,11 +122,13 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($field->defaultValue, new Currency($field->currency)));
         }
 
+        $value = is_numeric($this->value) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->value, 'currency' => $field->currency])) : $this->value;
+
         return [
             'type' => 'text',
             'id' => 'value',
             'name' => 'value',
-            'value' => $this->value,
+            'value' => $value,
             'autocomplete' => false,
             'currency' => $field->currency,
             'currencyLabel' => $field->currencyLabel(),
@@ -122,6 +146,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
      */
     protected function elementQueryParam(): ?string
     {
+        if (!$this->field() instanceof Money) {
+            return null;
+        }
+
         return $this->paramValue();
     }
 
@@ -130,6 +158,14 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
      */
     protected function matchFieldValue($value): bool
     {
+        if (!$this->field() instanceof Money) {
+            return true;
+        }
+
+        if ($value instanceof MoneyLibrary) {
+            $value = (float)$value->getAmount();
+        }
+
         /** @var int|float|null $value */
         return $this->matchValue($value);
     }

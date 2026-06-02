@@ -13,10 +13,19 @@ return [
     'dashboard' => 'dashboard/index',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
     'edit/<elementUid:' . StringHelper::UUID_PATTERN . '>' => 'elements/redirect',
+    'revisions/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/revisions',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
+
+    'content' => 'entries',
+    'content/<page:{slug}>' => ['template' => 'entries'],
+    'content/<page:{slug}>/<sectionHandle:{handle}>' => ['template' => 'entries'],
+    'content/<page:{slug}>/<section:{handle}>/new' => 'entries/create',
+    'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
+    'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
+
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'graphiql' => 'graphql/graphiql',
@@ -88,4 +97,5 @@ return [
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
     'plugin-store/<url:(.*)>' => 'plugin-store',
+    'preview/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/preview',
 ];

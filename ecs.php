@@ -12,6 +12,7 @@ return static function(ECSConfig $ecsConfig): void {
         __FILE__,
     ]);
     $ecsConfig->skip([
+        __DIR__ . '/src/icons/index.php',
         __DIR__ . '/tests/unit/helpers/typecast',
     ]);
 
