@@ -1,9 +1,45 @@
 let existingCss: string[] | null = null;
 let existingJs: string[] | null = null;
 
-async function appendHtml(html: string, parent: HTMLElement): Promise<void> {
+/**
+ * Disposer returned from {@link appendHeadHtml} / {@link appendBodyHtml}.
+ * Calling it removes any nodes that were appended and rolls back the
+ * dedup cache entries for stylesheets and scripts that were added.
+ */
+export type AppendHtmlDisposer = () => void;
+
+async function appendHtml(
+  html: string,
+  parent: HTMLElement
+): Promise<AppendHtmlDisposer> {
+  const appended: Node[] = [];
+  const cssAdded: string[] = [];
+  const jsAdded: string[] = [];
+
+  const dispose: AppendHtmlDisposer = () => {
+    for (const node of appended) {
+      node.parentNode?.removeChild(node);
+    }
+    if (existingCss) {
+      for (const href of cssAdded) {
+        const idx = existingCss.indexOf(href);
+        if (idx !== -1) {
+          existingCss.splice(idx, 1);
+        }
+      }
+    }
+    if (existingJs) {
+      for (const src of jsAdded) {
+        const idx = existingJs.indexOf(src);
+        if (idx !== -1) {
+          existingJs.splice(idx, 1);
+        }
+      }
+    }
+  };
+
   if (!html) {
-    return;
+    return dispose;
   }
 
   const div = document.createElement('div');
@@ -24,11 +60,13 @@ async function appendHtml(html: string, parent: HTMLElement): Promise<void> {
       }
 
       existingCss.push(href);
+      cssAdded.push(href);
       const link = document.createElement('link');
       Array.from(node.attributes).forEach((attr) => {
         link.setAttribute(attr.name, attr.value);
       });
       parent.appendChild(link);
+      appended.push(link);
       continue;
     }
 
@@ -51,29 +89,43 @@ async function appendHtml(html: string, parent: HTMLElement): Promise<void> {
         }
 
         existingJs.push(src);
+        jsAdded.push(src);
         script.async = false;
       } else {
         script.textContent = node.textContent;
       }
 
       parent.appendChild(script);
+      appended.push(script);
       continue;
     }
 
-    parent.appendChild(node.cloneNode(true));
+    const cloned = node.cloneNode(true);
+    parent.appendChild(cloned);
+    appended.push(cloned);
   }
+
+  return dispose;
 }
 
 /**
  * Appends HTML to the page `<head>`.
+ *
+ * Returns a disposer that removes the appended nodes when called.
  */
-export async function appendHeadHtml(html: string): Promise<void> {
-  await appendHtml(html, document.head);
+export async function appendHeadHtml(
+  html: string
+): Promise<AppendHtmlDisposer> {
+  return appendHtml(html, document.head);
 }
 
 /**
  * Appends HTML to the page `<body>`.
+ *
+ * Returns a disposer that removes the appended nodes when called.
  */
-export async function appendBodyHtml(html: string): Promise<void> {
-  await appendHtml(html, document.body);
+export async function appendBodyHtml(
+  html: string
+): Promise<AppendHtmlDisposer> {
+  return appendHtml(html, document.body);
 }

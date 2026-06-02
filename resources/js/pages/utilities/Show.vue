@@ -20,8 +20,6 @@
     footerHtml?: string;
     viewData?: unknown;
     utilities: Array<UtilityItem>;
-    bridgedHeadHtml?: string;
-    bridgedBodyHtml?: string;
   }>();
 </script>
 

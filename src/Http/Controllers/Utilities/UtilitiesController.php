@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
 use CraftCms\Cms\Utility\Utility;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
@@ -46,7 +47,7 @@ readonly class UtilitiesController
         return cp_redirect('utilities/'.$firstUtility::id());
     }
 
-    public function show(string $id)
+    public function show(string $id, HtmlStack $htmlStack)
     {
         $class = $this->utilitiesService->getUtilityTypeById($id);
 
@@ -68,6 +69,8 @@ readonly class UtilitiesController
             'contentHtml' => $class::contentHtml(),
             'toolbarHtml' => $class::toolbarHtml(),
             'footerHtml' => $class::footerHtml(),
+            'headHtml' => $htmlStack->headHtml(),
+            'bodyHtml' => $htmlStack->bodyHtml(),
             'utilities' => $this->utilityInfo(),
         ]);
     }
