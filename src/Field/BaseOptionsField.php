@@ -98,7 +98,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $negate = false;
         }
 
-        $valueSql = static::valueColumn($instances);
+        $valueSql = self::valueColumn($instances);
 
         if ($valueSql === null) {
             return $query;
