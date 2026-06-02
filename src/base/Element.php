@@ -2918,7 +2918,10 @@ abstract class Element extends Component implements ElementInterface
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
                 if (!isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                    $value = $this->getFieldValue($field->handle);
+                    if (!$value instanceof ElementQueryInterface) {
+                        $attributes[$field->handle] = $value;
+                    }
                 }
             }
         }
