@@ -68,6 +68,7 @@
                     scope: 'row',
                 } %}
                     {% tag 'div' with {
+                        class: 'flex',
                         style: {
                             ("padding-#{padding}"): structure or sortable ? "#{(inlineEditing ? 0 : 24) + 44 * ((element.level ?: 1) - 1)}px" : null,
                         }|filter,
