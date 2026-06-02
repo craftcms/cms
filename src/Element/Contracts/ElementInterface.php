@@ -1531,6 +1531,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function afterSave(bool $isNew): void;
 
     /**
+     * Performs actions after the element is assigned an ID.
+     */
+    public function afterAssignedId(): void;
+
+    /**
      * Performs actions after an element is fully saved and propagated to other sites.
      *
      * ::: tip

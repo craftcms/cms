@@ -1,1 +1,0 @@
-{"version":3,"file":"5503.js","mappings":"iGAAA,WACEA,aAAc,2C","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/hu.js"],"sourcesContent":["export default {\n  optionsPopup: 'Kombinált lista opcióinak felugró ablaka',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

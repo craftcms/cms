@@ -313,11 +313,15 @@ class AuthMethods
             $keyValid = false;
         }
 
+        $updatedPublicKeyCredentialSource = Session::remove($this->passkeys->passkeyCredSourceParam);
+
         if (! $keyValid) {
             $this->handleInvalidLogin($user);
 
             return false;
         }
+
+        $this->passkeys->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedPublicKeyCredentialSource);
 
         $this->authError = $this->getAuthError($user);
 

@@ -2,15 +2,21 @@
 
 ## Unreleased
 
+- `Element::getIterator()` no longer includes custom field values. ([#19004](https://github.com/craftcms/cms/issues/19004))
 - Fixed a bug where checking the elevated session timeout could overwrite newer session data, which could prevent passkeys from being created.
 - Fixed a bug where legacy plugin-defined `actions.php` routes could collide between plugins. ([#18994](https://github.com/craftcms/cms/pull/18994))
-- Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility
-  pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
+- Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
 - Fixed a bug where custom element authorization methods weren’t respected by Laravel element policies. ([#18983](https://github.com/craftcms/cms/pull/18983))
 - Fixed a bug where removing all permissions from a user wouldn’t save. ([#18995](https://github.com/craftcms/cms/pull/18995))
 - Fixed a bug where Single sections had Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
 - Fixed a bug where Channel and Structure sections didn’t have Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
 - Fixed a bug where sections’ Min Authors settings were defaulting to `1` when blank. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixes a bug where the “View entry” permission was listed twice for Single sections, causing a SQL error when both were selected. ([#19002](https://github.com/craftcms/cms/pull/19002))
+- Fixes a bug where user group handles weren’t getting auto-generated. ([#19002](https://github.com/craftcms/cms/pull/19002))
+- Fixed a JavaScript error that could occur in the Control Panel when a custom element was registered more than once.
+- Fixed a bug where Control Panel action menu items could trigger their action twice when clicked.
+- Fixed a bug where legacy Control Panel JavaScript wasn’t loaded and initialized on all Control Panel pages.
+- Fixed a styling issue with user avatars.
 
 ## 6.0.0-alpha.5 - 2026-05-27
 

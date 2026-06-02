@@ -104,7 +104,7 @@
         >
           {{ action.label }}
         </craft-action-item>
-        <craft-action-item v-else @click="action.onClick?.()" v-bind="action">{{
+        <craft-action-item v-else v-bind="action">{{
           action.label
         }}</craft-action-item>
       </template>
