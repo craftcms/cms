@@ -24,7 +24,6 @@ use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -116,13 +115,16 @@ abstract class BaseOptionsField extends Field implements
             $condition = [$param->operator];
             $qb = Craft::$app->getDb()->getQueryBuilder();
             $valueSql = static::valueSql($instances);
+            $emptyCondition = ['or', [$valueSql => null], [$valueSql => ''], [$valueSql => '[]']];
 
             foreach ($param->values as $value) {
                 if (
                     is_string($value) &&
                     in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
                 ) {
-                    $condition[] = Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+                    $condition[] = strtolower($value) === ':empty:'
+                        ? $emptyCondition
+                        : ['not', $emptyCondition];
                 } else {
                     $condition[] = $qb->jsonContains($valueSql, $value);
                 }
