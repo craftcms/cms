@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import SystemInfo from '@/common/components/SystemInfo.vue';
-  import useCraftData from '@/common/composables/useCraftData';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, reactive, ref, useTemplateRef, watch} from 'vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
@@ -43,8 +42,6 @@
     form: null,
   });
 
-  const {system} = useCraftData();
-
   const page = usePage<{
     title: string;
     readOnly: boolean;
@@ -63,10 +60,6 @@
   const readOnly = computed(() => page.props.readOnly);
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement, announce} = useAnnouncer();
-  const fullPageTitle = computed(() => {
-    const title = props.title?.trim();
-    return title ? `${title} - ${system.name}` : system.name;
-  });
 
   watch(successFlash, (newMessage) => announce(newMessage));
   watch(errorFlash, (newMessage) => announce(newMessage));
@@ -87,7 +80,7 @@
 
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
   const debugOpen = ref(false);
-  const pageTitle = computed(() => props.title ?? page.props.title);
+  const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
 
   watch(
     isLargeScreen,
@@ -131,7 +124,7 @@
 </script>
 
 <template>
-  <Head :title="fullPageTitle" />
+  <Head :title="pageTitle" />
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <header class="cp__header">

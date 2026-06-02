@@ -2,12 +2,13 @@
   import {Head} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
   import craftCmsLogoUrl from '@public/images/craftcms.svg';
+  import {t} from '@craftcms/cp';
 
   const {general, system} = useCraftData();
 </script>
 
 <template>
-  <Head title="Login"></Head>
+  <Head :title="t('Sign In')"></Head>
   <main class="cp-login">
     <div class="cp-login__wrapper grid gap-3 justify-items-center">
       <h1 class="flex justify-center">
