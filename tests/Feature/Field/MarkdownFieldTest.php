@@ -324,6 +324,8 @@ it('preserves element reference tags when sanitizing submitted markdown', functi
     $value = $field->normalizeValueFromRequest(implode("\n", [
         '[Global Transit Overhaul Widens Washington]({entry:925@1:url})',
         '[Global Transit Overhaul Widens Washington]({entry:925@1:url}?foo "Foo")',
+        '[Example.com](<https://example.com>)',
+        '[Example.com](<https://example.com> "Example")',
         '[Foo](/some/url?foo="bar")',
         '[Foo](/some/url "A title")',
         "[Foo](/some/url 'A title')",
@@ -335,6 +337,8 @@ it('preserves element reference tags when sanitizing submitted markdown', functi
         ->and($value->getRaw())->toBe(implode("\n", [
             '[Global Transit Overhaul Widens Washington]({entry:925@1:url})',
             '[Global Transit Overhaul Widens Washington]({entry:925@1:url}?foo "Foo")',
+            '[Example.com](<https://example.com>)',
+            '[Example.com](<https://example.com> "Example")',
             '[Foo](/some/url?foo&#61;"bar")',
             '[Foo](/some/url "A title")',
             "[Foo](/some/url 'A title')",
