@@ -28,6 +28,7 @@ use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use Throwable;
 use Traversable;
+use Twig\Extension\SandboxExtension;
 use Yiisoft\Arrays\ArrayableTrait;
 
 use function CraftCms\Cms\t;
@@ -707,14 +708,21 @@ abstract class Element extends Component implements ElementInterface
     {
         $attributes = $this->validationData();
 
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
+        // Include custom fields, unless this is coming from Twig’s SandboxExtension
+        // (see https://github.com/craftcms/cms/issues/19004)
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, limit: 3);
+        if (! (
+            ($backtrace[2]['class'] ?? null) === SandboxExtension::class &&
+            $backtrace[2]['function'] === 'doEnsureToStringAllowed'
+        )) {
+            $fieldLayout = $this->getFieldLayout();
 
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (! isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+            if ($fieldLayout !== null) {
+                foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                    $field = $layoutElement->getField();
+                    if (! isset($attributes[$field->handle])) {
+                        $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                    }
                 }
             }
         }
