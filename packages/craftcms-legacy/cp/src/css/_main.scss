@@ -1828,34 +1828,6 @@ ul.icons {
   gap: var(--s);
 }
 
-.flex-row {
-  flex-direction: row;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.items-start {
-  align-items: flex-start;
-}
-
-.items-end {
-  align-items: end;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.items-baseline {
-  align-items: baseline;
-}
-
-.items-stretch {
-  align-items: stretch;
-}
-
 .gap-0 {
   gap: 0;
 }
@@ -1882,43 +1854,6 @@ ul.icons {
 
 .gap-xl {
   gap: var(--xl);
-}
-
-.flex-grow {
-  flex: 1;
-  max-width: 100%;
-}
-
-.flex-justify {
-  justify-content: space-between;
-}
-
-.flex-justify-start {
-  justify-content: flex-start;
-}
-
-.flex-justify-end {
-  justify-content: flex-end;
-}
-
-.flex-justify-center {
-  justify-content: center;
-}
-
-.flex-start {
-  align-items: flex-start;
-}
-
-.flex-end {
-  align-items: flex-end;
-}
-
-.flex-center {
-  align-items: center;
-}
-
-.flex-stretch {
-  align-items: stretch;
 }
 
 .spacer {
@@ -5008,7 +4943,6 @@ ul.tree,
   flex: 0 0 auto;
   display: inline-block;
   position: relative;
-  margin-inline-end: 10px;
   width: calc(12rem / 16);
   height: calc(12rem / 16);
   border-radius: 100%;

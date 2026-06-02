@@ -705,20 +705,6 @@ abstract class Element extends Component implements ElementInterface
 
     public function getIterator(): Traversable
     {
-        $attributes = $this->validationData();
-
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
-
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (! isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
-                }
-            }
-        }
-
-        return new ArrayIterator($attributes);
+        return new ArrayIterator($this->validationData());
     }
 }

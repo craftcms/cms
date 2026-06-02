@@ -13,6 +13,7 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -22,20 +23,28 @@ readonly class PasskeyController extends AuthenticationController
     public function requestOptions(Passkeys $passkeys): JsonResponse
     {
         $serializer = $passkeys->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($passkeys->getPasskeyRequestOptions(), 'json');
+
+        Session::put($passkeys->passkeyRequestOptionsParam, $serializedData);
 
         return new JsonResponse([
-            'options' => $serializer->serialize($passkeys->getPasskeyRequestOptions(), 'json'),
+            'options' => $serializedData,
         ]);
     }
 
-    public function login(Request $request, AuthMethods $auth, Impersonation $impersonation): Response
+    public function login(Request $request, Passkeys $passkeys, AuthMethods $auth, Impersonation $impersonation): Response
     {
         $request->validate([
             'requestOptions' => ['required'],
             'authResponse' => ['required'],
         ]);
 
-        $requestOptions = $request->input('requestOptions');
+        $requestOptions = Session::remove($passkeys->passkeyRequestOptionsParam);
+
+        if (! $requestOptions) {
+            return $this->asFailure(t('Passkey authentication failed.'));
+        }
+
         $response = $request->input('authResponse');
         $credential = WebAuthn::where('credentialId', Json::decode($response)['id'])->first();
 

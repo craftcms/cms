@@ -54,6 +54,11 @@ trait HasLifecycleHooks
     }
 
     /**
+     * @see Element::afterAssignedId()
+     */
+    public function afterAssignedId(): void {}
+
+    /**
      * @see Element::afterPropagate()
      */
     public function afterPropagate(bool $isNew): void

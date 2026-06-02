@@ -38,7 +38,15 @@ class Passkeys
         /**
          * @var string The session variable name used to store passkey credential creation options.
          */
-        public readonly string $passkeyCreationOptionsParam = 'pkCredCreationOptions'
+        public readonly string $passkeyCreationOptionsParam = 'pkCredCreationOptions',
+        /**
+         * @var string The session variable name used to store passkey request options.
+         */
+        public readonly string $passkeyRequestOptionsParam = 'pkReqOptions',
+        /**
+         * @var string The session variable name used to store updated passkey credential source.
+         */
+        public readonly string $passkeyCredSourceParam = 'pkCredSource',
     ) {}
 
     public function hasPasskeys(CraftUser $user): bool
@@ -216,13 +224,18 @@ class Passkeys
         }
 
         try {
-            $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
+            $updatedPublicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $publicKeyCredentialSource,
                 $authenticatorAssertionResponse,
                 $requestOptions,
                 request()->host(),
                 $userEntity->id,
             );
+
+            // we can't save the updated public key credential source to db here as in User::authenticateWithPasskey()
+            // we might need to call this method (Auth::verifyPasskey()) again, with checkOldUserHandle set to true;
+            // so, we're going to store it in the session and then save from the User::authenticateWithPasskey() method
+            Session::put($this->passkeyCredSourceParam, $updatedPublicKeyCredentialSource);
         } catch (InvalidUserHandleException $exception) {
             throw $exception;
         } catch (Throwable $e) {
