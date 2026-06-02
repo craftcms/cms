@@ -1878,7 +1878,6 @@ interface ElementInterface extends
     /**
      * Performs actions after the element is assigned an ID.
      *
-     * @return void
      * @since 5.10.5
      */
     public function afterAssignedId(): void;
