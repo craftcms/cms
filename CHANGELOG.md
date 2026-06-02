@@ -2,10 +2,12 @@
 
 ## Unreleased
 
+- Added `craft\base\ElementInterface::afterAssignedId()`.
 - Fixed an error that occurred when executing the `users/remove-2fa` command non-interactively, if `--method` wasn’t provided. ([#18724](https://github.com/craftcms/cms/issues/18724))
 - Fixed a bug where Link fields weren’t getting updated when the “Replace relations” element deletion option was chosen. ([#18992](https://github.com/craftcms/cms/issues/18992))
 - Fixed a bug where it wasn’t always possible to select new categories or entries in relation fields. ([#18976](https://github.com/craftcms/cms/issues/18976))
 - Fixed a bug where Checkboxes and Multi-select fields weren’t handling `:empty:`/`:notempty:` params properly. ([#18988](https://github.com/craftcms/cms/issues/18988), [#19019](https://github.com/craftcms/cms/pull/19019))
+- Fixed a bug where entries with `{id}` in their Default Title Format weren’t always getting created with the correct generated title. ([#18991](https://github.com/craftcms/cms/issues/18991))
 
 ## 5.10.4.1 - 2026-05-28
 
