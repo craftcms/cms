@@ -126,8 +126,8 @@ abstract class BaseOptionsField extends Field implements
                     $condition[] = strtolower($value) === ':empty:'
                         ? $emptyCondition
                         : ['not', $emptyCondition];
-                } else {
                     $hasSpecialValue = true;
+                } else {
                     $condition[] = $qb->jsonContains($valueSql, $value);
                 }
             }
