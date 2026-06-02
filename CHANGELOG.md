@@ -16,6 +16,7 @@
 - Fixed a JavaScript error that could occur in the Control Panel when a custom element was registered more than once.
 - Fixed a bug where Control Panel action menu items could trigger their action twice when clicked.
 - Fixed a bug where legacy Control Panel JavaScript wasn’t loaded and initialized on all Control Panel pages.
+- Fixed a styling issue with user avatars.
 
 ## 6.0.0-alpha.5 - 2026-05-27
 
