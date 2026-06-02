@@ -73,6 +73,7 @@ use InvalidArgumentException;
 use Money\Money;
 use Override;
 use SimpleXMLElement;
+use SplFileObject;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Twig\Environment as TwigEnvironment;
@@ -467,6 +468,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             DirectoryIterator::class,
             Process::class,
             SimpleXMLElement::class,
+            SplFileObject::class,
         ] as $blockedClass) {
             if (is_a($class, $blockedClass, true)) {
                 throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
