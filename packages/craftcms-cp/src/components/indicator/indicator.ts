@@ -67,7 +67,7 @@ export default class CraftIndicator extends LitElement {
   getSize() {
     switch (this.size) {
       case 'md':
-        return '0.5em';
+        return '0.6em';
       case 'lg':
         return '1em';
       default:

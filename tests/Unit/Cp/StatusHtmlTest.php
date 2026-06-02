@@ -14,13 +14,14 @@ describe('statusIndicatorHtml', function () {
             ->and($html)->toContain('role="img"');
     });
 
-    it('renders standard status class and aria label', function () {
+    it('renders an indicator with the status fill and label', function () {
         $html = app(StatusHtml::class)->statusIndicatorHtml('enabled', [
             'label' => 'Enabled',
         ]);
 
-        expect($html)->toContain('class="status enabled"')
-            ->and($html)->toContain('aria-label="Status: Enabled"');
+        expect($html)->toContain('<craft-indicator')
+            ->and($html)->toContain('fill="enabled"')
+            ->and($html)->toContain('label="Status: Enabled"');
     });
 });
 
@@ -41,7 +42,10 @@ describe('component status helpers', function () {
 
         $html = app(StatusHtml::class)->componentStatusIndicatorHtml($component);
 
-        expect($html)->toContain('status pending yellow');
+        expect($html)->toContain('<craft-indicator')
+            ->and($html)->toContain('fill="yellow"')
+            ->and($html)->toContain('label="Status: Pending"')
+            ->and($html)->not->toContain('color="yellow"');
     });
 
     it('renders component status label and edited status label', function () {
@@ -62,7 +66,7 @@ describe('component status helpers', function () {
         $labelHtml = $statusHtml->componentStatusLabelHtml($component);
         $editedHtml = $statusHtml->editedStatusLabelHtml();
 
-        expect($labelHtml)->toContain('status-label')
+        expect($labelHtml)->toContain('craft-status-badge')
             ->and($labelHtml)->toContain('Pending')
             ->and($editedHtml)->toContain('Edited');
     });

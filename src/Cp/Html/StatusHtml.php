@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Html;
 
 use CraftCms\Cms\Component\Contracts\Statusable;
+use CraftCms\Cms\Cp\Components\Indicator;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -17,51 +17,29 @@ readonly class StatusHtml
 {
     public function statusIndicatorHtml(string $status, array $attributes = []): ?string
     {
-        $attributes += [
-            'color' => null,
-            'label' => ucfirst($status),
-        ];
+        $color = $attributes['color'] ?? null;
+        $label = array_key_exists('label', $attributes) ? $attributes['label'] : ucfirst($status);
+        unset($attributes['color'], $attributes['label']);
 
-        if ($status === 'draft') {
-            return Html::tag('span', '', [
-                'data' => ['icon' => 'draft'],
-                'class' => 'icon',
-                'role' => 'img',
-                'aria' => [
-                    'label' => sprintf('%s %s',
-                        t('Status:'),
-                        $attributes['label'] ?? t('Draft'),
-                    ),
-                ],
-            ]);
-        }
-
-        if ($attributes['color'] instanceof Color) {
-            $attributes['color'] = $attributes['color']->value;
-        }
-
-        return Html::tag('craft-indicator', '', Arr::merge($attributes, [
-            'fill' => $attributes['color'] ?? $status,
-            'label' => sprintf('%s %s', t('Status:'), $attributes['label']),
-        ]));
+        return Indicator::forStatus($status, ['color' => $color, 'label' => $label], $attributes)->toHtml();
     }
 
     public function componentStatusIndicatorHtml(Statusable $component): ?string
     {
         $status = $component->getStatus();
 
-        if ($status === 'draft') {
-            return $this->statusIndicatorHtml('draft');
+        if ($status === null) {
+            return null;
         }
 
         $statusDef = $component::statuses()[$status] ?? [];
 
-        // Just to give the `statusIndicatorHtml` clean types
+        // Just to give `Indicator::forStatus()` clean types
         if (is_string($statusDef)) {
             $statusDef = ['label' => $statusDef];
         }
 
-        return $this->statusIndicatorHtml($status, $statusDef);
+        return Indicator::forStatus($status, $statusDef)->toHtml();
     }
 
     public function statusLabelHtml(array $config = []): ?string
@@ -83,10 +61,10 @@ readonly class StatusHtml
                 'name' => $config['icon'],
             ]);
         } else {
-            $html = $this->statusIndicatorHtml($config['color'], [
-                'slot' => 'prefix',
-                'label' => null,
-            ]);
+            $html = Indicator::make()
+                ->fill($config['color'])
+                ->attributes(['slot' => 'prefix'])
+                ->toHtml();
         }
 
         if ($config['label']) {

@@ -713,18 +713,11 @@ JS,
                         'aria' => ['hidden' => 'true'],
                     ]);
                     $label = t('Draft');
-                } else {
-                    $status = $this->getStatus();
-                    $statusDef = static::statuses()[$status] ?? null;
-                    $color = $statusDef['color'] ?? $status;
-                    if ($color instanceof Color) {
-                        $color = $color->value;
-                    }
-                    $icon = Html::tag('span', '', ['class' => ['status', $color]]);
-                    $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
+
+                    return $icon.Html::tag('span', $label);
                 }
 
-                return $icon.Html::tag('span', $label);
+                return static::attributeHtml('status');
             },
         ], $metadata, [
             t('Created at') => $this->dateCreated && ! $this->getIsUnpublishedDraft()
