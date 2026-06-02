@@ -13,6 +13,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
+use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -75,6 +76,7 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         $this->setLaravelDefaults();
+        $this->registerLegacySiteTemplateRoot();
         $this->registerExceptionHandling();
     }
 
@@ -103,6 +105,20 @@ class Yii2ServiceProvider extends ServiceProvider
         } else {
             defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', base_path('templates'));
         }
+    }
+
+    private function registerLegacySiteTemplateRoot(): void
+    {
+        Event::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event): void {
+            $templatesPath = base_path('templates');
+
+            if (CRAFT_TEMPLATES_PATH !== resource_path('views') || !is_dir($templatesPath)) {
+                return;
+            }
+
+            $event->roots[''] ??= [];
+            $event->roots[''] = array_merge((array)$event->roots[''], [$templatesPath]);
+        });
     }
 
     /**
