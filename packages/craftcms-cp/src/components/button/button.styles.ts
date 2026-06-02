@@ -205,7 +205,7 @@ export default css`
       var(--c-color-neutral-fill-loud)
     );
     border-color: transparent;
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
   :host([appearance='solid']:not(:disabled):not(.loading):hover) {
