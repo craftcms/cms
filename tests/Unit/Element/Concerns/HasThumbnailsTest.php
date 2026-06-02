@@ -157,7 +157,7 @@ describe('getThumbHtml', function () {
         $html = $element->getThumbHtml(100);
 
         expect($html)->toContain('<div');
-        expect($html)->toContain('class="thumb"');
+        expect($html)->toContain('class="thumb w-[24px] h-[24px]"');
         expect($html)->toContain('<svg');
     });
 
