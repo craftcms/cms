@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.5 - 2026-06-02
 
 - Added `craft\base\ElementInterface::afterAssignedId()`.
 - Fixed an error that occurred when executing the `users/remove-2fa` command non-interactively, if `--method` wasn’t provided. ([#18724](https://github.com/craftcms/cms/issues/18724))
