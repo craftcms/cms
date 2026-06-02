@@ -13,7 +13,6 @@ use RectorLaravel\Rector\FuncCall\AppToResolveRector;
 use RectorLaravel\Rector\MethodCall\ResponseHelperCallToJsonResponseRector;
 use RectorLaravel\Rector\MethodCall\UseComponentPropertyWithinCommandsRector;
 use RectorLaravel\Set\LaravelSetList;
-use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
     ->withPaths([
