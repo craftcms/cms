@@ -469,7 +469,9 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 }
             }
 
-            return $serialized;
+            // return null if there are no selected options
+            // (see https://github.com/craftcms/cms/pull/19019)
+            return $serialized ?: null;
         }
 
         return parent::serializeValue($value, $element);
