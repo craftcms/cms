@@ -1287,7 +1287,7 @@ XML;
     /**
      * Returns whether the user can register additional users.
      */
-    final public function canRegisterUsers(): bool
+    public function canRegisterUsers(): bool
     {
         return $this->can('registerUsers') && Users::canCreateUsers();
     }

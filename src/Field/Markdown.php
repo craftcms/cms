@@ -657,36 +657,40 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     private function sanitizeSubmittedMarkdown(string $value): string
     {
-        $doubleQuoteToken = Str::random(32);
-        $singleQuoteToken = Str::random(32);
+        $markdownLinkTokens = [];
 
         return Pipeline::send($value)
             ->through(
-                fn (string $value, Closure $next) => $next($this->protectMarkdownLinkQuotes(
-                    value: $value,
-                    doubleQuoteToken: $doubleQuoteToken,
-                    singleQuoteToken: $singleQuoteToken
-                )),
+                function (string $value, Closure $next) use (&$markdownLinkTokens) {
+                    return $next($this->protectMarkdownLinkTokens(
+                        value: $value,
+                        tokens: $markdownLinkTokens
+                    ));
+                },
                 fn (string $value, Closure $next) => $next($this->sanitizePreservingElementRefs(
                     value: $value,
                     sanitize: fn (string $value): string => app(HtmlSanitizers::class)->sanitize($value, $this->htmlSanitizer),
                 )),
-                fn (string $value, Closure $next) => $next(strtr($value, [
-                    $doubleQuoteToken => '"',
-                    $singleQuoteToken => "'",
-                ])),
+                function (string $value, Closure $next) use (&$markdownLinkTokens) {
+                    return $next(strtr($value, $markdownLinkTokens));
+                },
             )
             ->thenReturn();
     }
 
-    private function protectMarkdownLinkQuotes(
-        string $value,
-        string $doubleQuoteToken,
-        string $singleQuoteToken,
-    ): string {
+    private function protectMarkdownLinkTokens(string $value, array &$tokens): string
+    {
         if (! str_contains($value, '](')) {
             return $value;
         }
+
+        $value = preg_replace_callback(
+            '/(?<prefix>]\(\s*)(?<destination><(?:\\\\.|[^<>\n\\\\])*>)/',
+            function (array $matches) use (&$tokens) {
+                return $matches['prefix'].$this->markdownLinkToken($matches['destination'], $tokens);
+            },
+            $value,
+        ) ?? $value;
 
         if (! str_contains($value, '"') && ! str_contains($value, "'")) {
             return $value;
@@ -694,12 +698,30 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
         return preg_replace_callback(
             '/]\((?<contents>[^\n)]*)\)/',
-            fn (array $matches) => ']('.strtr($matches['contents'], [
-                '"' => $doubleQuoteToken,
-                "'" => $singleQuoteToken,
-            ]).')',
+            function (array $matches) use (&$tokens) {
+                $replacements = [];
+
+                if (str_contains($matches['contents'], '"')) {
+                    $replacements['"'] = $this->markdownLinkToken('"', $tokens);
+                }
+
+                if (str_contains($matches['contents'], "'")) {
+                    $replacements["'"] = $this->markdownLinkToken("'", $tokens);
+                }
+
+                return ']('.strtr($matches['contents'], $replacements).')';
+            },
             $value,
         ) ?? $value;
+    }
+
+    private function markdownLinkToken(string $value, array &$tokens): string
+    {
+        $token = Str::random(32);
+
+        $tokens[$token] = $value;
+
+        return $token;
     }
 
     private function markdownData(string $value): MarkdownData

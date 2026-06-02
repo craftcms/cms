@@ -129,6 +129,13 @@ export default defineConfig(({mode}) => {
 
     optimizeDeps: {
       include: ['lit'],
+      // WebAwesome must NOT be pre-bundled. It's imported through many deep
+      // entry points (dist/components/*/*.js), and esbuild's dep optimizer
+      // duplicates their shared component modules across chunks — which makes
+      // custom elements like `wa-icon` get registered twice
+      // (NotSupportedError: "wa-icon" has already been used). Serving it as
+      // native ESM means each module file loads once, so each element is
+      // defined once.
       exclude: ['@awesome.me/webawesome'],
     },
 
