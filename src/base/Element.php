@@ -6653,6 +6653,13 @@ JS,
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function afterAssignedId(): void
+    {
+    }
+
     private function updateRelations(bool $isNew): void
     {
         if (!$this->hasFieldLayout()) {

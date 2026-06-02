@@ -2992,6 +2992,18 @@ JS;
     }
 
     /**
+     * @inheritdoc
+     */
+    public function afterAssignedId(): void
+    {
+        if (ElementHelper::isDraftOrRevision($this)) {
+            return;
+        }
+
+        $this->updateTitle();
+    }
+
+    /**
      * Set the default values for attributes if certain conditions are met.
      *
      * @return void

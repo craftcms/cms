@@ -1876,6 +1876,13 @@ interface ElementInterface extends
     public function afterSave(bool $isNew): void;
 
     /**
+     * Performs actions after the element is assigned an ID.
+     *
+     * @since 5.10.5
+     */
+    public function afterAssignedId(): void;
+
+    /**
      * Performs actions after an element is fully saved and propagated to other sites.
      *
      * ::: tip
