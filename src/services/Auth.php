@@ -72,6 +72,16 @@ class Auth extends Component
     public string $passkeyCreationOptionsParam;
 
     /**
+     * @var string The session variable name used to store passkey request options.
+     */
+    public string $passkeyRequestOptionsParam;
+
+    /**
+     * @var string The session variable name used to store updated passkey credential source.
+     */
+    public string $passkeyCredSourceParam;
+
+    /**
      * @var AuthMethodInterface[][] All user authentication methods
      * @see getAllMethods()
      */
@@ -110,6 +120,12 @@ class Auth extends Component
         }
         if (!isset($this->passkeyCreationOptionsParam)) {
             $this->passkeyCreationOptionsParam = sprintf('%s__pkCredCreationOptions', $stateKeyPrefix);
+        }
+        if (!isset($this->passkeyRequestOptionsParam)) {
+            $this->passkeyRequestOptionsParam = sprintf('%s__pkReqOptions', $stateKeyPrefix);
+        }
+        if (!isset($this->passkeyCredSourceParam)) {
+            $this->passkeyCredSourceParam = sprintf('%s__pkCredSource', $stateKeyPrefix);
         }
     }
 
@@ -600,13 +616,18 @@ class Auth extends Component
         }
 
         try {
-            $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
+            $updatedPublicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $publicKeyCredentialSource,
                 $authenticatorAssertionResponse,
                 $publicKeyCredentialRequestOptions,
                 Craft::$app->getRequest()->getHostName(),
                 $userEntity->id,
             );
+
+            // we can't save the updated public key credential source to db here as in User::authenticateWithPasskey()
+            // we might need to call this method (Auth::verifyPasskey()) again, with checkOldUserHandle set to true;
+            // so, we're going to store it in the session and then save from the User::authenticateWithPasskey() method
+            SessionHelper::set($this->passkeyCredSourceParam, $updatedPublicKeyCredentialSource);
         } catch (InvalidUserHandleException $e) {
             throw $e;
         } catch (Throwable $e) {

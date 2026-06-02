@@ -319,7 +319,12 @@ class UsersController extends Controller
         $duration = Craft::$app->getConfig()->getGeneral()->userSessionDuration;
 
         // PublicKeyCredentialRequestOptions
-        $requestOptions = $this->request->getRequiredBodyParam('requestOptions');
+        $requestOptions = SessionHelper::remove(Craft::$app->getAuth()->passkeyRequestOptionsParam);
+
+        if (!$requestOptions) {
+            return $this->asFailure(Craft::t('app', 'Passkey authentication failed.'));
+        }
+
         // PublicKeyCredential
         $response = $this->request->getRequiredBodyParam('response');
         $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
