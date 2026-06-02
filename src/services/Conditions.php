@@ -11,6 +11,7 @@ use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Json;
 use ReflectionException;
 use ReflectionProperty;
@@ -54,7 +55,7 @@ class Conditions extends Component
         // The base config will be JSON-encoded within a `config` key if this came from a condition builder
         if (isset($config['config']) && Json::isJsonObject($config['config'])) {
             $config = array_merge(
-                Json::decode(ArrayHelper::remove($config, 'config')),
+                ComponentHelper::cleanseConfig(Json::decode(ArrayHelper::remove($config, 'config'))),
                 $config
             );
         }
@@ -93,6 +94,7 @@ class Conditions extends Component
                     $newClass = $newConfig;
                     $newConfig = [];
                 } else {
+                    $newConfig = ComponentHelper::cleanseConfig($newConfig);
                     $newClass = ArrayHelper::remove($newConfig, 'class');
                 }
 
