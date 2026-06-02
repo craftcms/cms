@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type {EntryType} from '@/types';
+  import type {EntryType} from '@/common/types/index.js';
   import {computed, ref} from 'vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import ReorderButton from '@/components/ReorderButton.vue';
@@ -7,7 +7,7 @@
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
   import {create} from '@actions/Settings/EntryTypesController';
-  import useCraftData from '@/composables/useCraftData';
+  import useCraftData from '@/common/composables/useCraftData.js';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
@@ -25,8 +25,16 @@
       .map((id) => {
         return props.types?.find((type) => type.id === id) ?? null;
       })
-      .filter(Boolean);
+      .filter((type): type is EntryType => type !== null);
   });
+
+  function colorValue(color: EntryType['color']): string {
+    if (!color) {
+      return 'white';
+    }
+
+    return typeof color === 'string' ? color : color.value;
+  }
 
   const entryTypeQuery = ref('');
 
@@ -60,11 +68,11 @@
 
 <template>
   <div>
-    <template v-for="type in selectedTypes">
+    <template v-for="type in selectedTypes" :key="type.id">
       <craft-chip
         v-if="type"
         :icon="type.icon"
-        :data-color="type.color?.value ?? 'white'"
+        :data-color="colorValue(type.color)"
       >
         <div :data-id="type.id">
           <div class="font-bold">{{ type.name }}</div>
@@ -134,7 +142,7 @@
               type="checkbox"
               :icon="type.icon ?? 'empty'"
               :checked="modelValue.includes(type.id)"
-              :data-color="type.color?.value ?? 'white'"
+              :data-color="colorValue(type.color)"
             >
               <div>
                 {{ type.name }}
