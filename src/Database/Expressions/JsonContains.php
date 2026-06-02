@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Expressions;
 
+use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\Database\Query\ConditionExpression;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Grammar;
@@ -42,8 +43,8 @@ readonly class JsonContains implements ConditionExpression
     {
         $value = match ($this->identify($grammar)) {
             'sqlite' => $this->value,
-            'sqlsrv' => is_bool($this->value) ? json_encode($this->value) : $this->value,
-            default => json_encode($this->value, JSON_UNESCAPED_UNICODE),
+            'sqlsrv' => is_bool($this->value) ? Json::encode($this->value) : $this->value,
+            default => Json::encode($this->value),
         };
 
         return $grammar->escape($value);
