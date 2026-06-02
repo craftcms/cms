@@ -9,6 +9,7 @@
 - Fixed a bug where Checkboxes and Multi-select fields weren’t handling `:empty:`/`:notempty:` params properly. ([#18988](https://github.com/craftcms/cms/issues/18988), [#19019](https://github.com/craftcms/cms/pull/19019))
 - Fixed a bug where entries with `{id}` in their Default Title Format weren’t always getting created with the correct generated title. ([#18991](https://github.com/craftcms/cms/issues/18991))
 - Fixed a styling issue. ([#19010](https://github.com/craftcms/cms/issues/19010))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) object injection vulnerability.
 
 ## 5.10.4.1 - 2026-05-28
