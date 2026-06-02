@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Database\Expressions\JsonContains;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
@@ -97,21 +98,29 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
 
         $valueSql = static::valueSql($instances);
+        $isEmptyValueParam = fn (mixed $value): bool => is_string($value) &&
+            in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'], true);
 
-        return $query->where(function (Builder $query) use ($param, $valueSql) {
+        $applyConditions = function (Builder $query) use ($param, $valueSql, $isEmptyValueParam) {
             foreach ($param->values as $value) {
-                if (
-                    is_string($value) &&
-                    in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
-                ) {
+                if ($isEmptyValueParam($value)) {
                     $query->whereParam($valueSql, $value, columnType: Query::TYPE_JSON, boolean: $param->operator);
 
                     continue;
                 }
 
-                $query->whereJsonContains($valueSql, $value, $param->operator);
+                $query->where(new JsonContains($valueSql, $value), boolean: $param->operator);
             }
-        }, boolean: $negate ? 'and not' : 'and');
+        };
+
+        if ($negate && Collection::make($param->values)->doesntContain($isEmptyValueParam)) {
+            return $query->where(function (Builder $query) use ($valueSql, $applyConditions) {
+                $query->whereNull($valueSql)
+                    ->orWhereNot($applyConditions);
+            });
+        }
+
+        return $query->where($applyConditions, boolean: $negate ? 'and not' : 'and');
     }
 
     /**
