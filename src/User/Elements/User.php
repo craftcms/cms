@@ -1238,7 +1238,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $gradientId = sprintf('gradient-%s', Str::random(10));
 
         return <<<XML
-<svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<svg version="1.1" baseProfile="full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
         <stop offset="0%" style="stop-color:var(--$color1-500)" />

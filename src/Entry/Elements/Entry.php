@@ -2404,6 +2404,16 @@ JS;
         return parent::beforeSave($isNew);
     }
 
+    #[Override]
+    public function afterAssignedId(): void
+    {
+        if (ElementHelper::isDraftOrRevision($this)) {
+            return;
+        }
+
+        $this->updateTitle();
+    }
+
     /**
      * Set the default values for attributes if certain conditions are met.
      */
