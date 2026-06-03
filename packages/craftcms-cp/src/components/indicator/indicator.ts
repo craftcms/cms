@@ -1,9 +1,9 @@
 import {css, html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
-import {Variant} from '@src/types';
 import {classMap} from 'lit/directives/class-map.js';
 import variantsStyles from '@src/styles/variants.styles';
-import {Color} from '@src/constants/colors';
+import {colors} from '@src/constants/colors';
+import {variants} from '@src/constants/variants';
 
 /**
  * @summary Indicators are used to visually represent the status of an object.
@@ -60,12 +60,12 @@ export default class CraftIndicator extends LitElement {
 
   getFill() {
     // If the fill is known swatch
-    if (Object.keys(Color).includes(this.fill)) {
+    if ((colors as string[]).includes(this.fill)) {
       return `var(--c-color-${this.fill}-fill-loud)`;
     }
 
     // If it's a known variant
-    if (Object.keys(Variant).includes(this.fill)) {
+    if ((variants as string[]).includes(this.fill)) {
       return `var(--c-color-${this.fill}-fill-loud)`;
     }
 

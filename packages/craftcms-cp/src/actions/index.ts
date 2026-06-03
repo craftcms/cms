@@ -1,4 +1,4 @@
-import type {VariantKey} from '@src/types';
+import type {VariantKey} from '@src/constants/variants';
 
 export type BaseAction =
   | {type: 'clipboard'; value: string}

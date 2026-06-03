@@ -6,10 +6,8 @@ import '../../components/callout/callout.js';
 import '../../components/button/button.js';
 import '../../components/indicator/indicator.js';
 
-import {Appearance, Variant} from '@src/types';
-
-const variants = Object.values(Variant);
-const appearances = Object.values(Appearance);
+import {appearances} from '@src/constants/appearances';
+import {variants} from '@src/constants/variants';
 
 const buttonVariants = ['primary', 'default', 'danger'] as const;
 const buttonAppearances = ['accent', 'filled', 'dashed', 'plain'] as const;

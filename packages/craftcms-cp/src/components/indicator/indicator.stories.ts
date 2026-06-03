@@ -4,13 +4,13 @@ import {html, nothing} from 'lit';
 
 import './indicator.js';
 import type CraftIndicator from './indicator.js';
-import {Variant} from '@src/types';
+import {Variant} from '@src/constants/variants';
 
 const appearances = ['filled-outlined', 'filled', 'outlined'];
 
 /**
- * Renders a `solid` and an `empty` indicator side by side, with a label,
- * so every story shares the same markup.
+ * Renders the indicator in each appearance, with a label, so every story shares
+ * the same markup.
  */
 const renderIndicators = (
   label: string,

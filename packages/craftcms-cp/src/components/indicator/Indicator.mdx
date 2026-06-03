@@ -1,9 +1,5 @@
 import {Canvas, Meta} from '@storybook/addon-docs/blocks';
-import IndicatorMeta, {
-  Default,
-  ArbitraryColor,
-  ArbitrarySize,
-} from './indicator.stories';
+import IndicatorMeta, {ArbitraryColor, ArbitrarySize, Default,} from './indicator.stories';
 
 <Meta of={IndicatorMeta} name="Docs" />
 
@@ -38,78 +34,127 @@ appearance is driven by attributes.
   </thead>
   <tbody>
     <tr>
-      <td><code>fill</code></td>
-      <td><code>fill</code></td>
-      <td><code>string</code></td>
-      <td><code>var(--c-color-fill-loud)</code></td>
-      <td>The dot color. Accepts a semantic keyword (see below) or any CSS color.</td>
+      <td>
+        <code>fill</code>
+      </td>
+      <td>
+        <code>fill</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>var(--c-color-fill-loud)</code>
+      </td>
+      <td>
+        The dot color. Accepts a semantic keyword (see below) or any CSS color.
+      </td>
     </tr>
     <tr>
-      <td><code>appearance</code></td>
-      <td><code>appearance</code></td>
-      <td><code>'solid' | 'empty'</code></td>
-      <td><code>'solid'</code></td>
-      <td><code>solid</code> fills the dot; <code>empty</code> draws only the colored ring (hollow).</td>
+      <td>
+        <code>appearance</code>
+      </td>
+      <td>
+        <code>appearance</code>
+      </td>
+      <td>
+        <code>'filled' | 'outlined' | 'filled-outlined'</code>
+      </td>
+      <td>
+        <code>'filled-outlined'</code>
+      </td>
+      <td>
+        How the dot is drawn — see <a href="#appearance">Appearance</a>.
+      </td>
     </tr>
     <tr>
-      <td><code>size</code></td>
-      <td><code>size</code></td>
-      <td><code>'md' | 'lg'</code></td>
-      <td><code>'md'</code></td>
-      <td><code>md</code> ≈ 0.5em, <code>lg</code> ≈ 1em. Scales with the surrounding font size.</td>
+      <td>
+        <code>size</code>
+      </td>
+      <td>
+        <code>size</code>
+      </td>
+      <td>
+        <code>'md' | 'lg'</code>
+      </td>
+      <td>
+        <code>'md'</code>
+      </td>
+      <td>
+        <code>md</code> ≈ 0.6em, <code>lg</code> ≈ 1em. Scales with the
+        surrounding font size.
+      </td>
     </tr>
     <tr>
-      <td><code>label</code></td>
-      <td><code>label</code></td>
-      <td><code>string | null</code></td>
-      <td><code>null</code></td>
-      <td>Accessible name, exposed as <code>aria-label</code>. Provide it for non-decorative dots.</td>
+      <td>
+        <code>label</code>
+      </td>
+      <td>
+        <code>label</code>
+      </td>
+      <td>
+        <code>string | null</code>
+      </td>
+      <td>
+        <code>null</code>
+      </td>
+      <td>
+        Accessible name, exposed as <code>aria-label</code>. Provide it for
+        non-decorative dots.
+      </td>
     </tr>
   </tbody>
 </table>
 
-## Fill keywords
+## Fill
 
-`fill` accepts a set of semantic keywords that map to design tokens. Anything
-that isn't a recognized keyword is passed through verbatim, so raw CSS values
-(hex, `rgb()`, `var(...)`, gradients) work too.
+`fill` sets the dot's color. A recognized **status variant** (`default`,
+`success`, `warning`, `danger`, `info`) or **palette swatch** (`red`, `orange`,
+`amber`, `yellow`, `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`, `blue`,
+`indigo`, `violet`, `purple`, `fuchsia`, `pink`, `rose`, `gray`, `white`,
+`black`) resolves to the matching `--c-color-<name>-fill-loud` design token. Any
+other value — a hex code, `rgb()`, a gradient, or a custom property — is used
+verbatim.
+
+Prefer the variant and swatch names so indicators stay consistent with the rest
+of the palette; reach for an arbitrary value only when a color falls outside it.
+
+<Canvas of={ArbitraryColor} />
+
+## Appearance
+
+`appearance` controls how the dot is drawn:
 
 <table>
   <thead>
     <tr>
-      <th>Keyword</th>
-      <th>Token</th>
+      <th>Value</th>
+      <th>Renders</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><code>success</code> / <code>live</code></td>
-      <td><code>--c-color-success-fill-loud</code></td>
+      <td>
+        <code>filled-outlined</code> (default)
+      </td>
+      <td>Filled dot with a subtle dark outline.</td>
     </tr>
     <tr>
-      <td><code>warning</code></td>
-      <td><code>--c-color-warning-fill-loud</code></td>
+      <td>
+        <code>filled</code>
+      </td>
+      <td>Filled dot with no outline.</td>
     </tr>
     <tr>
-      <td><code>danger</code></td>
-      <td><code>--c-color-danger-fill-loud</code></td>
-    </tr>
-    <tr>
-      <td><code>info</code></td>
-      <td><code>--c-color-info-fill-loud</code></td>
-    </tr>
-    <tr>
-      <td><code>default</code> / <code>draft</code></td>
-      <td><code>--c-color-neutral-fill-loud</code></td>
+      <td>
+        <code>outlined</code>
+      </td>
+      <td>
+        Hollow dot — a 2px ring in the fill color over a transparent center.
+      </td>
     </tr>
   </tbody>
 </table>
-
-Prefer the semantic keywords so indicators stay consistent with the rest of the
-palette. Use an arbitrary value only when a status genuinely falls outside the
-token set.
-
-<Canvas of={ArbitraryColor} />
 
 ## Sizing
 
@@ -128,9 +173,10 @@ it's fine to leave `label` unset.
 
 ## Styling
 
-The visible color is resolved from `fill` and applied through the private
-`--fill` custom property at render time, so target the host element to adjust
-layout:
+At render time the resolved color and size are written to the `--fill` and
+`--size` custom properties on the inner dot, so there's nothing to override
+there directly. Because the dot is sized in `em`, set `font-size` on the host to
+scale it:
 
 ```css
 craft-indicator {
