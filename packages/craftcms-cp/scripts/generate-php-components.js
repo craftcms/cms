@@ -183,7 +183,7 @@ ${fields.join('\n\n')}
 
     public static function make(): static
     {
-        return new static;
+        return app(static::class);
     }
 
 ${setters.join('\n\n')}
