@@ -53,7 +53,7 @@ it('dispatches deletion blocker events with the default relation blocker', funct
 it('reports entry author blockers with details and actions', function () {
     $author = UserModel::factory()->createElement();
     $entry = EntryModel::factory()
-        ->hasAttached(UserModel::find($author->id), ['sortOrder' => 0], 'authors')
+        ->hasAttached(UserModel::find(), ['sortOrder' => 0], 'authors')
         ->create();
 
     $this->mock(ElementIndexHtml::class, function (MockInterface $mock) use ($author) {
