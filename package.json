@@ -24,7 +24,7 @@
     "storybook": "storybook dev -p 6007",
     "build:storybook": "storybook build",
     "storybook:cp": "cd ./packages/craftcms-cp && npm run storybook",
-    "build:all": "npm run build:bundles && npm run build:cp && npm run build"
+    "build:all": "npm run build:cp && npm run build:bundles && npm run build"
   },
   "workspaces": [
     "packages/*"
