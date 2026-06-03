@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 beforeEach(function () {

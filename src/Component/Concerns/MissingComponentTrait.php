@@ -64,7 +64,7 @@ trait MissingComponentTrait
         $iconSvg = null;
 
         if (
-            Auth::user()?->isAdmin() &&
+            Auth::craftUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $pluginsService = app(Plugins::class);

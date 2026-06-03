@@ -58,7 +58,7 @@ readonly class UpdatesController
         $allowUpdates = (
             $this->generalConfig->allowUpdates &&
             $this->generalConfig->allowAdminChanges &&
-            Auth::user()->can('performUpdates')
+            Auth::craftUser()->can('performUpdates')
         );
 
         $res = [
@@ -132,7 +132,7 @@ readonly class UpdatesController
             $arr['statusText'] = Html::tag('strong', t('This plugin is no longer maintained.'));
 
             if ($update->replacementName) {
-                if (Auth::user()?->isAdmin() && $this->generalConfig->allowAdminChanges) {
+                if (Auth::craftUser()?->isAdmin() && $this->generalConfig->allowAdminChanges) {
                     $replacementUrl = Url::url("plugin-store/$update->replacementHandle");
                 } else {
                     $replacementUrl = $update->replacementUrl;

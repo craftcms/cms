@@ -110,7 +110,7 @@ class CountryCodeField extends BaseNativeField
     {
         $items = [];
 
-        if (Auth::user()?->isAdmin()) {
+        if (Auth::craftUser()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

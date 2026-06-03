@@ -85,7 +85,7 @@ test('store clears existing address fields', function () {
 });
 
 test('store ignores ownership attributes', function () {
-    $user = auth()->user();
+    $user = auth('craft')->craftUser();
     $otherUser = UserModel::factory()->createElement();
 
     postJson(action([AddressesController::class, 'store']), [

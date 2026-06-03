@@ -14,9 +14,9 @@ use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
 use Override;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -291,7 +291,7 @@ abstract class FieldLayoutComponent extends Component
         $elementCondition = $this->getElementCondition();
 
         if ($userCondition) {
-            $currentUser = Auth::user();
+            $currentUser = currentUserElement();
             if ($currentUser && ! $userCondition->matchElement($currentUser)) {
                 return false;
             }

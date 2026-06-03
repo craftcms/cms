@@ -128,7 +128,7 @@ describe('download', function () {
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
-        $user = auth()->user();
+        $user = auth('craft')->craftUser();
         $content = postJson(action([RecoveryCodesController::class, 'download']))
             ->assertOk()
             ->getContent();

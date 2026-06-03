@@ -48,6 +48,7 @@ use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -94,7 +95,7 @@ class Assets
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
         $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
-        $asset->uploaderId = Auth::user()?->id;
+        $asset->uploaderId = Auth::craftUser()?->getCraftUserId();
         $asset->avoidFilenameConflicts = true;
         $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
@@ -346,7 +347,7 @@ class Assets
      */
     public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
     {
-        $user ??= Auth::user();
+        $user ??= currentUserElement();
         $cacheKey = $user->id ?? '__GUEST__';
 
         if (isset($this->userTempFolders[$cacheKey])) {

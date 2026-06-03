@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -195,4 +198,41 @@ test('attemptLogin accepts username when useEmailAsUsername is false', function 
     ])->assertOk();
 
     expect(Auth::check())->toBeTrue();
+});
+
+test('attemptLogin respects LoginUserRetrieving event', function () {
+    $user = UserModel::factory()->admin()->create([
+        'email' => 'event-user@example.com',
+    ]);
+
+    Event::listen(LoginUserRetrieving::class, function (LoginUserRetrieving $event) use ($user) {
+        $event->user = $user;
+    });
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => 'some-other-user',
+        'password' => 'password',
+    ])->assertOk();
+
+    expect(Auth::id())->toBe($user->id);
+});
+
+test('attemptLogin respects LoginUserRetrieved event', function () {
+    $original = UserModel::factory()->admin()->create([
+        'email' => 'original@example.com',
+    ]);
+    $replacement = UserModel::factory()->admin()->create([
+        'email' => 'replacement@example.com',
+    ]);
+
+    Event::listen(LoginUserRetrieved::class, function (LoginUserRetrieved $event) use ($replacement) {
+        $event->user = $replacement;
+    });
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $original->email,
+        'password' => 'password',
+    ])->assertOk();
+
+    expect(Auth::id())->toBe($replacement->id);
 });

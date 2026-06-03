@@ -112,7 +112,7 @@ readonly class ElementDuplicates
             $mainClone->setCanonicalId($element->getCanonicalId());
             $mainClone->draftId = $this->drafts->insertDraftRow(
                 name: $mainClone->draftName,
-                creatorId: Auth::user()->id,
+                creatorId: Auth::craftUser()?->getCraftUserId(),
                 canonicalId: $element->getCanonicalId(),
                 trackChanges: $mainClone->trackDraftChanges,
             );
@@ -124,7 +124,7 @@ readonly class ElementDuplicates
             $mainClone->setCanonicalId(null);
             $mainClone->draftId = $this->drafts->insertDraftRow(
                 name: $mainClone->draftName,
-                creatorId: Auth::user()->id,
+                creatorId: Auth::craftUser()?->getCraftUserId(),
                 trackChanges: $mainClone->trackDraftChanges,
             );
         }
@@ -327,7 +327,7 @@ readonly class ElementDuplicates
         $modifiedAttributes = array_unique($modifiedAttributes);
         $modifiedFields = array_unique($modifiedFields);
 
-        $userId = Auth::user()?->id;
+        $userId = Auth::craftUser()?->getCraftUserId();
 
         if (! empty($modifiedAttributes)) {
             $data = [];

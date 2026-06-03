@@ -451,7 +451,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
             return null;
         }
 
@@ -475,7 +475,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return $items;
         }
 
-        if (! Auth::user()?->isAdmin()) {
+        if (! Auth::craftUser()?->isAdmin()) {
             return $items;
         }
 

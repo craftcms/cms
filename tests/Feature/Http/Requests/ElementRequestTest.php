@@ -29,7 +29,7 @@ it('prefers the current users provisional draft when resolving by canonical elem
     Elements::saveElement($draft);
 
     $request = ElementRequest::create('/', 'POST');
-    $request->setUserResolver(fn () => auth()->user());
+    $request->setUserResolver(fn () => auth('craft')->craftUser());
 
     app()->instance('request', $request);
     app(RequestedSite::class)->reset();
@@ -57,7 +57,7 @@ it('resolves unpublished drafts by id when no canonical element exists', functio
     app(Drafts::class)->saveElementAsDraft($draft, auth()->id(), markAsSaved: false);
 
     $request = ElementRequest::create('/', 'POST');
-    $request->setUserResolver(fn () => auth()->user());
+    $request->setUserResolver(fn () => auth('craft')->craftUser());
 
     app()->instance('request', $request);
     app(RequestedSite::class)->reset();
@@ -87,7 +87,7 @@ it('resolves unpublished drafts by uid when no canonical element exists', functi
     $request = ElementRequest::create('/', 'POST', [
         'elementUid' => $draft->uid,
     ]);
-    $request->setUserResolver(fn () => auth()->user());
+    $request->setUserResolver(fn () => auth('craft')->craftUser());
 
     app()->instance('request', $request);
     app(RequestedSite::class)->reset();

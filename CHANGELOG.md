@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Improved the accessibility of the Login page. ([#19025](https://github.com/craftcms/cms/pull/19025))
+- Added `CraftCms\Cms\User\Contracts\CraftUser` and `CraftUserTrait`. ([#19009](https://github.com/craftcms/cms/pull/19009))
+- Removed `CraftCms\Cms\Auth\UserProvider`; the Craft guard now defaults to Laravel’s Eloquent provider using `CraftCms\Cms\User\Models\User`. ([#19009](https://github.com/craftcms/cms/pull/19009))
+- Added `Auth::craftUser()`/`auth('craft')->craftUser()` and `request()->craftUser()` as Craft-safe ways to access the authenticated user. ([#19009](https://github.com/craftcms/cms/pull/19009))
 - `Element::getIterator()` no longer includes custom field values. ([#19004](https://github.com/craftcms/cms/issues/19004))
 - Fixed a bug where checking the elevated session timeout could overwrite newer session data, which could prevent passkeys from being created.
 - Fixed a bug where legacy plugin-defined `actions.php` routes could collide between plugins. ([#18994](https://github.com/craftcms/cms/pull/18994))
@@ -95,7 +99,7 @@
 - Fixed a PHP error that occurred when saving a Structure section with a Max Levels value. ([#18809](https://github.com/craftcms/cms/issues/18809))
 - Fixed a bug where plugin settings pages were missing registered scripts and styles. ([#18815](https://github.com/craftcms/cms/pull/18815))
 - Fixed a PHP error that occurred when saving an entry type. ([#18816](https://github.com/craftcms/cms/pull/18816))
-- Fixed an issue with Typecast where typed setters wouldn't have precedence over private properties.
+- Fixed an issue with Typecast where typed setters wouldn’t have precedence over private properties.
 - Fixed a bug where Control Panel templates failed to load on Windows due to mismatched directory separators or drive-letter casing in `CraftCms\Cms\View\TwigEngine`. ([#18804](https://github.com/craftcms/cms/issues/18804))
 - Fixed a bug where Craft’s Vite hot file configuration could override the host application’s Vite hot file. ([#18810](https://github.com/craftcms/cms/issues/18810))
 - Fixed a bug where `CraftCms\Cms\Support\Typecast` could give private properties precedence over typed setters.
@@ -124,9 +128,9 @@
 - Fixed a bug where a `yii\base\InvalidConfigException` would be thrown when a Yii2-based plugin registered an asset bundle. ([#18818](https://github.com/craftcms/cms/issues/18818))
 - Fixed a bug where using `{{ successMessageInput() }}` would not decrypt the resulting message for the flash message.
 - Fixed a bug where a missing widget from an uninstalled plugin would throw instead of mapping to a MissingWidget.
-- Fixed a bug where an address' ownership ids could be overridden unintentionally.
+- Fixed a bug where an address’ ownership ids could be overridden unintentionally.
 - Fixed a bug where `getHasSsoIdentity()` would return `false` when Socialite was not installed but the user had an SSO identity.
-- Fixed a bug where the site's offline status was not being enforced on matched element routes.
+- Fixed a bug where the site’s offline status was not being enforced on matched element routes.
 - Fixed a user photo validation issue with file extensions.
 - Fixed a bug where legacy controllers could return `null` but were not considered handled.
 - Improved performance of the dashboard by reducing the amount of queries for widgets
@@ -281,7 +285,7 @@
 
 #### Mutex
 
-Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://laravel.com/docs/12.x/cache#atomic-locks) should be used instead.
+Craft’s Mutex classes have been deprecated. [Laravel’s atomic locking](https://laravel.com/docs/12.x/cache#atomic-locks) should be used instead.
 
 - Deprecated `craft\mutex\Mutex`
 - Deprecated `craft\mutex\MutexTrait`
@@ -371,7 +375,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ### Auth
 
-- Refactored the authentication system to use Laravel's authentication system.
+- Refactored the authentication system to use Laravel’s authentication system.
 - Added `CraftCms\Cms\Auth\Events\SettingPassword`.
 - Added `CraftCms\Cms\User\Notifications\ResetPasswordNotification`.
 - Deprecated `craft\services\Auth`. `CraftCms\Cms\Auth\Auth` should be used instead.
@@ -386,7 +390,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
 - Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
 - Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
-  - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+  - Elevated sessions now work through [Laravel’s password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 - Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
   - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
   - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
@@ -395,7 +399,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 #### Authorization
 
-Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/authorization) for element authorization checks.
+Craft 6 now uses [Laravel’s authorization system](https://laravel.com/docs/12.x/authorization) for element authorization checks.
 
 ##### Added
 
@@ -592,14 +596,14 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 #### Validation
 
-Craft 6 introduces a new validation system that uses Laravel's Validator instead of Yii2's model validation.
+Craft 6 introduces a new validation system that uses Laravel’s Validator instead of Yii2’s model validation.
 
 ##### Added
 
 - Added `CraftCms\Cms\Validation\Contracts\Validatable` interface for classes that support Laravel-style validation.
 - Added `CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset` interface for classes that use a `Ruleset` class to define validation rules.
 - Added `CraftCms\Cms\Validation\Ruleset` abstract class for defining validation rules, messages, and preparation logic.
-- Added `CraftCms\Cms\Validation\Attributes\Ruleset` PHP attribute for specifying a component's ruleset class.
+- Added `CraftCms\Cms\Validation\Attributes\Ruleset` PHP attribute for specifying a component’s ruleset class.
 - Added `CraftCms\Cms\Validation\Concerns\Validates` trait for simple validation support.
 - Added `CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset` trait for ruleset-based validation.
 - Added `CraftCms\Cms\Validation\Concerns\HasScenarios` trait for scenario-based validation filtering.
@@ -622,7 +626,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ##### Changed
 
-- `FieldInterface::getElementValidationRules()` has been replaced by `FieldInterface::getElementRules()` which returns rules in Laravel's validation format.
+- `FieldInterface::getElementValidationRules()` has been replaced by `FieldInterface::getElementRules()` which returns rules in Laravel’s validation format.
 - Added `FieldInterface::prepareForElementValidation()` for preparing field values before validation.
 - Validation rules are now defined as Laravel-style arrays (e.g., `['required', 'string', 'max:255']`).
 
@@ -685,7 +689,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ### Component
 
-- Added `CraftCms\Cms\Component\Component` base class, replacing Yii2's `BaseObject`/`Component` with config hydration, magic getters/setters, and `Arrayable` support.
+- Added `CraftCms\Cms\Component\Component` base class, replacing Yii2’s `BaseObject`/`Component` with config hydration, magic getters/setters, and `Arrayable` support.
 - Added `CraftCms\Cms\Component\Exceptions\InvalidCallException`, replacing `yii\base\InvalidCallException`.
 - Added `CraftCms\Cms\Component\Exceptions\UnknownPropertyException`, replacing `yii\base\UnknownPropertyException`.
 
@@ -810,11 +814,11 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ### HTTP
 
-- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel’s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
 - Deprecated `craft\filters\BasicHttpAuthLogin`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthStatic`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthTrait`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
-- Deprecated `craft\filters\Cors`. Use Laravel's CORS settings instead. (see https://laravel.com/docs/12.x/routing#cors)
+- Deprecated `craft\filters\Cors`. Use Laravel’s CORS settings instead. (see https://laravel.com/docs/12.x/routing#cors)
 - Deprecated `craft\filters\Headers`. Use Laravel middleware instead. (see https://laravel.com/docs/middleware)
 - Deprecated `craft\filters\ConditionalFilterTrait`.
 - Deprecated `craft\filters\SiteFilterTrait`.
@@ -827,7 +831,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Removed `craft\controllers\AppController::actionGetPluginLicenseInfo()` and `actionUpdatePluginLicense()`. `CraftCms\Cms\Http\Controllers\App\PluginsController` should be used instead.
 - Removed `craft\controllers\AppController::actionBrokenImage()`. `CraftCms\Cms\Http\Middleware\ShowBrokenImage` should be used instead.
 - Removed `craft\controllers\AppController::actionRenderElements()` and `actionRenderComponents()`. `CraftCms\Cms\Http\Controllers\App\RenderController` should be used instead.
-- Removed `craft\controllers\NotFoundController`. Laravel's exception handling should be used instead.
+- Removed `craft\controllers\NotFoundController`. Laravel’s exception handling should be used instead.
 - Removed the header-setting logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\SetHeaders` middleware handles this functionality.
 - Removed the licensing issues screen logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\EnforceLicenses` middleware handles this functionality.
 - Removed `craft\controllers\AppController::actionTryEdition()` and `actionSwitchToLicensedEdition()` in favor of `CraftCms\Cms\Http\Controllers\EditionController`.
@@ -842,11 +846,11 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\helpers\MailerHelper`. Laravel mail configuration and drivers should be used instead.
 - Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
 - Deprecated `craft\mail\Mailer::$template`, `craft\mail\Mailer::$siteOverrides`, `craft\models\MailSettings::$template`, and `craft\models\MailSettings::$siteOverrides`. Laravel mailable views and environment-specific Laravel mailers should be used instead.
-- Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
+- Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel’s `mail` config and drivers.
 
 ### Migrations
 
-Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
+Craft and Yii’s migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
 
 The `php craft fields:merge` and `php craft entry-types:merge` commands will now generate Laravel migrations.
 
@@ -914,8 +918,8 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 - Added `CraftCms\Cms\Support\Security`.
 - Added `CraftCms\Cms\Support\Facades\Security`.
 - Added `CraftCms\Cms\Http\Middleware\AddLogContext`.
-- Deprecated `Craft::$app->getSecurity()` in favor of Laravel's Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
-- Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
+- Deprecated `Craft::$app->getSecurity()` in favor of Laravel’s Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
+- Deprecated the `blowfishHashCost` general config setting in favor of Laravel’s `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
 
 ### Updates
 
@@ -1001,7 +1005,7 @@ Moved the following controllers:
 ### Routes
 
 - Deprecated `craft\services\Routes`. `CraftCms\Cms\Route\Routes` should be used instead.
-- Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel's routing](https://laravel.com/docs/12.x/routing) instead.
+- Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel’s routing](https://laravel.com/docs/12.x/routing) instead.
 
 ### Search
 

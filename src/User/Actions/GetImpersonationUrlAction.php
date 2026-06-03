@@ -22,7 +22,7 @@ readonly class GetImpersonationUrlAction
         $token = $this->tokens->createToken([
             action_url('/users/impersonate-with-token'), [
                 'userId' => $user->id,
-                'prevUserId' => Auth::user()->id ?? $user->id,
+                'prevUserId' => Auth::craftUser()?->getCraftUserId() ?? $user->id,
             ],
         ], 1, now()->addHour());
 

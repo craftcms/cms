@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Translation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -93,14 +92,14 @@ class I18N
             return $this->getLocale();
         }
 
-        if (Cms::isInstalled() && $user = Auth::user()) {
+        if (Cms::isInstalled() && $user = Auth::craftUser()) {
             // If they have a preferred locale, use it
-            if (($locale = Users::getUserPreference($user->id, 'locale')) !== null) {
+            if (($locale = $user->getPreference('locale')) !== null) {
                 return $this->getLocaleById($locale);
             }
 
             if (
-                ($language = Users::getUserPreference($user->id, 'language')) !== null &&
+                ($language = $user->getPreference('language')) !== null &&
                 $this->validateAppLocaleId($language)
             ) {
                 return $this->getLocaleById($language);

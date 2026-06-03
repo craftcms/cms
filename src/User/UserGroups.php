@@ -67,14 +67,14 @@ readonly class UserGroups
      */
     public function getAssignableGroups(?User $user = null): Collection
     {
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
 
         if (! $currentUser && ! $user) {
             return collect();
         }
 
         // If either user is an admin, all groups are fair game
-        if (($currentUser !== null && $currentUser->admin) || ($user !== null && $user->admin)) {
+        if (($currentUser !== null && $currentUser->isAdmin()) || ($user !== null && $user->admin)) {
             return $this->getAllGroups();
         }
 
