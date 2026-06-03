@@ -1,8 +1,9 @@
 import {css, html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
-import {Variant, type VariantKey} from '@src/types';
+import {Variant} from '@src/types';
 import {classMap} from 'lit/directives/class-map.js';
 import variantsStyles from '@src/styles/variants.styles';
+import {Color} from '@src/constants/colors';
 
 /**
  * @summary Indicators are used to visually represent the status of an object.
@@ -48,7 +49,7 @@ export default class CraftIndicator extends LitElement {
   size: 'md' | 'lg' = 'md';
 
   /** @phpType {Color|string} */
-  @property()
+  @property({reflect: true})
   fill: string = 'var(--c-color-fill-loud)';
 
   @property()
@@ -58,23 +59,17 @@ export default class CraftIndicator extends LitElement {
   appearance: 'filled' | 'outlined' | 'filled-outlined' = 'filled-outlined';
 
   getFill() {
-    switch (this.fill) {
-      case 'live':
-      case Variant.Success:
-        return 'var(--c-color-success-fill-loud)';
-      case Variant.Warning:
-        return 'var(--c-color-warning-fill-loud)';
-      case Variant.Danger:
-        return 'var(--c-color-danger-fill-loud)';
-      case Variant.Info:
-        return 'var(--c-color-info-fill-loud)';
-      case 'draft':
-      case 'default':
-        return 'var(--c-color-neutral-fill-loud)';
-
-      default:
-        return this.fill;
+    // If the fill is known swatch
+    if (Object.keys(Color).includes(this.fill)) {
+      return `var(--c-color-${this.fill}-fill-loud)`;
     }
+
+    // If it's a known variant
+    if (Object.keys(Variant).includes(this.fill)) {
+      return `var(--c-color-${this.fill}-fill-loud)`;
+    }
+
+    return this.fill;
   }
 
   getSize() {
