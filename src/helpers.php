@@ -11,8 +11,11 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Stringable;
 use UnitEnum;
@@ -69,6 +72,15 @@ function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool 
 function debugbar()
 {
     return app()->bound('debugbar') ? app('debugbar') : optional();
+}
+
+function currentUserElement(): ?UserElement
+{
+    $user = Auth::craftUser();
+
+    return $user instanceof CraftUser
+        ? $user->asElement()
+        : null;
 }
 
 /**

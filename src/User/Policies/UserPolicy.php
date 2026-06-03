@@ -6,7 +6,9 @@ namespace CraftCms\Cms\User\Policies;
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\UserPermissions;
 
 class UserPolicy extends ElementPolicy
@@ -15,33 +17,37 @@ class UserPolicy extends ElementPolicy
         private readonly UserPermissions $userPermissions,
     ) {}
 
-    public function view(User $user, User $target): bool
+    public function view(CraftUser $user, UserElement $target): bool
     {
-        return $user->id === $target->id || $user->can('viewUsers');
+        if ($user->getCraftUserId() === $target->id) {
+            return true;
+        }
+
+        return $user->can('viewUsers');
     }
 
-    public function save(User $user, User $target): bool
+    public function save(CraftUser $user, UserElement $target): bool
     {
         // New user registration
         if (! $target->id) {
-            return $user->canRegisterUsers();
+            return $user->can('registerUsers') && Users::canCreateUsers();
         }
 
         // User can always save themselves
-        if ($user->id === $target->id) {
+        if ($user->getCraftUserId() === $target->id) {
             return true;
         }
 
         return $user->can('editUsers');
     }
 
-    public function delete(User $user, User $target): bool
+    public function delete(CraftUser $user, UserElement $target): bool
     {
         if (Edition::get() === Edition::Solo) {
             return false;
         }
 
-        if ($user->id === $target->id) {
+        if ($user->getCraftUserId() === $target->id) {
             return true;
         }
 
@@ -51,27 +57,27 @@ class UserPolicy extends ElementPolicy
         }
 
         // Non-admins cannot delete admins
-        if ($target->admin && ! $user->admin) {
+        if ($target->admin && ! $user->isAdmin()) {
             return false;
         }
 
         return true;
     }
 
-    public function duplicate(User $user, User $target): bool
+    public function duplicate(CraftUser $user, UserElement $target): bool
     {
         return false;
     }
 
-    public function copy(User $user, User $target): bool
+    public function copy(CraftUser $user, UserElement $target): bool
     {
         return false;
     }
 
-    public function impersonate(User $user, User $target): bool
+    public function impersonate(CraftUser $user, UserElement $target): bool
     {
         // Admins can do whatever they want
-        if ($user->admin) {
+        if ($user->isAdmin()) {
             return true;
         }
 
@@ -85,8 +91,14 @@ class UserPolicy extends ElementPolicy
             return false;
         }
 
+        $userId = $user->getCraftUserId();
+
+        if (! $userId) {
+            return false;
+        }
+
         // Make sure the impersonator has at least all the same permissions as the target
-        $userPermissions = $this->userPermissions->getPermissionsByUserId($user->id)->flip();
+        $userPermissions = $this->userPermissions->getPermissionsByUserId($userId)->flip();
         $targetPermissions = $this->userPermissions->getPermissionsByUserId($target->id);
 
         foreach ($targetPermissions as $permission) {
@@ -98,14 +110,14 @@ class UserPolicy extends ElementPolicy
         return true;
     }
 
-    public function suspend(User $user, User $target): bool
+    public function suspend(CraftUser $user, UserElement $target): bool
     {
         if (! $user->can('moderateUsers')) {
             return false;
         }
 
         // Even if you have moderateUsers permissions, only an admin should be able to suspend another admin
-        if (! $user->admin && $target->admin) {
+        if (! $user->isAdmin() && $target->admin) {
             return false;
         }
 

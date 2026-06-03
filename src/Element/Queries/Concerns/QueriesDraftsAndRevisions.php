@@ -367,7 +367,7 @@ trait QueriesDraftsAndRevisions
      * ```php
      * // Fetch drafts by the current user
      * ${elements-var} = {php-method}
-     *     ->draftCreator(Auth::user())
+     *     ->draftCreator(Auth::craftUser())
      *     ->all();
      * ```
      */
@@ -403,7 +403,7 @@ trait QueriesDraftsAndRevisions
      * // Fetch provisional drafts created by the current user
      * ${elements-var} = {php-method}
      *     ->provisionalDrafts()
-     *     ->draftCreator(Auth::user())
+     *     ->draftCreator(Auth::craftUser())
      *     ->all();
      * ```
      */
@@ -588,7 +588,7 @@ trait QueriesDraftsAndRevisions
      * ```php
      * // Fetch revisions by the current user
      * ${elements-var} = {php-method}
-     *     ->revisionCreator(Auth::user())
+     *     ->revisionCreator(Auth::craftUser())
      *     ->all();
      * ```
      */

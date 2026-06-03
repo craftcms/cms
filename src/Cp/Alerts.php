@@ -42,7 +42,7 @@ readonly class Alerts
     public function get(?string $path = null, bool $fetch = false): array
     {
         $alerts = [];
-        $user = Auth::user();
+        $user = Auth::craftUser();
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
 
         if (! $user) {
@@ -114,7 +114,7 @@ readonly class Alerts
         }
 
         if (
-            $user->admin &&
+            $user->isAdmin() &&
             $this->generalConfig->allowAdminChanges &&
             $this->projectConfig->getHadFileWriteIssues()
         ) {

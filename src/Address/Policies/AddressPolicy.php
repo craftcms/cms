@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Address\Policies;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 
 class AddressPolicy extends ElementPolicy
 {
-    public function view(User $user, Address $address): bool
+    public function view(CraftUser $user, Address $address): bool
     {
         if (! $owner = $this->getOwner($address)) {
             return false;
@@ -20,7 +20,7 @@ class AddressPolicy extends ElementPolicy
         return $user->can('view', $owner);
     }
 
-    public function save(User $user, Address $address): bool
+    public function save(CraftUser $user, Address $address): bool
     {
         if (! $owner = $this->getOwner($address)) {
             return false;
@@ -29,7 +29,7 @@ class AddressPolicy extends ElementPolicy
         return $user->can('save', $owner);
     }
 
-    public function delete(User $user, Address $address): bool
+    public function delete(CraftUser $user, Address $address): bool
     {
         if (! $owner = $this->getOwner($address)) {
             return false;
@@ -38,7 +38,7 @@ class AddressPolicy extends ElementPolicy
         return $user->can('save', $owner);
     }
 
-    public function duplicate(User $user, Address $address): bool
+    public function duplicate(CraftUser $user, Address $address): bool
     {
         if (! $owner = $this->getOwner($address)) {
             return false;
@@ -47,12 +47,12 @@ class AddressPolicy extends ElementPolicy
         return $user->can('save', $owner);
     }
 
-    public function copy(User $user, Address $address): bool
+    public function copy(CraftUser $user, Address $address): bool
     {
         return $user->can('duplicate', $address);
     }
 
-    public function createDrafts(User $user, Address $address): bool
+    public function createDrafts(CraftUser $user, Address $address): bool
     {
         return true;
     }

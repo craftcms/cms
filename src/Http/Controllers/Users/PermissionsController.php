@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
@@ -35,15 +36,22 @@ readonly class PermissionsController
     public function index(Request $request, ?int $userId = null): CpScreenResponse
     {
         $user = $this->editedUser($userId);
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
         $response->action('users/save-permissions');
         $response->contentTemplate('users/_permissions', [
             'user' => $user,
             'currentGroupIds' => Arr::pluck($user->getGroups(), 'id'),
+            'currentUserIsAdmin' => $currentUser->isAdmin(),
+            'showPermissions' => $currentUser->can('assignUserPermissions'),
+            'showUserGroups' => $this->canAssignUserGroups($currentUser),
         ]);
 
-        if (! $user->getIsCredentialed() && $user->username && $request->user()->can('moderateUsers')) {
+        if (! $user->getIsCredentialed() && $user->username && $currentUser->can('moderateUsers')) {
             $response->additionalButtonsHtml(
                 Html::button(t('Save and send activation email'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
@@ -70,11 +78,15 @@ readonly class PermissionsController
             abort(403, 'User not authorized to perform this action.');
         }
 
-        $currentUser = $request->user();
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
         $user = $this->editedUser($request->integer('userId'));
 
         // Is their admin status changing?
-        if ($currentUser->admin) {
+        if ($currentUser->isAdmin()) {
             $adminParam = $request->boolean('admin', $user->admin);
 
             if ($adminParam !== $user->admin) {
@@ -114,9 +126,9 @@ readonly class PermissionsController
         return $this->asSuccess(t('Permissions saved.'));
     }
 
-    private function saveUserGroups(Request $request, UserElement $user, UserElement $currentUser): void
+    private function saveUserGroups(Request $request, UserElement $user, CraftUser $currentUser): void
     {
-        if (! $currentUser->canAssignUserGroups()) {
+        if (! $this->canAssignUserGroups($currentUser)) {
             return;
         }
 
@@ -161,7 +173,7 @@ readonly class PermissionsController
         $user->setGroups($newGroups);
     }
 
-    private function saveUserPermissions(Request $request, UserElement $user, UserElement $currentUser): void
+    private function saveUserPermissions(Request $request, UserElement $user, CraftUser $currentUser): void
     {
         if (! $currentUser->can('assignUserPermissions')) {
             return;

@@ -53,10 +53,15 @@ readonly class RecoveryCodesController
         $systemNameUnderline = str_repeat('=', mb_strlen($systemName));
         $primarySite = $sites->getPrimarySite();
         $website = $primarySite->getBaseUrl() ?? $primarySite->getName();
-        $user = $request->user();
+        $user = $request->craftUser();
+        if (! $user) {
+            abort(401);
+        }
+
+        $userElement = $user->asElement();
         $generalConfig = Cms::config();
-        $username = ! $generalConfig->useEmailAsUsername && $user->username ? $user->username : null;
-        $account = $username ? sprintf('%s (%s)', $username, $user->email) : $user->email;
+        $username = ! $generalConfig->useEmailAsUsername && $userElement->username ? $userElement->username : null;
+        $account = $username ? sprintf('%s (%s)', $username, $userElement->email) : $userElement->email;
         $generated = $i18N->getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);
         $codeContent = implode('', array_map(
             fn (string $code) => $code ? "- $code\n" : "- ~~~~~~~~~~~~~\n",
@@ -79,7 +84,7 @@ readonly class RecoveryCodesController
         $codeContent
         EOD;
 
-        $name = sprintf('%s recovery codes - %s.txt', $systemName, $username ?? $user->email);
+        $name = sprintf('%s recovery codes - %s.txt', $systemName, $username ?? $userElement->email);
 
         return response()->make($content, 200, [
             'Content-Type' => 'text/plain',

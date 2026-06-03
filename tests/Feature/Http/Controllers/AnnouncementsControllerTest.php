@@ -15,7 +15,7 @@ test('markRead', function () {
     $announcement = Announcement::factory()
         ->unread()
         ->create([
-            'userId' => auth()->user()->id,
+            'userId' => auth('craft')->craftUser()?->getCraftUserId(),
         ]);
 
     expect($announcement->fresh()->unread)->toBeTrue();

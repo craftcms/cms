@@ -325,7 +325,7 @@ readonly class ApiController extends GqlController
             return true;
         }
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         return $user && $user->isAdmin() && $user->getPreference('showExceptionView');
     }

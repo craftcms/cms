@@ -27,9 +27,7 @@ class User extends Component
      */
     public function getIsAdmin(): bool
     {
-        $user = Auth::user();
-
-        return ($user && $user->admin);
+        return Auth::craftUser()?->isAdmin() ?? false;
     }
 
     /**
@@ -40,9 +38,7 @@ class User extends Component
      */
     public function checkPermission(string $permissionName): bool
     {
-        $user = Auth::user();
-
-        return ($user && $user->can($permissionName));
+        return Auth::craftUser()?->can($permissionName) ?? false;
     }
 
     /**
@@ -53,7 +49,7 @@ class User extends Component
      */
     public function getIdentity(bool $autoRenew = true): UserElement|null
     {
-        return Auth::user();
+        return Auth::craftUser()?->asElement();
     }
 
     /**
@@ -74,7 +70,7 @@ class User extends Component
      */
     public function getIsGuest(): bool
     {
-        return Auth::user() === null;
+        return Auth::craftUser() === null;
     }
 
     /**
@@ -85,6 +81,6 @@ class User extends Component
      */
     public function getId(): ?int
     {
-        return Auth::user()?->getId();
+        return Auth::craftUser()?->getCraftUserId();
     }
 }

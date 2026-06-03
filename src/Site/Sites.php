@@ -279,7 +279,7 @@ class Sites
             return $this->editableSiteIds;
         }
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $user?->can("editSite:$site->uid"))->pluck('id')->values();
     }

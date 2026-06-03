@@ -13,7 +13,7 @@ readonly class RequireAdmin
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $user = $request->user()) {
+        if (! $user = $request->craftUser()) {
             throw new AuthenticationException('Unauthenticated.');
         }
 

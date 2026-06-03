@@ -123,7 +123,7 @@ enum Edition: int implements Arrayable
 
     public static function canUpgrade(): bool
     {
-        if (! Auth::user()?->isAdmin()) {
+        if (! Auth::craftUser()?->isAdmin()) {
             return false;
         }
 
