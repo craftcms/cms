@@ -89,6 +89,8 @@ class Svg extends Image
 
         // If the size is defined by viewbox only, add in width and height attributes
         if (!preg_match(self::SVG_WIDTH_RE, $svg) && !preg_match(self::SVG_HEIGHT_RE, $svg)) {
+            $svg = preg_replace(self::SVG_CLEANUP_WIDTH_RE, '${1}', $svg);
+            $svg = preg_replace(self::SVG_CLEANUP_HEIGHT_RE, '${1}', $svg);
             $svg = preg_replace(self::SVG_TAG_RE,
                 "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
         }
