@@ -169,7 +169,7 @@ ${buildColorableTokens()}
 ${buildSemanticTokens()}
 }
 
-${[...availableColors, ...semanticColors].map((c) => buildStyleBlock(c)).join('\n')}
+${[...availableColors, ...Object.values(semanticColors)].map((c) => buildStyleBlock(c)).join('\n')}
 `;
 }
 

@@ -2,12 +2,8 @@ import {type CSSResultGroup, html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './callout.styles.js';
 import '../icon/icon.js';
-import {
-  Appearance,
-  type AppearanceKey,
-  Variant,
-  type VariantKey,
-} from '@src/types/index.js';
+import {Appearance, type AppearanceKey} from '@src/constants/appearances';
+import {Variant, type VariantKey} from '@src/constants/variants';
 import variantsStyles from '@src/styles/variants.styles.js';
 
 export default class CraftCallout extends LitElement {
