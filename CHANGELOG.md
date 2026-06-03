@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.6 - 2026-06-03
 
 - Improved the accessibility of the Login page. ([#19025](https://github.com/craftcms/cms/pull/19025))
 - Added `CraftCms\Cms\User\Contracts\CraftUser` and `CraftUserTrait`. ([#19009](https://github.com/craftcms/cms/pull/19009))
