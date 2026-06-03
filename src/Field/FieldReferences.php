@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Operations\ElementRefs;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -19,18 +18,13 @@ use Tpetry\QueryExpressions\Language\Alias;
 #[Singleton]
 readonly class FieldReferences
 {
-    public function __construct(
-        private ElementRefs $elementRefs,
-    ) {}
-
     public function updateReferences(TracksReferencesFieldInterface $field, ElementInterface $element): void
     {
         if (! isset($field->id, $field->layoutElement->uid, $element->id, $element->siteId)) {
             return;
         }
 
-        $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
-        $targetIds = is_string($value) ? $this->elementRefs->targetIds($value, $element->siteId) : [];
+        $targetIds = $field->getReferenceTargetIds($element);
         $sourceSiteId = $element->siteId;
 
         DB::transaction(function () use ($field, $element, $sourceSiteId, $targetIds) {
@@ -93,28 +87,6 @@ readonly class FieldReferences
         DB::table(Table::FIELDREFERENCES)
             ->whereIn('fieldInstanceUid', $removedUids)
             ->delete();
-    }
-
-    /**
-     * @param  int[]  $oldTargetIds
-     */
-    public function replaceReferences(TracksReferencesFieldInterface $field, ElementInterface $element, array $oldTargetIds, int $newTargetId): bool
-    {
-        $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
-
-        if (! is_string($value)) {
-            return false;
-        }
-
-        $newValue = $this->elementRefs->replaceTargetRefs($value, $oldTargetIds, $newTargetId, $element->siteId);
-
-        if ($newValue === $value) {
-            return false;
-        }
-
-        $element->setFieldValue($field->handle, $newValue);
-
-        return true;
     }
 
     /**

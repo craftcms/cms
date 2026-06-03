@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element\Jobs;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
-use CraftCms\Cms\Field\FieldReferences;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -72,7 +71,6 @@ class ReplaceReferences extends BatchedElementJob
         }
 
         $saveElement = false;
-        $fieldReferences = app(FieldReferences::class);
 
         foreach ($fieldInstanceUids as $fieldInstanceUid) {
             $layoutElement = $element->getFieldLayout()?->getElementByUid($fieldInstanceUid);
@@ -87,7 +85,7 @@ class ReplaceReferences extends BatchedElementJob
                 continue;
             }
 
-            if ($fieldReferences->replaceReferences($field, $element, $this->oldTargetIds, $this->newTargetId)) {
+            if ($field->replaceReferences($element, $this->oldTargetIds, $this->newTargetId)) {
                 $saveElement = true;
             }
         }

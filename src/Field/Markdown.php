@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Concerns\PreservesElementRefs;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
+use CraftCms\Cms\Field\Concerns\TracksReferences;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -43,6 +44,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 {
     use PreservesElementRefs;
     use ProvidesLinkField;
+    use TracksReferences;
 
     public const string TOOLBAR_BOLD = 'bold';
 
