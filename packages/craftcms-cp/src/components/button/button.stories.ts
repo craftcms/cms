@@ -5,7 +5,7 @@ import {html} from 'lit';
 import './button.js';
 import '../icon/icon.js';
 import '../chip/chip.js';
-import {ButtonAppearance, ButtonVariant} from '@src/types';
+import {ButtonVariant, ButtonAppearance} from '@src/components/button/button';
 
 const buttonVariants = Object.values(ButtonVariant);
 const appearance = Object.values(ButtonAppearance);
@@ -73,7 +73,7 @@ export const Default: Story = {
   args: {},
 };
 
-export const Accent: Story = {
+export const Variants: Story = {
   args: {
     variant: 'accent',
   },
@@ -83,9 +83,12 @@ export const Accent: Story = {
       options: buttonVariants,
     },
   },
-  render: (args) => html`
-    <craft-button variant="${args.variant}">${args.label}</craft-button>
-  `,
+  render: () =>
+    html`${buttonVariants.map(
+      (variant) => html`
+        <craft-button variant="${variant}">${variant}</craft-button>
+      `
+    )}`,
 };
 
 export const Sizes: Story = {

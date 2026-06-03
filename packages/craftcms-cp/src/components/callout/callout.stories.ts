@@ -3,10 +3,8 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import {html} from 'lit';
 
 import './callout.js';
-import {Appearance, Variant} from '@src/types';
-
-const variants = Object.values(Variant);
-const appearances = Object.values(Appearance);
+import {appearances} from '@src/constants/appearances.js';
+import {variants} from '@src/constants/variants.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {

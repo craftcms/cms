@@ -1,4 +1,4 @@
-name: facades
+name: build
 
 on:
   push:
@@ -48,4 +48,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Update build artifacts
-          file_pattern: src/
+          file_pattern: resources/

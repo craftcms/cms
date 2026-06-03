@@ -6,10 +6,9 @@ import '../../components/callout/callout.js';
 import '../../components/button/button.js';
 import '../../components/indicator/indicator.js';
 
-import {Appearance, Variant, ButtonAppearance, ButtonVariant} from '@src/types';
-
-const variants = Object.values(Variant);
-const appearances = Object.values(Appearance);
+import {appearances} from '@src/constants/appearances';
+import {variants} from '@src/constants/variants';
+import {ButtonVariant, ButtonAppearance} from '@src/components/button/button';
 
 const buttonVariants = Object.values(ButtonVariant);
 const buttonAppearances = Object.values(ButtonAppearance);
@@ -99,40 +98,6 @@ export const ButtonMatrix: Story = {
               </tr>
             `
           )}
-        </tbody>
-      </table>
-    </div>
-  `,
-};
-
-/**
- * Indicators only use variants (no appearance axis).
- * They demonstrate the simplest use of the variant system.
- */
-export const IndicatorVariants: Story = {
-  name: 'Indicator Variants',
-  render: () => html`
-    <div class="stage">
-      <table class="cp-table cp-table--padded">
-        <thead>
-          <tr>
-            ${variants.map((v) => html`<th>${v}</th>`)}
-            <th>empty</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            ${variants.map(
-              (variant) => html`
-                <td>
-                  <craft-indicator variant="${variant}"></craft-indicator>
-                </td>
-              `
-            )}
-            <td>
-              <craft-indicator variant="empty"></craft-indicator>
-            </td>
-          </tr>
         </tbody>
       </table>
     </div>

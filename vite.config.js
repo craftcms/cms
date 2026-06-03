@@ -97,8 +97,8 @@ export default defineConfig(({mode}) => {
 
   let server = undefined;
   if (env.APP_URL) {
-    const url = new URL(env.APP_URL);
-    const host = url.hostname || 'localhost';
+    const url = new URL(env.APP_URL|| 'http://localhost');
+    const host = url.hostname ;
 
     server = url.hostname.includes('.ddev.site')
       ? {

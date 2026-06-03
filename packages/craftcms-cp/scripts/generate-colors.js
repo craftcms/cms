@@ -172,6 +172,10 @@ ${[...availableColors, ...Object.keys(semanticColors)].map((c) => buildStyleBloc
 `;
 }
 
-const css = generateStyles(availableColors);
-writeFileSync(OUT_FILE, css);
-console.log(`Generated ${OUT_FILE}`);
+export default function main() {
+  const css = generateStyles(availableColors);
+  writeFileSync(OUT_FILE, css);
+  console.log(`Generated ${OUT_FILE}`);
+}
+
+main();
