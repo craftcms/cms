@@ -9,13 +9,16 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 trait EditUserTrait
@@ -42,7 +45,7 @@ trait EditUserTrait
     protected function editedUser(?int $userId): User
     {
         if ($userId === null) {
-            return $this->editedUser(Auth::user()->id);
+            return $this->editedUser(Auth::craftUser()?->getCraftUserId());
         }
 
         /** @var User|null $user */
@@ -79,7 +82,7 @@ trait EditUserTrait
 
         $screens[self::SCREEN_ADDRESSES] = ['label' => t('Addresses')];
 
-        $currentUser = Auth::user();
+        $currentUser = currentUserElement();
 
         event($event = new EditUserScreensResolving($currentUser, $user, $screens));
 
@@ -163,7 +166,7 @@ trait EditUserTrait
 
     protected function existingPasswordVerified(Request $request): bool
     {
-        if (! $request->user()) {
+        if (! $request->craftUser()) {
             return false;
         }
 
@@ -173,22 +176,45 @@ trait EditUserTrait
             return false;
         }
 
-        $currentHashedPassword = $request->user()->password;
+        $currentHashedPassword = $request->craftUser()->asElement()->password;
 
         return Hash::check($currentPassword, $currentHashedPassword);
     }
 
     private function showPermissionsScreen(): bool
     {
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
+
+        if (! $currentUser) {
+            return false;
+        }
 
         return
             Edition::get()->value >= Edition::Team->value &&
             (
-                (Edition::get() === Edition::Team && $currentUser->admin) ||
+                (Edition::get() === Edition::Team && $currentUser->isAdmin()) ||
                 (Edition::get()->value >= Edition::Pro->value && $currentUser->can('assignUserPermissions')) ||
-                $currentUser->canAssignUserGroups()
+                $this->canAssignUserGroups($currentUser)
             );
+    }
+
+    private function canAssignUserGroups(CraftUser $user): bool
+    {
+        if (! Edition::isAtLeast(Edition::Pro)) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        foreach (UserGroups::getAllGroups() as $group) {
+            if ($user->can("assignUserGroup:$group->uid")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function editUserScreenUrl(User $user, string $screen): string

@@ -117,7 +117,7 @@ class EditElementController
         $canEditMultipleSites = count($propEditableSiteIds) > 1 || $addlEditableSites;
 
         // Permissions
-        $canSave = $this->canSave($element, $this->request->user());
+        $canSave = $this->canSave($element, $this->request->craftUser());
         $canSaveCanonical = Gate::check('saveCanonical', $element);
         $canCreateDrafts = Gate::check('createDrafts', $canonical);
         $canDuplicate = ! $isRevision && Gate::check('duplicateAsDraft', $element);
@@ -361,7 +361,7 @@ class EditElementController
                 ->orderByDesc('dateUpdated')
                 ->with(['draftCreator'])
                 ->get()
-                ->filter(fn (ElementInterface $draft) => $this->request->user()->can('view', $draft))
+                ->filter(fn (ElementInterface $draft) => $this->request->craftUser()->can('view', $draft))
                 ->all();
         } else {
             $drafts = [];

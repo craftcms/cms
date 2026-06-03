@@ -299,7 +299,7 @@ it('logs user in after registration when autoLoginAfterAccountActivation is true
         ->assertSessionHasNoErrors();
 
     expect(Auth::check())->toBeTrue();
-    expect(Auth::user()->email)->toBe('autologin@example.com');
+    expect(Auth::craftUser()?->asElement()->email)->toBe('autologin@example.com');
 });
 
 it('can upload a photo', function () {

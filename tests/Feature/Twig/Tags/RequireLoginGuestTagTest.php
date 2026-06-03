@@ -12,9 +12,9 @@ use function Pest\Laravel\actingAs;
 beforeEach(function () {
     $this->renderer = app(TemplateRenderer::class);
 
-    // Ensure request()->user() delegates to the Auth guard,
+    // Ensure request()->craftUser() delegates to the Auth guard,
     // which is needed by the yii2-adapter's Controller::requireLogin().
-    request()->setUserResolver(fn () => Auth::user());
+    request()->setUserResolver(fn () => Auth::craftUser());
 });
 
 describe('requireLogin', function () {

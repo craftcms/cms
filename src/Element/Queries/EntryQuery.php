@@ -227,7 +227,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return;
         }
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         if (! $user) {
             throw new QueryAbortedException;
@@ -253,21 +253,23 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 if ($excludePeerEntries || $excludePeerDrafts) {
                     $partialAccessSections[] = $section->id;
 
-                    $query->orWhere(function (Builder $query) use ($excludePeerDrafts, $user, $excludePeerEntries, $section) {
+                    $userId = $user->getCraftUserId();
+
+                    $query->orWhere(function (Builder $query) use ($excludePeerDrafts, $userId, $excludePeerEntries, $section) {
                         $query->where('entries.sectionId', $section->id);
 
                         if ($excludePeerEntries) {
                             $query->whereExists(
                                 DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
                                     ->whereColumn('entries_authors.entryId', 'entries.id')
-                                    ->where('entries_authors.authorId', $user->id)
+                                    ->where('entries_authors.authorId', $userId)
                             );
                         }
 
                         if ($excludePeerDrafts) {
-                            $query->where(function (Builder $query) use ($user) {
+                            $query->where(function (Builder $query) use ($userId) {
                                 $query->whereNull('elements.draftId')
-                                    ->orWhere('drafts.creatorId', $user->id);
+                                    ->orWhere('drafts.creatorId', $userId);
                             });
                         }
                     });

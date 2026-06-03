@@ -9,6 +9,10 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Path;
 use Illuminate\Support\Facades\Event;
 
+beforeEach(function () {
+    Cms::setIsInstalled(false);
+});
+
 describe('prepareAssetName', function () {
     test('returns expected results for various inputs', function (string $expected, string $name, bool $isFilename, bool $preventPluginModifications) {
         expect(AssetsHelper::prepareAssetName($name, $isFilename, $preventPluginModifications))->toBe($expected);

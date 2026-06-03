@@ -150,9 +150,16 @@ readonly class Query
             ? new Lower($column)
             : $column;
 
-        $query->where(function (Builder $query) use ($caseColumn, $isMysql, $isPgsql, $parsedColumnType, $columnType, $defaultOperator, $parsed, $column, $caseInsensitive) {
-            $boolean = match ($parsed->operator) {
-                QueryParam::AND, QueryParam::NOT => 'and',
+        $paramOperator = $parsed->operator;
+        $negate = $paramOperator === QueryParam::NOT;
+
+        if ($negate) {
+            $paramOperator = QueryParam::AND;
+        }
+
+        $query->where(function (Builder $query) use ($caseColumn, $isMysql, $isPgsql, $parsedColumnType, $columnType, $defaultOperator, $column, $caseInsensitive, $paramOperator, $negate, $parsed) {
+            $boolean = match ($paramOperator) {
+                QueryParam::AND => 'and',
                 default => 'or',
             };
 
@@ -161,7 +168,7 @@ readonly class Query
 
             foreach ($parsed->values as $value) {
                 $value = self::normalizeEmptyValue($value);
-                $operator = self::parseParamOperator($value, $defaultOperator, $parsed->operator === QueryParam::NOT);
+                $operator = self::parseParamOperator($value, $defaultOperator, $negate);
 
                 if ($columnType !== null) {
                     if ($parsedColumnType === self::TYPE_BOOLEAN) {
@@ -254,14 +261,14 @@ readonly class Query
                 }
 
                 // ['or', 1, 2, 3] => IN (1, 2, 3)
-                if (strtolower($parsed->operator) === QueryParam::OR && $operator === '=') {
+                if (strtolower($paramOperator) === QueryParam::OR && $operator === '=') {
                     $inVals[] = $value;
 
                     continue;
                 }
 
                 // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
-                if (strtolower($parsed->operator) === QueryParam::AND && $operator === '!=') {
+                if (strtolower($paramOperator) === QueryParam::AND && $operator === '!=') {
                     $notInVals[] = $value;
 
                     continue;
@@ -275,7 +282,13 @@ readonly class Query
             }
 
             if (! empty($notInVals)) {
-                $query->whereNotIn($caseColumn, $notInVals, boolean: $boolean);
+                $query->where(function (Builder $query) use ($notInVals, $caseColumn, $parsedColumnType, $column) {
+                    $query->whereNotIn($caseColumn, $notInVals);
+
+                    if ($parsedColumnType === self::TYPE_JSON) {
+                        $query->orWhereNull($column);
+                    }
+                }, boolean: $boolean);
             }
         }, boolean: $boolean);
 

@@ -21,3 +21,14 @@ test('session info returns csrf token without extending the session', function (
 
     expect($response->json('csrfTokenValue'))->toBeString();
 });
+
+test('elevated session timeout does not extend the session', function () {
+    $response = getJson(action([SessionInfoController::class, 'confirmTimeout']));
+
+    $response
+        ->assertOk()
+        ->assertHeaderMissing('Set-Cookie')
+        ->assertJson([
+            'timeout' => 0,
+        ]);
+});

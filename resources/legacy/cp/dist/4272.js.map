@@ -1,1 +1,0 @@
-{"version":3,"file":"4272.js","mappings":"iGAAA,WACEA,aAAc,iD","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/fr.js"],"sourcesContent":["export default {\n  optionsPopup: 'Fenêtre popup des options de la boîte combinée',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

@@ -55,7 +55,7 @@ readonly class Announcements
      */
     public function get(): array
     {
-        $userId = Auth::user()?->getKey();
+        $userId = Auth::craftUser()?->getCraftUserId();
 
         if (! $userId) {
             return [];
@@ -111,7 +111,7 @@ readonly class Announcements
             return;
         }
 
-        $userId = Auth::user()?->getKey();
+        $userId = Auth::craftUser()?->getCraftUserId();
 
         if (! $userId) {
             return;

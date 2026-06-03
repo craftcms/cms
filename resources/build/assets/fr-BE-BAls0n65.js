@@ -1,0 +1,1 @@
+import e from"./fr-Ido_b_59.js";var t={...e};export{t as default};

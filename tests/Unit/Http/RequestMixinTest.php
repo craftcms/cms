@@ -5,6 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Routing\ActionRoute;
+use CraftCms\Cms\User\Models\User;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
@@ -20,6 +23,63 @@ beforeEach(function () {
 afterEach(function () {
     Context::forgetHidden(HandleTokenRequest::TOKEN_KEY);
     Context::forgetHidden(HandleTokenRequest::HAD_TOKEN_KEY);
+});
+
+describe('craftUser', function () {
+    it('returns the current Craft user', function () {
+        $user = new User(['id' => 123]);
+        $request = Request::create('/admin');
+        $request->setUserResolver(fn () => $user);
+
+        expect($request->craftUser())->toBe($user);
+    });
+
+    it('throws when the current user is not a Craft user', function () {
+        $request = Request::create('/admin');
+        $request->setUserResolver(fn () => new class implements Authenticatable
+        {
+            public function getAuthIdentifierName()
+            {
+                return 'id';
+            }
+
+            public function getAuthIdentifier()
+            {
+                return 123;
+            }
+
+            public function getAuthPasswordName()
+            {
+                return 'password';
+            }
+
+            public function getAuthPassword()
+            {
+                return '';
+            }
+
+            public function getRememberToken()
+            {
+                return null;
+            }
+
+            public function setRememberToken($value) {}
+
+            public function getRememberTokenName()
+            {
+                return 'remember_token';
+            }
+        });
+
+        expect(fn () => $request->craftUser())
+            ->toThrow(AuthenticationException::class, 'The request user must implement');
+    });
+
+    it('returns null when there is no current user', function () {
+        $request = Request::create('/admin');
+
+        expect($request->craftUser())->toBeNull();
+    });
 });
 
 describe('isCpRequest', function () {

@@ -7,7 +7,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 beforeEach(function () {

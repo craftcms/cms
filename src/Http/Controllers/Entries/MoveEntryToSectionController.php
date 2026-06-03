@@ -58,7 +58,7 @@ readonly class MoveEntryToSectionController
             ->pluck('et.id')
             ->all();
 
-        $user = $this->request->user();
+        $user = $this->request->craftUser();
 
         // filter all sections to those that have all the entry types we just got
         $compatibleSections = $this->sections->getEditableSections()

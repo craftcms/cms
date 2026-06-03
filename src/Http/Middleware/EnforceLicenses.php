@@ -22,7 +22,7 @@ readonly class EnforceLicenses
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $request->user()) {
+        if (! $request->craftUser()) {
             return $next($request);
         }
 

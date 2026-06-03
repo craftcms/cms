@@ -8,7 +8,7 @@
 {% set canHaveDrafts = craft.users().drafts().draftOf(false).savedDraftsOnly().exists() %}
 
 {% block actionButton %}
-    {% if Auth.user.canRegisterUsers() %}
+    {% if canRegisterUsers %}
         <a class="btn submit add icon" href="{{ url('users/new') }}">
             {{ buttonLabel }}
         </a>

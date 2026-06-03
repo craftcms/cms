@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[2437,8722],{2437:function(a,i,n){n.r(i),i.default={validationError:"Error,",validationWarning:"Advertencia,",validationSuccess:"Satisfactorio,",validationInfo:"Información,"}},8722:function(a,i,n){n.r(i);var r=n(2437);i.default={...r.default}}}]);
-//# sourceMappingURL=8722.js.map

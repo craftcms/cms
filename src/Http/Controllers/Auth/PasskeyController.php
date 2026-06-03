@@ -9,9 +9,11 @@ use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -21,20 +23,28 @@ readonly class PasskeyController extends AuthenticationController
     public function requestOptions(Passkeys $passkeys): JsonResponse
     {
         $serializer = $passkeys->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($passkeys->getPasskeyRequestOptions(), 'json');
+
+        Session::put($passkeys->passkeyRequestOptionsParam, $serializedData);
 
         return new JsonResponse([
-            'options' => $serializer->serialize($passkeys->getPasskeyRequestOptions(), 'json'),
+            'options' => $serializedData,
         ]);
     }
 
-    public function login(Request $request, AuthMethods $auth, Impersonation $impersonation): Response
+    public function login(Request $request, Passkeys $passkeys, AuthMethods $auth, Impersonation $impersonation): Response
     {
         $request->validate([
             'requestOptions' => ['required'],
             'authResponse' => ['required'],
         ]);
 
-        $requestOptions = $request->input('requestOptions');
+        $requestOptions = Session::remove($passkeys->passkeyRequestOptionsParam);
+
+        if (! $requestOptions) {
+            return $this->asFailure(t('Passkey authentication failed.'));
+        }
+
         $response = $request->input('authResponse');
         $credential = WebAuthn::where('credentialId', Json::decode($response)['id'])->first();
 
@@ -42,9 +52,11 @@ readonly class PasskeyController extends AuthenticationController
             return $this->asFailure(t('Passkey authentication failed.'));
         }
 
-        $user = User::findOne(['id' => $credential->userId]);
+        /** @var SessionGuard $guard */
+        $guard = auth('craft');
+        $user = $guard->getProvider()->retrieveById($credential->userId);
 
-        if ($user === null) {
+        if (! $user instanceof CraftUser) {
             return $this->handleLoginFailure($request);
         }
 
@@ -54,7 +66,7 @@ readonly class PasskeyController extends AuthenticationController
 
         // if we're impersonating, pass the user we're impersonating to the complete method
         if ($impersonation->isImpersonating()) {
-            $user = $request->user();
+            $user = $request->craftUser() ?? $user;
         }
 
         return $this->completeLogin($request, $user, true);
