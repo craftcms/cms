@@ -10,6 +10,8 @@ import variantsStyles from '@src/styles/variants.styles';
  * should use one of the status components.
  *
  * @since 1.0
+ *
+ * @phpComponent
  */
 export default class CraftIndicator extends LitElement {
   static override styles = [
@@ -35,6 +37,7 @@ export default class CraftIndicator extends LitElement {
   @property()
   size: 'md' | 'lg' = 'md';
 
+  /** @phpType {Color|string} */
   @property()
   fill: string = 'var(--c-color-fill-loud)';
 
