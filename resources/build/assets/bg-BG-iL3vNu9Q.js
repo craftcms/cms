@@ -1,0 +1,1 @@
+import e from"./bg-CucplSWx.js";var t={...e};export{t as default};
