@@ -31,6 +31,12 @@ const ENUM_IMPORTS = {
   Color: 'CraftCms\\Cms\\Shared\\Enums\\Color',
 };
 
+// TS type aliases that resolve to a plain PHP type. e.g. `VariantKey` is a
+// string union, so it maps to `string`. A `@phpType` tag can always override.
+const TYPE_ALIASES = {
+  VariantKey: 'string',
+};
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function pascalFromTag(tagName) {
@@ -67,7 +73,9 @@ function mapType(attr) {
   let type;
   let paramDoc = null;
 
-  if (isStringLiteralUnion(base)) {
+  if (TYPE_ALIASES[base]) {
+    type = TYPE_ALIASES[base];
+  } else if (isStringLiteralUnion(base)) {
     type = 'string';
     paramDoc = base; // e.g. 'md' | 'lg'
   } else if (base === 'string') {
@@ -85,6 +93,16 @@ function mapType(attr) {
   }
 
   return {type, paramDoc, enum: null};
+}
+
+// Widens a PHP type to also accept null (used when an attribute has no default,
+// so the generated property can be initialized to null rather than left unset).
+function makeNullable(type) {
+  if (type === 'mixed' || type.startsWith('?') || /(^|\|)null(\||$)/.test(type)) {
+    return type;
+  }
+
+  return type.includes('|') ? `${type}|null` : `?${type}`;
 }
 
 const indent = (lines, pad = '    ') =>
@@ -107,18 +125,50 @@ function generateSetter(attr, field, mapped) {
   );
 }
 
-function generateRenderLine(attr, field, mapped) {
+function generateRenderLine(attr, field, mapped, effectiveDefault) {
   const resolved = mapped.enum
     ? `$this->${field} instanceof ${mapped.enum} ? $this->${field}->value : $this->${field}`
     : `$this->${field}`;
 
   // Omit the attribute when it still holds its default, keeping the markup
-  // clean (the web component applies the same defaults itself).
-  if (attr.default === undefined || attr.default === 'null') {
+  // clean (the web component applies the same defaults itself). `Html::tag`
+  // renders bool `true` as a bare attribute and omits `false`/`null`.
+  if (effectiveDefault === 'null') {
     return `'${attr.name}' => ${resolved},`;
   }
 
-  return `'${attr.name}' => $this->${field} === ${attr.default} ? null : ${mapped.enum ? `(${resolved})` : resolved},`;
+  return `'${attr.name}' => $this->${field} === ${effectiveDefault} ? null : ${mapped.enum ? `(${resolved})` : resolved},`;
+}
+
+function camelCase(name) {
+  return name
+    .split(/[-_]/)
+    .map((part, i) =>
+      i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
+    )
+    .join('');
+}
+
+// Method names already provided by the ViewComponent base.
+const RESERVED_METHODS = [
+  'make',
+  'attributes',
+  'slot',
+  'toHtml',
+  '__toString',
+  '__construct',
+];
+
+function generateSlotSetter(methodName, slotKey) {
+  const key = slotKey === '' ? "''" : `'${slotKey}'`;
+
+  return (
+    `    public function ${methodName}(Closure|Htmlable|Stringable|string $content): static\n` +
+    `    {\n` +
+    `        $this->slots[${key}] = $content;\n\n` +
+    `        return $this;\n` +
+    `    }`
+  );
 }
 
 function generateClass(decl) {
@@ -130,6 +180,7 @@ function generateClass(decl) {
   const fields = [];
   const setters = [];
   const renderLines = [];
+  const usedNames = new Set(RESERVED_METHODS);
 
   for (const attr of attributes) {
     const field = attr.fieldName ?? attr.name;
@@ -137,25 +188,65 @@ function generateClass(decl) {
     if (mapped.enum) {
       enums.add(mapped.enum);
     }
+    usedNames.add(field);
 
-    const def = attr.default !== undefined ? ` = ${attr.default}` : '';
-    fields.push(`    protected ${mapped.type} $${field}${def};`);
-    setters.push(generateSetter(attr, field, mapped));
-    renderLines.push(generateRenderLine(attr, field, mapped));
+    // CEM only captures literal defaults; non-literal/absent ones come through
+    // as `undefined`. In that case make the property nullable and default null
+    // so it's always initialized (and omitted from the rendered markup).
+    const hasDefault =
+      attr.default !== undefined && attr.default !== 'undefined';
+    const type = hasDefault ? mapped.type : makeNullable(mapped.type);
+    const effectiveDefault = hasDefault ? attr.default : 'null';
+
+    fields.push(`    protected ${type} $${field} = ${effectiveDefault};`);
+    setters.push(generateSetter(attr, field, {...mapped, type}));
+    renderLines.push(generateRenderLine(attr, field, mapped, effectiveDefault));
   }
 
-  const imports = [
-    ...[...enums].map((e) => `use ${ENUM_IMPORTS[e]};`),
-    'use CraftCms\\Cms\\Support\\Arr;',
-    'use CraftCms\\Cms\\Support\\Html;',
-    'use Illuminate\\Contracts\\Support\\Htmlable;',
-    'use Stringable;',
-  ].join('\n');
+  // Each manifest slot becomes a fluent callback setter. The default (unnamed)
+  // slot maps to `content()`; names that would clash with an attribute setter
+  // (or a base method) get a `Slot` suffix.
+  const slotSetters = [];
+  for (const slot of decl.slots ?? []) {
+    const slotKey = slot.name ?? '';
+    let methodName = slotKey === '' ? 'content' : camelCase(slotKey);
+    while (usedNames.has(methodName)) {
+      methodName += 'Slot';
+    }
+    usedNames.add(methodName);
+    slotSetters.push(generateSlotSetter(methodName, slotKey));
+  }
+
+  const hasSlots = slotSetters.length > 0;
+
+  const importClasses = ['CraftCms\\Cms\\Cp\\Components\\ViewComponent'];
+  for (const e of enums) {
+    importClasses.push(ENUM_IMPORTS[e]);
+  }
+  if (hasSlots) {
+    importClasses.push(
+      'Closure',
+      'Illuminate\\Contracts\\Support\\Htmlable',
+      'Stringable'
+    );
+  }
+  importClasses.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const imports = importClasses.map((c) => `use ${c};`).join('\n');
 
   const summary = (decl.summary ?? decl.description ?? '')
     .split('\n')
     .map((l) => ` * ${l}`.trimEnd())
     .join('\n');
+
+  const members = [
+    fields.join('\n\n'),
+    setters.join('\n\n'),
+    slotSetters.join('\n\n'),
+    `    protected function tagName(): string\n    {\n        return '${tagName}';\n    }`,
+    `    protected function hostAttributes(): array\n    {\n        return [\n${indent(renderLines, '            ')}\n        ];\n    }`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 
   return {
     baseName,
@@ -172,45 +263,9 @@ ${summary ? summary + '\n *\n' : ''} * @generated from the \`${tagName}\` custom
  *           Run \`npm run generate:php\` in packages/craftcms-cp to regenerate.
  *           Add behavior in the concrete subclass, not here.
  */
-abstract class ${baseName} implements Htmlable, Stringable
+abstract class ${baseName} extends ViewComponent
 {
-${fields.join('\n\n')}
-
-    /** @var array<string, mixed> Additional HTML attributes for the host element. */
-    protected array $attributes = [];
-
-    final public function __construct() {}
-
-    public static function make(): static
-    {
-        return app(static::class);
-    }
-
-${setters.join('\n\n')}
-
-    /**
-     * Merges additional HTML attributes (e.g. \`slot\`, \`class\`) onto the host element.
-     *
-     * @param  array<string, mixed>  $attributes
-     */
-    public function attributes(array $attributes): static
-    {
-        $this->attributes = Arr::merge($this->attributes, $attributes);
-
-        return $this;
-    }
-
-    public function toHtml(): string
-    {
-        return Html::tag('${tagName}', '', Arr::merge($this->attributes, [
-${indent(renderLines, '            ')}
-        ]));
-    }
-
-    public function __toString(): string
-    {
-        return $this->toHtml();
-    }
+${members}
 }
 `,
   };

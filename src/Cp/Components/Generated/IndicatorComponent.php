@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components\Generated;
 
+use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Html;
-use Illuminate\Contracts\Support\Htmlable;
-use Stringable;
 
 /**
  * Indicators are used to visually represent the status of an object.
@@ -19,7 +16,7 @@ use Stringable;
  *           Run `npm run generate:php` in packages/craftcms-cp to regenerate.
  *           Add behavior in the concrete subclass, not here.
  */
-abstract class IndicatorComponent implements Htmlable, Stringable
+abstract class IndicatorComponent extends ViewComponent
 {
     protected string $size = 'md';
 
@@ -28,16 +25,6 @@ abstract class IndicatorComponent implements Htmlable, Stringable
     protected ?string $label = null;
 
     protected string $appearance = 'solid';
-
-    /** @var array<string, mixed> Additional HTML attributes for the host element. */
-    protected array $attributes = [];
-
-    final public function __construct() {}
-
-    public static function make(): static
-    {
-        return new static;
-    }
 
     /**
      * @param  'md' | 'lg'  $size
@@ -73,30 +60,19 @@ abstract class IndicatorComponent implements Htmlable, Stringable
         return $this;
     }
 
-    /**
-     * Merges additional HTML attributes (e.g. `slot`, `class`) onto the host element.
-     *
-     * @param  array<string, mixed>  $attributes
-     */
-    public function attributes(array $attributes): static
+    protected function tagName(): string
     {
-        $this->attributes = Arr::merge($this->attributes, $attributes);
-
-        return $this;
+        return 'craft-indicator';
     }
 
-    public function toHtml(): string
+    #[\Override]
+    protected function hostAttributes(): array
     {
-        return Html::tag('craft-indicator', '', Arr::merge($this->attributes, [
+        return [
             'size' => $this->size === 'md' ? null : $this->size,
             'fill' => $this->fill === 'var(--c-color-fill-loud)' ? null : ($this->fill instanceof Color ? $this->fill->value : $this->fill),
             'label' => $this->label,
             'appearance' => $this->appearance === 'solid' ? null : $this->appearance,
-        ]));
-    }
-
-    public function __toString(): string
-    {
-        return $this->toHtml();
+        ];
     }
 }
