@@ -1,4 +1,4 @@
-name: facades
+name: build
 
 on:
   push:
