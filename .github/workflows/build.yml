@@ -24,12 +24,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -37,6 +31,12 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
