@@ -12,12 +12,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
-use CraftCms\Cms\Field\Concerns\RelationalField;
 use CraftCms\Cms\Field\Conditions\LinkFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
+use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\LinkTypesResolving;
@@ -50,10 +49,9 @@ use function CraftCms\Cms\template;
 /**
  * Link represents a Link field.
  */
-class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface
+class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
-    use RelationalField;
 
     private static array $_types;
 
@@ -787,7 +785,7 @@ JS;
         ]));
     }
 
-    public function getRelationTargetIds(ElementInterface $element): array
+    public function getReferenceTargetIds(ElementInterface $element): array
     {
         $targetIds = [];
         /** @var LinkData|null $value */
@@ -798,5 +796,23 @@ JS;
         }
 
         return $targetIds;
+    }
+
+    public function replaceReferences(ElementInterface $element, array $oldTargetIds, int $newTargetId): bool
+    {
+        /** @var LinkData|null $value */
+        $value = $element->getFieldValue($this->handle);
+        $element = $value?->getElement();
+
+        if (in_array(! $element?->id, $oldTargetIds)) {
+            return false;
+        }
+
+        $element->setFieldvalue($this->handle, [
+            'type' => $value->getType(),
+            'value' => sprintf('{%s:%s@%s:url}', $element::refHandle(), $newTargetId, $element->siteId),
+        ]);
+
+        return true;
     }
 }
