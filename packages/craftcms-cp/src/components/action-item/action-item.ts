@@ -19,25 +19,67 @@ import {
 } from '@src/actions';
 
 /**
- * @summary Either a link or button typically used in a menu.
+ * @summary A menu entry that renders as a link or a button and can run an
+ * action, showing inline loading/success/error feedback.
+ * @since 1.0
+ *
+ * @dependency craft-icon
+ * @dependency craft-spinner
+ * @dependency craft-shortcut
+ *
+ * @slot - The item's label.
+ * @slot icon - Icon displayed in the prefix (falls back to the `icon` attribute).
+ * @slot checkmark - Custom checkmark content, shown when `type="checkbox"`.
+ * @slot suffix - Content displayed after the label.
+ *
+ * @event action:change-state - Emitted when the item's async action changes state (idle, loading, success, or error).
+ *
+ * @phpComponent
  */
 export default class CraftActionItem extends LitElement {
   static override styles = [variantsStyles, styles];
+
+  /** Icon name shown in the prefix when no `icon` slot is provided. */
   @property() icon: string | null = null;
+
+  /** When set, the item renders as a link (`<a>`) instead of a `<button>`. */
   @property() href: string | null = null;
+
+  /** Disables the item and prevents its action from running. */
   @property({type: Boolean}) disabled: boolean = false;
+
+  /** Theme variant used for the item's coloring. */
   @property({reflect: true}) variant: VariantKey = Variant.Default;
+
+  /** For `type="checkbox"`, whether the item is checked. */
   @property({type: Boolean}) checked: boolean = false;
+
+  /** Displays the item in an active state. */
   @property({type: Boolean}) active: boolean = false;
+
+  /** Whether the item behaves as a `button` or a `checkbox`. */
   @property() type: 'button' | 'checkbox' = 'button';
+
+  /** The action to run when the item is activated. */
   @property({type: Object}) action: BaseAction | null = null;
+
+  /** Success/error feedback shown after the action runs. */
   @property({type: Object}) feedback: ActionFeedback | null = null;
+
+  /** How long, in milliseconds, feedback is shown before returning to idle. */
   @property({type: Number}) feedbackDuration: number = 1000;
+
+  /** Optional confirmation message shown before the action runs. */
   @property() confirm: string | null = null;
 
   @state() private state: AsyncState = AsyncStates.Idle;
   @state() private feedbackMessage: string | null = null;
 
+  /**
+   * Keyboard shortcut hint shown in the suffix. Accepts a plain string (e.g.
+   * `"ctrl+k"`) or an object describing the key and modifiers; the attribute
+   * form is parsed from JSON or a plain string.
+   */
   @property({
     converter: {
       fromAttribute(value: string | null) {

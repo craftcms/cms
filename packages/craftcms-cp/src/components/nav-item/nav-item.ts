@@ -7,7 +7,22 @@ import {t} from '@src/utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
 
 /**
+ * @summary A navigation item, rendered as a link within a nav list, optionally
+ * with a collapsible subnav, a prefix icon/indicator, and an icon-only mode.
+ * @since 1.0
  *
+ * @dependency craft-icon
+ * @dependency craft-button
+ * @dependency craft-badge-indicator
+ * @dependency c-tooltip
+ *
+ * @slot - The item's label.
+ * @slot prefix - Content displayed before the label.
+ * @slot icon - Icon displayed in the prefix (falls back to the `icon` attribute).
+ * @slot suffix - Content displayed after the label.
+ * @slot subnav - Nested `craft-nav-item`s shown in a collapsible subnav.
+ *
+ * @phpComponent
  */
 export default class CraftNavItem extends LitElement {
   static override styles = styles;
@@ -32,9 +47,11 @@ export default class CraftNavItem extends LitElement {
   @property({type: Boolean})
   indicator: boolean = false;
 
+  /** Unique identifier for the item. Generated automatically when omitted. */
   @property()
   override id: string;
 
+  /** Renders the item as an icon-only button, with the label shown in a tooltip. */
   @property({reflect: true, type: Boolean, attribute: 'icon-only'})
   iconOnly: boolean = false;
 

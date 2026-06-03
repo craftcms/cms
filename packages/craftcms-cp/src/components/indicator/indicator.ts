@@ -34,16 +34,24 @@ export default class CraftIndicator extends LitElement {
     `,
   ];
 
+  /** Size of the indicator dot. */
   @property()
   size: 'md' | 'lg' = 'md';
 
-  /** @phpType {Color|string} */
+  /**
+   * Fill color of the dot — a status keyword (e.g. `success`, `draft`), any CSS
+   * color value, or a {@link Color} when set from PHP.
+   *
+   * @phpType {Color|string}
+   */
   @property()
   fill: string = 'var(--c-color-fill-loud)';
 
+  /** Accessible label for the indicator, exposed as `aria-label`. */
   @property()
   label: string | null = null;
 
+  /** `solid` fills the dot; `empty` renders it hollow. */
   @property()
   appearance: 'solid' | 'empty' = 'solid';
 
