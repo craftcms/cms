@@ -39,6 +39,7 @@ readonly class Cp
                 'actionUrl' => Url::actionUrl(),
                 'cpUrl' => Url::cpUrl(),
                 'baseUrl' => Url::url(),
+                'systemName' => Cms::systemName(),
             ]);
     }
 
