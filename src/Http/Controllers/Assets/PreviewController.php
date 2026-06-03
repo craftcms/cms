@@ -72,7 +72,7 @@ readonly class PreviewController
         $previewHandler = $this->assets->getAssetPreviewHandler($asset);
         $variables = [];
 
-        if (($previewHandler instanceof ImagePreview) && $asset->id !== $request->user()->photoId) {
+        if (($previewHandler instanceof ImagePreview) && $asset->id !== $request->craftUser()?->asElement()->photoId) {
             $variables['editFocal'] = true;
 
             try {

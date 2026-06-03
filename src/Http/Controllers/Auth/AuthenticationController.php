@@ -12,6 +12,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\UserEmailVerifying;
@@ -36,29 +37,30 @@ abstract readonly class AuthenticationController
         protected AuthMethods $auth,
     ) {}
 
-    protected function completeLogin(Request $request, User $user, bool $remember): Response
+    protected function completeLogin(Request $request, CraftUser $user, bool $remember): Response
     {
-        auth('craft')->login($user, $remember);
+        auth('craft')->loginUsingId($user->getAuthIdentifier(), $remember);
 
         return $this->handleSuccessfulLogin($request, $user);
     }
 
-    protected function handleSuccessfulLogin(Request $request, User $user): Response
+    protected function handleSuccessfulLogin(Request $request, CraftUser $user): Response
     {
         $returnUrl = URL::returnUrl();
+        $userElement = $user->asElement();
 
         if ($request->wantsJson()) {
-            return $this->asModelSuccess($user, modelName: 'user', data: [
+            return $this->asModelSuccess($userElement, modelName: 'user', data: [
                 'returnUrl' => $returnUrl,
             ]);
         }
 
-        return $this->redirectToPostedUrl($user, $returnUrl);
+        return $this->redirectToPostedUrl($userElement, $returnUrl);
     }
 
     protected function finalizeLogin(
         Request $request,
-        User $user,
+        CraftUser $user,
         bool $remember,
         bool $skipTwoFactor = false,
     ): Response {
@@ -83,7 +85,7 @@ abstract readonly class AuthenticationController
         return $this->completeLogin($request, $user, $remember);
     }
 
-    protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?User $user = null): Response
+    protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?CraftUser $user = null): Response
     {
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
@@ -130,7 +132,7 @@ abstract readonly class AuthenticationController
         }
 
         // If someone is logged in and it’s not this person, log them out
-        if ($request->user() && $request->user()->id !== $user->id) {
+        if ($request->craftUser() && $request->craftUser()->getCraftUserId() !== $user->id) {
             auth('craft')->logout();
         }
 
@@ -187,9 +189,7 @@ abstract readonly class AuthenticationController
             return false;
         }
 
-        auth('craft')->login($user);
-
-        return true;
+        return auth('craft')->loginUsingId($user->id);
     }
 
     protected function redirectUserToCp(User $user): ?Response

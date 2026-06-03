@@ -26,7 +26,9 @@ export default class CraftLoginResetPassword extends LitElement {
   @query('.reset-username') private _input?: HTMLInputElement;
 
   override firstUpdated() {
-    this._input?.focus();
+    this.updateComplete.then(() => {
+      this._input?.focus();
+    });
   }
 
   #label() {

@@ -41,7 +41,7 @@ trait EnforcesPermissions
 
     protected function requirePermission(string $permission): void
     {
-        if (! $user = Auth::user()) {
+        if (! $user = Auth::craftUser()) {
             abort(403, 'User is not authenticated.');
         }
 
@@ -52,6 +52,6 @@ trait EnforcesPermissions
 
     protected function requireAdmin(): void
     {
-        abort_unless(Auth::user()->isAdmin(), 403, 'User is not permitted to perform this action.');
+        abort_unless(Auth::craftUser()->isAdmin(), 403, 'User is not permitted to perform this action.');
     }
 }

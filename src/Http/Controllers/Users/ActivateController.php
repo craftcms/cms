@@ -68,11 +68,11 @@ readonly class ActivateController
 
         abort_if(! $user, 400, 'User not found');
 
-        if ($user->id !== $request->user()->id) {
+        if ($user->id !== $request->craftUser()?->getCraftUserId()) {
             $this->authorize('administrateUsers');
 
             // Even if you have administrateUsers permissions, only and admin should be able to deactivate another admin.
-            abort_if($user->admin && ! $request->user()->isAdmin(), 403, 'User is not authorized to perform this action.');
+            abort_if($user->admin && ! $request->craftUser()->isAdmin(), 403, 'User is not authorized to perform this action.');
         }
 
         // Deactivate the user

@@ -80,6 +80,7 @@ const Cp = {
 
     await createInertiaApp({
       pages: '../pages',
+      title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         app.provide(Queue, queue);
         app.provide(Axios, axios);

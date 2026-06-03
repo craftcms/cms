@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,7 +26,7 @@ it('passes through if no user is authenticated', function () {
 
 it('passes through if edition can test', function () {
     $request = Request::create('foo');
-    $request->setUserResolver(fn () => new class {});
+    $request->setUserResolver(fn () => Mockery::mock(CraftUser::class));
 
     $result = $this->middleware->handle($request, fn () => 'bar');
 
@@ -40,7 +41,7 @@ it('passes through if no license issues', function () {
     $middleware = new EnforceLicenses($mockLicense);
 
     $request = Request::create('foo');
-    $request->setUserResolver(fn () => new class {});
+    $request->setUserResolver(fn () => Mockery::mock(CraftUser::class));
 
     $result = $middleware->handle($request, fn () => 'bar');
 
@@ -62,7 +63,7 @@ it('shows licensing screen when license issues exist', function () {
     $middleware = new EnforceLicenses($mockLicense);
 
     $request = Request::create('foo');
-    $request->setUserResolver(fn () => new class {});
+    $request->setUserResolver(fn () => Mockery::mock(CraftUser::class));
 
     $result = $middleware->handle($request, fn () => new Response);
 

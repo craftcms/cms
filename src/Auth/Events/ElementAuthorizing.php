@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth\Events;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /**
@@ -27,7 +27,7 @@ class ElementAuthorizing
     public ?bool $authorized = null;
 
     public function __construct(
-        public readonly User $user,
+        public readonly CraftUser $user,
         public readonly ElementInterface $element,
         public readonly string $ability,
     ) {}

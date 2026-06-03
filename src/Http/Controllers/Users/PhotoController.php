@@ -51,7 +51,7 @@ readonly class PhotoController
             'userId' => ['required', 'integer'],
         ]);
 
-        if ($request->integer('userId') !== $request->user()->id) {
+        if ($request->integer('userId') !== $request->craftUser()?->getCraftUserId()) {
             $this->authorize('editUsers');
         }
 

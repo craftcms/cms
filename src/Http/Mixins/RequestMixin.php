@@ -9,6 +9,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Http\Routing\ActionRouteResolver;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -16,6 +18,28 @@ use Illuminate\Support\Facades\Crypt;
 
 class RequestMixin
 {
+    public function craftUser(): Closure
+    {
+        return function (): ?CraftUser {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+            $user = $request->user();
+
+            if ($user === null || $user instanceof CraftUser) {
+                return $user;
+            }
+
+            throw new AuthenticationException(sprintf(
+                'The request user must implement %s to be used by Craft.',
+                CraftUser::class,
+            ));
+        };
+    }
+
     public function isMobileBrowser(): Closure
     {
         return function (bool $detectTablets = false): bool {

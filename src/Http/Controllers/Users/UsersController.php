@@ -16,6 +16,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -38,6 +39,7 @@ readonly class UsersController
             'buttonLabel' => mb_ucfirst(t('New {type}', [
                 'type' => User::lowerDisplayName(),
             ])),
+            'canRegisterUsers' => Gate::allows('save', new User),
             'source' => $slug ?? $request->input('source'),
         ]);
     }
@@ -49,7 +51,7 @@ readonly class UsersController
         $this->authorize('save', $user);
 
         $user->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        if (! $drafts->saveElementAsDraft($user, $request->user()->id, markAsSaved: false)) {
+        if (! $drafts->saveElementAsDraft($user, $request->craftUser()?->getCraftUserId(), markAsSaved: false)) {
             return $this->asModelFailure($user, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),
             ])), 'user');

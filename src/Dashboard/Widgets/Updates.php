@@ -33,7 +33,7 @@ class Updates extends Widget
     public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
-        return parent::isSelectable() && Auth::user()->can('performUpdates');
+        return parent::isSelectable() && Auth::craftUser()->can('performUpdates');
     }
 
     #[Override]
@@ -52,7 +52,7 @@ class Updates extends Widget
     public function getBodyHtml(): ?string
     {
         // Make sure the user actually has permission to perform updates
-        if (! Auth::user()->can('performUpdates')) {
+        if (! Auth::craftUser()->can('performUpdates')) {
             return null;
         }
 

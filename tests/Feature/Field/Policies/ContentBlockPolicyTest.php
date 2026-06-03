@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Policies\ContentBlockPolicy;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User;
 
 beforeEach(function () {
     $this->policy = app(ContentBlockPolicy::class);
@@ -13,7 +13,7 @@ beforeEach(function () {
 
 it('is registered with the gate', function () {
     $contentBlock = new ContentBlock;
-    $user = User::findOne();
+    $user = User::findOrFail(CraftCms\Cms\User\Elements\User::findOne()->id);
 
     $result = $user->can('view', $contentBlock);
 
@@ -21,7 +21,7 @@ it('is registered with the gate', function () {
 });
 
 it('returns false without owner for view', function () {
-    $user = User::findOne();
+    $user = User::findOrFail(CraftCms\Cms\User\Elements\User::findOne()->id);
     $contentBlock = createTestContentBlock(owner: null);
 
     $result = $user->can('view', $contentBlock);
@@ -30,7 +30,7 @@ it('returns false without owner for view', function () {
 });
 
 it('returns false without owner for save', function () {
-    $user = User::findOne();
+    $user = User::findOrFail(CraftCms\Cms\User\Elements\User::findOne()->id);
     $contentBlock = createTestContentBlock(owner: null);
 
     $result = $user->can('save', $contentBlock);
@@ -39,7 +39,7 @@ it('returns false without owner for save', function () {
 });
 
 it('returns false without owner for delete', function () {
-    $user = User::findOne();
+    $user = User::findOrFail(CraftCms\Cms\User\Elements\User::findOne()->id);
     $contentBlock = createTestContentBlock(owner: null);
 
     $result = $user->can('delete', $contentBlock);
@@ -48,7 +48,7 @@ it('returns false without owner for delete', function () {
 });
 
 it('returns false without owner for duplicate', function () {
-    $user = User::findOne();
+    $user = User::findOrFail(CraftCms\Cms\User\Elements\User::findOne()->id);
     $contentBlock = createTestContentBlock(owner: null);
 
     $result = $user->can('duplicate', $contentBlock);
@@ -57,7 +57,7 @@ it('returns false without owner for duplicate', function () {
 });
 
 it('create drafts always returns true', function () {
-    $user = User::findOne();
+    $user = User::findOrFail(CraftCms\Cms\User\Elements\User::findOne()->id);
     $contentBlock = createTestContentBlock(owner: null);
 
     $result = $user->can('createDrafts', $contentBlock);
