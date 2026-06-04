@@ -1,7 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import staticVariantsStyles from '@src/styles/static-variants.styles';
+import variantsStyles from '@src/styles/variants.styles';
 import {colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
 import {Appearance} from '@src/constants/appearances';
@@ -15,7 +15,7 @@ import {Appearance} from '@src/constants/appearances';
  */
 export default class CraftIndicator extends LitElement {
   static override styles = [
-    staticVariantsStyles,
+    variantsStyles,
     css`
       .indicator {
         --_fill: var(--fill, var(--c-color-fill-loud));
