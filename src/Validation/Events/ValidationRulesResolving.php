@@ -2,26 +2,50 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element\Validation\Events;
+namespace CraftCms\Cms\Validation\Events;
 
-use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\Validation\Ruleset;
+use CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset;
 use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Http\Request;
 
 /**
- * Event dispatched when an element's validation rules are being defined.
+ * Event dispatched when validation rules are being defined.
  *
- * Plugins can listen to this event to add custom validation rules.
+ * Plugins can listen to this event to add custom validation rules:
+ *
+ * ```php
+ * use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
+ * use CraftCms\Cms\Entry\Elements\Entry;
+ *
+ * Event::listen(function (ValidationRulesResolving $event) {
+ *     // Suppose we’re only interested in entries:
+ *     if (! $event->component instanceof Entry) {
+ *         return;
+ *     }
+ *
+ *     // Ignore nested entries:
+ *     if ($event->component->ownerId !== null) {
+ *         return;
+ *     }
+ *
+ *     // Enforce short slugs:
+ *     $event->addRule('slug', 'max:40');
+ * });
+ * ```
  */
 class ValidationRulesResolving
 {
     use Dispatchable;
 
     /**
-     * @param  Validatable  $component  The component being validated
+     * @param  ValidatesWithRuleset|Request  $subject  The object being validated
+     * @param  Ruleset  $ruleset  The ruleset that produced the attached {@see $rules}
      * @param  array<string, array<mixed>>  $rules  The current validation rules
      */
     public function __construct(
-        public readonly Validatable $component,
+        public readonly ValidatesWithRuleset|Request $subject,
+        public readonly Ruleset $ruleset,
         public array $rules,
     ) {}
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation;
 
-use CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving;
+use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Validation\Validator;
 use Override;
@@ -33,7 +33,7 @@ abstract class Ruleset extends \CraftCms\RulesetValidation\Ruleset
     {
         $rules = parent::validationRules();
 
-        event($event = new ValidationRulesResolving($this->subject, $rules));
+        event($event = new ValidationRulesResolving($this->resolveSubject(), $this, $rules));
 
         return $event->rules;
     }
