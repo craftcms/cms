@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a bug where the `craft:install` command would hang if run within a production environment.
+
 ## 6.0.0-alpha.6 - 2026-06-03
 
 - Improved the accessibility of the Login page. ([#19025](https://github.com/craftcms/cms/pull/19025))
