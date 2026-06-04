@@ -34,7 +34,7 @@ export default class CraftIndicator extends LitElement {
         border: 1px solid rgba(0, 0, 0, 0.5);
       }
 
-      :host([appearance~='fill']) .indicator {
+      :host([appearance~='solid']) .indicator {
         background: var(--_fill);
         border-color: transparent;
       }
@@ -57,7 +57,7 @@ export default class CraftIndicator extends LitElement {
   label: string | null = null;
 
   @property({reflect: true})
-  appearance: 'fill' | 'outline' | 'outline-fill' = Appearance.OutlineFill;
+  appearance: 'solid' | 'outline-fill' | 'outline' = Appearance.OutlineFill;
 
   getFill() {
     // If the fill is known swatch
@@ -91,7 +91,7 @@ export default class CraftIndicator extends LitElement {
       role="img"
       class="${classMap({
         indicator: true,
-        'indicator--outlined': this.appearance === Appearance.Outline,
+        'indicator--outline': this.appearance === Appearance.Outline,
       })}"
     ></span>`;
   }
