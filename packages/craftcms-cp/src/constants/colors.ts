@@ -19,9 +19,26 @@ export const Color = {
   White: 'white',
   Gray: 'gray',
   Black: 'black',
+
+  // Semantic
+  Neutral: 'slate',
+  Accent: 'red',
+  Success: 'emerald',
+  Warning: 'orange',
+  Danger: 'red',
+  Info: 'blue',
+
+  // Status
+  Pending: 'orange',
+  Off: 'red',
+  Suspended: 'red',
+  Expired: 'red',
+  Disabled: 'gray',
+  Inactive: 'gray',
+  On: 'emerald',
 } as const;
 
 export const colors = Object.values(Color);
 
-export type ColorKey = (typeof Color)[keyof typeof Color];
-export type ColorValue = typeof colors;
+export type ColorKey = keyof typeof Color;
+export type ColorValue = (typeof Color)[keyof typeof Color];
