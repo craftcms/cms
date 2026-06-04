@@ -1,6 +1,12 @@
 import {css} from 'lit';
 export default css`
   :host {
+    // Necessary to use variables here to override the default active style specificity
+    --_active-background-color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)) h s
+        calc(l - 10)
+    );
+    --_active-color: var(--c-color-on-loud);
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -206,15 +212,6 @@ export default css`
     );
     border-color: transparent;
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
-  }
-
-  :host([appearance='solid']:not(:disabled):not(.loading):hover) {
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
-      var(--c-color-mix-hover)
-    );
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
   :host([appearance='solid']:hover) {
