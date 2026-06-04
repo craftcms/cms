@@ -21,7 +21,7 @@ use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::find()->addSelect('password')->first());
+    actingAs(UserModel::first());
     Session::passwordConfirmed();
 });
 
@@ -195,7 +195,7 @@ it('sends password reset email for a valid loginName', function () {
     ])->assertOk();
 
     Notification::assertSentTo(
-        $user,
+        UserModel::findOrFail($user->id),
         ResetPasswordNotification::class,
         fn ($notification, $channels) => in_array(MailChannel::class, $channels)
     );
@@ -270,7 +270,7 @@ it('requires password confirmation for store', function () {
 it('aborts for users without current password', function () {
     UserModel::first()->update(['password' => null]);
 
-    actingAs(User::find()->addSelect('password')->first());
+    actingAs(UserModel::first());
 
     post(action([PasswordController::class, 'store']), [
         'newPassword' => 'validPassword123!',
@@ -305,7 +305,7 @@ it('returns failure when save fails', function () {
 
 describe('verifyPassword', function () {
     beforeEach(function () {
-        actingAs(User::find()->addSelect('password')->first());
+        actingAs(UserModel::first());
     });
 
     test('verifyPassword requires login', function () {

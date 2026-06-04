@@ -67,7 +67,7 @@ class UserGroup extends Component implements Actionable, Chippable, CpEditable, 
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
             return null;
         }
 
@@ -80,7 +80,7 @@ class UserGroup extends Component implements Actionable, Chippable, CpEditable, 
 
         if (
             $this->id &&
-            Auth::user()?->isAdmin() &&
+            Auth::craftUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());

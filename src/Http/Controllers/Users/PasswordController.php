@@ -36,7 +36,12 @@ readonly class PasswordController
 
     public function index(Request $request): CpScreenResponse
     {
-        $user = $request->user();
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
+        $user = $currentUser->asElement();
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
@@ -52,8 +57,12 @@ readonly class PasswordController
     {
         $this->requireConfirmedPassword('An elevated session is required to change your password.');
 
-        /** @var User $user */
-        $user = $request->user();
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
+        $user = $currentUser->asElement();
 
         abort_if(! $user->getHasPassword(), 400, 'Only users with current passwords can set new ones.');
 

@@ -99,7 +99,7 @@ JS, [
     {
         $items = [];
 
-        if (Auth::user()?->isAdmin()) {
+        if (Auth::craftUser()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

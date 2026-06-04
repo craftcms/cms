@@ -289,7 +289,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
             return null;
         }
 

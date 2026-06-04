@@ -105,7 +105,7 @@ class QuickPost extends Widget
             if ($section->type === SectionType::Single) {
                 continue;
             }
-            if (! Auth::user()->can('createEntries:'.$section->uid)) {
+            if (! Auth::craftUser()->can('createEntries:'.$section->uid)) {
                 continue;
             }
             $sections[] = $section;

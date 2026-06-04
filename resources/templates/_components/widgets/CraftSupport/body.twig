@@ -101,7 +101,7 @@
                 {{ hiddenInput('widgetId', widget.id) }}
                 {{ hiddenInput('message', '', {class: 'cs-support-message'}) }}
 
-                {% set email = Auth.user.email %}
+                {% set email = currentUser.email %}
                 {% if email in ['support@pixelandtonic.com', 'support@craftcms.com'] %}
                     {% set email = '' %}
                 {% endif %}

@@ -68,7 +68,7 @@ class MyDrafts extends Widget
         $drafts = Entry::find()
             ->drafts()
             ->status(null)
-            ->draftCreator(Auth::user()->id)
+            ->draftCreator(Auth::craftUser()?->getCraftUserId())
             ->section('*')
             ->site('*')
             ->unique()

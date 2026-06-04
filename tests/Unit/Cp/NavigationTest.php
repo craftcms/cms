@@ -9,8 +9,8 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\Variables\Cp;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\Utility\Utilities;
-use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -24,30 +24,11 @@ beforeEach(function () {
     Sections::shouldReceive('getTotalEditableSections')->andReturn(0);
     Volumes::shouldReceive('getTotalViewableVolumes')->andReturn(0);
 
-    $user = new class implements Authorizable
-    {
-        public function isAdmin(): bool
-        {
-            return true;
-        }
+    $user = Mockery::mock(CraftUser::class);
+    $user->shouldReceive('isAdmin')->andReturnTrue();
+    $user->shouldReceive('can')->andReturnTrue();
 
-        public function can($abilities, $arguments = []): bool
-        {
-            return true;
-        }
-
-        public function cant($abilities, $arguments = []): bool
-        {
-            return false;
-        }
-
-        public function cannot($abilities, $arguments = []): bool
-        {
-            return false;
-        }
-    };
-
-    Auth::shouldReceive('user')->andReturn($user);
+    Auth::shouldReceive('craftUser')->andReturn($user);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
 });
 

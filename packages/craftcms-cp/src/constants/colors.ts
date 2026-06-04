@@ -20,3 +20,8 @@ export const Color = {
   Gray: 'gray',
   Black: 'black',
 } as const;
+
+export const colors = Object.values(Color);
+
+export type ColorKey = (typeof Color)[keyof typeof Color];
+export type ColorValue = typeof colors;

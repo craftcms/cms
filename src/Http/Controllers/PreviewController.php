@@ -48,7 +48,7 @@ readonly class PreviewController
                 'siteId' => $tokenData->siteId,
                 'draftId' => $tokenData->draftId ?? null,
                 'revisionId' => $tokenData->revisionId ?? null,
-                'userId' => $request->user()->id,
+                'userId' => $request->craftUser()?->getCraftUserId(),
             ],
         ], token: $tokenData->previewToken);
 

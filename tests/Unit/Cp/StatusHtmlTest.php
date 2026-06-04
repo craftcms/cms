@@ -19,8 +19,8 @@ describe('statusIndicatorHtml', function () {
             'label' => 'Enabled',
         ]);
 
-        expect($html)->toContain('class="status enabled"')
-            ->and($html)->toContain('aria-label="Status: Enabled"');
+        expect($html)->toContain('fill="teal"')
+            ->and($html)->toContain('label="Status: Enabled"');
     });
 });
 
@@ -41,7 +41,8 @@ describe('component status helpers', function () {
 
         $html = app(StatusHtml::class)->componentStatusIndicatorHtml($component);
 
-        expect($html)->toContain('status pending yellow');
+        expect($html)->toContain('fill="yellow"')
+            ->and($html)->toContain('label="Status: Pending"');
     });
 
     it('renders component status label and edited status label', function () {

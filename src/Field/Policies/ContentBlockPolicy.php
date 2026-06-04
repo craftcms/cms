@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Field\Policies;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 
 class ContentBlockPolicy extends ElementPolicy
 {
-    public function view(User $user, ContentBlock $contentBlock): bool
+    public function view(CraftUser $user, ContentBlock $contentBlock): bool
     {
         if (! $owner = $this->getOwner($contentBlock)) {
             return false;
@@ -20,7 +20,7 @@ class ContentBlockPolicy extends ElementPolicy
         return $user->can('view', $owner);
     }
 
-    public function save(User $user, ContentBlock $contentBlock): bool
+    public function save(CraftUser $user, ContentBlock $contentBlock): bool
     {
         if (! $owner = $this->getOwner($contentBlock)) {
             return false;
@@ -29,7 +29,7 @@ class ContentBlockPolicy extends ElementPolicy
         return $user->can('save', $owner);
     }
 
-    public function delete(User $user, ContentBlock $contentBlock): bool
+    public function delete(CraftUser $user, ContentBlock $contentBlock): bool
     {
         if (! $owner = $this->getOwner($contentBlock)) {
             return false;
@@ -38,7 +38,7 @@ class ContentBlockPolicy extends ElementPolicy
         return $user->can('save', $owner);
     }
 
-    public function duplicate(User $user, ContentBlock $contentBlock): bool
+    public function duplicate(CraftUser $user, ContentBlock $contentBlock): bool
     {
         if (! $owner = $this->getOwner($contentBlock)) {
             return false;
@@ -47,12 +47,12 @@ class ContentBlockPolicy extends ElementPolicy
         return $user->can('save', $owner);
     }
 
-    public function copy(User $user, ContentBlock $contentBlock): bool
+    public function copy(CraftUser $user, ContentBlock $contentBlock): bool
     {
         return $user->can('duplicate', $contentBlock);
     }
 
-    public function createDrafts(User $user, ContentBlock $contentBlock): bool
+    public function createDrafts(CraftUser $user, ContentBlock $contentBlock): bool
     {
         return true;
     }

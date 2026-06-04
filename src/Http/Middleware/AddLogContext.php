@@ -21,7 +21,7 @@ readonly class AddLogContext
     {
         Log::shareContext(array_filter([
             'environment' => app()->environment(),
-            'userId' => $request->user()?->id,
+            'userId' => $request->craftUser()?->getCraftUserId(),
             'sessionId' => $request->hasSession() ? $request->session()->getId() : null,
             'ips' => $this->generalConfig->storeUserIps ? $request->ips() : null,
         ]));
