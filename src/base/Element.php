@@ -4356,7 +4356,7 @@ JS,
                     [
                         $view->namespaceInputId($deleteId),
                         static::class,
-                        $this->id,
+                        $this->getCanonicalId(),
                         $this->siteId,
                         $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
                         Craft::t('app', 'Are you sure you want to delete this {type}?', [

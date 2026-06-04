@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where the “Delete” element edit page action wasn’t working properly when editing a provisional draft.
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
