@@ -107,9 +107,9 @@
   --c-status-disabled-text: var(--color-slate-600);
   --c-status-disabled-border: var(--color-slate-600);
 
-  /**
-  Components
-   */
+/**
+ Static colors
+  */
   --c-color-static-success-fill: var(--color-static-emerald-200);
   --c-color-static-success-on: var(--c-text-white);
   --c-color-static-success-border: var(--color-static-emerald-500);
