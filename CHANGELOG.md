@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a styling issue.
+
 ## 5.10.5 - 2026-06-02
 
 - Added `craft\base\ElementInterface::afterAssignedId()`.
