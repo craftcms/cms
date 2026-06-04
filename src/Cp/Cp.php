@@ -36,9 +36,9 @@ use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use Illuminate\Foundation\Vite;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use stdClass;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 readonly class Cp
@@ -99,7 +99,7 @@ readonly class Cp
         $formattingLocale = I18N::getFormattingLocale();
         $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
-        $currentUser = Auth::user();
+        $currentUser = currentUserElement();
         $primarySite = $upToDate ? Sites::getPrimarySite() : null;
 
         $data = [
