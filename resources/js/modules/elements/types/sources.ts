@@ -1,4 +1,4 @@
-export type Criteria = Record<string, any>
+export type Criteria = Record<string, any>;
 
 interface SourceCustom {
   type: 'custom';
