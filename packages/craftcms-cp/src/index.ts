@@ -94,4 +94,9 @@ export {default as hostStyles} from './styles/host.styles.js';
 export {default as variantStyles} from './styles/variants.styles.js';
 export {default as visuallyHiddenStyles} from './styles/visually-hidden.styles.js';
 
+// Constants
+export * from './constants/variants';
+export * from './constants/appearances';
+export * from './constants/colors';
+
 configureIcons();

@@ -3,6 +3,7 @@
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\Checkboxes;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
@@ -84,6 +85,53 @@ it('can query custom fields', function () {
     }
 
     expect(entryQuery()->textField('bar')->count())->toBe(0);
+});
+
+it('includes entries whose multi-option field is still empty in not one of queries', function () {
+    actingAs(User::findOne());
+
+    $field = Field::factory()->create([
+        'handle' => 'checkboxField',
+        'type' => Checkboxes::class,
+        'settings' => [
+            'options' => [
+                ['label' => 'Option A', 'value' => 'a'],
+                ['label' => 'Option B', 'value' => 'b'],
+            ],
+        ],
+    ]);
+
+    $fieldLayout = FieldLayout::factory()->forField($field)->create();
+
+    $neverModifiedEntry = EntryModel::factory()
+        ->withFieldLayout($fieldLayout)
+        ->createElement(['title' => 'Never modified']);
+
+    $clearedEntry = EntryModel::factory()
+        ->withFieldLayout($fieldLayout)
+        ->createElement(['title' => 'Cleared']);
+    $clearedEntry->setFieldValue('checkboxField', []);
+    Elements::saveElement($clearedEntry);
+
+    $otherOptionEntry = EntryModel::factory()
+        ->withFieldLayout($fieldLayout)
+        ->createElement(['title' => 'Other option']);
+    $otherOptionEntry->setFieldValue('checkboxField', ['b']);
+    Elements::saveElement($otherOptionEntry);
+
+    $excludedEntry = EntryModel::factory()
+        ->withFieldLayout($fieldLayout)
+        ->createElement(['title' => 'Excluded option']);
+    $excludedEntry->setFieldValue('checkboxField', ['a']);
+    Elements::saveElement($excludedEntry);
+
+    $resultIds = entryQuery()
+        ->checkboxField(['not', 'a'])
+        ->ids();
+
+    expect($resultIds)
+        ->toContain($neverModifiedEntry->id, $clearedEntry->id, $otherOptionEntry->id)
+        ->not->toContain($excludedEntry->id);
 });
 
 it('exposes the active query while applying custom field query params', function () {

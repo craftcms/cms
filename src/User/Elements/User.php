@@ -50,15 +50,14 @@ use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Actions\SuspendUsers;
 use CraftCms\Cms\User\Actions\UnsuspendUsers;
+use CraftCms\Cms\User\Concerns\CraftUserTrait;
 use CraftCms\Cms\User\Concerns\LegacyConstants;
 use CraftCms\Cms\User\Conditions\UserCondition;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Events\UserFriendlyNameResolving;
 use CraftCms\Cms\User\Events\UserNameResolving;
 use CraftCms\Cms\User\Models\User as UserModel;
-use CraftCms\Cms\User\Notifications\ActivationNotification;
-use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
-use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
@@ -80,7 +79,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
-use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -101,11 +99,13 @@ use function CraftCms\Cms\t;
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  */
 #[Ruleset(UserRules::class)]
-class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, MustVerifyEmailContract
+class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, MustVerifyEmailContract
 {
     use Authenticatable;
     use Authorizable;
-    use CanResetPassword;
+    use CanResetPassword, CraftUserTrait {
+        CraftUserTrait::sendPasswordResetNotification insteadof CanResetPassword;
+    }
     use ConfirmsPasswords;
     use HasNames;
     use LegacyConstants;
@@ -369,6 +369,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function getAuthIdentifierName(): string
     {
         return 'id';
+    }
+
+    public function asElement(): self
+    {
+        return $this;
     }
 
     public function getKey(): ?int
@@ -750,53 +755,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
-    public function sendPasswordResetNotification($token): void
-    {
-        $this->notify(new ResetPasswordNotification($token));
-    }
-
-    public function sendActivationNotification(string $token): void
-    {
-        $this->notify(new ActivationNotification($token));
-    }
-
-    public function hasVerifiedEmail(): bool
-    {
-        return is_null($this->unverifiedEmail);
-    }
-
-    public function markEmailAsVerified(): bool
-    {
-        try {
-            Users::verifyEmailForUser($this);
-
-            return true;
-        } catch (Throwable) {
-            return false;
-        }
-    }
-
-    public function markEmailAsUnverified(): bool
-    {
-        try {
-            Users::unverifyEmailForUser($this);
-
-            return true;
-        } catch (Throwable) {
-            return false;
-        }
-    }
-
-    public function sendEmailVerificationNotification(): void
-    {
-        $this->notify(new VerifyEmailNotification(Users::setVerificationCodeOnUser($this)));
-    }
-
-    public function getEmailForVerification(): string
-    {
-        return $this->unverifiedEmail ?? $this->email;
-    }
-
     /**
      * Use the full name or username as the string representation.
      */
@@ -1136,7 +1094,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     {
         event($event = new UserNameResolving($this));
 
-        return $event->name ?? $this->fullName ?? (string) $this->username;
+        return $event->name ?? $this->defaultName();
     }
 
     /**
@@ -1164,7 +1122,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     {
         event($event = new UserFriendlyNameResolving($this));
 
-        return $event->name ?? $this->firstName ?? $this->username;
+        return $event->name ?? $this->defaultFriendlyName();
     }
 
     /**
@@ -1238,7 +1196,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $gradientId = sprintf('gradient-%s', Str::random(10));
 
         return <<<XML
-<svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<svg version="1.1" baseProfile="full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="$gradientId" x1="0" y1="1" x2="1"  y2="0">
         <stop offset="0%" style="stop-color:var(--$color1-500)" />
@@ -1276,42 +1234,7 @@ XML;
             return false;
         }
 
-        return Auth::user()?->id === $this->id;
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->admin;
-    }
-
-    /**
-     * Returns whether the user can register additional users.
-     */
-    final public function canRegisterUsers(): bool
-    {
-        return $this->can('registerUsers') && Users::canCreateUsers();
-    }
-
-    /**
-     * Returns whether the user is authorized to assign any user groups to users.
-     */
-    public function canAssignUserGroups(): bool
-    {
-        if (! Edition::isAtLeast(Edition::Pro)) {
-            return false;
-        }
-
-        if ($this->admin) {
-            return true;
-        }
-
-        foreach (UserGroups::getAllGroups() as $group) {
-            if ($this->can("assignUserGroup:$group->uid")) {
-                return true;
-            }
-        }
-
-        return false;
+        return Auth::craftUser()?->getCraftUserId() === $this->id;
     }
 
     /**
@@ -1387,7 +1310,12 @@ XML;
             return parent::safeActionMenuItems();
         }
 
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
+
+        if (! $currentUser instanceof CraftUser) {
+            return parent::safeActionMenuItems();
+        }
+
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
 
@@ -1459,7 +1387,7 @@ XML;
                     if ($this->locked) {
                         if (
                             ! $isCurrentUser &&
-                            ($currentUser->admin || ! $this->admin) &&
+                            ($currentUser->isAdmin() || ! $this->admin) &&
                             $canModerateUsers &&
                             (
                                 ($impersonatorId = app(Impersonation::class)->getImpersonatorId()) === null ||
@@ -1580,8 +1508,12 @@ JS, [
             return parent::destructiveActionMenuItems();
         }
 
-        /** @var User $currentUser */
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
+
+        if (! $currentUser instanceof CraftUser) {
+            return parent::destructiveActionMenuItems();
+        }
+
         $canAdministrateUsers = $currentUser->can('administrateUsers');
 
         $isCurrentUser = $this->getIsCurrent();
@@ -1603,7 +1535,7 @@ JS, [
             }
 
             // Destructive actions that should only be performed on non-admins, unless the current user is also an admin
-            if (! $this->admin || $currentUser->admin) {
+            if (! $this->admin || $currentUser->isAdmin()) {
                 if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
                     $items[] = [
                         'icon' => 'disabled',
@@ -1669,20 +1601,6 @@ JS, [
         }
 
         return $this->id ? Users::getUserPreferences($this->id) : [];
-    }
-
-    /**
-     * Returns one of the user’s preferences by its key.
-     *
-     * @param  string  $key  The preference’s key
-     * @param  mixed  $default  The default value, if the preference hasn’t been set
-     * @return mixed The user’s preference
-     */
-    public function getPreference(string $key, mixed $default = null): mixed
-    {
-        $preferences = $this->getPreferences();
-
-        return $preferences[$key] ?? $default;
     }
 
     /**
@@ -1838,12 +1756,12 @@ JS, [
     #[Override]
     protected function htmlAttributes(string $context): array
     {
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
 
         return [
             'data' => [
                 'suspended' => $this->suspended,
-                'can-suspend' => $currentUser && Users::canSuspend($currentUser, $this),
+                'can-suspend' => $currentUser instanceof CraftUser && Users::canSuspend($currentUser, $this),
             ],
         ];
     }

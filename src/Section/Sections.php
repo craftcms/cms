@@ -257,7 +257,7 @@ class Sections
             return $this->getAllSections();
         }
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         if (! $user) {
             return collect();

@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Override;
@@ -49,7 +50,7 @@ class SuspendUsers extends ElementAction
 })();
 JS, [
             static::class,
-            Auth::user()->id,
+            Auth::craftUser()?->getCraftUserId(),
         ]);
 
         return null;
@@ -63,7 +64,11 @@ JS, [
 
         /** @var User[] $users */
         $users = $query->all();
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
+
+        if (! $currentUser instanceof CraftUser) {
+            return false;
+        }
 
         $successCount = count(array_filter($users, function (User $user) use ($currentUser) {
             try {

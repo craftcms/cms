@@ -294,7 +294,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public static function currentUser(bool $autoRenew = true): ?User
     {
-        return Auth::user();
+        return Auth::craftUser()?->asElement();
     }
 
     /**

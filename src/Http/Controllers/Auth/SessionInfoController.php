@@ -15,16 +15,17 @@ readonly class SessionInfoController
     public function show(Request $request): JsonResponse
     {
         $data = [
-            'isGuest' => $request->user() === null,
+            'isGuest' => $request->craftUser() === null,
             'csrfTokenName' => '_token',
             'csrfTokenValue' => csrf_token(),
         ];
 
-        if ($user = $request->user()) {
-            $data['id'] = $user->id;
-            $data['uid'] = $user->uid;
-            $data['username'] = $user->username;
-            $data['email'] = $user->email;
+        if ($user = $request->craftUser()) {
+            $userElement = $user->asElement();
+            $data['id'] = $user->getCraftUserId();
+            $data['uid'] = $userElement->uid;
+            $data['username'] = $userElement->username;
+            $data['email'] = $userElement->email;
         }
 
         return new JsonResponse($data);

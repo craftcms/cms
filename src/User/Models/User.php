@@ -5,21 +5,24 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Models;
 
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\UserGroups;
-use Illuminate\Auth\MustVerifyEmail;
+use CraftCms\Cms\User\Concerns\CraftUserTrait;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Collection;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Override;
 
@@ -27,15 +30,24 @@ use Override;
     'password',
     'rememberToken',
 ])]
-class User extends BaseModel
+class User extends BaseModel implements CraftUser
 {
+    use Authenticatable;
+    use Authorizable;
+    use CanResetPassword, CraftUserTrait {
+        CraftUserTrait::sendPasswordResetNotification insteadof CanResetPassword;
+    }
+    use ConfirmsPasswords;
     use HasFactory;
-    use MustVerifyEmail;
+    use Notifiable;
 
     #[Override]
     public $incrementing = false;
 
-    private ?Collection $userGroupData = null;
+    #[Override]
+    protected $with = [
+        'element',
+    ];
 
     #[Override]
     protected $casts = [
@@ -54,9 +66,45 @@ class User extends BaseModel
         'lastPasswordChangeDate' => 'datetime',
     ];
 
-    public function isAdmin(): bool
+    protected function getNameAttribute(): string
     {
-        return (bool) $this->admin;
+        return $this->defaultName();
+    }
+
+    protected function getFriendlyNameAttribute(): ?string
+    {
+        return $this->defaultFriendlyName();
+    }
+
+    protected function getUidAttribute(): ?string
+    {
+        if (! $this->id) {
+            return null;
+        }
+
+        return $this->relationLoaded('element')
+            ? $this->element?->uid
+            : $this->element()->value('uid');
+    }
+
+    protected function setUidAttribute(?string $value): void {}
+
+    public function haveIndexAttributesChanged(): bool
+    {
+        return $this->isDirty([
+            'username',
+            'fullName',
+            'firstName',
+            'lastName',
+            'email',
+            'admin',
+            'active',
+            'pending',
+            'locked',
+            'suspended',
+            'lastLoginDate',
+            'photoId',
+        ]);
     }
 
     #[Override]
@@ -73,14 +121,25 @@ class User extends BaseModel
     public function asElement(): \CraftCms\Cms\User\Elements\User
     {
         $element = new \CraftCms\Cms\User\Elements\User(Arr::except($this->toArray(), [
+            'element',
             'invalidLoginWindowStart',
         ]));
 
         $element->password = $this->password;
 
-        unset($this->uid);
+        if ($this->id && ! $element->uid) {
+            $element->uid = $this->relationLoaded('element')
+                ? $this->element?->uid
+                : $this->element()->value('uid');
+        }
 
         return $element;
+    }
+
+    #[Override]
+    public function getRememberTokenName(): string
+    {
+        return 'rememberToken';
     }
 
     /**
@@ -120,43 +179,5 @@ class User extends BaseModel
         return $this->belongsToMany(UserPermission::class, Table::USERPERMISSIONS_USERS, 'userId', 'permissionId')
             ->withTimestamps('dateCreated', 'dateUpdated')
             ->withPivot('uid');
-    }
-
-    /**
-     * @return Collection<\CraftCms\Cms\User\Data\UserGroup>
-     */
-    public function getGroups(): Collection
-    {
-        if (isset($this->userGroupData)) {
-            return $this->userGroupData;
-        }
-
-        if (Edition::get() < Edition::Pro || ! isset($this->id)) {
-            return collect();
-        }
-
-        return $this->userGroupData = UserGroups::getGroupsByUserId($this->id);
-    }
-
-    /**
-     * Returns whether any properties that affect the user's status have changed.
-     */
-    public function haveIndexAttributesChanged(): bool
-    {
-        if (! $this->exists) {
-            return false;
-        }
-
-        return ! empty(Arr::only($this->getDirty(), [
-            'active',
-            'email',
-            'firstName',
-            'fullName',
-            'lastLoginDate',
-            'lastName',
-            'pending',
-            'suspended',
-            'username',
-        ]));
     }
 }

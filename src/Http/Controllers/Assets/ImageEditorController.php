@@ -120,7 +120,7 @@ readonly class ImageEditorController
         $folder = $asset->getFolder();
 
         // Do what you want with your own photo.
-        if ($asset->id !== $request->user()->photoId) {
+        if ($asset->id !== $request->craftUser()?->asElement()->photoId) {
             $this->requireVolumePermissionByAsset('editImages', $asset);
             $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
         }

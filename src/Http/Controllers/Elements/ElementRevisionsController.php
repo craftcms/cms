@@ -73,7 +73,7 @@ class ElementRevisionsController
 
         Gate::authorize('save', $element->getCanonical(true));
 
-        $canonical = $revisions->revertToRevision($element, $this->request->user()->id);
+        $canonical = $revisions->revertToRevision($element, $this->request->craftUser()?->getCraftUserId());
 
         $elementActivity->trackActivity($canonical, ElementActivityType::Save);
 

@@ -857,7 +857,7 @@ class DateTimeHelper
      */
     public static function firstWeekDay(): int
     {
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         return (int) ($user?->getPreference('weekStartDay') ?? Cms::config()->defaultWeekStartDay);
     }

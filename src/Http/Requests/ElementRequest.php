@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpFoundation\Response;
@@ -117,7 +117,7 @@ class ElementRequest extends FormRequest
             return null;
         }
 
-        abort_unless($this->user()->can('view', $element), 403, 'User not authorized to view this element.');
+        abort_unless($this->craftUser()->can('view', $element), 403, 'User not authorized to view this element.');
 
         if (
             ! $this->strictSite &&
@@ -211,7 +211,7 @@ class ElementRequest extends FormRequest
 
             abort_if(is_null($site), 400, "Invalid site ID: $siteId");
 
-            if (Sites::isMultiSite() && ! $this->user()->can("editSite:$site->uid")) {
+            if (Sites::isMultiSite() && ! $this->craftUser()->can("editSite:$site->uid")) {
                 abort(403, 'User not authorized to edit content for this site.');
             }
         } else {
@@ -259,7 +259,7 @@ class ElementRequest extends FormRequest
             // check for the canonical element as a fallback
             $element = $this->elementById() ?? $this->elementByUid();
 
-            if ($element && $this->user()->can('view', $element)) {
+            if ($element && $this->craftUser()->can('view', $element)) {
                 if (! $this->wantsJson()) {
                     return redirect($element->getCpEditUrl());
                 }
@@ -290,14 +290,14 @@ class ElementRequest extends FormRequest
             $element = $this->elementQuery()
                 ->provisionalDrafts()
                 ->draftOf($elementId)
-                ->draftCreator($this->user())
+                ->draftCreator($this->craftUser()?->getCraftUserId())
                 ->siteId($siteId)
                 ->preferSites($preferSites)
                 ->unique()
                 ->status(null)
                 ->one();
 
-            if ($element && $this->canSave($element, $this->user())) {
+            if ($element && $this->canSave($element, $this->craftUser())) {
                 return $element;
             }
         }
@@ -364,7 +364,7 @@ class ElementRequest extends FormRequest
             ->one();
     }
 
-    private function canSave(ElementInterface $element, User $user): bool
+    private function canSave(ElementInterface $element, CraftUser $user): bool
     {
         if ($element->getIsRevision()) {
             return false;

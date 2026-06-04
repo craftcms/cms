@@ -108,6 +108,7 @@ use Stringable;
 use Throwable;
 use Twig\Markup;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -457,7 +458,7 @@ class Asset extends Element
     protected static function defineSources(string $context): array
     {
         $sources = [];
-        $user = Auth::user();
+        $user = currentUserElement();
         $volumeIds = $context === ElementSources::CONTEXT_INDEX
             ? Volumes::getViewableVolumeIds()
             : Volumes::getAllVolumeIds();
@@ -499,7 +500,7 @@ class Asset extends Element
         if (preg_match('/^volume:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
             $folder = Folders::getFolderByUid($match[1]);
             if ($folder) {
-                $source = self::_assembleSourceInfoForFolder($folder, Auth::user());
+                $source = self::_assembleSourceInfoForFolder($folder, currentUserElement());
                 $source['keyPath'] = $sourceKey;
 
                 return $source;
@@ -770,7 +771,7 @@ class Asset extends Element
             ],
             'uploader' => [
                 'label' => t('Uploaded By'),
-                'placeholder' => fn () => ($uploader = Auth::user()) ? app(ElementHtml::class)->elementChipHtml($uploader) : '',
+                'placeholder' => fn () => ($uploader = currentUserElement()) ? app(ElementHtml::class)->elementChipHtml($uploader) : '',
             ],
         ]);
 
@@ -1293,7 +1294,7 @@ class Asset extends Element
         $items = parent::safeActionMenuItems();
 
         $volume = $this->getVolume();
-        $user = Auth::user();
+        $user = currentUserElement();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
         $viewItems = [];
@@ -1347,7 +1348,7 @@ JS, [
         ]);
 
         // Show in Folder
-        if ($this->volumeId && $this->canView($user)) {
+        if ($user && $this->volumeId && $this->canView($user)) {
             $viewItems[] = [
                 'type' => MenuItemType::Link,
                 'icon' => 'magnifying-glass',
@@ -1365,6 +1366,7 @@ JS, [
 
         // Replace file
         if (
+            $user &&
             $user->can("replaceFiles:$volume->uid") &&
             ($user->id === $this->uploaderId || $user->can("replacePeerFiles:$volume->uid"))
         ) {
@@ -1539,7 +1541,7 @@ JS, [
 
         if (
             app(ElementRequest::class)->element() === $this &&
-            Auth::user()->isAdmin() &&
+            Auth::craftUser()->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $items[] = ['type' => MenuItemType::HR];

@@ -119,7 +119,7 @@ class UserPermissions
     public function getAssignablePermissions(?User $user = null): Collection
     {
         // If either user is an admin, all permissions are fair game
-        if (Auth::user()?->isAdmin() || ($user !== null && $user->admin)) {
+        if (Auth::craftUser()?->isAdmin() || ($user !== null && $user->admin)) {
             return $this->getAllPermissions();
         }
 
@@ -549,30 +549,24 @@ class UserPermissions
                     label: mb_ucfirst(t('Save {type}', ['type' => $type])),
                 ),
                 new Permission(
-                    key: "viewEntries:$section->uid",
-                    label: mb_ucfirst(t('View {type}', ['type' => $type])),
+                    key: "viewPeerEntryDrafts:$section->uid",
+                    label: mb_ucfirst(t('View other users’ {type}', [
+                        'type' => t('drafts'),
+                    ])),
                     nested: collect([
                         new Permission(
-                            key: "viewPeerEntryDrafts:$section->uid",
-                            label: mb_ucfirst(t('View other users’ {type}', [
+                            key: "savePeerEntryDrafts:$section->uid",
+                            label: mb_ucfirst(t('Save other users’ {type}', [
                                 'type' => t('drafts'),
                             ])),
-                            nested: collect([
-                                new Permission(
-                                    key: "savePeerEntryDrafts:$section->uid",
-                                    label: mb_ucfirst(t('Save other users’ {type}', [
-                                        'type' => t('drafts'),
-                                    ])),
-                                ),
-                                new Permission(
-                                    key: "deletePeerEntryDrafts:$section->uid",
-                                    label: t('Delete other users’ {type}', [
-                                        'type' => t('drafts'),
-                                    ]),
-                                ),
-                            ])
                         ),
-                    ]),
+                        new Permission(
+                            key: "deletePeerEntryDrafts:$section->uid",
+                            label: t('Delete other users’ {type}', [
+                                'type' => t('drafts'),
+                            ]),
+                        ),
+                    ])
                 ),
             ])
         );
@@ -752,7 +746,7 @@ class UserPermissions
      */
     private function filterUnassignablePermissions(Collection $permissions, ?User $user = null): Collection
     {
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
 
         if (! $currentUser && ! $user) {
             return new Collection;

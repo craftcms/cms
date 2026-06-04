@@ -210,7 +210,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
             return null;
         }
 

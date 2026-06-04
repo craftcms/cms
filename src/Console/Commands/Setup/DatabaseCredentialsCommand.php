@@ -8,13 +8,15 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Console\Attributes\Aliases;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Laravel\Prompts\Support\Logger;
-use Override;
 use PDOException;
 
 use function Laravel\Prompts\confirm;
@@ -23,12 +25,9 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
-class DatabaseCredentialsCommand extends Command
-{
-    use CraftCommand;
-
-    #[Override]
-    protected $signature = 'craft:setup:db-creds
+#[Aliases(['setup/db-creds', 'setup:db', 'setup/db'])]
+#[Description('Stores new DB connection settings to the `.env` file.')]
+#[Signature('craft:setup:db-creds
         {--driver= : The database driver to use. Either `\'mysql\'` for MySQL, `\'mariadb\'` for MariaDB or `\'pgsql\'` for PostgreSQL.}
         {--host= : The database server name or IP address. Usually `\'localhost\'` or `\'127.0.0.1\'`.}
         {--port= : The database server port. Defaults to 3306 for MySQL and MariaDB and 5432 for PostgreSQL.}
@@ -37,13 +36,10 @@ class DatabaseCredentialsCommand extends Command
         {--database= : The name of the database to select.}
         {--schema= : The schema that Postgres is configured to use by default (PostgreSQL only).}
         {--prefix= : The table prefix to add to all database tables. This can be no more than 5 characters, and must be all lowercase.}
-    ';
-
-    #[Override]
-    protected $description = 'Stores new DB connection settings to the `.env` file.';
-
-    #[Override]
-    protected $aliases = ['setup/db-creds', 'setup:db', 'setup/db'];
+    ')]
+class DatabaseCredentialsCommand extends Command
+{
+    use CraftCommand;
 
     private string $driver;
 
@@ -111,7 +107,6 @@ class DatabaseCredentialsCommand extends Command
             }
         }
 
-        /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
             goto startTest;

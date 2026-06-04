@@ -123,7 +123,7 @@ readonly class Dashboard
     {
         $result = Models\Widget::query()
             ->where('id', $id)
-            ->where('userId', Auth::user()->getAuthIdentifier())
+            ->where('userId', Auth::craftUser()->getAuthIdentifier())
             ->firstOrFail();
 
         return Widget::fromConfig($result);
@@ -174,7 +174,7 @@ readonly class Dashboard
             if ($isNewWidget) {
                 // Set the sortOrder
                 $maxSortOrder = Models\Widget::query()
-                    ->where('userId', Auth::user()->getAuthIdentifier())
+                    ->where('userId', Auth::craftUser()->getAuthIdentifier())
                     ->max('sortOrder');
 
                 $widgetModel->sortOrder = $maxSortOrder + 1;
@@ -289,7 +289,7 @@ readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         // Recent Entries widget
         $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
@@ -313,16 +313,14 @@ readonly class Dashboard
             ],
         ]));
 
-        User::where('id', $user->id)->update([
+        User::where('id', $user->getCraftUserId())->update([
             'hasDashboard' => true,
         ]);
-
-        $user->hasDashboard = true;
     }
 
     private function getUserWidgetModelById(?int $widgetId = null): Models\Widget
     {
-        $userId = Auth::user()->getAuthIdentifier();
+        $userId = Auth::craftUser()->getAuthIdentifier();
 
         if ($widgetId !== null) {
             return Models\Widget::query()
@@ -346,19 +344,18 @@ readonly class Dashboard
      */
     private function getUserWidgets(): Collection|false
     {
-        /** @var User $user */
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         if (! $user) {
             throw new Exception('No logged-in user');
         }
 
-        if (! $user->hasDashboard) {
+        if (! User::where('id', $user->getCraftUserId())->value('hasDashboard')) {
             return false;
         }
 
         return once(fn () => Models\Widget::query()
-            ->where('userId', $user->id)
+            ->where('userId', $user->getCraftUserId())
             ->orderBy('sortOrder')
             ->get()
             ->map(fn (Models\Widget $widget) => Widget::fromConfig($widget)));

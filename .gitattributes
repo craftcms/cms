@@ -60,5 +60,8 @@
 /src/web/assets/**/dist/**/*.min.js linguist-generated=true
 /src/web/assets/**/dist/**/*.min.js.map linguist-generated=true
 
+# resources/build generated files
+/resources/build/**/* linguist-generated=true
+
 # Auto detect text files and perform LF normalization
 * text=auto

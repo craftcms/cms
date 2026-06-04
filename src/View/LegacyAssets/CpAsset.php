@@ -36,10 +36,10 @@ use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Auth;
 use stdClass;
 
 use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -116,7 +116,7 @@ class CpAsset implements LegacyAssetInterface
         $formattingLocale = I18N::getFormattingLocale();
         $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
-        $currentUser = Auth::user();
+        $currentUser = currentUserElement();
         $primarySite = $upToDate ? Sites::getPrimarySite() : null;
 
         $data = [
