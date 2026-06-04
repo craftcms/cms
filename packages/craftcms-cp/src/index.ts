@@ -21,6 +21,7 @@ export {default as CraftInputPassword} from './components/input-password/input-p
 export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';
 export {default as CraftChip} from './components/chip/chip.js';
 export {default as CraftStatus} from './components/status/status.js';
+export {default as CraftBadge} from './components/badge/badge.js';
 export {default as CraftTextarea} from './components/textarea/textarea.js';
 export {default as CraftButtonGroup} from './components/button-group/button-group.js';
 export {default as CraftSelect} from './components/select/select.js';

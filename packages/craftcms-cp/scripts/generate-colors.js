@@ -31,6 +31,7 @@ const availableColors = [
   'white',
   'gray',
   'black',
+  'slate',
 ];
 
 const semanticColors = {
@@ -169,7 +170,7 @@ ${buildColorableTokens()}
 ${buildSemanticTokens()}
 }
 
-${[...availableColors, ...Object.values(semanticColors)].map((c) => buildStyleBlock(c)).join('\n')}
+${[...availableColors, ...Object.keys(semanticColors)].map((c) => buildStyleBlock(c)).join('\n')}
 `;
 }
 
