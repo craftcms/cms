@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where the “Delete” element edit page action wasn’t working properly when editing a provisional draft.
+- Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t returning boolean values for environment variable names that resolved to `true`/`false` values. ([#19029](https://github.com/craftcms/cms/issues/19029))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
