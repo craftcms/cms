@@ -94,7 +94,7 @@ it('renders status attribute', function () {
 
     $result = $this->renderer->render($entry, 'status');
 
-    expect((string) $result)->toContain('status-label');
+    expect((string) $result)->toContain('<craft-badge');
 });
 
 it('renders empty string for generatedField when not found', function () {

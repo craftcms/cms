@@ -27,6 +27,15 @@ export const Color = {
   Warning: 'orange',
   Danger: 'red',
   Info: 'blue',
+
+  // Status
+  Pending: 'orange',
+  Off: 'red',
+  Suspended: 'red',
+  Expired: 'red',
+  Disabled: 'gray',
+  Inactive: 'gray',
+  On: 'emerald',
 } as const;
 
 export const colors = Object.values(Color);
