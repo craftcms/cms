@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where the `craft:install` command would hang if run within a production environment.
+- Fixed a bug where “Replace relation” action buttons weren’t working.
 - Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\ValidationRulesResolving` to reflect its broader applicability to components and rulesets.
 - Relaxed the allowed types in the `ValidationRulesResolving` event to include any implementation `ValidatesWithRuleset` or a `Illuminate\Http\Request` object.
 - Renamed `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$component` to `$subject`
