@@ -26,27 +26,27 @@ import{c as e,f as t,i as n,r,t as i}from"./lit-BpPOIUnZ.js";import{a,i as o}fro
   }
 `,A=Object.defineProperty,j=Object.getOwnPropertyDescriptor,M=Object.getOwnPropertySymbols,N=Object.prototype.hasOwnProperty,P=Object.prototype.propertyIsEnumerable,F=e=>{throw TypeError(e)},I=(e,t,n)=>t in e?A(e,t,{enumerable:!0,configurable:!0,writable:!0,value:n}):e[t]=n,L=(e,t)=>{for(var n in t||={})N.call(t,n)&&I(e,n,t[n]);if(M)for(var n of M(t))P.call(t,n)&&I(e,n,t[n]);return e},R=(e,t,n,r)=>{for(var i=r>1?void 0:r?j(t,n):t,a=e.length-1,o;a>=0;a--)(o=e[a])&&(i=(r?o(t,n,i):o(i))||i);return r&&i&&A(t,n,i),i},z=(e,t,n)=>t.has(e)||F(`Cannot `+n),B=(e,t,n)=>(z(e,t,`read from private field`),n?n.call(e):t.get(e)),V=(e,t,n)=>t.has(e)?F(`Cannot add the same private member more than once`):t instanceof WeakSet?t.add(e):t.set(e,n),H=(e,t,n,r)=>(z(e,t,`write to private field`),r?r.call(e,n):t.set(e,n),n),U,W=class extends i{constructor(){super(),V(this,U,!1),this.initialReflectedProperties=new Map,Object.entries(this.constructor.dependencies).forEach(([e,t])=>{this.constructor.define(e,t)})}emit(e,t){let n=new CustomEvent(e,L({bubbles:!0,cancelable:!1,composed:!0,detail:{}},t));return this.dispatchEvent(n),n}static define(e,t=this,n={}){let r=customElements.get(e);if(!r){try{customElements.define(e,t,n)}catch{customElements.define(e,class extends t{},n)}return}let i=` (unknown version)`,a=i;`version`in t&&t.version&&(i=` v`+t.version),`version`in r&&r.version&&(a=` v`+r.version),!(i&&a&&i===a)&&console.warn(`Attempted to register <${e}>${i}, but <${e}>${a} has already been registered.`)}attributeChangedCallback(e,t,n){B(this,U)||(this.constructor.elementProperties.forEach((e,t)=>{e.reflect&&this[t]!=null&&this.initialReflectedProperties.set(t,this[t])}),H(this,U,!0)),super.attributeChangedCallback(e,t,n)}willUpdate(e){super.willUpdate(e),this.initialReflectedProperties.forEach((t,n)=>{e.has(n)&&this[n]==null&&(this[n]=t)})}};U=new WeakMap,W.version=`2.20.1`,W.dependencies={},R([a()],W.prototype,`dir`,2),R([a()],W.prototype,`lang`,2);var G=class extends W{render(){return e` <slot></slot> `}};G.styles=[k,O],G.define(`sl-visually-hidden`);var K=t`
   .badge-indicator {
-    --badge-color: var(--c-color-accent-fill-loud);
-    --text-color: white;
+    --_badge-color: var(--c-color-info-fill-loud);
+    --_text-color: var(--c-color-info-on-loud);
     --badge-size: calc(8rem / 16);
     display: inline-flex;
     min-width: var(--badge-size);
     min-height: var(--badge-size);
     justify-content: center;
     align-items: center;
-    background-color: var(--badge-color);
-    color: var(--text-color);
+    background-color: var(--_badge-color);
+    color: var(--_text-color);
     border-radius: var(--c-radius-full);
-    border: 2px solid var(--c-text-white);
+    border: 2px solid Canvas;
   }
 
   .badge-indicator--secondary {
-    --badge-color: var(--c-color-brand-fill-loud);
+    --_badge-color: var(--c-color-warning-fill-loud);
   }
 
   .badge-indicator--inverse {
-    --badge-color: var(--c-color-neutral-fill-normal);
-    --text-color: var(--c-text-default);
+    --_badge-color: var(--c-color-neutral-fill-normal);
+    --_text-color: var(--c-color-neutral-on-normal);
   }
 
   .badge-indicator--with-number {

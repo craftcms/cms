@@ -1,6 +1,7 @@
 import {Theme, Color, BackgroundColor} from '@adobe/leonardo-contrast-colors';
 
 const contrastRatios = {
+  static: [1.45, 1.78, 2.22, 2.78, 3.54, 4.61, 5.92, 7.81, 10.21, 13.01, 15.91],
   light: [1.08, 1.33, 1.58, 2.39, 3.01, 3.87, 5.07, 6.72, 8.84, 11.31, 13.94],
   dark: [1.08, 1.58, 1.96, 2.45, 3.09, 3.9, 5.07, 6.02, 7.34, 8.77, 10.18],
   base: [-1.2, 1, 1.2, 1.4, 2, 4, 5, 6.5, 10.21, 13.58, 17.04],
@@ -163,6 +164,12 @@ export const lightTheme = new Theme({
   colors: makeColors(contrastRatios.light),
   backgroundColor: backgroundColor,
   lightness: 97,
+});
+
+export const staticTheme = new Theme({
+  colors: makeColors(contrastRatios.static),
+  backgroundColor: backgroundColor,
+  lightness: 100,
 });
 
 export const darkTheme = new Theme({

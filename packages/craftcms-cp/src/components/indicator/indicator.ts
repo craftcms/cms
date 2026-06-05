@@ -4,6 +4,7 @@ import {classMap} from 'lit/directives/class-map.js';
 import variantsStyles from '@src/styles/variants.styles';
 import {colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
+import {Appearance} from '@src/constants/appearances';
 
 /**
  * @summary Indicators are used to visually represent the status of an object.
@@ -28,17 +29,17 @@ export default class CraftIndicator extends LitElement {
       }
 
       /* Appearances */
-      :host([appearance~='filled-outlined']) .indicator {
+      :host([appearance~='outline-fill']) .indicator {
         background: var(--_fill);
         border: 1px solid rgba(0, 0, 0, 0.5);
       }
 
-      :host([appearance~='filled']) .indicator {
+      :host([appearance~='solid']) .indicator {
         background: var(--_fill);
         border-color: transparent;
       }
 
-      :host([appearance~='outlined']) .indicator {
+      :host([appearance~='outline']) .indicator {
         background: transparent;
         border: 2px solid var(--_fill);
       }
@@ -56,7 +57,7 @@ export default class CraftIndicator extends LitElement {
   label: string | null = null;
 
   @property({reflect: true})
-  appearance: 'filled' | 'outlined' | 'filled-outlined' = 'filled-outlined';
+  appearance: 'solid' | 'outline-fill' | 'outline' = Appearance.OutlineFill;
 
   getFill() {
     // If the fill is known swatch
@@ -90,7 +91,7 @@ export default class CraftIndicator extends LitElement {
       role="img"
       class="${classMap({
         indicator: true,
-        'indicator--outlined': this.appearance === 'outlined',
+        'indicator--outline': this.appearance === Appearance.Outline,
       })}"
     ></span>`;
   }

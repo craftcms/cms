@@ -16,6 +16,7 @@
 
   /* Text tokens (replaces --c-fg-*) */
   --c-text-white: var(--color-white);
+  --c-text-black: var(--color-black);
   --c-text-default: var(--color-slate-900);
   --c-text-quiet: var(--color-slate-600);
   --c-text-link: var(--color-blue-600);
@@ -106,9 +107,36 @@
   --c-status-disabled-text: var(--color-slate-600);
   --c-status-disabled-border: var(--color-slate-600);
 
-  /**
-  Components
-   */
+/**
+ Static colors
+  */
+  --c-color-static-success-fill: var(--color-static-emerald-200);
+  --c-color-static-success-on: var(--c-text-white);
+  --c-color-static-success-border: var(--color-static-emerald-500);
+
+  --c-color-static-warning-fill: var(--color-static-yellow-100);
+  --c-color-static-warning-on: var(--c-text-black);
+  --c-color-static-warning-border: var(--color-static-yellow-200);
+
+  --c-color-static-info-fill: var(--color-static-blue-400);
+  --c-color-static-info-on: var(--c-text-white);
+  --c-color-static-info-border: var(--color-static-blue-500);
+
+  --c-color-static-brand-fill: var(--color-static-red-500);
+  --c-color-static-brand-on: var(--c-text-white);
+  --c-color-static-brand-border: var(--color-static-red-600);
+
+  --c-color-static-danger-fill: var(--color-static-red-500);
+  --c-color-static-danger-on: var(--c-text-white);
+  --c-color-static-danger-border: var(--color-static-red-600);
+
+  --c-color-static-accent-fill: var(--color-static-blue-400);
+  --c-color-static-accent-on: var(--c-text-white);
+  --c-color-static-accent-border: var(--color-static-blue-500);
+
+  --c-color-static-neutral-fill: var(--color-static-slate-600);
+  --c-color-static-neutral-on: var(--c-text-white);
+  --c-color-static-neutral-border: var(--color-static-slate-700);
 
   /**
   Form controls
@@ -147,35 +175,6 @@
   --c-select-spacing-inline: var(--c-form-control-spacing-inline);
   --c-select-spacing-block: var(--c-form-control-spacing-block);
   --c-select-shadow: var(--shadow-sm);
-
-  /**
-  Buttons
-   */
-
-  /** Variants **/
-  /* Default */
-  --c-button-default-fill: var(--color-slate-200);
-  --c-button-default-fill-hover: var(--color-slate-300);
-  --c-button-default-text: var(--c-text-default);
-  --c-button-default-text-hover: var(--c-button-default-text);
-  --c-button-default-border: var(--color-slate-300);
-  --c-button-default-border-hover: var(--c-button-default-border);
-
-  /* Primary */
-  --c-button-primary-fill: var(--color-red-600);
-  --c-button-primary-border: var(--color-red-700);
-  --c-button-primary-text: var(--color-white);
-  --c-button-primary-fill-hover: var(--color-red-700);
-  --c-button-primary-border-hover: var(--c-button-primary-border);
-  --c-button-primary-text-hover: var(--c-button-primary-text);
-
-  /* Danger */
-  --c-button-danger-fill: var(--color-red-600);
-  --c-button-danger-border: var(--color-red-700);
-  --c-button-danger-text: var(--color-white);
-  --c-button-danger-fill-hover: var(--color-red-700);
-  --c-button-danger-border-hover: var(--c-button-danger-border);
-  --c-button-danger-text-hover: var(--c-button-danger-text);
 
   /** Appearances **/
   /* Generic Panes */

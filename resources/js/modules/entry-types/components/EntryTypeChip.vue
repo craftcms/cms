@@ -1,8 +1,7 @@
 <script setup lang="ts">
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/components/ActionMenu.vue';
   import ReorderButton from '@/common/components/ReorderButton.vue';
-  import type {EntryType} from '@/common/types';
+  import type {EntryType, ActionItem} from '@/common/types';
   import Tooltip from '@/common/components/Tooltip.vue';
   import {ref, watch} from 'vue';
 

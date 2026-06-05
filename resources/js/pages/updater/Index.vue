@@ -132,7 +132,7 @@
           v-else
           type="button"
           @click="handleOptionClick(option)"
-          :variant="option.submit ? 'primary' : 'default'"
+          :variant="option.submit ? 'accent' : 'neutral'"
           size="lg"
         >
           {{ option.label }}
