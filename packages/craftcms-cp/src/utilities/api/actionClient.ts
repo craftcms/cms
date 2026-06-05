@@ -1,49 +1,44 @@
 import axios, {type RawAxiosRequestHeaders} from 'axios';
 import {Csrf} from '@src/services/Csrf';
-
-declare const Craft: any;
+import {getCraft} from '@src/craft';
 
 /**
  * Get the action URL for a given action path.
- * Delegates to Craft.getActionUrl() when available (runtime),
- * falls back to a path-based URL for early/test contexts.
  */
 export function getActionUrl(action: string = '') {
-  if (typeof Craft !== 'undefined' && Craft.getActionUrl) {
-    return Craft.getActionUrl(action);
-  }
-  return `/admin/actions/${action}`;
+  return getCraft().getActionUrl(action);
 }
 
 /**
  * Get the CP URL for a given path.
- * Delegates to Craft.getCpUrl() when available.
  */
 export function getCpUrl(path: string = '', params?: object) {
-  if (typeof Craft !== 'undefined' && Craft.getCpUrl) {
-    return Craft.getCpUrl(path, params);
-  }
-  return `/admin/${path}`;
+  return getCraft().getCpUrl(path, params);
 }
 
 export function actionHeaders(): RawAxiosRequestHeaders {
+  const craft = getCraft();
+
   let headers: Record<string, string> = {
     'X-Registered-Asset-Bundles': [
-      ...new Set(Craft.registeredAssetBundles),
+      ...new Set(craft.registeredAssetBundles),
     ].join(','),
-    'X-Registered-Js-Files': [...new Set(Craft.registeredJsFiles)].join(','),
+    'X-Registered-Js-Files': [...new Set(craft.registeredJsFiles)].join(','),
   };
 
   return headers;
 }
 
-export const actionClient = axios.create({
-  baseURL: getActionUrl(),
-});
+export const actionClient = axios.create();
 
 const csrf = new Csrf();
 
 actionClient.interceptors.request.use(async (config) => {
+  const craft = getCraft();
+
+  // Set base URL lazily so configure() can be called after import
+  config.baseURL ??= craft.getActionUrl('');
+
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');
 
@@ -52,19 +47,6 @@ actionClient.interceptors.request.use(async (config) => {
   Object.entries(headers).forEach(([key, value]) => {
     config.headers.set(key, value);
   });
-
-  // @TODO Make sure we really don't need this anymore
-  // if (
-  //   ['post', 'put', 'patch', 'delete'].includes(
-  //     config.method?.toLowerCase() || ''
-  //   ) &&
-  //   !config.url?.includes('users/session-info')
-  // ) {
-  //   const tokenValue = await csrf.getToken();
-  //   if (tokenValue) {
-  //     config.headers.set('X-CSRF-Token', tokenValue);
-  //   }
-  // }
 
   return config;
 });

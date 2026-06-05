@@ -4,8 +4,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import {actionClient} from './actionClient.js';
-
-declare const Craft: any;
+import {getCraft} from '@src/craft';
 
 let loadingApiHeaders = false;
 let apiHeaderWaitlist: Promise<any>[] = [];
@@ -110,10 +109,12 @@ apiClient.interceptors.request.use(async (config) => {
     });
   }
 
+  const craft = getCraft();
+
   const finalConfig = {
     ...config,
     params: {
-      ...(Craft.apiParams || {}),
+      ...(craft.apiParams || {}),
       ...config.params,
       v: new Date().getTime(),
     },
@@ -123,8 +124,8 @@ apiClient.interceptors.request.use(async (config) => {
     finalConfig.params.processCraftHeaders = 1;
   }
 
-  if (Craft.httpProxy) {
-    finalConfig.proxy = Craft.httpProxy as AxiosProxyConfig;
+  if (craft.httpProxy) {
+    finalConfig.proxy = craft.httpProxy as AxiosProxyConfig;
   }
 
   return finalConfig;

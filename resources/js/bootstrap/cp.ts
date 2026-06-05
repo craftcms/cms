@@ -1,4 +1,4 @@
-import {QueueService} from '@craftcms/cp';
+import {QueueService, configure} from '@craftcms/cp';
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
 import {Axios, Queue} from '@/common/types/keys';
@@ -32,6 +32,8 @@ function booted(callback: (craft: any) => void) {
 }
 
 function init() {
+  configure(window.Craft);
+
   queue.initialize({
     runAutomatically: window.Craft.runQueueAutomatically ?? true,
     enabled: true,

@@ -67,6 +67,10 @@ export * from './utilities/api/apiClient.js';
 export * from './utilities/string.js';
 export * from './utilities/dom.js';
 
+// Configuration
+export {configure, getCraft, tryGetCraft, resetConfiguration} from './craft.js';
+export type {CraftContext} from './craft.js';
+
 // Services
 export {QueueService} from './services/Queue.js';
 export {AssetIndexer} from './services/AssetIndexer.js';
