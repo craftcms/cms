@@ -6,6 +6,7 @@
 - Fixed a bug where “Replace relation” action buttons weren’t working.
 - Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
 - Fixed a bug where queue job progress labels weren’t getting translated.
+- Fixed a bug where the control panel sidebar and Queue Manager were showing completed jobs.
 
 ## 6.0.0-alpha.6 - 2026-06-03
 
