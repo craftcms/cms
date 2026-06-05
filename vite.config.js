@@ -94,8 +94,9 @@ function typescriptTransformer() {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const url = new URL(env.APP_URL);
-  const host = url.hostname || 'localhost';
+
+  const url = new URL(env.APP_URL || 'http://localhost');
+  const host = url.hostname;
 
   const server = url.hostname.includes('.ddev.site')
     ? {

@@ -37,7 +37,7 @@ readonly class Cp
                 'csrfTokenValue' => csrf_token(),
                 'csrfTokenName' => '_token',
                 'actionUrl' => Url::actionUrl(),
-                'cpUrl' => Url::cpUrl(),
+                'baseCpUrl' => Url::cpUrl(),
                 'baseUrl' => Url::url(),
                 'systemName' => Cms::systemName(),
             ]);

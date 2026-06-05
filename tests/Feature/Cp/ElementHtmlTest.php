@@ -30,8 +30,8 @@ describe('elementChipHtml', function () {
 
         expect($fieldHtml)->toContain('removable')
             ->and($fieldHtml)->toContain('name="myFieldName[]"')
-            ->and($indexHtml)->toContain('<span class="status')
-            ->and($this->elementHtml->elementChipHtml($user, ['showStatus' => false]))->not->toContain('<span class="status')
+            ->and($indexHtml)->toContain('<craft-indicator')
+            ->and($this->elementHtml->elementChipHtml($user, ['showStatus' => false]))->not->toContain('<craft-indicator')
             ->and($indexHtml)->toContain('thumb')
             ->and($this->elementHtml->elementChipHtml($user, ['showThumb' => false]))->not->toContain('thumb');
 

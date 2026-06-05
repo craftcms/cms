@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fixed a bug where the `craft:install` command would hang if run within a production environment.
+- Fixed a bug where “Replace relation” action buttons weren’t working.
+- Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
+
+## 6.0.0-alpha.6 - 2026-06-03
+
 - Improved the accessibility of the Login page. ([#19025](https://github.com/craftcms/cms/pull/19025))
 - Added `CraftCms\Cms\User\Contracts\CraftUser` and `CraftUserTrait`. ([#19009](https://github.com/craftcms/cms/pull/19009))
 - Removed `CraftCms\Cms\Auth\UserProvider`; the Craft guard now defaults to Laravel’s Eloquent provider using `CraftCms\Cms\User\Models\User`. ([#19009](https://github.com/craftcms/cms/pull/19009))

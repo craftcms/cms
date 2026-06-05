@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp\Html;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -17,11 +18,7 @@ readonly class StatusHtml
 {
     public function statusIndicatorHtml(string $status, array $attributes = []): ?string
     {
-        $attributes += [
-            'color' => null,
-            'label' => ucfirst($status),
-            'class' => $status,
-        ];
+        $label = Arr::get($attributes, 'label', ucfirst($status));
 
         if ($status === 'draft') {
             return Html::tag('span', '', [
@@ -31,30 +28,23 @@ readonly class StatusHtml
                 'aria' => [
                     'label' => sprintf('%s %s',
                         t('Status:'),
-                        $attributes['label'] ?? t('Draft'),
+                        $label ?? t('Draft'),
                     ),
                 ],
             ]);
         }
 
-        if ($attributes['color'] instanceof Color) {
-            $attributes['color'] = $attributes['color']->value;
+        $color = Arr::get($attributes, 'color') ?? Color::tryFromStatus($status) ?? Color::Gray;
+        $attributes = [];
+
+        if ($color instanceof Color) {
+            $color = $color->value;
         }
 
-        $options = [
-            'class' => array_filter([
-                'status',
-                $attributes['class'],
-                $attributes['color'],
-            ]),
-        ];
+        $attributes['label'] = $label ? sprintf('%s %s', t('Status:'), $label) : null;
+        $attributes['fill'] = $color;
 
-        if ($attributes['label'] !== null) {
-            $options['role'] = 'img';
-            $options['aria']['label'] = sprintf('%s %s', t('Status:'), $attributes['label']);
-        }
-
-        return Html::tag('span', '', $options);
+        return Html::tag('craft-indicator', '', $attributes);
     }
 
     public function componentStatusIndicatorHtml(Statusable $component): ?string
