@@ -72,7 +72,7 @@ export default css`
     border-end-end-radius: var(--_radius);
   }
 
-  :host([appearance~='accent']) {
+  :host([appearance~='solid']) {
     --c-text-link: var(--c-color-on-loud);
     background-color: var(--c-color-fill-loud);
     color: var(--c-color-on-loud);

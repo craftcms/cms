@@ -18,8 +18,8 @@
       -45deg,
       transparent,
       transparent 12px,
-      var(--color-yellow-400) 12px,
-      var(--color-yellow-400) 20px
+      var(--c-color-static-warning-fill) 12px,
+      var(--c-color-static-warning-fill) 20px
     );
     background-color: var(--color-slate-900);
   }

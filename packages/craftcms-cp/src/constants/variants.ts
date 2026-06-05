@@ -1,7 +1,7 @@
 import {Volume} from '@src/constants/volume';
 
 export const Variant = {
-  Default: 'default',
+  Neutral: 'neutral',
   Success: 'success',
   Warning: 'warning',
   Danger: 'danger',

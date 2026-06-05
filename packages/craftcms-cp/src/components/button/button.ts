@@ -7,6 +7,22 @@ import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
 
+export const ButtonAppearance = {
+  Solid: 'solid',
+  Outline: 'outline',
+  Plain: 'plain',
+} as const;
+
+export const ButtonVariant = {
+  Accent: 'accent',
+  Neutral: 'neutral',
+  Danger: 'danger',
+} as const;
+
+export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
+export type ButtonAppearance =
+  (typeof ButtonAppearance)[keyof typeof ButtonAppearance];
+
 /**
  * @summary Interactive element that triggers an action or event.
  * @since 1.0
@@ -50,27 +66,17 @@ export default class CraftButton extends LionButtonSubmit {
   @property() accessibleName: string;
 
   /** Visual appearance of the button */
-  @property({reflect: true}) appearance:
-    | 'accent'
-    | 'inline'
-    | 'plain'
-    | 'filled'
-    | 'none'
-    | 'dashed' = 'accent';
+  @property({reflect: true}) appearance: ButtonAppearance = 'solid';
 
   /**
-   * Theme variant of the button. Defaults to "default"
+   * Theme variant of the button. Defaults to "neutral"
    *
-   * Primary: The primary action on a page
-   * Default: Used in most cases
+   * Accent: The primary action on a page
+   * Neutral: Used in most cases
    * Danger: Indicates a dangerous action, when data will be removed or deleted
    * Inherit: Useful for colorable elements, button will reflect the parent theme
    */
-  @property({reflect: true}) variant:
-    | 'primary'
-    | 'default'
-    | 'danger'
-    | 'inherit' = 'default';
+  @property({reflect: true}) variant: ButtonVariant = 'neutral';
 
   /** Size of the button. Defaults to "medium" */
   @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =

@@ -212,7 +212,7 @@
       <CpLink
         :inertia="false"
         appearance="button"
-        variant="primary"
+        variant="accent"
         :href="create()"
         icon="plus"
       >

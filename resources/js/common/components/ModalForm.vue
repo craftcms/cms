@@ -51,7 +51,7 @@
           </craft-button>
         </template>
         <template #primary-action>
-          <craft-button type="submit" variant="primary" :loading="loading">
+          <craft-button type="submit" variant="accent" :loading="loading">
             {{ submitLabel }}
           </craft-button>
         </template>

@@ -42,7 +42,7 @@
           <craft-button
             type="submit"
             :loading="form.processing"
-            variant="primary"
+            variant="accent"
           >
             {{ t('Find and Replace') }}
           </craft-button>

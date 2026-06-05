@@ -36,11 +36,10 @@ const availableColors = [
 
 const semanticColors = {
   neutral: 'slate',
-  brand: 'red',
-  accent: 'blue',
+  accent: 'red',
   info: 'blue',
   success: 'emerald',
-  warning: 'orange',
+  warning: 'yellow',
   danger: 'red',
 };
 
@@ -174,6 +173,10 @@ ${[...availableColors, ...Object.keys(semanticColors)].map((c) => buildStyleBloc
 `;
 }
 
-const css = generateStyles(availableColors);
-writeFileSync(OUT_FILE, css);
-console.log(`Generated ${OUT_FILE}`);
+export default function main() {
+  const css = generateStyles(availableColors);
+  writeFileSync(OUT_FILE, css);
+  console.log(`Generated ${OUT_FILE}`);
+}
+
+main();

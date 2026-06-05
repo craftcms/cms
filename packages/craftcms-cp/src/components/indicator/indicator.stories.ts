@@ -6,7 +6,7 @@ import './indicator.js';
 import type CraftIndicator from './indicator.js';
 import {Variant} from '@src/constants/variants';
 
-const appearances = ['filled-outlined', 'filled', 'outlined'];
+const appearances = ['outline-fill', 'solid', 'outline'];
 
 /**
  * Renders the indicator in each appearance, with a label, so every story shares

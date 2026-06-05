@@ -114,7 +114,7 @@
       <craft-button
         type="button"
         @click="beginInstall"
-        variant="primary"
+        variant="accent"
         class="begin-button"
       >
         {{ t('Install Craft CMS') }}
@@ -140,7 +140,7 @@
             <div class="flex justify-center w-full">
               <craft-button
                 type="button"
-                variant="primary"
+                variant="accent"
                 @click="goTo('account')"
               >
                 {{ t('Got it') }}
@@ -237,7 +237,7 @@
                 <craft-button
                   class="justify-self-end"
                   type="submit"
-                  variant="primary"
+                  variant="accent"
                   :loading="formData.processing"
                 >
                   {{ current.submitLabel ?? t('Next') }}

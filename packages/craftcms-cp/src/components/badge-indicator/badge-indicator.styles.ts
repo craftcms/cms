@@ -2,27 +2,27 @@ import {css} from 'lit';
 
 export default css`
   .badge-indicator {
-    --badge-color: var(--c-color-accent-fill-loud);
-    --text-color: white;
+    --_badge-color: var(--c-color-info-fill-loud);
+    --_text-color: var(--c-color-info-on-loud);
     --badge-size: calc(8rem / 16);
     display: inline-flex;
     min-width: var(--badge-size);
     min-height: var(--badge-size);
     justify-content: center;
     align-items: center;
-    background-color: var(--badge-color);
-    color: var(--text-color);
+    background-color: var(--_badge-color);
+    color: var(--_text-color);
     border-radius: var(--c-radius-full);
-    border: 2px solid var(--c-text-white);
+    border: 2px solid Canvas;
   }
 
   .badge-indicator--secondary {
-    --badge-color: var(--c-color-brand-fill-loud);
+    --_badge-color: var(--c-color-warning-fill-loud);
   }
 
   .badge-indicator--inverse {
-    --badge-color: var(--c-color-neutral-fill-normal);
-    --text-color: var(--c-text-default);
+    --_badge-color: var(--c-color-neutral-fill-normal);
+    --_text-color: var(--c-color-neutral-on-normal);
   }
 
   .badge-indicator--with-number {
