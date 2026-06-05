@@ -265,6 +265,8 @@ Route::prefix(implode('/', [
         Route::post('delete-elements/delete', [DeleteElementsController::class, 'destroy']);
         Route::any('delete-elements/replace-relations-modal', [DeleteElementsController::class, 'replaceRelationsModal']);
         Route::post('delete-elements/replace-relations', [DeleteElementsController::class, 'replaceRelations']);
+        Route::any('delete-elements/replace-references-modal', [DeleteElementsController::class, 'replaceReferencesModal']);
+        Route::post('delete-elements/replace-references', [DeleteElementsController::class, 'replaceReferences']);
 
         Route::post('elements/create', CreateElementController::class);
         Route::any('elements/edit', EditElementController::class);

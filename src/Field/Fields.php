@@ -1037,8 +1037,10 @@ class Fields
         if (! $isNewLayout) {
             // Get the current layout
             $layoutModel = FieldLayoutModel::withTrashed()->findOrFail($layout->id);
+            $previousConfig = $layoutModel->config;
         } else {
             $layoutModel = new FieldLayoutModel;
+            $previousConfig = null;
         }
 
         // Save the layout
@@ -1062,7 +1064,7 @@ class Fields
 
         $layout->uid = $layoutModel->uid;
 
-        event(new FieldLayoutSaved($layout, $isNewLayout));
+        event(new FieldLayoutSaved($layout, $isNewLayout, $previousConfig));
 
         // Clear caches
         $this->invalidateCaches();
