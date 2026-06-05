@@ -13,6 +13,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
+/** @phpstan-ignore-next-line */
 trait RelationalFieldTrait
 {
     /**
