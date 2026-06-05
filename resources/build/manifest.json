@@ -104,8 +104,8 @@
       "_nav-item-DFZbQ-Jw-CtSAdykQ.js"
     ]
   },
-  "_DeleteSiteModal-CoHy6eTY.js": {
-    "file": "assets/DeleteSiteModal-CoHy6eTY.js",
+  "_DeleteSiteModal-Ywb0L7ev.js": {
+    "file": "assets/DeleteSiteModal-Ywb0L7ev.js",
     "name": "DeleteSiteModal",
     "imports": [
       "__plugin-vue_export-helper-Cuhevpfm.js",
@@ -361,8 +361,8 @@
     "file": "assets/cp-Ci2VJcYL.css",
     "src": "_cp-Ci2VJcYL.css"
   },
-  "_cp-O_ysiaCo.js": {
-    "file": "assets/cp-O_ysiaCo.js",
+  "_cp-D1UY0kZ8.js": {
+    "file": "assets/cp-D1UY0kZ8.js",
     "name": "cp",
     "imports": [
       "__plugin-vue_export-helper-Cuhevpfm.js",
@@ -1198,25 +1198,25 @@
     "isEntry": true
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-BVBYNW4y.js",
+    "file": "assets/cp-D8AWCzbZ.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "_cp-CFH6wPLn.js",
-      "_cp-O_ysiaCo.js",
+      "_cp-D1UY0kZ8.js",
       "_CpQueueIndicator-B3MdytXL.js",
       "_CpGlobalSidebar-7AFxlz3R.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-DdoUTTdF.js",
+    "file": "assets/legacy-CxWcAg0r.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
       "_cp-CFH6wPLn.js",
-      "_cp-O_ysiaCo.js",
+      "_cp-D1UY0kZ8.js",
       "_login-form-BasWBRF9.js"
     ],
     "dynamicImports": [
@@ -1511,7 +1511,7 @@
     ]
   },
   "resources/js/pages/settings/Sites.vue": {
-    "file": "assets/Sites-Cu6d_1qH.js",
+    "file": "assets/Sites-DSzjghQP.js",
     "name": "Sites",
     "src": "resources/js/pages/settings/Sites.vue",
     "isDynamicEntry": true,
@@ -1521,7 +1521,7 @@
       "_AdminTable-D7ObLWOh.js",
       "_InputCombobox-C2-gVliR.js",
       "_nav-item-DFZbQ-Jw-CtSAdykQ.js",
-      "_DeleteSiteModal-CoHy6eTY.js",
+      "_DeleteSiteModal-Ywb0L7ev.js",
       "_AppLayout-B0dpV2Cl.js",
       "_Badge-CZivKMDx.js",
       "_InlineFlash-Cl4JE_nm.js",
@@ -1535,7 +1535,7 @@
     ]
   },
   "resources/js/pages/settings/SitesEdit.vue": {
-    "file": "assets/SitesEdit-Cny2e-a_.js",
+    "file": "assets/SitesEdit-b-gE1Q84.js",
     "name": "SitesEdit",
     "src": "resources/js/pages/settings/SitesEdit.vue",
     "isDynamicEntry": true,
@@ -1544,7 +1544,7 @@
       "_cp-CFH6wPLn.js",
       "_dist-QTXkEWuv.js",
       "_nav-item-DFZbQ-Jw-CtSAdykQ.js",
-      "_DeleteSiteModal-CoHy6eTY.js",
+      "_DeleteSiteModal-Ywb0L7ev.js",
       "_AppLayout-B0dpV2Cl.js",
       "_Badge-CZivKMDx.js",
       "_Pane-DrGNHYDe.js",
