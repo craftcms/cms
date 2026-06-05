@@ -6,11 +6,11 @@
  *
  * Usage in your CSS entry file:
  *
- *   @import "@craftcms/ui/dist/styles/cp.css";   // loads :root token values
+ *   @import "@craftcms/ui/styles/base.css";       // loads :root token values
  *   @import "@craftcms/ui/tailwind.css";          // @theme inline — generate utilities
  *   @import "tailwindcss";                        // Tailwind v4 engine
  *
- * The --c-* variables must already be in scope (via cp.css) for var() to
+ * The --c-* variables must already be in scope (via base.css) for var() to
  * resolve at render time. Using @theme inline means the generated utilities
  * reference the CSS custom properties directly, so dark-mode overrides in
  * [data-theme='dark'] are picked up automatically.

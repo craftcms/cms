@@ -1,10 +1,10 @@
 @layer preflight, theme, base, components, utilities;
 
-@import './shared/preflight.css' layer(preflight);
-@import './shared/variables.css' layer(theme);
-@import './shared/tokens.css' layer(theme);
-@import './shared/colorable.css' layer(theme);
-@import './shared/base.css' layer(base);
+@import '@craftcms/ui/styles/shared/preflight.css' layer(preflight);
+@import '@craftcms/ui/styles/shared/variables.css' layer(theme);
+@import '@craftcms/ui/styles/shared/tokens.css' layer(theme);
+@import '@craftcms/ui/styles/shared/colorable.css' layer(theme);
+@import '@craftcms/ui/styles/shared/base.css' layer(base);
 
 .resizable-container {
   border: 2px solid;

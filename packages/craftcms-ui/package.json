@@ -42,7 +42,7 @@
     "./dist/*": "./dist/*",
     "./vue/*": "./dist/vue/*",
     "./types/*": "./src/types/*",
-    "./styles/*": "./dist/styles/*",
+    "./styles/*": "./src/styles/*",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",
     "./custom-elements.json": "./dist/custom-elements.json",
