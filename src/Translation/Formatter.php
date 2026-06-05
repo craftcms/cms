@@ -597,7 +597,7 @@ class Formatter
     private function parseDate(int|string|DateTimeInterface $value, string $format, bool $withTimeZone): array
     {
         if ($value instanceof CarbonInterface) {
-            return [$value, true];
+            return [$this->formatParsedDate($value, $format, $withTimeZone), true];
         }
 
         /** Int is always a timestamp */
@@ -634,15 +634,20 @@ class Formatter
             $dateTime = $dateTime->addHours($offset / 3600);
         }
 
+        return [$this->formatParsedDate($dateTime, $format, $withTimeZone), $hasTimeInfo];
+    }
+
+    private function formatParsedDate(CarbonInterface $dateTime, string $format, bool $withTimeZone): CarbonInterface|string
+    {
         $result = str_starts_with($format, 'php:')
             ? $dateTime->format(Str::after($format, 'php:'))
             : $dateTime;
 
-        if ($withTimeZone && $result) {
-            $result .= ' '.DateTimeHelper::timeZoneAbbreviation($value->getTimezone());
+        if (is_string($result) && $withTimeZone && $result !== '') {
+            $result .= ' '.DateTimeHelper::timeZoneAbbreviation($dateTime->getTimezone());
         }
 
-        return [$result, $hasTimeInfo];
+        return $result;
     }
 
     private function normalizeNumericValue(mixed $value): float|int
