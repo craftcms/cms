@@ -802,15 +802,15 @@ JS;
     {
         /** @var LinkData|null $value */
         $value = $element->getFieldValue($this->handle);
-        $element = $value?->getElement();
+        $linkedElement = $value?->getElement();
 
-        if (in_array(! $element?->id, $oldTargetIds)) {
+        if (in_array(! $linkedElement?->id, $oldTargetIds)) {
             return false;
         }
 
         $element->setFieldvalue($this->handle, [
             'type' => $value->getType(),
-            'value' => sprintf('{%s:%s@%s:url}', $element::refHandle(), $newTargetId, $element->siteId),
+            'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $newTargetId, $linkedElement->siteId),
         ]);
 
         return true;

@@ -93,7 +93,7 @@ new Craft.CpModal('delete-elements/replace-references-modal', {
     elementIds: $targetIds,
     hardDelete: $hardDelete,
   },
-  (ev) => {
+  onSubmit: (ev) => {
     resolve(ev.response.data.message);
   },
   onCancel: () => {
