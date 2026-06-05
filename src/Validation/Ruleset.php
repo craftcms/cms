@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation;
 
-use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
 use Illuminate\Validation\Validator;
 use Override;
 
