@@ -8,6 +8,8 @@ parameters:
     paths:
         - src
         - config
+    scanDirectories:
+        - yii2-adapter/legacy/base
     stubFiles:
         - yii2-adapter/stubs/_generated.stub
         - yii2-adapter/stubs/GraphQL/Type/Definition/FieldDefinition.stub
