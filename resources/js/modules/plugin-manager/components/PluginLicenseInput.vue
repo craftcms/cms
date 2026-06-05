@@ -96,7 +96,7 @@
           appearance="button"
           :inertia="false"
           :href="plugin.buyUrl"
-          :variant="plugin.licenseIssues.length > 0 ? 'primary' : 'default'"
+          :variant="plugin.licenseIssues.length > 0 ? 'accent' : 'neutral'"
           >{{ t('Buy now') }}</CpLink
         >
       </template>

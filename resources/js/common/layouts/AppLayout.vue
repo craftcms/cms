@@ -11,8 +11,7 @@
   import LiveRegion from '@/common/components/LiveRegion.vue';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/components/ActionMenu.vue';
-  import type {ActionItemData} from '@/common/types';
+  import type {ActionItem} from '@/common/types';
   import {useFlash} from '@/common/composables/useFlash';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
@@ -29,7 +28,7 @@
     debug?: any;
     fullWidth?: boolean;
     form?: InertiaForm<any> | null;
-    formActions?: Array<ActionItemData>;
+    formActions?: Array<ActionItem>;
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }
 
@@ -202,7 +201,7 @@
                         <craft-button-group v-if="!readOnly">
                           <craft-button
                             type="submit"
-                            variant="primary"
+                            variant="accent"
                             :loading="form.processing"
                           >
                             {{ t('Save') }}
@@ -224,7 +223,7 @@
                             <template #invoker="{label}">
                               <craft-button
                                 slot="invoker"
-                                variant="primary"
+                                variant="accent"
                                 type="button"
                                 icon
                               >

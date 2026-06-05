@@ -98,7 +98,7 @@ export default class CraftLoginResetPassword extends LitElement {
           <div class="login-form__actions">
             <craft-button
               type="submit"
-              variant="primary"
+              variant="accent"
               ?loading="${this._busy}"
             >
               ${t('Reset password')}

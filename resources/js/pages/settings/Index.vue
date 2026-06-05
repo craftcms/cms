@@ -110,8 +110,8 @@
   }
 
   .settings-item:hover {
-    background-color: var(--c-color-accent-fill-quiet);
-    color: var(--c-color-accent-on-quiet);
-    border: 1px solid var(--c-color-accent-border-quiet);
+    background-color: var(--c-color-info-fill-quiet);
+    color: var(--c-color-info-on-quiet);
+    border: 1px solid var(--c-color-info-border-quiet);
   }
 </style>

@@ -93,7 +93,7 @@
         icon="plus"
         :inertia="false"
         appearance="button"
-        variant="primary"
+        variant="accent"
         >{{ t('New token') }}</CpLink
       >
     </template>
