@@ -5,6 +5,7 @@
 - Fixed a bug where the `craft:install` command would hang if run within a production environment.
 - Fixed a bug where “Replace relation” action buttons weren’t working.
 - Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
+- Fixed a bug where queue job progress labels weren’t getting translated.
 
 ## 6.0.0-alpha.6 - 2026-06-03
 
