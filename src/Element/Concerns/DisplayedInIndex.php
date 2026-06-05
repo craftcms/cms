@@ -26,8 +26,6 @@ use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Structures;
-use DateInterval;
-use DateTime;
 use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
 use Illuminate\Support\Facades\DB;
 use Stringable;
@@ -505,11 +503,11 @@ trait DisplayedInIndex
         $attributes = [
             'dateCreated' => [
                 'label' => t('Date Created'),
-                'placeholder' => fn () => new DateTime()->sub(new DateInterval('P16D')),
+                'placeholder' => fn () => now()->subDays(16),
             ],
             'dateUpdated' => [
                 'label' => t('Date Updated'),
-                'placeholder' => fn () => new DateTime()->sub(new DateInterval('P15D')),
+                'placeholder' => fn () => now()->subDays(15),
             ],
             'id' => [
                 'label' => t('ID'),

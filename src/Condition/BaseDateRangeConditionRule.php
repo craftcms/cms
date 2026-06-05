@@ -14,7 +14,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
-use DateTime;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Validation\Rule;
 use Override;
@@ -320,7 +320,7 @@ JS,
                 $dateInterval = $periodType->interval($this->periodValue);
 
                 return ($this->rangeType === DateRangeType::After->value ? '>=' : '<').' '.
-                    DateTimeHelper::toIso8601(DateTimeHelper::now()->add($dateInterval));
+                    DateTimeHelper::toIso8601(now()->add($dateInterval));
 
             case self::OPERATOR_EMPTY:
                 return ':empty:';
@@ -342,7 +342,7 @@ JS,
      *
      * @throws Exception
      */
-    protected function matchValue(?DateTime $value): bool
+    protected function matchValue(?DateTimeInterface $value): bool
     {
         switch ($this->rangeType) {
             case DateRangeType::Range->value:
@@ -356,7 +356,7 @@ JS,
                     return true;
                 }
 
-                $date = DateTimeHelper::now()->add(DateRangePeriod::from($this->periodType)->interval($this->periodValue));
+                $date = now()->add(DateRangePeriod::from($this->periodType)->interval($this->periodValue));
 
                 if ($this->rangeType === DateRangeType::After->value) {
                     return $value && $value >= $date;
@@ -377,7 +377,7 @@ JS,
         }
     }
 
-    private function _inclusiveEndDate(): DateTime
+    private function _inclusiveEndDate(): DateTimeInterface
     {
         return DateTimeHelper::toDateTime($this->_endDate)->modify('+1 day');
     }

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Conditions;
 use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Date;
-use DateTime;
+use DateTimeInterface;
 use RuntimeException;
 
 class DateFieldConditionRule extends BaseDateRangeConditionRule implements FieldConditionRuleInterface
@@ -39,7 +39,7 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
             return true;
         }
 
-        /** @var DateTime|null $value */
+        /** @var DateTimeInterface|null $value */
         return $this->matchValue($value);
     }
 }

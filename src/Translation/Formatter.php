@@ -9,7 +9,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
-use DateTime;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Date;
@@ -273,7 +272,7 @@ class Formatter
                 $value->invert,
             ],
             is_numeric($value) => [
-                new DateTime()->setTimestamp(abs((int) $value))->diff(new DateTime()->setTimestamp(0)),
+                Date::createFromTimestampUTC(abs((int) $value))->diff(Date::createFromTimestampUTC(0)),
                 $value < 0,
             ],
             str_starts_with($value, 'P-') => [

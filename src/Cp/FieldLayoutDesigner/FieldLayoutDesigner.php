@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
-use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 
@@ -126,7 +125,7 @@ JS;
             foreach ($fieldLayoutConfig['tabs'] as &$tabConfig) {
                 foreach ($tabConfig['elements'] as &$elementConfig) {
                     if (! isset($elementConfig['dateAdded'])) {
-                        $elementConfig['dateAdded'] = DateTimeHelper::toIso8601((new DateTime)->modify('-1 minute'));
+                        $elementConfig['dateAdded'] = DateTimeHelper::toIso8601(now()->subMinute());
                     }
                 }
             }

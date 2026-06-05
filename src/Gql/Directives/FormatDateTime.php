@@ -9,7 +9,7 @@ use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -67,11 +67,11 @@ class FormatDateTime extends Directive
 
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
-        if (! $value instanceof DateTime) {
+        if (! $value instanceof DateTimeInterface) {
             return $value;
         }
 
-        /** @var DateTime $value */
+        /** @var DateTimeInterface $value */
         $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
 
         // Is this a custom PHP date format?

@@ -14,7 +14,6 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
 use DateTimeInterface;
@@ -43,7 +42,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
     public function handle(): int
     {
-        $now = Query::prepareDateForDb(DateTimeHelper::now());
+        $now = Query::prepareDateForDb(now());
 
         foreach ($this->conditions($now) as $status => $condition) {
             $this->components->task(

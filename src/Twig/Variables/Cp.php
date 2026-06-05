@@ -17,7 +17,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use DateTime;
+use DateTimeInterface;
 use Deprecated;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -220,10 +220,10 @@ class Cp extends Component
     /**
      * Returns all known time zones for a time zone input.
      *
-     * @param  DateTime|null  $offsetDate  The [[DateTime]] object that contains the date/time to compute time zone offsets from
+     * @param  DateTimeInterface|null  $offsetDate  The [[DateTime]] object that contains the date/time to compute time zone offsets from
      */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTimezoneOptions]] should be used instead.')]
-    public function getTimeZoneOptions(?DateTime $offsetDate = null): array
+    public function getTimeZoneOptions(?DateTimeInterface $offsetDate = null): array
     {
         return $this->formatLegacyOptions(SelectOptions::getTimeZoneOptions($offsetDate));
     }

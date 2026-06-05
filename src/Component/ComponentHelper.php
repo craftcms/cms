@@ -11,9 +11,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
-use DateTime;
-use ReflectionNamedType;
-use ReflectionProperty;
 use RuntimeException;
 
 class ComponentHelper
@@ -150,11 +147,10 @@ class ComponentHelper
     {
         $datetimeAttributes = [];
 
-        $attributes = Utils::getPublicReflectionProperties($model, function (ReflectionProperty $property) {
-            $type = $property->getType();
-
-            return $type instanceof ReflectionNamedType && $type->getName() === DateTime::class;
-        });
+        $attributes = Utils::getPublicReflectionProperties(
+            $model,
+            fn ($property) => Typecast::isDateTimeProperty($model::class, $property->getName()),
+        );
 
         foreach ($attributes as $property) {
             $datetimeAttributes[] = $property->getName();
