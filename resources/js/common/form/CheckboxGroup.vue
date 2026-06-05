@@ -28,7 +28,7 @@
   <craft-checkbox-group
     :name="name"
     :label="label"
-    .model-value="modelValue"
+    .modelValue="modelValue"
     @model-value-changed="handleValueChange"
     :disabled="disabled"
   >
@@ -36,7 +36,7 @@
       <craft-checkbox-indeterminate :label="t('All')">
         <template v-for="option in options" :key="option.value">
           <craft-checkbox
-            .choice-value="option.value"
+            .choiceValue="option.value"
             .checked="option.checked"
             .disabled="option.disabled"
           >
@@ -53,7 +53,7 @@
     <template v-else>
       <template v-for="option in options" :key="option.value">
         <craft-checkbox
-          .choice-value="option.value"
+          .choiceValue="option.value"
           .checked="option.checked"
           .disabled="option.disabled"
         >

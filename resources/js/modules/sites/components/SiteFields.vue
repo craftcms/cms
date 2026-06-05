@@ -66,7 +66,7 @@
     :help-text="t('Which group should this site belong to?')"
     name="group"
     id="group"
-    .model-value="form.group"
+    .modelValue="form.group"
     @model-value-changed="form.group = $event.target?.modelValue"
     :disabled="readOnly"
   >
