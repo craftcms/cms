@@ -8,7 +8,8 @@
         {!! app(\CraftCms\Cms\Plugin\Plugins::class)->getAssetsHtml() !!}
         <script>
           let Craft = (window.Craft || {});
-          let Cp = (window.Cp || {});
+          Craft.booting ||= (fn) => (window.bootingCallbacks ||= []).push(fn);
+          Craft.booted  ||= (fn) => (window.bootedCallbacks  ||= []).push(fn);
         </script>
         <x-inertia::head>
             <title>{{ config('app.name') }}</title>
@@ -18,10 +19,10 @@
         <x-inertia::app />
         {!! $bodyHtml !!}
         <script>
-          let CpConfig = {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!};
+          Object.assign(window.Craft, {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!});
         </script>
         <script
-            src="data:text/javascript;base64,{{ base64_encode('console.log(Cp); window.Cp.config(CpConfig); window.Cp.start()') }}"
+            src="data:text/javascript;base64,{{ base64_encode('window.Craft.start()') }}"
             defer
         ></script>
     </body>

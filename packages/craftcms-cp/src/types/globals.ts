@@ -1,5 +1,4 @@
 import {QueueService} from '@src/services/Queue';
-import {ConfigService} from '@src/services/Config';
 
 declare const d3: any | undefined;
 declare const d3FormatLocaleDefinition: any | undefined;
@@ -39,7 +38,6 @@ type Site = {
 
 export interface CpServices {
   $queue: QueueService;
-  $config: ConfigService;
 }
 
 export {};

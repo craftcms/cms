@@ -1,4 +1,5 @@
 import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
+import type {AxiosInstance} from 'axios';
 
 declare module '@tanstack/vue-table' {
   interface ColumnMeta {
@@ -52,9 +53,6 @@ type Site = {
   uid: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface CpStatic extends CpServices {}
-
 interface CpNotificationSettings {
   icon: string;
   iconLabel: string;
@@ -69,9 +67,25 @@ interface SlideoutInstance {
   on(event: string, callback: () => void): void;
 }
 
-interface CraftStatic {
+interface CraftStatic extends CpServices {
+  $axios: AxiosInstance;
+  booting(cb: (craft: CraftStatic) => void): void;
+  booted(cb: (craft: CraftStatic) => void): void;
+  init(): void;
+  start(): Promise<void>;
+
+  // Server config
   csrfTokenName?: string;
   csrfTokenValue?: string;
+  systemUid?: string;
+  systemName?: string;
+  runQueueAutomatically?: boolean;
+  canAccessQueueManager?: boolean;
+  translations?: Record<string, Record<string, string>>;
+  registeredAssetBundles?: string[];
+  registeredJsFiles?: string[];
+
+  // Legacy classes/utils
   ProgressBar: ProgressBarInterface;
   IntervalManager: IntervalManagerInterface;
   t(message: string, params?: object, category?: string): string;
@@ -79,11 +93,13 @@ interface CraftStatic {
   initUiElements($container: JQuery): void;
   expandPostArray(arr: object): any;
   escapeHtml(str: string);
+  getUrl(path: string, params?: string | object, baseUrl?: string): string;
+  getActionUrl(action: string, params?: string | object): string;
+  getCpUrl(path: string, params?: string | object): string;
   sites: Site[];
   Preview: any;
   setCookie(name: string, value: string): any;
   getCookie(name: string): any;
-  getUrl(path: string, params?: string | object, baseUrl?: string): string;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;
@@ -99,8 +115,6 @@ interface CraftStatic {
       settings?: CpNotificationSettings
     ) => object;
   };
-  systemUid?: string;
-  canAccessQueueManager?: boolean;
   queue?: {
     hasWaitingJobs?: boolean;
     hasReservedJobs?: boolean;
@@ -120,6 +134,8 @@ interface CraftStatic {
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
   };
+
+  [key: string]: any;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -130,15 +146,12 @@ interface JQueryObject {}
 // Declare existing variables, mock the things we'll use.
 
 declare global {
-  let Cp: CpStatic;
   let Craft: CraftStatic;
   let Garnish: GarnishStatic;
   let $: any;
   interface Window {
     bootedCallbacks: Array<(craft: any) => void>;
     bootingCallbacks: Array<(craft: any) => void>;
-    CpConfig: Record<string, any>;
-    Cp: CpStatic;
     Craft: CraftStatic;
     $: JQueryObject;
     jQuery: JQueryObject;

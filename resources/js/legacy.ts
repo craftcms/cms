@@ -3,9 +3,7 @@
 import './modules/auth/components/login/login-form.js';
 import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
-import Cp from './bootstrap/cp.js';
-
-window.Cp = Cp;
+import './bootstrap/cp.js';
 
 /**
  * Components - dynamically imported after Craft is initialized

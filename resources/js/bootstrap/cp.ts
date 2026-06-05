@@ -1,7 +1,7 @@
-import {QueueService, ConfigService} from '@craftcms/cp';
+import {QueueService} from '@craftcms/cp';
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
-import {Axios, Config, Queue} from '@/common/types/keys';
+import {Axios, Queue} from '@/common/types/keys';
 import axios from 'axios';
 import QueueManagerToolbar from '@/modules/utilities/components/queue-manager/QueueManagerToolbar.vue';
 import DeprecationErrors from '@/modules/utilities/components/deprecation-errors/DeprecationErrors.vue';
@@ -16,99 +16,74 @@ import SystemMessages from '@/modules/utilities/components/system-messages/Syste
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
 
-let bootedCallbacks: Array<(instance: any) => void> = [];
-let bootingCallbacks: Array<(instance: any) => void> = [];
-
-// Instantiate services
-const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
+let hasBooted = false;
 
-// Create our object
-const Cp = {
-  initialConfig: {} as Record<string, any>,
+function booting(callback: (craft: any) => void) {
+  (window.bootingCallbacks ||= []).push(callback);
+}
 
-  get $config() {
-    return config;
-  },
+function booted(callback: (craft: any) => void) {
+  if (hasBooted) {
+    callback(window.Craft);
+  } else {
+    (window.bootedCallbacks ||= []).push(callback);
+  }
+}
 
-  get $queue() {
-    return queue;
-  },
+function init() {
+  queue.initialize({
+    runAutomatically: window.Craft.runQueueAutomatically ?? true,
+    enabled: true,
+    appId: window.Craft.systemUid ?? '',
+    canAccessQueueManager: window.Craft.canAccessQueueManager ?? false,
+  });
 
-  get $axios() {
-    return axios;
-  },
+  setTranslations(window.Craft.translations);
+}
 
-  booted(callback: (instance: any) => void) {
-    bootedCallbacks.push(callback);
-  },
+async function start() {
+  init();
 
-  booting(callback: (instance: any) => void) {
-    bootingCallbacks.push(callback);
-  },
+  axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+  axios.defaults.headers.common['X-CSRF-TOKEN'] =
+    window.Craft.csrfTokenValue;
 
-  config(config: Record<any, any>) {
-    this.initialConfig = config;
-  },
+  (window.bootingCallbacks ?? []).forEach((callback) =>
+    callback(window.Craft)
+  );
+  window.bootingCallbacks = [];
 
-  init() {
-    config.initialize(this.initialConfig);
-    queue.initialize({
-      runAutomatically: config.get('runQueueAutomatically', true),
-      enabled: true,
-      appId: config.get('systemUid', ''),
-      canAccessQueueManager: config.get('canAccessQueueManager', false),
-    });
+  await createInertiaApp({
+    pages: '../pages',
+    title: (title) => `${title} - ${window.Craft.systemName}`,
+    withApp(app) {
+      app.provide(Queue, queue);
+      app.provide(Axios, axios);
 
-    setTranslations(this.initialConfig.translations);
-  },
+      app.component('QueueManager', QueueManager);
+      app.component('QueueManagerToolbar', QueueManagerToolbar);
+      app.component('DeprecationErrors', DeprecationErrors);
+      app.component('DeprecationErrorsToolbar', DeprecationErrorsToolbar);
+      app.component('ClearCaches', ClearCaches);
+      app.component('FindReplace', FindReplace);
+      app.component('DatabaseBackup', DatabaseBackup);
+      app.component('Migrations', Migrations);
+      app.component('Updates', Updates);
+      app.component('ProjectConfig', ProjectConfig);
+      app.component('AssetIndexes', AssetIndexes);
+      app.component('SystemMessages', SystemMessages);
+    },
+  });
 
-  async start() {
-    this.init();
+  handleNonInertiaRequests();
 
-    axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-    axios.defaults.headers.common['X-CSRF-TOKEN'] =
-      this.$config.get('csrfToken');
-
-    console.groupCollapsed('Craft configuration');
-    console.log(config.all().entries());
-    console.groupEnd();
-
-    console.log('Calling booting callbacks', bootingCallbacks);
-    bootingCallbacks.forEach((callback) => callback(this));
-    bootingCallbacks = [];
-
-    await createInertiaApp({
-      pages: '../pages',
-      title: (title) => `${title} - ${this.$config.get('systemName')}`,
-      withApp(app) {
-        app.provide(Queue, queue);
-        app.provide(Axios, axios);
-        app.provide(Config, config);
-        app.provide(Craft, config);
-
-        app.component('QueueManager', QueueManager);
-        app.component('QueueManagerToolbar', QueueManagerToolbar);
-        app.component('DeprecationErrors', DeprecationErrors);
-        app.component('DeprecationErrorsToolbar', DeprecationErrorsToolbar);
-        app.component('ClearCaches', ClearCaches);
-        app.component('FindReplace', FindReplace);
-        app.component('DatabaseBackup', DatabaseBackup);
-        app.component('Migrations', Migrations);
-        app.component('Updates', Updates);
-        app.component('ProjectConfig', ProjectConfig);
-        app.component('AssetIndexes', AssetIndexes);
-        app.component('SystemMessages', SystemMessages);
-      },
-    });
-
-    handleNonInertiaRequests();
-
-    console.log('Calling booted callbacks', bootedCallbacks);
-    bootedCallbacks.forEach((callback) => callback(this));
-    bootedCallbacks = [];
-  },
-};
+  hasBooted = true;
+  (window.bootedCallbacks ?? []).forEach((callback) =>
+    callback(window.Craft)
+  );
+  window.bootedCallbacks = [];
+}
 
 function handleNonInertiaRequests() {
   let fallbackUrl = '';
@@ -151,4 +126,13 @@ function handleNonInertiaRequests() {
   });
 }
 
-export default Cp;
+Object.assign(window.Craft, {
+  $queue: queue,
+  $axios: axios,
+  booting,
+  booted,
+  init,
+  start,
+});
+
+export default window.Craft;

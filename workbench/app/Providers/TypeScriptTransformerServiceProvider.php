@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
+use CraftCms\Cms\Cp\Data\CraftConfigData;
 use CraftCms\Cms\Update\Data\Updates;
 use DateTimeInterface;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
@@ -24,6 +25,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->provider(new ClassListTransformedProvider(
                 [
                     Updates::class,
+                    CraftConfigData::class,
                 ],
                 [
                     new EnumTransformer,

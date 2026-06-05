@@ -1,6 +1,5 @@
 import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
 import {QueueService} from './Queue.js';
-import {ConfigService} from './Config.js';
 import type {JobInfo} from '../types/index.js';
 import {JobStatus} from '../types/index.js';
 
@@ -12,21 +11,16 @@ vi.mock('axios', () => ({
   },
 }));
 
-// Mock ConfigService
-vi.mock('./Config', () => ({
-  ConfigService: {
-    getInstance: vi.fn(() => ({
-      getActionUrl: vi.fn(
-        (path: string) => `https://example.com/actions/${path}`
-      ),
-    })),
-  },
+// Mock getActionUrl
+vi.mock('../utilities/api/actionClient', () => ({
+  getActionUrl: vi.fn(
+    (path: string) => `https://example.com/actions/${path}`
+  ),
 }));
 
 describe('QueueService', () => {
   beforeEach(() => {
     QueueService.resetInstance();
-    ConfigService.getInstance();
     vi.clearAllMocks();
   });
 

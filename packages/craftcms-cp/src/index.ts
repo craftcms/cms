@@ -69,7 +69,6 @@ export * from './utilities/dom.js';
 
 // Services
 export {QueueService} from './services/Queue.js';
-export {ConfigService} from './services/Config.js';
 export {AssetIndexer} from './services/AssetIndexer.js';
 export type {
   IndexingSession,

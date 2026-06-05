@@ -5,6 +5,8 @@ import axios, {
 } from 'axios';
 import {actionClient} from './actionClient.js';
 
+declare const Craft: any;
+
 let loadingApiHeaders = false;
 let apiHeaderWaitlist: Promise<any>[] = [];
 let apiHeaders: Record<string, string> | null = null;
@@ -111,7 +113,7 @@ apiClient.interceptors.request.use(async (config) => {
   const finalConfig = {
     ...config,
     params: {
-      ...(Cp.apiParams || {}),
+      ...(Craft.apiParams || {}),
       ...config.params,
       v: new Date().getTime(),
     },
@@ -121,8 +123,8 @@ apiClient.interceptors.request.use(async (config) => {
     finalConfig.params.processCraftHeaders = 1;
   }
 
-  if (Cp.httpProxy) {
-    finalConfig.proxy = Cp.httpProxy as AxiosProxyConfig;
+  if (Craft.httpProxy) {
+    finalConfig.proxy = Craft.httpProxy as AxiosProxyConfig;
   }
 
   return finalConfig;
