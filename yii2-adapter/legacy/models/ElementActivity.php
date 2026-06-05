@@ -9,7 +9,7 @@ namespace craft\models;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\User\Elements\User;
-use DateTime;
+use DateTimeInterface;
 
 /**
  * Element activity model.
@@ -28,13 +28,13 @@ class ElementActivity
      * @param User $user
      * @param ElementInterface $element
      * @param self::TYPE_* $type
-     * @param DateTime $timestamp
+     * @param DateTimeInterface $timestamp
      */
     public function __construct(
         public User $user,
         public ElementInterface $element,
         public string $type,
-        public DateTime $timestamp,
+        public DateTimeInterface $timestamp,
     ) {
     }
 }

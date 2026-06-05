@@ -10,7 +10,7 @@ namespace craft\helpers;
 use CraftCms\Cms\Shared\Enums\DateRangePeriod;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
 use DateInterval;
-use DateTime;
+use DateTimeInterface;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -51,8 +51,8 @@ class DateRange
      *
      * @param string $rangeType
      * @phpstan-param self::TYPE_* $rangeType
-     * @return DateTime[]
-     * @phpstan-return array{DateTime,DateTime}
+     * @return DateTimeInterface[]
+     * @phpstan-return array{DateTimeInterface,DateTimeInterface}
      */
     public static function dateRangeByType(string $rangeType): array
     {

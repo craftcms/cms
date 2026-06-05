@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Diff;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Path;
@@ -621,7 +620,7 @@ class ProjectConfigHelper
     public static function touch(?int $timestamp = null): void
     {
         if ($timestamp === null) {
-            $timestamp = DateTimeHelper::currentTimeStamp();
+            $timestamp = now()->getTimestamp();
         }
 
         $timestampLine = "dateModified: $timestamp\n";

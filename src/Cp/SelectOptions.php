@@ -20,9 +20,10 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\View\TemplateMode;
-use DateTime;
+use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -328,13 +329,12 @@ class SelectOptions
             ->all();
     }
 
-    public static function getTimeZoneOptions(?DateTime $offsetDate = null): array
+    public static function getTimeZoneOptions(?DateTimeInterface $offsetDate = null): array
     {
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $utc = new DateTimeZone('UTC');
-        $offsetDate = $offsetDate ? (clone $offsetDate)->setTimezone($utc) : DateTimeHelper::now($utc);
+        $offsetDate = $offsetDate ? Date::instance($offsetDate)->setTimezone('UTC') : now('UTC');
         $offsets = [];
         $timezoneIds = [];
 

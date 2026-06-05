@@ -14,10 +14,10 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
-use DateTime;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 
 use function request;
@@ -294,11 +294,11 @@ class TemplateCaches
     private function normalizeDuration(?string $duration, mixed $expiration): ?int
     {
         if ($duration !== null) {
-            $expiration = new DateTime($duration);
+            $expiration = Date::parse($duration);
         }
 
         if ($expiration !== null) {
-            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - DateTimeHelper::currentTimeStamp();
+            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - now()->getTimestamp();
         } else {
             $duration = null;
         }
@@ -319,7 +319,7 @@ class TemplateCaches
             return null;
         }
 
-        $duration = DateTimeHelper::toDateTime($cacheInfo['expiryDate'])->getTimestamp() - DateTimeHelper::currentTimeStamp();
+        $duration = DateTimeHelper::toDateTime($cacheInfo['expiryDate'])->getTimestamp() - now()->getTimestamp();
 
         return $duration > 0 ? $duration : null;
     }

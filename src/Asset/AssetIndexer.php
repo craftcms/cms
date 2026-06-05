@@ -28,7 +28,6 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use DateTime;
 use Generator;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -37,6 +36,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use League\Flysystem\StorageAttributes;
@@ -220,7 +220,7 @@ class AssetIndexer
                 $timestamp = null;
             } else {
                 $dateModified = $volumeListing->getDateModified();
-                $timestamp = $dateModified !== null ? new DateTime('@'.$dateModified) : $now;
+                $timestamp = $dateModified !== null ? Date::createFromTimestampUTC($dateModified) : $now;
             }
 
             $values[] = [

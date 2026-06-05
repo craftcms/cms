@@ -13,12 +13,11 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Responses\GqlResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SiteSites;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
@@ -208,11 +207,11 @@ readonly class ApiController extends GqlController
             }
         }
 
-        $now = DateTimeHelper::currentUTCDateTime();
+        $now = now('UTC');
 
         if (
             ! $token->lastUsed ||
-            $token->lastUsed->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i') !== $now->format('Y-m-d H:i')
+            Date::instance($token->lastUsed)->setTimezone('UTC')->format('Y-m-d H:i') !== $now->format('Y-m-d H:i')
         ) {
             $token->lastUsed = $now;
             $this->gql->saveToken($token);

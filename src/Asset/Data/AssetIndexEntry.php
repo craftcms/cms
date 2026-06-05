@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Component\Component;
-use DateTime;
+use DateTimeInterface;
 use Stringable;
 
 class AssetIndexEntry extends Component implements Stringable
@@ -24,7 +24,7 @@ class AssetIndexEntry extends Component implements Stringable
 
     public ?bool $isSkipped = null;
 
-    public ?DateTime $timestamp = null;
+    public ?DateTimeInterface $timestamp = null;
 
     public bool $isDir = false;
 

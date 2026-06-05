@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Support;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use DateTimeInterface;
-use DateTimeZone;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
@@ -831,8 +830,8 @@ readonly class Query
             return null;
         }
 
-        $date = clone $date;
-        $date->setTimezone(new DateTimeZone('UTC'));
+        $date = Date::instance($date);
+        $date->setTimezone('UTC');
 
         return $date->format('Y-m-d H:i:s');
     }

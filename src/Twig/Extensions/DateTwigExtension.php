@@ -9,8 +9,8 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use DateInterval;
-use DateTime;
 use DateTimeInterface;
+use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Override;
 use Throwable;
@@ -48,7 +48,7 @@ class DateTwigExtension extends AbstractExtension
     public function timestampFilter(mixed $value, ?string $format = null, bool $withPreposition = false): string
     {
         if ($value === null || $value === '') {
-            $value = DateTimeHelper::now();
+            $value = now();
         }
 
         try {
@@ -71,12 +71,12 @@ class DateTwigExtension extends AbstractExtension
 
     public function atomFilter(TwigEnvironment $env, mixed $date, mixed $timezone = null): string
     {
-        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTime::ATOM, $timezone);
+        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTimeInterface::ATOM, $timezone);
     }
 
     public function rssFilter(TwigEnvironment $env, mixed $date, mixed $timezone = null): string
     {
-        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTime::RSS, $timezone);
+        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTimeInterface::RSS, $timezone);
     }
 
     public function timeFilter(
@@ -127,15 +127,15 @@ class DateTwigExtension extends AbstractExtension
         string $method,
         bool $withTimeZone = false,
     ): string {
-        $date = DateTime::createFromInterface($env->getExtension(CoreExtension::class)->convertDate($date, $timezone));
+        $date = Date::instance($env->getExtension(CoreExtension::class)->convertDate($date, $timezone));
         $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : I18N::getFormatter();
         $originalTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
 
         if ($method === 'asDate') {
-            $formatted = $formatter->{$method}(DateTime::createFromInterface($date), $format);
+            $formatted = $formatter->{$method}(Date::instance($date), $format);
         } else {
-            $formatted = $formatter->{$method}(DateTime::createFromInterface($date), $format, withTimeZone: $withTimeZone);
+            $formatted = $formatter->{$method}(Date::instance($date), $format, withTimeZone: $withTimeZone);
         }
 
         $formatter->timeZone = $originalTimeZone;
@@ -145,7 +145,7 @@ class DateTwigExtension extends AbstractExtension
 
     public function httpdateFilter(TwigEnvironment $env, mixed $date, mixed $timezone = null): string
     {
-        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTime::RFC7231, $timezone);
+        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTimeInterface::RFC7231, $timezone);
     }
 
     public function dateFunction(TwigEnvironment $env, mixed $date = null, mixed $timezone = null): DateTimeInterface
