@@ -20,12 +20,12 @@ use Illuminate\Http\Request;
  *
  * Event::listen(function (ValidationRulesResolving $event) {
  *     // Suppose we’re only interested in entries:
- *     if (! $event->component instanceof Entry) {
+ *     if (! $event->subject instanceof Entry) {
  *         return;
  *     }
  *
  *     // Ignore nested entries:
- *     if ($event->component->ownerId !== null) {
+ *     if ($event->subject->ownerId !== null) {
  *         return;
  *     }
  *
