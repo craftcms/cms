@@ -3,7 +3,6 @@ import VariantsMeta, {
   AppearanceScale,
   ButtonMatrix,
   CalloutMatrix,
-  IndicatorVariants,
 } from './variants.stories';
 
 <Meta of={VariantsMeta} />
@@ -12,10 +11,10 @@ import VariantsMeta, {
 
 The component system uses two independent properties to control how semantic color is applied to UI elements:
 
-- **Variant** - _What kind of message is this?_ Values: `default`, `success`, `warning`, `danger`, `info`
-- **Appearance** - _How prominently should it be displayed?_ Values: `accent`, `fill`, `outline-fill`, `outline`, `plain`
+- **Variant** - _What kind of message is this?_ Values: `neutral`, `success`, `warning`, `danger`, `info`
+- **Appearance** - _How prominently should it be displayed?_ Values: `solid`, `fill`, `outline-fill`, `outline`, `plain`
 
-Any variant can be combined with any appearance. A `danger` callout can be a bold `accent` banner or a subtle `plain` inline hint. The variant stays the same; the appearance controls how loudly it speaks.
+Any variant can be combined with any appearance. A `danger` callout can be a bold `solid` banner or a subtle `plain` inline hint. The variant stays the same; the appearance controls how loudly it speaks.
 
 ---
 
@@ -54,7 +53,7 @@ Appearances consume the generic tokens set by the variant and apply them with va
   <tbody>
     <tr>
       <td>
-        <code>accent</code>
+        <code>solid</code>
       </td>
       <td>
         <code>fill-loud</code>
@@ -146,15 +145,9 @@ Not every component supports the full set of variants and appearances. Component
 
 ### Button
 
-Buttons use **3 variants** (`primary`, `default`, `danger`) and **4 appearances** (`accent`, `filled`, `dashed`, `plain`). The `primary` variant maps to the `brand` color group rather than the shared `Variant` type.
+Buttons use **3 variants** (`accent`, `neutral`, `danger`) and **3 appearances** (`solid`, `outline`, `plain`).
 
 <Canvas of={ButtonMatrix} />
-
-### Indicator
-
-Indicators use only the **variant** axis (no appearance). They also support an additional `empty` variant for inactive states.
-
-<Canvas of={IndicatorVariants} />
 
 ---
 
@@ -174,7 +167,7 @@ export default class MyComponent extends LitElement {
   static override styles: CSSResultGroup = [variantsStyles, styles];
 
   @property({reflect: true})
-  variant: VariantKey = Variant.Default;
+  variant: VariantKey = Variant.Neutral;
 }
 ```
 
@@ -219,5 +212,5 @@ appearance: AppearanceKey = Appearance.Fill;
 
 - **Reflect properties** - both `variant` and `appearance` should use `reflect: true` so they appear as HTML attributes for CSS matching.
 - **Use `~=` selectors** - appearance selectors in existing components use `[appearance~='value']` (word matching) rather than `[appearance='value']` (exact matching).
-- **Default to neutral** - set sensible defaults (`Variant.Default` / the most common appearance) so components look correct without explicit attributes.
+- **Default to neutral** - set sensible defaults (`Variant.Neutral` / the most common appearance) so components look correct without explicit attributes.
 - **Define custom subsets when needed** - if the standard `Variant` or `Appearance` type doesn't fit (like Button's `primary` variant), define component-specific values instead of forcing the shared types.

@@ -319,7 +319,7 @@ export default class CraftLoginForm extends LitElement {
           <div class="login-form__actions">
             <craft-button
               type="submit"
-              variant="primary"
+              variant="accent"
               ?loading="${this._loginBusy}"
               style="width: 100%"
             >

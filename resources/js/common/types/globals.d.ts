@@ -84,6 +84,8 @@ interface CraftStatic {
   setCookie(name: string, value: string): any;
   getCookie(name: string): any;
   getUrl(path: string, params?: string | object, baseUrl?: string): string;
+  baseCpUrl: string;
+  getCpUrl(path: string, params?: string | object): string;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;

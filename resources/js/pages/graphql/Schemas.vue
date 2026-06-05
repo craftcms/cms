@@ -96,7 +96,7 @@
         icon="plus"
         :inertia="false"
         appearance="button"
-        variant="primary"
+        variant="accent"
         >{{ t('New schema') }}</CpLink
       >
     </template>

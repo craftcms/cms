@@ -165,7 +165,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
-                'cpUrl' => cp_url(),
+                'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
                 'nav' => $nav->getItems(),

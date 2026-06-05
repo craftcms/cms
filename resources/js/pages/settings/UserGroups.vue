@@ -72,7 +72,7 @@
         class="btn submit add icon"
         icon="plus"
         appearance="button"
-        variant="primary"
+        variant="accent"
         >{{ t('New user group') }}</CpLink
       >
     </template>

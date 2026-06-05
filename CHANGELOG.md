@@ -4,6 +4,9 @@
 
 - Fixed a bug where the `craft:install` command would hang if run within a production environment.
 - Fixed a bug where “Replace relation” action buttons weren’t working.
+- Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
+- Fixed a bug where queue job progress labels weren’t getting translated.
+- Fixed a bug where the control panel sidebar and Queue Manager were showing completed jobs.
 - Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\ValidationRulesResolving` to reflect its broader applicability to components and rulesets.
 - Relaxed the allowed types in the `ValidationRulesResolving` event to include any implementation `ValidatesWithRuleset` or a `Illuminate\Http\Request` object.
 - Renamed `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$component` to `$subject`
