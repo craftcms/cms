@@ -1,5 +1,9 @@
 import {Canvas, Meta} from '@storybook/addon-docs/blocks';
-import IndicatorMeta, {ArbitraryColor, ArbitrarySize, Default,} from './indicator.stories';
+import IndicatorMeta, {
+  ArbitraryColor,
+  ArbitrarySize,
+  Default,
+} from './indicator.stories';
 
 <Meta of={IndicatorMeta} name="Docs" />
 
@@ -168,8 +172,8 @@ wrapper to fine-tune it.
 
 - The dot is exposed as `role="img"`, and `label` becomes its `aria-label`.
 - A status dot conveys meaning through color alone, so set `label` whenever the
-indicator isn't purely decorative. If it only repeats adjacent visible text,
-it's fine to leave `label` unset.
+  indicator isn't purely decorative. If it only repeats adjacent visible text,
+  it's fine to leave `label` unset.
 
 ## Styling
 

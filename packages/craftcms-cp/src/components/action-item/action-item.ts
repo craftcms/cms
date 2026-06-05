@@ -6,7 +6,12 @@ import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
 import '../shortcut/shortcut.js';
-import {type ActionFeedback, type BaseAction, type FeedbackData, runAction,} from '@src/actions';
+import {
+  type ActionFeedback,
+  type BaseAction,
+  type FeedbackData,
+  runAction,
+} from '@src/actions';
 import {Variant, type VariantKey} from '@src/constants/variants';
 
 /**
