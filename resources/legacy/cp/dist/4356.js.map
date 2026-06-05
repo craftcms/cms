@@ -1,1 +1,0 @@
-{"version":3,"file":"4356.js","mappings":"iGAAA,WACEA,aAAc,oD","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/es.js"],"sourcesContent":["export default {\n  optionsPopup: 'Ventana emergente de opciones de cuadro combinado',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

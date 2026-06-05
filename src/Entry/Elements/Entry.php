@@ -82,6 +82,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
@@ -95,6 +96,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -406,7 +408,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             SectionType::Structure->value => t('Structures'),
         ];
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         foreach ($sectionTypes as $type => $heading) {
             if (! empty($sectionsByType[$type])) {
@@ -534,7 +536,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $actions = [];
 
         if ($section) {
-            $user = Auth::user();
+            $user = Auth::craftUser();
 
             if (
                 $section->type === SectionType::Structure &&
@@ -764,7 +766,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     protected static function defineCardAttributes(): array
     {
-        $currentUser = Auth::user();
+        $currentUser = currentUserElement();
 
         $attributes = array_merge(parent::defineCardAttributes(), [
             'section' => [
@@ -1220,7 +1222,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if ($section->type === SectionType::Structure) {
-            $user = Auth::user();
+            $user = Auth::craftUser();
 
             $ancestors = $this->getAncestors();
             if ($ancestors instanceof ElementQueryInterface) {
@@ -1810,7 +1812,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if (
             app(ElementRequest::class)->element === $this &&
-            Auth::user()?->isAdmin() &&
+            Auth::craftUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             // Entry type settings
@@ -1997,9 +1999,9 @@ JS, [
     /**
      * Returns whether the given user is authorized to move this entry to a different section.
      */
-    public function canMove(?User $user = null): bool
+    public function canMove(?CraftUser $user = null): bool
     {
-        $user ??= Auth::user();
+        $user ??= currentUserElement();
 
         if (! $user) {
             return false;
@@ -2008,6 +2010,8 @@ JS, [
         if (! $section = $this->getSection()) {
             return false;
         }
+
+        $userId = $user->getCraftUserId();
 
         // disallow moving singles and trashed entries
         if ($section->type === SectionType::Single || $this->trashed) {
@@ -2020,14 +2024,14 @@ JS, [
         }
 
         if ($this->getIsDraft()) {
-            return $this->draftCreatorId === $user->id || $user->can("savePeerEntryDrafts:$section->uid");
+            return $this->draftCreatorId === $userId || $user->can("savePeerEntryDrafts:$section->uid");
         }
 
         if (! $user->can("saveEntries:$section->uid")) {
             return false;
         }
 
-        return in_array($user->id, $this->getAuthorIds(), true) || $user->can("savePeerEntries:$section->uid");
+        return ($userId !== null && in_array($userId, $this->getAuthorIds(), true)) || $user->can("savePeerEntries:$section->uid");
     }
 
     /**
@@ -2053,7 +2057,7 @@ JS, [
     {
         $fields = [];
         $section = $this->getSection();
-        $user = Auth::user();
+        $user = currentUserElement();
 
         $this->_applyActionBtnEntryTypeCompatibility();
 
@@ -2230,18 +2234,19 @@ JS;
     /**
      * Returns whether the current user has permission to change this entry’s author.
      */
-    private function canChangeAuthor(?User $user = null): bool
+    private function canChangeAuthor(?CraftUser $user = null): bool
     {
-        if (! $user && ! $user = Auth::user()) {
+        if (! $user && ! $user = currentUserElement()) {
             return false;
         }
 
         $section = $this->getSection();
         $authorIds = $this->getAuthorIds();
+        $userId = $user->getCraftUserId();
 
         return
             empty($authorIds) ||
-            in_array($user->id, $authorIds) ||
+            ($userId !== null && in_array($userId, $authorIds, true)) ||
             $user->can("changeAuthorForPeerEntries:$section->uid");
     }
 
@@ -2404,6 +2409,16 @@ JS;
         return parent::beforeSave($isNew);
     }
 
+    #[Override]
+    public function afterAssignedId(): void
+    {
+        if (ElementHelper::isDraftOrRevision($this)) {
+            return;
+        }
+
+        $this->updateTitle();
+    }
+
     /**
      * Set the default values for attributes if certain conditions are met.
      */
@@ -2418,7 +2433,7 @@ JS;
         if ($section?->type !== SectionType::Single
             && $section?->minAuthors === 1
             && empty($this->getAuthors())
-            && $user = Auth::user()
+            && $user = currentUserElement()
         ) {
             $this->setAuthor($user);
         }

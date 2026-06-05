@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -16,7 +17,7 @@ trait SavesElement
 {
     protected readonly ElementRequest $request;
 
-    protected function canSave(ElementInterface $element, User $user): bool
+    protected function canSave(ElementInterface $element, CraftUser $user): bool
     {
         if ($element->getIsRevision()) {
             return false;

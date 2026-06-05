@@ -1,0 +1,190 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import IndicatorMeta, {
+  ArbitraryColor,
+  ArbitrarySize,
+  Default,
+} from './indicator.stories';
+
+<Meta of={IndicatorMeta} name="Docs" />
+
+# Indicator
+
+`<craft-indicator>` is a small dot used to visually represent the status of an
+object — for example, the live/draft state of an entry or a "has updates" marker
+in a list.
+
+<Canvas of={Default} />
+
+## Usage
+
+```html
+<craft-indicator fill="success" label="Live"></craft-indicator>
+```
+
+The element renders a single `role="img"` dot. It has no slot — all of its
+appearance is driven by attributes.
+
+## Properties
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Attribute</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>fill</code>
+      </td>
+      <td>
+        <code>fill</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>var(--c-color-fill-loud)</code>
+      </td>
+      <td>
+        The dot color. Accepts a semantic keyword (see below) or any CSS color.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>appearance</code>
+      </td>
+      <td>
+        <code>appearance</code>
+      </td>
+      <td>
+        <code>'filled' | 'outlined' | 'filled-outlined'</code>
+      </td>
+      <td>
+        <code>'filled-outlined'</code>
+      </td>
+      <td>
+        How the dot is drawn — see <a href="#appearance">Appearance</a>.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>size</code>
+      </td>
+      <td>
+        <code>size</code>
+      </td>
+      <td>
+        <code>'md' | 'lg'</code>
+      </td>
+      <td>
+        <code>'md'</code>
+      </td>
+      <td>
+        <code>md</code> ≈ 0.6em, <code>lg</code> ≈ 1em. Scales with the
+        surrounding font size.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>label</code>
+      </td>
+      <td>
+        <code>label</code>
+      </td>
+      <td>
+        <code>string | null</code>
+      </td>
+      <td>
+        <code>null</code>
+      </td>
+      <td>
+        Accessible name, exposed as <code>aria-label</code>. Provide it for
+        non-decorative dots.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## Fill
+
+`fill` sets the dot's color. A recognized **status variant** (`default`,
+`success`, `warning`, `danger`, `info`) or **palette swatch** (`red`, `orange`,
+`amber`, `yellow`, `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`, `blue`,
+`indigo`, `violet`, `purple`, `fuchsia`, `pink`, `rose`, `gray`, `white`,
+`black`) resolves to the matching `--c-color-<name>-fill-loud` design token. Any
+other value — a hex code, `rgb()`, a gradient, or a custom property — is used
+verbatim.
+
+Prefer the variant and swatch names so indicators stay consistent with the rest
+of the palette; reach for an arbitrary value only when a color falls outside it.
+
+<Canvas of={ArbitraryColor} />
+
+## Appearance
+
+`appearance` controls how the dot is drawn:
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Renders</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>filled-outlined</code> (default)
+      </td>
+      <td>Filled dot with a subtle dark outline.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>filled</code>
+      </td>
+      <td>Filled dot with no outline.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>outlined</code>
+      </td>
+      <td>
+        Hollow dot — a 2px ring in the fill color over a transparent center.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## Sizing
+
+`size` switches between two preset sizes. Because the dimensions are defined in
+`em`, the dot scales with the font size of its container — set `font-size` on a
+wrapper to fine-tune it.
+
+<Canvas of={ArbitrarySize} />
+
+## Accessibility
+
+- The dot is exposed as `role="img"`, and `label` becomes its `aria-label`.
+- A status dot conveys meaning through color alone, so set `label` whenever the
+  indicator isn't purely decorative. If it only repeats adjacent visible text,
+  it's fine to leave `label` unset.
+
+## Styling
+
+At render time the resolved color and size are written to the `--fill` and
+`--size` custom properties on the inner dot, so there's nothing to override
+there directly. Because the dot is sized in `em`, set `font-size` on the host to
+scale it:
+
+```css
+craft-indicator {
+  /* the dot is sized in em — change the font size to scale it */
+  font-size: 1.25rem;
+}
+```

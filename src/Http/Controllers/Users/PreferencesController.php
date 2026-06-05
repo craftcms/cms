@@ -25,7 +25,12 @@ readonly class PreferencesController
 
     public function index(Request $request, I18N $i18N, GeneralConfig $generalConfig, ProjectConfig $projectConfig): CpScreenResponse
     {
-        $user = $request->user();
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
+        $user = $currentUser->asElement();
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PREFERENCES);
 
@@ -66,7 +71,10 @@ readonly class PreferencesController
 
     public function store(Request $request, Users $users): Response
     {
-        $user = $request->user();
+        $user = $request->craftUser();
+        if (! $user) {
+            abort(401);
+        }
 
         $preferredLocale = $request->input('preferredLocale', $user->getPreference('locale')) ?: null;
 
@@ -93,7 +101,7 @@ readonly class PreferencesController
             'slideoutPosition' => $request->input('slideoutPosition', $user->getPreference('slideoutPosition')),
         ];
 
-        if ($user->admin) {
+        if ($user->isAdmin()) {
             $preferences = array_merge($preferences, [
                 'showFieldHandles' => (bool) $request->input('showFieldHandles', $user->getPreference('showFieldHandles')),
                 'showExceptionView' => (bool) $request->input('showExceptionView', $user->getPreference('showExceptionView')),

@@ -150,7 +150,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
-            $value = Auth::user()->email;
+            $value = Auth::craftUser()?->asElement()->email;
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry);

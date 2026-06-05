@@ -96,13 +96,13 @@ class TemplateProfiler
             return $this->shouldProfile = true;
         }
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         if (! $user) {
             return $this->shouldProfile = false;
         }
 
-        return $this->shouldProfile = ($user->admin && $user->getPreference('profileTemplates'));
+        return $this->shouldProfile = ($user->isAdmin() && $user->getPreference('profileTemplates'));
     }
 
     private function profileToken(string $type, string $name, int $count): string

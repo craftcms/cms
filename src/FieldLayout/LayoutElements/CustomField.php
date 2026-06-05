@@ -30,6 +30,7 @@ use Override;
 use RuntimeException;
 use Throwable;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -721,7 +722,7 @@ class CustomField extends BaseField
         $editCondition = $this->getEditCondition();
 
         if ($editCondition) {
-            $currentUser = Auth::user();
+            $currentUser = currentUserElement();
             if (! $currentUser || ! $editCondition->matchElement($currentUser)) {
                 return false;
             }
@@ -876,7 +877,7 @@ class CustomField extends BaseField
             $items = [];
         }
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
         if ($user?->isAdmin() && ! $user->getPreference('showFieldHandles')) {
             $items[] = $this->copyAttributeAction([
                 'label' => t('Copy field handle'),

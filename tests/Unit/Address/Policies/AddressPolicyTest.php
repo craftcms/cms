@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Policies\AddressPolicy;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 beforeEach(function () {
@@ -81,13 +82,13 @@ function createAddressTestUser(?int $id = null, array $permissions = [], bool $i
     return $user;
 }
 
-function createAddressTestAddress(?User $owner): Address
+function createAddressTestAddress(?UserElement $owner): Address
 {
     $address = new class extends Address
     {
-        public ?User $mockOwner = null;
+        public ?UserElement $mockOwner = null;
 
-        public function getOwner(): ?User
+        public function getOwner(): ?UserElement
         {
             return $this->mockOwner;
         }

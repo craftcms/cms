@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -48,14 +49,16 @@ readonly class ImpersonationController
 
         $this->enforceImpersonatePermission($user);
 
-        $this->impersonation->setImpersonatorId($this->request->user()->id);
+        $this->impersonation->setImpersonatorId($this->request->craftUser()?->getCraftUserId());
 
         try {
-            Auth::guard('craft')->login($user);
+            if (! Auth::guard('craft')->loginUsingId($user->id)) {
+                throw new RuntimeException('Unable to retrieve the user being impersonated.');
+            }
         } catch (Throwable) {
             Flash::error(t('There was a problem impersonating this user.'));
 
-            Log::error($this->request->user()->username.' tried to impersonate userId: '.$userId.' but something went wrong.');
+            Log::error($this->request->craftUser()?->asElement()->username.' tried to impersonate userId: '.$userId.' but something went wrong.');
 
             return back();
         }
@@ -102,7 +105,9 @@ readonly class ImpersonationController
         $this->impersonation->setImpersonatorId($prevUserId);
 
         try {
-            Auth::guard('craft')->login($user);
+            if (! Auth::guard('craft')->loginUsingId($user->id)) {
+                throw new RuntimeException('Unable to retrieve the user being impersonated.');
+            }
         } catch (Throwable) {
             Flash::error(t('There was a problem impersonating this user.'));
 
@@ -127,12 +132,12 @@ readonly class ImpersonationController
             return $this->asModelSuccess($user, modelName: 'user', data: $return);
         }
 
-        return $this->redirectToPostedUrl($this->request->user(), $returnUrl);
+        return $this->redirectToPostedUrl($this->request->craftUser(), $returnUrl);
     }
 
     private function enforceImpersonatePermission(User $user): void
     {
-        $currentUser = $this->request->user();
+        $currentUser = $this->request->craftUser();
 
         abort_unless(
             $this->users->canImpersonate($currentUser, $user),

@@ -1828,34 +1828,6 @@ ul.icons {
   gap: var(--s);
 }
 
-.flex-row {
-  flex-direction: row;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.items-start {
-  align-items: flex-start;
-}
-
-.items-end {
-  align-items: end;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.items-baseline {
-  align-items: baseline;
-}
-
-.items-stretch {
-  align-items: stretch;
-}
-
 .gap-0 {
   gap: 0;
 }
@@ -1882,43 +1854,6 @@ ul.icons {
 
 .gap-xl {
   gap: var(--xl);
-}
-
-.flex-grow {
-  flex: 1;
-  max-width: 100%;
-}
-
-.flex-justify {
-  justify-content: space-between;
-}
-
-.flex-justify-start {
-  justify-content: flex-start;
-}
-
-.flex-justify-end {
-  justify-content: flex-end;
-}
-
-.flex-justify-center {
-  justify-content: center;
-}
-
-.flex-start {
-  align-items: flex-start;
-}
-
-.flex-end {
-  align-items: flex-end;
-}
-
-.flex-center {
-  align-items: center;
-}
-
-.flex-stretch {
-  align-items: stretch;
 }
 
 .spacer {
@@ -4164,12 +4099,6 @@ table:not(.cp-table) {
     }
   }
 
-  .elements {
-    margin: calc(var(--pane-padding) * -1);
-    padding: var(--pane-padding);
-    overflow: auto;
-  }
-
   &.main {
     .source-path {
       margin-block: calc(var(--padding) * -1 + 2px) 24px;
@@ -4221,6 +4150,8 @@ table:not(.cp-table) {
   }
 
   &.pane {
+    overflow: auto;
+
     .toolbar {
       position: relative;
       z-index: 2;
@@ -4273,6 +4204,10 @@ table:not(.cp-table) {
 .elements {
   position: relative;
 
+  .update-spinner {
+    inset-block-start: 50%;
+  }
+
   &:not(.busy) {
     .update-spinner {
       display: none;
@@ -4288,7 +4223,10 @@ table:not(.cp-table) {
       font-size: 0;
       position: absolute;
       z-index: 100;
-      inset: var(--pane-padding);
+      inset-block-start: 0;
+      inset-inline-start: calc(var(--pane-padding, 24px) * -1);
+      width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
+      height: 100%;
       background: color.adjust(mixins.$white, $alpha: -0.25);
       border-radius: var(--radius-lg);
     }
@@ -5008,7 +4946,6 @@ ul.tree,
   flex: 0 0 auto;
   display: inline-block;
   position: relative;
-  margin-inline-end: 10px;
   width: calc(12rem / 16);
   height: calc(12rem / 16);
   border-radius: 100%;
@@ -6995,10 +6932,7 @@ $min2ColWidth: 400px;
         .element-index {
           border-color: var(--border-hairline-dark) !important;
           background-color: var(--white) !important;
-
-          .elements {
-            max-height: 220px;
-          }
+          max-height: 272px;
         }
       }
 

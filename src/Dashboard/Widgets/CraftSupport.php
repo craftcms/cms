@@ -43,7 +43,7 @@ class CraftSupport extends Widget
     public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
-        return parent::isSelectable() && Auth::user()?->isAdmin();
+        return parent::isSelectable() && Auth::craftUser()?->isAdmin();
     }
 
     #[Override]
@@ -68,7 +68,7 @@ class CraftSupport extends Widget
     public function getBodyHtml(): ?string
     {
         // Only admins get the Craft Support widget.
-        if (! Auth::user()?->isAdmin()) {
+        if (! Auth::craftUser()?->isAdmin()) {
             return null;
         }
 

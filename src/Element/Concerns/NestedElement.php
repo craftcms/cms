@@ -155,6 +155,9 @@ trait NestedElement
         return $names;
     }
 
+    /**
+     * @phpstan-impure
+     */
     public function getPrimaryOwnerId(): ?int
     {
         return $this->primaryOwnerId ?? $this->ownerId;
@@ -219,6 +222,9 @@ trait NestedElement
         $this->primaryOwnerId = $owner->id ?? null;
     }
 
+    /**
+     * @phpstan-impure
+     */
     public function getOwnerId(): ?int
     {
         return $this->ownerId ?? $this->primaryOwnerId;

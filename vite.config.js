@@ -94,8 +94,9 @@ function typescriptTransformer() {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const url = new URL(env.APP_URL);
-  const host = url.hostname || 'localhost';
+
+  const url = new URL(env.APP_URL || 'http://localhost');
+  const host = url.hostname;
 
   const server = url.hostname.includes('.ddev.site')
     ? {
@@ -128,7 +129,15 @@ export default defineConfig(({mode}) => {
     },
 
     optimizeDeps: {
-      include: ['@awesome.me/webawesome', 'lit'],
+      include: ['lit'],
+      // WebAwesome must NOT be pre-bundled. It's imported through many deep
+      // entry points (dist/components/*/*.js), and esbuild's dep optimizer
+      // duplicates their shared component modules across chunks — which makes
+      // custom elements like `wa-icon` get registered twice
+      // (NotSupportedError: "wa-icon" has already been used). Serving it as
+      // native ESM means each module file loads once, so each element is
+      // defined once.
+      exclude: ['@awesome.me/webawesome'],
     },
 
     plugins: [
