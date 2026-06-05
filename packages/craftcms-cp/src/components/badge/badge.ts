@@ -39,7 +39,7 @@ export default class CraftBadge extends LitElement {
     // Set the colorable context from `fill` so the badge's own surface/border/
     // text colors (which read --c-color-*) reflect the chosen color.
     if (changed.has('fill')) {
-      this.dataset.color = this.getFill()
+      this.dataset.color = this.getFill();
     }
   }
 
