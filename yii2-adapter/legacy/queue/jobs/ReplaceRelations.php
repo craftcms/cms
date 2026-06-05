@@ -15,12 +15,8 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\db\QueryBatcher;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\BaseRelationField;
-use craft\fields\Link;
 use craft\i18n\Translation;
 use craft\queue\BaseBatchedElementJob;
-use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
-use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use Illuminate\Support\Collection;
 use Throwable;
 
@@ -88,17 +84,7 @@ class ReplaceRelations extends BaseBatchedElementJob
             $field::elementType() === $this->targetElementType
         ));
 
-        $targetRefHandle = $this->targetElementType::refHandle();
-        /** @var Collection<Link> $linkFields */
-        $linkFields = $customFields->filter(fn($field) => (
-            $field instanceof Link &&
-            Collection::make($field->getLinkTypes())->contains(fn(BaseLinkType $linkType) => (
-                $linkType instanceof BaseElementLinkType &&
-                $linkType::id() === $targetRefHandle
-            ))
-        ));
-
-        if ($relationFields->isEmpty() && $linkFields->isEmpty()) {
+        if ($relationFields->isEmpty()) {
             return;
         }
 
@@ -108,10 +94,6 @@ class ReplaceRelations extends BaseBatchedElementJob
 
         foreach ($relationFields as $field) {
             $this->processRelationField($item, $field, $behavior->{$field->handle}, $saveElement);
-        }
-
-        foreach ($linkFields as $field) {
-            $this->processLinkField($item, $field, $behavior->{$field->handle}, $saveElement);
         }
 
         if ($saveElement) {
@@ -152,34 +134,6 @@ class ReplaceRelations extends BaseBatchedElementJob
             $item->setFieldValue($field->handle, $newValue);
             $saveElement = true;
         }
-    }
-
-    private function processLinkField(ElementInterface $item, Link $field, mixed $value, bool &$saveElement): void
-    {
-        if (empty($value['value']) || !preg_match(Elements::REF_TAG_PATTERN, $value['value'], $matches)) {
-            return;
-        }
-
-        $elementType = $matches['elementType'];
-        $ref = $matches['ref'];
-        $siteId = $matches['site'] ?? null;
-        $attribute = $matches['attr'] ?? null;
-
-        if (!is_numeric($ref) || !in_array((int)$ref, $this->oldTargetIds)) {
-            return;
-        }
-
-        $item->setFieldValue($field->handle, [
-            'type' => $value['type'],
-            'value' => sprintf(
-                '{%s:%s%s%s}',
-                $elementType,
-                $this->newTargetId,
-                $siteId ? "@$siteId" : '',
-                $attribute ? ":$attribute" : '',
-            ),
-        ]);
-        $saveElement = true;
     }
 
     /**

@@ -6,13 +6,9 @@ namespace CraftCms\Cms\Element\Jobs;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\BaseRelationField;
-use CraftCms\Cms\Field\Link;
-use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
-use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -61,17 +57,7 @@ class ReplaceRelations extends BatchedElementJob
             $field::elementType() === $this->targetElementType
         ));
 
-        $targetRefHandle = $this->targetElementType::refHandle();
-        /** @var Collection<Link> $linkFields */
-        $linkFields = $customFields->filter(fn ($field) => (
-            $field instanceof Link &&
-            collect($field->getLinkTypes())->contains(fn (BaseLinkType $linkType) => (
-                $linkType instanceof BaseElementLinkType &&
-                $linkType::id() === $targetRefHandle
-            ))
-        ));
-
-        if ($relationFields->isEmpty() && $linkFields->isEmpty()) {
+        if ($relationFields->isEmpty()) {
             return;
         }
 
@@ -79,10 +65,6 @@ class ReplaceRelations extends BatchedElementJob
 
         foreach ($relationFields as $field) {
             $this->processRelationField($element, $field, $saveElement);
-        }
-
-        foreach ($linkFields as $field) {
-            $this->processLinkField($element, $field, $saveElement);
         }
 
         if ($saveElement) {
@@ -127,37 +109,6 @@ class ReplaceRelations extends BatchedElementJob
             $element->setFieldValue($field->handle, $newValue);
             $saveElement = true;
         }
-    }
-
-    private function processLinkField(ElementInterface $element, Link $field, bool &$saveElement): void
-    {
-        /** @var Element $element */
-        $value = $element->getCustomFieldRawValue($field->handle);
-
-        if (empty($value['value']) || ! preg_match(ElementsService::REF_TAG_PATTERN, (string) $value['value'], $matches)) {
-            return;
-        }
-
-        $elementType = $matches['elementType'];
-        $ref = $matches['ref'];
-        $siteId = $matches['site'] ?? null;
-        $attribute = $matches['attr'] ?? null;
-
-        if (! is_numeric($ref) || ! in_array((int) $ref, $this->oldTargetIds)) {
-            return;
-        }
-
-        $element->setFieldValue($field->handle, [
-            'type' => $value['type'],
-            'value' => sprintf(
-                '{%s:%s%s%s}',
-                $elementType,
-                $this->newTargetId,
-                $siteId ? "@$siteId" : '',
-                $attribute ? ":$attribute" : '',
-            ),
-        ]);
-        $saveElement = true;
     }
 
     #[Override]
