@@ -127,7 +127,7 @@
     <template #actions>
       <CpLink
         as="craft-button"
-        variant="primary"
+        variant="accent"
         :href="create()"
         v-if="!readOnly"
       >

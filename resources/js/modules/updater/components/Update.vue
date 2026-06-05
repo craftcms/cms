@@ -99,7 +99,7 @@
             v-if="ctaUrl"
             :href="ctaUrl"
             target="_blank"
-            variant="primary"
+            variant="accent"
             appearance="button"
           >
             {{ ctaButtonText }}
@@ -122,7 +122,7 @@
               :name="`packageNames[${handle}]`"
               :value="packageName"
             />
-            <craft-button type="submit" variant="primary" :loading="processing">
+            <craft-button type="submit" variant="accent" :loading="processing">
               {{ ctaButtonText }}
             </craft-button>
           </Form>
@@ -135,7 +135,7 @@
             v-if="altCtaUrl"
             :href="altCtaUrl"
             appearance="button"
-            variant="default"
+            variant="neutral"
           >
             {{ altCtaText }}
           </CpLink>
