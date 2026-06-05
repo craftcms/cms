@@ -7,14 +7,27 @@
 
 namespace craft\base;
 
-/** @phpstan-ignore-next-line */
-if (false) {
+/**
+ * RelationalFieldTrait provides a base implementation for [[RelationalFieldInterface]].
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 5.3.0
+ */
+trait RelationalFieldTrait
+{
     /**
-     * @since 5.3.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Concerns\RelationalField} instead.
-     * @phpstan-ignore-next-line
+     * @see RelationalFieldInterface::localizeRelations()
      */
-    trait RelationalFieldTrait
+    public function localizeRelations(): bool
     {
+        return true;
+    }
+
+    /**
+     * @see RelationalFieldInterface::forceUpdateRelations()
+     */
+    public function forceUpdateRelations(ElementInterface $element): bool
+    {
+        return false;
     }
 }
