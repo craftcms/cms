@@ -63,7 +63,7 @@ readonly class Cp
             ->merge([
                 'cpLogoUrl' => $generalConfig->cpLogoUrl,
                 'cpTrigger' => $generalConfig->cpTrigger,
-                'cpUrl' => Url::cpUrl(),
+                'baseCpUrl' => Url::cpUrl(),
                 'defaultCpLocale' => $generalConfig->defaultCpLocale,
                 'rememberedUserSessionDuration' => $generalConfig->rememberedUserSessionDuration,
                 'runQueueAutomatically' => $generalConfig->runQueueAutomatically,

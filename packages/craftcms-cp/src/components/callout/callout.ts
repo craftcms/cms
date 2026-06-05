@@ -10,7 +10,7 @@ export default class CraftCallout extends LitElement {
   static override styles: CSSResultGroup = [variantsStyles, styles];
 
   /** Variant style of the callout */
-  @property({reflect: true}) variant: VariantKey = Variant.Default;
+  @property({reflect: true}) variant: VariantKey = Variant.Neutral;
 
   /**
    * Appearance style of the callout

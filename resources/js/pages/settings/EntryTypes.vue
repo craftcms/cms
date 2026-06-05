@@ -150,7 +150,7 @@
       <CpLink
         appearance="button"
         :href="create['/admin/settings/entry-types/new']().url"
-        variant="primary"
+        variant="accent"
         :inertia="false"
         icon="plus"
       >

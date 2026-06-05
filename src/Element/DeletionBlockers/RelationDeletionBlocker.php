@@ -100,7 +100,7 @@ new Craft.CpModal('delete-elements/replace-relations-modal', {
     hardDelete: $hardDelete,
     sourceElementType: $sourceElementType,
   },
-  (ev) => {
+  onSubmit: (ev) => {
     resolve(ev.response.data.message);
   },
   onCancel: () => {

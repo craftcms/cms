@@ -1,48 +1,13 @@
 <script setup lang="ts">
-  import {t, type VariantKey} from '@craftcms/cp';
-  import {type Component, computed} from 'vue';
-
-  interface ActionItemHr {
-    type: 'hr';
-  }
-
-  interface ActionItemDisplay {
-    type: 'display';
-    is: Component;
-  }
-
-  interface ActionItemButton {
-    type?: 'button';
-    label: string;
-    variant?: VariantKey | string;
-    icon?: string;
-    onClick?: () => void;
-    shortcut?: string | {alt?: boolean; shift?: boolean; key: string} | null;
-    [key: string]: unknown;
-  }
-
-  interface ActionItemLink {
-    type: 'link';
-    href: string;
-    label: string;
-    variant?: VariantKey | string;
-    onClick?: () => void;
-    [key: string]: unknown;
-  }
-
-  export type ActionItem =
-    | ActionItemDisplay
-    | ActionItemHr
-    | ActionItemButton
-    | ActionItemLink;
-
-  export type ActionItems = Array<ActionItem>;
+  import {t} from '@craftcms/cp';
+  import {computed} from 'vue';
+  import type {ActionItem} from '@/common/types';
 
   const props = withDefaults(
     defineProps<{
       icon?: string;
       label?: string | null;
-      actions: Array<ActionItem & {onClick?: (event: Event) => void}>;
+      actions: Array<ActionItem>;
     }>(),
     {
       icon: 'ellipsis',
@@ -50,24 +15,19 @@
     }
   );
 
-  const normalizedActions = computed(
-    (): Array<ActionItem & {onClick?: (event: Event) => void}> => {
-      return props.actions.map(
-        (action): ActionItem & {onClick?: (event: Event) => void} => {
-          if (action.type === 'hr' || action.type === 'display') {
-            return action;
-          }
+  const normalizedActions = computed((): Array<ActionItem> => {
+    return props.actions.map((action): ActionItem => {
+      if (action.type === 'hr' || action.type === 'display') {
+        return action;
+      }
 
-          return {
-            ...action,
-            type:
-              action.type ??
-              ('href' in action && action.href ? 'link' : 'button'),
-          } as ActionItem & {onClick?: (event: Event) => void};
-        }
-      );
-    }
-  );
+      return {
+        ...action,
+        type:
+          action.type ?? ('href' in action && action.href ? 'link' : 'button'),
+      } as ActionItem;
+    });
+  });
 
   const sortedActions = computed(() => {
     return [...normalizedActions.value].sort((a, b) => {
