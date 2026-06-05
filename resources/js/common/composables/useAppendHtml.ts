@@ -2,7 +2,7 @@ import {
   appendHeadHtml,
   appendBodyHtml,
   type AppendHtmlDisposer,
-} from '@craftcms/cp';
+} from '@craftcms/ui';
 import {computed, watch, onBeforeUnmount} from 'vue';
 import {usePage} from '@inertiajs/vue3';
 

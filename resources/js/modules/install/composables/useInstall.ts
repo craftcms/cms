@@ -1,6 +1,6 @@
 import {computed, ref} from 'vue';
 import {useStepper} from '@vueuse/core';
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {
   validateAccount,
   validateDb,

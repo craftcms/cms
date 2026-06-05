@@ -8,7 +8,7 @@
       "@public/*": ["./resources/public/*"],
       "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
       "@routes/*": ["./resources/js/routes/craft/*"],
-      "@craftcms/cp/vue/*": ["./node_modules/@craftcms/cp/dist/vue/*"]
+      "@craftcms/ui/vue/*": ["./node_modules/@craftcms/ui/dist/vue/*"]
     },
     "types": ["vite/client"]
   },

@@ -5,10 +5,10 @@ import type {
   JobUpdateDetail,
   QueueJobData,
   QueueServiceOptions,
-} from '@src/types';
-import {JobStatus} from '@src/types';
+} from '@/common/types/queue';
+import {JobStatus} from '@/common/types/queue';
 import axios from 'axios';
-import {getActionUrl} from '@src/utilities/api/actionClient';
+import {getActionUrl} from '@/common/api/actionClient';
 
 /**
  * Service for managing queue job tracking.

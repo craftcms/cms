@@ -1,4 +1,4 @@
-import {actionClient} from '../utilities/api/actionClient.js';
+import {actionClient} from '@/common/api/actionClient';
 
 interface SessionInfoResponseData {
   isGuest: boolean;

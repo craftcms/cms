@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {h} from 'vue';
 import {
   type AccessorColumnDef,

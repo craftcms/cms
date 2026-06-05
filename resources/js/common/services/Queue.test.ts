@@ -1,7 +1,7 @@
 import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
-import {QueueService} from './Queue.js';
-import type {JobInfo} from '../types/index.js';
-import {JobStatus} from '../types/index.js';
+import {QueueService} from './Queue';
+import type {JobInfo} from '@/common/types/queue';
+import {JobStatus} from '@/common/types/queue';
 
 // Mock axios
 vi.mock('axios', () => ({
@@ -12,7 +12,7 @@ vi.mock('axios', () => ({
 }));
 
 // Mock getActionUrl
-vi.mock('../utilities/api/actionClient', () => ({
+vi.mock('@/common/api/actionClient', () => ({
   getActionUrl: vi.fn(
     (path: string) => `https://example.com/actions/${path}`
   ),

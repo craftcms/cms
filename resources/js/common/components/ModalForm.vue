@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import Modal, {type ModalProps} from '@/common/components/Modal.vue';
   import Pane from '@/common/components/Pane.vue';
 

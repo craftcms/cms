@@ -1,29 +1,28 @@
 import axios, {type RawAxiosRequestHeaders} from 'axios';
-import {Csrf} from '@src/services/Csrf';
-import {getCraft} from '@src/craft';
+import {Csrf} from '@/common/services/Csrf';
 
 /**
  * Get the action URL for a given action path.
  */
 export function getActionUrl(action: string = '') {
-  return getCraft().getActionUrl(action);
+  return window.Craft.getActionUrl(action);
 }
 
 /**
  * Get the CP URL for a given path.
  */
 export function getCpUrl(path: string = '', params?: object) {
-  return getCraft().getCpUrl(path, params);
+  return window.Craft.getCpUrl(path, params);
 }
 
 export function actionHeaders(): RawAxiosRequestHeaders {
-  const craft = getCraft();
-
   let headers: Record<string, string> = {
     'X-Registered-Asset-Bundles': [
-      ...new Set(craft.registeredAssetBundles),
+      ...new Set(window.Craft.registeredAssetBundles),
     ].join(','),
-    'X-Registered-Js-Files': [...new Set(craft.registeredJsFiles)].join(','),
+    'X-Registered-Js-Files': [...new Set(window.Craft.registeredJsFiles)].join(
+      ','
+    ),
   };
 
   return headers;
@@ -34,10 +33,8 @@ export const actionClient = axios.create();
 const csrf = new Csrf();
 
 actionClient.interceptors.request.use(async (config) => {
-  const craft = getCraft();
-
-  // Set base URL lazily so configure() can be called after import
-  config.baseURL ??= craft.getActionUrl('');
+  // Set base URL lazily
+  config.baseURL ??= window.Craft.getActionUrl('');
 
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import ProjectConfigDiff from './ProjectConfigDiff.vue';
   import {useProjectConfig} from '@/modules/utilities/composables/useProjectConfig';
   import Pane from '@/common/components/Pane.vue';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import {default as settingsIndex} from '@actions/Settings/SettingsIndexController';

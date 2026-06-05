@@ -8,7 +8,7 @@ import './bootstrap/cp.js';
 /**
  * Components - dynamically imported after Craft is initialized
  */
-import('@craftcms/cp/components/nav-list/nav-list.ts.mjs');
-import('@craftcms/cp/components/nav-item/nav-item.ts.mjs');
+import('@craftcms/ui/components/nav-list/nav-list.ts.mjs');
+import('@craftcms/ui/components/nav-item/nav-item.ts.mjs');
 import('./modules/navigation/components/CpGlobalSidebar.js');
 import('./modules/navigation/components/CpQueueIndicator.js');

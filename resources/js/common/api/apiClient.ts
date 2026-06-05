@@ -3,8 +3,7 @@ import axios, {
   type CancelToken,
   type InternalAxiosRequestConfig,
 } from 'axios';
-import {actionClient} from './actionClient.js';
-import {getCraft} from '@src/craft';
+import {actionClient} from './actionClient';
 
 let loadingApiHeaders = false;
 let apiHeaderWaitlist: Promise<any>[] = [];
@@ -109,12 +108,10 @@ apiClient.interceptors.request.use(async (config) => {
     });
   }
 
-  const craft = getCraft();
-
   const finalConfig = {
     ...config,
     params: {
-      ...(craft.apiParams || {}),
+      ...(window.Craft.apiParams || {}),
       ...config.params,
       v: new Date().getTime(),
     },
@@ -124,8 +121,8 @@ apiClient.interceptors.request.use(async (config) => {
     finalConfig.params.processCraftHeaders = 1;
   }
 
-  if (craft.httpProxy) {
-    finalConfig.proxy = craft.httpProxy as AxiosProxyConfig;
+  if (window.Craft.httpProxy) {
+    finalConfig.proxy = window.Craft.httpProxy as AxiosProxyConfig;
   }
 
   return finalConfig;

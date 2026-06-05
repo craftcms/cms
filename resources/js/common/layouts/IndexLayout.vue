@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import AppLayout, {type AppLayoutProps} from '@/common/layouts/AppLayout.vue';
   import {computed, ref, useSlots, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';

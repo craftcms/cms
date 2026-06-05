@@ -1,5 +1,5 @@
 import {computed, type ComputedRef, type Ref, ref} from 'vue';
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import axios from 'axios';
 
 /**

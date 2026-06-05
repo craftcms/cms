@@ -1,6 +1,7 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
-import {actionClient, t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
+import {actionClient} from '@/common/api/actionClient';
 import componentStyles from './login-form.styles.js';
 
 /**

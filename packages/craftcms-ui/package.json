@@ -1,9 +1,9 @@
 {
-  "name": "@craftcms/cp",
+  "name": "@craftcms/ui",
   "version": "0.0.0",
-  "description": "CP Components for Craft CMS",
+  "description": "UI Components for Craft CMS",
   "type": "module",
-  "main": "dist/cp.js",
+  "main": "dist/ui.js",
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
@@ -34,15 +34,14 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/cp.d.mts",
-      "import": "./dist/cp.mjs",
-      "require": "./dist/cp.cjs"
+      "types": "./dist/ui.d.mts",
+      "import": "./dist/ui.mjs",
+      "require": "./dist/ui.cjs"
     },
     "./*": "./dist/*",
     "./dist/*": "./dist/*",
     "./vue/*": "./dist/vue/*",
     "./types/*": "./src/types/*",
-    "./services/*": "./dist/services/*",
     "./styles/*": "./dist/styles/*",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",
@@ -104,8 +103,7 @@
     "@formatjs/intl-durationformat": "^0.10.8",
     "@github/relative-time-element": "^5.0.0",
     "@simplewebauthn/browser": "^13.3.0",
-    "@vitest/browser-playwright": "^4.1.5",
-    "axios": "^1.15.2"
+    "@vitest/browser-playwright": "^4.1.5"
   },
   "customElements": "dist/custom-elements.json"
 }

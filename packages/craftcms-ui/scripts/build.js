@@ -9,7 +9,7 @@ import {join} from 'path';
 import {deleteAsync} from 'del';
 import createVueWrappers from './generate-vue-wrappers.js';
 
-const spinner = ora({text: '@craftcms/cp', color: 'red'}).start();
+const spinner = ora({text: '@craftcms/ui', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
 
 async function cleanup() {

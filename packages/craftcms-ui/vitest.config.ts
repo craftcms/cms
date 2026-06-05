@@ -23,16 +23,6 @@ export default defineConfig({
         },
       },
       {
-        resolve: {
-          tsconfigPaths: true,
-        },
-        test: {
-          name: 'services',
-          root: './src/services',
-          environment: 'happy-dom',
-        },
-      },
-      {
         extends: true,
         plugins: [
           // The plugin will run tests for the stories defined in your Storybook config

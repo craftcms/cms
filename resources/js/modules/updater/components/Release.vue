@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate.ts.mjs';
   import {Disclosure, DisclosureButton, DisclosurePanel} from '@headlessui/vue';
   import {computed} from 'vue';
 

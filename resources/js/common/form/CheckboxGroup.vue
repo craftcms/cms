@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import type CraftCheckbox from '@craftcms/cp/components/checkbox/checkbox.ts.mjs';
+  import {t} from '@craftcms/ui';
+  import type CraftCheckbox from '@craftcms/ui/components/checkbox/checkbox.ts.mjs';
   import type {CheckboxOption} from '@/common/types';
 
   const emit = defineEmits<{

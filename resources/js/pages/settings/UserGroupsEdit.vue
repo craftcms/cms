@@ -1,11 +1,11 @@
 <script setup lang="ts">
-  import {t, toHandle} from '@craftcms/cp';
+  import {t, toHandle} from '@craftcms/ui';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {router, useForm} from '@inertiajs/vue3';
   import type {ActionItemData, UserGroup} from '@/common/types';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftHandleInput from '@craftcms/cp/vue/CraftInputHandle.vue';
-  import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftHandleInput from '@craftcms/ui/vue/CraftInputHandle.vue';
+  import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
   import Pane from '@/common/components/Pane.vue';
   import PermissionList from '@/modules/permissions/components/PermissionList.vue';
   import {

@@ -1,7 +1,7 @@
 import {ref, type Ref} from 'vue';
 import {router} from '@inertiajs/vue3';
 import axios from 'axios';
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import ProjectConfigController, {
   download,
 } from '@actions/Utilities/ProjectConfigController';

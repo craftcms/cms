@@ -14,7 +14,7 @@ import axios, {
   type CancelTokenSource,
 } from 'axios';
 import {useHelpers} from '@/common/composables/useCraftData';
-import {apiClient} from '@craftcms/cp/utilities/api/apiClient.ts.mjs';
+import {apiClient} from '@/common/api/apiClient';
 
 // Type for URL parameter - can be string, ref, or computed
 type MaybeRef<T> = T | Ref<T> | ComputedRef<T>;

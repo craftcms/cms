@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {capitalize, t} from '@craftcms/cp';
+  import {capitalize, t} from '@craftcms/ui';
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';

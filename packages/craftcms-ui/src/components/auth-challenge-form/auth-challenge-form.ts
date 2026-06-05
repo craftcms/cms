@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
-import {actionClient, t} from '@src/index';
+import {t} from '@src/utilities/translate';
 
 /** @internal Module-private registry of PHP METHOD handle → element class. */
 const _registry = new Map<string, typeof CraftAuthChallengeForm>();
@@ -20,7 +20,7 @@ const _registry = new Map<string, typeof CraftAuthChallengeForm>();
  * @example
  * ```typescript
  * import {html} from 'lit';
- * import {CraftAuthChallengeForm} from '@craftcms/cp';
+ * import {CraftAuthChallengeForm} from '@craftcms/ui';
  *
  * class MyPluginForm extends CraftAuthChallengeForm {
  *   static METHOD = 'my-method';
@@ -139,7 +139,18 @@ export abstract class CraftAuthChallengeForm extends LitElement {
     this._state = 'loading';
 
     try {
-      await actionClient.post(this.endpoint, {code});
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({code}),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
       this.dispatchEvent(
         new CustomEvent('login-verified', {

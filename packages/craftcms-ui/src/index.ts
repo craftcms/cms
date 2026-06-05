@@ -5,7 +5,6 @@ import {configureIcons} from './utilities/icons';
 import './types/globals.js';
 import './types/events.js';
 import './types/index.js';
-import './types/queue.js';
 
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
@@ -62,30 +61,8 @@ export {default as CraftVisuallyHidden} from './components/visually-hidden/visua
 export * from './utilities/cookies.js';
 export * from './utilities/translate.js';
 export * from './utilities/format.js';
-export * from './utilities/api/actionClient.js';
-export * from './utilities/api/apiClient.js';
 export * from './utilities/string.js';
 export * from './utilities/dom.js';
-
-// Configuration
-export {configure, getCraft, tryGetCraft, resetConfiguration} from './craft.js';
-export type {CraftContext} from './craft.js';
-
-// Services
-export {QueueService} from './services/Queue.js';
-export {AssetIndexer} from './services/AssetIndexer.js';
-export type {
-  IndexingSession,
-  IndexingResponse,
-  StartIndexingParams,
-  FinishIndexingParams,
-  ChangeEventData,
-  ErrorEventData,
-  MissingEntries,
-  IndexerEventType,
-  IndexerEventListener,
-} from './services/AssetIndexer.js';
-export {IndexingActions} from './services/AssetIndexer.js';
 
 // Types
 export * from './types/index.js';

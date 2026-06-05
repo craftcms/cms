@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {h} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import Pane from '@/common/components/Pane.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';

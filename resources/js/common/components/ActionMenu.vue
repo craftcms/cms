@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t, type VariantKey} from '@craftcms/cp';
+  import {t, type VariantKey} from '@craftcms/ui';
   import {type Component, computed} from 'vue';
 
   interface ActionItemHr {

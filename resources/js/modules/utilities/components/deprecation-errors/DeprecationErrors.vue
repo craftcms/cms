@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate.ts.mjs';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {h, ref} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';

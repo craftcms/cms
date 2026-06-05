@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import type {EntryType} from '@/common/types';
   import {computed, ref} from 'vue';
-  import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import Text from '@/common/components/Text.vue';
   import {
     applyOverrideSettings,

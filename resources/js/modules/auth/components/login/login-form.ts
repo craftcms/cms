@@ -5,7 +5,8 @@ import {
   platformAuthenticatorIsAvailable,
   startAuthentication,
 } from '@simplewebauthn/browser';
-import {actionClient, t, visuallyHiddenStyles} from '@craftcms/cp';
+import {t, visuallyHiddenStyles} from '@craftcms/ui';
+import {actionClient} from '@/common/api/actionClient';
 import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';

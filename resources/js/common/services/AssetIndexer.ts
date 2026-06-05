@@ -1,6 +1,11 @@
-import {actionClient} from '../utilities/api/actionClient.js';
+import {actionClient} from '@/common/api/actionClient';
 import type {AxiosResponse} from 'axios';
-import type {DateObject} from '@src/types';
+
+interface DateObject {
+  date: string;
+  timezone_type: string;
+  timezone: string;
+}
 
 /**
  * API action endpoints for asset indexing operations.

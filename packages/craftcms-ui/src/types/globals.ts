@@ -1,5 +1,3 @@
-import {QueueService} from '@src/services/Queue';
-
 declare const d3: any | undefined;
 declare const d3FormatLocaleDefinition: any | undefined;
 
@@ -35,9 +33,5 @@ type Site = {
   name: string;
   uid: string;
 };
-
-export interface CpServices {
-  $queue: QueueService;
-}
 
 export {};

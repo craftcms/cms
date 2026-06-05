@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
   import {type SystemData} from '@/modules/user/types/settings';
@@ -9,7 +9,7 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import Pane from '@/common/components/Pane.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {transformBooleanOptions} from '@/common/utils/transformBooleanOptions';
   import useCraftData from '@/common/composables/useCraftData';
 

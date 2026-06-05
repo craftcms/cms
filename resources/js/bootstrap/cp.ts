@@ -1,4 +1,4 @@
-import {QueueService, configure} from '@craftcms/cp';
+import {QueueService} from '@/common/services/Queue';
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
 import {Axios, Queue} from '@/common/types/keys';
@@ -14,7 +14,7 @@ import ProjectConfig from '@/modules/utilities/components/project-config/Project
 import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
-import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import {setTranslations} from '@craftcms/ui/utilities/translate.ts.mjs';
 
 const queue = QueueService.getInstance();
 let hasBooted = false;
@@ -32,8 +32,6 @@ function booted(callback: (craft: any) => void) {
 }
 
 function init() {
-  configure(window.Craft);
-
   queue.initialize({
     runAutomatically: window.Craft.runQueueAutomatically ?? true,
     enabled: true,

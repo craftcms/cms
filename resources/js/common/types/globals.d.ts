@@ -1,4 +1,4 @@
-import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
+import type {QueueService} from '@/common/services/Queue';
 import type {AxiosInstance} from 'axios';
 
 declare module '@tanstack/vue-table' {
@@ -67,7 +67,8 @@ interface SlideoutInstance {
   on(event: string, callback: () => void): void;
 }
 
-interface CraftStatic extends CpServices {
+interface CraftStatic {
+  $queue: QueueService;
   $axios: AxiosInstance;
   booting(cb: (craft: CraftStatic) => void): void;
   booted(cb: (craft: CraftStatic) => void): void;

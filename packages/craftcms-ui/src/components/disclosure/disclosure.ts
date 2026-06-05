@@ -4,7 +4,9 @@
  * Allows you to wrap a button[type="button"] and target an element to toggle the `data-state` attribute on.
  * Set `aria-expanded` on the button
  */
-import {tryGetCraft} from '@src/craft';
+import {Cookies} from '@src/utilities/cookies';
+
+const cookies = new Cookies();
 
 export default class CraftDisclosure extends HTMLElement {
   static observedAttributes = ['state'];
@@ -93,7 +95,7 @@ export default class CraftDisclosure extends HTMLElement {
     }
 
     if (this.cookieName) {
-      tryGetCraft()?.setCookie?.(this.cookieName, 'expanded');
+      cookies.set(this.cookieName, 'expanded');
     }
   };
 
@@ -111,7 +113,7 @@ export default class CraftDisclosure extends HTMLElement {
     }
 
     if (this.cookieName) {
-      tryGetCraft()?.setCookie?.(this.cookieName, 'collapsed');
+      cookies.set(this.cookieName, 'collapsed');
     }
   };
 

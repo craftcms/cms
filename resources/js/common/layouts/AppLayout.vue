@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import SystemInfo from '@/common/components/SystemInfo.vue';
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate.ts.mjs';
   import {computed, reactive, ref, useTemplateRef, watch} from 'vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';

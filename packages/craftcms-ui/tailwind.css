@@ -6,8 +6,8 @@
  *
  * Usage in your CSS entry file:
  *
- *   @import "@craftcms/cp/dist/styles/cp.css";   // loads :root token values
- *   @import "@craftcms/cp/tailwind.css";          // @theme inline — generate utilities
+ *   @import "@craftcms/ui/dist/styles/cp.css";   // loads :root token values
+ *   @import "@craftcms/ui/tailwind.css";          // @theme inline — generate utilities
  *   @import "tailwindcss";                        // Tailwind v4 engine
  *
  * The --c-* variables must already be in scope (via cp.css) for var() to

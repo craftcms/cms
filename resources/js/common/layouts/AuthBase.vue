@@ -2,7 +2,7 @@
   import {Head} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
   import craftCmsLogoUrl from '@public/images/craftcms.svg';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
 
   const {general, system} = useCraftData();
 </script>
