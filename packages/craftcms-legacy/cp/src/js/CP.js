@@ -1,8 +1,8 @@
-// Import from the deep service module rather than the package root. The root
-// entry (`@craftcms/ui`) side-effect-registers WebAwesome components (e.g.
-// `wa-icon`); pulling that into this separately-webpacked legacy bundle causes
-// a duplicate custom-element registration when it loads alongside the Vite app.
-import {QueueService} from '../../../resources/js/common/services/Queue';
+// The root entry (`@craftcms/ui`) side-effect-registers WebAwesome components
+// (e.g. `wa-icon`); pulling that into this separately-webpacked legacy bundle
+// causes a duplicate custom-element registration when it loads alongside the
+// Vite app. QueueService is available at runtime as Craft.$queue (set by
+// bootstrap/cp.ts).
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */
@@ -81,8 +81,10 @@ Craft.CP = Garnish.Base.extend(
 
     resizeTimeout: null,
 
-    /** @type QueueService */
-    QueueService: QueueService.getInstance(),
+    /** @deprecated since 6.0. Access via Craft.$queue */
+    get QueueService() {
+      return Craft.$queue;
+    },
 
     init: function () {
       this.elementThumbLoader = new Craft.ElementThumbLoader();
@@ -1679,29 +1681,29 @@ Craft.CP = Garnish.Base.extend(
     /** @deprecated since 6.0. */
     runQueue: function () {
       if (Craft.runQueueAutomatically) {
-        Craft.queue.push(() => this.QueueService.runQueue());
+        Craft.queue.push(() => Craft.$queue.runQueue());
       } else {
-        this.QueueService.startTracking(false, true);
+        Craft.$queue.startTracking(false, true);
       }
     },
 
-    /** @deprecated since 6.0. Use QueueService.startTracking() instead */
+    /** @deprecated since 6.0. Use Craft.$queue.startTracking() instead */
     trackJobProgress: function (delay, force) {
-      this.QueueService.startTracking(delay, force);
+      Craft.$queue.startTracking(delay, force);
     },
 
-    /** @deprecated since 6.0. Use QueueService.setJobData() instead */
+    /** @deprecated since 6.0. Use Craft.$queue.setJobData() instead */
     setJobData: function (data) {
-      this.QueueService.setJobData(data);
+      Craft.$queue.setJobData(data);
     },
 
     get jobInfo() {
-      return this.QueueService.jobInfo;
+      return Craft.$queue.jobInfo;
     },
 
-    /** @deprecated since 6.0. Use QueueService.setJobData() instead */
+    /** @deprecated since 6.0. Use Craft.$queue.setJobData() instead */
     setJobInfo: function (jobInfo) {
-      this.QueueService.setJobData({
+      Craft.$queue.setJobData({
         jobs: jobInfo,
         total: jobInfo.length,
       });
@@ -1710,9 +1712,9 @@ Craft.CP = Garnish.Base.extend(
       this.trigger('setJobInfo');
     },
 
-    /** @deprecated since 6.0. Use QueueService.stopTracking() instead */
+    /** @deprecated since 6.0. Use Craft.$queue.stopTracking() instead */
     cancelJobTracking: function () {
-      this.QueueService.stopTracking();
+      Craft.$queue.stopTracking();
     },
 
     /**
