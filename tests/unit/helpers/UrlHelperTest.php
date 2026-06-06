@@ -299,8 +299,13 @@ class UrlHelperTest extends TestCase
             ['foo%5Bbar%5D=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
             ['foo%2Bbar=baz', ['foo+bar' => 'baz']],
+            ['foo%2Fbar=baz', ['foo/bar' => 'baz']],
+            ['foo%5B{bar}%5D=baz', ['foo[{bar}]' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo={bar}', ['foo' => '{bar}']],
+            ['foo=some%2Fpath%2F{bar}', ['foo' => 'some/path/{bar}']],
+            ['p=actions/endpoint', ['p' => 'actions/endpoint']],
+            ['returnUrl=https%3A%2F%2Fexample.test%2Fpath%2F{id}%3Ffoo%3Dbar', ['returnUrl' => 'https://example.test/path/{id}?foo=bar']],
             ['foo%5B1%5D=bar', ['foo[1]' => 'bar']],
             ['foo%5B1%5D%5Bbar%5D=1&foo%5B1%5D%5Bbaz%5D=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
         ];
@@ -369,6 +374,16 @@ class UrlHelperTest extends TestCase
                 '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2'],
+            ],
+            'test-token-and-forward-slash-params' => [
+                '{cpUrl}/nav?redirect=some%2Fpath%2F{id}&site={handle}',
+                'nav',
+                ['redirect' => 'some/path/{id}', 'site' => '{handle}'],
+            ],
+            'test-return-url-param' => [
+                '{cpUrl}/nav?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}',
+                'nav',
+                ['returnUrl' => 'https://example.test/admin/entries?site={handle}'],
             ],
             'test-preexisting-endpoints' => [
                 '{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2',
@@ -494,9 +509,19 @@ class UrlHelperTest extends TestCase
                 '?param1[]=value1&param1[]=value2',
             ],
             'query-string-with-forward-slash' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some/path',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some%2Fpath',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '?param1=some/path',
+            ],
+            'query-string-with-token-and-forward-slash' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some%2Fpath%2F{value}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1=some/path/{value}',
+            ],
+            'return-url-with-query-string' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fcontent%2Fentries%2Fsingles%3Fsource%3Dsingles',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                ['returnUrl' => 'https://example.test/admin/content/entries/singles?source=singles'],
             ],
             'pre-queried-url' => [
                 self::ABSOLUTE_URL_HTTPS_WWW . '?param3=name3&param1=name&param2=name2',
@@ -612,6 +637,8 @@ class UrlHelperTest extends TestCase
             ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
             ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
+            ['http://example.test?foo=some%2Fpath%2F{token}', 'http://example.test?foo=some/path/{token}'],
+            ['http://example.test?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'http://example.test?returnUrl=https://example.test/admin/entries?site={handle}'],
         ];
     }
 
@@ -677,6 +704,18 @@ class UrlHelperTest extends TestCase
                 ['param1' => 'entry1', 'param2' => 'entry2'],
                 'https',
             ],
+            'token-and-forward-slash-param-add' => [
+                self::ABSOLUTE_URL_HTTPS . '?redirect=some%2Fpath%2F{id}',
+                self::ABSOLUTE_URL,
+                ['redirect' => 'some/path/{id}'],
+                'https',
+            ],
+            'return-url-param-add' => [
+                self::ABSOLUTE_URL_HTTPS . '?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}',
+                self::ABSOLUTE_URL,
+                ['returnUrl' => 'https://example.test/admin/entries?site={handle}'],
+                'https',
+            ],
         ];
     }
 
@@ -697,6 +736,8 @@ class UrlHelperTest extends TestCase
             ['{siteUrl}endpoint', 'endpoint'],
             // https://github.com/craftcms/cms/issues/4778
             ['{siteUrl}endpoint?param1=x&param2%5B0%5D=y&param2%5B1%5D=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
+            ['{siteUrl}endpoint?redirect=some%2Fpath%2F{id}', 'endpoint', ['redirect' => 'some/path/{id}']],
+            ['{siteUrl}endpoint?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'endpoint', ['returnUrl' => 'https://example.test/admin/entries?site={handle}']],
         ];
     }
 
