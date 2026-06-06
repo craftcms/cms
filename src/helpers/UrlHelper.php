@@ -97,15 +97,15 @@ class UrlHelper
         if ($query === '') {
             return '';
         }
-        // Decode a few select chars
         $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
         $params = [];
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
             $n = str_replace(['%7B', '%7D'], ['{', '}'], $n);
             $v = str_replace(['%7B', '%7D'], ['{', '}'], $v);
+
+            // Preserve the long-standing `?p=actions/foo` format, even though the encoded value should resolve the same.
             if ($n === $pathParam) {
-                // Preserve the long-standing `?p=actions/foo` format, even though the encoded value should resolve the same.
                 $v = str_replace('%2F', '/', $v);
             }
             $params[] = $v !== '' ? "$n=$v" : $n;
