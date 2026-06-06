@@ -1,15 +1,20 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Cms\Element\ElementIndexParams;
-use CraftCms\Cms\Element\ElementIndexService;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
+use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
+use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,11 +25,17 @@ use function CraftCms\Cms\t;
  */
 class ContentIndexController
 {
+    use InteractsWithElementIndexes;
+
     public function __construct(
         private readonly PrepareElementIndexVariables $prepareElementIndexVariables,
-        private readonly ElementIndexService $elementIndexService,
+        private readonly PrepareElementToolbarVariables $prepareElementToolbarVariables,
+        private readonly PrepareElementSourcesVariables $prepareElementSourcesVariables,
+        private readonly ElementHtml $elementHtml,
         private readonly ElementSources $elementSources,
-    ) {}
+        private readonly ElementAttributeRenderer $attributeRenderer,
+    ) {
+    }
 
     public function __invoke(Request $request, string $page, ?string $sectionHandle = null)
     {
@@ -36,63 +47,72 @@ class ContentIndexController
         ];
 
         ($this->prepareElementIndexVariables)($context);
+        ($this->prepareElementToolbarVariables)($context);
+        ($this->prepareElementSourcesVariables)($context);
 
-        // Determine the initial source key from the resolved sources
-        $sourceKey = $request->input('source');
-        if (! empty($context['sources'])) {
-            // If a section handle is provided, find the matching source
-            if ($sectionHandle) {
-                foreach ($context['sources'] as $source) {
-                    if (isset($source['key']) && str_contains($source['key'], $sectionHandle)) {
-                        $sourceKey = $source['key'];
-                        break;
-                    }
-                }
-            }
-
-            // Fall back to the first source key
-            if ($sourceKey === null) {
-                $sourceKey = $context['sources'][0]['key'] ?? null;
-            }
-        }
-
-        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
-            ['field' => 'dateCreated', 'direction' => 'desc'],
-        ];
-
-        $criteria = [];
-        if ($request->has('status')) {
-            $criteria['status'] = $request->input('status');
-        }
-
-        if ($request->has('search')) {
-            $criteria['search'] = $request->input('search');
-        }
-
-        $params = ElementIndexParams::fromContext(
-            elementType: $elementType,
-            sourceKey: $sourceKey,
-            criteria: $criteria,
-            elementSources: $this->elementSources,
-            page: max(1, $request->integer('page', 1)),
-            perPage: max(1, $request->integer('per_page', 100)),
-            sort: $sort,
-        );
-
-        $elementStatuses = $elementType::statuses();
-        $statusOptions = collect($elementStatuses)
-            ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
+        $statusOptions = collect($context['elementStatuses'])
+            ->map(fn($label, $value) => ['label' => $label, 'value' => $value])
             ->prepend(['label' => t('All'), 'value' => ''])
             ->values()
             ->all();
 
+        $renderContext = 'index';
+        [$sourceKey, $source] = $this->resolveSource($elementType, $request->input('source', '*'), $renderContext);
+        $elementQuery = $this->buildElementQueryState($elementType, $source, null)['query'];
+
+        if ($request->has('status')) {
+            $elementQuery->status($request->input('status'));
+        }
+
+        // get the return URL with `?` replaced with a token
+        // (see https://github.com/craftcms/cms/issues/18923)
+        if ($returnUrl = $request->input('returnUrl')) {
+            $returnUrl = str_replace('?', ':QS:', $returnUrl);
+        }
+
+        // @TODO: this should be from the view state
+        // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];
+        $attributes = ['title', ...array_keys($elementType::tableAttributes())];
+        $elements = collect($elementType::indexElements($elementQuery, $sourceKey))
+            ->map(fn(ElementInterface $element) => collect($attributes)
+                ->mapWithKeys(fn(string $attribute) => [
+                    $attribute => $attribute === 'title' ?
+                        Html::tag('CpLink',
+                            $this->elementHtml->chipHtml($element, [
+                                'context' => $renderContext,
+                                'appearance' => 'plain',
+                            ]),
+                            ['href' => $element->getCpEditUrl()]
+                        )
+                        : (string) $this->attributeRenderer->render($element, $attribute),
+                ]));
+
+        $viewState = [
+            ...$this->resolveViewState(),
+            'showHeaderColumn' => true,
+            'fieldLayouts' => $this->resolveFieldLayouts(),
+            'returnUrl' => $returnUrl,
+        ];
+
+        $contentHtml = $elementType::indexHtml(
+            elementQuery: $elementQuery,
+            disabledElementIds: $request->array('disabledElementIds'),
+            viewState: $viewState,
+            sourceKey: $sourceKey,
+            context: $renderContext,
+            includeContainer: false,
+            selectable: true,
+            sortable: false,
+        );
+
         return Inertia::render('content/Index', Arr::merge($context, [
-            'source' => $this->elementSources->findSource($context['elementType'], $sourceKey, $context['context']),
             'status' => $request->input('status', ''),
+            'source' => $this->resolveSource($elementType, $request->input('source', '*'), $renderContext)[1],
             'search' => $request->input('search'),
+            'viewState' => $viewState,
             'statusOptions' => $statusOptions,
-            'viewMode' => $request->input('viewMode', 'table'),
-            'contentHtml' => $this->elementIndexService->getElementsHtml($params)['html'],
+            'elements' => $elements,
+            'contentHtml' => $contentHtml,
         ]));
     }
 }

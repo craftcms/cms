@@ -5,15 +5,22 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Resources;
 
 use CraftCms\Cms\Cp\JsonResource;
-use CraftCms\Cms\Element\ElementIndexParams;
-use CraftCms\Cms\Element\ElementIndexService;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\CurrentElementIndex;
+use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Support\Facades\ElementActions;
+use CraftCms\Cms\Support\Facades\ElementExporters;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Http\Request;
 use Override;
 
+use function CraftCms\Cms\t;
+
 class ElementIndexResource extends JsonResource
 {
+    use InteractsWithElementIndexes;
+
     #[Override]
     public static $wrap;
 
@@ -28,16 +35,75 @@ class ElementIndexResource extends JsonResource
     public function toArray(Request $_): array
     {
         $request = app(ElementIndexRequest::class);
-        $elementSources = app(ElementSources::class);
-        $service = app(ElementIndexService::class);
 
-        $params = ElementIndexParams::fromRequest(
-            request: $request,
-            elementSources: $elementSources,
+        $elementType = $request->elementType();
+        [$sourceKey, $source] = $this->resolveSource($elementType, $request->input('source'), $request->context());
+        $elementQuery = $this->buildElementQueryState(
+            elementType: $elementType,
+            source: $source,
+            condition: $request->condition(),
+        )['query'];
+
+        app(CurrentElementIndex::class)->activate($elementQuery);
+
+        $viewState = $this->resolveViewState();
+
+        $responseData = [];
+        $actions = null;
+        $exporters = null;
+
+        if ($this->includeActions) {
+            if ($request->isAdministrative() && isset($sourceKey)) {
+                $actions = ElementActions::availableActions($elementType, $sourceKey, $elementQuery);
+                $exporters = $this->availableExporters($elementType, $sourceKey);
+            }
+
+            $responseData['actions'] = match (true) {
+                ($viewState['static'] ?? false) === true => [],
+                empty($actions) => null,
+                default => ElementActions::serializeActions($actions),
+            };
+
+            $responseData['actionsHeadHtml'] = HtmlStack::headHtml();
+            $responseData['actionsBodyHtml'] = HtmlStack::bodyHtml();
+            $responseData['exporters'] = empty($exporters) ? null : ElementExporters::serializeExporters($exporters);
+        }
+
+        if (! $sourceKey) {
+            $responseData['html'] = Html::tag('div', t('Nothing yet.'), [
+                'class' => ['zilch', 'small'],
+            ]);
+
+            return $responseData;
+        }
+
+        // get the return URL with `?` replaced with a token
+        // (see https://github.com/craftcms/cms/issues/18923)
+        if ($returnUrl = $request->input('returnUrl')) {
+            $returnUrl = str_replace('?', ':QS:', $returnUrl);
+        }
+
+        $responseData['html'] = $elementType::indexHtml(
+            elementQuery: $elementQuery,
+            disabledElementIds: $request->array('disabledElementIds'),
+            viewState: [
+                ...$viewState,
+                'fieldLayouts' => $this->resolveFieldLayouts(),
+                'returnUrl' => $returnUrl,
+            ],
+            sourceKey: $sourceKey,
+            context: $request->context(),
             includeContainer: $this->includeContainer,
-            includeActions: $this->includeActions,
+            selectable: (
+                ((! empty($actions)) || request()->boolean('selectable')) &&
+                empty($viewState['inlineEditing'])
+            ),
+            sortable: $request->isAdministrative() && $request->boolean('sortable'),
         );
 
-        return $service->getElementsHtml($params);
+        $responseData['headHtml'] = HtmlStack::headHtml();
+        $responseData['bodyHtml'] = HtmlStack::bodyHtml();
+
+        return $responseData;
     }
 }

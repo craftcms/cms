@@ -1,5 +1,3 @@
-import {Volume} from '@src/constants/volume';
-
 export const Variant = {
   Neutral: 'neutral',
   Success: 'success',
@@ -11,4 +9,4 @@ export const Variant = {
 export const variants = Object.values(Variant);
 
 export type VariantKey = keyof typeof Variant;
-export type VariantValue = (typeof Volume)[keyof typeof Volume];
+export type VariantValue = (typeof Variant)[keyof typeof Variant];

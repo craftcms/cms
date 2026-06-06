@@ -164,14 +164,15 @@
 
 <template>
   <div class="cp-table-wrapper">
-    <div class="cp-table-header" v-if="$slots['search-form']">
-      <slot name="search-form"></slot>
+    <div class="cp-table-header" v-if="$slots['table-header']">
+      <slot name="table-header">
+      </slot>
     </div>
 
     <table
       :class="{
         'cp-table': true,
-        'cp-table--grid': true,
+        'cp-table--grid': false,
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--relaxed': spacing === TableSpacing.Relaxed,
         'cp-table--spacious': spacing === TableSpacing.Spacious,
@@ -231,9 +232,7 @@
                   v-if="!header.isPlaceholder"
                   :render="header.column.columnDef.header"
                   :props="header.getContext()"
-                />
-
-                <craft-icon
+                />&nbsp;<craft-icon
                   v-if="
                     header.column.getCanSort() && !header.column.getIsSorted()
                   "
@@ -241,11 +240,11 @@
                 ></craft-icon>
                 <craft-icon
                   v-else-if="header.column.getIsSorted() === 'asc'"
-                  name="arrow-down"
+                  name="asc"
                 ></craft-icon>
                 <craft-icon
                   v-else-if="header.column.getIsSorted() === 'desc'"
-                  name="arrow-up"
+                  name="desc"
                 ></craft-icon>
               </ColumnHeaderTitle>
 

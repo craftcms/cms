@@ -14,6 +14,7 @@ import ProjectConfig from '@/modules/utilities/components/project-config/Project
 import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
+import CpLink from '@/common/components/CpLink.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
@@ -99,6 +100,7 @@ const Cp = {
         app.component('ProjectConfig', ProjectConfig);
         app.component('AssetIndexes', AssetIndexes);
         app.component('SystemMessages', SystemMessages);
+        app.component('CpLink', CpLink);
       },
     });
 

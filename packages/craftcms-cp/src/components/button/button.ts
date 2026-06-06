@@ -6,9 +6,11 @@ import '../spinner/spinner.js';
 import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
+import variantsStyles from '@src/styles/variants.styles';
 
 export const ButtonAppearance = {
   Solid: 'solid',
+  Fill: 'fill',
   Outline: 'outline',
   Plain: 'plain',
 } as const;
@@ -41,7 +43,7 @@ export type ButtonAppearance =
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
-    return [...super.styles, styles];
+    return [...super.styles, variantsStyles, styles];
   }
 
   override async firstUpdated(changedProperties: Map<string, any>) {
@@ -86,7 +88,7 @@ export default class CraftButton extends LionButtonSubmit {
   @property({reflect: true}) value: string;
 
   /** Whether the button is in a selected/active state (e.g. inside a radio button-group) */
-  @property({reflect: true, type: Boolean}) active: boolean = false;
+  @property({reflect: true, type: Boolean}) override active: boolean = false;
 
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;

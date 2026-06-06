@@ -333,7 +333,7 @@ trait DisplayedInIndex
      * @param  string|null  $sourceKey  The source key
      * @return ElementInterface[] The elements
      */
-    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
+    public static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         return $elementQuery->all();
     }
