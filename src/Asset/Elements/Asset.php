@@ -86,8 +86,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use DateInterval;
-use DateTime;
+use DateTimeInterface;
 use DOMDocument;
 use DOMXPath;
 use Exception;
@@ -96,6 +95,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -210,9 +210,9 @@ class Asset extends Element
     public ?bool $keptFile = null;
 
     /**
-     * @var DateTime|null Date modified
+     * @var DateTimeInterface|null Date modified
      */
-    public ?DateTime $dateModified = null;
+    public ?DateTimeInterface $dateModified = null;
 
     /**
      * @var string|null New file location
@@ -767,7 +767,7 @@ class Asset extends Element
             ],
             'dateModified' => [
                 'label' => t('File Modified Date'),
-                'placeholder' => fn () => (new DateTime)->sub(new DateInterval('P14D')),
+                'placeholder' => fn () => now()->subDays(14),
             ],
             'uploader' => [
                 'label' => t('Uploaded By'),
@@ -3281,7 +3281,7 @@ JS;
 
             $this->size = filesize($tempPath);
             $mtime = filemtime($tempPath);
-            $this->dateModified = $mtime ? new DateTime('@'.$mtime) : null;
+            $this->dateModified = $mtime ? Date::createFromTimestampUTC($mtime) : null;
 
             // Delete the temp file
             File::delete($tempPath);

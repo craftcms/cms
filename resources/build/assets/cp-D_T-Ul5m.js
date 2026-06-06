@@ -1,0 +1,1 @@
+import"./cp-CyF-w_Aq.js";import{t as e}from"./cp-rys1CQhH.js";import"./CpGlobalSidebar-7AFxlz3R.js";import"./CpQueueIndicator-JqxfhkEw.js";window.Cp=e,console.log(`window.Cp defined`,window.Cp);

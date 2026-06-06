@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Shared\Enums;
 
 use CraftCms\Cms\Support\DateTimeHelper;
-use DateTime;
+use DateTimeInterface;
 use Exception;
 
 use function CraftCms\Cms\t;
@@ -41,41 +41,41 @@ enum DateRangeType: string
         };
     }
 
-    /** @return array{DateTime, DateTime} */
+    /** @return array{DateTimeInterface, DateTimeInterface} */
     public function range(): array
     {
         return match ($this) {
             DateRangeType::Today => [
-                DateTimeHelper::today(),
-                DateTimeHelper::tomorrow(),
+                today(),
+                today()->addDay(),
             ],
             DateRangeType::ThisWeek => [
-                DateTimeHelper::thisWeek(),
-                DateTimeHelper::nextWeek(),
+                now()->startOfWeek(DateTimeHelper::firstWeekDay()),
+                now()->startOfWeek(DateTimeHelper::firstWeekDay())->addWeek(),
             ],
             DateRangeType::ThisMonth => [
-                DateTimeHelper::thisMonth(),
-                DateTimeHelper::nextMonth(),
+                today()->startOfMonth(),
+                today()->startOfMonth()->addMonth(),
             ],
             DateRangeType::ThisYear => [
-                DateTimeHelper::thisYear(),
-                DateTimeHelper::nextYear(),
+                today()->startOfYear(),
+                today()->startOfYear()->addYear(),
             ],
             DateRangeType::Past7Days => [
-                DateTimeHelper::today()->modify('-7 days'),
-                DateTimeHelper::now(),
+                today()->subDays(7),
+                now(),
             ],
             DateRangeType::Past30Days => [
-                DateTimeHelper::today()->modify('-30 days'),
-                DateTimeHelper::now(),
+                today()->subDays(30),
+                now(),
             ],
             DateRangeType::Past90Days => [
-                DateTimeHelper::today()->modify('-90 days'),
-                DateTimeHelper::now(),
+                today()->subDays(90),
+                now(),
             ],
             DateRangeType::PastYear => [
-                DateTimeHelper::today()->modify('-1 year'),
-                DateTimeHelper::now(),
+                today()->subYear(),
+                now(),
             ],
             default => throw new Exception('Invalid range type: '.$this->value),
         };

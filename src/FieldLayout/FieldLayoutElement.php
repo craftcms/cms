@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use DateTime;
+use DateTimeInterface;
 use Override;
 
 /**
@@ -19,9 +19,9 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
     public int $width = 100;
 
     /**
-     * @var DateTime|null The date that the element was added to the field layout.
+     * @var DateTimeInterface|null The date that the element was added to the field layout.
      */
-    public ?DateTime $dateAdded = null;
+    public ?DateTimeInterface $dateAdded = null;
 
     #[Override]
     public function fields(): array

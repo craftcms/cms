@@ -258,7 +258,7 @@ readonly class ElementDeletions
                     $this->setDraftAndRevisionDeletionState($element->id);
                 }
 
-                $element->dateDeleted = DateTimeHelper::now();
+                $element->dateDeleted = now();
                 $element->afterDelete();
 
                 if (! $element->hardDelete) {
