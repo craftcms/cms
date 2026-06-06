@@ -17,8 +17,9 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Validation\Rules\TimeRule;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -44,7 +45,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|null', DateTime::class);
+        return sprintf('\\%s|null', DateTimeInterface::class);
     }
 
     #[Override]
@@ -174,20 +175,20 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
-            $value = new DateTime;
+            $value = now();
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
     #[Override]
-    public function normalizeValue(mixed $value, ?ElementInterface $element): ?DateTime
+    public function normalizeValue(mixed $value, ?ElementInterface $element): ?DateTimeInterface
     {
         if (! $value) {
             return null;
         }
 
-        if ($value instanceof DateTime) {
+        if ($value instanceof DateTimeInterface) {
             return $value;
         }
 
@@ -205,7 +206,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): ?string
     {
-        /** @var DateTime|null $value */
+        /** @var DateTimeInterface|null $value */
         return $value?->format('H:i:s');
     }
 

@@ -159,7 +159,7 @@ class InstallCommand extends Command
                         ...$timezoneBaseOptions,
                         ...$timezoneEnvOptions,
                     ],
-                    default: date_default_timezone_get(),
+                    default: now()->getTimezone()->getName(),
                     required: true,
                     validate: [new EnvValueRule([Rule::in($timezoneBaseOptions)])],
                     hint: 'Type $ for environment variables containing valid timezones.',

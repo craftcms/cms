@@ -1,0 +1,51 @@
+name: build-artifacts
+
+on:
+  push:
+    branches:
+      - main
+      - '*.x'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: true
+
+    name: Update build artifacts
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build:all
+        run: npm run build:all
+
+      - name: Commit build artifacts
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: Update build artifacts
+          file_pattern: resources/

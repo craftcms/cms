@@ -1,5 +1,5 @@
 export const Variant = {
-  Default: 'default',
+  Neutral: 'neutral',
   Success: 'success',
   Warning: 'warning',
   Danger: 'danger',

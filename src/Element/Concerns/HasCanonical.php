@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
-use DateTime;
+use DateTimeInterface;
 
 /**
  * HasCanonical provides support for canonical elements and their derivatives.
@@ -28,9 +28,9 @@ use DateTime;
 trait HasCanonical
 {
     /**
-     * @var DateTime|null The date that the canonical element was last merged into this one
+     * @var DateTimeInterface|null The date that the canonical element was last merged into this one
      */
-    public ?DateTime $dateLastMerged = null;
+    public ?DateTimeInterface $dateLastMerged = null;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.

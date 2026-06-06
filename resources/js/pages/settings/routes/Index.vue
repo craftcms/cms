@@ -224,10 +224,10 @@
 
   .route__parts ::v-deep(.token) {
     align-items: center;
-    background: var(--c-color-accent-fill-quiet);
+    background: color-mix(currentColor, transparent 90%);
     border: 1px solid transparent;
     border-radius: var(--c-radius-sm);
-    color: var(--c-color-accent-on-quiet);
+    color: currentColor;
     display: inline-flex;
     font-family: var(--c-font-mono);
     font-size: var(--c-text-sm);

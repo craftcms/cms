@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Image\Data;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\ImageTransformer;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -66,7 +66,7 @@ class ImageTransform extends Component
 
     public ?string $uid = null;
 
-    public ?DateTime $parameterChangeTime = null;
+    public ?DateTimeInterface $parameterChangeTime = null;
 
     /** @var class-string<ImageTransformerInterface> */
     protected string $transformer = self::DEFAULT_TRANSFORMER;

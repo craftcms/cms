@@ -15,7 +15,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\DateTimeHelper;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -72,7 +71,7 @@ readonly class ElementCanonicalChanges
                 $element->mergeCanonicalChanges();
                 $duplicateOf = $element->duplicateOf;
                 $element->duplicateOf = null;
-                $element->dateLastMerged = DateTimeHelper::now();
+                $element->dateLastMerged = now();
                 $element->mergingCanonicalChanges = true;
                 $this->elementWrites->save(
                     element: $element,

@@ -1,4 +1,5 @@
 import type {VariantKey} from '@craftcms/cp';
+import type {Component} from 'vue';
 
 export interface BaseOption {
   label: string;
@@ -64,21 +65,38 @@ export type ShortcutProps =
     }
   | null;
 
-export interface ActionItemData {
-  type?: 'link' | 'button';
-  id?: string;
+export interface ActionItemDisplay {
+  type: 'display';
+  is: Component;
+}
+
+export interface ActionItemButton {
+  type?: 'button';
   label: string;
   variant?: VariantKey | string;
   icon?: string;
-  onClick?: (event: PointerEvent) => void;
+  onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
-  action?: string;
-  disabled?: boolean;
-  params?: Record<string, any>;
-  confirm?: string;
-  success?: string;
-  error?: string;
+  [key: string]: unknown;
 }
+
+export interface ActionItemLink {
+  type: 'link';
+  href: string;
+  label: string;
+  variant?: VariantKey | string;
+  onClick?: (event: Event) => void;
+  shortcut?: ShortcutProps;
+  [key: string]: unknown;
+}
+
+export type ActionItem =
+  | ActionItemDisplay
+  | ActionItemHr
+  | ActionItemButton
+  | ActionItemLink;
+
+export type ActionItems = Array<ActionItem>;
 
 export interface EntryType {
   id: number;
@@ -106,7 +124,7 @@ export interface EntryType {
   group: null;
   original: null;
   idAttribute: null;
-  actions?: Array<ActionItemData>;
+  actions?: Array<ActionItem>;
   indicators?: Array<ChipIndicator>;
 }
 

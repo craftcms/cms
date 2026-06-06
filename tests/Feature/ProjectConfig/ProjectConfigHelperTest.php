@@ -303,7 +303,7 @@ test('touch', function (string $input, string $expected) {
 
     // Test
     DateTimeHelper::pause();
-    $expected = str_replace('__TIMESTAMP__', (string) DateTimeHelper::currentTimeStamp(), $expected);
+    $expected = str_replace('__TIMESTAMP__', (string) now()->getTimestamp(), $expected);
     ProjectConfigHelper::touch();
     expect(str_replace(["\r\n", "\r"], "\n", file_get_contents($path)))->toBe($expected);
     DateTimeHelper::resume();

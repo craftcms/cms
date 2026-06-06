@@ -32,7 +32,6 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -61,8 +60,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
-use DateTime;
-use DateTimeZone;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -73,6 +71,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -91,7 +90,7 @@ use function CraftCms\Cms\t;
  * @property string|null $friendlyName the user’s first name or username
  * @property-read Address[]|null $addresses the user’s addresses
  * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
- * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property-read DateTimeInterface|null $cooldownEndTime the time when the user will be over their cooldown period
  * @property-read array $preferences the user’s preferences
  * @property-read bool $isCredentialed whether the user account can be logged into
  * @property-read bool $isCurrent whether this is the current logged-in user
@@ -234,10 +233,10 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public ?int $affiliatedSiteId = null;
 
     /**
-     * @var DateTime|null Last login date
+     * @var DateTimeInterface|null Last login date
      */
     #[AllowedInSandbox]
-    public ?DateTime $lastLoginDate = null;
+    public ?DateTimeInterface $lastLoginDate = null;
 
     /**
      * @var int|null Invalid login count
@@ -245,14 +244,14 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public ?int $invalidLoginCount = null;
 
     /**
-     * @var DateTime|null Last invalid login date
+     * @var DateTimeInterface|null Last invalid login date
      */
-    public ?DateTime $lastInvalidLoginDate = null;
+    public ?DateTimeInterface $lastInvalidLoginDate = null;
 
     /**
-     * @var DateTime|null Lockout date
+     * @var DateTimeInterface|null Lockout date
      */
-    public ?DateTime $lockoutDate = null;
+    public ?DateTimeInterface $lockoutDate = null;
 
     /**
      * @var bool Whether the user has a dashboard
@@ -265,9 +264,9 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public bool $passwordResetRequired = false;
 
     /**
-     * @var DateTime|null Last password change date
+     * @var DateTimeInterface|null Last password change date
      */
-    public ?DateTime $lastPasswordChangeDate = null;
+    public ?DateTimeInterface $lastPasswordChangeDate = null;
 
     /**
      * @var string|null Unverified email
@@ -697,7 +696,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'lastLoginDate' => [
                 'label' => t('Last Login'),
-                'placeholder' => fn () => (new DateTime)->sub(new DateInterval('P14D')),
+                'placeholder' => fn () => now()->subDays(14),
             ],
             'is2faEnabled' => [
                 'label' => t('Two-Step Verification'),
@@ -1252,7 +1251,7 @@ XML;
     /**
      * Returns the time when the user will be over their cooldown period.
      */
-    public function getCooldownEndTime(): ?DateTime
+    public function getCooldownEndTime(): ?DateTimeInterface
     {
         // There was an old bug where a user's lockoutDate could be null if they've
         // passed their cooldownDuration already, but their account status is still locked.
@@ -1260,11 +1259,10 @@ XML;
         if ($this->locked && $this->lockoutDate) {
             $generalConfig = Cms::config();
             $cooldownDuration = (int) $generalConfig->cooldownDuration;
-            $cooldownEnd = clone $this->lockoutDate;
+            $cooldownEnd = Date::instance($this->lockoutDate);
 
             if ($cooldownDuration !== 0) {
-                $sign = $cooldownDuration < 0 ? '-' : '+';
-                $cooldownEnd->modify(sprintf('%s%s seconds', $sign, abs($cooldownDuration)));
+                $cooldownEnd->addSeconds($cooldownDuration);
             }
 
             return $cooldownEnd;
@@ -1279,8 +1277,9 @@ XML;
     public function getRemainingCooldownTime(): ?DateInterval
     {
         if ($this->locked) {
-            $currentTime = DateTimeHelper::currentUTCDateTime();
-            $cooldownEnd = $this->getCooldownEndTime()?->setTimezone(new DateTimeZone('UTC'));
+            $currentTime = now('UTC');
+            $cooldownEnd = $this->getCooldownEndTime();
+            $cooldownEnd = $cooldownEnd ? Date::instance($cooldownEnd)->setTimezone('UTC') : null;
 
             if ($cooldownEnd && $currentTime < $cooldownEnd) {
                 return $currentTime->diff($cooldownEnd);

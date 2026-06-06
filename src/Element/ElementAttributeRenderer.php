@@ -23,7 +23,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Stringable;
@@ -125,7 +125,7 @@ readonly class ElementAttributeRenderer
 
     public function attributeHtml(mixed $value): string
     {
-        if ($value instanceof DateTime) {
+        if ($value instanceof DateTimeInterface) {
             $formatter = I18N::getFormatter();
 
             return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [

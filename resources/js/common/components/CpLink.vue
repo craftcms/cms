@@ -6,7 +6,7 @@
     defineProps<
       InertiaLinkProps & {
         as?: string | Component;
-        variant?: 'default' | 'primary' | 'danger';
+        variant?: 'neutral' | 'accent' | 'danger';
         size?: 'zero' | 'small' | 'medium' | 'large';
         appearance?: 'button' | 'inline';
         icon?: string;
@@ -15,7 +15,7 @@
       }
     >(),
     {
-      variant: 'default',
+      variant: 'neutral',
       appearance: 'inline',
       block: false,
       size: 'medium',
@@ -34,8 +34,8 @@
       'cp-link--large': props.size === 'large',
       'cp-link--inline': props.appearance === 'inline',
       'cp-link--button': props.appearance === 'button',
-      'cp-link--default': props.variant === 'default',
-      'cp-link--primary': props.variant === 'primary',
+      'cp-link--default': props.variant === 'neutral',
+      'cp-link--primary': props.variant === 'accent',
       'cp-link--danger': props.variant === 'danger',
     };
   });
@@ -51,7 +51,13 @@
 
 <template>
   <template v-if="inertia">
-    <Link :as="as" :href="href" :class="classes">
+    <Link
+      :as="as"
+      :href="href"
+      :class="classes"
+      :variant="variant"
+      :size="size"
+    >
       <div class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>
@@ -137,7 +143,7 @@
     }
   }
 
-  .cp-link--default {
+  .cp-link--neutral {
     --c-color-fill-loud: var(--c-color-neutral-fill-loud);
     --c-color-fill-normal: var(--c-color-neutral-fill-normal);
     --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
@@ -149,16 +155,16 @@
     --c-color-on-quiet: var(--c-color-neutral-on-quiet);
   }
 
-  .cp-link--primary {
-    --c-color-fill-loud: var(--c-color-brand-fill-loud);
-    --c-color-fill-normal: var(--c-color-brand-fill-normal);
-    --c-color-fill-quiet: var(--c-color-brand-fill-quiet);
-    --c-color-border-loud: var(--c-color-brand-border-loud);
-    --c-color-border-normal: var(--c-color-brand-border-normal);
-    --c-color-border-quiet: var(--c-color-brand-border-quiet);
-    --c-color-on-loud: var(--c-color-brand-on-loud);
-    --c-color-on-normal: var(--c-color-brand-on-normal);
-    --c-color-on-quiet: var(--c-color-brand-on-quiet);
+  .cp-link--accent {
+    --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
+    --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-on-loud: var(--c-color-accent-on-loud);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
   }
 
   .cp-link--danger {

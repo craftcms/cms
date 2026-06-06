@@ -82,7 +82,7 @@ trait MergesFields
             $fieldsService->deleteField($outgoingField);
         });
 
-        $migrationName = sprintf('%s_merge_%s_into_%s', gmdate('Y_m_d_His'), $outgoingField->handle, $persistingField->handle);
+        $migrationName = sprintf('%s_merge_%s_into_%s', now('UTC')->format('Y_m_d_His'), $outgoingField->handle, $persistingField->handle);
         $migrationPath = database_path("migrations/{$migrationName}.php");
 
         $this->components->task("Generating content migration for `$outgoingField->handle`", function () use (

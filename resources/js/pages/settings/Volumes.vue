@@ -157,7 +157,7 @@
       <CpLink
         appearance="button"
         :href="create().url"
-        variant="primary"
+        variant="accent"
         :inertia="false"
         icon="plus"
       >

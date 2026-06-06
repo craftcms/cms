@@ -1,5 +1,5 @@
 export const Appearance = {
-  Accent: 'accent',
+  Solid: 'solid',
   OutlineFill: 'outline-fill',
   Fill: 'fill',
   Outline: 'outline',

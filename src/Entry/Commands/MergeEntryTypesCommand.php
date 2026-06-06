@@ -239,7 +239,7 @@ class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
             }
         );
 
-        $migrationName = sprintf('%s_merge_%s_into_%s', gmdate('Y_m_d_His'), $outgoingEntryType->handle, $persistingEntryType->handle);
+        $migrationName = sprintf('%s_merge_%s_into_%s', now('UTC')->format('Y_m_d_His'), $outgoingEntryType->handle, $persistingEntryType->handle);
         $migrationPath = database_path("migrations/{$migrationName}.php");
 
         $this->components->task(

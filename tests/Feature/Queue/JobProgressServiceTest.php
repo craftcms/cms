@@ -353,7 +353,6 @@ test('getJobInfo returns sorted job info', function () {
         'pending',
         'delayed-1',
         'delayed-2',
-        'completed',
         'failed',
     ]);
 });
