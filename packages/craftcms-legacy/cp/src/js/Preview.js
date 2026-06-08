@@ -373,7 +373,7 @@ Craft.Preview = Garnish.Base.extend(
 
       this.$saveBtn = Craft.ui
         .createSubmitButton({
-          label: data.submitButtonLabel,
+          label: data.submitButtonLabel || Craft.t('app', 'Save'),
           spinner: true,
         })
         .appendTo(this.$editorFooter);
