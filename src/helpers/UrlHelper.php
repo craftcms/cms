@@ -80,7 +80,8 @@ class UrlHelper
     /**
      * Returns a query string based on the given params.
      *
-     * Param values will be encoded, except for `/`, `{`, and `}` characters.
+     * Param names and values will be encoded, except for `{` and `}` characters.
+     * Path param values will also preserve `/` characters.
      *
      * @param array $params
      * @return string
@@ -96,12 +97,17 @@ class UrlHelper
         if ($query === '') {
             return '';
         }
-        // Decode a few select chars
+        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
         $params = [];
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
-            $n = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $n);
-            $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
+            $n = str_replace(['%7B', '%7D'], ['{', '}'], $n);
+            $v = str_replace(['%7B', '%7D'], ['{', '}'], $v);
+
+            // Preserve the long-standing `?p=actions/foo` format, even though the encoded value should resolve the same.
+            if ($n === $pathParam) {
+                $v = str_replace('%2F', '/', $v);
+            }
             $params[] = $v !== '' ? "$n=$v" : $n;
         }
         return implode('&', $params);
