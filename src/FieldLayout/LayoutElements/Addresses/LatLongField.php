@@ -88,7 +88,7 @@ class LatLongField extends BaseNativeField
             throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
         }
 
-        $isAdmin = Auth::user()?->isAdmin();
+        $isAdmin = Auth::craftUser()?->isAdmin();
 
         return
             Html::beginTag('div', ['class' => 'flex-fields']).

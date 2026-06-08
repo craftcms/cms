@@ -62,7 +62,7 @@ readonly class PluginStoreController
         $data = [];
 
         // Current user
-        $data['currentUser'] = $request->user()->email;
+        $data['currentUser'] = $request->craftUser()?->asElement()->email;
 
         // Craft license/edition info
         $data['licensedEdition'] = Edition::getLicensed()?->value;

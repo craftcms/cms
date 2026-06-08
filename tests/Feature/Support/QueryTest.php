@@ -35,6 +35,48 @@ test('whereParam', function (string $column, mixed $param, array $expected) {
     ['migration', 'test-1', [1]],
 ]);
 
+test('whereParam includes null JSON values for none-of conditions', function () {
+    DB::table(Table::MIGRATIONS)->delete();
+
+    DB::table(Table::MIGRATIONS)->insert([
+        [
+            'track' => null,
+            'migration' => 'empty-json-value',
+            'batch' => 1,
+        ],
+        [
+            'track' => 'field_1',
+            'migration' => 'excluded-field-one',
+            'batch' => 2,
+        ],
+        [
+            'track' => 'field_2',
+            'migration' => 'excluded-field-two',
+            'batch' => 3,
+        ],
+        [
+            'track' => 'field_3',
+            'migration' => 'included-field-three',
+            'batch' => 4,
+        ],
+    ]);
+
+    $jsonMatches = DB::table(Table::MIGRATIONS)
+        ->whereParam('track', ['not', 'field_1', 'field_2'], columnType: Query::TYPE_JSON)
+        ->orderBy('batch')
+        ->pluck('migration')
+        ->all();
+
+    $stringMatches = DB::table(Table::MIGRATIONS)
+        ->whereParam('track', ['not', 'field_1', 'field_2'], columnType: Query::TYPE_STRING)
+        ->orderBy('batch')
+        ->pluck('migration')
+        ->all();
+
+    expect($jsonMatches)->toBe(['empty-json-value', 'included-field-three'])
+        ->and($stringMatches)->toBe(['included-field-three']);
+});
+
 test('whereNumericParam throws if not numeric', function () {
     $this->expectException(InvalidArgumentException::class);
     $this->expectExceptionMessage('Invalid numeric value: foo');

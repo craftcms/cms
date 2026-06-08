@@ -485,7 +485,7 @@ class NestedElementManager extends Component
         }
 
         $authorizedOwnerId = $owner->id;
-        if ($owner->isProvisionalDraft && $owner->draftCreatorId === Auth::user()?->id) {
+        if ($owner->isProvisionalDraft && $owner->draftCreatorId === Auth::craftUser()?->getCraftUserId()) {
             /** @var ElementInterface $owner */
             $authorizedOwnerId = $owner->getCanonicalId();
         }

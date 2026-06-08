@@ -7,7 +7,7 @@
   import useCraftData from '@/common/composables/useCraftData';
   import {computed} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/components/ActionMenu.vue';
+  import type {ActionItem} from '@/common/types';
   import CurrentUser from '@/common/components/CurrentUser.vue';
   import UserThumbnail from '@/common/components/UserThumbnail.vue';
   import PasswordController from '@actions/Users/PasswordController';

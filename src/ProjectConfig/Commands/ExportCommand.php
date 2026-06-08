@@ -62,7 +62,7 @@ class ExportCommand extends Command
         if (is_dir($path)) {
             $i = 0;
             $scope = $this->option('external') ? 'external' : 'internal';
-            $date = date('Y-m-d');
+            $date = now()->format('Y-m-d');
             do {
                 $suffix = $i ? "--$i" : '';
                 $testPath = join_paths($path, "project-config-$scope--$date$suffix.yaml");

@@ -94,20 +94,24 @@ function typescriptTransformer() {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const url = new URL(env.APP_URL);
-  const host = url.hostname || 'localhost';
 
-  const server = url.hostname.includes('.ddev.site')
-    ? {
-        host,
-        cors: url.toString(),
-        hmr: {host},
-        https: {
-          key: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_KEY),
-          cert: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_CERT),
-        },
-      }
-    : undefined;
+  let server = undefined;
+  if (env.APP_URL) {
+    const url = new URL(env.APP_URL|| 'http://localhost');
+    const host = url.hostname ;
+
+    server = url.hostname.includes('.ddev.site')
+      ? {
+          host,
+          cors: url.toString(),
+          hmr: {host},
+          https: {
+            key: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_KEY),
+            cert: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_CERT),
+          },
+        }
+      : undefined;
+  }
 
   return {
     base: './',
@@ -128,7 +132,15 @@ export default defineConfig(({mode}) => {
     },
 
     optimizeDeps: {
-      include: ['@awesome.me/webawesome', 'lit'],
+      include: ['lit'],
+      // WebAwesome must NOT be pre-bundled. It's imported through many deep
+      // entry points (dist/components/*/*.js), and esbuild's dep optimizer
+      // duplicates their shared component modules across chunks — which makes
+      // custom elements like `wa-icon` get registered twice
+      // (NotSupportedError: "wa-icon" has already been used). Serving it as
+      // native ESM means each module file loads once, so each element is
+      // defined once.
+      exclude: ['@awesome.me/webawesome'],
     },
 
     plugins: [

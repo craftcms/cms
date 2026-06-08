@@ -30,9 +30,14 @@ readonly class ElementActivityController
             abort(400, 'No element was identified by the request.');
         }
 
-        $activity = $this->elementActivity->getRecentActivity($element, $this->request->user()->id);
+        $user = $this->request->craftUser();
+        if (! $user) {
+            abort(401);
+        }
 
-        $this->elementActivity->trackActivity($element, ElementActivityType::View, $this->request->user());
+        $activity = $this->elementActivity->getRecentActivity($element, $user->getCraftUserId());
+
+        $this->elementActivity->trackActivity($element, ElementActivityType::View, $user->asElement());
 
         return new JsonResponse([
             'activity' => $activity->map(fn (ElementActivityData $record) => $record->toActivityRow($element))->all(),

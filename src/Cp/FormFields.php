@@ -112,8 +112,8 @@ readonly class FormFields
 
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
-            Auth::user()->isAdmin() &&
-            Auth::user()->getPreference('showFieldHandles')
+            Auth::craftUser()->isAdmin() &&
+            Auth::craftUser()->getPreference('showFieldHandles')
         );
         $showActionMenu = (
             ! empty($config['actionMenuItems']) &&

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth\Concerns;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 
 use function CraftCms\Cms\t;
@@ -44,7 +43,7 @@ trait ConfirmsPasswords
             $confirmedAt = Session::get('auth.password_confirmed_at');
 
             if ($confirmedAt !== null) {
-                $diff = Date::now()->unix() - $confirmedAt;
+                $diff = now()->unix() - $confirmedAt;
                 $remainingTime = $maximumSecondsSinceConfirmation - $diff;
 
                 if ($remainingTime >= 0) {

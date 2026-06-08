@@ -98,7 +98,9 @@ Aliases::set('@dotenv', $app->environmentFilePath());
 Aliases::set('@config', $app->configPath());
 Aliases::set('@contentMigrations', Env::get('CRAFT_CONTENT_MIGRATIONS_PATH', $app->basePath('migrations')));
 Aliases::set('@storage', defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $app->storagePath());
-Aliases::set('@templates', CRAFT_TEMPLATES_PATH); // Defined in Yii2ServiceProvider
+Aliases::set('@templates', defined('CRAFT_TEMPLATES_PATH')
+    ? CRAFT_TEMPLATES_PATH
+    : Aliases::get('@templates', is_dir($app->resourcePath('views')) ? $app->resourcePath('views') : $app->basePath('templates')));
 Aliases::set('@translations', Env::get('CRAFT_TRANSLATIONS_PATH', $app->langPath()));
 Aliases::set('@tests', Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
 

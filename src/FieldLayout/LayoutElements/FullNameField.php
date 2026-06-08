@@ -62,7 +62,7 @@ class FullNameField extends TextField
         $statusClass = $this->statusClass($element);
         $status = $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null;
         $required = ! $static && $this->required;
-        $isAdmin = Auth::user()?->isAdmin();
+        $isAdmin = Auth::craftUser()?->isAdmin();
 
         return HtmlHelper::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'fullwidth']]).
             FormFields::textFieldHtml([

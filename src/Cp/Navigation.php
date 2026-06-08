@@ -35,7 +35,7 @@ readonly class Navigation
 
     public function getItems(): array
     {
-        $user = Auth::user();
+        $user = Auth::craftUser();
         $isAdmin = $user?->isAdmin();
 
         $navItems = [

@@ -23,7 +23,7 @@ use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
@@ -117,24 +117,24 @@ abstract class Element extends Component implements ElementInterface, Importable
     public ?string $slug = null;
 
     /**
-     * @var DateTime|null The date that the element was created
+     * @var DateTimeInterface|null The date that the element was created
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateCreated = null;
+    public ?DateTimeInterface $dateCreated = null;
 
     /**
-     * @var DateTime|null The date that the element was last updated
+     * @var DateTimeInterface|null The date that the element was last updated
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateUpdated = null;
+    public ?DateTimeInterface $dateUpdated = null;
 
     /**
-     * @var DateTime|null The date that the element was trashed
+     * @var DateTimeInterface|null The date that the element was trashed
      *
      * @since 3.2.0
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateDeleted = null;
+    public ?DateTimeInterface $dateDeleted = null;
 
     /**
      * @var bool|null Whether the element was deleted along with its owner
@@ -707,21 +707,7 @@ abstract class Element extends Component implements ElementInterface, Importable
 
     public function getIterator(): Traversable
     {
-        $attributes = $this->validationData();
-
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
-
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (! isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
-                }
-            }
-        }
-
-        return new ArrayIterator($attributes);
+        return new ArrayIterator($this->validationData());
     }
 
     #[Override]

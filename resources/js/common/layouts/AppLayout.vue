@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import SystemInfo from '@/common/components/SystemInfo.vue';
-  import useCraftData from '@/common/composables/useCraftData';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, reactive, ref, useTemplateRef, watch} from 'vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
@@ -12,8 +11,7 @@
   import LiveRegion from '@/common/components/LiveRegion.vue';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/components/ActionMenu.vue';
-  import type {ActionItemData} from '@/common/types';
+  import type {ActionItem} from '@/common/types';
   import {useFlash} from '@/common/composables/useFlash';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
@@ -30,7 +28,7 @@
     debug?: any;
     fullWidth?: boolean;
     form?: InertiaForm<any> | null;
-    formActions?: Array<ActionItemData>;
+    formActions?: Array<ActionItem>;
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }
 
@@ -42,8 +40,6 @@
     crumbs: () => [],
     form: null,
   });
-
-  const {system} = useCraftData();
 
   const page = usePage<{
     title: string;
@@ -63,10 +59,6 @@
   const readOnly = computed(() => page.props.readOnly);
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement, announce} = useAnnouncer();
-  const fullPageTitle = computed(() => {
-    const title = props.title?.trim();
-    return title ? `${title} - ${system.name}` : system.name;
-  });
 
   watch(successFlash, (newMessage) => announce(newMessage));
   watch(errorFlash, (newMessage) => announce(newMessage));
@@ -87,7 +79,7 @@
 
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
   const debugOpen = ref(false);
-  const pageTitle = computed(() => props.title ?? page.props.title);
+  const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
 
   watch(
     isLargeScreen,
@@ -131,7 +123,7 @@
 </script>
 
 <template>
-  <Head :title="fullPageTitle" />
+  <Head :title="pageTitle" />
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <header class="cp__header">
@@ -209,7 +201,7 @@
                         <craft-button-group v-if="!readOnly">
                           <craft-button
                             type="submit"
-                            variant="primary"
+                            variant="accent"
                             :loading="form.processing"
                           >
                             {{ t('Save') }}
@@ -231,7 +223,7 @@
                             <template #invoker="{label}">
                               <craft-button
                                 slot="invoker"
-                                variant="primary"
+                                variant="accent"
                                 type="button"
                                 icon
                               >

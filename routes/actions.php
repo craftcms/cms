@@ -141,7 +141,9 @@ foreach ([
         Route::any('users/session-info', [SessionInfoController::class, 'show'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
-        Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
+        Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout'])
+            ->middleware(StartSessionWithoutPersistence::class)
+            ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::middleware(
             in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
         )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);

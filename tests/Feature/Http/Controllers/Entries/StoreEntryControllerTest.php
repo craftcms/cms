@@ -76,7 +76,7 @@ function createContentBlockSettings(Field $field): array
 }
 
 beforeEach(function () {
-    $this->user = User::factory()->admin()->create()->asElement();
+    $this->user = User::factory()->admin()->create();
     actingAs($this->user);
 
     $this->entryType = EntryType::factory()->create();

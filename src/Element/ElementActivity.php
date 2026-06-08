@@ -13,10 +13,11 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+
+use function CraftCms\Cms\currentUserElement;
 
 #[Singleton]
 readonly class ElementActivity
@@ -119,7 +120,7 @@ readonly class ElementActivity
 
     public function trackActivity(ElementInterface $element, ElementActivityType $type, ?User $user = null): void
     {
-        $user ??= Auth::user();
+        $user ??= currentUserElement();
 
         if (! $user) {
             throw new InvalidArgumentException('$user must be set if no user is signed in.');

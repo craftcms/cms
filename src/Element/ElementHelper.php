@@ -19,13 +19,13 @@ use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use RuntimeException;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 
 class ElementHelper
@@ -275,7 +275,7 @@ class ElementHelper
      */
     public static function isElementEditable(ElementInterface $element): bool
     {
-        $user = Auth::user();
+        $user = currentUserElement();
 
         if (! $user || ! $element->canView($user)) {
             return false;
@@ -295,7 +295,7 @@ class ElementHelper
      */
     public static function editableSiteIdsForElement(ElementInterface $element): array
     {
-        $user = Auth::user();
+        $user = currentUserElement();
 
         if (! $user || ! $element->canView($user)) {
             return [];

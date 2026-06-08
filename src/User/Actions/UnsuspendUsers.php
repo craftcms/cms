@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Actions\ElementAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -58,7 +59,11 @@ JS, [
         $query->status(User::STATUS_SUSPENDED);
         /** @var User[] $users */
         $users = $query->all();
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
+
+        if (! $currentUser instanceof CraftUser) {
+            return false;
+        }
 
         $successCount = count(array_filter($users, function (User $user) use ($currentUser) {
             if (! Users::canSuspend($currentUser, $user)) {

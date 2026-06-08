@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t, toHandle} from '@craftcms/cp';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {router, useForm} from '@inertiajs/vue3';
-  import type {ActionItemData, UserGroup} from '@/common/types';
+  import type {ActionItem, UserGroup} from '@/common/types';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftHandleInput from '@craftcms/cp/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
@@ -15,15 +15,17 @@
   import {destroy, store} from '@actions/Settings/UserGroupsController';
   import {computed} from 'vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import {useInputGenerator} from '@/common/composables/useInputGenerator';
 
   const props = defineProps<{
     group: UserGroup;
+    brandNew: boolean;
     permissions: Array<{
       heading: string;
       handle: string;
       permissions: Record<string, PermissionItem>;
     }>;
-    formActions?: Array<ActionItemData>;
+    formActions?: Array<ActionItem>;
     redirect?: string;
     toolbar?: string;
     errors: Record<any, any> | null;
@@ -39,6 +41,12 @@
     description: props.group.description ?? '',
     permissions: props.group.permissions ?? [],
   });
+
+  // Auto-generate handle from name for new sections
+  const handleGenerator = useInputGenerator(
+    () => form.name,
+    (v) => (form.handle = toHandle(v))
+  );
 
   function getAllKeys(
     permissions: Record<string, PermissionItem>
@@ -84,6 +92,11 @@
     } else {
       form.permissions = [...new Set([...form.permissions, ...setKeys])];
     }
+  }
+
+  // For existing groups, mark handle as already dirty
+  if (!props.brandNew) {
+    handleGenerator.stop();
   }
 
   const {save} = useSettingsSave(form, store);
@@ -140,6 +153,7 @@
           :required="true"
           data-error-key="handle"
           :disabled="readOnly"
+          @change="handleGenerator.markDirty()"
         />
 
         <CraftTextarea

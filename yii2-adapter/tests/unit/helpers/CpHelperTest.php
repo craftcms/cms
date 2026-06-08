@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -19,13 +21,11 @@ use UnitTester;
  * Unit tests for the CP Helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.6.0
  */
 class CpHelperTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
     protected UnitTester $tester;
 
     public function _fixtures(): array
@@ -37,10 +37,7 @@ class CpHelperTest extends TestCase
         ];
     }
 
-    /**
-     *
-     */
-    public function testElementChipHtml(): void
+    public function test_element_chip_html(): void
     {
         /** @var User $user */
         $user = User::findOne(1);
@@ -57,8 +54,8 @@ class CpHelperTest extends TestCase
         self::assertStringContainsString('name="myFieldName[]"', $fieldHtml);
 
         // status
-        self::assertStringContainsString('<span class="status', $indexHtml);
-        self::assertStringNotContainsString('<span class="status', Cp::elementChipHtml($user, ['showStatus' => false]));
+        self::assertStringContainsString('<craft-indicator', $indexHtml);
+        self::assertStringNotContainsString('<craft-indicator', Cp::elementChipHtml($user, ['showStatus' => false]));
 
         // thumb
         self::assertStringContainsString('thumb', $indexHtml);
@@ -84,10 +81,7 @@ class CpHelperTest extends TestCase
         $user->trashed = false;
     }
 
-    /**
-     *
-     */
-    public function testElementHtml(): void
+    public function test_element_html(): void
     {
         /** @var User $user */
         $user = User::findOne(1);
@@ -101,8 +95,8 @@ class CpHelperTest extends TestCase
         self::assertStringContainsString('name="myFieldName[]"', $fieldHtml);
 
         // status
-        self::assertStringContainsString('<span class="status', $indexHtml);
-        self::assertStringNotContainsString('<span class="status', Cp::elementHtml($user, showStatus: false));
+        self::assertStringContainsString('<craft-indicator', $indexHtml);
+        self::assertStringNotContainsString('<craft-indicator', Cp::elementHtml($user, showStatus: false));
 
         // thumb
         self::assertStringContainsString('thumb', $indexHtml);
@@ -126,14 +120,11 @@ class CpHelperTest extends TestCase
         $user->trashed = false;
     }
 
-    /**
-     *
-     */
-    public function testFieldHtml(): void
+    public function test_field_html(): void
     {
         self::assertStringContainsString('<div class="input ltr"><input></div>', Cp::fieldHtml('<input>'));
         self::assertStringContainsString('<label id="id-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
-        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__', ]));
+        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__']));
         // invalid site ID
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Cp::fieldHtml('<input>', ['siteId' => -1]);
@@ -170,18 +161,12 @@ class CpHelperTest extends TestCase
 
     /**
      * @dataProvider fieldMethodsDataProvider
-     * @param string $needle
-     * @param string $method
-     * @param array $config
      */
-    public function testFieldMethods(string $needle, string $method, array $config = []): void
+    public function test_field_methods(string $needle, string $method, array $config = []): void
     {
         self::assertStringContainsString($needle, call_user_func([Cp::class, $method], $config));
     }
 
-    /**
-     * @return array
-     */
     public static function fieldMethodsDataProvider(): array
     {
         return [
@@ -189,16 +174,16 @@ class CpHelperTest extends TestCase
             ['color-input', 'colorFieldHtml'],
             [
                 'editable', 'editableTableFieldHtml', [
-                'name' => 'test',
-            ],
+                    'name' => 'test',
+                ],
             ],
             ['lightswitch', 'lightswitchFieldHtml'],
             ['<select', 'selectFieldHtml'],
             ['type="text"', 'textFieldHtml'],
             [
                 '<div class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', [
-                'unit' => 'Test unit',
-            ],
+                    'unit' => 'Test unit',
+                ],
             ],
             ['<textarea', 'textareaFieldHtml'],
         ];

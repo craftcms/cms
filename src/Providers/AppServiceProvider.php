@@ -20,8 +20,10 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use GuzzleHttp\Utils;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
@@ -155,6 +157,19 @@ class AppServiceProvider extends ServiceProvider
 
         Request::mixin(new RequestMixin);
         SessionStore::mixin(new SessionMixin);
+
+        SessionGuard::macro('craftUser', function (): ?CraftUser {
+            $user = $this->user();
+
+            if ($user === null || $user instanceof CraftUser) {
+                return $user;
+            }
+
+            throw new AuthenticationException(sprintf(
+                'The authenticated user must implement %s to be used by Craft.',
+                CraftUser::class,
+            ));
+        });
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);
