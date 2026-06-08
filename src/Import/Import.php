@@ -22,6 +22,7 @@ use CraftCms\Cms\Import\Events\RegisterDataTypes;
 use CraftCms\Cms\Import\Events\RegisterImporterTypes;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Importers\ElementImporter;
+use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
@@ -33,6 +34,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection as LaravelCollection;
 use Illuminate\Support\Facades\Config;
@@ -44,6 +46,7 @@ use League\Fractal\Manager;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
 use Throwable;
+use yii\db\ActiveRecord;
 
 #[Singleton]
 class Import
@@ -75,6 +78,7 @@ class Import
     {
         $importers = [
             ElementImporter::class,
+            ModelImporter::class,
         ];
 
         if (Event::hasListeners(RegisterImporterTypes::class)) {
@@ -198,12 +202,14 @@ class Import
             $configRecord->description = $import->description;
             $settings = [
                 'file' => $import->file,
-                'site' => $import->site->uid,
                 'className' => $import->className,
                 'transformer' => $import->transformer ? $import->transformer::class : null,
                 'map' => $import->map,
                 'matchCriteria' => $import->matchCriteria,
             ];
+            if (property_exists($import, 'site')) {
+                $settings['site'] = $import->site->uid;
+            }
             $configRecord->settings = $settings;
             $configRecord->save();
 
@@ -424,6 +430,17 @@ class Import
 
         $data = $event->data;
 
+        if ($config->isElementImport()) {
+            $this->importElement($config, $data);
+        } else {
+            $this->importModel($config, $data);
+        }
+
+        event(new DataImported($config, $data));
+    }
+
+    protected function importElement(BaseImporter $config, array $data): void
+    {
         // figure out if we're adding or updating
         $element = $this->getElement($config, $data);
 
@@ -441,8 +458,20 @@ class Import
         $element->setFieldValues($fields);
 
         Elements::saveElement($element);
+    }
 
-        event(new DataImported($config, $data));
+    protected function importModel(BaseImporter $config, array $data): void
+    {
+        $model = $this->getModel($config, $data);
+
+        $item = $this->processData($config, $data, $model);
+
+        $attributeHandles = $model->attributes();
+        $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
+
+        $model->setAttributes($attributes, false);
+
+        $model->save();
     }
 
     private function normalizeFields(ElementInterface $element, array $fields): array
@@ -503,6 +532,37 @@ class Import
         }
 
         return $element;
+    }
+
+    private function getModel(BaseImporter $config, array $data): Model|ActiveRecord
+    {
+        $model = new $config->className;
+
+        // if null then return a brand new model
+        if ($config->matchCriteria === null) {
+            return $model;
+        }
+
+        if (is_array($config->matchCriteria)) {
+            $query = $model::find();
+            $criteria = [];
+
+            foreach ($config->matchCriteria as $key => $value) {
+                if (array_key_exists((string) $value, $data)) {
+                    $criteria[$key] = $data[$value];
+                }
+            }
+
+            if (empty($criteria)) {
+                return $model;
+            }
+
+            $query->where($criteria);
+
+            return $query->one() ?? $model;
+        }
+
+        return $model;
     }
 
     public function import(BaseImporter $config): void

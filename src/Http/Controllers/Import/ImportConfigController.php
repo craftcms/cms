@@ -134,8 +134,10 @@ class ImportConfigController
         $import->handle($request->input('handle', $import->handle));
         $import->description($request->input('description', $import->description));
         $import->file($request->input('settings.file', $import->file));
-        $import->site($request->input('settings.site', $import->site));
-        $import->className($request->input('settings.elementType'));
+        if (property_exists($import, 'site')) {
+            $import->site($request->input('settings.site', $import->site));
+        }
+        $import->className($request->has('settings.elementType') ? $request->input('settings.elementType') : $request->input('settings.className'));
         $import->transformer($request->input('settings.transformer', $import->transformer));
         $import->map($request->input('settings.map', $import->map));
         $import->matchCriteria($request->input('settings.matchCriteria', $import->matchCriteria));

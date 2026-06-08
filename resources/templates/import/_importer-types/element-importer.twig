@@ -1,11 +1,7 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% set readOnly = readOnly ?? false %}
 {% set static = static ?? false %}
-
-{% if static == true %}
-    {% set readOnly = true %}
-{% endif %}
+{% set readOnly = readOnly ?? (static == true) %}
 
 {% set errors = errors ?? [] %}
 

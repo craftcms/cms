@@ -38,7 +38,7 @@
                         <br /><code>{{ config.handle }}</code>
                     </td>
                     <td>{{ config.file }}</td>
-                    <td>{{ config.site }}</td>
+                    <td>{{ config.site ?? 'n/a' }}</td>
                     <td>
                         {% if config.isElementImport() %}
                             <span class="cp-icon">{{ iconSvg('check', altText: 'yes') }}</span>
@@ -106,7 +106,7 @@
                         {{ config.name }}
                         <br /><code>{{ config.handle }}</code>
                     </td>
-                    <td>{{ config.site }}</td>
+                    <td>{{ config.site ?? 'n/a' }}</td>
                     <td>
                         {% if config.isElementImport() %}
                             <span class="cp-icon">{{ iconSvg('check', altText: 'yes') }}</span>
@@ -115,8 +115,8 @@
                         {% endif %}
                     </td>
                     <td>{{ config.className ?? '' }}</td>
-                    <td>{{ className(config.transformer) }}</td>
-                    <td>{{ dump(config.map) }}</td>
+                    <td>{{ config.transformer ? className(config.transformer) : 'none' }}</td>
+                    <td>{{ config.map is not empty ? dump(config.map) : 'n/a' }}</td>
                     <td class="nowrap thin" data-title="{{ 'Actions'|t('app') }}">
                         {% set actionItems = [
                             {

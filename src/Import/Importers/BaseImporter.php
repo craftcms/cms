@@ -26,7 +26,7 @@ abstract class BaseImporter
 
     public protected(set) ?string $description = null;
 
-    public protected(set) string $className;
+    public protected(set) ?string $className = null;
 
     public protected(set) ?string $file = null;
 
@@ -170,7 +170,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Sets the handle for the instance.
+     * Sets the handle for the importer.
      *
      * @param  string|null  $handle  The handle to be assigned.
      */
@@ -182,7 +182,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Sets the description of the instance.
+     * Sets the description for the importer.
      *
      * @param  string|null  $description  The description to be assigned.
      */
@@ -194,7 +194,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Sets the class name for the current instance.
+     * Sets the class we're importing into, e.g. Entry
      *
      * @param  string  $className  The name of the class to set.
      */
@@ -206,7 +206,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Sets the file location property.
+     * Sets the path to the file that contains the data to be imported.
      *
      * @param  string|null  $file  The file name or path to set.
      */
