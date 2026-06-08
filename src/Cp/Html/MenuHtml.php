@@ -174,18 +174,31 @@ readonly class MenuHtml
 
             $totalSites += count($groupSites);
 
-            $groupSiteItems = $groupSites->map(fn (Site $site) => [
-                'status' => $sites[$site->id]['status'] ?? null,
-                'label' => t($site->getName(), category: 'site'),
-                'url' => Url::cpUrl($path, ['site' => $site->handle] + $params),
-                'hidden' => ! isset($sites[$site->id]),
-                'selected' => $site->id === $selectedSite?->id,
-                'attributes' => [
-                    'data' => [
-                        'site-id' => $site->id,
+            $groupSiteItems = $groupSites->map(function (Site $site) use ($sites, $path, $params, $selectedSite) {
+                if (isset($params['returnUrl'])) {
+                    // swap the `site` param in the `returnUrl` URL too
+                    $params['returnUrl'] = str_replace(':QS:', '?', $params['returnUrl'], $count);
+                    $params['returnUrl'] = Url::url($params['returnUrl'], [
+                        'site' => $site->handle,
+                    ]);
+                    if ($count !== 0) {
+                        $params['returnUrl'] = str_replace('?', ':QS:', $params['returnUrl']);
+                    }
+                }
+
+                return [
+                    'status' => $sites[$site->id]['status'] ?? null,
+                    'label' => t($site->getName(), category: 'site'),
+                    'url' => Url::cpUrl($path, ['site' => $site->handle] + $params),
+                    'hidden' => ! isset($sites[$site->id]),
+                    'selected' => $site->id === $selectedSite?->id,
+                    'attributes' => [
+                        'data' => [
+                            'site-id' => $site->id,
+                        ],
                     ],
-                ],
-            ]);
+                ];
+            });
 
             if ($config['showSiteGroupHeadings']) {
                 $items[] = [
