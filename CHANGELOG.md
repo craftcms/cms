@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Forward slashes in query strings are now encoded. ([#19057](https://github.com/craftcms/cms/pull/19057))
 - Updated Axios to 1.17.0. ([#19053](https://github.com/craftcms/cms/issues/19053))
 - Fixed a bug where the “Delete” element edit page action wasn’t working properly when editing a provisional draft.
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t returning boolean values for environment variable names that resolved to `true`/`false` values. ([#19029](https://github.com/craftcms/cms/issues/19029))
