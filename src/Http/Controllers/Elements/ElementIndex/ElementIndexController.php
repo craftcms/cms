@@ -123,7 +123,7 @@ readonly class ElementIndexController
         /** @var ElementInterface|null $element */
         $element = (clone $elementQuery)
             ->draftOf($this->request->integer('id'))
-            ->draftCreator($this->request->craftUser())
+            ->draftCreator($this->request->craftUser()?->asElement())
             ->provisionalDrafts()
             ->status(null)
             ->one();
