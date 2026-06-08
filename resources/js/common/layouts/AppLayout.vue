@@ -29,6 +29,7 @@
     fullWidth?: boolean;
     form?: InertiaForm<any> | null;
     formActions?: Array<ActionItem>;
+    formAdditionalActions?: Array<any>;
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }
 
@@ -198,43 +199,53 @@
                           :is-active="form.recentlySuccessful || form.hasErrors"
                         />
 
-                        <craft-button-group v-if="!readOnly">
-                          <craft-button
-                            type="submit"
-                            variant="accent"
-                            :loading="form.processing"
-                          >
-                            {{ t('Save') }}
-                          </craft-button>
+                        <div
+                          v-if="!readOnly"
+                          class="flex items-center justify-end gap-2"
+                        >
+                          <craft-button-group>
+                            <craft-button
+                              type="submit"
+                              variant="accent"
+                              :loading="form.processing"
+                            >
+                              {{ t('Save') }}
+                            </craft-button>
+                            <ActionMenu
+                              icon="chevron-down"
+                              :actions="
+                                [
+                                  {
+                                    label: t('Save and continue editing'),
+                                    onClick: () =>
+                                      emit('save', {redirect: false}),
+                                    shortcut: 'S',
+                                  },
+                                  ...(formActions ?? []),
+                                ] as ActionItem[]
+                              "
+                            >
+                              <template #invoker="{label}">
+                                <craft-button
+                                  slot="invoker"
+                                  variant="accent"
+                                  type="button"
+                                  icon
+                                >
+                                  <craft-icon
+                                    name="chevron-down"
+                                    :label="label"
+                                  ></craft-icon>
+                                </craft-button>
+                              </template>
+                            </ActionMenu>
+                          </craft-button-group>
+
                           <ActionMenu
-                            icon="chevron-down"
-                            :actions="
-                              [
-                                {
-                                  label: t('Save and continue editing'),
-                                  onClick: () =>
-                                    emit('save', {redirect: false}),
-                                  shortcut: 'S',
-                                },
-                                ...(formActions ?? []),
-                              ] as ActionItem[]
-                            "
-                          >
-                            <template #invoker="{label}">
-                              <craft-button
-                                slot="invoker"
-                                variant="accent"
-                                type="button"
-                                icon
-                              >
-                                <craft-icon
-                                  name="chevron-down"
-                                  :label="label"
-                                ></craft-icon>
-                              </craft-button>
-                            </template>
-                          </ActionMenu>
-                        </craft-button-group>
+                            v-if="formAdditionalActions?.length"
+                            :actions="formAdditionalActions"
+                          />
+                        </div>
                       </template>
                     </slot>
                   </div>
