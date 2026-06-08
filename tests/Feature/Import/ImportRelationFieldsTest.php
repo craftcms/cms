@@ -15,6 +15,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\ElementImporter;
+use CraftCms\Cms\Import\Transformers\EntryTransformer;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -94,4 +95,40 @@ it('imports an assets field value', function () {
     $this->import->importItem($this->importer, ($this->entryData)(['myAssets' => [$this->relatedAsset->id]]));
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myAssets')->one()->id)->toBe($this->relatedAsset->id);
+});
+
+it('imports an entries field value using a transformer with ID map', function () {
+    $importer = (clone $this->importer)
+        ->transformer(new class extends EntryTransformer
+        {
+            public function transform(mixed $item): array
+            {
+                $array = parent::transform($item);
+                $array['myEntries'] = $item['myEntriesToBeMapped'];
+
+                return $array;
+            }
+        });
+
+    $this->import->importItem($importer, ($this->entryData)(['myEntriesToBeMapped' => [$this->relatedEntry->id]]));
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myEntries')->one()->id)->toBe($this->relatedEntry->id);
+});
+
+it('imports an entries field value using a transformer with element lookup', function () {
+    $importer = (clone $this->importer)
+        ->transformer(new class extends EntryTransformer
+        {
+            public function transform(mixed $item): array
+            {
+                $array = parent::transform($item);
+                $array['myEntries'] = EntryElement::find()->title($item['myEntriesToBeMapped'])->ids();
+
+                return $array;
+            }
+        });
+
+    $this->import->importItem($importer, ($this->entryData)(['myEntriesToBeMapped' => [$this->relatedEntry->title]]));
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myEntries')->one()->id)->toBe($this->relatedEntry->id);
 });

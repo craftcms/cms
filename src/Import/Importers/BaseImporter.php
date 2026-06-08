@@ -242,7 +242,8 @@ abstract class BaseImporter
     }
 
     /**
-     * Sets the criteria to be used for matching and returns the current instance.
+     * Sets the criteria to be used for matching the element we're importing into
+     * and returns the current instance.
      *
      * @param  array  $matchCriteria  The criteria to match against.
      */
