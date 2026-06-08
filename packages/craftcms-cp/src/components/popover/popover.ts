@@ -61,11 +61,29 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     };
   }
 
+  /**
+   * The popover content lives in the shadow DOM so the component can provide
+   * the scrollable `.content` wrapper (with body/footer slots). Lion's default
+   * getter only looks for a light-DOM `[slot="content"]` child, so we point it
+   * at the shadow node instead. Lion positions `#overlay-content-node-wrapper`
+   * around it, mirroring how LionSelectRich handles shadow-DOM content.
+   */
+  protected override get _overlayContentNode(): HTMLElement {
+    return this.shadowRoot?.querySelector('.popover-pane') as HTMLElement;
+  }
+
   protected override render(): unknown {
     return html`
       <slot name="invoker"></slot>
       <slot name="backdrop"></slot>
-      <slot name="content"></slot>
+      <div id="overlay-content-node-wrapper">
+        <div class="popover-pane">
+          <slot name="content">
+            <slot name="content-body"></slot>
+            <slot name="content-footer"></slot>
+          </slot>
+        </div>
+      </div>
     `;
   }
 }
