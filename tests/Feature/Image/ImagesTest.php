@@ -56,6 +56,17 @@ describe('loadImage', function () {
 
         expect($image)->toBeInstanceOf(Raster::class);
     });
+
+    it('replaces percentage width and height attributes on SVG files', function () {
+        $path = $this->fixturesPath.'/svg-pcts.svg';
+        /** @var Svg $image */
+        $image = $this->service->loadImage($path);
+        $expectedContents = str_replace('width="100%" height="100%"', 'width="4167px" height="4167px"', file_get_contents($path));
+
+        expect($image->getWidth())->toBe(4167)
+            ->and($image->getHeight())->toBe(4167)
+            ->and($image->getSvgString())->toBe($expectedContents);
+    });
 });
 
 it('sanitizes dirty svgs', function () {
