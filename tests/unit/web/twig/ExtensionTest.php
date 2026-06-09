@@ -7,8 +7,10 @@
 
 namespace crafttests\unit\web\twig;
 
+use ArrayIterator;
 use ArrayObject;
 use Craft;
+use craft\base\Model;
 use craft\elements\Address;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
@@ -22,6 +24,7 @@ use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Collection;
+use IteratorAggregate;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -190,6 +193,39 @@ class ExtensionTest extends TestCase
                 'foo' => new PlainText(),
             ]
         );
+    }
+
+    /**
+     *
+     */
+    public function testEmptyTest(): void
+    {
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => null,
+        ]);
+
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator()
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator()
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() extends Model {
+            },
+        ]);
     }
 
     /**
@@ -959,6 +995,49 @@ class ExtensionTest extends TestCase
     public function testWidontFilter(): void
     {
         $this->testRenderResult('foo bar&nbsp;baz', '{{ "foo bar baz"|widont }}');
+    }
+
+    /**
+     *
+     */
+    public function testDefaultFilter(): void
+    {
+        $this->testRenderResult('default', '{{ foo|default("default") }}');
+
+        $this->testRenderResult('default', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator()
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator()
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() extends Model {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+            },
+        ]);
     }
 
     /**

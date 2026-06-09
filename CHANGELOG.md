@@ -1,6 +1,32 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.18.1 - 2026-05-22
+
+- Fixed a bug where some element index actions weren’t working. ([#18938](https://github.com/craftcms/cms/issues/18938))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+
+## 4.18.0.1 - 2026-05-15
+
+- Fixed a bug where the `|default` filter only accepted string values. ([#18886](https://github.com/craftcms/cms/issues/18886))
+
+## 4.18.0 - 2026-05-13
+
+### Development
+- The `|default` Twig filter and `is empty` Twig test now treat all `yii\base\Model` instances as not empty. ([#18727](https://github.com/craftcms/cms/issues/18727)) 
+- Added `craft\filters\SecFetchSiteFilter` for request origin verification. ([#18641](https://github.com/craftcms/cms/pull/18641))
+- `dataUrl()` is no longer allowed in sandboxed Twig environments by default.
+
+### Extensibility
+- Removed `craft\controllers\AppController::actionResourceJs()`. ([#18559](https://github.com/craftcms/cms/pull/18559))
+
+### System
+- Cross-domain script tags added by JavaScript are now loaded directly, rather than via a proxy. ([#18559](https://github.com/craftcms/cms/pull/18559))
+- Updated the built-in composer.phar to 2.9.8. ([#18761](https://github.com/craftcms/cms/issues/18761))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-287w-mxq6-x2cp)
+
+## 4.17.16 - 2026-05-11
 
 - Updated Yii to 2.0.55. ([#18833](https://github.com/craftcms/cms/issues/18833))
 - Fixed a bug where the “Move…” asset index action was always disabled for files. ([#18798](https://github.com/craftcms/cms/issues/18798))

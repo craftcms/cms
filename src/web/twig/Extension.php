@@ -80,12 +80,14 @@ use Twig\ExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\Model;
 use yii\behaviors\AttributeTypecastBehavior;
 use yii\db\Exception;
 use yii\db\Expression;
@@ -223,6 +225,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('currency', [$this, 'currencyFilter']),
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
+            new TwigFilter('default', [$this, 'defaultFilter'], ['node_class' => DefaultFilter::class]),
             new TwigFilter('diff', 'array_diff'),
             new TwigFilter('duration', [DateTimeHelper::class, 'humanDuration']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
@@ -310,6 +313,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
                     return is_array($obj) || $obj instanceof Countable;
                 }
                 return is_countable($obj);
+            }),
+            new TwigTest('empty', function($obj): bool {
+                if ($obj instanceof Model) {
+                    // assume the IteratorAggregate implementation was not intentional
+                    return false;
+                }
+
+                return CoreExtension::testEmpty($obj);
             }),
             new TwigTest('float', function($obj): bool {
                 return is_float($obj);
@@ -1156,6 +1167,28 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
+    }
+
+    /**
+     * Returns the passed-in value if it’s not empty; otherwise, the provided default value.
+     *
+     * @param mixed $value
+     * @param mixed $default
+     * @return mixed
+     * @since 4.18.0
+     */
+    public static function defaultFilter(mixed $value, mixed $default = ''): mixed
+    {
+        if ($value instanceof Model) {
+            // assume the IteratorAggregate implementation was not intentional
+            return $value;
+        }
+
+        if (CoreExtension::testEmpty($value)) {
+            return $default;
+        }
+
+        return $value;
     }
 
     /**
