@@ -22,10 +22,11 @@ class Element extends Command
 
     #[\Override]
     protected $signature = 'craft:import:element
-        {--elementType= : The element type you want to import.}
+        {--elementType= : The fully qualified class name of the element type you want to import into.}
         {--file= : `@root`-relative path to the file containing data you want to import.}
+        {--transformer= : The fully qualified class name of the transformer you want to use to manipulate the data on import.}
+        {--matchCriteria= : An array of key-value pairs that will be used to match existing elements when importing.}
         {--site= : The handle of the site you want to import into.}
-        {--transformer= : The transformer you want to use to manipulate the data on import.}
     ';
 
     #[\Override]
@@ -59,19 +60,39 @@ class Element extends Command
             ), 'site')
             // TODO: maybe change this to a select field and show all available transformers? but then we'd still have to allow for custom ones too
             ->addIf(! $this->option('transformer'), fn () => text(
-                label: 'The transformer you want to use to manipulate the data on import',
+                label: 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)',
                 validate: [
                     'string',
                 ]
             ), 'transformer')
+            ->addIf(! $this->option('matchCriteria'), fn () => text(
+                label: 'A JSON-encoded array of match criteria you’d like to use to match against existing elements. If none provided, ID will be used for matching.',
+                validate: [
+                    'string',
+                ]
+            ), 'matchCriteria')
             ->submit();
 
-        // important: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
+        $matchCriteria = null;
+        if ($this->option('matchCriteria')) {
+            $matchCriteria = self::normalizeMatchCriteria($this->option('matchCriteria'));
+        } elseif ($responses['matchCriteria']) {
+            if (! str_starts_with((string) $responses['matchCriteria'], '=')) {
+                $responses['matchCriteria'] = '='.$responses['matchCriteria'];
+            }
+            $matchCriteria = self::normalizeMatchCriteria($responses['matchCriteria']);
+        }
+
+        // IMPORTANT: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
         $importConfig = (new ElementImporter)
             ->className($this->option('elementType') ?: $responses['elementType'])
             ->file($this->option('file') ?: $responses['file'])
             ->site($this->option('site') ?: $responses['site'] ?? Sites::getPrimarySite()->handle)
             ->transformer($this->option('transformer') ?: $responses['transformer'] ?: null);
+
+        if ($matchCriteria) {
+            $importConfig->matchCriteria($matchCriteria);
+        }
 
         $this->components->info("element type: `{$importConfig->className}`");
         $this->components->info("file: `{$importConfig->file}`");
@@ -80,5 +101,16 @@ class Element extends Command
         Import::import($importConfig);
 
         return self::SUCCESS;
+    }
+
+    private static function normalizeMatchCriteria(string $matchCriteria): ?array
+    {
+        if (str_starts_with($matchCriteria, '=')) {
+            $json = substr($matchCriteria, 1);
+
+            return json_decode($json, true);
+        }
+
+        return null;
     }
 }
