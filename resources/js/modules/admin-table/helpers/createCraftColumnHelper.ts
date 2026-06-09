@@ -25,28 +25,29 @@ type DateColumnDef<T extends Record<string, any>> = AccessorColumnDef<T> & {
   format?: string;
 };
 
-export type CraftColumnHelper<T extends Record<string, any>> = ColumnHelper<T> & {
-  handle: (
-    accessor: AccessorParam<T>,
-    config?: Partial<AccessorColumnDef<T>>
-  ) => AccessorColumnDef<T, any>;
-  html: (
-    accessor: AccessorParam<T>,
-    config?: Partial<HtmlColumnDef<T>>
-  ) => AccessorColumnDef<T, any>;
-  link: (
-    accessor: AccessorParam<T>,
-    config?: Partial<LinkColumnDef<T>>
-  ) => AccessorColumnDef<T, any>;
-  actions: (
-    actions: (cellContext: CellContext<T, any>) => Array<any>,
-    config?: Partial<DisplayColumnDef<T>>
-  ) => ColumnDef<T, any>;
-  date: (
-    accessor: AccessorParam<T>,
-    config?: Partial<DateColumnDef<T>>
-  ) => AccessorColumnDef<T, any>;
-};
+export type CraftColumnHelper<T extends Record<string, any>> =
+  ColumnHelper<T> & {
+    handle: (
+      accessor: AccessorParam<T>,
+      config?: Partial<AccessorColumnDef<T>>
+    ) => AccessorColumnDef<T, any>;
+    html: (
+      accessor: AccessorParam<T>,
+      config?: Partial<HtmlColumnDef<T>>
+    ) => AccessorColumnDef<T, any>;
+    link: (
+      accessor: AccessorParam<T>,
+      config?: Partial<LinkColumnDef<T>>
+    ) => AccessorColumnDef<T, any>;
+    actions: (
+      actions: (cellContext: CellContext<T, any>) => Array<any>,
+      config?: Partial<DisplayColumnDef<T>>
+    ) => ColumnDef<T, any>;
+    date: (
+      accessor: AccessorParam<T>,
+      config?: Partial<DateColumnDef<T>>
+    ) => AccessorColumnDef<T, any>;
+  };
 
 export function createCraftColumnHelper<T extends Record<string, any>>() {
   const baseHelper = createColumnHelper<T>();

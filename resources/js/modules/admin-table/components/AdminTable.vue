@@ -165,8 +165,7 @@
 <template>
   <div class="cp-table-wrapper">
     <div class="cp-table-header" v-if="$slots['table-header']">
-      <slot name="table-header">
-      </slot>
+      <slot name="table-header"> </slot>
     </div>
 
     <table

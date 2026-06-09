@@ -2,9 +2,14 @@ import {useEventListener} from '@vueuse/core';
 import {type InertiaForm, usePage} from '@inertiajs/vue3';
 import {computed} from 'vue';
 
+interface UseSettingsSaveOptions<T extends Record<string, any>> {
+  transform?: (data: T) => Record<string, any>;
+}
+
 export function useSettingsSave<T extends Record<string, any>>(
   form: InertiaForm<T>,
-  action: any
+  action: any,
+  options: UseSettingsSaveOptions<T> = {}
 ) {
   const page = usePage<{
     redirectUrl?: string;
@@ -20,9 +25,9 @@ export function useSettingsSave<T extends Record<string, any>>(
   });
 
   function save({redirect = true} = {}) {
-    let options = {};
+    let submitOptions = {};
     if (redirect) {
-      options = {
+      submitOptions = {
         preserveScroll: true,
         preserveState: true,
       };
@@ -31,13 +36,15 @@ export function useSettingsSave<T extends Record<string, any>>(
     form
       .clearErrors()
       .transform((data: T) => {
+        const transformedData = options.transform?.(data) ?? data;
+
         return {
-          ...data,
+          ...transformedData,
           redirect:
             redirect && redirectUrl.value ? redirectUrl.value : undefined,
         };
       })
-      .submit(action(), options);
+      .submit(action(), submitOptions);
   }
 
   return {save};

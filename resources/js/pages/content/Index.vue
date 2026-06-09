@@ -32,7 +32,7 @@
   type ViewState = {
     inlineEditing: boolean;
     mode: ViewMode['type'];
-    tableColumns?: Array<string>;
+    tableColumns: Array<string>;
     nestedInputNamespace?: string | null;
     showHeaderColumn: boolean;
     order: string;
@@ -54,15 +54,15 @@
       context?: string;
       canHaveDrafts?: boolean;
       criteria?: Record<any, any>;
-      page?: string | null;
-      sources?: Array<Source>;
+      page: string;
+      sources: Array<Source>;
       source?: Source;
       contentHtml?: string;
       search?: string | null;
       status: string;
       viewMode?: string | null;
       statusOptions?: Array<{label: string; value: string}>;
-      sectionHandle?: string | null;
+      sectionHandle?: string | number;
       viewState: Partial<ViewState>;
       elements: Array<Element>;
       tableColumns: Record<string, {label: string}>;
@@ -74,10 +74,9 @@
     {
       context: 'index',
       canHaveDrafts: false,
-      criteria: Craft.defaultIndexCriteria,
+      criteria: () => Craft.defaultIndexCriteria,
       defaultSource: null,
       defaultSourcePath: null,
-      page: null,
     }
   );
 
@@ -136,6 +135,15 @@
       value: key,
     })),
   ]);
+
+  // Persisted view state may not include tableColumns (older stored payloads),
+  // so proxy it with a safe default for the CheckboxGroup's required string[].
+  // const tableColumns = computed<string[]>({
+  //   get: () => viewState.value.tableColumns ?? [],
+  //   set: (columns) => {
+  //     viewState.value.tableColumns = columns;
+  //   },
+  // });
 
   const visibleColumns = ref({});
   const elementTable = useVueTable<Element>({

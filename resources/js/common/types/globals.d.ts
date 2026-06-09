@@ -86,6 +86,7 @@ interface CraftStatic {
   getUrl(path: string, params?: string | object, baseUrl?: string): string;
   baseCpUrl: string;
   getCpUrl(path: string, params?: string | object): string;
+  defaultIndexCriteria: Record<string, any>;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;

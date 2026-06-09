@@ -15,7 +15,7 @@
   );
 
   const variant = computed(() => {
-    if (props.color || props.color?.value) {
+    if (props.color) {
       return 'custom';
     }
 
@@ -60,7 +60,7 @@
     return {};
   });
 
-  const computedLabel = computed(() => props.label ?? capitalize(props.value));
+  const computedLabel = computed(() => props.label ?? capitalize(props.value.toString()));
 </script>
 
 <template>

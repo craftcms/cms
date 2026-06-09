@@ -80,7 +80,7 @@ class Routes
                 template: $route['template'],
                 siteUid: $route['siteUid'] ?? null,
                 uid: $uid,
-                sortOrder: $route['sortOrder'] ?? null,
+                sortOrder: isset($route['sortOrder']) ? (int) $route['sortOrder'] : null,
             );
 
             $uri = $route->getUri();
