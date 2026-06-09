@@ -8,6 +8,7 @@
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t returning boolean values for environment variable names that resolved to `true`/`false` values. ([#19029](https://github.com/craftcms/cms/issues/19029))
 - Fixed a bug where the submit button within Live Preview was labelled “Submit” rather than “Save”. ([#19056](https://github.com/craftcms/cms/issues/19056))
 - Fixed a bug where the selected site wasn’t being remembered after saving an element. ([#19054](https://github.com/craftcms/cms/discussions/19054))
+- Fixed a bug where transformed SVG images could have two sets of `width` and `height` attributes. ([#19027](https://github.com/craftcms/cms/pull/19027))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
