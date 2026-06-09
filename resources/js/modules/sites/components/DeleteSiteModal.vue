@@ -75,20 +75,20 @@
             {siteName: site.name}
           )
         "
-        .model-value="form.contentDestination"
+        .modelValue="form.contentDestination"
         @model-value-changed="
           form.contentDestination = $event.target.modelValue
         "
       >
         <craft-radio
           :label="t('Transfer it')"
-          .choice-value="'transfer'"
+          .choiceValue="'transfer'"
           :checked="'transfer' === form.contentDestination"
         >
         </craft-radio>
         <craft-radio
           :label="t('Delete it')"
-          .choice-value="'delete'"
+          .choiceValue="'delete'"
           :checked="'delete' === form.contentDestination"
         ></craft-radio>
       </craft-radio-group>
@@ -104,7 +104,7 @@
             :label="t('Transfer content to')"
             id="transfer-to"
             name="transferContentTo"
-            .model-value="form.transferContentTo"
+            .modelValue="form.transferContentTo"
             @model-value-changed="
               form.transferContentTo = $event.target.modelValue
             "

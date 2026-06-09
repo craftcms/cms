@@ -70,24 +70,27 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * Returns a query string based on the given params.
      *
-     * Param values will be encoded, except for `/`, `{`, and `}` characters.
+     * Param names and values will be encoded, except for `{` and `}` characters.
      */
     public static function buildQuery(array $params): string
     {
         if (empty($params)) {
             return '';
         }
+
         // build the query string
         $query = http_build_query($params);
         if ($query === '') {
             return '';
         }
-        // Decode a few select chars
+
+        // Decode curly braces
         $params = [];
+
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
-            $n = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $n);
-            $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
+            $n = str_replace(['%7B', '%7D'], ['{', '}'], $n);
+            $v = str_replace(['%7B', '%7D'], ['{', '}'], $v);
             $params[] = $v !== '' ? "$n=$v" : $n;
         }
 

@@ -56,7 +56,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -155,8 +155,8 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /** @var string|null The field's UID */
     public ?string $uid = null;
 
-    /** @var DateTime|null The date that the field was trashed */
-    public ?DateTime $dateDeleted = null;
+    /** @var DateTimeInterface|null The date that the field was trashed */
+    public ?DateTimeInterface $dateDeleted = null;
 
     /** @var CustomField|null The field layout element */
     public ?CustomField $layoutElement = null;
@@ -450,7 +450,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
             return null;
         }
 
@@ -474,7 +474,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return $items;
         }
 
-        if (! Auth::user()?->isAdmin()) {
+        if (! Auth::craftUser()?->isAdmin()) {
             return $items;
         }
 
@@ -803,7 +803,7 @@ JS, [
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
             return DateTimeHelper::toIso8601($value);
         }
 
@@ -813,7 +813,7 @@ JS, [
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         // Dates should be stored in UTC w/o the time zone
-        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
             return Query::prepareDateForDb($value);
         }
 

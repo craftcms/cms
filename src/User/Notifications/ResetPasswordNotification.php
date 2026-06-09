@@ -9,7 +9,7 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\SystemMessage\SystemMessages;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Channels\MailChannel;
@@ -30,8 +30,10 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
         return [MailChannel::class];
     }
 
-    public function toMail(User $user): SystemMessageMailable
+    public function toMail(CraftUser $user): SystemMessageMailable
     {
+        $user = $user->asElement();
+
         $url = Users::getPasswordResetUrl($user, $this->token);
 
         return app(SystemMessages::class)->mailable(

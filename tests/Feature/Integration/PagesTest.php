@@ -55,14 +55,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
 
     ['url' => '/settings/plugins', 'title' => 'Plugins'],
     ['url' => '/settings/sites', 'title' => 'Sites'],
-    [
-        'url' => '/settings/routes',
-        'title' => 'Routes',
-        'extraContent' => [
-            ['rendered' => 'No routes exist yet.'],
-        ],
-    ],
-
 ]);
 
 it('renders inertia pages', function (string $url, string $component, string $title) {
@@ -100,6 +92,11 @@ it('renders inertia pages', function (string $url, string $component, string $ti
         'url' => '/settings/assets/transforms',
         'title' => 'Image Transforms',
         'component' => 'settings/ImageTransforms',
+    ],
+    [
+        'url' => '/settings/routes',
+        'title' => 'Routes',
+        'component' => 'settings/routes/Index',
     ],
 ]);
 

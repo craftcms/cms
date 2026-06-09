@@ -130,7 +130,7 @@ readonly class DeleteElementsController
                 'single' => true,
             ]).
                 Html::hiddenInput('elementType', $this->elementType).
-                $targetElementIds->map(fn (int $id) => Html::hiddenInput('elementIds[]', (string) $id))->join('').
+                $targetElementIds->map(fn (int $id) => (string) Html::hiddenInput('elementIds[]', (string) $id))->join('').
                 Html::hiddenInput('hardDelete', $this->hardDelete ? '1' : '0').
                 Html::hiddenInput('sourceElementType', $sourceElementType)
             )

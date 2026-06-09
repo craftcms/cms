@@ -20,8 +20,10 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Collection;
@@ -45,7 +47,7 @@ class AuthMethods
     private Collection $methods;
 
     /**
-     * The user being logged in.
+     * The user element being logged in.
      */
     private ?User $user = null;
 
@@ -63,9 +65,13 @@ class AuthMethods
     /**
      * @return Collection<AuthMethodInterface>
      */
-    public function getAllMethods(?User $user = null): Collection
+    public function getAllMethods(?CraftUser $user = null): Collection
     {
-        $user ??= auth('craft')->user() ?? $this->getUser();
+        /** @var SessionGuard $guard */
+        $guard = auth('craft');
+        $user = $user?->asElement()
+            ?? $guard->craftUser()?->asElement()
+            ?? $this->getUser();
 
         if (! $user?->id) {
             return new Collection;
@@ -113,7 +119,7 @@ class AuthMethods
     /**
      * @return Collection<AuthMethodInterface>
      */
-    public function getAvailableMethods(?User $user = null): Collection
+    public function getAvailableMethods(?CraftUser $user = null): Collection
     {
         $methods = $this->getAllMethods($user);
 
@@ -134,7 +140,7 @@ class AuthMethods
     /**
      * Returns whether any authentication methods are active for the given user.
      */
-    public function hasActiveMethod(?User $user = null): bool
+    public function hasActiveMethod(?CraftUser $user = null): bool
     {
         foreach ($this->getAvailableMethods($user) as $method) {
             if ($method->isActive()) {
@@ -150,7 +156,7 @@ class AuthMethods
      *
      * @return Collection<AuthMethodInterface>
      */
-    public function getActiveMethods(?User $user = null): Collection
+    public function getActiveMethods(?CraftUser $user = null): Collection
     {
         return $this->getAvailableMethods($user)
             ->filter(fn (AuthMethodInterface $method) => $method->isActive())
@@ -167,7 +173,7 @@ class AuthMethods
      *
      * @throws InvalidArgumentException
      */
-    public function getMethod(string $class, ?User $user = null): AuthMethodInterface
+    public function getMethod(string $class, ?CraftUser $user = null): AuthMethodInterface
     {
         foreach ($this->getAllMethods($user) as $method) {
             if ($method::class === $class) {
@@ -193,20 +199,22 @@ class AuthMethods
         return $this->user;
     }
 
-    public function setUser(?User $user): void
+    public function setUser(?CraftUser $user): void
     {
-        $this->user = $user;
+        $this->user = $user?->asElement();
 
-        if ($user) {
-            Session::put('user.id', $user->id);
+        if ($this->user) {
+            Session::put('user.id', $this->user->id);
             Session::put('user.pending_2fa_at', now()->timestamp);
         } else {
             Session::forget(['user.id', 'user.pending_2fa_at']);
         }
     }
 
-    public function is2faRequired(User $user): bool
+    public function is2faRequired(CraftUser $user): bool
     {
+        $user = $user->asElement();
+
         if (Edition::get() === Edition::Solo) {
             return false;
         }
@@ -222,7 +230,7 @@ class AuthMethods
 
             foreach ($require2fa as $group) {
                 if ($group === 'admins') {
-                    if ($user->admin) {
+                    if ($user->isAdmin()) {
                         return true;
                     }
                 } elseif (isset($groups[$group])) {
@@ -234,9 +242,11 @@ class AuthMethods
         return false;
     }
 
-    public function authenticate(User $user, #[SensitiveParameter] array $credentials): bool
+    public function authenticate(CraftUser $user, #[SensitiveParameter] array $credentials): bool
     {
         event($event = new UserAuthenticating($credentials));
+
+        $user = $user->asElement();
 
         $this->authError = $event->authError;
 
@@ -281,9 +291,11 @@ class AuthMethods
         return true;
     }
 
-    public function authenticateWithPasskey(User $user, string $requestOptions, string $response): bool
+    public function authenticateWithPasskey(CraftUser $user, string $requestOptions, string $response): bool
     {
         event($event = new UserAuthenticating);
+
+        $user = $user->asElement();
 
         $this->authError = $event->authError;
 
@@ -344,20 +356,30 @@ class AuthMethods
         if ($user) {
             $this->setUser(null);
 
+            /** @var SessionGuard $guard */
+            $guard = auth('craft');
+
             // if we're impersonating, pass the user we're impersonating to the complete the login
             if ($this->impersonation->isImpersonating()) {
-                /** @var User $user */
-                $user = auth('craft')->user();
+                $authUser = $guard->craftUser();
             }
 
-            auth('craft')->login($user, true);
+            $authUser ??= $guard->getProvider()->retrieveById($user->id);
+
+            if (! $authUser) {
+                return false;
+            }
+
+            auth('craft')->login($authUser, true);
         }
 
         return true;
     }
 
-    public function getAuthError(User $user): ?AuthError
+    public function getAuthError(CraftUser $user): ?AuthError
     {
+        $user = $user->asElement();
+
         switch ($user->getStatus()) {
             case User::STATUS_INACTIVE:
             case User::STATUS_ARCHIVED:
@@ -435,8 +457,10 @@ class AuthMethods
     /**
      * @return array{0:AuthError|null,1:string}
      */
-    public function getLoginFailureInfo(?AuthError $authError, ?User $user): array
+    public function getLoginFailureInfo(?AuthError $authError, ?CraftUser $user): array
     {
+        $user = $user?->asElement();
+
         if ($this->generalConfig->preventUserEnumeration && in_array($authError, [AuthError::AccountLocked, AuthError::AccountCooldown])) {
             $authError = AuthError::InvalidCredentials;
         }
@@ -462,8 +486,10 @@ class AuthMethods
         return [$authError, $message];
     }
 
-    public function handleInvalidLogin(User $user): void
+    public function handleInvalidLogin(CraftUser $user): void
     {
+        $user = $user->asElement();
+
         $this->users->handleInvalidLogin($user);
 
         // Was that one bad password/2fa code/passkey too many?
@@ -486,8 +512,10 @@ class AuthMethods
         return Cookie::get($this->rememberedUsernameCookie());
     }
 
-    public function setRememberedUsername(User $user): void
+    public function setRememberedUsername(CraftUser $user): void
     {
+        $user = $user->asElement();
+
         if ($this->generalConfig->rememberUsernameDuration === 0) {
             Cookie::unqueue($this->rememberedUsernameCookie());
             Cookie::forget($this->rememberedUsernameCookie());

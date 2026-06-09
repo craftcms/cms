@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
@@ -57,9 +58,10 @@ use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Events\UserUnsuspending;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use DateTime;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Container\Attributes\Singleton;
@@ -209,21 +211,27 @@ class Users
     /**
      * Saves a user’s preferences.
      *
-     * @param  User  $user  The user
+     * @param  CraftUser  $user  The user
      * @param  array  $preferences  The user’s new preferences
      */
-    public function saveUserPreferences(User $user, array $preferences): void
+    public function saveUserPreferences(CraftUser $user, array $preferences): void
     {
+        $userId = $user->getCraftUserId();
+
+        if (! $userId) {
+            throw new InvalidArgumentException('Cannot save preferences for a user without an ID.');
+        }
+
         // Merge in any other saved preferences
-        $preferences += $this->getUserPreferences($user->id);
+        $preferences += $this->getUserPreferences($userId);
 
         DB::table(Table::USERPREFERENCES)
             ->upsert([
-                'userId' => $user->id,
+                'userId' => $userId,
                 'preferences' => Json::encode($preferences),
             ], ['userId']);
 
-        $this->userPreferences[$user->id] = $preferences;
+        $this->userPreferences[$userId] = $preferences;
     }
 
     /**
@@ -249,7 +257,7 @@ class Users
      */
     public function sendPasswordResetEmail(User $user): bool
     {
-        return Password::broker('craft')->sendResetLink(['loginName' => $user->email]) === Password::RESET_LINK_SENT;
+        return Password::broker('craft')->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
     }
 
     /**
@@ -259,7 +267,7 @@ class Users
      */
     public function sendActivationEmail(User $user): bool
     {
-        $user->sendActivationNotification($this->setVerificationCodeOnUser($user));
+        $user->notify(new ActivationNotification($this->setVerificationCodeOnUser($user)));
 
         return true;
     }
@@ -882,9 +890,9 @@ class Users
      *
      * @param  int  $userId  The user’s ID.
      * @param  string  $message  The message to be shunned.
-     * @param  DateTime|null  $expiryDate  When the message should be un-shunned. Defaults to `null` (never un-shun).
+     * @param  DateTimeInterface|null  $expiryDate  When the message should be un-shunned. Defaults to `null` (never un-shun).
      */
-    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): void
+    public function shunMessageForUser(int $userId, string $message, ?DateTimeInterface $expiryDate = null): void
     {
         DB::table(Table::SHUNNEDMESSAGES)
             ->upsert([
@@ -1204,7 +1212,7 @@ class Users
     /**
      * Returns whether a user is allowed to impersonate another user.
      */
-    public function canImpersonate(User $impersonator, User $impersonatee): bool
+    public function canImpersonate(CraftUser $impersonator, User $impersonatee): bool
     {
         return $impersonator->can('impersonate', $impersonatee);
     }
@@ -1212,7 +1220,7 @@ class Users
     /**
      * Returns whether the user can suspend the given user
      */
-    public function canSuspend(User $suspender, User $suspendee): bool
+    public function canSuspend(CraftUser $suspender, User $suspendee): bool
     {
         return $suspender->can('suspend', $suspendee);
     }

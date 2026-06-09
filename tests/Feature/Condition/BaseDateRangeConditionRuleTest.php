@@ -9,7 +9,6 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Shared\Enums\DateRangePeriod;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -59,8 +58,8 @@ describe('matchElement', function () {
 
         expect($rule->matchElement($entry))->toBe($expected);
     })->with([
-        'created today' => [fn () => DateTimeHelper::today()->modify('+12 hours'), true],
-        'created yesterday' => [DateTimeHelper::yesterday(...), false],
+        'created today' => [fn () => today()->addHours(12), true],
+        'created yesterday' => [fn () => today()->subDay(), false],
     ]);
 
     it('matches with TYPE_RANGE', function (string $entryDate, array $ruleAttributes, bool $expected) {
@@ -99,7 +98,7 @@ describe('matchElement', function () {
     ]);
 
     it('matches with empty/notempty using DateCreatedConditionRule', function (string $rangeType, bool $expected) {
-        $entry = createEntryWithDate(DateTimeHelper::now());
+        $entry = createEntryWithDate(now());
 
         // dateCreated is always set
         $rule = createDateRangeRule([
@@ -113,7 +112,7 @@ describe('matchElement', function () {
     ]);
 
     it('matches with relative date types', function (string $rangeType, array $ruleAttributes, bool $expected) {
-        $entry = createEntryWithDate(DateTimeHelper::now());
+        $entry = createEntryWithDate(now());
 
         $rule = createDateRangeRule([
             'rangeType' => $rangeType,
@@ -181,7 +180,7 @@ describe('modifyQuery', function () {
     });
 
     it('filters with OPERATOR_NOT_EMPTY for dateCreated', function () {
-        createEntryWithDate(DateTimeHelper::now());
+        createEntryWithDate(now());
 
         $rule = createDateRangeRule([
             'rangeType' => 'notempty',

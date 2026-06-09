@@ -27,7 +27,6 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -124,7 +123,7 @@ class ImageTransforms
             $upscaleChanged = ($transformModel->upscale !== null ? (bool) $transformModel->upscale : null) !== ($data['upscale'] ?? null);
 
             if ($dimensionsChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
-                $transformModel->parameterChangeTime = Query::prepareDateForDb(new DateTime);
+                $transformModel->parameterChangeTime = Query::prepareDateForDb(now());
             }
 
             $transformModel->mode = $data['mode'];

@@ -4,7 +4,7 @@ import {JobStatus} from '@craftcms/cp/types/queue.js';
 import type {JobInfo, JobUpdateDetail} from '@craftcms/cp';
 
 import '@craftcms/cp/components/progress/progress.ts.mjs';
-import {QueueService, ConfigService} from '@craftcms/cp';
+import {QueueService} from '@craftcms/cp';
 
 @customElement('cp-queue-indicator')
 class CpQueueIndicator extends LitElement {
@@ -31,7 +31,6 @@ class CpQueueIndicator extends LitElement {
   hasWaitingJobs: boolean = false;
 
   #queue: QueueService = QueueService.getInstance();
-  #config: ConfigService = ConfigService.getInstance();
 
   override connectedCallback() {
     super.connectedCallback();
@@ -110,7 +109,7 @@ class CpQueueIndicator extends LitElement {
       return null;
     }
 
-    return this.#config.getCpUrl('utilities/queue-manager');
+    return window.Craft.getCpUrl('utilities/queue-manager');
   }
 
   protected override render() {

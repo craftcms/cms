@@ -21,6 +21,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -287,7 +288,7 @@ it('adds a plain validation error when a propagated save fails', function () {
 });
 
 it('adds a linked validation error when the current user can fix the propagated site', function () {
-    Auth::setUser(new AuthorizedUser);
+    Auth::setUser(new AuthorizedAuthUser);
     swapUrlRequest('/admin/entries/100?foo=bar&site=primary');
 
     $this->executor->returnValue = false;
@@ -605,6 +606,21 @@ class TrackingField extends Field
 
 class AuthorizedUser extends User
 {
+    #[Override]
+    public function can($abilities, $arguments = []): bool
+    {
+        return $abilities === 'editSite:secondary-uid';
+    }
+}
+
+class AuthorizedAuthUser extends UserModel
+{
+    #[Override]
+    public function asElement(): User
+    {
+        return new AuthorizedUser;
+    }
+
     #[Override]
     public function can($abilities, $arguments = []): bool
     {

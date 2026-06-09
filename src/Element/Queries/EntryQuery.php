@@ -123,7 +123,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         // Always consider “now” to be the current time @ 59 seconds into the minute.
         // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
-        $currentTime = Date::now()->endOfMinute()->setTimezone('UTC');
+        $currentTime = now()->endOfMinute()->setTimezone('UTC');
 
         return match ($status) {
             Entry::STATUS_LIVE => fn (Builder $query) => $query
@@ -227,7 +227,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return;
         }
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         if (! $user) {
             throw new QueryAbortedException;
@@ -253,21 +253,23 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 if ($excludePeerEntries || $excludePeerDrafts) {
                     $partialAccessSections[] = $section->id;
 
-                    $query->orWhere(function (Builder $query) use ($excludePeerDrafts, $user, $excludePeerEntries, $section) {
+                    $userId = $user->getCraftUserId();
+
+                    $query->orWhere(function (Builder $query) use ($excludePeerDrafts, $userId, $excludePeerEntries, $section) {
                         $query->where('entries.sectionId', $section->id);
 
                         if ($excludePeerEntries) {
                             $query->whereExists(
                                 DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
                                     ->whereColumn('entries_authors.entryId', 'entries.id')
-                                    ->where('entries_authors.authorId', $user->id)
+                                    ->where('entries_authors.authorId', $userId)
                             );
                         }
 
                         if ($excludePeerDrafts) {
-                            $query->where(function (Builder $query) use ($user) {
+                            $query->where(function (Builder $query) use ($userId) {
                                 $query->whereNull('elements.draftId')
-                                    ->orWhere('drafts.creatorId', $user->id);
+                                    ->orWhere('drafts.creatorId', $userId);
                             });
                         }
                     });

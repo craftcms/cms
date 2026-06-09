@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use Illuminate\Console\Command;
+use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -35,6 +36,7 @@ use function Laravel\Prompts\warning;
 
 class InstallCommand extends Command
 {
+    use ConfirmableTrait;
     use CraftCommand;
     use SiteDefaults;
 
@@ -64,6 +66,10 @@ class InstallCommand extends Command
             warning('Craft is already installed!');
 
             return self::SUCCESS;
+        }
+
+        if (! $this->confirmToProceed()) {
+            return 1;
         }
 
         try {
@@ -153,7 +159,7 @@ class InstallCommand extends Command
                         ...$timezoneBaseOptions,
                         ...$timezoneEnvOptions,
                     ],
-                    default: date_default_timezone_get(),
+                    default: now()->getTimezone()->getName(),
                     required: true,
                     validate: [new EnvValueRule([Rule::in($timezoneBaseOptions)])],
                     hint: 'Type $ for environment variables containing valid timezones.',
@@ -197,7 +203,9 @@ class InstallCommand extends Command
         info('Installing Craft CMS...');
 
         PromptTask::run('Running initial migrations', function (Logger $logger) {
-            $this->callSilent('migrate');
+            $this->callSilent('migrate', [
+                '--force' => true,
+            ]);
             $logger->success('Initial migrations completed.');
         }, keepSummary: true, output: $this->output);
 

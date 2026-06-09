@@ -26,7 +26,9 @@ export default class CraftLoginResetPassword extends LitElement {
   @query('.reset-username') private _input?: HTMLInputElement;
 
   override firstUpdated() {
-    this._input?.focus();
+    this.updateComplete.then(() => {
+      this._input?.focus();
+    });
   }
 
   #label() {
@@ -96,7 +98,7 @@ export default class CraftLoginResetPassword extends LitElement {
           <div class="login-form__actions">
             <craft-button
               type="submit"
-              variant="primary"
+              variant="accent"
               ?loading="${this._busy}"
             >
               ${t('Reset password')}

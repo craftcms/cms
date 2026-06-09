@@ -1,8 +1,8 @@
 import {
+  type ComponentPublicInstance,
   nextTick,
   onMounted,
   onUnmounted,
-  ref,
   shallowRef,
   triggerRef,
   watch,
@@ -16,6 +16,8 @@ import {
 
 export type {DragState, DropState};
 
+type ReorderableElement = Element | ComponentPublicInstance | null;
+
 export interface UseReorderableItemsOptions {
   getItemIds: () => Array<string | number>;
   onReorder: (startIndex: number, finishIndex: number) => void;
@@ -24,20 +26,24 @@ export interface UseReorderableItemsOptions {
 }
 
 export interface UseReorderableItemsReturn {
-  setItemRef: (el: HTMLElement | null, itemId: string | number) => void;
-  setHandleRef: (el: HTMLElement | null, itemId: string | number) => void;
+  setItemRef: (el: ReorderableElement, itemId: string | number) => void;
+  setHandleRef: (el: ReorderableElement, itemId: string | number) => void;
   getDragState: (id: string | number) => DragState;
   getDropState: (id: string | number) => DropState;
   refreshRegistrations: () => void;
+  getRowPosition: (index: number) => 'first' | 'middle' | 'last';
 }
 
 export function useReorderableItems(
   options: UseReorderableItemsOptions
 ): UseReorderableItemsReturn {
-  const itemRefs = ref<Map<string | number, HTMLElement>>(new Map());
+  const itemRefs = shallowRef<Map<string | number, HTMLElement>>(new Map());
   const handleRefs = shallowRef<Map<string | number, HTMLElement>>(new Map());
-  const cleanupFns = ref<Map<string | number, () => void>>(new Map());
+  const cleanupFns = new Map<string | number, () => void>();
   let monitorCleanup: (() => void) | null = null;
+  let mounted = false;
+  let unmounted = false;
+  let refreshScheduled = false;
 
   const {registerItem, getDragState, getDropState, setupMonitor} =
     useDragAndDrop({
@@ -45,21 +51,72 @@ export function useReorderableItems(
       axis: options.axis ?? 'vertical',
     });
 
-  function setItemRef(el: HTMLElement | null, itemId: string | number) {
-    if (el) {
-      itemRefs.value.set(itemId, el);
-    } else {
-      itemRefs.value.delete(itemId);
+  function resolveElement(el: ReorderableElement): HTMLElement | null {
+    if (el instanceof HTMLElement) {
+      return el;
     }
+
+    if (el && !(el instanceof Element) && el.$el instanceof HTMLElement) {
+      return el.$el;
+    }
+
+    return null;
   }
 
-  function setHandleRef(el: HTMLElement | null, itemId: string | number) {
-    if (el) {
-      handleRefs.value.set(itemId, el);
-    } else {
-      handleRefs.value.delete(itemId);
+  function scheduleRefreshRegistrations() {
+    if (!mounted || unmounted || refreshScheduled) {
+      return;
     }
+
+    refreshScheduled = true;
+
+    nextTick(() => {
+      refreshScheduled = false;
+
+      if (!unmounted) {
+        refreshRegistrations();
+      }
+    });
+  }
+
+  function setItemRef(el: ReorderableElement, itemId: string | number) {
+    const element = resolveElement(el);
+    const current = itemRefs.value.get(itemId);
+
+    if (element) {
+      if (current === element) {
+        return;
+      }
+
+      itemRefs.value.set(itemId, element);
+    } else if (current) {
+      itemRefs.value.delete(itemId);
+    } else {
+      return;
+    }
+
+    triggerRef(itemRefs);
+    scheduleRefreshRegistrations();
+  }
+
+  function setHandleRef(el: ReorderableElement, itemId: string | number) {
+    const element = resolveElement(el);
+    const current = handleRefs.value.get(itemId);
+
+    if (element) {
+      if (current === element) {
+        return;
+      }
+
+      handleRefs.value.set(itemId, element);
+    } else if (current) {
+      handleRefs.value.delete(itemId);
+    } else {
+      return;
+    }
+
     triggerRef(handleRefs);
+    scheduleRefreshRegistrations();
   }
 
   function isEnabled(): boolean {
@@ -68,8 +125,8 @@ export function useReorderableItems(
 
   function refreshRegistrations() {
     // Clean up existing registrations
-    cleanupFns.value.forEach((fn) => fn());
-    cleanupFns.value.clear();
+    cleanupFns.forEach((fn) => fn());
+    cleanupFns.clear();
 
     if (!isEnabled()) {
       return;
@@ -83,7 +140,7 @@ export function useReorderableItems(
 
       if (itemEl) {
         const cleanup = registerItem(itemEl, handleEl ?? null, itemId, index);
-        cleanupFns.value.set(itemId, cleanup);
+        cleanupFns.set(itemId, cleanup);
       }
     });
   }
@@ -92,35 +149,52 @@ export function useReorderableItems(
   watch(
     () => options.getItemIds(),
     () => {
-      nextTick(refreshRegistrations);
+      scheduleRefreshRegistrations();
     },
     {deep: true}
   );
 
-  // Re-register when handle refs change (handles may be set after initial mount)
+  // Re-register when enabled state changes.
   watch(
-    () => handleRefs.value.size,
+    () => isEnabled(),
     () => {
-      nextTick(refreshRegistrations);
+      scheduleRefreshRegistrations();
     }
   );
 
   onMounted(() => {
+    mounted = true;
+
     // Setup the monitor
     monitorCleanup = setupMonitor();
-    nextTick(refreshRegistrations);
+    scheduleRefreshRegistrations();
   });
 
   onUnmounted(() => {
-    cleanupFns.value.forEach((fn) => fn());
+    unmounted = true;
+    cleanupFns.forEach((fn) => fn());
+    cleanupFns.clear();
     monitorCleanup?.();
   });
+
+  function getRowPosition(index: number) {
+    if (index === 0) {
+      return 'first';
+    }
+
+    if (index === itemRefs.value.size - 1) {
+      return 'last';
+    }
+
+    return 'middle';
+  }
 
   return {
     setItemRef,
     setHandleRef,
     getDragState,
     getDropState,
+    getRowPosition,
     refreshRegistrations,
   };
 }

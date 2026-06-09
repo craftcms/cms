@@ -140,7 +140,7 @@ readonly class MatrixController
 
             $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
-            if (! $this->drafts->saveElementAsDraft($entry, $request->user()->id, markAsSaved: false)) {
+            if (! $this->drafts->saveElementAsDraft($entry, $request->craftUser()?->getCraftUserId(), markAsSaved: false)) {
                 return $this->asFailure(mb_ucfirst(t('Couldn’t create {type}.', [
                     'type' => Entry::lowerDisplayName(),
                 ])));

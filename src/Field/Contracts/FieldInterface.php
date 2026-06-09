@@ -18,7 +18,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Validation\Contracts\Validatable;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -69,8 +69,8 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /** @var string|null The field's UID */
     public ?string $uid { get; set; }
 
-    /** @var DateTime|null The date that the field was trashed */
-    public ?DateTime $dateDeleted { get; set; }
+    /** @var DateTimeInterface|null The date that the field was trashed */
+    public ?DateTimeInterface $dateDeleted { get; set; }
 
     /** @var CustomField|null The field layout element */
     public ?CustomField $layoutElement { get; set; }

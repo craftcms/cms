@@ -1,48 +1,20 @@
 <script setup lang="ts">
-  import {t, type VariantKey} from '@craftcms/cp';
+  import {t} from '@craftcms/cp';
   import {type Component, computed} from 'vue';
-
-  interface ActionItemHr {
-    type: 'hr';
-  }
+  import type {ActionItem} from '@/common/types';
 
   interface ActionItemDisplay {
     type: 'display';
     is: Component;
   }
 
-  interface ActionItemButton {
-    type?: 'button';
-    label: string;
-    variant?: VariantKey | string;
-    icon?: string;
-    onClick?: () => void;
-    shortcut?: string | {alt?: boolean; shift?: boolean; key: string} | null;
-    [key: string]: unknown;
-  }
-
-  interface ActionItemLink {
-    type: 'link';
-    href: string;
-    label: string;
-    variant?: VariantKey | string;
-    onClick?: () => void;
-    [key: string]: unknown;
-  }
-
-  export type ActionItem =
-    | ActionItemDisplay
-    | ActionItemHr
-    | ActionItemButton
-    | ActionItemLink;
-
-  export type ActionItems = Array<ActionItem>;
+  export type ActionItems = Array<ActionItem | ActionItemDisplay>;
 
   const props = withDefaults(
     defineProps<{
       icon?: string;
       label?: string | null;
-      actions: Array<ActionItem & {onClick?: (event: Event) => void}>;
+      actions: ActionItems;
     }>(),
     {
       icon: 'ellipsis',
@@ -50,24 +22,28 @@
     }
   );
 
-  const normalizedActions = computed(
-    (): Array<ActionItem & {onClick?: (event: Event) => void}> => {
-      return props.actions.map(
-        (action): ActionItem & {onClick?: (event: Event) => void} => {
-          if (action.type === 'hr' || action.type === 'display') {
-            return action;
-          }
+  const normalizedActions = computed((): Array<ActionItem> => {
+    return props.actions.map((action): ActionItem => {
+      if (action.type === 'hr' || action.type === 'display') {
+        return action as ActionItem;
+      }
 
-          return {
-            ...action,
-            type:
-              action.type ??
-              ('href' in action && action.href ? 'link' : 'button'),
-          } as ActionItem & {onClick?: (event: Event) => void};
-        }
-      );
-    }
-  );
+      if ('href' in action) {
+        return {
+          ...action,
+          label: action.label ?? '',
+          type: action.type ?? 'link',
+        } as ActionItem;
+      }
+
+      return {
+        ...action,
+        label: action.label ?? '',
+        type:
+          action.type ?? ('href' in action && action.href ? 'link' : 'button'),
+      } as ActionItem;
+    });
+  });
 
   const sortedActions = computed(() => {
     return [...normalizedActions.value].sort((a, b) => {
@@ -76,6 +52,24 @@
       return aDanger - bDanger;
     });
   });
+
+  function actionProps(action: ActionItem): Record<string, unknown> {
+    if (action.type === 'hr' || action.type === 'display') {
+      return {};
+    }
+
+    const attrs = {...action};
+
+    delete (attrs as {onClick?: unknown}).onClick;
+
+    return attrs;
+  }
+
+  function runAction(action: ActionItem, event: Event) {
+    if ('onClick' in action) {
+      action.onClick?.(event);
+    }
+  }
 </script>
 
 <template>
@@ -99,14 +93,18 @@
         <component v-else-if="action.type === 'display'" :is="action.is" />
         <craft-action-item
           v-else-if="action.type === 'link'"
-          v-bind="action"
+          v-bind="actionProps(action)"
           :href="action.href"
         >
           {{ action.label }}
         </craft-action-item>
-        <craft-action-item v-else v-bind="action">{{
-          action.label
-        }}</craft-action-item>
+        <craft-action-item
+          v-else
+          @click="runAction(action, $event)"
+          v-bind="actionProps(action)"
+        >
+          {{ action.label }}
+        </craft-action-item>
       </template>
     </div>
   </craft-action-menu>

@@ -31,6 +31,7 @@ use Override;
 
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUserElement;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -115,7 +116,7 @@ class HandleInertiaRequests extends Middleware
         $generalConfig = app(GeneralConfig::class);
 
         if (! $updates->isCraftUpdatePending()) {
-            $currentUser = $request->user();
+            $currentUser = currentUserElement();
         }
 
         $systemIcon = ($generalConfig->cpIconUrl && Edition::isAtLeast(Edition::Pro))
@@ -164,7 +165,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
-                'cpUrl' => cp_url(),
+                'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
                 'nav' => $nav->getItems(),

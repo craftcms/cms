@@ -25,9 +25,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -410,7 +410,7 @@ class ElementSources
             return true;
         }
 
-        $user = Auth::user();
+        $user = currentUserElement();
 
         if (! $user) {
             return false;
@@ -691,7 +691,7 @@ class ElementSources
      */
     public function getTableAttributesForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
-        $user = Auth::user();
+        $user = currentUserElement();
 
         $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */

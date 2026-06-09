@@ -108,7 +108,7 @@ readonly class UploadController
         $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $uploadedFile->getClientMimeType());
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
-        $asset->uploaderId = $request->user()->id;
+        $asset->uploaderId = $request->craftUser()?->getCraftUserId();
         $asset->avoidFilenameConflicts = true;
 
         if (isset($originalFilename)) {

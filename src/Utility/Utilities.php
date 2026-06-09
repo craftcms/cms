@@ -94,7 +94,7 @@ readonly class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
-        $user = Auth::user();
+        $user = Auth::craftUser();
 
         // The Project Config utility is for admins only!
         if ($class === ProjectConfigUtility::class && ! $user?->isAdmin()) {

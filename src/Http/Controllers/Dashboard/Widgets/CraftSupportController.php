@@ -75,7 +75,7 @@ readonly class CraftSupportController
             ],
             [
                 'name' => 'name',
-                'contents' => $request->user()->fullName,
+                'contents' => $request->craftUser()?->asElement()->fullName,
             ],
             [
                 'name' => 'message',

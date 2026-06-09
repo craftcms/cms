@@ -11,6 +11,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\User\Validation\UserRules;
@@ -68,10 +69,11 @@ readonly class SetPasswordController extends AuthenticationController
             $status = PasswordFacade::broker('craft')->reset(
                 [
                     'token' => $request->input('code'),
-                    'loginName' => $user->email,
+                    'email' => $user->email,
                     'password' => $request->input('newPassword'),
                 ],
-                function (User $user, string $password) use ($elements) {
+                function (CraftUser $authUser, string $password) use ($elements) {
+                    $user = $authUser->asElement();
                     $user->newPassword = $password;
                     $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
 

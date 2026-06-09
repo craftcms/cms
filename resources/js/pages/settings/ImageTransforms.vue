@@ -127,7 +127,7 @@
         appearance="button"
         :inertia="false"
         :href="create().url"
-        variant="primary"
+        variant="accent"
         icon="plus"
         >{{ t('New image transform') }}</CpLink
       >
@@ -156,7 +156,7 @@
             appearance="button"
             :inertia="false"
             :href="create().url"
-            variant="default"
+            variant="neutral"
             icon="plus"
             >{{ t('New image transform') }}</CpLink
           >
