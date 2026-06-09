@@ -603,4 +603,9 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * @param  ElementInterface  $element  The element that was just restored
      */
     public function afterElementRestore(ElementInterface $element): void;
+
+    /**
+     * Normalizes value so that it can be imported into the field.
+     */
+    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): mixed;
 }

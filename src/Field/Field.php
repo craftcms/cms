@@ -1155,4 +1155,11 @@ JS, [
     {
         $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));
     }
+
+    #[Override]
+    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): mixed
+    {
+        // by default, just return the value we were given
+        return $value;
+    }
 }
