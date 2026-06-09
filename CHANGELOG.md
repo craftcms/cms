@@ -12,7 +12,7 @@
 - Fixed an infinite recursion bug. ([#19063](https://github.com/craftcms/cms/issues/19063))
 - Fixed a styling issue.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities.
 
 ## 5.10.5 - 2026-06-02
 
