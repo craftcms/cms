@@ -237,6 +237,18 @@ class App
         // …${VAR}…
         $value = self::parseNestedEnv($value);
 
+        // $VAR
+        if (preg_match('/^\$(\w+)$/', $value, $m)) {
+            $result = self::env($m[1]);
+
+            if (is_bool($result)) {
+                return $result;
+            }
+
+            $result = (string)$result;
+            return $result === '' ? null : $result;
+        }
+
         // …/$VAR/…
         $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)?/', function($m) {
             $result = self::env($m[1]);

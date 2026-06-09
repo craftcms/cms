@@ -4356,7 +4356,7 @@ JS,
                     [
                         $view->namespaceInputId($deleteId),
                         static::class,
-                        $this->id,
+                        $this->getCanonicalId(),
                         $this->siteId,
                         $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
                         Craft::t('app', 'Are you sure you want to delete this {type}?', [
@@ -6996,9 +6996,12 @@ JS,
             throw new InvalidFieldException($fieldHandle);
         }
 
+        // Mark the field as normalized up front to prevent infinite recursion,
+        // if the field's normalizeValue() method ends up calling renderObjectTemplate() on the element, etc.
+        $this->_normalizedFieldValues[$fieldHandle] = true;
+
         $behavior = $this->getBehavior('customFields');
         $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
-        $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
     /**

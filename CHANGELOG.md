@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Forward slashes in query strings are now encoded. ([#19057](https://github.com/craftcms/cms/pull/19057))
+- Updated Axios to 1.17.0. ([#19053](https://github.com/craftcms/cms/issues/19053))
+- Fixed a bug where the “Delete” element edit page action wasn’t working properly when editing a provisional draft.
+- Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t returning boolean values for environment variable names that resolved to `true`/`false` values. ([#19029](https://github.com/craftcms/cms/issues/19029))
+- Fixed a bug where the submit button within Live Preview was labelled “Submit” rather than “Save”. ([#19056](https://github.com/craftcms/cms/issues/19056))
+- Fixed a bug where the selected site wasn’t being remembered after saving an element. ([#19054](https://github.com/craftcms/cms/discussions/19054))
+- Fixed a bug where transformed SVG images could have two sets of `width` and `height` attributes. ([#1902w7](https://github.com/craftcms/cms/pull/19027))
+- Fixed an infinite recursion bug. ([#19063](https://github.com/craftcms/cms/issues/19063))
+- Fixed a styling issue.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
 
