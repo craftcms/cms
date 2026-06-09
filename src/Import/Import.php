@@ -28,13 +28,13 @@ use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection as LaravelCollection;
 use Illuminate\Support\Facades\Config;
@@ -42,11 +42,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
 use Throwable;
-use yii\db\ActiveRecord;
 
 #[Singleton]
 class Import
@@ -466,12 +466,10 @@ class Import
 
         $item = $this->processData($config, $data, $model);
 
-        $attributeHandles = $model->attributes();
+        $attributeHandles = Schema::getColumnListing($model->getTable());
         $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
 
-        $model->setAttributes($attributes, false);
-
-        $model->save();
+        $model->fill($attributes)->save();
     }
 
     private function normalizeFields(ElementInterface $element, array $fields): array
@@ -534,7 +532,7 @@ class Import
         return $element;
     }
 
-    private function getModel(BaseImporter $config, array $data): Model|ActiveRecord
+    private function getModel(BaseImporter $config, array $data): BaseModel
     {
         $model = new $config->className;
 
@@ -544,7 +542,7 @@ class Import
         }
 
         if (is_array($config->matchCriteria)) {
-            $query = $model::find();
+            $query = $model::query();
             $criteria = [];
 
             foreach ($config->matchCriteria as $key => $value) {
@@ -559,7 +557,7 @@ class Import
 
             $query->where($criteria);
 
-            return $query->one() ?? $model;
+            return $query->first() ?? $model;
         }
 
         return $model;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
+use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Validation\Validator;
 use League\Fractal\TransformerAbstract;
@@ -46,17 +47,26 @@ class ModelImporter extends BaseImporter
 
     public static function validateModel(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
+        // can't be empty
         if (empty($value)) {
             $fail($attribute, t('Model must be provided.'));
 
             return false;
         }
 
+        // can't be for an element type - in that case the ElementImporter should be used
         $allElementTypes = Elements::getAllElementTypes();
         if (in_array($value, $allElementTypes)) {
             $fail($attribute, t('Model “{elementType}” is a valid element type. Use ElementImporter to handle it.', [
                 'elementType' => $value,
             ]));
+
+            return false;
+        }
+
+        // has to extend Craft's BaseModel
+        if (! $value instanceof BaseModel) {
+            $fail($attribute, t('Class name must extend Craft\'s BaseModel.'));
 
             return false;
         }
