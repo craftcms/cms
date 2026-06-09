@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
@@ -34,8 +34,7 @@ class ContentIndexController
         private readonly ElementHtml $elementHtml,
         private readonly ElementSources $elementSources,
         private readonly ElementAttributeRenderer $attributeRenderer,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, string $page, ?string $sectionHandle = null)
     {
@@ -46,12 +45,16 @@ class ContentIndexController
             'elementType' => $elementType,
         ];
 
+        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
+            ['field' => 'dateCreated', 'direction' => 'desc'],
+        ];
+
         ($this->prepareElementIndexVariables)($context);
         ($this->prepareElementToolbarVariables)($context);
         ($this->prepareElementSourcesVariables)($context);
 
         $statusOptions = collect($context['elementStatuses'])
-            ->map(fn($label, $value) => ['label' => $label, 'value' => $value])
+            ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
             ->prepend(['label' => t('All'), 'value' => ''])
             ->values()
             ->all();
@@ -64,6 +67,26 @@ class ContentIndexController
             $elementQuery->status($request->input('status'));
         }
 
+        // Apply the requested sort as the authoritative order. The client treats
+        // the URL as the source of truth for sorting, so reset any ordering that
+        // was applied while building the query (Laravel's orderBy() appends
+        // rather than replaces, which would otherwise demote the requested sort
+        // to a tiebreaker) and then apply the requested columns in order.
+        $orderBy = array_values(array_filter(
+            $sort,
+            fn ($sortItem) => ! empty($sortItem['field']),
+        ));
+
+        if (! empty($orderBy)) {
+            $elementQuery->getQuery()->reorder();
+
+            foreach ($orderBy as $sortItem) {
+                $elementQuery->orderBy(
+                    $sortItem['field'],
+                );
+            }
+        }
+
         // get the return URL with `?` replaced with a token
         // (see https://github.com/craftcms/cms/issues/18923)
         if ($returnUrl = $request->input('returnUrl')) {
@@ -74,8 +97,8 @@ class ContentIndexController
         // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];
         $attributes = ['title', ...array_keys($elementType::tableAttributes())];
         $elements = collect($elementType::indexElements($elementQuery, $sourceKey))
-            ->map(fn(ElementInterface $element) => collect($attributes)
-                ->mapWithKeys(fn(string $attribute) => [
+            ->map(fn (ElementInterface $element) => collect($attributes)
+                ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title' ?
                         Html::tag('CpLink',
                             $this->elementHtml->chipHtml($element, [
@@ -111,7 +134,8 @@ class ContentIndexController
             'search' => $request->input('search'),
             'viewState' => $viewState,
             'statusOptions' => $statusOptions,
-            'elements' => $elements,
+            'data' => $elements,
+            'sort' => $sort,
             'contentHtml' => $contentHtml,
         ]));
     }

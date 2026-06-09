@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t, Appearance} from '@craftcms/cp';
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
-  import {useForm} from '@inertiajs/vue3';
+  import {router, useForm} from '@inertiajs/vue3';
   import ElementSources from '@/modules/elements/ElementSources.vue';
   import type {Source} from '@/modules/elements/types/sources';
   import CraftSelectRich from '@craftcms/cp/vue/CraftSelectRich.vue';
@@ -11,15 +11,16 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import {computed, ref} from 'vue';
+  import {computed, onMounted, ref, watch} from 'vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import Select from '@/common/form/Select.vue';
   import {useLocalStorage} from '@/common/composables/useStorage';
   import type {PaginationData, SortItem} from '@/common/types';
+  import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
 
   type Element = Record<any, any>;
   type ViewMode = {
-    type: 'table' | 'cards' | 'structure';
+    mode: 'table' | 'cards' | 'structure';
     title: string;
     icon: string;
     structuresOnly?: boolean;
@@ -31,12 +32,11 @@
    */
   type ViewState = {
     inlineEditing: boolean;
-    mode: ViewMode['type'];
+    mode: ViewMode['mode'];
     tableColumns: Array<string>;
     nestedInputNamespace?: string | null;
     showHeaderColumn: boolean;
-    order: string;
-    sort: 'asc' | 'desc';
+    sort: Array<SortItem>;
     static: boolean;
   };
 
@@ -53,7 +53,7 @@
       elementPluralDisplayName: string;
       context?: string;
       canHaveDrafts?: boolean;
-      criteria?: Record<any, any>;
+      criteria?: Record<string, any>;
       page: string;
       sources: Array<Source>;
       source?: Source;
@@ -64,11 +64,11 @@
       statusOptions?: Array<{label: string; value: string}>;
       sectionHandle?: string | number;
       viewState: Partial<ViewState>;
-      elements: Array<Element>;
+      data: Array<Element>;
       tableColumns: Record<string, {label: string}>;
       viewModes?: Array<ViewMode>;
       baseSortOptions: Array<SortOption>;
-      pagination: PaginationData;
+      pagination?: PaginationData;
       sort: Array<SortItem>;
     }>(),
     {
@@ -86,8 +86,12 @@
     tableColumns: ['title', 'dateCreated'],
     nestedInputNamespace: null,
     showHeaderColumn: true,
-    order: 'dateCreated',
-    sort: 'desc',
+    sort: props.sort ?? [
+      {
+        field: 'dateCreated',
+        direction: 'desc',
+      },
+    ],
     static: false,
     ...props.viewState,
   };
@@ -100,13 +104,23 @@
   const searchForm = useForm({
     search: props.search ?? '',
     status: props.status,
+    sort: props.sort ?? viewState.value.sort,
     viewMode: viewState.value.mode ?? props.viewMode ?? 'table',
   });
 
   function handleSearch() {
-    searchForm.submit(
-      index({page: props.page, sectionHandle: props.sectionHandle})
-    );
+    searchForm
+      // Carry the persisted view mode along with the filter submit.
+      .transform((data) => ({
+        ...data,
+        viewMode: viewState.value.mode,
+      }))
+      .submit(
+        index({
+          page: props.page ?? '',
+          sectionHandle: props.sectionHandle ?? undefined,
+        })
+      );
   }
 
   const columnHelper = createCraftColumnHelper<Element>();
@@ -124,31 +138,136 @@
       }),
   ]);
 
-  const tableColumnOptions = computed(() => [
-    {
-      label: t('Entry'),
-      value: 'title',
-      disabled: true,
+  const {sortingState, sortingConfig, onSortingChange} = useServerSort({
+    initialState: searchForm.sort,
+    onChange: ({query}) => {
+      router.visit(
+        index(
+          {
+            page: props.page ?? '',
+            sectionHandle: props.sectionHandle ?? undefined,
+          },
+          {query}
+        ),
+        {
+          only: ['data', 'sort'],
+          preserveState: true,
+          preserveScroll: true,
+        }
+      );
     },
-    ...Object.entries(props.tableColumns).map(([key, value]) => ({
-      label: value.label,
-      value: key,
-    })),
-  ]);
+  });
 
-  // Persisted view state may not include tableColumns (older stored payloads),
-  // so proxy it with a safe default for the CheckboxGroup's required string[].
-  // const tableColumns = computed<string[]>({
-  //   get: () => viewState.value.tableColumns ?? [],
-  //   set: (columns) => {
-  //     viewState.value.tableColumns = columns;
-  //   },
-  // });
+  function sortItemsToQuery(items: Array<SortItem>) {
+    return items.reduce<Record<string, {field: string; direction: string}>>(
+      (acc, item) => {
+        acc[0] = {field: item.field, direction: item.direction};
+        return acc;
+      },
+      {}
+    );
+  }
+
+  // The URL is the source of truth: whenever the server confirms a sort (after
+  // a sort-driven visit), mirror it into the table state, the search form, and
+  // local storage so the choice is remembered on the user's next visit.
+  watch(
+    () => props.sort,
+    (sort) => {
+      const next = sort ?? [];
+      sortingState.value = next.map((item) => ({
+        id: item.field,
+        desc: item.direction === 'desc',
+      }));
+      searchForm.sort = next;
+      viewState.value.sort = next;
+    }
+  );
+
+  // On load, if the URL doesn't specify a sort but we have one persisted from a
+  // previous visit, restore it into the URL (without adding a history entry).
+  onMounted(() => {
+    const params = new URLSearchParams(window.location.search);
+    const persisted = viewState.value.sort;
+
+    if (params.has('sort') || !persisted?.length) {
+      return;
+    }
+
+    if (JSON.stringify(persisted) === JSON.stringify(props.sort)) {
+      return;
+    }
+
+    router.visit(
+      index(
+        {
+          page: props.page ?? '',
+          sectionHandle: props.sectionHandle ?? undefined,
+        },
+        {
+          query: {
+            ...Object.fromEntries(params),
+            sort: sortItemsToQuery(persisted),
+          },
+        }
+      ),
+      {only: ['data', 'sort'], preserveScroll: true, replace: true}
+    );
+  });
+
+  // Two-way bindings for the single-column sort controls in the "View" popover.
+  // They read from and write through the same sorting state as the column
+  // headers, so the popover, the headers, the URL, and local storage stay in
+  // sync.
+  const sortField = computed<string>({
+    get: () => sortingState.value[0]?.id ?? 'title',
+    set: (field) =>
+      onSortingChange([
+        {id: field, desc: sortingState.value[0]?.desc ?? false},
+      ]),
+  });
+
+  const sortDirection = computed<'asc' | 'desc'>({
+    get: () => (sortingState.value[0]?.desc ? 'desc' : 'asc'),
+    set: (direction) =>
+      onSortingChange([{id: sortField.value, desc: direction === 'desc'}]),
+  });
+
+  /**
+   * A list of the available columns to be toggled on and off. Returned
+   * with the title first. The other options are ordered by if they are checked
+   * or not.
+   */
+  const tableColumnOptions = computed(() => {
+    return [
+      {
+        label: t('Entry'),
+        value: 'title',
+        disabled: true,
+      },
+      ...Object.entries(props.tableColumns).map(([key, value]) => ({
+        label: value.label,
+        value: key,
+      })),
+    ];
+  });
+
+  const sortedColumnOptions = computed(() => {
+    const checked = viewState.value.tableColumns ?? [];
+    return [
+      ...tableColumnOptions.value.filter((option) =>
+        checked.includes(option.value)
+      ),
+      ...tableColumnOptions.value.filter(
+        (option) => !checked.includes(option.value)
+      ),
+    ];
+  });
 
   const visibleColumns = ref({});
   const elementTable = useVueTable<Element>({
     get data() {
-      return props.elements;
+      return props.data;
     },
     get columns() {
       return columns.value;
@@ -160,9 +279,20 @@
       get columnVisibility() {
         return visibleColumns.value;
       },
+      get sorting() {
+        return sortingState.value;
+      },
     },
     getCoreRowModel: getCoreRowModel<Element>(),
+    ...sortingConfig,
+    enableMultiSort: false,
   });
+
+  function closePopover(event: MouseEvent) {
+    (event.currentTarget as HTMLElement).dispatchEvent(
+      new Event('close-overlay', {bubbles: true, composed: true})
+    );
+  }
 </script>
 
 <template>
@@ -217,26 +347,25 @@
             </CraftInput>
 
             <craft-button-group
-              v-model="searchForm.viewMode"
-              name="viewMode"
+              name="viewState[mode]"
+              v-model="viewState.mode"
               @change="
-                (event: CustomEvent) =>
-                  (searchForm.viewMode = event.detail.value)
+                (event: CustomEvent) => (viewState.mode = event.detail.value)
               "
             >
-              <template v-for="mode in viewModes" :key="mode.type">
+              <template v-for="mode in viewModes" :key="mode.mode">
                 <craft-button
                   type="button"
                   :appearance="Appearance.Fill"
                   :icon="mode.icon"
                   :aria-label="mode.title"
-                  :active="searchForm.viewMode === mode.type"
-                  :value="mode.type"
+                  :active="viewState.mode === mode.mode"
+                  :value="mode.mode"
                 ></craft-button>
               </template>
             </craft-button-group>
 
-            <craft-action-menu>
+            <craft-popover>
               <craft-button
                 type="button"
                 slot="invoker"
@@ -246,51 +375,60 @@
                 {{ t('View') }}
               </craft-button>
 
-              <div slot="content">
-                <div class="p-2">
+              <div slot="content-body" class="gap-4">
+                <div>
                   <div class="flex items-end gap-2">
                     <Select
                       :label="t('Sort by')"
-                      name="viewState[order]"
-                      v-model="viewState.order"
+                      v-model="sortField"
                       :options="tableColumnOptions"
                     />
                     <craft-button-group
-                      name="viewState[sort]"
-                      v-model="viewState.sort"
+                      name="viewState[sort][0][direction]"
+                      v-model="viewState.sort[0]!.direction"
+                      @change="
+                        (event: CustomEvent) =>
+                          (sortDirection = event.detail.value)
+                      "
                     >
                       <craft-button
                         type="button"
                         icon="asc"
                         value="asc"
-                        aria-label="t('Sort ascending')"
+                        :aria-label="t('Sort ascending')"
                         :appearance="Appearance.Fill"
-                        :active="viewState.sort === 'asc'"
+                        :active="sortDirection === 'asc'"
                       ></craft-button>
                       <craft-button
                         type="button"
                         icon="desc"
-                        aria-label="t('Sort descending')"
+                        :aria-label="t('Sort descending')"
                         value="desc"
                         :appearance="Appearance.Fill"
-                        :active="viewState.sort === 'desc'"
+                        :active="sortDirection === 'desc'"
                       ></craft-button>
                     </craft-button-group>
                   </div>
                 </div>
-                <div class="p-2">
+                <div>
                   <CheckboxGroup
                     :label="t('Table Columns')"
-                    name="viewState[tableColumns]"
+                    name="viewState[tableColumns][]"
                     v-model="viewState.tableColumns"
-                    :options="tableColumnOptions"
+                    :options="sortedColumnOptions"
                     allow-select-all
                   />
                 </div>
-
-                <div class="p-2"></div>
               </div>
-            </craft-action-menu>
+              <div slot="content-footer">
+                <craft-button
+                  type="button"
+                  @click="closePopover"
+                  :appearance="Appearance.Fill"
+                  >{{ t('Close') }}</craft-button
+                >
+              </div>
+            </craft-popover>
 
             <div>
               <craft-button type="submit" :loading="searchForm.processing">{{
@@ -301,95 +439,6 @@
         </form>
       </template>
     </AdminTable>
-    <!--<VarDump :data="$props" />-->
-    <!--<div id="elements" v-if="contentHtml">-->
-    <!--  <div class="p-1">-->
-    <!--    <form @submit="handleSearch" class="w-full">-->
-    <!--      <div class="flex gap-2 items-center">-->
-    <!--        <div>-->
-    <!--          <CraftSelectRich-->
-    <!--            v-model="searchForm.status"-->
-    <!--            :options="statusOptions"-->
-    <!--            :label="t('Status')"-->
-    <!--            label-sr-only-->
-    <!--          >-->
-    <!--            <template #option="{option}">-->
-    <!--              <ElementStatus :label="option.label" :value="option.value" />-->
-    <!--            </template>-->
-    <!--          </CraftSelectRich>-->
-    <!--        </div>-->
-
-    <!--        <CraftInput-->
-    <!--          class="flex-1"-->
-    <!--          name="search"-->
-    <!--          :label="t('Search term')"-->
-    <!--          v-model="searchForm.search"-->
-    <!--          label-sr-only-->
-    <!--        >-->
-    <!--          <craft-button-->
-    <!--            type="button"-->
-    <!--            slot="suffix"-->
-    <!--            icon-->
-    <!--            size="small"-->
-    <!--            appearance="plain"-->
-    <!--          >-->
-    <!--            <craft-icon-->
-    <!--              name="filter"-->
-    <!--              :label="t('Filter results')"-->
-    <!--            ></craft-icon>-->
-    <!--          </craft-button>-->
-    <!--        </CraftInput>-->
-
-    <!--        <craft-button-group-->
-    <!--          v-model="searchForm.viewMode"-->
-    <!--          name="viewMode"-->
-    <!--          @change="-->
-    <!--            (event: CustomEvent) =>-->
-    <!--              (searchForm.viewMode = event.detail.value)-->
-    <!--          "-->
-    <!--        >-->
-    <!--          <craft-button-->
-    <!--            type="button"-->
-    <!--            :appearance="Appearance.Fill"-->
-    <!--            icon="list"-->
-    <!--            :aria-label="t('Display in a table')"-->
-    <!--            :active="searchForm.viewMode === 'table'"-->
-    <!--            value="table"-->
-    <!--          ></craft-button>-->
-    <!--          <craft-button-->
-    <!--            type="button"-->
-    <!--            :appearance="Appearance.Fill"-->
-    <!--            icon="custom-icons/element-cards"-->
-    <!--            :aria-label="t('Display as cards')"-->
-    <!--            :active="searchForm.viewMode === 'cards'"-->
-    <!--            value="cards"-->
-    <!--          ></craft-button>-->
-    <!--        </craft-button-group>-->
-
-    <!--        <craft-action-menu>-->
-    <!--          <craft-button-->
-    <!--            type="button"-->
-    <!--            slot="invoker"-->
-    <!--            icon="sliders"-->
-    <!--            :appearance="Appearance.Fill"-->
-    <!--          >-->
-    <!--            {{ t('View') }}-->
-    <!--          </craft-button>-->
-
-    <!--          <div slot="content">Hey</div>-->
-    <!--        </craft-action-menu>-->
-
-    <!--        <div>-->
-    <!--          <craft-button type="submit" :loading="searchForm.processing">{{-->
-    <!--            t('Update')-->
-    <!--          }}</craft-button>-->
-    <!--        </div>-->
-    <!--      </div>-->
-    <!--    </form>-->
-    <!--  </div>-->
-
-    <!--<DynamicHtmlRenderer :html="contentHtml" />-->
-    <!--</div>-->
   </IndexLayout>
 </template>
 

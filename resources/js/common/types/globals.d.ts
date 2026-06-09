@@ -102,6 +102,7 @@ interface CraftStatic {
       settings?: CpNotificationSettings
     ) => object;
   };
+  defaultIndexCriteria: Record<string, any>;
   systemUid?: string;
   canAccessQueueManager?: boolean;
   queue?: {

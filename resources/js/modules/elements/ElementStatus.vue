@@ -60,7 +60,9 @@
     return {};
   });
 
-  const computedLabel = computed(() => props.label ?? capitalize(props.value.toString()));
+  const computedLabel = computed(
+    () => props.label ?? capitalize(props.value.toString())
+  );
 </script>
 
 <template>
