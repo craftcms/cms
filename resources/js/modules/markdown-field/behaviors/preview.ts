@@ -57,6 +57,18 @@ export function createPreviewController(
     button.setAttribute('aria-pressed', active.toString());
   }
 
+  function updatePreviewInteractivity(): void {
+    editor.preview.toggleAttribute('inert', !active);
+
+    if (active) {
+      editor.preview.removeAttribute('aria-hidden');
+
+      return;
+    }
+
+    editor.preview.setAttribute('aria-hidden', 'true');
+  }
+
   async function render(markdown: string): Promise<void> {
     const currentRequestId = ++requestId;
 
@@ -89,6 +101,7 @@ export function createPreviewController(
   async function toggle(): Promise<void> {
     active = !active;
     updateButton();
+    updatePreviewInteractivity();
 
     if (!active) {
       editor.showNormalEditMode();
@@ -100,6 +113,8 @@ export function createPreviewController(
     editor.showPreviewMode();
     await render(editor.getValue());
   }
+
+  updatePreviewInteractivity();
 
   return {
     destroy() {

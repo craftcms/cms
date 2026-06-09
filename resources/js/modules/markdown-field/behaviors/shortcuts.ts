@@ -7,6 +7,12 @@ export function registerShortcutBehavior(
   preview: PreviewController
 ): () => void {
   async function handleKeydown(event: KeyboardEvent): Promise<void> {
+    if (event.key === 'Tab') {
+      event.stopPropagation();
+
+      return;
+    }
+
     if (!isModifierKeyPressed(event)) {
       return;
     }
@@ -18,6 +24,18 @@ export function registerShortcutBehavior(
     }
 
     event.preventDefault();
+
+    if (action === 'indent') {
+      indentSelection(editor.textarea);
+
+      return;
+    }
+
+    if (action === 'outdent') {
+      outdentSelection(editor.textarea);
+
+      return;
+    }
 
     if (action === 'togglePreview') {
       await preview.toggle();
@@ -37,8 +55,23 @@ export function registerShortcutBehavior(
   };
 }
 
-function shortcutAction(event: KeyboardEvent): string | null {
+type ShortcutAction =
+  | 'indent'
+  | 'outdent'
+  | 'toggleCode'
+  | 'togglePreview'
+  | 'toggleQuote';
+
+function shortcutAction(event: KeyboardEvent): ShortcutAction | null {
   const key = event.key.toLowerCase();
+
+  if (key === ']') {
+    return 'indent';
+  }
+
+  if (key === '[') {
+    return 'outdent';
+  }
 
   if (key === 'e' && !event.shiftKey) {
     return 'toggleCode';
@@ -53,4 +86,43 @@ function shortcutAction(event: KeyboardEvent): string | null {
   }
 
   return null;
+}
+
+function indentSelection(textarea: HTMLTextAreaElement): void {
+  replaceSelectedLines(textarea, (line) => `  ${line}`);
+}
+
+function outdentSelection(textarea: HTMLTextAreaElement): void {
+  replaceSelectedLines(textarea, (line) => line.replace(/^( {1,2}|\t)/, ''));
+}
+
+function replaceSelectedLines(
+  textarea: HTMLTextAreaElement,
+  transformLine: (line: string) => string
+): void {
+  const {selectionEnd, selectionStart, value} = textarea;
+  const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
+  const lineEndOffset = value.indexOf(
+    '\n',
+    effectiveSelectionEnd(value, selectionStart, selectionEnd)
+  );
+  const lineEnd = lineEndOffset === -1 ? value.length : lineEndOffset;
+  const replacement = value
+    .slice(lineStart, lineEnd)
+    .split('\n')
+    .map(transformLine)
+    .join('\n');
+
+  textarea.setRangeText(replacement, lineStart, lineEnd, 'preserve');
+  textarea.dispatchEvent(new Event('input', {bubbles: true}));
+}
+
+function effectiveSelectionEnd(
+  value: string,
+  selectionStart: number,
+  selectionEnd: number
+): number {
+  return selectionEnd > selectionStart && value[selectionEnd - 1] === '\n'
+    ? selectionEnd - 1
+    : selectionEnd;
 }
