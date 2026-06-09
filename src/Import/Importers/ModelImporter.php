@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
+use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Elements;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Validator;
 use League\Fractal\TransformerAbstract;
 use Override;
@@ -87,5 +89,61 @@ class ModelImporter extends BaseImporter
         }
 
         return parent::transformer($transformer);
+    }
+
+    #[Override]
+    public function getDestinationCols(): array
+    {
+        return Schema::getColumnListing((new $this->className)->getTable());
+    }
+
+    #[Override]
+    public function getSourceDataCols(): array
+    {
+        return [];
+    }
+
+    #[Override]
+    public function importItem(array $data): void
+    {
+        $model = $this->getModel($data);
+
+        $item = app(Import::class)->processData($this, $data, $model);
+
+        $attributeHandles = Schema::getColumnListing($model->getTable());
+        $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
+
+        $model->fill($attributes)->save();
+    }
+
+    private function getModel(array $data): BaseModel
+    {
+        $model = new $this->className;
+
+        // if null then return a brand new model
+        if ($this->matchCriteria === null) {
+            return $model;
+        }
+
+        if (is_array($this->matchCriteria)) {
+            $query = $model::query();
+            $criteria = [];
+
+            foreach ($this->matchCriteria as $key => $value) {
+                if (array_key_exists((string) $value, $data)) {
+                    $criteria[$key] = $data[$value];
+                }
+            }
+
+            if (empty($criteria)) {
+                return $model;
+            }
+
+            $query->where($criteria);
+
+            return $query->first() ?? $model;
+        }
+
+        return $model;
     }
 }

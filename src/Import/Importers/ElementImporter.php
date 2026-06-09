@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use League\Fractal\TransformerAbstract;
@@ -170,11 +173,89 @@ class ElementImporter extends BaseImporter
         return parent::transformer($transformer);
     }
 
-    //
-    //    public function map(array $map): self
-    //    {
-    //        $this->map = $map;
-    //
-    //        return $this;
-    //    }
+    #[Override]
+    public function importItem(array $data): void
+    {
+        // figure out if we're adding or updating
+        $element = $this->getElement($data);
+
+        $item = app(Import::class)->processData($this, $data, $element);
+
+        $attributeHandles = $element->attributes();
+        // $fieldHandles has custom and native field - basically all field layout elements
+        $fieldHandles = array_diff(array_keys($item), $attributeHandles);
+        $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
+        $fields = array_filter($item, fn ($value, $key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_BOTH);
+
+        $element->setAttributesFromRequest($attributes);
+
+        $fields = $this->normalizeFields($element, $fields);
+
+        $element->setFieldValues($fields);
+
+        Elements::saveElement($element);
+    }
+
+    private function getElement(array $data): ElementInterface
+    {
+        // figure out if we're adding or editing
+        $element = new $this->className;
+
+        // if null then return a brand new ElementInterface object with just the siteId set to the selected value
+        if ($this->matchCriteria === null) {
+            $element->siteId = $this->site->id;
+
+            return $element;
+        }
+
+        if (is_array($this->matchCriteria)) {
+            $query = $element::find();
+            $criteria = [];
+
+            foreach ($this->matchCriteria as $key => $value) {
+                if (array_key_exists((string) $value, $data)) {
+                    $criteria[$key] = $data[$value];
+                }
+            }
+
+            if (empty($criteria)) {
+                $element->siteId = $this->site?->id;
+
+                return $element;
+            }
+
+            Typecast::configure($query, $criteria);
+            // force the selected siteId
+            $query->siteId = $this->site?->id;
+
+            return $query->one() ?? $element;
+        }
+
+        return $element;
+    }
+
+    private function normalizeFields(ElementInterface $element, array $fields): array
+    {
+        $fieldLayout = $element->getFieldLayout();
+
+        if (! $fieldLayout) {
+            return $fields;
+        }
+
+        foreach ($fields as $handle => $value) {
+            $field = $fieldLayout->getFieldByHandle($handle);
+            // if we don't have a field, or it doesn't have a normalizeValueForImport() method,
+            // we don't have to worry about extra normalization, so carry on
+            if (! $field) {
+                continue;
+            }
+            if (! method_exists($field, 'normalizeValueForImport')) {
+                continue;
+            }
+
+            $fields[$handle] = $field->normalizeValueForImport($value, $element);
+        }
+
+        return $fields;
+    }
 }

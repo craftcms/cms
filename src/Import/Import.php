@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
@@ -28,11 +27,8 @@ use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Shared\BaseModel;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Typecast;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -42,7 +38,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
@@ -430,139 +425,12 @@ class Import
 
         $data = $event->data;
 
-        if ($config->isElementImport()) {
-            $this->importElement($config, $data);
-        } else {
-            $this->importModel($config, $data);
-        }
+        $config->importItem($data);
 
         event(new DataImported($config, $data));
     }
 
-    protected function importElement(BaseImporter $config, array $data): void
-    {
-        // figure out if we're adding or updating
-        $element = $this->getElement($config, $data);
-
-        $item = $this->processData($config, $data, $element);
-
-        $attributeHandles = $element->attributes();
-        $fieldHandles = array_diff(array_keys($item), $attributeHandles);
-        $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
-        $fields = array_filter($item, fn ($value, $key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_BOTH);
-
-        $element->setAttributesFromRequest($attributes);
-
-        $fields = $this->normalizeFields($element, $fields);
-
-        $element->setFieldValues($fields);
-
-        Elements::saveElement($element);
-    }
-
-    protected function importModel(BaseImporter $config, array $data): void
-    {
-        $model = $this->getModel($config, $data);
-
-        $item = $this->processData($config, $data, $model);
-
-        $attributeHandles = Schema::getColumnListing($model->getTable());
-        $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
-
-        $model->fill($attributes)->save();
-    }
-
-    private function normalizeFields(ElementInterface $element, array $fields): array
-    {
-        $fieldLayout = $element->getFieldLayout();
-
-        if (! $fieldLayout) {
-            return $fields;
-        }
-
-        foreach ($fields as $handle => $value) {
-            $field = $fieldLayout->getFieldByHandle($handle);
-            // if we don't have a field, or it doesn't have a normalizeValueForImport() method,
-            // we don't have to worry about extra normalization, so carry on
-            if (! method_exists($field, 'normalizeValueForImport')) {
-                continue;
-            }
-
-            $fields[$handle] = $field->normalizeValueForImport($value, $element);
-        }
-
-        return $fields;
-    }
-
-    private function getElement(BaseImporter $config, array $data): ElementInterface
-    {
-        // figure out if we're adding or editing
-        $element = new $config->className;
-
-        // if null then return a brand new ElementInterface object with just the siteId set to the selected value
-        if ($config->matchCriteria === null) {
-            $element->siteId = $config->site->id;
-
-            return $element;
-        }
-
-        if (is_array($config->matchCriteria)) {
-            $query = $element::find();
-            $criteria = [];
-
-            foreach ($config->matchCriteria as $key => $value) {
-                if (array_key_exists((string) $value, $data)) {
-                    $criteria[$key] = $data[$value];
-                }
-            }
-
-            if (empty($criteria)) {
-                $element->siteId = $config->site?->id;
-
-                return $element;
-            }
-
-            Typecast::configure($query, $criteria);
-            // force the selected siteId
-            $query->siteId = $config->site?->id;
-
-            return $query->one() ?? $element;
-        }
-
-        return $element;
-    }
-
-    private function getModel(BaseImporter $config, array $data): BaseModel
-    {
-        $model = new $config->className;
-
-        // if null then return a brand new model
-        if ($config->matchCriteria === null) {
-            return $model;
-        }
-
-        if (is_array($config->matchCriteria)) {
-            $query = $model::query();
-            $criteria = [];
-
-            foreach ($config->matchCriteria as $key => $value) {
-                if (array_key_exists((string) $value, $data)) {
-                    $criteria[$key] = $data[$value];
-                }
-            }
-
-            if (empty($criteria)) {
-                return $model;
-            }
-
-            $query->where($criteria);
-
-            return $query->first() ?? $model;
-        }
-
-        return $model;
-    }
-
+    // TODO: might be able to delete this; currently only used by ImportConfigController::run()
     public function import(BaseImporter $config): void
     {
         $filePath = BaseImporter::resolvedFilePath($config->file);
@@ -614,7 +482,7 @@ class Import
         return $data;
     }
 
-    private function processData(BaseImporter $config, array $data, mixed $element): array
+    final public function processData(BaseImporter $config, array $data, mixed $element): array
     {
         // turn that data into a fractal collection
         $resource = new Item($data, $config->transformer);

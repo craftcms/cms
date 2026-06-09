@@ -401,4 +401,25 @@ abstract class BaseImporter
 
         return false;
     }
+
+    /**
+     * Returns the names of the columns/properties/fields that we're importing into.
+     */
+    public function getDestinationCols(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the names of the columns/properties that we're importing from (the ones from the data source).
+     */
+    public function getSourceDataCols(): array
+    {
+        return [];
+    }
+
+    public function importItem(array $data): void
+    {
+        // by default, this doesn't do anything
+    }
 }
