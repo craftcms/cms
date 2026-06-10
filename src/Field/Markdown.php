@@ -8,7 +8,6 @@ use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Concerns\PreservesElementRefs;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Concerns\TracksReferences;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -33,7 +32,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Pipeline;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -42,7 +40,6 @@ use function CraftCms\Cms\template;
 
 class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface, TracksReferencesFieldInterface
 {
-    use PreservesElementRefs;
     use ProvidesLinkField;
     use TracksReferences;
 
@@ -646,84 +643,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             return null;
         }
 
-        if ($fromRequest && $this->sanitizeHtml) {
-            $value = $this->sanitizeSubmittedMarkdown($value);
-
-            if (trim($value) === '') {
-                return null;
-            }
-        }
-
         return $this->markdownData($value);
-    }
-
-    private function sanitizeSubmittedMarkdown(string $value): string
-    {
-        $markdownLinkTokens = [];
-
-        return Pipeline::send($value)
-            ->through(
-                function (string $value, Closure $next) use (&$markdownLinkTokens) {
-                    return $next($this->protectMarkdownLinkTokens(
-                        value: $value,
-                        tokens: $markdownLinkTokens
-                    ));
-                },
-                fn (string $value, Closure $next) => $next($this->sanitizePreservingElementRefs(
-                    value: $value,
-                    sanitize: fn (string $value): string => app(HtmlSanitizers::class)->sanitize($value, $this->htmlSanitizer),
-                )),
-                function (string $value, Closure $next) use (&$markdownLinkTokens) {
-                    return $next(strtr($value, $markdownLinkTokens));
-                },
-            )
-            ->thenReturn();
-    }
-
-    private function protectMarkdownLinkTokens(string $value, array &$tokens): string
-    {
-        if (! str_contains($value, '](')) {
-            return $value;
-        }
-
-        $value = preg_replace_callback(
-            '/(?<prefix>]\(\s*)(?<destination><(?:\\\\.|[^<>\n\\\\])*>)/',
-            function (array $matches) use (&$tokens) {
-                return $matches['prefix'].$this->markdownLinkToken($matches['destination'], $tokens);
-            },
-            $value,
-        ) ?? $value;
-
-        if (! str_contains($value, '"') && ! str_contains($value, "'")) {
-            return $value;
-        }
-
-        return preg_replace_callback(
-            '/]\((?<contents>[^\n)]*)\)/',
-            function (array $matches) use (&$tokens) {
-                $replacements = [];
-
-                if (str_contains($matches['contents'], '"')) {
-                    $replacements['"'] = $this->markdownLinkToken('"', $tokens);
-                }
-
-                if (str_contains($matches['contents'], "'")) {
-                    $replacements["'"] = $this->markdownLinkToken("'", $tokens);
-                }
-
-                return ']('.strtr($matches['contents'], $replacements).')';
-            },
-            $value,
-        ) ?? $value;
-    }
-
-    private function markdownLinkToken(string $value, array &$tokens): string
-    {
-        $token = Str::random(32);
-
-        $tokens[$token] = $value;
-
-        return $token;
     }
 
     private function markdownData(string $value): MarkdownData
@@ -733,6 +653,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             $this->encode ? MarkdownService::FLAVOR_PRE_ENCODED : $this->flavor,
             encode: $this->encode,
             inlineOnly: $this->inlineOnly,
+            sanitizeHtml: $this->sanitizeHtml,
+            htmlSanitizer: $this->htmlSanitizer,
         );
     }
 

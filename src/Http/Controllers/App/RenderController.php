@@ -189,11 +189,9 @@ readonly class RenderController
             $encode ? MarkdownService::FLAVOR_PRE_ENCODED : $validated['flavor'],
             encode: $encode,
             inlineOnly: $request->boolean('inlineOnly'),
+            sanitizeHtml: $request->boolean('sanitizeHtml'),
+            htmlSanitizer: $validated['htmlSanitizer'] ?? null,
         )->getHtml();
-
-        if ($request->boolean('sanitizeHtml')) {
-            $html = app(HtmlSanitizers::class)->sanitize($html, $validated['htmlSanitizer'] ?? null);
-        }
 
         return new JsonResponse([
             'html' => $html,

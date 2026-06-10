@@ -135,7 +135,7 @@ it('allows extended markdown flavors in field settings', function () {
 
     expect(Arr::pluck(MarkdownField::flavorOptions(), 'value'))->toContain('custom-field-flavor')
         ->and($field->validate())->toBeTrue()
-        ->and($field->normalizeValue("one\ntwo", null)->getHtml())->toBe("<p>one<br>\ntwo</p>\n");
+        ->and($field->normalizeValue("one\ntwo", null)->getHtml())->toBe("<p>one<br />\ntwo</p>\n");
 });
 
 it('validates configurable toolbar buttons', function () {
@@ -293,7 +293,7 @@ it('can show editor stats', function () {
         ->and($field->getSettingsHtml())->toContain('name="showStats"');
 });
 
-it('sanitizes submitted html with the configured html sanitizer', function () {
+it('sanitizes rendered html with the configured html sanitizer', function () {
     app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
         (new HtmlSanitizerConfig)->allowElement('p')
     ));
@@ -306,22 +306,25 @@ it('sanitizes submitted html with the configured html sanitizer', function () {
     ]);
 
     $value = $field->normalizeValueFromRequest('<p onclick="bad()">Hi</p><h1>Heading</h1>', null);
+    $previewHtml = $field->getPreviewHtml($value, new Entry);
     $inputHtml = $field->getInputHtml('**bold**', null);
 
     expect($field->validate())->toBeTrue()
-        ->and($value->getRaw())->toBe('<p>Hi</p>')
+        ->and($value->getRaw())->toBe('<p onclick="bad()">Hi</p><h1>Heading</h1>')
+        ->and($value->getHtml())->toBe("<p>Hi</p>\n")
+        ->and($previewHtml)->toBe("<div class=\"markdown-field-preview\"><p>Hi</p>\n</div>")
         ->and($inputHtml)->toContain('sanitize-html')
         ->and($inputHtml)->toContain('html-sanitizer="paragraphs-only"');
 });
 
-it('preserves element reference tags when sanitizing submitted markdown', function () {
+it('preserves raw markdown syntax when html sanitization is enabled', function () {
     $field = new MarkdownField([
         'name' => 'Body',
         'handle' => 'body',
         'sanitizeHtml' => true,
     ]);
 
-    $value = $field->normalizeValueFromRequest(implode("\n", [
+    $markdown = implode("\n", [
         '[Global Transit Overhaul Widens Washington]({entry:925@1:url})',
         '[Global Transit Overhaul Widens Washington]({entry:925@1:url}?foo "Foo")',
         '[Example.com](<https://example.com>)',
@@ -329,25 +332,21 @@ it('preserves element reference tags when sanitizing submitted markdown', functi
         '[Foo](/some/url?foo="bar")',
         '[Foo](/some/url "A title")',
         "[Foo](/some/url 'A title')",
+        '`inline code`',
+        '```php',
+        'echo "Hello world";',
+        '```',
+        '> A quote',
         '[Unknown]({unknown:925@1:url})',
         '[Unknown]({unknown:925@1:url}?foo "Foo")',
-    ]), null);
+    ]);
+    $value = $field->normalizeValueFromRequest($markdown, null);
 
     expect($field->validate())->toBeTrue()
-        ->and($value->getRaw())->toBe(implode("\n", [
-            '[Global Transit Overhaul Widens Washington]({entry:925@1:url})',
-            '[Global Transit Overhaul Widens Washington]({entry:925@1:url}?foo "Foo")',
-            '[Example.com](<https://example.com>)',
-            '[Example.com](<https://example.com> "Example")',
-            '[Foo](/some/url?foo&#61;"bar")',
-            '[Foo](/some/url "A title")',
-            "[Foo](/some/url 'A title')",
-            '[Unknown]({unknown:925&#64;1:url})',
-            '[Unknown]({unknown:925&#64;1:url}?foo "Foo")',
-        ]));
+        ->and($value->getRaw())->toBe($markdown);
 });
 
-it('can disable submitted html sanitization', function () {
+it('can disable rendered html sanitization', function () {
     $field = new MarkdownField([
         'name' => 'Body',
         'handle' => 'body',
@@ -356,7 +355,8 @@ it('can disable submitted html sanitization', function () {
     $value = $field->normalizeValueFromRequest('<script>alert(1)</script>**bold**', null);
 
     expect($field->validate())->toBeTrue()
-        ->and($value->getRaw())->toBe('<script>alert(1)</script>**bold**');
+        ->and($value->getRaw())->toBe('<script>alert(1)</script>**bold**')
+        ->and($value->getHtml())->toContain('<script>alert(1)</script>');
 });
 
 it('validates and renders html sanitizer settings', function () {
@@ -495,7 +495,7 @@ it('saves and retrieves markdown field values as markdown data', function () {
 
     expect($value)->toBeInstanceOf(MarkdownData::class)
         ->and($value->getRaw())->toBe("line one\nline two")
-        ->and($value->getHtml())->toBe("<p>line one<br>\nline two</p>\n");
+        ->and($value->getHtml())->toBe("<p>line one<br />\nline two</p>\n");
 });
 
 it('renders as safe html in twig while raw markdown remains accessible', function () {
@@ -523,7 +523,7 @@ it('returns rendered html by default and raw markdown when requested through gra
     };
 
     expect($type['args']['raw']['defaultValue'])->toBeFalse()
-        ->and($type['resolve']($source, [], null, markdownFieldResolveInfo('body')))->toBe("<p>line one<br>\nline two</p>\n")
+        ->and($type['resolve']($source, [], null, markdownFieldResolveInfo('body')))->toBe("<p>line one<br />\nline two</p>\n")
         ->and($type['resolve']($source, ['raw' => true], null, markdownFieldResolveInfo('body')))->toBe("line one\nline two");
 });
 

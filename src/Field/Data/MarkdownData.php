@@ -8,6 +8,7 @@ use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
 use Illuminate\Contracts\Support\Htmlable;
@@ -20,6 +21,8 @@ readonly class MarkdownData implements Htmlable, SafeHtml, Serializable
         private string $flavor,
         private bool $encode = false,
         private bool $inlineOnly = false,
+        private bool $sanitizeHtml = false,
+        private ?string $htmlSanitizer = null,
     ) {}
 
     public function __toString(): string
@@ -50,11 +53,15 @@ readonly class MarkdownData implements Htmlable, SafeHtml, Serializable
             $markdown = Html::encode($markdown);
         }
 
-        if ($this->inlineOnly) {
-            return MarkdownFacade::parseParagraph($markdown, $this->flavor);
+        $html = $this->inlineOnly
+            ? MarkdownFacade::parseParagraph($markdown, $this->flavor)
+            : MarkdownFacade::parse($markdown, $this->flavor);
+
+        if (! $this->sanitizeHtml) {
+            return $html;
         }
 
-        return MarkdownFacade::parse($markdown, $this->flavor);
+        return app(HtmlSanitizers::class)->sanitize($html, $this->htmlSanitizer);
     }
 
     public function toHtml(): string
