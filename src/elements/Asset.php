@@ -3943,9 +3943,7 @@ JS;
                         // it's likely UTF-8
                     } else {
                         // No reliable declaration; Windows-1252 is our safest bet
-                        $bytes = preg_replace_callback('/\\\\x([0-9a-fA-F]{2})/', function($m) {
-                            return chr(hexdec($m[1]));
-                        }, $value);
+                        $bytes = preg_replace_callback('/\\\\x([0-9a-fA-F]{2})/', fn($m) => chr(hexdec($m[1])), $value);
 
                         $value = mb_convert_encoding($bytes, 'UTF-8', 'Windows-1252');
                     }
