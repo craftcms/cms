@@ -55,6 +55,8 @@ test('addErrors compatibility helper merges yii2-format error array via validate
         'type' => 'file',
     ]);
 
+    $listing->errors()->add('basename', 'Existing error.');
+
     $listing->addErrors([
         'basename' => ['Invalid basename.', 'Too long.'],
         'type' => 'Invalid type.',
@@ -62,6 +64,6 @@ test('addErrors compatibility helper merges yii2-format error array via validate
 
     expect($listing->hasErrors('basename'))->toBeTrue()
         ->and($listing->hasErrors('type'))->toBeTrue()
-        ->and($listing->errors()->get('basename'))->toBe(['Invalid basename.', 'Too long.'])
+        ->and($listing->errors()->get('basename'))->toBe(['Existing error.', 'Invalid basename.', 'Too long.'])
         ->and($listing->errors()->get('type'))->toBe(['Invalid type.']);
 });
