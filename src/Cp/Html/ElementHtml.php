@@ -71,6 +71,7 @@ readonly class ElementHtml
             'showThumb' => true,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
+            'appearance' => null,
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -90,6 +91,7 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
+            'appearance' => $config['appearance'],
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),

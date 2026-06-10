@@ -34,6 +34,7 @@ export default css`
 
   .cp-chip[appearance='plain'],
   .cp-chip--plain {
+    --_min-height: none;
     padding-block: 0;
     padding-inline: 0;
     border-color: transparent;
@@ -43,7 +44,6 @@ export default css`
 
   .cp-chip[size='small'],
   .cp-chip--small {
-    --_min-height: var(--c-size-control-sm);
     padding-block: calc(var(--c-spacing-xs) / 2);
   }
 
