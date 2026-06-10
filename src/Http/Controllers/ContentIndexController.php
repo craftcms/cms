@@ -81,9 +81,11 @@ class ContentIndexController
             $elementQuery->getQuery()->reorder();
 
             foreach ($orderBy as $sortItem) {
-                $elementQuery->orderBy(
-                    $sortItem['field'],
-                );
+                if (($sortItem['direction'] ?? 'asc') === 'desc') {
+                    $elementQuery->orderByDesc($sortItem['field']);
+                } else {
+                    $elementQuery->orderBy($sortItem['field']);
+                }
             }
         }
 
