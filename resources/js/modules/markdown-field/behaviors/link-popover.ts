@@ -28,9 +28,14 @@ export function createLinkPopoverController(
   options: LinkPopoverOptions
 ): LinkPopoverController {
   let popover: HTMLElementTagNameMap['craft-popover'] | null = null;
+  let trigger: HTMLElement | null = disclosureTrigger();
   let selectionEnd = 0;
   let selectionStart = 0;
   let suspended = false;
+
+  if (trigger) {
+    setDisclosureState(trigger, false);
+  }
 
   function open(event?: Event | null): void {
     event?.preventDefault();
@@ -51,12 +56,14 @@ export function createLinkPopoverController(
     linkField.showLabelField = options.showLabelField;
     linkField.types = options.types;
 
-    const trigger = triggerElement(event);
+    trigger = triggerElement(event);
+    const triggerId = anchorId(trigger);
 
     popover = document.createElement('craft-popover');
     popover.className = 'markdown-link-popover';
     popover.distance = 6;
-    popover.for = anchorId(trigger);
+    popover.for = triggerId;
+    popover.id = `${triggerId}-popover`;
     // `for` resolves after the first update; set the anchor directly so
     // programmatic show() has a target during the first render.
     popover.anchor = trigger;
@@ -74,7 +81,16 @@ export function createLinkPopoverController(
     linkField.addEventListener('element-select-end', resume);
     popover.addEventListener('wa-after-hide', handlePopoverAfterHide);
 
+    trigger.setAttribute('aria-controls', popover.id);
+    setDisclosureState(trigger, false);
     void showPopover(popover);
+  }
+
+  function disclosureTrigger(): HTMLElement | null {
+    return (
+      editor.toolbar?.buttons?.link ??
+      editor.container.querySelector<HTMLElement>('[data-button="link"]')
+    );
   }
 
   function triggerElement(event?: Event | null): HTMLElement {
@@ -129,6 +145,7 @@ export function createLinkPopoverController(
     }
 
     suspended = true;
+    setDisclosureState(trigger, false);
     event.detail.waitUntil(popover.hide() ?? Promise.resolve());
   }
 
@@ -189,19 +206,33 @@ export function createLinkPopoverController(
     }
 
     await target.show();
+    setDisclosureState(trigger, true);
     focusFirstControl();
   }
 
   function close(): void {
     const currentPopover = popover;
+    const currentTrigger = trigger;
     popover = null;
     suspended = false;
+
+    if (currentTrigger) {
+      setDisclosureState(currentTrigger, false);
+      currentTrigger.removeAttribute('aria-controls');
+    }
 
     currentPopover?.removeEventListener(
       'wa-after-hide',
       handlePopoverAfterHide
     );
     currentPopover?.remove();
+  }
+
+  function setDisclosureState(
+    target: HTMLElement | null,
+    expanded: boolean
+  ): void {
+    target?.setAttribute('aria-expanded', expanded.toString());
   }
 
   return {

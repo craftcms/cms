@@ -167,24 +167,9 @@ function toolbarButtonGroups(
       customizeToolbarButton(toolbarButtons.code, t('Code'), 'code'),
     ],
     [
-      customizeToolbarButton(
-        toolbarButtons.h1,
-        t('H1'),
-        'h1',
-        'heading-1'
-      ),
-      customizeToolbarButton(
-        toolbarButtons.h2,
-        t('H2'),
-        'h2',
-        'heading-2'
-      ),
-      customizeToolbarButton(
-        toolbarButtons.h3,
-        t('H3'),
-        'h3',
-        'heading-3'
-      ),
+      customizeToolbarButton(toolbarButtons.h1, t('H1'), 'h1', 'heading-1'),
+      customizeToolbarButton(toolbarButtons.h2, t('H2'), 'h2', 'heading-2'),
+      customizeToolbarButton(toolbarButtons.h3, t('H3'), 'h3', 'heading-3'),
       headingButton(4, t('Heading 4')),
       headingButton(5, t('Heading 5')),
       headingButton(6, t('Heading 6')),
