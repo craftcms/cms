@@ -18,7 +18,6 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
-use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\LinkTypesResolving;
 use CraftCms\Cms\Field\LinkTypes\Asset;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
@@ -337,22 +336,10 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             $value instanceof LinkData &&
             $element?->propagating &&
             ($element->propagateAll || ($element->isNewForSite && ! isset($element->duplicateOf))) &&
-            isset($element->propagatingFrom)
+            isset($element->propagatingFrom) &&
+            $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
         ) {
-            // in order to avoid infinite loop when using custom translation format with a translation key containing `include()`
-            // we need to prevent `View::renderObjectTemplate()` from trying to normalize this value again and again
-            // to do that, we can e.g. set `propagating` to false before getting the translation key
-            // see https://github.com/craftcms/cms/issues/18363 for more details
-            if ($this->translationMethod === TranslationMethod::Custom->value) {
-                $element->propagating = false;
-            }
-
-            if ($this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)) {
-                $value = $this->localizeLinkValue($value, $element);
-            }
-
-            // set $propagating back to true
-            $element->propagating = true;
+            $value = $this->localizeLinkValue($value, $element);
         }
 
         // as above but specifically for nested entries when field uses "none" propagation method

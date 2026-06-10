@@ -21,8 +21,8 @@
     "dev": "node ./scripts/build.js --develop",
     "prebuild": "npm run format",
     "build": "node ./scripts/build.js",
-    "format": "npx prettier --write .",
-    "check:format": "prettier --check .",
+    "format": "npx prettier --write ./src",
+    "check:format": "prettier --check ./src",
     "check:exports": "attw --pack .",
     "check:types": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
@@ -105,7 +105,7 @@
     "@github/relative-time-element": "^5.0.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@vitest/browser-playwright": "^4.1.5",
-    "axios": "^1.15.2"
+    "axios": "^1.17.0"
   },
   "customElements": "dist/custom-elements.json"
 }

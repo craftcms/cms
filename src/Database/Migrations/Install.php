@@ -27,7 +27,6 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
@@ -1410,7 +1409,7 @@ class Install extends Migration
         $siteGroupUid = Str::uuid()->toString();
 
         return [
-            'dateModified' => DateTimeHelper::currentTimeStamp(),
+            'dateModified' => now()->getTimestamp(),
             'siteGroups' => [
                 $siteGroupUid => [
                     'name' => $this->site->getName(),

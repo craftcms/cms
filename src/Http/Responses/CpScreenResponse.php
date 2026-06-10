@@ -856,6 +856,7 @@ class CpScreenResponse implements Responsable
             }, $crumbs ?? []),
             'contextMenu' => $this->contextMenu(),
             'toolbar' => $toolbar,
+            'actionMenuItems' => $this->actionMenuItemProps(),
             'actionMenu' => $this->actionMenu(config: [
                 'hiddenLabel' => t('Actions'),
                 'buttonAttributes' => [
@@ -913,22 +914,36 @@ class CpScreenResponse implements Responsable
 
     private function actionMenu(bool $withDestructive = true, array $config = [], ?string $namespace = null): ?string
     {
-        if ($this->actionMenuItems === null) {
-            return null;
-        }
+        $itemsFactory = $this->actionMenuItemsFactory($withDestructive);
 
-        if ($withDestructive) {
-            $itemsFactory = $this->actionMenuItems;
-        } else {
-            $itemsFactory = fn () => array_filter(
-                call_user_func($this->actionMenuItems),
-                fn (array $item) => ! ($item['destructive'] ?? false),
-            );
+        if ($itemsFactory === null) {
+            return null;
         }
 
         return $this->menu($itemsFactory, $config + [
             'id' => 'action-menu',
         ], $namespace);
+    }
+
+    private function actionMenuItemProps(bool $withDestructive = true): ?array
+    {
+        return $this->menuItems($this->actionMenuItemsFactory($withDestructive));
+    }
+
+    private function actionMenuItemsFactory(bool $withDestructive): ?callable
+    {
+        if ($this->actionMenuItems === null) {
+            return null;
+        }
+
+        if ($withDestructive) {
+            return $this->actionMenuItems;
+        }
+
+        return fn () => array_filter(
+            call_user_func($this->actionMenuItems),
+            fn (array $item) => ! ($item['destructive'] ?? false),
+        );
     }
 
     private function menu(?callable $itemsFactory, array $config, ?string $namespace): ?string
@@ -938,7 +953,7 @@ class CpScreenResponse implements Responsable
         }
 
         $render = function () use ($itemsFactory, $config): ?string {
-            $items = app(MenuHtml::class)->normalizeMenuItems($itemsFactory() ?? []);
+            $items = $this->menuItems($itemsFactory);
 
             if (empty($items)) {
                 return null;
@@ -952,5 +967,20 @@ class CpScreenResponse implements Responsable
         }
 
         return $render();
+    }
+
+    private function menuItems(?callable $itemsFactory): ?array
+    {
+        if ($itemsFactory === null) {
+            return null;
+        }
+
+        $items = app(MenuHtml::class)->disclosureMenuItems($itemsFactory() ?? []);
+
+        if (empty($items)) {
+            return null;
+        }
+
+        return $items;
     }
 }

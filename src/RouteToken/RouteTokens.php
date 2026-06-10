@@ -10,7 +10,7 @@ use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -55,12 +55,12 @@ class RouteTokens
      * @param  array|string  $route  Where matching requests should be routed to.
      * @param  int|null  $usageLimit  The maximum number of times this token can be
      *                                used. Defaults to no limit.
-     * @param  DateTime|null  $expiryDate  The date that the token expires.
-     *                                     Defaults to the 'defaultTokenDuration' config setting.
+     * @param  DateTimeInterface|null  $expiryDate  The date that the token expires.
+     *                                              Defaults to the 'defaultTokenDuration' config setting.
      * @param  string|null  $token  The token to use, if it was pre-generated. Must be exactly 32 characters.
      * @return string|false The generated token, or `false` if there was an error.
      */
-    public function createToken(array|string $route, ?int $usageLimit = null, ?DateTime $expiryDate = null, ?string $token = null): string|false
+    public function createToken(array|string $route, ?int $usageLimit = null, ?DateTimeInterface $expiryDate = null, ?string $token = null): string|false
     {
         if ($token !== null && strlen($token) !== 32) {
             throw new InvalidArgumentException("Invalid token: $token");

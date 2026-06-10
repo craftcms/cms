@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Gql\Resources;
 
 use CraftCms\Cms\Cp\JsonResource;
 use CraftCms\Cms\Gql\Data\GqlToken;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Http\Request;
 
 /**
@@ -20,9 +20,9 @@ class GqlTokenResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'dateCreated' => $this->dateCreated?->format(DateTime::ATOM),
-            'lastUsed' => $this->lastUsed?->format(DateTime::ATOM),
-            'expiryDate' => $this->expiryDate?->format(DateTime::ATOM),
+            'dateCreated' => $this->dateCreated?->format(DateTimeInterface::ATOM),
+            'lastUsed' => $this->lastUsed?->format(DateTimeInterface::ATOM),
+            'expiryDate' => $this->expiryDate?->format(DateTimeInterface::ATOM),
             'enabled' => $this->enabled,
             'isTemporary' => $this->isTemporary,
             'isValid' => $this->isValid,

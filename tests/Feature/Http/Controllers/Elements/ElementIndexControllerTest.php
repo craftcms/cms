@@ -11,6 +11,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -189,6 +190,7 @@ it('prefers the current users provisional draft for element table html', functio
     $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
     $draft->title = 'Draft Title';
     Elements::saveElement($draft);
+    actingAs(UserModel::findOrFail(auth()->id()));
 
     postJson(action([ElementIndexController::class, 'elementTableHtml']), [
         'context' => ElementSources::CONTEXT_INDEX,

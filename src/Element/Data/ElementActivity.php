@@ -8,7 +8,7 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\User\Elements\User;
-use DateTime;
+use DateTimeInterface;
 
 use function CraftCms\Cms\t;
 
@@ -20,7 +20,7 @@ class ElementActivity extends Component
 
     public ElementActivityType $type;
 
-    public DateTime $timestamp;
+    public DateTimeInterface $timestamp;
 
     public function toActivityRow(ElementInterface $element): array
     {

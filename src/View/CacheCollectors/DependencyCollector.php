@@ -56,7 +56,7 @@ class DependencyCollector implements CacheCollectorInterface
 
         return [
             'tags' => $dependency->tags ?? [],
-            'expiryDate' => $duration ? DateTimeHelper::toIso8601(DateTimeHelper::now()->modify("+{$duration} seconds")) : null,
+            'expiryDate' => $duration ? DateTimeHelper::toIso8601(now()->add($duration, 'seconds')) : null,
         ];
     }
 
@@ -99,7 +99,7 @@ class DependencyCollector implements CacheCollectorInterface
             return;
         }
 
-        $duration = $expiryDate->getTimestamp() - DateTimeHelper::currentTimeStamp();
+        $duration = $expiryDate->getTimestamp() - now()->getTimestamp();
 
         if ($duration > 0 && ($this->duration === null || $duration < $this->duration)) {
             $this->duration = $duration;
@@ -147,7 +147,7 @@ class DependencyCollector implements CacheCollectorInterface
             $this->collectTags($tags);
 
             if ($duration) {
-                $this->setExpiryDate(DateTimeHelper::now()->modify("+{$duration} seconds"));
+                $this->setExpiryDate(now()->add($duration, 'seconds'));
             }
         } else {
             $this->tags = null;

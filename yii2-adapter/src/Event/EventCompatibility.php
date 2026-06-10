@@ -8,6 +8,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\Field as LegacyField;
 use craft\console\controllers\ResaveController;
+use craft\controllers\AssetsController;
 use craft\controllers\ElementsController;
 use craft\controllers\UsersController;
 use craft\db\Connection;
@@ -136,6 +137,7 @@ readonly class EventCompatibility
         /**
          * Controllers
          */
+        AssetsController::registerEvents();
         ResaveController::registerEvents();
         UsersController::registerEvents();
         ElementsController::registerEvents();

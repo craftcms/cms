@@ -19,7 +19,7 @@
   );
 
   function handleValueChange(event: CustomEvent) {
-    const target = event.target as CraftCheckbox;
+    const target = event.currentTarget as CraftCheckbox;
     emit('update:modelValue', target.modelValue);
   }
 </script>
@@ -28,14 +28,14 @@
   <craft-checkbox-group
     :name="name"
     :label="label"
-    .model-value="modelValue"
+    .modelValue="modelValue"
     @model-value-changed="handleValueChange"
     :disabled="disabled"
   >
     <template v-if="allowSelectAll">
       <craft-checkbox-indeterminate :label="t('All')">
         <template v-for="option in options" :key="option.value">
-          <craft-checkbox .choice-value="option.value">
+          <craft-checkbox .choiceValue="option.value">
             <label slot="label"
               ><slot name="label" :option="option">{{
                 option.label
@@ -48,7 +48,7 @@
     </template>
     <template v-else>
       <template v-for="option in options" :key="option.value">
-        <craft-checkbox .choice-value="option.value">
+        <craft-checkbox .choiceValue="option.value">
           <label slot="label"
             ><slot name="label" :option="option">{{
               option.label

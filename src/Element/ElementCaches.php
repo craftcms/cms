@@ -10,7 +10,7 @@ use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use RuntimeException;
 use Throwable;
@@ -38,7 +38,7 @@ readonly class ElementCaches
         $this->dependencyCollector()->collectTags($tags);
     }
 
-    public function setCacheExpiryDate(DateTime $expiryDate): void
+    public function setCacheExpiryDate(DateTimeInterface $expiryDate): void
     {
         $this->dependencyCollector()->setExpiryDate($expiryDate);
     }
