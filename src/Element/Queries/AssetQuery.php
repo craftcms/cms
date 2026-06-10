@@ -188,12 +188,9 @@ class AssetQuery extends ElementQuery
     #[Override]
     public function createElement(array $row): ElementInterface
     {
-        // Use the site-specific alt text, if set
+        // Use the site-specific alt text
         $siteAlt = Arr::pull($row, 'siteAlt');
-
-        if ($siteAlt !== null) {
-            $row['alt'] = $siteAlt;
-        }
+        $row['alt'] = $siteAlt;
 
         return parent::createElement($row);
     }
