@@ -9,13 +9,17 @@
 
 namespace craft\controllers;
 
+use craft\base\Event as YiiEvent;
+use craft\events\SaveAssetImageEvent;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Image\Events\ImageEditorSaving;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\Event;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -36,6 +40,40 @@ use function CraftCms\Cms\t;
 class AssetsController extends Controller
 {
     use AssetsControllerTrait;
+
+    /**
+     * @event SaveAssetImageEvent The event that is triggered before an edited asset image is saved.
+     *
+     * Event handlers may set {@see \craft\events\SaveAssetImageEvent::handled} to `true` in order to skip
+     * Craft's native image editor save implementation.
+     *
+     * @since 5.10.6
+     * @deprecated 6.0.0 use {@see ImageEditorSaving} instead.
+     */
+    public const EVENT_BEFORE_SAVE_IMAGE = 'beforeSaveImage';
+
+    public static function registerEvents(): void
+    {
+        Event::listen(ImageEditorSaving::class, function(ImageEditorSaving $event) {
+            if (!$event->handled && YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_SAVE_IMAGE)) {
+                $yiiEvent = new SaveAssetImageEvent([
+                    'asset' => $event->asset,
+                    'replace' => $event->replace,
+                    'viewportRotation' => $event->viewportRotation,
+                    'imageRotation' => $event->imageRotation,
+                    'cropData' => $event->cropData,
+                    'focalPoint' => $event->focalPoint,
+                    'imageDimensions' => $event->imageDimensions,
+                    'flipData' => $event->flipData,
+                    'zoom' => $event->zoom,
+                ]);
+
+                YiiEvent::trigger(self::class, self::EVENT_BEFORE_SAVE_IMAGE, $yiiEvent);
+                $event->newAssetId = $yiiEvent->newAssetId;
+                $event->handled = $yiiEvent->handled;
+            }
+        });
+    }
 
     /**
      * Saves an asset.

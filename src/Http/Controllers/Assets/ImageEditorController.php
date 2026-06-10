@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Image\Events\ImageEditorSaving;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
@@ -137,6 +138,24 @@ readonly class ImageEditorController
             array_diff(['offsetX', 'offsetY', 'height', 'width'], array_keys($cropData))
         ) {
             abort(400, t('Invalid cropping parameters passed'));
+        }
+
+        event($event = new ImageEditorSaving(
+            asset: $asset,
+            replace: $replace,
+            viewportRotation: $viewportRotation,
+            imageRotation: $imageRotation,
+            cropData: $cropData,
+            focalPoint: $focalPoint,
+            imageDimensions: $imageDimensions,
+            flipData: $flipData,
+            zoom: $zoom,
+        ));
+
+        if ($event->handled) {
+            return $this->asSuccess(data: array_filter([
+                'newAssetId' => $event->newAssetId,
+            ]));
         }
 
         $transformer = new ImageTransformer;
