@@ -55,7 +55,7 @@ class AssetsController extends Controller
     public static function registerEvents(): void
     {
         Event::listen(ImageEditorSaving::class, function(ImageEditorSaving $event) {
-            if (!$event->handled && YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_SAVE_IMAGE)) {
+            if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_SAVE_IMAGE)) {
                 $yiiEvent = new SaveAssetImageEvent([
                     'asset' => $event->asset,
                     'replace' => $event->replace,
@@ -71,6 +71,10 @@ class AssetsController extends Controller
                 YiiEvent::trigger(self::class, self::EVENT_BEFORE_SAVE_IMAGE, $yiiEvent);
                 $event->newAssetId = $yiiEvent->newAssetId;
                 $event->handled = $yiiEvent->handled;
+
+                if ($yiiEvent->handled) {
+                    return false;
+                }
             }
         });
     }
