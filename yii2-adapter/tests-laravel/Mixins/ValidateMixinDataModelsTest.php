@@ -47,3 +47,21 @@ test('folder criteria keeps hasErrors compatibility helpers via validate mixin',
         ->and($criteria->hasErrors('sourceId'))->toBeTrue()
         ->and($criteria->hasErrors())->toBeTrue();
 });
+
+test('addErrors compatibility helper merges yii2-format error array via validate mixin', function() {
+    $listing = new FsListing([
+        'dirname' => 'foo',
+        'basename' => 'bar',
+        'type' => 'file',
+    ]);
+
+    $listing->addErrors([
+        'basename' => ['Invalid basename.', 'Too long.'],
+        'type' => 'Invalid type.',
+    ]);
+
+    expect($listing->hasErrors('basename'))->toBeTrue()
+        ->and($listing->hasErrors('type'))->toBeTrue()
+        ->and($listing->errors()->get('basename'))->toBe(['Invalid basename.', 'Too long.'])
+        ->and($listing->errors()->get('type'))->toBe(['Invalid type.']);
+});
