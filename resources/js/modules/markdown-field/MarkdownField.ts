@@ -19,6 +19,7 @@ import {registerShortcutBehavior} from './behaviors/shortcuts';
 import {themeOptions} from './behaviors/theme';
 import {
   replaceMarkdownGuideButton,
+  syncToolbarKeyboardNavigation,
   syncUnsupportedToolbarButtonStates,
   toolbarItems,
 } from './behaviors/toolbar';
@@ -177,6 +178,7 @@ class MarkdownField extends LitElement {
       () => this.linkPopoverController?.destroy(),
       ...(charCounterCleanup ? [charCounterCleanup] : []),
       replaceMarkdownGuideButton(editor),
+      syncToolbarKeyboardNavigation(editor),
       syncUnsupportedToolbarButtonStates(editor),
       registerLinkPasteBehavior(editor, previewController),
       registerShortcutBehavior(editor, previewController),
