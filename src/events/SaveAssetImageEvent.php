@@ -11,7 +11,7 @@ namespace craft\events;
  * Save asset image event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.19.0
+ * @since 4.18.1
  */
 class SaveAssetImageEvent extends AssetEvent
 {

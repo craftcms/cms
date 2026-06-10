@@ -76,7 +76,7 @@ class AssetsController extends Controller
      * Event handlers may set [[SaveAssetImageEvent::assetId]] to the ID of the saved asset, in order to skip
      * Craft's native image editor save implementation.
      *
-     * @since 4.19.0
+     * @since 4.18.1
      */
     public const EVENT_BEFORE_SAVE_IMAGE = 'beforeSaveImage';
 
