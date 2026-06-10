@@ -22,7 +22,7 @@
 
 {{ forms.textField({
     label: "Model Class"|t('app'),
-    instructions: "The class name (with namespace) of the model you’d like to import the data into."|t('app'),
+    instructions: "The fully qualified class of the model you’d like to import the data into."|t('app'),
     id: 'className',
     name: 'className',
     class: 'code',
@@ -56,8 +56,15 @@
     static: static,
 }) }}#}
 
+<a href="{{ cpUrl('import/configs/' ~ import.handle ~ '/map') }}" class="btn submit">Configure mapping</a>
+
 <div>
-    <p>mapping stuff goes here, or maybe we want a separate screen?</p>
+    <p>
+        mapping stuff goes here<br />
+        this is model-based, so we want a list of all the table columns and a list of all the keys from the data array
+    </p>
+
+
     <p>
         if we're editing something that already exists, this is prepopulated with what's already saved;<br />
         if it's a new config (or the map in the config is empty), you use the UI to create your mapping;<br />

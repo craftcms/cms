@@ -108,6 +108,54 @@ class ImportConfigController
         return $this->cpScreenResponse($import);
     }
 
+    public function editMap(Request $request, ?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
+    {
+        $handle ??= $import->handle ?? $request->input('handle');
+
+        abort_if(is_null($handle), 404, 'Import config not found');
+        abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
+        abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
+
+        if ($import === null) {
+            $import = $found;
+        }
+
+        $currentUser = auth('craft')->user();
+
+        $templateVars = [
+            'readOnly' => $this->readOnly,
+            'static' => ! $currentUser?->can('editImportConfigs'),
+            'import' => $import,
+            'destinationCols' => $import->getDestinationCols(),
+            'sourceDataCols' => $import->getSourceDataCols(),
+        ];
+
+        return new CpScreenResponse()
+            ->title(t('Edit map', ['name' => $import->name]))
+            ->addCrumb(t('Import'), 'import')
+            ->addCrumb(t('Configs'), 'import/configs')
+            ->addCrumb(t($import->name), 'import/configs/'.$import->handle)
+            ->contentTemplate('import/configs/_map.twig', $templateVars)
+            ->unless(
+                $this->readOnly || ! $currentUser?->can('editImportConfigs'),
+                callback: function (CpScreenResponse $response) {
+                    $response
+                        ->action('import/configs/save')
+                        ->redirectUrl('import/configs')
+                        ->addAltAction(t('Save and continue editing'), [
+                            'redirect' => 'import/configs/{handle}/map',
+                            'shortcut' => true,
+                            'retainScroll' => true,
+                        ]);
+                },
+                default: function (CpScreenResponse $response) {
+                    if ($this->readOnly) {
+                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
+                    }
+                },
+            );
+    }
+
     public function store(Request $request): Response
     {
         $request->validate([
@@ -227,6 +275,7 @@ class ImportConfigController
             );
     }
 
+    // TODO: this might be deleted - currently only used for file-based config, to run it from the configs screen
     public function run(Request $request): Response
     {
         $handle = $request->input('handle');
