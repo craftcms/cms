@@ -49,6 +49,7 @@ readonly class ValidateMixin
         };
     }
 
+    /** @return Closure(array<string, string|string[]>): void */
     public function addErrors(): Closure
     {
         return function(array $items): void {
