@@ -69,7 +69,6 @@ class AssetQuery extends ElementQuery
             'assets.width as width',
             'assets.height as height',
             'assets.size as size',
-            'assets.alt as alt',
             'assets.focalPoint as focalPoint',
             'assets.keptFile as keptFile',
             'assets.dateModified as dateModified',
