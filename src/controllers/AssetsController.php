@@ -991,7 +991,7 @@ class AssetsController extends Controller
             ]);
             $this->trigger(self::EVENT_BEFORE_SAVE_IMAGE, $event);
 
-            if ($event->assetId) {
+            if ($event->assetId !== null) {
                 return $this->asSuccess(data: $event->replace ? [] : [
                     'newAssetId' => $event->assetId,
                 ]);
