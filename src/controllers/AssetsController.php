@@ -22,6 +22,7 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\FsException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
+use craft\events\SaveAssetImageEvent;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -69,6 +70,16 @@ use ZipArchive;
 class AssetsController extends Controller
 {
     use AssetsControllerTrait;
+
+    /**
+     * @event SaveAssetImageEvent The event that is triggered before an edited asset image is saved.
+     *
+     * Event handlers may set [[SaveAssetImageEvent::handled]] to `true` in order to skip
+     * Craft's native image editor save implementation.
+     *
+     * @since 5.10.6
+     */
+    public const EVENT_BEFORE_SAVE_IMAGE = 'beforeSaveImage';
 
     /**
      * @inheritdoc
@@ -975,7 +986,27 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('Invalid cropping parameters passed');
         }
 
-        // TODO Fire an event for any other image editing takers.
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_IMAGE)) {
+            $event = new SaveAssetImageEvent([
+                'asset' => $asset,
+                'replace' => (bool)$replace,
+                'viewportRotation' => $viewportRotation,
+                'imageRotation' => $imageRotation,
+                'cropData' => $cropData,
+                'focalPoint' => $focalPoint,
+                'imageDimensions' => $imageDimensions,
+                'flipData' => $flipData,
+                'zoom' => $zoom,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_SAVE_IMAGE, $event);
+
+            if ($event->handled) {
+                return $this->asSuccess(data: array_filter([
+                    'newAssetId' => $event->newAssetId,
+                ]));
+            }
+        }
+
         $transformer = new ImageTransformer();
 
         $originalImageWidth = $asset->width;
