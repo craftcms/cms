@@ -3938,6 +3938,18 @@ JS;
             if (!empty($iptc['2#120'])) {
                 $value = trim(implode(' ', $iptc['2#120']));
                 if ($value !== '') {
+                    // check tag 1#090 => Coded Character Set; to denote UTF-8, "\x1B%G" is usually used
+                    if (($iptc['1#090'][0] ?? null) === "\x1B%G" || StringHelper::encoding($value) === 'utf-8') {
+                        // it's likely UTF-8
+                    } else {
+                        // No reliable declaration; Windows-1252 is our safest bet
+                        $bytes = preg_replace_callback('/\\\\x([0-9a-fA-F]{2})/', function($m) {
+                            return chr(hexdec($m[1]));
+                        }, $value);
+
+                        $value = mb_convert_encoding($bytes, 'UTF-8', 'Windows-1252');
+                    }
+
                     return $value;
                 }
             }
