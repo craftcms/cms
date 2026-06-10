@@ -10,6 +10,7 @@
 - Fixed a bug where the selected site wasn’t being remembered after saving an element. ([#19054](https://github.com/craftcms/cms/discussions/19054))
 - Fixed a bug where transformed SVG images could have two sets of `width` and `height` attributes. ([#1902w7](https://github.com/craftcms/cms/pull/19027))
 - Fixed an infinite recursion bug. ([#19063](https://github.com/craftcms/cms/issues/19063))
+- Fixed a JavaScript error that could occur if there was an error rendering an element condition rule’s Twig template.
 - Fixed a styling issue.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
