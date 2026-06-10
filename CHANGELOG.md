@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added `craft\controllers\EVENT_BEFORE_SAVE_IMAGE`. ([#19068](https://github.com/craftcms/cms/pull/19068))
+- Added `craft\events\SaveAssetImageEvent`. ([#19068](https://github.com/craftcms/cms/pull/19068))
+
 ## 4.18.1 - 2026-05-22
 
 - Fixed a bug where some element index actions weren’t working. ([#18938](https://github.com/craftcms/cms/issues/18938))
