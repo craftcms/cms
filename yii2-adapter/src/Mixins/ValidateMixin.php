@@ -60,6 +60,7 @@ readonly class ValidateMixin
              *
              * @phpstan-ignore-next-line
              */
+            $items = array_map(static fn (mixed $messages) => Arr::wrap($messages), $items);
             $this->errors()->merge($items);
         };
     }
