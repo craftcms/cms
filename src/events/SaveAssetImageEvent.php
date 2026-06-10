@@ -56,7 +56,7 @@ class SaveAssetImageEvent extends AssetEvent
     public float $zoom = 1.0;
 
     /**
-     * @var int|null The ID of the asset saved by the event handler.
+     * @var int|null The ID of the new asset saved by the event handler, if [[replace]] is `false`.
      */
-    public ?int $assetId = null;
+    public ?int $newAssetId = null;
 }
