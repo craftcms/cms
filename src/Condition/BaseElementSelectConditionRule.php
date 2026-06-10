@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use Override;
 use stdClass;
+use Throwable;
 
 use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
@@ -119,11 +120,14 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
                 $referenceElement = new stdClass;
             }
 
-            $elementIds = renderSandboxedObjectTemplate($elementIds, $referenceElement);
+            try {
+                $elementIds = renderSandboxedObjectTemplate($elementIds, $referenceElement);
+            } catch (Throwable) {
+            }
 
             return array_values(array_filter(array_map(
                 fn (string $elementId) => (int) trim($elementId),
-                explode(',', $elementIds),
+                explode(',', (string) $elementIds),
             )));
         }
 
