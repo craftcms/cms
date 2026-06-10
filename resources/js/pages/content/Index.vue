@@ -34,6 +34,7 @@
     inlineEditing: boolean;
     mode: ViewMode['mode'];
     tableColumns: Array<string>;
+    columnOrder?: Array<string>;
     nestedInputNamespace?: string | null;
     showHeaderColumn: boolean;
     sort: Array<SortItem>;
@@ -123,13 +124,27 @@
       );
   }
 
+  // Available columns ordered by the persisted column order (unknown/new
+  // columns fall to the end in their natural order).
+  const orderedColumns = computed<Array<[string, {label: string}]>>(() => {
+    const order = viewState.value.columnOrder ?? [];
+    return [...Object.entries(props.tableColumns)].sort(([a], [b]) => {
+      const ai = order.indexOf(a);
+      const bi = order.indexOf(b);
+      if (ai === -1 && bi === -1) return 0;
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+  });
+
   const columnHelper = createCraftColumnHelper<Element>();
   const columns = computed(() => [
     columnHelper.html('title', {
       header: t('Entry'),
     }),
 
-    ...Object.entries(props.tableColumns)
+    ...orderedColumns.value
       .filter(([key]) => viewState.value.tableColumns?.includes(key))
       .map(([key, value]) => {
         return columnHelper.html(key, {
@@ -160,8 +175,8 @@
 
   function sortItemsToQuery(items: Array<SortItem>) {
     return items.reduce<Record<string, {field: string; direction: string}>>(
-      (acc, item) => {
-        acc[0] = {field: item.field, direction: item.direction};
+      (acc, item, index) => {
+        acc[index] = {field: item.field, direction: item.direction};
         return acc;
       },
       {}
@@ -190,7 +205,13 @@
     const params = new URLSearchParams(window.location.search);
     const persisted = viewState.value.sort;
 
-    if (params.has('sort') || !persisted?.length) {
+    // The sort is serialized as `sort[0][field]`, `sort[0][direction]`, … so we
+    // can't look for a literal `sort` key — check for any bracketed sort param.
+    const hasSortInUrl = [...params.keys()].some(
+      (key) => key === 'sort' || key.startsWith('sort[')
+    );
+
+    if (hasSortInUrl || !persisted?.length) {
       return;
     }
 
@@ -211,7 +232,12 @@
           },
         }
       ),
-      {only: ['data', 'sort'], preserveScroll: true, replace: true}
+      {
+        only: ['data', 'sort'],
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+      }
     );
   });
 
@@ -245,24 +271,20 @@
         value: 'title',
         disabled: true,
       },
-      ...Object.entries(props.tableColumns).map(([key, value]) => ({
+      ...orderedColumns.value.map(([key, value]) => ({
         label: value.label,
         value: key,
       })),
     ];
   });
 
-  const sortedColumnOptions = computed(() => {
-    const checked = viewState.value.tableColumns ?? [];
-    return [
-      ...tableColumnOptions.value.filter((option) =>
-        checked.includes(option.value)
-      ),
-      ...tableColumnOptions.value.filter(
-        (option) => !checked.includes(option.value)
-      ),
-    ];
-  });
+  function handleColumnReorder(options: Array<{value: string}>) {
+    // Persist the new column order; the pinned "Entry" (title) column always
+    // stays first, so it's excluded from the stored order.
+    viewState.value.columnOrder = options
+      .map((option) => option.value)
+      .filter((value) => value !== 'title');
+  }
 
   const visibleColumns = ref({});
   const elementTable = useVueTable<Element>({
@@ -415,8 +437,9 @@
                     :label="t('Table Columns')"
                     name="viewState[tableColumns][]"
                     v-model="viewState.tableColumns"
-                    :options="sortedColumnOptions"
-                    allow-select-all
+                    :options="tableColumnOptions"
+                    sortable
+                    @update:options="handleColumnReorder"
                   />
                 </div>
               </div>
