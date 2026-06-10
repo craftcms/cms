@@ -73,7 +73,7 @@ export function createLinkPopoverController(
     document.body.appendChild(popover);
 
     linkField.addEventListener('apply', handleApply as EventListener);
-    linkField.addEventListener('cancel', close);
+    linkField.addEventListener('cancel', handleCancel);
     linkField.addEventListener(
       'element-select-start',
       suspend as EventListener
@@ -137,6 +137,10 @@ export function createLinkPopoverController(
     }
 
     close();
+  }
+
+  function handleCancel(): void {
+    close({restoreFocus: true});
   }
 
   function suspend(event: ElementSelectStartEvent): void {
@@ -210,7 +214,7 @@ export function createLinkPopoverController(
     focusFirstControl();
   }
 
-  function close(): void {
+  function close({restoreFocus = false} = {}): void {
     const currentPopover = popover;
     const currentTrigger = trigger;
     popover = null;
@@ -226,6 +230,10 @@ export function createLinkPopoverController(
       handlePopoverAfterHide
     );
     currentPopover?.remove();
+
+    if (restoreFocus) {
+      currentTrigger?.focus();
+    }
   }
 
   function setDisclosureState(
