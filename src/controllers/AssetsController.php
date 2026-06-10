@@ -992,7 +992,7 @@ class AssetsController extends Controller
             $this->trigger(self::EVENT_BEFORE_SAVE_IMAGE, $event);
 
             if ($event->handled) {
-                return $this->asSuccess(array_filter([
+                return $this->asSuccess(data: array_filter([
                     'newAssetId' => $event->newAssetId,
                 ]));
             }
