@@ -73,7 +73,7 @@ class AssetsController extends Controller
     /**
      * @event SaveAssetImageEvent The event that is triggered before an edited asset image is saved.
      *
-     * Event handlers may set [[SaveAssetImageEvent::assetId]] to the ID of the saved asset, in order to skip
+     * Event handlers may set [[SaveAssetImageEvent::handled]] to `true` in order to skip
      * Craft's native image editor save implementation.
      *
      * @since 4.18.1
