@@ -34,6 +34,7 @@ type ElementInfo = {
 };
 
 type ElementSelectStartDetail = {
+  restoreFocusTo?: HTMLElement;
   waitUntil: (promise: Promise<unknown>) => void;
 };
 
@@ -132,7 +133,7 @@ class CraftLinkField extends LitElement {
     return (event.target as HTMLInputElement).value;
   }
 
-  private async chooseElement(): Promise<void> {
+  private async chooseElement(event: Event): Promise<void> {
     const type = this.selectedType;
 
     if (!type?.elementType || !type.refHandle) {
@@ -144,7 +145,9 @@ class CraftLinkField extends LitElement {
     delete config.limit;
     delete config.single;
 
-    await this.dispatchElementSelectStartEvent();
+    await this.dispatchElementSelectStartEvent(
+      event.currentTarget instanceof HTMLElement ? event.currentTarget : null
+    );
 
     const modal = window.Craft.createElementSelectorModal(type.elementType, {
       ...config,
@@ -171,13 +174,16 @@ class CraftLinkField extends LitElement {
     });
   }
 
-  private async dispatchElementSelectStartEvent(): Promise<void> {
+  private async dispatchElementSelectStartEvent(
+    restoreFocusTo: HTMLElement | null
+  ): Promise<void> {
     const promises: Array<Promise<unknown>> = [];
 
     this.dispatchEvent(
       new CustomEvent<ElementSelectStartDetail>('element-select-start', {
         bubbles: true,
         detail: {
+          restoreFocusTo: restoreFocusTo ?? undefined,
           waitUntil: (promise) => promises.push(promise),
         },
       })

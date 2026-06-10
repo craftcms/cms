@@ -12,6 +12,7 @@ type LinkPopoverOptions = {
 };
 
 type ElementSelectStartEvent = CustomEvent<{
+  restoreFocusTo?: HTMLElement;
   waitUntil: (promise: Promise<unknown>) => void;
 }>;
 
@@ -31,6 +32,7 @@ export function createLinkPopoverController(
   let trigger: HTMLElement | null = disclosureTrigger();
   let selectionEnd = 0;
   let selectionStart = 0;
+  let resumeFocusTarget: HTMLElement | null = null;
   let suspended = false;
 
   if (trigger) {
@@ -149,6 +151,7 @@ export function createLinkPopoverController(
     }
 
     suspended = true;
+    resumeFocusTarget = event.detail.restoreFocusTo ?? null;
     setDisclosureState(trigger, false);
     event.detail.waitUntil(popover.hide() ?? Promise.resolve());
   }
@@ -161,7 +164,8 @@ export function createLinkPopoverController(
     }
 
     suspended = false;
-    void showPopover(currentPopover);
+    void showPopover(currentPopover, resumeFocusTarget);
+    resumeFocusTarget = null;
   }
 
   function handlePopoverAfterHide(event: Event): void {
@@ -201,7 +205,8 @@ export function createLinkPopoverController(
   }
 
   async function showPopover(
-    target: HTMLElementTagNameMap['craft-popover']
+    target: HTMLElementTagNameMap['craft-popover'],
+    focusTarget: HTMLElement | null = null
   ): Promise<void> {
     await target.updateComplete;
 
@@ -211,6 +216,13 @@ export function createLinkPopoverController(
 
     await target.show();
     setDisclosureState(trigger, true);
+
+    if (focusTarget?.isConnected) {
+      focusTarget.focus();
+
+      return;
+    }
+
     focusFirstControl();
   }
 
@@ -218,6 +230,7 @@ export function createLinkPopoverController(
     const currentPopover = popover;
     const currentTrigger = trigger;
     popover = null;
+    resumeFocusTarget = null;
     suspended = false;
 
     if (currentTrigger) {
