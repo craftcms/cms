@@ -1,5 +1,10 @@
 import {t} from '@craftcms/cp';
-import {markdownActions, toolbarButtons, type ToolbarButton} from 'overtype';
+import {
+  markdownActions,
+  toolbarButtons,
+  type OverType as OverTypeInstance,
+  type ToolbarButton,
+} from 'overtype';
 import boldIcon from '@icons/solid/bold.svg?raw';
 import circleQuestionIcon from '@icons/solid/circle-question.svg?raw';
 import codeIcon from '@icons/solid/code.svg?raw';
@@ -22,6 +27,7 @@ import uploadIcon from '@icons/solid/upload.svg?raw';
 
 type CraftToolbarButton = ToolbarButton & {
   actionId?: string;
+  optionName?: string;
 };
 
 type ToolbarOptions = {
@@ -42,6 +48,15 @@ const strikethroughFormat = {
   prefix: '~~',
   suffix: '~~',
   trimFirst: true,
+};
+
+const unsupportedActiveButtons = {
+  code: (editor: OverTypeInstance) => {
+    return markdownActions.getActiveFormats(editor.textarea).includes('code');
+  },
+  strikethrough: (editor: OverTypeInstance) => {
+    return hasSurroundingMarker(editor.textarea, '~~');
+  },
 };
 
 const customIcons: Record<string, string> = {
@@ -80,9 +95,11 @@ export function toolbarItems(
   const items: CraftToolbarButton[] = [];
 
   for (const group of toolbarButtonGroups(callbacks)) {
-    const groupItems = group.filter(
-      (item) => selectedButtons.has(item.name) || requiredButtons.has(item.name)
-    );
+    const groupItems = group.filter((item) => {
+      const optionName = item.optionName ?? item.name;
+
+      return selectedButtons.has(optionName) || requiredButtons.has(optionName);
+    });
 
     if (!groupItems.length) {
       continue;
@@ -96,6 +113,36 @@ export function toolbarItems(
   }
 
   return items;
+}
+
+export function syncUnsupportedToolbarButtonStates(
+  editor: OverTypeInstance
+): () => void {
+  const sync = () => {
+    for (const [buttonName, isActive] of Object.entries(
+      unsupportedActiveButtons
+    )) {
+      const button = editor.toolbar?.buttons?.[buttonName];
+
+      if (!(button instanceof HTMLElement)) {
+        continue;
+      }
+
+      const active = isActive(editor);
+
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active.toString());
+    }
+  };
+
+  editor.textarea.addEventListener('input', sync);
+  editor.textarea.addEventListener('selectionchange', sync);
+  sync();
+
+  return () => {
+    editor.textarea.removeEventListener('input', sync);
+    editor.textarea.removeEventListener('selectionchange', sync);
+  };
 }
 
 function toolbarButtonGroups(
@@ -114,6 +161,7 @@ function toolbarButtonGroups(
             editor.textarea,
             strikethroughFormat
           );
+          editor.textarea.dispatchEvent(new Event('input', {bubbles: true}));
         }
       ),
       customizeToolbarButton(toolbarButtons.code, t('Code'), 'code'),
@@ -217,12 +265,12 @@ function customizeToolbarButton(
   button: ToolbarButton,
   title: string,
   icon: string,
-  name = button.name
+  optionName = button.name
 ): CraftToolbarButton {
   return {
     ...button,
     icon: customIcons[icon] ?? button.icon,
-    name,
+    optionName,
     title,
   };
 }
@@ -245,4 +293,22 @@ function customToolbarButton(
 
 function decorativeIcon(svg: string): string {
   return svg.replace('<svg ', '<svg aria-hidden="true" focusable="false" ');
+}
+
+function hasSurroundingMarker(
+  textarea: HTMLTextAreaElement,
+  marker: string
+): boolean {
+  const {selectionEnd, selectionStart, value} = textarea;
+  const beforeSelection = value.slice(0, selectionStart);
+  const afterSelection = value.slice(selectionEnd);
+
+  return (
+    markerCount(beforeSelection, marker) % 2 === 1 &&
+    afterSelection.indexOf(marker) !== -1
+  );
+}
+
+function markerCount(value: string, marker: string): number {
+  return value.split(marker).length - 1;
 }
