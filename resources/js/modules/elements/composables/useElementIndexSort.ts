@@ -56,7 +56,7 @@ export function useElementIndexSort(
     initialState: normalizeSort(props.sort ?? viewState.value.sort),
     onChange: ({query}) => {
       router.visit(index(routeArgs(), {query}), {
-        only: ['data', 'sort'],
+        only: ['data', 'sort', 'pagination'],
         preserveState: true,
         preserveScroll: true,
       });
@@ -108,7 +108,7 @@ export function useElementIndexSort(
         },
       }),
       {
-        only: ['data', 'sort'],
+        only: ['data', 'sort', 'pagination'],
         preserveState: true,
         preserveScroll: true,
         replace: true,

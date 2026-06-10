@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
@@ -95,10 +96,19 @@ class ContentIndexController
             $returnUrl = str_replace('?', ':QS:', $returnUrl);
         }
 
+        // Paginate a clone so the query the legacy index HTML uses below stays
+        // unbounded.
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $paginator = (clone $elementQuery)->paginate(
+            perPage: $request->integer('per_page', 50),
+            pageName: $pageParam,
+            page: $request->integer($pageParam, 1),
+        );
+
         // @TODO: this should be from the view state
         // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];
         $attributes = ['title', ...array_keys($elementType::tableAttributes())];
-        $elements = collect($elementType::indexElements($elementQuery, $sourceKey))
+        $elements = collect($paginator->items())
             ->map(fn (ElementInterface $element) => collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title' ?
@@ -138,6 +148,16 @@ class ContentIndexController
             'statusOptions' => $statusOptions,
             'data' => $elements,
             'sort' => $sort,
+            'pagination' => [
+                'total' => $paginator->total(),
+                'per_page' => $paginator->perPage(),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'next_page_url' => $paginator->nextPageUrl(),
+                'prev_page_url' => $paginator->previousPageUrl(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+            ],
             'contentHtml' => $contentHtml,
         ]));
     }

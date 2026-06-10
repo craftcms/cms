@@ -12,6 +12,7 @@
   import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
   import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
   import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
+  import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
   import type {
     SortOption,
     ViewMode,
@@ -42,7 +43,7 @@
       tableColumns: Record<string, {label: string}>;
       viewModes?: Array<ViewMode>;
       baseSortOptions: Array<SortOption>;
-      pagination?: PaginationData;
+      pagination: PaginationData;
       sort: Array<SortItem>;
     }>(),
     {
@@ -63,6 +64,7 @@
   );
   const {sortingState, sortingConfig, sortField, sortDirection} =
     useElementIndexSort(props, viewState);
+  const {paginationState, paginationConfig} = useElementIndexPagination(props);
 
   const visibleColumns = ref({});
   const elementTable = useVueTable<Element>({
@@ -82,9 +84,13 @@
       get sorting() {
         return sortingState.value;
       },
+      get pagination() {
+        return paginationState.value;
+      },
     },
     getCoreRowModel: getCoreRowModel<Element>(),
     ...sortingConfig,
+    ...paginationConfig,
     enableMultiSort: false,
   });
 </script>
@@ -102,7 +108,13 @@
       <div id="source-actions"></div>
     </template>
 
-    <AdminTable :table="elementTable">
+    <AdminTable
+      :table="elementTable"
+      :from="pagination.from"
+      :to="pagination.to"
+      :total="pagination.total"
+      :enable-adjust-page-size="true"
+    >
       <template #table-header>
         <ElementIndexToolbar
           v-model:search="filters.form.search"
