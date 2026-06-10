@@ -53,7 +53,11 @@
       :height="overDropState?.draggingRect?.height"
     />
 
-    <span ref="handleRef" class="checkbox-group-item__handle">
+    <span
+      v-if="!option.disabled"
+      ref="handleRef"
+      class="checkbox-group-item__handle"
+    >
       <ReorderButton
         :aria-label="t('Reorder')"
         :position="position"

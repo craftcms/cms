@@ -138,19 +138,25 @@
     });
   });
 
+  // The selected columns, in display order (drives both the table columns and
+  // the table's column order).
+  const visibleOrderedColumns = computed(() =>
+    orderedColumns.value.filter(([key]) =>
+      viewState.value.tableColumns?.includes(key)
+    )
+  );
+
   const columnHelper = createCraftColumnHelper<Element>();
   const columns = computed(() => [
     columnHelper.html('title', {
       header: t('Entry'),
     }),
 
-    ...orderedColumns.value
-      .filter(([key]) => viewState.value.tableColumns?.includes(key))
-      .map(([key, value]) => {
-        return columnHelper.html(key, {
-          header: value.label,
-        });
-      }),
+    ...visibleOrderedColumns.value.map(([key, value]) => {
+      return columnHelper.html(key, {
+        header: value.label,
+      });
+    }),
   ]);
 
   const {sortingState, sortingConfig, onSortingChange} = useServerSort({
@@ -270,6 +276,7 @@
         label: t('Entry'),
         value: 'title',
         disabled: true,
+        checked: true,
       },
       ...orderedColumns.value.map(([key, value]) => ({
         label: value.label,
@@ -296,7 +303,10 @@
     },
     state: {
       get columnOrder() {
-        return ['title', 'dateCreated'];
+        return [
+          'title',
+          ...visibleOrderedColumns.value.map(([key]) => key),
+        ];
       },
       get columnVisibility() {
         return visibleColumns.value;

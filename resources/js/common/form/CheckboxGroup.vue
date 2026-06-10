@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import {t} from '@craftcms/cp';
   import type CraftCheckbox from '@craftcms/cp/components/checkbox/checkbox.ts.mjs';
   import type {CheckboxOption} from '@/common/types';
@@ -23,31 +24,59 @@
     {allowSelectAll: false, sortable: false}
   );
 
+  // The checkbox group derives each checkbox's checked state from its
+  // modelValue, which would otherwise override a per-option `checked` flag. Fold
+  // any forced-checked options (e.g. a disabled, always-on column) into the
+  // value the group receives so they render checked.
+  const groupModelValue = computed(() => {
+    const forced = props.options
+      .filter((option) => option.checked)
+      .map((option) => option.value);
+    return [...new Set([...props.modelValue, ...forced])];
+  });
+
   function handleValueChange(event: CustomEvent) {
     const target = event.target as CraftCheckbox;
     emit('update:modelValue', target.modelValue);
   }
 
+  // Only non-disabled options are reorderable; disabled options (e.g. a pinned
+  // "always on" column) keep their position.
+  const sortableOptions = computed(() =>
+    props.options.filter((option) => !option.disabled)
+  );
+
+  function sortableIndexOf(option: CheckboxOption): number {
+    return sortableOptions.value.findIndex((o) => o.value === option.value);
+  }
+
   function reorder(startIndex: number, finishIndex: number) {
-    if (finishIndex < 0 || finishIndex > props.options.length - 1) return;
-    const items = [...props.options];
-    const [removed] = items.splice(startIndex, 1);
+    const sortable = sortableOptions.value.slice();
+    if (finishIndex < 0 || finishIndex > sortable.length - 1) return;
+    const [removed] = sortable.splice(startIndex, 1);
     if (removed === undefined) return;
-    items.splice(finishIndex, 0, removed);
+    sortable.splice(finishIndex, 0, removed);
+
+    // Rebuild the full list, leaving disabled (pinned) options in place and
+    // filling the reorderable slots with the new order.
+    let next = 0;
+    const items = props.options.map((option) =>
+      option.disabled ? option : sortable[next++]!
+    );
     emit('update:options', items);
   }
 
   function getRowPosition(index: number): 'first' | 'middle' | 'last' {
-    if (index === 0) return 'first';
-    if (index === props.options.length - 1) return 'last';
+    if (index <= 0) return 'first';
+    if (index === sortableOptions.value.length - 1) return 'last';
     return 'middle';
   }
 
   const {setItemRef, setHandleRef, getDragState, getDropState} =
     useReorderableItems({
-      getItemIds: () => props.options.map((option) => option.value),
+      getItemIds: () => sortableOptions.value.map((option) => option.value),
       onReorder: reorder,
-      enabled: () => props.sortable && props.options.length > 1,
+      enabled: () => props.sortable && sortableOptions.value.length > 1,
     });
 </script>
 
@@ -55,7 +84,7 @@
   <craft-checkbox-group
     :name="name"
     :label="label"
-    .modelValue="modelValue"
+    .modelValue="groupModelValue"
     @model-value-changed="handleValueChange"
     :disabled="disabled"
   >
@@ -69,13 +98,13 @@
         :class="{'checkbox-group__items--sortable': sortable}"
       >
         <CheckboxGroupItem
-          v-for="(option, index) in options"
+          v-for="option in options"
           :key="option.value"
           :ref="(el) => setItemRef(el as HTMLElement, option.value)"
           :option="option"
           :sortable="sortable"
-          :index="index"
-          :position="getRowPosition(index)"
+          :index="sortableIndexOf(option)"
+          :position="getRowPosition(sortableIndexOf(option))"
           :drag-state="getDragState(option.value)"
           :drop-state="getDropState(option.value)"
           @handle-ref="(el) => setHandleRef(el, option.value)"
@@ -96,13 +125,13 @@
       :class="{'checkbox-group__items--sortable': sortable}"
     >
       <CheckboxGroupItem
-        v-for="(option, index) in options"
+        v-for="option in options"
         :key="option.value"
         :ref="(el) => setItemRef(el as HTMLElement, option.value)"
         :option="option"
         :sortable="sortable"
-        :index="index"
-        :position="getRowPosition(index)"
+        :index="sortableIndexOf(option)"
+        :position="getRowPosition(sortableIndexOf(option))"
         :drag-state="getDragState(option.value)"
         :drop-state="getDropState(option.value)"
         @handle-ref="(el) => setHandleRef(el, option.value)"
