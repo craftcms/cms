@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added `craft\controllers\EVENT_BEFORE_SAVE_IMAGE`. ([#19068](https://github.com/craftcms/cms/pull/19068))
+- Added `craft\events\SaveAssetImageEvent`. ([#19068](https://github.com/craftcms/cms/pull/19068))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities.
