@@ -1015,29 +1015,15 @@ class AssetQuery extends ElementQuery
     {
         if ($this->hasAlt !== null) {
             $hasAltCondition = [
-                'or',
+                'and',
                 ['not', ['assets_sites.alt' => '']],
-                [
-                    'and',
-                    ['assets_sites.alt' => null],
-                    ['not', ['assets.alt' => '']],
-                    ['not', ['assets.alt' => null]],
-                ],
+                ['not', ['assets_sites.alt' => null]],
             ];
 
             $withoutAltCondition = [
                 'or',
                 ['assets_sites.alt' => ''],
-                [
-                    'and',
-                    ['assets_sites.alt' => null],
-                    [
-                        'or',
-                        ['assets.alt' => ''],
-                        ['assets.alt' => null],
-                    ],
-
-                ],
+                ['assets_sites.alt' => null],
             ];
 
             $this->subQuery
@@ -1153,11 +1139,9 @@ class AssetQuery extends ElementQuery
      */
     public function createElement(array $row): ElementInterface
     {
-        // Use the site-specific alt text, if set
+        // Use the site-specific alt text
         $siteAlt = ArrayHelper::remove($row, 'siteAlt');
-        if ($siteAlt !== null) {
-            $row['alt'] = $siteAlt;
-        }
+        $row['alt'] = $siteAlt;
 
         return parent::createElement($row);
     }
