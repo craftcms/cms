@@ -169,19 +169,19 @@ function toolbarButtonGroups(
     [
       customizeToolbarButton(
         toolbarButtons.h1,
-        t('Big Heading'),
+        t('H1'),
         'h1',
         'heading-1'
       ),
       customizeToolbarButton(
         toolbarButtons.h2,
-        t('Medium Heading'),
+        t('H2'),
         'h2',
         'heading-2'
       ),
       customizeToolbarButton(
         toolbarButtons.h3,
-        t('Small Heading'),
+        t('H3'),
         'h3',
         'heading-3'
       ),
