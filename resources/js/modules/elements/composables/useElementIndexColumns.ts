@@ -7,7 +7,7 @@ import type {ViewState} from '@/modules/elements/types/view-state';
 type Row = Record<any, any>;
 
 interface ElementIndexColumnsContext {
-  tableColumns: Record<string, {label: string}>;
+  tableColumns: Array<{label: string; value: string}>;
 }
 
 interface PinnedColumn {
@@ -29,17 +29,20 @@ export function useElementIndexColumns(
   pinned: PinnedColumn
 ) {
   // Available columns ordered by the persisted column order (unknown/new
-  // columns fall to the end in their natural order).
+  // columns fall to the end in their natural order). Each column is keyed by its
+  // `value` (e.g. `field:{uuid}`), which matches the row data's attribute keys.
   const orderedColumns = computed<Array<[string, {label: string}]>>(() => {
     const order = viewState.value.columnOrder ?? [];
-    return [...Object.entries(props.tableColumns)].sort(([a], [b]) => {
-      const ai = order.indexOf(a);
-      const bi = order.indexOf(b);
-      if (ai === -1 && bi === -1) return 0;
-      if (ai === -1) return 1;
-      if (bi === -1) return -1;
-      return ai - bi;
-    });
+    return props.tableColumns
+      .map((column): [string, {label: string}] => [column.value, column])
+      .sort(([a], [b]) => {
+        const ai = order.indexOf(a);
+        const bi = order.indexOf(b);
+        if (ai === -1 && bi === -1) return 0;
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      });
   });
 
   // The selected columns, in display order (drives both the table columns and

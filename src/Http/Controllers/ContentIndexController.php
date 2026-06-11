@@ -105,9 +105,37 @@ class ContentIndexController
             page: $request->integer($pageParam, 1),
         );
 
+        $fieldLayouts = $this->resolveFieldLayouts();
+        $sortOptions = $this->elementSources->getSourceSortOptions($elementType, $sourceKey)
+            ->map(fn (array $option) => [
+                'label' => $option['label'],
+                'value' => $option['attribute'] ?? $option['orderBy'],
+                'defaultDir' => $option['defaultDir'] ?? 'asc',
+            ])
+            ->values()
+            ->all();
+
+        $tableColumns = $this->elementSources->getSourceTableAttributes($elementType, $sourceKey)
+            ->map(fn (array $attribute, string $key) => [
+                ...$attribute,
+                'value' => $key,
+            ])
+            ->values()
+            ->all();
+
+        $defaultTableColumns = $this->elementSources->getTableAttributes(
+            elementType: $elementType,
+            sourceKey: $sourceKey,
+            fieldLayouts: $fieldLayouts,
+        )
+            ->map(fn (array $attribute) => $attribute[0])
+            ->filter(fn (string $attribute) => $attribute !== 'title')
+            ->values()
+            ->all();
+
         // @TODO: this should be from the view state
         // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];
-        $attributes = ['title', ...array_keys($elementType::tableAttributes())];
+        $attributes = ['title', ...array_keys($elementType::tableAttributes()), ...collect($tableColumns)->pluck('value')->all()];
         $elements = collect($paginator->items())
             ->map(fn (ElementInterface $element) => [
                 // `id` is not a rendered column; the table keys row selection by
@@ -122,7 +150,7 @@ class ContentIndexController
                                     'context' => $renderContext,
                                     'appearance' => 'plain',
                                 ]),
-                                ['href' => $element->getCpEditUrl()]
+                                ['href' => $element->getCpEditUrl(), 'inertia' => false]
                             )
                             : (string) $this->attributeRenderer->render($element, $attribute),
                     ])
@@ -147,12 +175,22 @@ class ContentIndexController
             sortable: false,
         );
 
+        // PrepareElementSourcesVariables seeds $context['tableColumns'] with the
+        // full set of available attributes, keyed by attribute. Drop it so the
+        // recursive Arr::merge below doesn't fold our source-specific list (a
+        // sequential array) into that associative structure — the page expects a
+        // plain array of {label, value}.
+        unset($context['tableColumns']);
+
         return Inertia::render('content/Index', Arr::merge($context, [
             'status' => $request->input('status', ''),
             'source' => $this->resolveSource($elementType, $request->input('source', '*'), $renderContext)[1],
             'search' => $request->input('search'),
             'viewState' => $viewState,
             'statusOptions' => $statusOptions,
+            'sortOptions' => $sortOptions,
+            'tableColumns' => $tableColumns,
+            'defaultTableColumns' => $defaultTableColumns,
             'data' => $elements,
             'sort' => $sort,
             'pagination' => [

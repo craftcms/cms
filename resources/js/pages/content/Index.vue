@@ -45,7 +45,7 @@
       sectionHandle?: string | number;
       viewState: Partial<ViewState>;
       data: Array<Element>;
-      tableColumns: Record<string, {label: string}>;
+      tableColumns: Array<{label: string; value: string}>;
       viewModes?: Array<ViewMode>;
       baseSortOptions: Array<SortOption>;
       pagination: PaginationData;
@@ -101,8 +101,6 @@
         modal.destroy();
       },
     });
-
-    console.log(modal);
 
     return modal;
   }
