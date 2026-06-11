@@ -49,8 +49,13 @@ export default css`
     }
   }
 
-  .nav-item:hover:not(:has(craft-button:hover)) {
+  .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)) {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
+  }
+
+  /* No href: render as a plain label, not an interactive item. */
+  .nav-item--static {
+    cursor: default;
   }
 
   .nav-item__prefix {
@@ -60,6 +65,10 @@ export default css`
     align-items: center;
     aspect-ratio: 1;
     width: 100%;
+  }
+  
+  .nav-item__suffix {
+    justify-self: end;
   }
 
   .active-indicator {

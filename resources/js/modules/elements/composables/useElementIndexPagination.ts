@@ -15,7 +15,9 @@ interface ElementIndexPaginationContext {
  * `data` + `pagination` Inertia visit, and the server-confirmed pagination is
  * mirrored back into the table state.
  */
-export function useElementIndexPagination(props: ElementIndexPaginationContext) {
+export function useElementIndexPagination(
+  props: ElementIndexPaginationContext
+) {
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
     onChange: ({query}) => {

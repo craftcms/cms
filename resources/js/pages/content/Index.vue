@@ -2,10 +2,15 @@
   import {t} from '@craftcms/cp';
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import ElementSources from '@/modules/elements/ElementSources.vue';
-  import type {Source} from '@/modules/elements/types/sources';
+  import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
-  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {
+    getCoreRowModel,
+    type RowSelectionState,
+    useVueTable,
+  } from '@tanstack/vue-table';
   import {ref} from 'vue';
   import type {PaginationData, SortItem} from '@/common/types';
   import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
@@ -31,10 +36,10 @@
       criteria?: Record<string, any>;
       page: string;
       sources: Array<Source>;
-      source?: Source;
+      source?: SourceItem;
       contentHtml?: string;
       search?: string | null;
-      status: string;
+      status: string | null;
       viewMode?: string | null;
       statusOptions?: Array<{label: string; value: string}>;
       sectionHandle?: string | number;
@@ -67,9 +72,19 @@
   const {paginationState, paginationConfig} = useElementIndexPagination(props);
 
   const visibleColumns = ref({});
+
+  // Selection is keyed by element id (see `getRowId`), so it survives sorting
+  // and pagination. Read the current selection from `rowSelection` (a map of
+  // element id → selected) or via `elementTable.getSelectedRowModel()`.
+  const rowSelection = ref<RowSelectionState>({});
+
+  function createCustomizeSourcesModal() {
+    console.log('opening sources modal');
+  }
+
   const elementTable = useVueTable<Element>({
     get data() {
-      return props.data;
+      return props.data ?? [];
     },
     get columns() {
       return columns.value;
@@ -87,6 +102,15 @@
       get pagination() {
         return paginationState.value;
       },
+      get rowSelection() {
+        return rowSelection.value;
+      },
+    },
+    getRowId: (row) => String(row.id),
+    enableRowSelection: true,
+    onRowSelectionChange: (updater) => {
+      rowSelection.value =
+        typeof updater === 'function' ? updater(rowSelection.value) : updater;
     },
     getCoreRowModel: getCoreRowModel<Element>(),
     ...sortingConfig,
@@ -105,11 +129,22 @@
         <ElementSources :sources="sources" :active-source="source?.key" />
       </nav>
 
+      <div class="mt-4">
+        <ActionMenu
+          :actions="[
+            {
+              label: t('Customize sources'),
+              action: () => createCustomizeSourcesModal(),
+            },
+          ]"
+        />
+      </div>
       <div id="source-actions"></div>
     </template>
 
     <AdminTable
       :table="elementTable"
+      :selectable="true"
       :from="pagination.from"
       :to="pagination.to"
       :total="pagination.total"

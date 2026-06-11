@@ -5,7 +5,7 @@ import type {ViewState} from '@/modules/elements/types/view-state';
 
 interface ElementIndexFiltersContext {
   search?: string | null;
-  status: string;
+  status: string | null;
   page: string;
   sectionHandle?: string | number;
 }
@@ -21,7 +21,7 @@ export function useElementIndexFilters(
 ) {
   const form = useForm({
     search: props.search ?? '',
-    status: props.status,
+    status: props.status ?? '',
   });
 
   function submit() {

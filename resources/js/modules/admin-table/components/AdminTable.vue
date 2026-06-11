@@ -30,7 +30,7 @@
 
     {
       reorderable: false,
-      selectable: true,
+      selectable: false,
       layout: 'auto',
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
@@ -128,6 +128,10 @@
       columnCount += 1;
     }
 
+    if (props.selectable) {
+      columnCount += 1;
+    }
+
     const styles: {[key: string]: number} = {
       '--table-column-count': columnCount,
     };
@@ -140,6 +144,11 @@
       []
     );
 
+    // Leading utility columns, in render order: reorder handle, then select.
+    if (props.selectable) {
+      gridDef.unshift('44px');
+    }
+
     if (props.reorderable) {
       gridDef.unshift('44px');
     }
@@ -148,6 +157,32 @@
 
     return styles;
   });
+
+  // craft-checkbox (Lion) fires `model-value-changed` on programmatic `.checked`
+  // updates too, not just user clicks. Since we bind `.checked` to the selection
+  // state, only act when the event value actually differs from current state —
+  // that's true for genuine user interaction but not for our own state sync, so
+  // it breaks the feedback loop (and avoids the partial-selection header, set to
+  // `checked=false`, being misread as "deselect all"). Read-only fully inert.
+  function onToggleAllSelected(event: Event) {
+    if (readOnly.value) {
+      return;
+    }
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked !== props.table.getIsAllRowsSelected()) {
+      props.table.toggleAllRowsSelected(checked);
+    }
+  }
+
+  function onToggleRowSelected(row: any, event: Event) {
+    if (readOnly.value) {
+      return;
+    }
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked !== row.getIsSelected()) {
+      row.toggleSelected(checked);
+    }
+  }
 
   function getRowPosition(index: number) {
     if (index === 0) {
@@ -197,6 +232,21 @@
               <span class="sr-only">Reorder</span>
             </th>
           </template>
+          <th
+            v-if="selectable"
+            class="cp-table-cell cp-table-cell--header cp-table-cell--select"
+            scope="col"
+          >
+            <craft-checkbox
+              label-sr-only
+              .checked="table.getIsAllRowsSelected()"
+              .indeterminate="table.getIsSomeRowsSelected()"
+              .disabled="readOnly"
+              @model-value-changed="onToggleAllSelected"
+            >
+              <label slot="label">{{ t('Select all') }}</label>
+            </craft-checkbox>
+          </th>
           <th
             v-for="header in headerGroup.headers"
             :key="header.id"
@@ -284,6 +334,16 @@
                 <DropIndicator :edge="getClosestEdge(row.id)" />
               </td>
             </template>
+            <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
+              <craft-checkbox
+                label-sr-only
+                .checked="row.getIsSelected()"
+                .disabled="readOnly || !row.getCanSelect()"
+                @model-value-changed="onToggleRowSelected(row, $event)"
+              >
+                <label slot="label">{{ t('Select row') }}</label>
+              </craft-checkbox>
+            </td>
             <component
               v-for="cell in row.getVisibleCells()"
               :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
@@ -376,7 +436,7 @@
           {{ t('Items per page:') }}
           <Select
             small
-            :options="pageSizeOptions"
+            :options="pageSizeOptions!"
             v-model="pageSizeProxy"
             class="w-auto"
           />
@@ -410,6 +470,12 @@
 
   :deep(.cell--wrap) {
     white-space: normal;
+  }
+
+  // Selection column hugs its checkbox rather than claiming a data-column share.
+  :deep(.cp-table-cell--select) {
+    width: 1px;
+    white-space: nowrap;
   }
 
   :deep(.cell--drag-handle) {

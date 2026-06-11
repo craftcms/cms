@@ -1,6 +1,7 @@
 import {html, LitElement, nothing} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import '../badge-indicator/badge-indicator';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
@@ -42,6 +43,10 @@ export default class CraftNavItem extends LitElement {
   @property()
   flush: boolean = false;
 
+  /** Whether the subnav starts open or closed. Active items always start open. */
+  @property({reflect: true, attribute: 'initial-state'})
+  initialState: 'open' | 'closed' = 'closed';
+
   @state()
   subnavState: string = 'closed';
 
@@ -52,8 +57,9 @@ export default class CraftNavItem extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    // Default to open when the item is active
-    this.subnavState = this.active ? 'open' : 'closed';
+    // Default to open when the item is active, or when explicitly requested.
+    this.subnavState =
+      this.active || this.initialState === 'open' ? 'open' : 'closed';
   }
 
   toggleSubnav(event: Event) {
@@ -67,9 +73,13 @@ export default class CraftNavItem extends LitElement {
 
     return html`
       <a
-        class="nav-item nav-item--icon"
+        class="${classMap({
+          'nav-item': true,
+          'nav-item--icon': true,
+          'nav-item--static': !this.href,
+        })}"
         id="${itemId}"
-        href="${this.href}"
+        href="${ifDefined(this.href || undefined)}"
         aria-current="${this.active ? 'page' : false}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(hasSubnav)}
@@ -144,8 +154,9 @@ export default class CraftNavItem extends LitElement {
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
+          'nav-item--static': !this.href,
         })}"
-        href="${this.href}"
+        href="${ifDefined(this.href || undefined)}"
         aria-current="${this.active ? 'page' : false}"
       >
         ${hasPrefix ? this.renderPrefix() : nothing}

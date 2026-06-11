@@ -3,7 +3,10 @@
   import {t} from '@craftcms/cp';
   import type {CheckboxOption} from '@/common/types';
   import DragShadow from '@/common/components/DragShadow.vue';
-  import type {DragState, DropState} from '@/common/composables/useReorderableItems';
+  import type {
+    DragState,
+    DropState,
+  } from '@/common/composables/useReorderableItems';
   import ReorderButton from '@/common/components/ReorderButton.vue';
 
   const emit = defineEmits<{

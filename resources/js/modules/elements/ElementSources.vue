@@ -1,10 +1,11 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import {index} from '@routes/cp/content/index.js';
   import {Link} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
-  import type {Source} from '@/modules/elements/types/sources';
+  import type {Source, SourceHeading} from '@/modules/elements/types/sources';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       sources: Array<Source>;
       activeSource?: string | null;
@@ -13,13 +14,60 @@
   );
 
   const {site} = useCraftData();
+
+  // Group the flat source list: each heading absorbs the items that follow it
+  // (until the next heading) into its `children`. Items before the first
+  // heading stay at the top level. Already-grouped headings keep their existing
+  // children, so this is safe to run on a partially/fully normalized list.
+  const normalizedSources = computed<Source[]>(() => {
+    const result: Source[] = [];
+    let currentHeading: SourceHeading | null = null;
+
+    for (const source of props.sources) {
+      if (source.type === 'heading') {
+        currentHeading = {...source, children: [...(source.children || [])]};
+        result.push(currentHeading);
+      } else if (currentHeading) {
+        currentHeading.children.push(source);
+      } else {
+        result.push(source);
+      }
+    }
+
+    return result;
+  });
 </script>
 
 <template>
   <craft-nav-list>
-    <template v-for="(source, idx) in sources" :key="source.key">
+    <template
+      v-for="source in normalizedSources"
+      :key="source.type === 'heading' ? source.heading : source.key"
+    >
       <template v-if="source.type === 'heading'">
-        {{ source.heading }}
+        <craft-nav-item initial-state="open">
+          <span class="text-xs font-bold">
+            {{ source.heading }}
+          </span>
+          <div slot="subnav">
+            <Link
+              v-for="child in source.children"
+              :key="child.key"
+              as="craft-nav-item"
+              :href="
+                index(
+                  {page: 'entries'},
+                  {query: {source: child.key, site: site?.handle}}
+                )
+              "
+              preserve-state
+              :active="child.key === activeSource"
+              :data-group="source.heading"
+            >
+              {{ child.label }}
+            </Link>
+          </div>
+        </craft-nav-item>
       </template>
       <template v-else>
         <Link
@@ -38,7 +86,6 @@
       </template>
     </template>
   </craft-nav-list>
-  <ul></ul>
 </template>
 
 <style scoped lang="scss"></style>
