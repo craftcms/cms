@@ -78,11 +78,35 @@ test('deactivate requires administrateUsers permission and deactivates users', f
     expect($user2->fresh()->active)->toBeFalse();
 });
 
+test('deactivate prevents non-admin administrators from deactivating admins', function () {
+    Edition::set(Edition::Pro);
+
+    $user = User::factory()->create();
+    $admin = User::factory()->admin()->create([
+        'active' => true,
+    ]);
+
+    UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
+        'viewUsers',
+        'editUsers',
+        'administrateUsers',
+    ]);
+
+    actingAs($user->asElement());
+
+    postJson(action([ActivateController::class, 'deactivate']), [
+        'userId' => $admin->id,
+    ])->assertForbidden();
+
+    expect($admin->fresh()->active)->toBeTrue();
+});
+
 it('requires login for sendActivationEmail', function () {
     postJson(action([ActivateController::class, 'sendActivationEmail']))->assertUnauthorized();
 });
 
-test('sendActivationEmail requires moderateUsers for pending users', function () {
+test('sendActivationEmail allows editUsers to email pending users', function () {
     Notification::fake();
 
     Edition::set(Edition::Pro);
@@ -107,7 +131,6 @@ test('sendActivationEmail requires moderateUsers for pending users', function ()
         'accessCp',
         'viewUsers',
         'editUsers',
-        'moderateUsers',
     ]);
 
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
@@ -132,6 +155,16 @@ test('sendActivationEmail requires moderateUsers for inactive (non-pending) user
     ]);
 
     actingAs($user->asElement());
+
+    postJson(action([ActivateController::class, 'sendActivationEmail']), [
+        'userId' => $inactiveUser->id,
+    ])->assertForbidden();
+
+    UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
+        'viewUsers',
+        'editUsers',
+    ]);
 
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
         'userId' => $inactiveUser->id,

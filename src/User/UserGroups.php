@@ -25,7 +25,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -78,14 +77,14 @@ readonly class UserGroups
             return $this->getAllGroups();
         }
 
-        $recipient = $user ?? $currentUser?->asElement();
+        $recipient = $user ?? $currentUser->asElement();
 
         return $this->getAllGroups()
             ->filter(function (UserGroup $group) use ($currentUser, $recipient, $user) {
                 if (
                     $currentUser !== null &&
                     $recipient !== null &&
-                    Gate::check('assignUserGroup', [$recipient, $group])
+                    $currentUser->can('assignUserGroup', [$recipient, $group])
                 ) {
                     return true;
                 }

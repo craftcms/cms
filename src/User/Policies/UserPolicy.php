@@ -121,6 +121,41 @@ class UserPolicy extends ElementPolicy
         return $user->can($permission);
     }
 
+    public function activate(CraftUser $user, UserElement $target): bool
+    {
+        return $user->can('administrateUsers');
+    }
+
+    public function deactivate(CraftUser $user, UserElement $target): bool
+    {
+        if ($user->getCraftUserId() === $target->id) {
+            return true;
+        }
+
+        if (! $user->can('administrateUsers')) {
+            return false;
+        }
+
+        if ($target->admin && ! $user->isAdmin()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function sendActivationEmail(CraftUser $user, UserElement $target): bool
+    {
+        if (! in_array($target->getStatus(), [UserElement::STATUS_PENDING, UserElement::STATUS_INACTIVE], true)) {
+            return false;
+        }
+
+        if ($target->pending) {
+            return true;
+        }
+
+        return $user->can('moderateUsers');
+    }
+
     public function impersonate(CraftUser $user, UserElement $target): bool
     {
         // Admins can do whatever they want

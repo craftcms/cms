@@ -51,7 +51,7 @@ readonly class PermissionsController
             'showUserGroups' => $currentUser->can('assignUserGroups', $user),
         ]);
 
-        if (! $user->getIsCredentialed() && $user->username && $currentUser->can('moderateUsers')) {
+        if (! $user->getIsCredentialed() && $user->username && $currentUser->can('sendActivationEmail', $user)) {
             $response->additionalButtonsHtml(
                 Html::button(t('Save and send activation email'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
@@ -111,7 +111,7 @@ readonly class PermissionsController
 
         if (
             ! $user->getIsCredentialed() &&
-            $currentUser->can('administrateUsers') &&
+            $currentUser->can('sendActivationEmail', $user) &&
             $request->boolean('sendActivationEmail')
         ) {
             try {

@@ -235,6 +235,66 @@ it('authorizes assigning permissions without removing existing recipient permiss
         ->and($this->policy->assignPermission($user, $recipient, 'deleteUsers'))->toBeTrue();
 });
 
+it('authorizes activating users with administrateUsers', function () {
+    Edition::set(Edition::Pro);
+
+    $target = User::factory()->createElement([
+        'active' => false,
+    ]);
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers'])
+        ->create();
+    $administrator = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', 'administrateUsers'])
+        ->create();
+
+    expect($this->policy->activate($user, $target))->toBeFalse()
+        ->and($this->policy->activate($administrator, $target))->toBeTrue();
+});
+
+it('authorizes deactivating users from self, administrateUsers, and admin target rules', function () {
+    Edition::set(Edition::Pro);
+
+    $self = User::factory()->create();
+    $target = User::factory()->createElement();
+    $adminTarget = User::factory()->admin()->createElement();
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers'])
+        ->create();
+    $administrator = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', 'administrateUsers'])
+        ->create();
+    $admin = User::factory()->admin()->create();
+
+    expect($this->policy->deactivate($self, $self->asElement()))->toBeTrue()
+        ->and($this->policy->deactivate($user, $target))->toBeFalse()
+        ->and($this->policy->deactivate($administrator, $target))->toBeTrue()
+        ->and($this->policy->deactivate($administrator, $adminTarget))->toBeFalse()
+        ->and($this->policy->deactivate($admin, $adminTarget))->toBeTrue();
+});
+
+it('authorizes activation email by pending and inactive status', function () {
+    Edition::set(Edition::Pro);
+
+    $user = User::factory()->create();
+    $moderator = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', 'moderateUsers'])
+        ->create();
+    $pendingTarget = User::factory()->pending()->createElement();
+    $inactiveTarget = User::factory()->createElement([
+        'active' => false,
+        'pending' => false,
+    ]);
+    $activeTarget = User::factory()->active()->createElement([
+        'pending' => false,
+    ]);
+
+    expect($this->policy->sendActivationEmail($user, $pendingTarget))->toBeTrue()
+        ->and($this->policy->sendActivationEmail($user, $inactiveTarget))->toBeFalse()
+        ->and($this->policy->sendActivationEmail($moderator, $inactiveTarget))->toBeTrue()
+        ->and($this->policy->sendActivationEmail($moderator, $activeTarget))->toBeFalse();
+});
+
 // Impersonate tests
 it('allows admin to impersonate any user', function () {
     $admin = createUserTestUser(id: 1, isAdmin: true);

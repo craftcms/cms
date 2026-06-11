@@ -7,6 +7,7 @@ use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
@@ -189,4 +190,29 @@ test('store sends activation email and marks inactive user as pending', function
     ])->assertOk();
 
     expect($inactiveUser->fresh()->pending)->toBeTrue();
+});
+
+test('store can send activation email through moderateUsers permission', function () {
+    Notification::fake();
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $user = UserModel::factory()
+        ->withPermissions(['accessCp', 'viewUsers', 'editUsers', 'assignUserPermissions', 'moderateUsers'])
+        ->create();
+    $inactiveUser = UserModel::factory()->create([
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    actingAs($user->asElement());
+
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $inactiveUser->id,
+        'sendActivationEmail' => true,
+    ])->assertOk();
+
+    expect($inactiveUser->fresh()->pending)->toBeTrue();
+
+    Notification::assertSentTimes(ActivationNotification::class, 1);
 });
