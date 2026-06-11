@@ -1288,7 +1288,6 @@ class Asset extends Element
     {
         $items = parent::safeActionMenuItems();
 
-        $this->getVolume();
         $user = currentUserElement();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
