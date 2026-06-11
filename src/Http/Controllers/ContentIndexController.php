@@ -115,6 +115,14 @@ class ContentIndexController
             ->values()
             ->all();
 
+        $contextColumns = collect($context['tableColumns'])
+            ->map(fn (array $attribute, string $key) => [
+                'label' => $attribute['label'],
+                'value' => $key,
+            ])
+            ->values()
+            ->all();
+
         $tableColumns = $this->elementSources->getSourceTableAttributes($elementType, $sourceKey)
             ->map(fn (array $attribute, string $key) => [
                 ...$attribute,
@@ -189,7 +197,7 @@ class ContentIndexController
             'viewState' => $viewState,
             'statusOptions' => $statusOptions,
             'sortOptions' => $sortOptions,
-            'tableColumns' => $tableColumns,
+            'tableColumns' => array_merge($contextColumns, $tableColumns),
             'defaultTableColumns' => $defaultTableColumns,
             'data' => $elements,
             'sort' => $sort,
