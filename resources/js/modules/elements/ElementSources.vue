@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {index} from '@routes/cp/content/index.js';
-  import {Link} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
   import type {Source, SourceHeading} from '@/modules/elements/types/sources';
 
@@ -36,6 +36,20 @@
 
     return result;
   });
+
+  // `index.url()` returns the plain string URL (vs. `index()`, which returns a
+  // `{url, method}` pair). craft-nav-item needs a real string href so it renders
+  // an interactive link; we intercept the click for SPA navigation.
+  function sourceUrl(key: string) {
+    return index.url(
+      {page: 'entries'},
+      {query: {source: key, site: site?.handle}}
+    );
+  }
+
+  function visitSource(key: string) {
+    router.visit(sourceUrl(key), {preserveState: true});
+  }
 </script>
 
 <template>
@@ -50,39 +64,27 @@
             {{ source.heading }}
           </span>
           <div slot="subnav">
-            <Link
+            <craft-nav-item
               v-for="child in source.children"
               :key="child.key"
-              as="craft-nav-item"
-              :href="
-                index(
-                  {page: 'entries'},
-                  {query: {source: child.key, site: site?.handle}}
-                )
-              "
-              preserve-state
+              :href="sourceUrl(child.key)"
               :active="child.key === activeSource"
               :data-group="source.heading"
+              @click.prevent="visitSource(child.key)"
             >
               {{ child.label }}
-            </Link>
+            </craft-nav-item>
           </div>
         </craft-nav-item>
       </template>
       <template v-else>
-        <Link
-          as="craft-nav-item"
-          :href="
-            index(
-              {page: 'entries'},
-              {query: {source: source.key, site: site?.handle}}
-            )
-          "
-          preserve-state
+        <craft-nav-item
+          :href="sourceUrl(source.key)"
           :active="source.key === activeSource"
+          @click.prevent="visitSource(source.key)"
         >
           {{ source.label }}
-        </Link>
+        </craft-nav-item>
       </template>
     </template>
   </craft-nav-list>
