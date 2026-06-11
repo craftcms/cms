@@ -85,7 +85,7 @@ class Import
         return $importers;
     }
 
-    // //// configs //////
+    // //////////// configs //////////////
     public function createImporter(array $config): BaseImporter
     {
         $importer = new $config['type']($config);
@@ -205,6 +205,9 @@ class Import
             if (property_exists($import, 'site')) {
                 $settings['site'] = $import->site->uid;
             }
+            if (property_exists($import, 'fieldLayoutUid')) {
+                $settings['fieldLayoutUid'] = $import->fieldLayoutUid;
+            }
             $configRecord->settings = $settings;
             $configRecord->save();
 
@@ -263,7 +266,7 @@ class Import
             ->whereNull('import_configs.dateDeleted');
     }
 
-    // //// runs //////
+    // //////////// runs //////////////
     public function getImportRuns(): LaravelCollection
     {
         if ($this->runs === null) {
@@ -379,7 +382,7 @@ class Import
             ->whereNull('import_runs.dateDeleted');
     }
 
-    // ///// import //////
+    // //////////// import //////////////
     public function dispatchImport(ImportRun $run): bool
     {
         $steps = [];
@@ -434,12 +437,13 @@ class Import
     public function import(BaseImporter $config): void
     {
         $filePath = BaseImporter::resolvedFilePath($config->file);
-        foreach ($this->getData($filePath) as $item) {
+        foreach ($this->getFormattedData($filePath) as $item) {
             $this->importItem($config, $item);
         }
     }
 
-    public function getData(string $filePath): array
+    // //////////// data //////////////
+    public function getRawData(string $filePath): string
     {
         error_clear_last();
         $rawData = @file_get_contents($filePath);
@@ -451,6 +455,13 @@ class Import
         if (! $rawData) {
             throw new Exception('Unable to parse data.');
         }
+
+        return $rawData;
+    }
+
+    public function getFormattedData(string $filePath): array
+    {
+        $rawData = $this->getRawData($filePath);
 
         // process raw data based on the file type it came from
         $data = $this->formatData($filePath, $rawData);
@@ -480,6 +491,27 @@ class Import
         }
 
         return $data;
+    }
+
+    public function getDataHeadings(string $filePath): ?array
+    {
+        $rawData = $this->getRawData($filePath);
+        $extension = File::extension($filePath);
+        $dataTypes = $this->getAllDataTypes();
+
+        if (! $dataTypes[$extension]) {
+            throw new Exception('Unsupported data type: '.$extension);
+        }
+
+        try {
+            $headings = $dataTypes[$extension]::getHeadings($rawData);
+        } catch (Throwable $e) {
+            Log::error($e->getMessage());
+
+            return null;
+        }
+
+        return ['Please select' => ''] + $headings;
     }
 
     final public function processData(BaseImporter $config, array $data, mixed $element): array

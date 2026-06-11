@@ -67,7 +67,7 @@ class ModelImporter extends BaseImporter
         }
 
         // has to extend Craft's BaseModel
-        if (! $value instanceof BaseModel) {
+        if (! (new $value) instanceof BaseModel) {
             $fail($attribute, t('Class name must extend Craft\'s BaseModel.'));
 
             return false;
@@ -94,13 +94,21 @@ class ModelImporter extends BaseImporter
     #[Override]
     public function getDestinationCols(): array
     {
-        return Schema::getColumnListing((new $this->className)->getTable());
+        $columns = Schema::getColumnListing((new $this->className)->getTable());
+
+        return array_map(fn ($col) => [
+            'label' => $col,
+            'handle' => $col,
+            'isContainer' => false,
+        ], $columns);
     }
 
     #[Override]
     public function getSourceDataCols(): array
     {
-        return [];
+        $filePath = BaseImporter::resolvedFilePath($this->file);
+
+        return app(Import::class)->getDataHeadings($filePath);
     }
 
     #[Override]

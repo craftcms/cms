@@ -146,6 +146,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('import/configs', [ImportConfigController::class, 'index']);
         Route::middleware('can:editImportConfigs')->get('import/configs/new', [ImportConfigController::class, 'create']);
         Route::get('import/configs/{handle}', [ImportConfigController::class, 'edit']);
+        Route::get('import/configs/{handle}/field-layout-provider', [ImportConfigController::class, 'editFieldLayoutProvider']);
         Route::get('import/configs/{handle}/map', [ImportConfigController::class, 'editMap']);
     });
     Route::middleware('can:viewImportRuns')->group(function () {

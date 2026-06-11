@@ -44,7 +44,7 @@ class Import extends Job
         $config = $importService->getConfigByUid($this->step['config']) ?? $importService->getConfigByHandle($this->step['config']);
 
         // get all the data
-        $allData = $importService->getData($this->filePath);
+        $allData = $importService->getFormattedData($this->filePath);
         // discard the part at the start that was already processed
         $data = array_slice($allData, $this->start);
         // count how many items we have to process

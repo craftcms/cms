@@ -1,0 +1,17 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.hidden({
+    name: 'uid',
+    value: import.uid
+}) }}
+
+{{ forms.selectField({
+    label: 'Choose the field layout provider to import into (e.g. entry type, volume)',
+    name: 'fieldLayoutUid',
+    options: availableFieldLayoutProviders,
+    value: import.fieldLayoutUid
+}) }}
+
+<a href="{{ cpUrl('import/configs/' ~ import.handle ~ '/map') }}" class="btn submit">Configure mapping</a>
+
+{{ dump(availableFieldLayoutProviders) }}

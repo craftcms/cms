@@ -108,6 +108,129 @@ class ImportConfigController
         return $this->cpScreenResponse($import);
     }
 
+    public function store(Request $request): Response
+    {
+        $importConfigUid = $request->input('uid');
+
+        $request->validate([
+            'uid' => ['nullable', 'string', 'max:36'],
+            'type' => [
+                Rule::requiredIf(! $importConfigUid),
+                'nullable',
+                'string',
+                Rule::in($this->importService->getAllImporterTypes()),
+            ],
+        ]);
+
+        if ($importConfigUid) {
+            abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
+        } else {
+            $import = new ($request->input('type'));
+        }
+
+        $request->validate($import::getRules());
+
+        $import->name($request->input('name', $import->name));
+        $import->handle($request->input('handle', $import->handle));
+        $import->description($request->input('description', $import->description));
+        $import->file($request->input('settings.file', $import->file));
+        if (property_exists($import, 'site')) {
+            $import->site($request->input('settings.site', $import->site));
+        }
+        $import->className($request->has('settings.elementType') ? $request->input('settings.elementType') : $request->input('settings.className'));
+        $import->transformer($request->input('settings.transformer', $import->transformer));
+        $import->map($request->input('settings.map', $import->map));
+        $import->matchCriteria($request->input('settings.matchCriteria', $import->matchCriteria));
+
+        if (! $this->importService->saveConfig($import)) {
+            // Flash::fail(t('Couldn’t save import config.'));
+            return $this->asModelFailure($import, t('Couldn’t save import config.'), 'import');
+        }
+
+        return $this->asModelSuccess(
+            $import,
+            t('Import config saved.'),
+            'import',
+        );
+    }
+
+    public function editFieldLayoutProvider(Request $request, ?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
+    {
+        $handle ??= $import->handle ?? $request->input('handle');
+
+        abort_if(is_null($handle), 404, 'Import config not found');
+        abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
+        abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
+
+        if ($import === null) {
+            $import = $found;
+        }
+
+        $currentUser = auth('craft')->user();
+
+        $templateVars = [
+            'readOnly' => $this->readOnly,
+            'static' => ! $currentUser?->can('editImportConfigs'),
+            'import' => $import,
+            'availableFieldLayoutProviders' => $import->getAvailableFieldLayoutProviders(),
+        ];
+
+        return new CpScreenResponse()
+            ->title(t('Edit Field Layout Provider', ['name' => $import->name]))
+            ->addCrumb(t('Import'), 'import')
+            ->addCrumb(t('Configs'), 'import/configs')
+            ->addCrumb(t($import->name), 'import/configs/'.$import->handle)
+            ->contentTemplate('import/configs/_field-layout-provider.twig', $templateVars)
+            ->unless(
+                $this->readOnly || ! $currentUser?->can('editImportConfigs'),
+                callback: function (CpScreenResponse $response) {
+                    $response
+                        ->action('import/configs/saveFieldLayoutProvider')
+                        ->redirectUrl('import/configs')
+                        ->addAltAction(t('Save and continue editing'), [
+                            'redirect' => 'import/configs/{handle}/field-layout-provider',
+                            'shortcut' => true,
+                            'retainScroll' => true,
+                        ]);
+                },
+                default: function (CpScreenResponse $response) {
+                    if ($this->readOnly) {
+                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
+                    }
+                },
+            );
+    }
+
+    public function storeFieldLayoutProvider(Request $request): Response
+    {
+        $importConfigUid = $request->input('uid');
+        abort_if(empty($importConfigUid), 400, 'No import config UID provided');
+
+        $request->validate([
+            'uid' => ['string', 'max:36'],
+        ]);
+
+        abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
+
+        $request->validate([
+            'fieldLayoutUid' => ['nullable', 'string', 'max:36'],
+        ]);
+
+        if (property_exists($import, 'fieldLayoutUid')) {
+            $import->fieldLayoutUid($request->input('fieldLayoutUid', $import->fieldLayoutUid));
+        }
+
+        if (! $this->importService->saveConfig($import)) {
+            return $this->asModelFailure($import, t('Couldn’t save import config.'), 'import');
+        }
+
+        return $this->asModelSuccess(
+            $import,
+            t('Import config saved.'),
+            'import',
+        );
+    }
+
     public function editMap(Request $request, ?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
     {
         $handle ??= $import->handle ?? $request->input('handle');
@@ -140,7 +263,7 @@ class ImportConfigController
                 $this->readOnly || ! $currentUser?->can('editImportConfigs'),
                 callback: function (CpScreenResponse $response) {
                     $response
-                        ->action('import/configs/save')
+                        ->action('import/configs/saveMap')
                         ->redirectUrl('import/configs')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'import/configs/{handle}/map',
@@ -156,39 +279,24 @@ class ImportConfigController
             );
     }
 
-    public function store(Request $request): Response
+    public function storeMap(Request $request): Response
     {
+        $importConfigUid = $request->input('uid');
+        abort_if(empty($importConfigUid), 400, 'No import config UID provided');
+
         $request->validate([
-            'uid' => ['nullable', 'string', 'max:36'],
-            'type' => [
-                Rule::requiredIf(! $request->input('uid')),
-                'nullable',
-                'string',
-                Rule::in($this->importService->getAllImporterTypes()),
-            ],
+            'uid' => ['string', 'max:36'],
         ]);
 
-        $importConfigUid = $request->input('uid');
+        abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
-        if ($importConfigUid) {
-            abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
-        } else {
-            $import = new ($request->input('type'));
+        $request->validate([
+            'fieldLayoutId' => ['nullable', 'integer'],
+        ]);
+
+        if (property_exists($import, 'fieldLayoutId')) {
+            $import->fieldLayoutId($request->input('fieldLayoutId', $import->fieldLayoutId));
         }
-
-        $request->validate($import::getRules());
-
-        $import->name($request->input('name', $import->name));
-        $import->handle($request->input('handle', $import->handle));
-        $import->description($request->input('description', $import->description));
-        $import->file($request->input('settings.file', $import->file));
-        if (property_exists($import, 'site')) {
-            $import->site($request->input('settings.site', $import->site));
-        }
-        $import->className($request->has('settings.elementType') ? $request->input('settings.elementType') : $request->input('settings.className'));
-        $import->transformer($request->input('settings.transformer', $import->transformer));
-        $import->map($request->input('settings.map', $import->map));
-        $import->matchCriteria($request->input('settings.matchCriteria', $import->matchCriteria));
 
         if (! $this->importService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));

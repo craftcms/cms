@@ -7,6 +7,10 @@ namespace CraftCms\Cms\Import\Importers;
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -23,6 +27,8 @@ use function CraftCms\Cms\template;
 class ElementImporter extends BaseImporter
 {
     public protected(set) ?Site $site = null;
+
+    public protected(set) ?string $fieldLayoutUid = null;
 
     public function __construct(?array $config = null)
     {
@@ -161,6 +167,31 @@ class ElementImporter extends BaseImporter
         return $this;
     }
 
+    public function fieldLayoutUid(string|int|FieldLayout|null $value): self
+    {
+        $fieldsService = app(Fields::class);
+
+        if ($value instanceof FieldLayout) {
+            $this->fieldLayoutUid = $value->uid;
+        } elseif ($value === null) {
+            $this->fieldLayoutUid = null;
+        } elseif (is_numeric($value)) {
+            $fieldLayout = $fieldsService->getLayoutById($value);
+            if ($fieldLayout === null) {
+                throw new InvalidArgumentException("No field layout found with ID: $value");
+            }
+            $this->fieldLayoutUid = $fieldLayout->uid;
+        } elseif (is_string($value)) {
+            $fieldLayout = $fieldsService->getLayoutByUid($value) ?? $fieldsService->getLayoutByHandle($value);
+            if ($fieldLayout === null) {
+                throw new InvalidArgumentException("No field layout found with UID or handle: \"$value\".");
+            }
+            $this->fieldLayoutUid = $fieldLayout->uid;
+        }
+
+        return $this;
+    }
+
     #[Override]
     public function transformer(string|null|TransformerAbstract $transformer): self
     {
@@ -171,6 +202,67 @@ class ElementImporter extends BaseImporter
         }
 
         return parent::transformer($transformer);
+    }
+
+    public function getAvailableFieldLayoutProviders(): array
+    {
+        $providers = [
+            [
+                'label' => 'Please select',
+                'value' => '',
+            ],
+        ];
+
+        $fieldLayouts = (new $this->className)::fieldLayouts(null);
+
+        foreach ($fieldLayouts as $fieldLayout) {
+            $providers[] = [
+                'label' => $fieldLayout->provider->name,
+                'value' => $fieldLayout->uid,
+            ];
+        }
+
+        return $providers;
+    }
+
+    #[Override]
+    public function getDestinationCols(): array
+    {
+        if ($this->fieldLayoutUid === null) {
+            return [];
+        }
+
+        $cols = [];
+        // get all the field layout elements and create an array that contains their handles;
+        // if FLE is nestable (element container type) then its content is an array of its FLE handles
+        // and so on
+        $fieldLayout = app(Fields::class)->getLayoutByUid($this->fieldLayoutUid);
+        if ($fieldLayout) {
+            $allElements = $fieldLayout->getAllElements();
+
+            foreach ($allElements as $element) {
+                $field = null;
+                if ($element instanceof CustomField) {
+                    $field = $element->getField();
+                }
+                $cols[] = [
+                    'handle' => $element->attribute(),
+                    // $element->getField() needs to be called before calling $element->label() or we won't always get the label
+                    'label' => $element->label(),
+                    'isContainer' => $field instanceof ElementContainerFieldInterface,
+                ];
+            }
+        }
+
+        return $cols;
+    }
+
+    #[Override]
+    public function getSourceDataCols(): array
+    {
+        $filePath = BaseImporter::resolvedFilePath($this->file);
+
+        return app(Import::class)->getDataHeadings($filePath);
     }
 
     #[Override]

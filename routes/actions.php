@@ -362,6 +362,8 @@ Route::prefix(implode('/', [
         Route::middleware('can:editImportConfigs')->group(function () {
             Route::post('import/configs/render-settings', [ImportConfigController::class, 'renderSettings']);
             Route::post('import/configs/save', [ImportConfigController::class, 'store']);
+            Route::post('import/configs/saveFieldLayoutProvider', [ImportConfigController::class, 'storeFieldLayoutProvider']);
+            Route::post('import/configs/saveMap', [ImportConfigController::class, 'storeMap']);
         });
         Route::middleware('can:deleteImportConfigs')->post('import/configs/delete', [ImportConfigController::class, 'destroy']);
 

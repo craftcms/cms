@@ -64,12 +64,8 @@
     static: static,
 }) }}#}
 
-<div>
-    <p>mapping stuff goes here, or maybe we want a separate screen?</p>
-    <p>
-        if we're editing something that already exists, this is prepopulated with what's already saved;<br />
-        if it's a new config (or the map in the config is empty), you use the UI to create your mapping;<br />
-        which means you can create a new config, leave mapping empty, then go edit the mapping in the php file,
-        if that's easier for you and then go back here to tweak
-    </p>
-</div>
+
+{# TODO: for element types that can have multiple field layout providers (like Entries) we now go to an field layout provider screen
+    and then from that screen to the mapping one;
+#}
+<a href="{{ cpUrl('import/configs/' ~ import.handle ~ '/field-layout-provider') }}" class="btn submit">Configure field layout provider</a>

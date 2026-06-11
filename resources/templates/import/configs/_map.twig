@@ -1,1 +1,42 @@
 {% import '_includes/forms.twig' as forms %}
+
+<table>
+    {% for col in destinationCols %}
+        <tr>
+            <td>
+                {{ col.label }} <pre>({{ col.handle }})</pre>
+            </td>
+            <td>
+                {% if col.isContainer %}
+                    SPECIAL BUTTON
+                {% else %}
+                    {{ forms.selectField({
+                        name: 'map[' ~ col.handle ~ ']',
+                        options: sourceDataCols,
+                        value: import.map[col.handle] ?? ''
+                    }) }}
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<div>
+    <p>
+        mapping stuff goes here<br />
+        if it's element-based, we want a list of all the field layout elements that are importable
+        and a list of all the keys from the data array;
+
+        for the nestable fields (element container fields?), we don't show the dropdown, but a button that triggers a modal;
+        in that modal (or maybe a slideout) there's a table that allows you to map the contents of that field;
+        if there's a nestable field in there - another modal (or slideout) can be open - and so on
+    </p>
+    <p>
+        if we're editing something that already exists, this is prepopulated with what's already saved;<br />
+        if it's a new config (or the map in the config is empty), you use the UI to create your mapping;<br />
+        which means you can create a new config, leave mapping empty, then go edit the mapping in the php file,
+        if that's easier for you and then go back here to tweak
+    </p>
+</div>
+{{ dump(destinationCols) }}
+{{ dump(sourceDataCols) }}
