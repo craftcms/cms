@@ -14,6 +14,7 @@
 - Fixed an infinite recursion bug. ([#19063](https://github.com/craftcms/cms/issues/19063))
 - Fixed a JavaScript error that could occur if there was an error rendering an element condition rule’s Twig template.
 - Fixed a bug where relational fields’ element selector modals weren’t showing any results if they were configured to only relate to elements in a specific site, and the author didn’t have permission to access that site. ([#19078](https://github.com/craftcms/cms/issues/19078))
+- Fixed a bug where element cards were showing preview values for conditionally-hidden fields. ([#19064](https://github.com/craftcms/cms/discussions/19064))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
