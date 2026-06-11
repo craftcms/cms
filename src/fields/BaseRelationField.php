@@ -1623,7 +1623,7 @@ JS, [
             'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
-                'defaultSiteId' => $this->_targetSiteId() ?? $element->siteId ?? null,
+                'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
     }
