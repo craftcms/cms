@@ -203,182 +203,188 @@
       <slot name="table-header"> </slot>
     </div>
 
-    <table
-      :class="{
-        'cp-table': true,
-        'cp-table--grid': false,
-        'cp-table--compact': spacing === TableSpacing.Compact,
-        'cp-table--relaxed': spacing === TableSpacing.Relaxed,
-        'cp-table--spacious': spacing === TableSpacing.Spacious,
-        'cp-table--auto': layout === 'auto',
-      }"
-      :style="tableStyles"
-    >
-      <caption class="sr-only">
-        {{
-          titleString
-        }}
-        <span :id="columnSortInstructionId">{{
-          t('Column headers with buttons are sortable')
-        }}</span>
-      </caption>
-      <thead>
-        <tr
-          v-for="headerGroup in table.getHeaderGroups()"
-          :key="headerGroup.id"
-        >
-          <template v-if="!readOnly && reorderable">
-            <th class="cell cell--header">
-              <span class="sr-only">Reorder</span>
-            </th>
-          </template>
-          <th
-            v-if="selectable"
-            class="cp-table-cell cp-table-cell--header cp-table-cell--select"
-            scope="col"
-          >
-            <craft-checkbox
-              label-sr-only
-              .checked="table.getIsAllRowsSelected()"
-              .indeterminate="table.getIsSomeRowsSelected()"
-              .disabled="readOnly"
-              @model-value-changed="onToggleAllSelected"
-            >
-              <label slot="label">{{ t('Select all') }}</label>
-            </craft-checkbox>
-          </th>
-          <th
-            v-for="header in headerGroup.headers"
-            :key="header.id"
-            :colSpan="header.colSpan"
-            :id="`header-${header.id}`"
-            :class="{
-              'cp-table-cell': true,
-              'cp-table-cell--header': true,
-              'cursor-pointer select-none': header.column.getCanSort(),
-            }"
-            scope="col"
-            :aria-sort="getAriaSortAttribute(header.column)"
-          >
-            <div
-              class="flex gap-1 items-center"
-              :class="{
-                'sr-only': header.column.columnDef.meta?.headerSrOnly,
-                ...resolveMetaClasses(
-                  header.column.columnDef.meta?.columnClass
-                ),
-                ...resolveMetaClasses(
-                  header.column.columnDef.meta?.headerClass
-                ),
-              }"
-            >
-              <ColumnHeaderTitle
-                :is-sortable="header.column.getCanSort()"
-                :sort-instructions-id="columnSortInstructionId"
-                @sort-column="header.column.getToggleSortingHandler()?.($event)"
-              >
-                <FlexRender
-                  v-if="!header.isPlaceholder"
-                  :render="header.column.columnDef.header"
-                  :props="header.getContext()"
-                />&nbsp;<craft-icon
-                  v-if="
-                    header.column.getCanSort() && !header.column.getIsSorted()
-                  "
-                  name="arrow-up-arrow-down"
-                ></craft-icon>
-                <craft-icon
-                  v-else-if="header.column.getIsSorted() === 'asc'"
-                  name="asc"
-                ></craft-icon>
-                <craft-icon
-                  v-else-if="header.column.getIsSorted() === 'desc'"
-                  name="desc"
-                ></craft-icon>
-              </ColumnHeaderTitle>
-
-              <template v-if="header.column.columnDef.meta?.headerTip">
-                <craft-info-icon>{{
-                  header.column.columnDef.meta.headerTip
-                }}</craft-info-icon>
-              </template>
-            </div>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <template v-if="table.getRowModel().rows.length > 0">
+    <div class="cp-table-body">
+      <table
+        :class="{
+          'cp-table': true,
+          'cp-table--grid': false,
+          'cp-table--compact': spacing === TableSpacing.Compact,
+          'cp-table--relaxed': spacing === TableSpacing.Relaxed,
+          'cp-table--spacious': spacing === TableSpacing.Spacious,
+          'cp-table--auto': layout === 'auto',
+        }"
+        :style="tableStyles"
+      >
+        <caption class="sr-only">
+          {{
+            titleString
+          }}
+          <span :id="columnSortInstructionId">{{
+            t('Column headers with buttons are sortable')
+          }}</span>
+        </caption>
+        <thead>
           <tr
-            v-for="row in table.getRowModel().rows"
-            :key="row.id"
-            :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
-            :class="{
-              row: true,
-              'cp-table-row': true,
-              'row--dragging':
-                !readOnly && getDragState(row.id).type === 'is-dragging',
-            }"
+            v-for="headerGroup in table.getHeaderGroups()"
+            :key="headerGroup.id"
           >
-            <template v-if="reorderable && !readOnly">
-              <td>
-                <div>
-                  <ReorderButton
-                    @click:up="emit('reorder', row.index, row.index - 1)"
-                    @click:down="emit('reorder', row.index, row.index + 1)"
-                    :position="getRowPosition(row.index)"
-                    :ref="(el: any) => setHandleRef(el?.$el, row.id)"
-                  />
-                </div>
-
-                <!-- Drop indicator spans entire row, positioned from this cell -->
-                <DropIndicator :edge="getClosestEdge(row.id)" />
-              </td>
+            <template v-if="!readOnly && reorderable">
+              <th class="cell cell--header">
+                <span class="sr-only">Reorder</span>
+              </th>
             </template>
-            <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
+            <th
+              v-if="selectable"
+              class="cp-table-cell cp-table-cell--header cp-table-cell--select"
+              scope="col"
+            >
               <craft-checkbox
                 label-sr-only
-                .checked="row.getIsSelected()"
-                .disabled="readOnly || !row.getCanSelect()"
-                @model-value-changed="onToggleRowSelected(row, $event)"
+                .checked="table.getIsAllRowsSelected()"
+                .indeterminate="table.getIsSomeRowsSelected()"
+                .disabled="readOnly"
+                @model-value-changed="onToggleAllSelected"
               >
-                <label slot="label">{{ t('Select row') }}</label>
+                <label slot="label">{{ t('Select all') }}</label>
               </craft-checkbox>
-            </td>
-            <component
-              v-for="cell in row.getVisibleCells()"
-              :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
-              :key="cell.id"
+            </th>
+            <th
+              v-for="header in headerGroup.headers"
+              :key="header.id"
+              :colSpan="header.colSpan"
+              :id="`header-${header.id}`"
               :class="{
                 'cp-table-cell': true,
-                'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
-                ...resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
-                ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
+                'cp-table-cell--header': true,
+                'cursor-pointer select-none': header.column.getCanSort(),
+              }"
+              scope="col"
+              :aria-sort="getAriaSortAttribute(header.column)"
+            >
+              <div
+                class="flex gap-1 items-center"
+                :class="{
+                  'sr-only': header.column.columnDef.meta?.headerSrOnly,
+                  ...resolveMetaClasses(
+                    header.column.columnDef.meta?.columnClass
+                  ),
+                  ...resolveMetaClasses(
+                    header.column.columnDef.meta?.headerClass
+                  ),
+                }"
+              >
+                <ColumnHeaderTitle
+                  :is-sortable="header.column.getCanSort()"
+                  :sort-instructions-id="columnSortInstructionId"
+                  @sort-column="
+                    header.column.getToggleSortingHandler()?.($event)
+                  "
+                >
+                  <FlexRender
+                    v-if="!header.isPlaceholder"
+                    :render="header.column.columnDef.header"
+                    :props="header.getContext()"
+                  />&nbsp;<craft-icon
+                    v-if="
+                      header.column.getCanSort() && !header.column.getIsSorted()
+                    "
+                    name="arrow-up-arrow-down"
+                  ></craft-icon>
+                  <craft-icon
+                    v-else-if="header.column.getIsSorted() === 'asc'"
+                    name="asc"
+                  ></craft-icon>
+                  <craft-icon
+                    v-else-if="header.column.getIsSorted() === 'desc'"
+                    name="desc"
+                  ></craft-icon>
+                </ColumnHeaderTitle>
+
+                <template v-if="header.column.columnDef.meta?.headerTip">
+                  <craft-info-icon>{{
+                    header.column.columnDef.meta.headerTip
+                  }}</craft-info-icon>
+                </template>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <template v-if="table.getRowModel().rows.length > 0">
+            <tr
+              v-for="row in table.getRowModel().rows"
+              :key="row.id"
+              :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
+              :class="{
+                row: true,
+                'cp-table-row': true,
+                'row--dragging':
+                  !readOnly && getDragState(row.id).type === 'is-dragging',
               }"
             >
-              <FlexRender
-                :render="cell.column.columnDef.cell"
-                :props="cell.getContext()"
-              />
-            </component>
-          </tr>
-        </template>
-        <template v-else>
-          <tr
-            style="
-              --table-template-columns: 1fr;
-              --_cell-spacing-inline: 0;
-              --_cell-spacing-block: 0;
-            "
-          >
-            <td>
-              <slot name="empty-row">
-                <Empty :label="t('No results')" icon="empty-set" />
-              </slot>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
+              <template v-if="reorderable && !readOnly">
+                <td>
+                  <div>
+                    <ReorderButton
+                      @click:up="emit('reorder', row.index, row.index - 1)"
+                      @click:down="emit('reorder', row.index, row.index + 1)"
+                      :position="getRowPosition(row.index)"
+                      :ref="(el: any) => setHandleRef(el?.$el, row.id)"
+                    />
+                  </div>
+
+                  <!-- Drop indicator spans entire row, positioned from this cell -->
+                  <DropIndicator :edge="getClosestEdge(row.id)" />
+                </td>
+              </template>
+              <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
+                <craft-checkbox
+                  label-sr-only
+                  .checked="row.getIsSelected()"
+                  .disabled="readOnly || !row.getCanSelect()"
+                  @model-value-changed="onToggleRowSelected(row, $event)"
+                >
+                  <label slot="label">{{ t('Select row') }}</label>
+                </craft-checkbox>
+              </td>
+              <component
+                v-for="cell in row.getVisibleCells()"
+                :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
+                :key="cell.id"
+                :class="{
+                  'cp-table-cell': true,
+                  'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
+                  ...resolveMetaClasses(
+                    cell.column.columnDef.meta?.columnClass
+                  ),
+                  ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
+                }"
+              >
+                <FlexRender
+                  :render="cell.column.columnDef.cell"
+                  :props="cell.getContext()"
+                />
+              </component>
+            </tr>
+          </template>
+          <template v-else>
+            <tr
+              style="
+                --table-template-columns: 1fr;
+                --_cell-spacing-inline: 0;
+                --_cell-spacing-block: 0;
+              "
+            >
+              <td>
+                <slot name="empty-row">
+                  <Empty :label="t('No results')" icon="empty-set" />
+                </slot>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
 
     <div class="cp-table-footer" v-if="showFooter">
       <div>
@@ -449,6 +455,9 @@
 <style scoped lang="scss">
   .cp-table-wrapper {
     overflow-y: clip;
+  }
+
+  .cp-table-body {
     overflow-x: auto;
   }
 
