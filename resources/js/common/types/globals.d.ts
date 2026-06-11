@@ -124,6 +124,10 @@ interface CraftStatic {
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
   };
+  CustomizeSourcesModal: new (
+    elementIndex: unknown,
+    settings?: object
+  ) => {destroy(): void};
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

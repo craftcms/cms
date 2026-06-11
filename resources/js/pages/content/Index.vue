@@ -79,7 +79,32 @@
   const rowSelection = ref<RowSelectionState>({});
 
   function createCustomizeSourcesModal() {
-    console.log('opening sources modal');
+    // The modal was written for the legacy BaseElementIndex instance, but it
+    // only reads a few things off it: the element type (to load/save settings),
+    // the current `settings.page`, and the current/root source key (to preselect
+    // a row). Its save flow reloads the page, so `asyncSelectSourceByKey` /
+    // `$visibleSources` only need to be safe no-ops here.
+    const elementIndexShim = {
+      elementType: props.elementType,
+      settings: {page: props.page},
+      sourceKey: props.source?.key ?? null,
+      rootSourceKey: props.source?.key ?? null,
+      $visibleSources: {first: () => ({data: () => null})},
+      asyncSelectSourceByKey: () => Promise.resolve(),
+    };
+
+    // Recreate it each time, mirroring the legacy implementation.
+    const modal = new Craft.CustomizeSourcesModal(elementIndexShim, {
+      hideOnEsc: false,
+      hideOnShadeClick: false,
+      onFadeOut: function () {
+        modal.destroy();
+      },
+    });
+
+    console.log(modal);
+
+    return modal;
   }
 
   const elementTable = useVueTable<Element>({
@@ -134,7 +159,7 @@
           :actions="[
             {
               label: t('Customize sources'),
-              action: () => createCustomizeSourcesModal(),
+              onClick: () => createCustomizeSourcesModal(),
             },
           ]"
         />
