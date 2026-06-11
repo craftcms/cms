@@ -1426,6 +1426,7 @@ JS, [
             'jsSettings' => [],
             'registerJs' => true,
             'showSiteMenu' => 'auto',
+            'siteIds' => null,
             'showStatusMenu' => 'auto',
             'statuses' => null,
             'sources' => null,
@@ -1439,7 +1440,7 @@ JS, [
             ? $elementType::isLocalized()
             : (bool)$config['showSiteMenu'];
 
-        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $siteIds = $config['siteIds'] ?? Craft::$app->getSites()->getEditableSiteIds();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn($option, $key) => [

@@ -13,6 +13,7 @@
 - Fixed a bug where transformed SVG images could have two sets of `width` and `height` attributes. ([#19027](https://github.com/craftcms/cms/pull/19027))
 - Fixed an infinite recursion bug. ([#19063](https://github.com/craftcms/cms/issues/19063))
 - Fixed a JavaScript error that could occur if there was an error rendering an element condition rule’s Twig template.
+- Fixed a bug where relational fields’ element selector modals weren’t showing any results if they were configured to only relate to elements in a specific site, and the author didn’t have permission to access that site. ([#19078](https://github.com/craftcms/cms/issues/19078))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02

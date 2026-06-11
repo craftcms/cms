@@ -1592,6 +1592,8 @@ JS, [
             }
         }
 
+        $targetSiteId = $this->_targetSiteId();
+
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => $elementType,
@@ -1608,6 +1610,7 @@ JS, [
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
+            'siteIds' => $targetSiteId ? [$targetSiteId] : null,
             'allowSelfRelations' => $this->allowSelfRelations,
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
@@ -1620,7 +1623,7 @@ JS, [
             'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
-                'defaultSiteId' => $element->siteId ?? null,
+                'defaultSiteId' => $this->_targetSiteId() ?? $element->siteId ?? null,
             ],
         ];
     }
