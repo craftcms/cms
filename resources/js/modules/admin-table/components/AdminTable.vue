@@ -117,7 +117,7 @@
     }
   }
 
-  const tableStyles = computed(() => {
+  const visibleColumnCount = computed(() => {
     const columns = props.table.getAllColumns();
     const visibleColumns = columns.filter((column: Column<any>) =>
       column.getIsVisible()
@@ -131,6 +131,17 @@
     if (props.selectable) {
       columnCount += 1;
     }
+
+    return columnCount;
+  });
+
+  const tableStyles = computed(() => {
+    const columns = props.table.getAllColumns();
+    const visibleColumns = columns.filter((column: Column<any>) =>
+      column.getIsVisible()
+    );
+
+    const columnCount = visibleColumnCount.value;
 
     const styles: {[key: string]: number} = {
       '--table-column-count': columnCount,
@@ -375,7 +386,7 @@
                 --_cell-spacing-block: 0;
               "
             >
-              <td>
+              <td :colspan="visibleColumnCount">
                 <slot name="empty-row">
                   <Empty :label="t('No results')" icon="empty-set" />
                 </slot>
