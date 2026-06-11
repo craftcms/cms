@@ -73,33 +73,28 @@ it('can get available entry move target sections', function () {
     $currentSite = Sites::getCurrentSite();
     $otherSite = Site::factory()->create();
 
-    Section::factory()->withEntryTypes($entryType)->create([
-        'uid' => 'current',
+    $currentSection = Section::factory()->withEntryTypes($entryType)->create([
         'name' => 'Current',
         'handle' => 'current',
     ]);
 
-    Section::factory()->withEntryTypes($entryType)->create([
-        'uid' => 'target-b',
+    $targetBSection = Section::factory()->withEntryTypes($entryType)->create([
         'name' => 'B Target',
         'handle' => 'target-b',
     ]);
 
-    Section::factory()->withEntryTypes($entryType)->create([
-        'uid' => 'target-a',
+    $targetASection = Section::factory()->withEntryTypes($entryType)->create([
         'name' => 'A Target',
         'handle' => 'target-a',
     ]);
 
     Section::factory()->withEntryTypes($entryType)->create([
-        'uid' => 'single',
         'name' => 'Single',
         'handle' => 'single',
         'type' => SectionType::Single,
     ]);
 
     $wrongSiteSection = Section::factory()->withEntryTypes($entryType)->create([
-        'uid' => 'wrong-site',
         'name' => 'Wrong Site',
         'handle' => 'wrong-site',
     ]);
@@ -112,23 +107,21 @@ it('can get available entry move target sections', function () {
     ]);
 
     Section::factory()->withEntryTypes($otherEntryType)->create([
-        'uid' => 'wrong-type',
         'name' => 'Wrong Type',
         'handle' => 'wrong-type',
     ]);
 
     Section::factory()->withEntryTypes($entryType)->create([
-        'uid' => 'unauthorized',
         'name' => 'Unauthorized',
         'handle' => 'unauthorized',
     ]);
 
     $user = UserModel::factory()
         ->withPermissions([
-            'viewEntries:target-a',
-            'saveEntries:target-a',
-            'viewEntries:target-b',
-            'saveEntries:target-b',
+            "viewEntries:{$targetASection->uid}",
+            "saveEntries:{$targetASection->uid}",
+            "viewEntries:{$targetBSection->uid}",
+            "saveEntries:{$targetBSection->uid}",
         ])
         ->create();
 
@@ -139,12 +132,12 @@ it('can get available entry move target sections', function () {
     $availableSections = $this->sections->getAvailableEntryMoveTargetSections(
         entryTypeIds: [$entryType->id],
         siteId: $currentSite->id,
-        currentSectionUid: 'current',
+        currentSectionUid: $currentSection->uid,
     );
 
     expect(array_values(array_map(fn (SectionData $section) => $section->uid, $availableSections)))->toBe([
-        'target-a',
-        'target-b',
+        $targetASection->uid,
+        $targetBSection->uid,
     ]);
 });
 
