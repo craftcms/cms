@@ -109,18 +109,25 @@ class ContentIndexController
         // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];
         $attributes = ['title', ...array_keys($elementType::tableAttributes())];
         $elements = collect($paginator->items())
-            ->map(fn (ElementInterface $element) => collect($attributes)
-                ->mapWithKeys(fn (string $attribute) => [
-                    $attribute => $attribute === 'title' ?
-                        Html::tag('CpLink',
-                            $this->elementHtml->chipHtml($element, [
-                                'context' => $renderContext,
-                                'appearance' => 'plain',
-                            ]),
-                            ['href' => $element->getCpEditUrl()]
-                        )
-                        : (string) $this->attributeRenderer->render($element, $attribute),
-                ]));
+            ->map(fn (ElementInterface $element) => [
+                // `id` is not a rendered column; the table keys row selection by
+                // it (see `getRowId`) so selection tracks elements across sorting
+                // and pagination.
+                'id' => $element->id,
+                ...collect($attributes)
+                    ->mapWithKeys(fn (string $attribute) => [
+                        $attribute => $attribute === 'title' ?
+                            Html::tag('CpLink',
+                                $this->elementHtml->chipHtml($element, [
+                                    'context' => $renderContext,
+                                    'appearance' => 'plain',
+                                ]),
+                                ['href' => $element->getCpEditUrl()]
+                            )
+                            : (string) $this->attributeRenderer->render($element, $attribute),
+                    ])
+                    ->all(),
+            ]);
 
         $viewState = [
             ...$this->resolveViewState(),

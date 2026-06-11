@@ -260,6 +260,13 @@ Modify with `cp-table--auto` to apply table-layout: auto
   --_cell-spacing-block: var(--c-spacing-lg);
 }
 
+.cp-table-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 0;
+}
+
 .cp-table-header,
 .cp-table-footer {
   padding: var(--c-spacing-md);
