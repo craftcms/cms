@@ -42,7 +42,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\User\Elements\User;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -885,8 +884,7 @@ readonly class ElementWrites
     ): bool {
         $propagateToSite = $this->sites->getSiteById($siteElement->siteId);
 
-        /** @var ?User $user */
-        $user = Auth::craftUser();
+        $user = Auth::craftUser()?->asElement();
         $message = t('Validation errors for site: “{siteName}“', [
             'siteName' => $propagateToSite?->getName(),
         ]);

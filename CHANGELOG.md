@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Fixed errors that could occur when Craft user elements were expected but the authenticated user was resolved as a Laravel user model. ([#19051](https://github.com/craftcms/cms/pull/19051))
 - Fixed a bug where the `craft:install` command would hang if run within a production environment.
 - Fixed a bug where “Replace relation” action buttons weren’t working.
 - Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
+- Fixed an error that could occur during Craft 6 upgrades when legacy relational or Matrix field settings included `showCardsInGrid`. ([#19047](https://github.com/craftcms/cms/pull/19047))
 - Fixed a bug where queue job progress labels weren’t getting translated.
 - Fixed a bug where the control panel sidebar and Queue Manager were showing completed jobs.
 - Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\ValidationRulesResolving` to reflect its broader applicability to components and rulesets.
