@@ -7,7 +7,9 @@ namespace CraftCms\Cms\Entry\Policies;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Contracts\CraftUser;
 
 class EntryPolicy extends ElementPolicy
@@ -140,5 +142,79 @@ class EntryPolicy extends ElementPolicy
 
         return in_array($userId, $entry->getAuthorIds(), true)
             || $user->can("deletePeerEntriesForSite:$section->uid");
+    }
+
+    public function changeAuthor(CraftUser $user, Entry $entry): bool
+    {
+        $section = $entry->getSection();
+
+        if (! $section) {
+            return false;
+        }
+
+        $authorIds = $entry->getAuthorIds();
+        $userId = $user->getCraftUserId();
+
+        return
+            empty($authorIds) ||
+            ($userId !== null && in_array($userId, $authorIds, true)) ||
+            $user->can("changeAuthorForPeerEntries:$section->uid");
+    }
+
+    public function author(CraftUser $user, Entry $entry): bool
+    {
+        $section = $entry->getSection();
+
+        if (! $section) {
+            return false;
+        }
+
+        return $user->can("viewEntries:$section->uid");
+    }
+
+    public function move(CraftUser $user, Entry $entry): bool
+    {
+        if (! $section = $entry->getSection()) {
+            return false;
+        }
+
+        $userId = $user->getCraftUserId();
+
+        if ($section->type === SectionType::Single || $entry->trashed) {
+            return false;
+        }
+
+        if (! $this->compatibleSectionsCount($entry)) {
+            return false;
+        }
+
+        if ($entry->getIsDraft()) {
+            return ($userId !== null && $entry->draftCreatorId === $userId) ||
+                $user->can("savePeerEntryDrafts:$section->uid");
+        }
+
+        if (! $user->can("saveEntries:$section->uid")) {
+            return false;
+        }
+
+        return ($userId !== null && in_array($userId, $entry->getAuthorIds(), true)) ||
+            $user->can("savePeerEntries:$section->uid");
+    }
+
+    public function moveToSection(CraftUser $user, Entry $entry, Section $section): bool
+    {
+        return $this->move($user, $entry) &&
+            $user->can("saveEntries:$section->uid");
+    }
+
+    private function compatibleSectionsCount(Entry $entry): int
+    {
+        $entryTypeId = $entry->getType()->id;
+
+        return Sections::getEditableSections()
+            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $section->id !== $entry->sectionId)
+            ->map(fn (Section $section) => ['entryTypes' => $section->getEntryTypes()])
+            ->filter(fn (array $section) => collect($section['entryTypes'])->contains('id', $entryTypeId))
+            ->count();
     }
 }

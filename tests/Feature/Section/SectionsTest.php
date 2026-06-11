@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
@@ -16,13 +17,18 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->sections = app(Sections::class);
@@ -57,6 +63,89 @@ it('can get editable sections', function () {
     expect($this->sections->getEditableSections()->pluck('id'))->toContain($section->id);
     expect($this->sections->getEditableSectionIds())->toContain($section->id);
     expect($this->sections->getTotalEditableSections())->toBe(1);
+});
+
+it('can get available entry move target sections', function () {
+    Edition::set(Edition::Pro);
+
+    $entryType = EntryType::factory()->create();
+    $otherEntryType = EntryType::factory()->create();
+    $currentSite = Sites::getCurrentSite();
+    $otherSite = Site::factory()->create();
+
+    Section::factory()->withEntryTypes($entryType)->create([
+        'uid' => 'current',
+        'name' => 'Current',
+        'handle' => 'current',
+    ]);
+
+    Section::factory()->withEntryTypes($entryType)->create([
+        'uid' => 'target-b',
+        'name' => 'B Target',
+        'handle' => 'target-b',
+    ]);
+
+    Section::factory()->withEntryTypes($entryType)->create([
+        'uid' => 'target-a',
+        'name' => 'A Target',
+        'handle' => 'target-a',
+    ]);
+
+    Section::factory()->withEntryTypes($entryType)->create([
+        'uid' => 'single',
+        'name' => 'Single',
+        'handle' => 'single',
+        'type' => SectionType::Single,
+    ]);
+
+    $wrongSiteSection = Section::factory()->withEntryTypes($entryType)->create([
+        'uid' => 'wrong-site',
+        'name' => 'Wrong Site',
+        'handle' => 'wrong-site',
+    ]);
+    SectionSiteSettings::query()
+        ->where('sectionId', $wrongSiteSection->id)
+        ->delete();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $wrongSiteSection->id,
+        'siteId' => $otherSite->id,
+    ]);
+
+    Section::factory()->withEntryTypes($otherEntryType)->create([
+        'uid' => 'wrong-type',
+        'name' => 'Wrong Type',
+        'handle' => 'wrong-type',
+    ]);
+
+    Section::factory()->withEntryTypes($entryType)->create([
+        'uid' => 'unauthorized',
+        'name' => 'Unauthorized',
+        'handle' => 'unauthorized',
+    ]);
+
+    $user = UserModel::factory()
+        ->withPermissions([
+            'viewEntries:target-a',
+            'saveEntries:target-a',
+            'viewEntries:target-b',
+            'saveEntries:target-b',
+        ])
+        ->create();
+
+    Auth::shouldUse('craft');
+    actingAs($user);
+    $this->sections->refreshSections();
+
+    $availableSections = $this->sections->getAvailableEntryMoveTargetSections(
+        entryTypeIds: [$entryType->id],
+        siteId: $currentSite->id,
+        currentSectionUid: 'current',
+    );
+
+    expect(array_values(array_map(fn (SectionData $section) => $section->uid, $availableSections)))->toBe([
+        'target-a',
+        'target-b',
+    ]);
 });
 
 it('can get sections by type', function () {

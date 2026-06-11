@@ -48,7 +48,7 @@ readonly class PermissionsController
             'currentGroupIds' => Arr::pluck($user->getGroups(), 'id'),
             'currentUserIsAdmin' => $currentUser->isAdmin(),
             'showPermissions' => $currentUser->can('assignUserPermissions'),
-            'showUserGroups' => $this->canAssignUserGroups($currentUser),
+            'showUserGroups' => $currentUser->can('assignUserGroups', $user),
         ]);
 
         if (! $user->getIsCredentialed() && $user->username && $currentUser->can('moderateUsers')) {
@@ -128,7 +128,7 @@ readonly class PermissionsController
 
     private function saveUserGroups(Request $request, UserElement $user, CraftUser $currentUser): void
     {
-        if (! $this->canAssignUserGroups($currentUser)) {
+        if (! $currentUser->can('assignUserGroups', $user)) {
             return;
         }
 
@@ -157,7 +157,7 @@ readonly class PermissionsController
 
                 // Make sure the current user is in the group or has permission to assign it
                 abort_if(
-                    ! $currentUser->can("assignUserGroup:$group->uid"),
+                    ! $currentUser->can('assignUserGroup', [$user, $group]),
                     403,
                     "Your account doesn't have permission to assign user group “{$group->name}” to a user.",
                 );
@@ -204,7 +204,7 @@ readonly class PermissionsController
 
                 // Make sure the current user even has permission to grant it
                 abort_if(
-                    ! $currentUser->can($permission),
+                    ! $currentUser->can('assignPermission', [$user, $permission]),
                     403,
                     "Your account doesn't have permission to assign the $permission permission to a user.",
                 );

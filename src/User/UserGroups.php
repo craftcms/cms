@@ -25,6 +25,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -73,22 +74,24 @@ readonly class UserGroups
             return collect();
         }
 
-        // If either user is an admin, all groups are fair game
         if (($currentUser !== null && $currentUser->isAdmin()) || ($user !== null && $user->admin)) {
             return $this->getAllGroups();
         }
 
-        return $this->getAllGroups()->filter(function (UserGroup $group) use ($currentUser, $user) {
-            if ($currentUser !== null && $currentUser->can("assignUserGroup:$group->uid")) {
-                return true;
-            }
+        $recipient = $user ?? $currentUser?->asElement();
 
-            if ($user !== null && $user->isInGroup($group)) {
-                return true;
-            }
+        return $this->getAllGroups()
+            ->filter(function (UserGroup $group) use ($currentUser, $recipient, $user) {
+                if (
+                    $currentUser !== null &&
+                    $recipient !== null &&
+                    Gate::check('assignUserGroup', [$recipient, $group])
+                ) {
+                    return true;
+                }
 
-            return false;
-        });
+                return $user !== null && $user->isInGroup($group);
+            });
     }
 
     public function getGroupById(int $groupId): ?UserGroup

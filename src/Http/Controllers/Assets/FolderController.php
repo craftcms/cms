@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
@@ -14,13 +13,13 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
 readonly class FolderController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -42,7 +41,7 @@ readonly class FolderController
         abort_if(! $parentFolder, 400, 'The parent folder cannot be found');
 
         try {
-            $this->requireVolumePermissionByFolder('createFolders', $parentFolder);
+            Gate::authorize('createFolder', $parentFolder);
 
             $folderModel = new VolumeFolder;
             $folderModel->name = $folderName;
@@ -73,7 +72,7 @@ readonly class FolderController
 
         abort_if(! $folder, 400, 'The folder cannot be found');
 
-        $this->requireVolumePermissionByFolder('deletePeerAssets', $folder);
+        Gate::authorize('deleteFolder', $folder);
         $this->folders->deleteFoldersByIds($folderId);
 
         return $this->asSuccess();
@@ -92,8 +91,7 @@ readonly class FolderController
 
         abort_if(! $folder, 400, 'The folder cannot be found');
 
-        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
-        $this->requireVolumePermissionByFolder('createFolders', $folder);
+        Gate::authorize('renameFolder', $folder);
 
         $newName = $this->folders->renameFolderById($folderId, $newName);
 
@@ -118,17 +116,7 @@ readonly class FolderController
         abort_if(! $folderToMove, 400, 'The folder you are trying to move does not exist');
         abort_if(! $destinationFolder, 400, 'The destination folder does not exist');
 
-        // Make sure the user has permission to move the source folder
-        // (same permissions checked for `data-movable`)
-        $this->requireVolumePermissionByFolder('savePeerAssets', $folderToMove);
-        $this->requireVolumePermissionByFolder('deletePeerAssets', $folderToMove);
-
-        // Make sure the user has permission to move folders into the target folder
-        // (same permissions checked for `data-can-move-to`)
-        $this->requireVolumePermissionByFolder('saveAssets', $destinationFolder);
-        $this->requireVolumePermissionByFolder('deleteAssets', $destinationFolder);
-        $this->requireVolumePermissionByFolder('savePeerAssets', $destinationFolder);
-        $this->requireVolumePermissionByFolder('deletePeerAssets', $destinationFolder);
+        Gate::authorize('moveFolder', [$folderToMove, $destinationFolder]);
 
         $targetVolume = $destinationFolder->getVolume();
 

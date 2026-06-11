@@ -5,22 +5,57 @@ declare(strict_types=1);
 use craft\base\Fs;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
+use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 beforeEach(function () {
     $this->policy = app(AssetPolicy::class);
+    $this->folderPolicy = app(VolumeFolderPolicy::class);
 
-    $this->volume = new Volume([
-        'id' => 1,
+    Edition::set(Edition::Pro);
+
+    config()->set('filesystems.disks.asset-policy-test', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-policy-test'),
+    ]);
+
+    $this->volumeModel = VolumeModel::factory()->create([
         'uid' => 'volume-uid',
         'name' => 'Test Volume',
         'handle' => 'testVolume',
+        'fs' => 'disk:asset-policy-test',
     ]);
+
+    $this->volume = new Volume([
+        'id' => $this->volumeModel->id,
+        'uid' => $this->volumeModel->uid,
+        'name' => $this->volumeModel->name,
+        'handle' => $this->volumeModel->handle,
+    ]);
+
+    $assetFolder = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volumeModel->id,
+    ]);
+    $this->peerAsset = AssetModel::factory()->createElement([
+        'volumeId' => $this->volumeModel->id,
+        'folderId' => $assetFolder->id,
+        'uploaderId' => User::factory()->create()->id,
+    ]);
+
+    $folder = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volumeModel->id,
+    ]);
+    $this->folder = Folders::getFolderById($folder->id);
 });
 
 it('is registered with the gate', function () {
@@ -207,6 +242,93 @@ it('allows delete on temp fs even for peer assets', function () {
     expect($result)->toBeTrue();
 });
 
+it('requires view and peer view permissions for viewing peer asset files', function () {
+    expect($this->policy->viewFile(User::factory()->withPermissions(['viewAssets:volume-uid'])->create(), $this->peerAsset))->toBeFalse()
+        ->and($this->policy->viewFile(User::factory()->withPermissions([
+            'viewAssets:volume-uid',
+            'viewPeerAssets:volume-uid',
+        ])->create(), $this->peerAsset))->toBeTrue();
+});
+
+it('requires replace and peer replace permissions for replacing peer files', function () {
+    expect($this->policy->replaceFile(User::factory()->withPermissions([
+        'viewAssets:volume-uid',
+        'replaceFiles:volume-uid',
+    ])->create(), $this->peerAsset))->toBeFalse()
+        ->and($this->policy->replaceFile(User::factory()->withPermissions([
+            'viewAssets:volume-uid',
+            'replaceFiles:volume-uid',
+            'viewPeerAssets:volume-uid',
+            'replacePeerFiles:volume-uid',
+        ])->create(), $this->peerAsset))->toBeTrue();
+});
+
+it('requires edit image and peer edit image permissions for editing peer images', function () {
+    expect($this->policy->editImage(User::factory()->withPermissions([
+        'viewAssets:volume-uid',
+        'editImages:volume-uid',
+    ])->create(), $this->peerAsset))->toBeFalse()
+        ->and($this->policy->editImage(User::factory()->withPermissions([
+            'viewAssets:volume-uid',
+            'editImages:volume-uid',
+            'viewPeerAssets:volume-uid',
+            'editPeerImages:volume-uid',
+        ])->create(), $this->peerAsset))->toBeTrue();
+});
+
+it('requires target folder save plus source asset delete and peer permissions for moving peer files', function () {
+    expect($this->policy->moveFile(User::factory()->withPermissions([
+        'viewAssets:volume-uid',
+        'saveAssets:volume-uid',
+        'deleteAssets:volume-uid',
+        'viewPeerAssets:volume-uid',
+        'savePeerAssets:volume-uid',
+    ])->create(), $this->peerAsset, $this->folder))->toBeFalse()
+        ->and($this->policy->moveFile(User::factory()->withPermissions([
+            'viewAssets:volume-uid',
+            'saveAssets:volume-uid',
+            'deleteAssets:volume-uid',
+            'viewPeerAssets:volume-uid',
+            'savePeerAssets:volume-uid',
+            'deletePeerAssets:volume-uid',
+        ])->create(), $this->peerAsset, $this->folder))->toBeTrue();
+});
+
+it('requires all move-into folder permissions', function () {
+    expect($this->folderPolicy->moveIntoFolder(User::factory()->withPermissions([
+        'viewAssets:volume-uid',
+        'saveAssets:volume-uid',
+        'deleteAssets:volume-uid',
+        'viewPeerAssets:volume-uid',
+        'savePeerAssets:volume-uid',
+    ])->create(), $this->folder))->toBeFalse()
+        ->and($this->folderPolicy->moveIntoFolder(User::factory()->withPermissions([
+            'viewAssets:volume-uid',
+            'saveAssets:volume-uid',
+            'deleteAssets:volume-uid',
+            'viewPeerAssets:volume-uid',
+            'savePeerAssets:volume-uid',
+            'deletePeerAssets:volume-uid',
+        ])->create(), $this->folder))->toBeTrue();
+});
+
+it('requires view assets permission for viewing folder contents', function () {
+    expect(Gate::forUser(User::factory()->withPermissions([])->create())->allows('viewContents', $this->folder))->toBeFalse()
+        ->and(Gate::forUser(User::factory()->withPermissions(['viewAssets:volume-uid'])->create())->allows('viewContents', $this->folder))->toBeTrue();
+});
+
+it('requires delete and create folder permissions for renaming folders', function () {
+    expect($this->folderPolicy->renameFolder(User::factory()->withPermissions([
+        'viewAssets:volume-uid',
+        'createFolders:volume-uid',
+    ])->create(), $this->folder))->toBeFalse()
+        ->and($this->folderPolicy->renameFolder(User::factory()->withPermissions([
+            'viewAssets:volume-uid',
+            'createFolders:volume-uid',
+            'deleteAssets:volume-uid',
+        ])->create(), $this->folder))->toBeTrue();
+});
+
 // Helper functions
 function createAssetTestUser(array $permissions): User
 {
@@ -262,6 +384,7 @@ function createAssetTestAsset(
 
     $asset->id = 100;
     $asset->siteId = null;
+    $asset->volumeId = $volume->id;
     $asset->uploaderId = $uploaderId;
     $asset->isFolder = $isFolder;
     $asset->mockVolume = $mockVolume;
@@ -306,6 +429,7 @@ function createAssetTestAssetWithTempFs(
 
     $asset->id = 100;
     $asset->siteId = null;
+    $asset->volumeId = $volume->id;
     $asset->uploaderId = $uploaderId;
     $asset->isFolder = false;
     $asset->mockVolume = $mockVolume;

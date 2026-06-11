@@ -42,6 +42,11 @@ it('can get assignable groups', function () {
     // Empty when not logged in
     expect(UserGroups::getAssignableGroups())->toBeEmpty();
 
+    $recipient = CraftCms\Cms\User\Models\User::factory()->createElement();
+    $recipient->setGroups([$this->group]);
+
+    expect(UserGroups::getAssignableGroups($recipient)->pluck('id'))->toContain($this->group->id);
+
     // All when admin
     actingAs(User::find()->one());
     expect(UserGroups::getAssignableGroups()->count())->toBeGreaterThan(0);
