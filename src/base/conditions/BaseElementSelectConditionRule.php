@@ -10,6 +10,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use stdClass;
+use Throwable;
 
 /**
  * BaseElementSelectConditionRule provides a base implementation for element query condition rules that are composed of an element select input.
@@ -118,7 +119,12 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             } else {
                 $referenceElement = new stdClass();
             }
-            $elementIds = Craft::$app->getView()->renderSandboxedObjectTemplate($elementIds, $referenceElement);
+
+            try {
+                $elementIds = Craft::$app->getView()->renderSandboxedObjectTemplate($elementIds, $referenceElement);
+            } catch (Throwable) {
+            }
+
             return array_values(array_filter(array_map(
                 fn(string $elementId) => (int)trim($elementId),
                 explode(',', $elementIds),

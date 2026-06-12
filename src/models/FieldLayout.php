@@ -1283,6 +1283,10 @@ class FieldLayout extends Model
         }
 
         if ($element) {
+            if (!$layoutElement->showInForm($element)) {
+                return null;
+            }
+
             return $layoutElement->previewHtml($element);
         }
 

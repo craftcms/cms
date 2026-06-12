@@ -1426,6 +1426,7 @@ JS, [
             'jsSettings' => [],
             'registerJs' => true,
             'showSiteMenu' => 'auto',
+            'siteIds' => null,
             'showStatusMenu' => 'auto',
             'statuses' => null,
             'sources' => null,
@@ -1439,7 +1440,7 @@ JS, [
             ? $elementType::isLocalized()
             : (bool)$config['showSiteMenu'];
 
-        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $siteIds = $config['siteIds'] ?? Craft::$app->getSites()->getEditableSiteIds();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn($option, $key) => [
@@ -3808,18 +3809,31 @@ JS, [
 
             $totalSites += count($groupSites);
 
-            $groupSiteItems = array_map(fn(Site $site) => [
-                'status' => $sites[$site->id]['status'] ?? null,
-                'label' => Craft::t('site', $site->name),
-                'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
-                'hidden' => !isset($sites[$site->id]),
-                'selected' => $site->id === $selectedSite?->id,
-                'attributes' => [
-                    'data' => [
-                        'site-id' => $site->id,
+            $groupSiteItems = array_map(function(Site $site) use ($sites, $path, $params, $selectedSite) {
+                if (isset($params['returnUrl'])) {
+                    // swap the `site` param in the `returnUrl` URL too
+                    $params['returnUrl'] = str_replace(':QS:', '?', $params['returnUrl'], $count);
+                    $params['returnUrl'] = UrlHelper::url($params['returnUrl'], [
+                        'site' => $site->handle,
+                    ]);
+                    if ($count !== 0) {
+                        $params['returnUrl'] = str_replace('?', ':QS:', $params['returnUrl']);
+                    }
+                }
+
+                return [
+                    'status' => $sites[$site->id]['status'] ?? null,
+                    'label' => Craft::t('site', $site->name),
+                    'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
+                    'hidden' => !isset($sites[$site->id]),
+                    'selected' => $site->id === $selectedSite?->id,
+                    'attributes' => [
+                        'data' => [
+                            'site-id' => $site->id,
+                        ],
                     ],
-                ],
-            ], $groupSites);
+                ];
+            }, $groupSites);
 
             if ($config['showSiteGroupHeadings']) {
                 $items[] = [
