@@ -22,8 +22,14 @@ interface UseElementIndexSortOptions {
  * to the first — this also self-heals any extra/garbage entries that may have
  * accumulated in persisted state.
  */
-function normalizeSort(items: Array<SortItem> | undefined): Array<SortItem> {
-  return (items ?? []).filter((item) => !!item?.field).slice(0, 1);
+function normalizeSort(
+  items: Array<SortItem> | Record<string, SortItem> | undefined
+): Array<SortItem> {
+  // `sort` round-trips through query params as an index-keyed object
+  // (`{0: {...}}`), so persisted/rehydrated state can come back as an object
+  // rather than an array. Coerce to an array before filtering.
+  const list = Array.isArray(items) ? items : items ? Object.values(items) : [];
+  return list.filter((item) => !!item?.field).slice(0, 1);
 }
 
 function sortItemsToQuery(items: Array<SortItem>) {

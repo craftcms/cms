@@ -44,7 +44,7 @@
       statusOptions?: Array<{label: string; value: string}>;
       sectionHandle?: string | number;
       viewState: Partial<ViewState>;
-      data: Array<Element>;
+      data?: Array<Element>;
       tableColumns: Array<{label: string; value: string}>;
       viewModes?: Array<ViewMode>;
       baseSortOptions: Array<SortOption>;
@@ -54,9 +54,8 @@
     {
       context: 'index',
       canHaveDrafts: false,
+      data: () => [],
       criteria: () => Craft.defaultIndexCriteria,
-      defaultSource: null,
-      defaultSourcePath: null,
     }
   );
 
