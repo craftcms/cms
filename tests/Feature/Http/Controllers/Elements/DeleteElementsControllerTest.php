@@ -240,9 +240,31 @@ describe('replaceRelationsModal', function () {
 
         expect($response->json('content'))->toContain(
             'elementType',
+            'elementIds',
             'hardDelete',
             'sourceElementType',
             'delete-elements/replace-relations',
+        );
+    });
+});
+
+describe('replaceReferencesModal', function () {
+    it('returns modal content with the selected target ids', function () {
+        $entry = EntryModel::factory()->createElement();
+
+        $response = post(action([DeleteElementsController::class, 'replaceReferencesModal']), [
+            'elementType' => Entry::class,
+            'elementIds' => [$entry->id],
+            'hardDelete' => true,
+        ])->assertOk()
+            ->assertJsonPath('action', 'delete-elements/replace-references')
+            ->assertJsonPath('submitButtonLabel', 'Replace');
+
+        expect($response->json('content'))->toContain(
+            'elementType',
+            'elementIds',
+            'hardDelete',
+            'delete-elements/replace-references',
         );
     });
 });
@@ -318,6 +340,19 @@ describe('replaceRelations', function () {
             collect($job->sourceIds)->sort()->values()->all() === collect([$firstSource->id, $secondSource->id])->sort()->values()->all() &&
             $job->oldTargetIds === [$oldTarget->id] &&
             $job->newTargetId === $newTarget->id);
+    });
+});
+
+describe('replaceReferences', function () {
+    it('returns failure when the replacement target does not exist', function () {
+        $entry = EntryModel::factory()->createElement();
+
+        postJson(action([DeleteElementsController::class, 'replaceReferences']), [
+            'elementType' => Entry::class,
+            'elementIds' => [$entry->id],
+            'newTargetId' => 999999,
+        ])->assertStatus(400)
+            ->assertJsonPath('message', 'The selected entry could not be found.');
     });
 });
 

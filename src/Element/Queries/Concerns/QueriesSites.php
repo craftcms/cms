@@ -255,7 +255,7 @@ trait QueriesSites
      */
     private function normalizeSiteId(ElementQuery $query): mixed
     {
-        if (is_null($query->siteId)) {
+        if (is_null($query->siteId) || $query->siteId === '') {
             // Default to the current site
             return Sites::getCurrentSite()->id;
         }
