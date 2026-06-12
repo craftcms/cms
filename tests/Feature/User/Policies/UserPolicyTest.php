@@ -37,6 +37,17 @@ it('supports assignment abilities through the gate', function () {
         ->and(Gate::forUser($user)->allows('assignUserGroup', [$targetUser, $group]))->toBeTrue();
 });
 
+it('allows editUsers to save another user through the gate without site permission', function () {
+    Edition::set(Edition::Pro);
+
+    $targetUser = User::factory()->createElement();
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers'])
+        ->create();
+
+    expect(Gate::forUser($user)->allows('save', $targetUser))->toBeTrue();
+});
+
 it('allows user to view themselves', function () {
     $user = createUserTestUser(id: 1);
 

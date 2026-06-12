@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Policies;
 
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
@@ -12,6 +13,7 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\UserPermissions;
+use Override;
 
 class UserPolicy extends ElementPolicy
 {
@@ -41,6 +43,12 @@ class UserPolicy extends ElementPolicy
         }
 
         return $user->can('editUsers');
+    }
+
+    #[Override]
+    protected function shouldCheckSiteAuthorization(ElementInterface $element): bool
+    {
+        return false;
     }
 
     public function delete(CraftUser $user, UserElement $target): bool
