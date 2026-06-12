@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +34,7 @@ readonly class NestedElementsController
         private Elements $elements,
     ) {
         $this->request->validate([
-            'ownerElementType' => ['required', 'string'],
+            'ownerElementType' => ['required', 'string', new ElementTypeRule],
             'ownerId' => ['required', 'integer'],
             'ownerSiteId' => ['required', 'integer'],
             'attribute' => ['required', 'string'],
