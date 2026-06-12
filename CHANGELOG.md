@@ -13,6 +13,7 @@
 - Fixed an error that could occur during Craft 6 upgrades when legacy relational or Matrix field settings included `showCardsInGrid`. ([#19047](https://github.com/craftcms/cms/pull/19047))
 - Fixed a bug where queue job progress labels weren’t getting translated.
 - Fixed a bug where the control panel sidebar and Queue Manager were showing completed jobs.
+- Fixed a bug where `CraftCms\Yii2Adapter\Mixins\ValidateMixin::addErrors()` had incorrect arguments. ([#19065](https://github.com/craftcms/cms/pull/19065))
 
 ## 6.0.0-alpha.6 - 2026-06-03
 
