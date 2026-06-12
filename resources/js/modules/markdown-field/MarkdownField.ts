@@ -20,12 +20,20 @@ import {themeOptions} from './behaviors/theme';
 import {
   replaceMarkdownGuideButton,
   syncToolbarKeyboardNavigation,
-  syncUnsupportedToolbarButtonStates,
+  syncToolbarButtonStates,
   toolbarItems,
 } from './behaviors/toolbar';
 import {fileUploadOptions} from './behaviors/uploads';
 import markdownIcon from '@icons/brands/markdown.svg?raw';
 import './MarkdownField.css';
+
+type RenderOptions = Options & {
+  onRender?: (
+    preview: HTMLElement,
+    mode: 'normal' | 'preview',
+    editor: OverTypeInstance
+  ) => void;
+};
 
 @customElement('craft-markdown-field')
 class MarkdownField extends LitElement {
@@ -179,7 +187,7 @@ class MarkdownField extends LitElement {
       ...(charCounterCleanup ? [charCounterCleanup] : []),
       replaceMarkdownGuideButton(editor),
       syncToolbarKeyboardNavigation(editor),
-      syncUnsupportedToolbarButtonStates(editor),
+      syncToolbarButtonStates(editor, previewController),
       registerLinkPasteBehavior(editor, previewController),
       registerShortcutBehavior(editor, previewController),
     ];
@@ -207,7 +215,7 @@ class MarkdownField extends LitElement {
     inputId: string,
     toolbarButtons: Options['toolbarButtons']
   ): Options {
-    const options: Options = {
+    const options: RenderOptions = {
       autoResize: true,
       fontFamily: 'var(--c-font-mono)',
       fontSize: 'var(--c-text-base)',

@@ -65,7 +65,7 @@ export function createLinkPopoverController(
     popover.className = 'markdown-link-popover';
     popover.distance = 6;
     popover.for = triggerId;
-    popover.id = `${triggerId}-popover`;
+    popover.id = popoverId(triggerId);
     // `for` resolves after the first update; set the anchor directly so
     // programmatic show() has a target during the first render.
     popover.anchor = trigger;
@@ -83,7 +83,6 @@ export function createLinkPopoverController(
     linkField.addEventListener('element-select-end', resume);
     popover.addEventListener('wa-after-hide', handlePopoverAfterHide);
 
-    trigger.setAttribute('aria-controls', popover.id);
     setDisclosureState(trigger, false);
     void showPopover(popover);
   }
@@ -235,7 +234,6 @@ export function createLinkPopoverController(
 
     if (currentTrigger) {
       setDisclosureState(currentTrigger, false);
-      currentTrigger.removeAttribute('aria-controls');
     }
 
     currentPopover?.removeEventListener(
@@ -253,7 +251,17 @@ export function createLinkPopoverController(
     target: HTMLElement | null,
     expanded: boolean
   ): void {
-    target?.setAttribute('aria-expanded', expanded.toString());
+    if (!target) {
+      return;
+    }
+
+    target.setAttribute('aria-controls', popoverId(anchorId(target)));
+    target.setAttribute('aria-expanded', expanded.toString());
+    target.removeAttribute('aria-pressed');
+  }
+
+  function popoverId(triggerId: string): string {
+    return `${triggerId}-popover`;
   }
 
   return {

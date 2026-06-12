@@ -49,17 +49,17 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public const string TOOLBAR_STRIKETHROUGH = 'strikethrough';
 
-    public const string TOOLBAR_HEADING_1 = 'heading-1';
+    public const string TOOLBAR_HEADING_1 = 'h1';
 
-    public const string TOOLBAR_HEADING_2 = 'heading-2';
+    public const string TOOLBAR_HEADING_2 = 'h2';
 
-    public const string TOOLBAR_HEADING_3 = 'heading-3';
+    public const string TOOLBAR_HEADING_3 = 'h3';
 
-    public const string TOOLBAR_HEADING_4 = 'heading-4';
+    public const string TOOLBAR_HEADING_4 = 'h4';
 
-    public const string TOOLBAR_HEADING_5 = 'heading-5';
+    public const string TOOLBAR_HEADING_5 = 'h5';
 
-    public const string TOOLBAR_HEADING_6 = 'heading-6';
+    public const string TOOLBAR_HEADING_6 = 'h6';
 
     public const string TOOLBAR_QUOTE = 'quote';
 

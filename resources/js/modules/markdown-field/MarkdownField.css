@@ -189,6 +189,15 @@
   text-decoration-color: var(--markdown-field-text) !important;
 }
 
+.markdown-field .overtype-wrapper .overtype-preview :where(h4, h5, h6) {
+  display: inline !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: inherit !important;
+  font-weight: bold !important;
+  line-height: inherit !important;
+}
+
 .markdown-field
   .overtype-container[data-mode='preview']
   .overtype-wrapper
