@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added a new core Markdown field ([#18960](https://github.com/craftcms/cms/pull/18960))
+- Added a way for fields to track references and register a deletion blocker for them ([#19014](https://github.com/craftcms/cms/pull/19014))
 - Added `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$ruleset`.
 - Relaxed the allowed types in the `ValidationRulesResolving` event to include any implementation `ValidatesWithRuleset` or a `Illuminate\Http\Request` object.
 - Renamed `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$component` to `$subject`.
