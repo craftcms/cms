@@ -48,7 +48,7 @@ it('can get assignable groups', function () {
     expect(UserGroups::getAssignableGroups($recipient)->pluck('id'))->toContain($this->group->id);
 
     // All when admin
-    actingAs(User::find()->one());
+    actingAs(User::find()->admin()->one());
     expect(UserGroups::getAssignableGroups()->count())->toBeGreaterThan(0);
 
     // No group when user has no permissions to assign groups
