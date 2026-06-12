@@ -70,11 +70,10 @@ JS, [
             $query->orderBy('structureelements.lft');
         }
 
-        $elements = $query->all();
         $successCount = 0;
         $failCount = 0;
 
-        $this->_duplicateElements($query, $elements, $successCount, $failCount);
+        $this->_duplicateElements($query, $successCount, $failCount);
 
         // Did all of them fail?
         if ($successCount === 0) {
@@ -92,8 +91,12 @@ JS, [
         return true;
     }
 
-    private function _duplicateElements(ElementQueryInterface $query, array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
+    private function _duplicateElements(ElementQueryInterface $query, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
+        $elements = $query
+            ->reorder(column: 'elements.id')
+            ->lazy(100);
+
         foreach ($elements as $element) {
             $allowed = $this->asDrafts
                 ? Gate::check('duplicateAsDraft', $element)
@@ -147,14 +150,13 @@ JS, [
 
             if ($this->deep) {
                 // Don't use $element->children() here in case its lft/rgt values have changed
-                $children = $element::find()
+                $childQuery = $element::find()
                     ->siteId($element->siteId)
                     ->descendantOf($element->id)
                     ->descendantDist(1)
-                    ->status(null)
-                    ->all();
+                    ->status(null);
 
-                $this->_duplicateElements($query, $children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
+                $this->_duplicateElements($childQuery, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }
         }
     }
