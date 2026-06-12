@@ -16,6 +16,7 @@
 - Fixed a bug where relational fields’ element selector modals weren’t showing any results if they were configured to only relate to elements in a specific site, and the author didn’t have permission to access that site. ([#19078](https://github.com/craftcms/cms/issues/19078))
 - Fixed a bug where element cards were showing preview values for conditionally-hidden fields. ([#19064](https://github.com/craftcms/cms/discussions/19064))
 - Fixed a bug where some bulk element actions could exhaust the memory limit on large selections. ([#19070](https://github.com/craftcms/cms/issues/19070))
+- Fixed a SQL error that could occur when uploading an asset, if it contained non-UTF-8 alt text in its metadata. ([#19069](https://github.com/craftcms/cms/issues/19069))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
