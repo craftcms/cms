@@ -202,7 +202,7 @@ class Application extends \yii\web\Application
                 $generalConfig->disallowRobots ||
                 $isCpRequest ||
                 $request->getToken() !== null ||
-                $request->getIsPreview() ||
+                $request->getHadPreviewToken() ||
                 ($request->getIsActionRequest() && !($request->getIsLoginRequest() && $request->getIsGet()))
             ) {
                 $headers->set('X-Robots-Tag', 'none');

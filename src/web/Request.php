@@ -753,6 +753,19 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether the request initially had a preview token, even if invalid.
+     *
+     * @return bool
+     * @since 5.9.18
+     */
+    public function getHadPreviewToken(): bool
+    {
+        return $this->getQueryParam('x-craft-preview') !== null ||
+            $this->getQueryParam('x-craft-live-preview') !== null ||
+            $this->getHeaders()->get('X-Craft-Preview-Token') !== null;
+    }
+
+    /**
      * Returns whether this is a Live Preview request.
      *
      * ::: tip

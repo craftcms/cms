@@ -386,6 +386,22 @@ class RequestTest extends TestCase
         self::assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
     }
 
+    public function testGetHadPreviewToken(): void
+    {
+        $this->request->setQueryParams(['x-craft-preview' => 'invalid']);
+
+        self::assertTrue($this->request->getHadPreviewToken());
+        self::assertFalse($this->request->getIsPreview());
+
+        $request = new Request([
+            'cookieValidationKey' => 'lashdao8u09ud09u09231uoij098wqe',
+        ]);
+        $request->getHeaders()->set('X-Craft-Preview-Token', 'invalid');
+
+        self::assertTrue($request->getHadPreviewToken());
+        self::assertFalse($request->getIsPreview());
+    }
+
     /**
      * @dataProvider acceptsDataProvider
      */
