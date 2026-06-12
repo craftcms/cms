@@ -2328,7 +2328,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             },
           }
         );
-      } catch (e) {}
+      } catch (e) {
+        return;
+      }
 
       $source.data(
         'table-col-opts',

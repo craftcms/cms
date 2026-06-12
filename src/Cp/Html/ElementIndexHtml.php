@@ -41,6 +41,7 @@ readonly class ElementIndexHtml
             'jsSettings' => [],
             'registerJs' => true,
             'showSiteMenu' => 'auto',
+            'siteIds' => null,
             'showStatusMenu' => 'auto',
             'statuses' => null,
             'sources' => null,
@@ -54,7 +55,7 @@ readonly class ElementIndexHtml
             ? $elementType::isLocalized()
             : (bool) $config['showSiteMenu'];
 
-        $siteIds = $this->sites->getEditableSiteIds()->all();
+        $siteIds = $config['siteIds'] ?? $this->sites->getEditableSiteIds()->all();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn ($option, $key) => [
