@@ -82,11 +82,7 @@ JS, [
         $anySuccess = false;
         $anyFail = false;
 
-        $elements = $query
-            ->reorder(column: 'elements.id')
-            ->lazy(100);
-
-        foreach ($elements as $element) {
+        foreach ($query->all() as $element) {
             if (! Gate::check('save', $element)) {
                 continue;
             }

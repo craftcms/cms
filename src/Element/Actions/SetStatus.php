@@ -71,16 +71,10 @@ JS, [static::class]);
         $elementType = $this->elementType;
         $isLocalized = $elementType::isLocalized() && Sites::isMultiSite();
 
-        $elements = $query
-            ->reorder(column: 'elements.id')
-            ->lazy(100);
-
+        $elements = $query->all();
         $failCount = 0;
-        $total = 0;
 
         foreach ($elements as $element) {
-            $total++;
-
             if (! Gate::check('save', $element)) {
                 continue;
             }
@@ -122,8 +116,8 @@ JS, [static::class]);
         }
 
         // Did all of them fail?
-        if ($failCount === $total) {
-            if ($total === 1) {
+        if ($failCount === count($elements)) {
+            if (count($elements) === 1) {
                 $this->setMessage(t('Could not update status due to a validation error.'));
             } else {
                 $this->setMessage(t('Could not update statuses due to validation errors.'));
@@ -135,7 +129,7 @@ JS, [static::class]);
         if ($failCount !== 0) {
             $this->setMessage(t('Status updated, with some failures due to validation errors.'));
         } else {
-            if ($total === 1) {
+            if (count($elements) === 1) {
                 $this->setMessage(t('Status updated.'));
             } else {
                 $this->setMessage(t('Statuses updated.'));

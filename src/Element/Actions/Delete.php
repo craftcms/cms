@@ -172,11 +172,7 @@ JS, [
         $deletedElementIds = [];
         $deleteOwnership = [];
 
-        $elements = $query
-            ->reorder(column: 'elements.id')
-            ->lazy(100);
-
-        foreach ($elements as $element) {
+        foreach ($query->all() as $element) {
             if (! Gate::check('view', $element)) {
                 continue;
             }

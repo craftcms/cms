@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
@@ -70,17 +69,16 @@ JS, [static::class]);
     #[\Override]
     public function performAction(ElementQueryInterface $query): bool
     {
-        $query
-            ->reorder(column: 'elements.id')
-            ->chunk(100, function (Collection $elements) {
-                // Ignore any elements the user doesn’t have permission to delete
-                $elements = $elements->filter(fn (ElementInterface $element) => (
-                    Gate::check('view', $element) &&
-                    Gate::check('deleteForSite', $element)
-                ))->all();
+        // Ignore any elements the user doesn’t have permission to delete
+        $elements = array_filter(
+            $query->all(),
+            fn (ElementInterface $element) => (
+                Gate::check('view', $element) &&
+                Gate::check('deleteForSite', $element)
+            ),
+        );
 
-                Elements::deleteElementsForSite($elements);
-            });
+        Elements::deleteElementsForSite($elements);
 
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
