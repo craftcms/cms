@@ -233,17 +233,17 @@ class Entries
                         Structures::remove($oldSection->structureId, $entry);
 
                         // remove drafts and revisions from the structure, too
-                        $draftsQuery->each(function (Entry $draft) use ($oldSection) {
+                        $draftsQuery->cursor()->each(function (Entry $draft) use ($oldSection) {
                             if ($draft->lft) {
                                 Structures::remove($oldSection->structureId, $draft);
                             }
-                        }, 100);
+                        });
 
-                        $revisionsQuery->each(function (Entry $revision) use ($oldSection) {
+                        $revisionsQuery->cursor()->each(function (Entry $revision) use ($oldSection) {
                             if ($revision->lft) {
                                 Structures::remove($oldSection->structureId, $revision);
                             }
-                        }, 100);
+                        });
                     }
 
                     // if we're moving it to a Structure section, place it at the root

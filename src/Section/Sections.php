@@ -806,9 +806,10 @@ class Sections
             ->status(null)
             ->withStructure(false)
             ->orderBy('id')
+            ->cursor()
             ->each(function (Entry $entry) use ($sectionModel) {
                 Structures::appendToRoot($sectionModel->structureId, $entry, Mode::Insert);
-            }, 100);
+            });
     }
 
     /**
