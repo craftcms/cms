@@ -135,7 +135,7 @@ readonly class ElementUris
             return;
         }
 
-        $query->each(fn (ElementInterface $child) => $this->updateElementSlugAndUri(
+        $query->cursor()->each(fn (ElementInterface $child) => $this->updateElementSlugAndUri(
             element: $child,
             updateOtherSites: $updateOtherSites,
             updateDescendants: true,

@@ -13,11 +13,16 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Field\Data\MarkdownData;
+use CraftCms\Cms\Field\Markdown as MarkdownField;
+use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 readonly class RenderController
 {
@@ -164,5 +169,32 @@ readonly class RenderController
         }
 
         return new JsonResponse($data);
+    }
+
+    public function markdown(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'markdown' => ['nullable', 'string'],
+            'flavor' => ['required', 'string', Rule::in(Arr::pluck(MarkdownField::flavorOptions(), 'value'))],
+            'encode' => ['boolean'],
+            'inlineOnly' => ['boolean'],
+            'sanitizeHtml' => ['boolean'],
+            'htmlSanitizer' => ['nullable', 'string', Rule::in(app(HtmlSanitizers::class)->names())],
+        ]);
+
+        $encode = $request->boolean('encode');
+
+        $html = new MarkdownData(
+            $validated['markdown'] ?? '',
+            $encode ? MarkdownService::FLAVOR_PRE_ENCODED : $validated['flavor'],
+            encode: $encode,
+            inlineOnly: $request->boolean('inlineOnly'),
+            sanitizeHtml: $request->boolean('sanitizeHtml'),
+            htmlSanitizer: $validated['htmlSanitizer'] ?? null,
+        )->getHtml();
+
+        return new JsonResponse([
+            'html' => $html,
+        ]);
     }
 }

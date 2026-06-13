@@ -1047,13 +1047,8 @@ class Asset extends Element
             $volumeHandle = false;
         }
 
-        $canUpload = Gate::check("saveAssets:$volume->uid");
-        $canMoveTo = (
-            $canUpload &&
-            Gate::check("deleteAssets:$volume->uid") &&
-            Gate::check("savePeerAssets:$volume->uid") &&
-            Gate::check("deletePeerAssets:$volume->uid")
-        );
+        $canUpload = $user && Gate::check('uploadAsset', $folder);
+        $canMoveTo = $user && Gate::check('moveIntoFolder', $folder);
 
         $sourcePathInfo = $folder->getSourcePathInfo();
 
@@ -1293,7 +1288,6 @@ class Asset extends Element
     {
         $items = parent::safeActionMenuItems();
 
-        $volume = $this->getVolume();
         $user = currentUserElement();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
@@ -1367,8 +1361,7 @@ JS, [
         // Replace file
         if (
             $user &&
-            $user->can("replaceFiles:$volume->uid") &&
-            ($user->id === $this->uploaderId || $user->can("replacePeerFiles:$volume->uid"))
+            $user->can('replaceFile', $this)
         ) {
             $replaceId = sprintf('action-replace-%s', mt_rand());
             $items[] = [
@@ -1511,8 +1504,8 @@ JS, [
         // Image editor
         if (
             $this->getSupportsImageEditor() &&
-            Gate::check("editImages:$volume->uid") &&
-            (Auth::id() === $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
+            $user &&
+            $user->can('editImage', $this)
         ) {
             $editImageId = sprintf('action-image-edit-%s', mt_rand());
             $items[] = [
@@ -2526,12 +2519,11 @@ JS, [
         // See if we can show a thumbnail
         try {
             // Is the image editable, and is the user allowed to edit?
-            $volume = $this->getVolume();
+            $user = Auth::craftUser();
             $previewable = AssetsService::getAssetPreviewHandler($this) !== null;
             $editable = (
                 $this->getSupportsImageEditor() &&
-                Gate::check("editImages:$volume->uid") &&
-                (Auth::id() === $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
+                $user?->can('editImage', $this)
             );
 
             $previewInner = match ($this->kind) {
@@ -2905,7 +2897,12 @@ JS;
                 isset($this->tempFilePath) &&
                 $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
             ) {
-                $this->alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                if ($alt !== null) {
+                    // ensure it's UTF-8
+                    // (see https://github.com/craftcms/cms/issues/19069)
+                    $this->alt = Str::convertToUtf8($alt);
+                }
             }
 
             // Are we uploading an image that needs to be sanitized?
@@ -3060,12 +3057,9 @@ JS;
                 ],
             ];
 
-            $volume = $this->getVolume();
+            $user = Auth::craftUser();
 
-            if (
-                Gate::check("savePeerAssets:$volume->uid") &&
-                Gate::check("deletePeerAssets:$volume->uid")
-            ) {
+            if ($user && Gate::check('moveFolderFrom', $this->getFolder())) {
                 $attributes['data']['movable'] = true;
             }
 

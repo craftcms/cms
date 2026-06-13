@@ -14,6 +14,7 @@ class FieldLayoutSaved extends FieldLayoutEvent
     public function __construct(
         FieldLayout $layout,
         public bool $isNew,
+        public ?array $previousConfig = null,
     ) {
         parent::__construct($layout);
     }

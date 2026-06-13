@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
 
@@ -19,6 +21,31 @@ it('is registered with the gate', function () {
     $result = Gate::forUser($currentUser)->allows('view', $targetUser->asElement());
 
     expect($result)->toBeBool();
+});
+
+it('supports assignment abilities through the gate', function () {
+    Edition::set(Edition::Pro);
+
+    $groupModel = UserGroupModel::factory()->create();
+    $group = UserGroups::getGroupById($groupModel->id);
+    $targetUser = User::factory()->createElement();
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', "assignUserGroup:$group->uid"])
+        ->create();
+
+    expect(Gate::forUser($user)->allows('assignUserGroups', $targetUser))->toBeTrue()
+        ->and(Gate::forUser($user)->allows('assignUserGroup', [$targetUser, $group]))->toBeTrue();
+});
+
+it('allows editUsers to save another user through the gate without site permission', function () {
+    Edition::set(Edition::Pro);
+
+    $targetUser = User::factory()->createElement();
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers'])
+        ->create();
+
+    expect(Gate::forUser($user)->allows('save', $targetUser))->toBeTrue();
 });
 
 it('allows user to view themselves', function () {
@@ -154,6 +181,131 @@ it('prevents users from being copied', function () {
     expect($result)->toBeFalse();
 });
 
+it('only shows the permissions screen in supported editions', function () {
+    $admin = User::factory()->admin()->create();
+
+    Edition::set(Edition::Solo);
+    expect($this->policy->viewPermissionsScreen($admin))->toBeFalse();
+
+    Edition::set(Edition::Team);
+    expect($this->policy->viewPermissionsScreen($admin))->toBeTrue();
+
+    Edition::set(Edition::Pro);
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', 'assignUserPermissions'])
+        ->create();
+
+    expect($this->policy->viewPermissionsScreen($user))->toBeTrue();
+});
+
+it('authorizes assigning user groups from the edition and group permissions', function () {
+    Edition::set(Edition::Pro);
+
+    $groupModel = UserGroupModel::factory()->create();
+    $group = UserGroups::getGroupById($groupModel->id);
+    $admin = User::factory()->admin()->create();
+    $proAdmin = User::factory()->admin()->create();
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', "assignUserGroup:$group->uid"])
+        ->create();
+
+    Edition::set(Edition::Solo);
+    expect($this->policy->assignUserGroups($admin))->toBeFalse();
+
+    Edition::set(Edition::Pro);
+    expect($this->policy->assignUserGroups($proAdmin))->toBeTrue()
+        ->and($this->policy->assignUserGroups($user))->toBeTrue();
+});
+
+it('checks the specific group assignment permission', function () {
+    Edition::set(Edition::Pro);
+
+    $groupModel = UserGroupModel::factory()->create();
+    $group = UserGroups::getGroupById($groupModel->id);
+    $targetUser = User::factory()->createElement();
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', "assignUserGroup:$group->uid"])
+        ->create();
+
+    expect($this->policy->assignUserGroup(User::factory()->create(), $targetUser, $group))->toBeFalse()
+        ->and($this->policy->assignUserGroup($user, $targetUser, $group))->toBeTrue();
+});
+
+it('authorizes assigning permissions without removing existing recipient permissions', function () {
+    Edition::set(Edition::Pro);
+
+    $recipient = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers'])
+        ->createElement();
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'deleteUsers'])
+        ->create();
+
+    expect($this->policy->assignPermission(User::factory()->create(), $recipient, 'editUsers'))->toBeTrue()
+        ->and($this->policy->assignPermission(User::factory()->create(), $recipient, 'deleteUsers'))->toBeFalse()
+        ->and($this->policy->assignPermission($user, $recipient, 'deleteUsers'))->toBeTrue();
+});
+
+it('authorizes activating users with administrateUsers', function () {
+    Edition::set(Edition::Pro);
+
+    $target = User::factory()->createElement([
+        'active' => false,
+    ]);
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers'])
+        ->create();
+    $administrator = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', 'administrateUsers'])
+        ->create();
+
+    expect($this->policy->activate($user, $target))->toBeFalse()
+        ->and($this->policy->activate($administrator, $target))->toBeTrue();
+});
+
+it('authorizes deactivating users from self, administrateUsers, and admin target rules', function () {
+    Edition::set(Edition::Pro);
+
+    $self = User::factory()->create();
+    $target = User::factory()->createElement();
+    $adminTarget = User::factory()->admin()->createElement();
+    $user = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers'])
+        ->create();
+    $administrator = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', 'administrateUsers'])
+        ->create();
+    $admin = User::factory()->admin()->create();
+
+    expect($this->policy->deactivate($self, $self->asElement()))->toBeTrue()
+        ->and($this->policy->deactivate($user, $target))->toBeFalse()
+        ->and($this->policy->deactivate($administrator, $target))->toBeTrue()
+        ->and($this->policy->deactivate($administrator, $adminTarget))->toBeFalse()
+        ->and($this->policy->deactivate($admin, $adminTarget))->toBeTrue();
+});
+
+it('authorizes activation email by pending and inactive status', function () {
+    Edition::set(Edition::Pro);
+
+    $user = User::factory()->create();
+    $moderator = User::factory()
+        ->withPermissions(['viewUsers', 'editUsers', 'moderateUsers'])
+        ->create();
+    $pendingTarget = User::factory()->pending()->createElement();
+    $inactiveTarget = User::factory()->createElement([
+        'active' => false,
+        'pending' => false,
+    ]);
+    $activeTarget = User::factory()->active()->createElement([
+        'pending' => false,
+    ]);
+
+    expect($this->policy->sendActivationEmail($user, $pendingTarget))->toBeTrue()
+        ->and($this->policy->sendActivationEmail($user, $inactiveTarget))->toBeFalse()
+        ->and($this->policy->sendActivationEmail($moderator, $inactiveTarget))->toBeTrue()
+        ->and($this->policy->sendActivationEmail($moderator, $activeTarget))->toBeFalse();
+});
+
 // Impersonate tests
 it('allows admin to impersonate any user', function () {
     $admin = createUserTestUser(id: 1, isAdmin: true);
@@ -265,6 +417,17 @@ function createUserTestUser(
             {
                 public bool $hasSso = false;
 
+                public array $grantedPermissions = [];
+
+                public function can($abilities, $arguments = []): bool
+                {
+                    if (is_array($abilities)) {
+                        return array_all($abilities, fn ($ability) => $this->can($ability, $arguments));
+                    }
+
+                    return in_array($abilities, $this->grantedPermissions, true);
+                }
+
                 public function getHasSsoIdentity(): bool
                 {
                     return $this->hasSso;
@@ -275,6 +438,7 @@ function createUserTestUser(
             $element->siteId = null;
             $element->admin = $this->admin;
             $element->hasSso = $this->hasSso;
+            $element->grantedPermissions = $this->grantedPermissions;
 
             return $element;
         }

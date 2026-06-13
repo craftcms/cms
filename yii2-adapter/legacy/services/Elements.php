@@ -1808,6 +1808,10 @@ class Elements extends Component
 
                 if (property_exists($event, 'handled')) {
                     $event->handled = $yiiEvent->handled;
+
+                    if ($yiiEvent->handled) {
+                        return false;
+                    }
                 }
             });
         }

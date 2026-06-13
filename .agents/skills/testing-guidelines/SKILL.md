@@ -44,6 +44,7 @@ uses(UnitTestCase::class)->in('Unit');
 - For element traits, create minimal test elements that override only what is needed.
 - Use Laravel event fakes/listeners to assert dispatch, cancellation, or data changes.
 - Use Pest's `->with()` data providers to consolidate tests that share the same structure but differ only in input/expected values. Use named dataset entries for clarity.
+- Avoid long chains of `toContain()` / `not()->toContain()` assertions against rendered HTML. They tend to test incidental markup, labels, ordering, and template structure instead of behavior. Prefer assertions that target the semantic contract directly, such as input names, selected values, option values, or data attributes. Keep raw string containment assertions for small, stable strings that are themselves the contract.
 - Tests that assert Yii2 backwards-compatibility surfaces (legacy aliases, `ValidateMixin` helpers like `hasErrors()`, other adapter-only behavior) must live in `yii2-adapter/tests-laravel/`, not `tests/Feature/` or `tests/Unit/`.
 
 ## When to Load References

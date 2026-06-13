@@ -138,7 +138,7 @@ readonly class ElementWrites
             $position = 0;
 
             try {
-                $query->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
+                $query->cursor()->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     $position++;
 
                     $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
@@ -177,7 +177,6 @@ readonly class ElementWrites
 
                     event(new ElementResaved($query, $element, $position, $throwable));
                 });
-                /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
                 // Fail silently
             }
@@ -201,7 +200,7 @@ readonly class ElementWrites
             $position = 0;
 
             try {
-                $query->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
+                $query->cursor()->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
                     $position++;
 
                     event(new ElementPropagating($query, $element, $position));
@@ -244,7 +243,6 @@ readonly class ElementWrites
                     BulkOps::trackElement($element);
                     $this->elementCaches->invalidateForElement($element);
                 });
-                /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
                 // Fail silently
             }

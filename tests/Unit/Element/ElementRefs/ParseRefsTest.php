@@ -134,6 +134,22 @@ function createParseRefsElement(
     return $element;
 }
 
+function expectParseRefsElementType(int $times = 1): void
+{
+    test()->elements->expects(test()->exactly($times))
+        ->method('getElementTypeByRefHandle')
+        ->with('test')
+        ->willReturn(TestParseRefsElement::class);
+}
+
+function expectParseRefsQueries(TestParseRefsQuery ...$queries): void
+{
+    test()->elements->expects(test()->exactly(count($queries)))
+        ->method('createElementQuery')
+        ->with(TestParseRefsElement::class)
+        ->willReturnOnConsecutiveCalls(...$queries);
+}
+
 it('returns the original string when it does not contain reference syntax', function () {
     $this->elements->expects(test()->never())
         ->method('createElementQuery');
@@ -168,10 +184,7 @@ it('uses an explicit fallback when the element type is unknown', function () {
 });
 
 it('uses the original tag as the fallback when a site handle cannot be resolved', function () {
-    $this->elements->expects(test()->once())
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
+    expectParseRefsElementType();
 
     $this->sites->expects(test()->once())
         ->method('getSiteByHandle')
@@ -190,15 +203,8 @@ it('uses the default site id and resolves numeric id refs to urls', function () 
         createParseRefsElement(id: 1, url: 'https://example.test/id-1'),
     ]);
 
-    $this->elements->expects(test()->once())
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
-
-    $this->elements->expects(test()->once())
-        ->method('createElementQuery')
-        ->with(TestParseRefsElement::class)
-        ->willReturn($query);
+    expectParseRefsElementType();
+    expectParseRefsQueries($query);
 
     expect($this->action->parseRefs('Link: {test:1}', 7))
         ->toBe('Link: https://example.test/id-1')
@@ -212,11 +218,6 @@ it('resolves site handles before querying elements', function () {
         createParseRefsElement(ref: 'entry', url: 'https://example.test/handle-site'),
     ]);
 
-    $this->elements->expects(test()->once())
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
-
     $this->sites->expects(test()->once())
         ->method('getSiteByHandle')
         ->with('secondary')
@@ -227,10 +228,8 @@ it('resolves site handles before querying elements', function () {
             $site->language = 'en-US';
         }));
 
-    $this->elements->expects(test()->once())
-        ->method('createElementQuery')
-        ->with(TestParseRefsElement::class)
-        ->willReturn($query);
+    expectParseRefsElementType();
+    expectParseRefsQueries($query);
 
     expect($this->action->parseRefs('{test:entry@secondary}'))
         ->toBe('https://example.test/handle-site')
@@ -245,21 +244,14 @@ it('resolves numeric site ids without looking up a site record', function () {
         createParseRefsElement(ref: 'entry', url: 'https://example.test/numeric-site'),
     ]);
 
-    $this->elements->expects(test()->once())
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
-
     $this->sites->expects(test()->never())
         ->method('getSiteByHandle');
 
     $this->sites->expects(test()->never())
         ->method('getSiteByUid');
 
-    $this->elements->expects(test()->once())
-        ->method('createElementQuery')
-        ->with(TestParseRefsElement::class)
-        ->willReturn($query);
+    expectParseRefsElementType();
+    expectParseRefsQueries($query);
 
     expect($this->action->parseRefs('{test:entry@4}'))
         ->toBe('https://example.test/numeric-site')
@@ -271,10 +263,7 @@ it('resolves numeric site ids without looking up a site record', function () {
 it('falls back when resolving a site uid throws an exception', function () {
     $uuid = '550e8400-e29b-41d4-a716-446655440000';
 
-    $this->elements->expects(test()->once())
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
+    expectParseRefsElementType();
 
     $this->sites->expects(test()->once())
         ->method('getSiteByUid')
@@ -293,15 +282,8 @@ it('resolves suffix refs even when the query does not support ref lookups', func
         createParseRefsElement(ref: 'section/slug', url: 'https://example.test/slug-match'),
     ]);
 
-    $this->elements->expects(test()->once())
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
-
-    $this->elements->expects(test()->once())
-        ->method('createElementQuery')
-        ->with(TestParseRefsElement::class)
-        ->willReturn($query);
+    expectParseRefsElementType();
+    expectParseRefsQueries($query);
 
     expect($this->action->parseRefs('{test:slug:summary}'))
         ->toBe('https://example.test/slug-match')
@@ -319,15 +301,8 @@ it('parses referenced attributes recursively', function () {
         createParseRefsElement(ref: 'nested-ref', title: 'Nested title'),
     ]);
 
-    $this->elements->expects(test()->exactly(2))
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
-
-    $this->elements->expects(test()->exactly(2))
-        ->method('createElementQuery')
-        ->with(TestParseRefsElement::class)
-        ->willReturnOnConsecutiveCalls($primaryQuery, $nestedQuery);
+    expectParseRefsElementType(2);
+    expectParseRefsQueries($primaryQuery, $nestedQuery);
 
     expect($this->action->parseRefs('Start {test:primary-ref:body} end'))
         ->toBe('Start See Nested title end')
@@ -338,15 +313,8 @@ it('parses referenced attributes recursively', function () {
 it('uses the fallback when no matching element is found', function () {
     $query = new TestParseRefsRefQuery([]);
 
-    $this->elements->expects(test()->once())
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
-
-    $this->elements->expects(test()->once())
-        ->method('createElementQuery')
-        ->with(TestParseRefsElement::class)
-        ->willReturn($query);
+    expectParseRefsElementType();
+    expectParseRefsQueries($query);
 
     expect($this->action->parseRefs('{test:missing||fallback}'))
         ->toBe('fallback')
@@ -364,17 +332,83 @@ it('logs and falls back when a referenced attribute cannot be converted to a str
             && str_contains($message, 'could not be converted to string')
             && $context === ['CraftCms\\Cms\\Element\\Operations\\ElementRefs::getRefTokenReplacement']);
 
-    $this->elements->expects(test()->once())
-        ->method('getElementTypeByRefHandle')
-        ->with('test')
-        ->willReturn(TestParseRefsElement::class);
-
-    $this->elements->expects(test()->once())
-        ->method('createElementQuery')
-        ->with(TestParseRefsElement::class)
-        ->willReturn($query);
+    expectParseRefsElementType();
+    expectParseRefsQueries($query);
 
     expect($this->action->parseRefs('{test:error:problem || fallback}'))
         ->toBe('fallback')
         ->and($query->recordedRef)->toBe(['error']);
+});
+
+it('returns target ids for numeric id refs', function () {
+    $matchingQuery = new TestParseRefsQuery([
+        createParseRefsElement(id: 3),
+    ]);
+    $missingQuery = new TestParseRefsQuery([]);
+
+    expectParseRefsElementType(2);
+    expectParseRefsQueries($matchingQuery, $missingQuery);
+
+    expect($this->action->targetIds('{test:3:url} {test:999}', 7))
+        ->toBe([3])
+        ->and($matchingQuery->recordedSiteId)->toBe(7)
+        ->and($matchingQuery->recordedStatus)->toBeNull()
+        ->and($matchingQuery->recordedId)->toBe(3)
+        ->and($missingQuery->recordedSiteId)->toBe(7)
+        ->and($missingQuery->recordedStatus)->toBeNull()
+        ->and($missingQuery->recordedId)->toBe(999);
+});
+
+it('returns target ids for named refs and suffix refs', function () {
+    $suffixQuery = new TestParseRefsRefQuery([createParseRefsElement(id: 4, ref: 'section/slug')]);
+    $directQuery = new TestParseRefsRefQuery([createParseRefsElement(id: 5, ref: 'direct-ref')]);
+    $missingQuery = new TestParseRefsRefQuery([]);
+
+    expectParseRefsElementType(3);
+    expectParseRefsQueries($suffixQuery, $directQuery, $missingQuery);
+
+    expect($this->action->targetIds('{test:slug} {test:direct-ref} {test:missing}'))
+        ->toBe([4, 5])
+        ->and($suffixQuery->recordedSiteId)->toBeNull()
+        ->and($suffixQuery->recordedStatus)->toBeNull()
+        ->and($suffixQuery->recordedRef)->toBe('slug')
+        ->and($directQuery->recordedSiteId)->toBeNull()
+        ->and($directQuery->recordedStatus)->toBeNull()
+        ->and($directQuery->recordedRef)->toBe('direct-ref')
+        ->and($missingQuery->recordedSiteId)->toBeNull()
+        ->and($missingQuery->recordedStatus)->toBeNull()
+        ->and($missingQuery->recordedRef)->toBe('missing');
+});
+
+it('returns no target ids when the site cannot be resolved', function () {
+    expectParseRefsElementType();
+
+    $this->sites->expects(test()->once())
+        ->method('getSiteByHandle')
+        ->with('missing')
+        ->willReturn(null);
+
+    $this->elements->expects(test()->never())
+        ->method('createElementQuery');
+
+    expect($this->action->targetIds('{test:entry@missing}'))->toBe([]);
+});
+
+it('replaces numeric and named refs that resolve to old targets', function () {
+    $numericQuery = new TestParseRefsQuery([createParseRefsElement(id: 1)]);
+    $matchingRefQuery = new TestParseRefsRefQuery([createParseRefsElement(id: 4, ref: 'section/slug')]);
+    $keptRefQuery = new TestParseRefsRefQuery([createParseRefsElement(id: 5, ref: 'kept-ref')]);
+
+    expectParseRefsElementType(3);
+    expectParseRefsQueries($numericQuery, $matchingRefQuery, $keptRefQuery);
+
+    expect($this->action->replaceTargetRefs(
+        '{test:1@2:url} {test:section/slug:title || fallback} {test:kept-ref}',
+        [1, 4],
+        9,
+    ))->toBe('{test:9@2:url} {test:9:title || fallback} {test:kept-ref}')
+        ->and($numericQuery->recordedSiteId)->toBe(2)
+        ->and($numericQuery->recordedId)->toBe(1)
+        ->and($matchingRefQuery->recordedRef)->toBe('section/slug')
+        ->and($keptRefQuery->recordedRef)->toBe('kept-ref');
 });

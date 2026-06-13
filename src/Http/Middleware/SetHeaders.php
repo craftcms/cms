@@ -52,7 +52,9 @@ class SetHeaders
             return $response;
         }
 
-        if ($request->isCpRequest() || $request->isActionRequest() || self::$noCache) {
+        $hasPreviewParam = $request->previewParam() !== null;
+
+        if ($request->isCpRequest() || $request->isActionRequest() || $hasPreviewParam || self::$noCache) {
             $response->setNoCacheHeaders();
         } elseif (! is_null(self::$duration)) {
             if (self::$duration <= 0) {
@@ -72,8 +74,8 @@ class SetHeaders
             $request->isCpRequest() ||
             $request->has(HandleTokenRequest::TOKEN_KEY) ||
             $request->hasHeader(HandleTokenRequest::TOKEN_HEADER) ||
-            $request->isPreview()
-            || ($request->isActionRequest() && ! ($request->route()?->getActionName() === LoginController::class && $request->isMethod('GET')))
+            $hasPreviewParam ||
+            ($request->isActionRequest() && ! ($request->route()?->getActionName() === LoginController::class && $request->isMethod('GET')))
         ) {
             $response->headers->set('X-Robots-Tag', 'none');
         }

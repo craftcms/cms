@@ -1,1 +1,0 @@
-var e={validationError:`Hatalı`,validationWarning:`Uyarı`,validationSuccess:`Başarılı`,validationInfo:`Bilgilendirme`};export{e as default};

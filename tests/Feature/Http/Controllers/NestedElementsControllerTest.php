@@ -132,6 +132,11 @@ it('validates the required owner params', function () {
         ->assertJsonValidationErrors(['ownerElementType', 'ownerId', 'ownerSiteId', 'attribute']);
 });
 
+it('validates the required owner params for delete requests', function () {
+    postJson(action([NestedElementsController::class, 'destroy']), [])
+        ->assertJsonValidationErrors(['ownerElementType', 'ownerId', 'ownerSiteId', 'attribute']);
+});
+
 it('returns 400 for invalid owner params', function () {
     postJson(action([NestedElementsController::class, 'reorder']), [
         'ownerElementType' => User::class,

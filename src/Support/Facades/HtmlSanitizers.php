@@ -11,6 +11,7 @@ use Override;
  * @method static void register(string $name, \Closure|\Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface|array $definition)
  * @method static void defaults(\Closure $callback)
  * @method static bool has(string $name)
+ * @method static array names()
  * @method static \Illuminate\Support\Collection all()
  * @method static string sanitize(string $html, \Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface|string|null $sanitizer = null)
  * @method static \Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface sanitizer(string|null $name = null)
