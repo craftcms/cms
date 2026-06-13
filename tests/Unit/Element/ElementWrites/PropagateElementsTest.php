@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\LazyCollection;
 
 class TestPropagateElementsActionElement extends Element
 {
@@ -163,13 +164,9 @@ function createQueryMock(array $elements): ElementQueryInterface
 {
     $query = Mockery::mock(ElementQueryInterface::class);
 
-    $query->shouldReceive('each')
+    $query->shouldReceive('cursor')
         ->once()
-        ->andReturnUsing(function (callable $callback) use ($elements): void {
-            foreach ($elements as $element) {
-                $callback($element);
-            }
-        });
+        ->andReturn(LazyCollection::make(fn () => yield from $elements));
 
     return $query;
 }
@@ -332,7 +329,7 @@ it('swallows aborted queries and still dispatches the final event', function () 
     Event::fake([ElementsPropagating::class, ElementsPropagated::class]);
 
     $query = Mockery::mock(ElementQueryInterface::class);
-    $query->shouldReceive('each')
+    $query->shouldReceive('cursor')
         ->once()
         ->andThrow(new QueryAbortedException);
 

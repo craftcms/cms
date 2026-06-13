@@ -859,9 +859,10 @@ class Sections
             ->status(null)
             ->withStructure(false)
             ->orderBy('id')
+            ->cursor()
             ->each(function (Entry $entry) use ($sectionModel) {
                 Structures::appendToRoot($sectionModel->structureId, $entry, Mode::Insert);
-            }, 100);
+            });
     }
 
     /**
@@ -995,11 +996,11 @@ class Sections
             ->id(['not', $entry->id])
             ->status(null);
 
-        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry) {
+        $otherEntriesQuery->cursor()->each(function (Entry $entryToDelete) use ($entry) {
             if (! $entryToDelete->getIsDraft() || $entry->canonicalId !== $entry->id) {
                 $this->elements->deleteElement($entryToDelete, true);
             }
-        }, 100);
+        });
 
         return $entry;
     }
