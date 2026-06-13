@@ -2897,7 +2897,12 @@ JS;
                 isset($this->tempFilePath) &&
                 $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
             ) {
-                $this->alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                if ($alt !== null) {
+                    // ensure it's UTF-8
+                    // (see https://github.com/craftcms/cms/issues/19069)
+                    $this->alt = Str::convertToUtf8($alt);
+                }
             }
 
             // Are we uploading an image that needs to be sanitized?

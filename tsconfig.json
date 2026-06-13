@@ -5,10 +5,11 @@
     "useDefineForClassFields": false,
     "paths": {
       "@/*": ["./resources/js/*"],
-      "@public/*": ["./resources/public/*"],
       "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
+      "@craftcms/cp/vue/*": ["./node_modules/@craftcms/cp/dist/vue/*"],
+      "@icons/*": ["./resources/icons/*"],
+      "@public/*": ["./resources/public/*"],
       "@routes/*": ["./resources/js/routes/craft/*"],
-      "@craftcms/cp/vue/*": ["./node_modules/@craftcms/cp/dist/vue/*"]
     },
     "types": ["vite/client"]
   },

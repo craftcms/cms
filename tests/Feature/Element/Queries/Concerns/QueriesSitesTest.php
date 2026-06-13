@@ -17,6 +17,7 @@ it('can query elements by site', function () {
     Sites::refreshSites();
 
     expect(entryQuery()->count())->toBe(1); // Defaults to current site (1)
+    expect(entryQuery()->siteId('')->count())->toBe(1);
     expect(entryQuery()->siteId($site1->id)->count())->toBe(1);
     expect(entryQuery()->siteId($site2->id)->count())->toBe(1);
     expect(entryQuery()->siteId([$site1->id, $site2->id])->count())->toBe(2);

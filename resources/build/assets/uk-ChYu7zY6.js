@@ -1,1 +1,0 @@
-var e={validationError:`Помилка,`,validationWarning:`Попередження,`,validationSuccess:`Успішно,`,validationInfo:`Інформація,`};export{e as default};

@@ -1142,7 +1142,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     public function __clone(): void
     {
         if ($this->queryBeforePrepare !== null) {
-            $beforeQueryCallbacks = $this->beforeQueryCallbacks;
+            $beforeQueryCallbacks = array_diff_key(
+                $this->beforeQueryCallbacks,
+                $this->beforeQueryCallbacksBeforePrepare ?? [],
+            );
 
             $this->query = clone $this->queryBeforePrepare;
             $this->columnMap = $this->columnMapBeforePrepare ?? $this->columnMap;

@@ -1,0 +1,76 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Field\Data;
+
+use CraftCms\Cms\Shared\Contracts\Serializable;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\Twig\Contracts\SafeHtml;
+use Illuminate\Contracts\Support\Htmlable;
+
+#[AllowedInSandbox]
+readonly class MarkdownData implements Htmlable, SafeHtml, Serializable
+{
+    public function __construct(
+        private string $raw,
+        private string $flavor,
+        private bool $encode = false,
+        private bool $inlineOnly = false,
+        private bool $sanitizeHtml = false,
+        private ?string $htmlSanitizer = null,
+    ) {}
+
+    public function __toString(): string
+    {
+        return $this->getHtml();
+    }
+
+    public function getRaw(): string
+    {
+        return $this->raw;
+    }
+
+    public function getMarkdown(): string
+    {
+        return $this->raw;
+    }
+
+    public function getFlavor(): string
+    {
+        return $this->flavor;
+    }
+
+    public function getHtml(): string
+    {
+        $markdown = Elements::parseRefs($this->raw);
+
+        if ($this->encode) {
+            $markdown = Html::encode($markdown);
+        }
+
+        $html = $this->inlineOnly
+            ? MarkdownFacade::parseParagraph($markdown, $this->flavor)
+            : MarkdownFacade::parse($markdown, $this->flavor);
+
+        if (! $this->sanitizeHtml) {
+            return $html;
+        }
+
+        return app(HtmlSanitizers::class)->sanitize($html, $this->htmlSanitizer);
+    }
+
+    public function toHtml(): string
+    {
+        return $this->getHtml();
+    }
+
+    public function serialize(): string
+    {
+        return $this->raw;
+    }
+}

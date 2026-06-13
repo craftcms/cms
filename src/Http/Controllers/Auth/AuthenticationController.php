@@ -189,7 +189,7 @@ abstract readonly class AuthenticationController
             return false;
         }
 
-        return auth('craft')->loginUsingId($user->id);
+        return (bool) auth('craft')->loginUsingId($user->id);
     }
 
     protected function redirectUserToCp(User $user): ?Response
