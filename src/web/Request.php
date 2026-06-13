@@ -705,6 +705,17 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the `x-craft-preview` param value, if passed.
+     *
+     * @return string|null
+     * @since 4.18.2
+     */
+    public function getPreviewParam(): ?string
+    {
+        return $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+    }
+
+    /**
      * Returns whether this is an element preview request.
      *
      * ::: tip
@@ -720,12 +731,13 @@ class Request extends \yii\web\Request
      * {% set isPreviewRequest = craft.app.request.isPreview %}
      * ```
      *
+     * @param bool $validate Whether to validate the `x-craft-preview` param and check for a token
      * @return bool
      * @since 3.2.1
      */
     public function getIsPreview(): bool
     {
-        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+        $previewParamValue = $this->getPreviewParam();
         if (!$previewParamValue) {
             return false;
         }

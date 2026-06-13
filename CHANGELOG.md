@@ -4,6 +4,8 @@
 
 - Added `craft\controllers\EVENT_BEFORE_SAVE_IMAGE`. ([#19068](https://github.com/craftcms/cms/pull/19068))
 - Added `craft\events\SaveAssetImageEvent`. ([#19068](https://github.com/craftcms/cms/pull/19068))
+- Added `craft\web\Request::getPreviewParam()`.
+- Fixed a bug where no-cache and `X-Robots-Tag: none` headers weren’t always being sent for requests with `x-craft-preview` or `x-craft-live-preview` query string params. ([#19060](https://github.com/craftcms/cms/issues/19060))
 
 ## 4.18.1 - 2026-05-22
 
