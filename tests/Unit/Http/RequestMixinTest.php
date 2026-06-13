@@ -212,6 +212,24 @@ describe('actionSegmentsToRoute', function () {
     });
 });
 
+describe('previewParam', function () {
+    it('returns null when no preview param was provided', function () {
+        expect(Request::create('/news')->previewParam())->toBeNull();
+    });
+
+    it('returns a preview param via the x-craft-preview query string param', function () {
+        expect(Request::create('/news', parameters: ['x-craft-preview' => 'foobar'])->previewParam())->toBe('foobar');
+    });
+
+    it('returns a preview param via the x-craft-live-preview query string param', function () {
+        expect(Request::create('/news', parameters: ['x-craft-live-preview' => 'foobar'])->previewParam())->toBe('foobar');
+    });
+
+    it('returns a preview param via the X-Craft-Preview-Token header', function () {
+        expect(Request::create('/news', server: ['HTTP_X_CRAFT_PREVIEW_TOKEN' => ['foobar']])->previewParam())->toBe('foobar');
+    });
+});
+
 describe('isPreview', function () {
     it('returns false when no preview token was provided', function () {
         expect(Request::create('/news')->isPreview())->toBeFalse();

@@ -233,6 +233,20 @@ class RequestMixin
         };
     }
 
+    public function previewParam(): Closure
+    {
+        return function (): ?string {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+
+            return $request->input('x-craft-preview') ?? $request->input('x-craft-live-preview') ?? $request->header('X-Craft-Preview-Token');
+        };
+    }
+
     public function isPreview(): Closure
     {
         return function (): bool {
@@ -242,7 +256,7 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
-            $previewParamValue = $request->input('x-craft-preview') ?? $request->input('x-craft-live-preview') ?? $request->header('X-Craft-Preview-Token');
+            $previewParamValue = $request->previewParam();
 
             if ($previewParamValue === null || $previewParamValue === '') {
                 return false;
