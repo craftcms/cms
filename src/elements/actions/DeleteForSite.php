@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 
 /**
  * Delete represents a “Delete for site” element action.
@@ -94,16 +95,15 @@ JS, [static::class]);
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        // Ignore any elements the user doesn’t have permission to delete
-        $elements = array_filter(
-            $query->all(),
-            fn(ElementInterface $element) => (
+        foreach (Db::batch($query) as $elements) {
+            // Ignore any elements the user doesn’t have permission to delete
+            $elements = array_filter($elements, fn(ElementInterface $element) => (
                 $elementsService->canView($element, $user) &&
                 $elementsService->canDeleteForSite($element, $user)
-            ),
-        );
+            ));
 
-        $elementsService->deleteElementsForSite($elements);
+            $elementsService->deleteElementsForSite($elements);
+        }
 
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
