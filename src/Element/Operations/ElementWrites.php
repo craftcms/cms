@@ -177,7 +177,6 @@ readonly class ElementWrites
 
                     event(new ElementResaved($query, $element, $position, $throwable));
                 });
-                /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
                 // Fail silently
             }
@@ -244,7 +243,6 @@ readonly class ElementWrites
                     BulkOps::trackElement($element);
                     $this->elementCaches->invalidateForElement($element);
                 });
-                /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
                 // Fail silently
             }
