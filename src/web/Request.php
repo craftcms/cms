@@ -731,7 +731,6 @@ class Request extends \yii\web\Request
      * {% set isPreviewRequest = craft.app.request.isPreview %}
      * ```
      *
-     * @param bool $validate Whether to validate the `x-craft-preview` param and check for a token
      * @return bool
      * @since 3.2.1
      */
