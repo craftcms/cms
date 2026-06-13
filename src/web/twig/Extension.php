@@ -70,7 +70,6 @@ use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Money\Money;
 use SimpleXMLElement;
-use SplFileObject;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Traversable;
@@ -1544,13 +1543,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
             FnStream::class,
             Process::class,
             SimpleXMLElement::class,
-            SplFileObject::class,
         ];
 
         foreach ($blocklist as $c) {
             if (is_a($class, $c, true)) {
                 throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
             }
+        }
+
+        if (str_starts_with(ltrim($class, '\\'), 'Spl')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
+        if (str_ends_with(rtrim($class, '\\'), 'Iterator')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
         /** @var BaseObject */
