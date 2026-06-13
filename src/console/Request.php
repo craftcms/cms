@@ -87,6 +87,17 @@ class Request extends \yii\console\Request
     }
 
     /**
+     * Returns the `x-craft-preview` param value, if passed.
+     *
+     * @return string|null
+     * @since 5.10.6
+     */
+    public function getPreviewParam(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Returns whether this is an element preview request.
      *
      * @return bool

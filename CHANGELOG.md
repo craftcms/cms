@@ -5,7 +5,9 @@
 - Forward slashes in query strings are now encoded. ([#19057](https://github.com/craftcms/cms/pull/19057))
 - Added `craft\controllers\EVENT_BEFORE_SAVE_IMAGE`. ([#19068](https://github.com/craftcms/cms/pull/19068))
 - Added `craft\events\SaveAssetImageEvent`. ([#19068](https://github.com/craftcms/cms/pull/19068))
+- Added `craft\web\Request::getPreviewParam()`.
 - Updated Axios to 1.17.0. ([#19053](https://github.com/craftcms/cms/issues/19053))
+- Fixed a bug where no-cache and `X-Robots-Tag: none` headers weren’t always being sent for requests with `x-craft-preview` or `x-craft-live-preview` query string params. ([#19060](https://github.com/craftcms/cms/issues/19060))
 - Fixed a bug where the “Delete” element edit page action wasn’t working properly when editing a provisional draft.
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t returning boolean values for environment variable names that resolved to `true`/`false` values. ([#19029](https://github.com/craftcms/cms/issues/19029))
 - Fixed a bug where the submit button within Live Preview was labelled “Submit” rather than “Save”. ([#19056](https://github.com/craftcms/cms/issues/19056))
@@ -13,6 +15,12 @@
 - Fixed a bug where transformed SVG images could have two sets of `width` and `height` attributes. ([#1902w7](https://github.com/craftcms/cms/pull/19027))
 - Fixed an infinite recursion bug. ([#19063](https://github.com/craftcms/cms/issues/19063))
 - Fixed a JavaScript error that could occur if there was an error rendering an element condition rule’s Twig template.
+- Fixed a bug where relational fields’ element selector modals weren’t showing any results if they were configured to only relate to elements in a specific site, and the author didn’t have permission to access that site. ([#19078](https://github.com/craftcms/cms/issues/19078))
+- Fixed a bug where element cards were showing preview values for conditionally-hidden fields. ([#19064](https://github.com/craftcms/cms/discussions/19064))
+- Fixed a bug where some bulk element actions could exhaust the memory limit on large selections. ([#19070](https://github.com/craftcms/cms/issues/19070))
+- Fixed a SQL error that could occur when uploading an asset, if it contained non-UTF-8 alt text in its metadata. ([#19069](https://github.com/craftcms/cms/issues/19069))
+- Fixed an error that could occur when editing an entry if a soft-deleted user had recently edited the same entry. ([#19081](https://github.com/craftcms/cms/issues/19081))
+- Fixed a PHP error that occurred when setting general config settings via `config/general.console.php` or `config/general.web.php`. ([#19083](https://github.com/craftcms/cms/pull/19083))
 - Fixed a styling issue.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.

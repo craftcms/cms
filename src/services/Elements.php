@@ -2955,6 +2955,10 @@ class Elements extends Component
                 $elements[$elementKey][$result['siteId']] = $resultElement;
             }
 
+            if (!isset($users[$result['userId']])) {
+                continue;
+            }
+
             $record = $activityByUserId[$result['userId']] = new ElementActivity(
                 $users[$result['userId']],
                 $elements[$elementKey][$result['siteId']],
