@@ -942,11 +942,11 @@ class Sections
             ->id(['not', $entry->id])
             ->status(null);
 
-        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry) {
+        $otherEntriesQuery->cursor()->each(function (Entry $entryToDelete) use ($entry) {
             if (! $entryToDelete->getIsDraft() || $entry->canonicalId !== $entry->id) {
                 $this->elements->deleteElement($entryToDelete, true);
             }
-        }, 100);
+        });
 
         return $entry;
     }
