@@ -18,6 +18,7 @@
 - Fixed a bug where some bulk element actions could exhaust the memory limit on large selections. ([#19070](https://github.com/craftcms/cms/issues/19070))
 - Fixed a SQL error that could occur when uploading an asset, if it contained non-UTF-8 alt text in its metadata. ([#19069](https://github.com/craftcms/cms/issues/19069))
 - Fixed an error that could occur when editing an entry if a soft-deleted user had recently edited the same entry. ([#19081](https://github.com/craftcms/cms/issues/19081))
+- Fixed a PHP error that occurred when setting general config settings via `config/general.console.php` or `config/general.web.php`. ([#19083](https://github.com/craftcms/cms/pull/19083))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
