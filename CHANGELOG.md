@@ -8,6 +8,7 @@
 - Fixed a bug where no-cache and `X-Robots-Tag: none` headers weren’t always being sent for requests with `x-craft-preview` or `x-craft-live-preview` query string params. ([#19060](https://github.com/craftcms/cms/issues/19060))
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 
 ## 4.18.1 - 2026-05-22
