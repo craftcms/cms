@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
-use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
+use CraftCms\Cms\Http\Requests\NestedElementsRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,68 +22,23 @@ readonly class NestedElementsController
 {
     use RespondsWithFlash;
 
-    private ElementInterface $owner;
-
-    private ElementQueryInterface|ElementCollection $nestedElements;
-
     public function __construct(
-        private Request $request,
         private Elements $elements,
-    ) {
-        $this->request->validate([
-            'ownerElementType' => ['required', 'string', new ElementTypeRule],
-            'ownerId' => ['required', 'integer'],
-            'ownerSiteId' => ['required', 'integer'],
-            'attribute' => ['required', 'string'],
-        ]);
+    ) {}
 
-        // Get the owner element
-        /** @var class-string<ElementInterface> $ownerElementType */
-        $ownerElementType = $this->request->input('ownerElementType');
-        $ownerId = $this->request->integer('ownerId');
-        $ownerSiteId = $this->request->integer('ownerSiteId');
-        $owner = $this->elements->getElementById($ownerId, $ownerElementType, $ownerSiteId);
-
-        abort_if(is_null($owner), 400, 'Invalid owner params');
-
-        $this->owner = $owner;
-
-        // Make sure they're authorized to manage it
-        $attribute = $this->request->input('attribute');
-        if (
-            ! SessionAuth::checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->id, $attribute)) &&
-            (
-                $owner->id === $owner->getCanonicalId() ||
-                ! SessionAuth::checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
-            )
-        ) {
-            abort(403, 'User is not authorized to perform this action');
-        }
-
-        // Set the nested elements for the action
-        $this->nestedElements = $this->owner->$attribute;
-    }
-
-    public function reorder(ElementCaches $elementCaches): Response
+    public function reorder(NestedElementsRequest $request, ElementCaches $elementCaches): Response
     {
-        $this->request->validate([
-            'elementIds' => ['required', 'array'],
-            'offset' => ['required', 'integer'],
-        ]);
+        $nestedElements = $request->nestedElements();
 
-        $ids = array_map(fn ($id) => (int) $id, $this->request->array('elementIds'));
-
-        $offset = $this->request->integer('offset');
-
-        if ($this->nestedElements instanceof ElementQueryInterface) {
-            $oldSortOrders = (clone $this->nestedElements)
+        if ($nestedElements instanceof ElementQueryInterface) {
+            $oldSortOrders = (clone $nestedElements)
                 ->status(null)
                 ->asArray()
                 ->select(['id', 'sortOrder'])
                 ->pluck('sortOrder', 'id')
                 ->all();
         } else {
-            $oldSortOrders = $this->nestedElements
+            $oldSortOrders = $nestedElements
                 ->keyBy(fn (ElementInterface $element) => $element->id)
                 /** @phpstan-ignore-next-line */
                 ->map(fn (NestedElementInterface $element) => $element->getSortOrder())
@@ -94,15 +46,15 @@ readonly class NestedElementsController
         }
 
         // Build the full list of IDs in the new sort order
-        $allIds = array_diff(array_keys($oldSortOrders), $ids);
-        array_splice($allIds, $offset, 0, $ids);
+        $allIds = array_diff(array_keys($oldSortOrders), $request->elementIds());
+        array_splice($allIds, $request->offset(), 0, $request->elementIds());
 
         // Update all the incorrect sort orders
         foreach ($allIds as $i => $id) {
             $sortOrder = $i + 1;
             if (! isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
                 DB::table(Table::ELEMENTS_OWNERS)
-                    ->where('ownerId', $this->owner->id)
+                    ->where('ownerId', $request->owner()->id)
                     ->where('elementId', $id)
                     ->update([
                         'sortOrder' => $sortOrder,
@@ -110,46 +62,22 @@ readonly class NestedElementsController
             }
         }
 
-        $elementCaches->invalidateForElement($this->owner);
+        $elementCaches->invalidateForElement($request->owner());
 
         return $this->asSuccess(t('New {total, plural, =1{position} other{positions}} saved.', [
-            'total' => count($ids),
+            'total' => count($request->elementIds()),
         ]));
     }
 
-    public function destroy(): Response
+    public function destroy(NestedElementsRequest $request): Response
     {
-        $this->request->validate([
-            'elementId' => ['required', 'integer'],
-        ]);
-
-        $elementId = $this->request->integer('elementId');
-
-        if ($this->nestedElements instanceof ElementQueryInterface) {
-            $element = $this->nestedElements
-                ->id($elementId)
-                ->status(null)
-                ->drafts(null)
-                ->provisionalDrafts(null)
-                ->one();
-        } else {
-            $element = $this->nestedElements->first(
-                fn (ElementInterface $element) => (
-                    $element->id === $elementId ||
-                    $element->getCanonicalId() === $elementId
-                )
-            );
-        }
-
-        abort_if(is_null($element), 400, 'Invalid elementId param');
-
+        $element = $request->nestedElement();
         Gate::authorize('delete', $element);
 
         // If the element primarily belongs to a different element, just delete the ownership
-        /** @var NestedElementInterface $element */
-        if ($element->getPrimaryOwnerId() !== $this->owner->id) {
+        if ($element->getPrimaryOwnerId() !== $request->owner()->id) {
             DB::table(Table::ELEMENTS_OWNERS)
-                ->where('ownerId', $this->owner->id)
+                ->where('ownerId', $request->owner()->id)
                 ->where('elementId', $element->id)
                 ->delete();
 
