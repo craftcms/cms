@@ -43,6 +43,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -268,6 +269,27 @@ class Sections
     }
 
     /**
+     * @param  array<int, int>  $entryTypeIds
+     * @return array<array-key, Section>
+     */
+    public function getAvailableEntryMoveTargetSections(
+        array $entryTypeIds,
+        int $siteId,
+        string $currentSectionUid,
+    ): array {
+        $user = Auth::craftUser();
+
+        if (! $user) {
+            return [];
+        }
+
+        return $this->getEditableSections()
+            ->filter(fn (Section $section) => $this->canUseSectionAsEntryMoveTarget($user, $section, $entryTypeIds, $siteId, $currentSectionUid))
+            ->sortBy(fn (Section $section) => $section->getUiLabel())
+            ->all();
+    }
+
+    /**
      * Returns all sections of a given type.
      *
      * ---
@@ -321,6 +343,37 @@ class Sections
     public function getTotalEditableSections(): int
     {
         return $this->getEditableSections()->count();
+    }
+
+    /**
+     * @param  array<int, int>  $entryTypeIds
+     */
+    private function canUseSectionAsEntryMoveTarget(
+        CraftUser $user,
+        Section $section,
+        array $entryTypeIds,
+        int $siteId,
+        string $currentSectionUid,
+    ): bool {
+        if ($section->type === SectionType::Single) {
+            return false;
+        }
+
+        if (! isset($section->getSiteSettings()[$siteId])) {
+            return false;
+        }
+
+        if ($section->uid === $currentSectionUid) {
+            return false;
+        }
+
+        if (! $user->can("saveEntries:$section->uid")) {
+            return false;
+        }
+
+        $sectionEntryTypeIds = array_map(fn ($entryType) => $entryType->id, $section->getEntryTypes());
+
+        return ! empty(array_intersect($entryTypeIds, $sectionEntryTypeIds));
     }
 
     /**

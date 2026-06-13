@@ -63,6 +63,20 @@ test('getAssignablePermissions', function () {
         ->toEqualCanonicalizing($this->userPermissions->getAssignablePermissions()->toArray());
 });
 
+test('getAssignablePermissions includes existing recipient permissions without a current user', function () {
+    auth()->logout();
+
+    $recipient = CraftCms\Cms\User\Models\User::factory()->create();
+    $this->userPermissions->saveUserPermissions($recipient->id, ['accessSiteWhenSystemIsOff']);
+
+    $permissions = $this->userPermissions
+        ->getAssignablePermissions($recipient->asElement())
+        ->flatMap(fn (PermissionGroup $group) => $group->permissions)
+        ->pluck('key');
+
+    expect($permissions)->toContain('accessSiteWhenSystemIsOff');
+});
+
 test('getPermissionsByGroupId & doesGroupHavePermission', function () {
     $group = UserGroup::factory()->create();
 

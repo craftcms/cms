@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
@@ -17,13 +16,13 @@ use CraftCms\Cms\Http\Requests\RenameAssetFolderRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
 use Exception;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
 readonly class FolderController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -35,7 +34,7 @@ readonly class FolderController
         $parentFolder = $request->parentFolder();
 
         try {
-            $this->requireVolumePermissionByFolder('createFolders', $parentFolder);
+            Gate::authorize('createFolder', $parentFolder);
 
             $folderModel = new VolumeFolder;
             $folderModel->name = $request->folderName();
@@ -57,7 +56,9 @@ readonly class FolderController
 
     public function delete(DeleteAssetFolderRequest $request): Response
     {
-        $this->requireVolumePermissionByFolder('deletePeerAssets', $request->folder());
+        $folder = $request->folder();
+
+        Gate::authorize('deleteFolder', $folder);
         $this->folders->deleteFoldersByIds($request->folderId());
 
         return $this->asSuccess();
@@ -65,8 +66,9 @@ readonly class FolderController
 
     public function rename(RenameAssetFolderRequest $request): Response
     {
-        $this->requireVolumePermissionByFolder('deleteAssets', $request->folder());
-        $this->requireVolumePermissionByFolder('createFolders', $request->folder());
+        $folder = $request->folder();
+
+        Gate::authorize('renameFolder', $folder);
 
         $newName = $this->folders->renameFolderById($request->folderId(), $request->newName());
 
@@ -79,17 +81,7 @@ readonly class FolderController
         $folderToMove = $request->folderToMove();
         $destinationFolder = $request->destinationFolder();
 
-        // Make sure the user has permission to move the source folder
-        // (same permissions checked for `data-movable`)
-        $this->requireVolumePermissionByFolder('savePeerAssets', $folderToMove);
-        $this->requireVolumePermissionByFolder('deletePeerAssets', $folderToMove);
-
-        // Make sure the user has permission to move folders into the target folder
-        // (same permissions checked for `data-can-move-to`)
-        $this->requireVolumePermissionByFolder('saveAssets', $destinationFolder);
-        $this->requireVolumePermissionByFolder('deleteAssets', $destinationFolder);
-        $this->requireVolumePermissionByFolder('savePeerAssets', $destinationFolder);
-        $this->requireVolumePermissionByFolder('deletePeerAssets', $destinationFolder);
+        Gate::authorize('moveFolder', [$folderToMove, $destinationFolder]);
 
         $targetVolume = $destinationFolder->getVolume();
 
