@@ -129,3 +129,12 @@ export async function appendBodyHtml(
 ): Promise<AppendHtmlDisposer> {
   return appendHtml(html, document.body);
 }
+
+export function isVisible(el: HTMLElement): boolean {
+  if (typeof el.checkVisibility === 'function') {
+    return el.checkVisibility({checkOpacity: true, checkVisibilityCSS: true});
+  }
+
+  // Fallback: mirrors jQuery's :visible behavior
+  return el.offsetWidth > 0 || el.offsetHeight > 0;
+}

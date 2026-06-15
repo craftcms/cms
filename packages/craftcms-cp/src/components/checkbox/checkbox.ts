@@ -10,7 +10,7 @@ export default class CraftCheckbox extends LionCheckbox {
    */
   @property({type: Boolean, reflect: true}) indeterminate = false;
 
-  protected override updated(changedProperties: PropertyValues): void {
+  override updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
 
     const input = this._inputNode as HTMLInputElement | undefined;

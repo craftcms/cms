@@ -1,9 +1,6 @@
 import {QueueService} from '@src/services/Queue';
 import {ConfigService} from '@src/services/Config';
 
-declare const d3: any | undefined;
-declare const d3FormatLocaleDefinition: any | undefined;
-
 interface ProgressBarInterface {
   $progressBar: JQuery;
 
@@ -40,6 +37,28 @@ type Site = {
 export interface CpServices {
   $queue: QueueService;
   $config: ConfigService;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var d3: any | undefined;
+  // eslint-disable-next-line no-var
+  var d3FormatLocaleDefinition: any | undefined;
+
+  // eslint-disable-next-line no-var
+  var Cp: {
+    registeredAssetBundles: Iterable<string>;
+    registeredJsFiles: Iterable<string>;
+    csrfTokenValue?: string;
+    apiParams?: Record<string, unknown>;
+    httpProxy?: unknown;
+  };
+
+  interface Window {
+    Craft?: {
+      setCookie(name: string, value: string): void;
+    };
+  }
 }
 
 export {};

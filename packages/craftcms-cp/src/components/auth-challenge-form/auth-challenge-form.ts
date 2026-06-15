@@ -241,7 +241,10 @@ export abstract class CraftAuthChallengeForm extends LitElement {
     elementClass: T
   ): void {
     if (!customElements.get(tagName)) {
-      customElements.define(tagName, elementClass);
+      customElements.define(
+        tagName,
+        elementClass as unknown as CustomElementConstructor
+      );
     }
     // Cast required: TypeScript does not support abstract static properties,
     // so METHOD cannot be declared abstract on the base class.

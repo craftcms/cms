@@ -31,7 +31,8 @@ const renderIndicators = (
     )}
   </tr>
 `;
-import type {ColorGroup, Volume} from './indicator.js';
+type ColorGroup = string;
+type Volume = string;
 
 const SWATCH_COLORS: ColorGroup[] = [
   'red',
@@ -253,9 +254,8 @@ export const CustomVariant: Story = {
 export const Playground: Story = {
   name: 'Playground',
   args: {
-    variant: 'swatch',
-    swatch: 'violet',
-    volume: 'normal',
+    fill: 'violet',
+    size: 'md',
   },
 };
 
