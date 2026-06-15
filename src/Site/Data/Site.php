@@ -221,7 +221,7 @@ class Site extends Component implements Chippable, Stringable
             'handle' => $this->handle,
             'language' => $this->getLanguage(false),
             'hasUrls' => $this->hasUrls,
-            'baseUrl' => $this->baseUrl ?: null,
+            'baseUrl' => $this->_baseUrl ?: null,
             'sortOrder' => $this->sortOrder,
             'primary' => $this->primary,
             'enabled' => $this->getEnabled(false),

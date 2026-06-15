@@ -18,6 +18,7 @@
 - Fixed a bug where `CraftCms\Yii2Adapter\Mixins\ValidateMixin::addErrors()` had incorrect arguments. ([#19065](https://github.com/craftcms/cms/pull/19065))
 - Fixed a bug where plugin templates were not being loaded correctly
 - Fixed a bug where query string params were getting registered as variables in Twig templates. ([#19090](https://github.com/craftcms/cms/discussions/19090))
+- Fixed a bug where parsed site URLs would get saved to the project config. ([#19092](https://github.com/craftcms/cms/issues/19092))
 
 ## 6.0.0-alpha.6 - 2026-06-03
 
