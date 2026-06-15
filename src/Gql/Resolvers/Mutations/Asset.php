@@ -20,6 +20,8 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
+use CraftCms\UrlValidator\UrlValidationException;
+use CraftCms\UrlValidator\UrlValidator;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -38,6 +40,8 @@ class Asset extends ElementMutationResolver
     protected array $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
 
     private ?string $filename = null;
+
+    private UrlValidator $urlValidator;
 
     public function saveAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): AssetElement
     {
@@ -212,14 +216,6 @@ class Asset extends ElementMutationResolver
         } elseif (! empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
-            if (! $this->validateScheme($url)) {
-                throw new UserError("$url contains an invalid scheme.");
-            }
-
-            if (! $this->validateHostname($url)) {
-                throw new UserError("$url contains an invalid hostname.");
-            }
-
             if (empty($fileInformation['filename'])) {
                 $filename = AssetsHelper::prepareAssetName(pathinfo(Url::stripQueryString($url), PATHINFO_BASENAME));
             } else {
@@ -233,17 +229,17 @@ class Asset extends ElementMutationResolver
                 ]));
             }
 
-            // Download the file
+            // Validate the URL and resolve it to a known-good set of IPs *before*
+            // opening any connection (guards against SSRF + DNS rebinding).
+            try {
+                $ips = $this->urlValidator()->validate($url);
+            } catch (UrlValidationException $e) {
+                throw new UserError($e->getMessage());
+            }
+
+            // Download the file, pinning the connection to the validated IPs
             $tempPath = AssetsHelper::tempFilePath($extension);
-            Http::create()->withOptions([
-                RequestOptions::ALLOW_REDIRECTS => false,
-                RequestOptions::SINK => $tempPath,
-                RequestOptions::ON_STATS => function (TransferStats $stats) use ($url) {
-                    if (! $this->validateIp($stats->getHandlerStat('primary_ip'))) {
-                        throw new UserError("$url resolves to an invalid IP address.");
-                    }
-                },
-            ])->get($url, ['sink' => $tempPath]);
+            $this->downloadUrl($url, $ips, $tempPath);
         }
 
         if (! $tempPath || ! $filename) {
@@ -263,89 +259,39 @@ class Asset extends ElementMutationResolver
         return true;
     }
 
-    private function validateScheme(string $url): bool
+    private function urlValidator(): UrlValidator
     {
-        // block Gopher/File/FTP Smuggling
-        $scheme = parse_url($url, PHP_URL_SCHEME);
-
-        return in_array(strtolower($scheme), ['http', 'https'], true);
+        return $this->urlValidator ??= new UrlValidator;
     }
 
-    private function validateHostname(string $url): bool
+    /**
+     * Downloads a remote file to a temp path, pinning the connection to a set of
+     * pre-validated IP addresses so cURL can’t re-resolve the hostname to a
+     * different (potentially internal) address between validation and download.
+     *
+     * @throws UserError if the connection still resolves to a disallowed IP
+     */
+    private function downloadUrl(string $url, array $ips, string $tempPath): void
     {
-        $hostname = parse_url($url, PHP_URL_HOST);
+        $host = parse_url($url, PHP_URL_HOST);
+        $port = parse_url($url, PHP_URL_PORT)
+            ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
 
-        // convert hex segments to decimal
-        $hostname = collect(explode('.', $hostname))
-            ->map(function (string $chunk): string {
-                $chunk = str($chunk)->lower();
-
-                if ($chunk->startsWith('0x')) {
-                    return $chunk->after('0x')
-                        ->split(2)
-                        ->map(hexdec(...))
-                        ->implode('.');
+        Http::create()->withOptions([
+            RequestOptions::ALLOW_REDIRECTS => false,
+            RequestOptions::SINK => $tempPath,
+            // Pin the connection to the IPs we already validated, so cURL doesn’t
+            // re-resolve the hostname to a different address (DNS rebinding).
+            'curl' => [
+                CURLOPT_RESOLVE => ["$host:$port:".implode(',', $ips)],
+            ],
+            RequestOptions::ON_STATS => function (TransferStats $stats) use ($url) {
+                // Validate the IP again, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
+                $ip = $stats->getHandlerStat('primary_ip');
+                if ($ip && ! $this->urlValidator()->validateIp($ip)) {
+                    throw new UserError("$url resolves to an invalid IP address.");
                 }
-
-                return $chunk->toString();
-            })
-            ->join('.');
-
-        // make sure the hostname is alphanumeric and not an IP address
-        if (
-            ! filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
-            filter_var($hostname, FILTER_VALIDATE_IP)
-        ) {
-            return false;
-        }
-
-        // Check against well-known cloud metadata domains
-        // h/t https://gist.github.com/BuffaloWill/fa96693af67e3a3dd3fb
-        if (in_array($hostname, [
-            'kubernetes.default',
-            'kubernetes.default.svc',
-            'kubernetes.default.svc.cluster.local',
-            'metadata',
-            'metadata.google.internal',
-            'metadata.packet.net',
-        ])) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private function validateIp(string $ip): bool
-    {
-        // make sure the hostname doesn’t resolve to a known cloud metadata IP
-        // h/t https://gist.github.com/BuffaloWill/fa96693af67e3a3dd3fb
-        if (in_array($ip, [
-            '100.100.100.200', // Alibaba
-            '169.254.169.254', // AWS, GCP, DO, Azure, Oracle, OpenStack/RackSpace
-            '169.254.170.2', // ECS
-            '192.0.0.192', // Oracle
-        ])) {
-            return false;
-        }
-
-        $v6Prefixes = [
-            '::1', // Loopback
-            '::ffff:', // IPv4-mapped IPv6
-            'fd00:ec2::', // AWS IMDS, DNS, NTP
-            'fd20:ce::', // GCP
-            'fe80:', // Link-local
-        ];
-
-        if (array_any($v6Prefixes, fn ($prefix) => str($ip)->startsWith($prefix))) {
-            return false;
-        }
-
-        // Only allow publicly-routable IPs
-        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
-        if (filter_var($ip, FILTER_VALIDATE_IP, $flags) === false) {
-            return false;
-        }
-
-        return true;
+            },
+        ])->get($url, ['sink' => $tempPath]);
     }
 }
