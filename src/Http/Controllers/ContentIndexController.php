@@ -79,6 +79,11 @@ class ContentIndexController
         $renderContext = 'index';
         [$sourceKey, $source] = $this->resolveSource($elementType, $request->input('source', '*'), $renderContext);
 
+        // The view mode is pushed as a flat `viewMode` query param when the user
+        // switches views (see the `useElementIndexViewMode` composable); fall
+        // back to the persisted view state, then the default table mode.
+        $mode = $request->input('viewMode') ?: ($this->resolveViewState()['mode'] ?? 'table');
+
         // A requested sort wins; otherwise fall back to the source's configured
         // `defaultSort` (e.g. `['postDate', 'desc']`), then a sensible default.
         $sort = ! empty($request->array('sort'))
@@ -164,32 +169,56 @@ class ContentIndexController
             ->values()
             ->all();
 
-        // @TODO: this should be from the view state
-        // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];
-        $attributes = ['title', ...array_keys($elementType::tableAttributes()), ...collect($tableColumns)->pluck('value')->all()];
-        $elements = collect($paginator->items())
-            ->map(fn (ElementInterface $element) => [
-                // `id` is not a rendered column; the table keys row selection by
-                // it (see `getRowId`) so selection tracks elements across sorting
-                // and pagination.
-                'id' => $element->id,
-                ...collect($attributes)
-                    ->mapWithKeys(fn (string $attribute) => [
-                        $attribute => $attribute === 'title' ?
-                            Html::tag('CpLink',
-                                $this->elementHtml->chipHtml($element, [
-                                    'context' => $renderContext,
-                                    'appearance' => 'plain',
-                                ]),
-                                ['href' => $element->getCpEditUrl(), 'inertia' => false]
-                            )
-                            : (string) $this->attributeRenderer->render($element, $attribute),
-                    ])
-                    ->all(),
-            ]);
+        if ($mode === 'cards') {
+            // Cards mirror the table's per-element shape, but each element
+            // carries a single server-rendered `cardHtml` string (the Craft 6
+            // equivalent of `Cp::elementCardHtml`) instead of per-column HTML.
+            // The Vue shell renders the `.card-grid` wrapper and owns selection,
+            // so the card itself is display-only: no Garnish-managed edit button
+            // or auto-reload, and the title is hyperlinked to the edit URL.
+            $elements = collect($paginator->items())
+                ->map(fn (ElementInterface $element) => [
+                    // `id` keys row selection (see `getRowId`) so selection
+                    // tracks elements across sorting and pagination.
+                    'id' => $element->id,
+                    'cardHtml' => $this->elementHtml->elementCardHtml($element, [
+                        'context' => $renderContext,
+                        'hyperlink' => true,
+                        'showEditButton' => false,
+                        'autoReload' => false,
+                        'selectable' => false,
+                        'sortable' => false,
+                    ]),
+                ]);
+        } else {
+            // @TODO: this should be from the view state
+            // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];
+            $attributes = ['title', ...array_keys($elementType::tableAttributes()), ...collect($tableColumns)->pluck('value')->all()];
+            $elements = collect($paginator->items())
+                ->map(fn (ElementInterface $element) => [
+                    // `id` is not a rendered column; the table keys row selection by
+                    // it (see `getRowId`) so selection tracks elements across sorting
+                    // and pagination.
+                    'id' => $element->id,
+                    ...collect($attributes)
+                        ->mapWithKeys(fn (string $attribute) => [
+                            $attribute => $attribute === 'title' ?
+                                Html::tag('CpLink',
+                                    $this->elementHtml->chipHtml($element, [
+                                        'context' => $renderContext,
+                                        'appearance' => 'plain',
+                                    ]),
+                                    ['href' => $element->getCpEditUrl(), 'inertia' => false]
+                                )
+                                : (string) $this->attributeRenderer->render($element, $attribute),
+                        ])
+                        ->all(),
+                ]);
+        }
 
         $viewState = [
             ...$this->resolveViewState(),
+            'mode' => $mode,
             'showHeaderColumn' => true,
             'fieldLayouts' => $this->resolveFieldLayouts(),
             'returnUrl' => $returnUrl,

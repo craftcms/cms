@@ -4,6 +4,7 @@
   import ElementSources from '@/modules/elements/ElementSources.vue';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {
@@ -173,7 +174,36 @@
       <div id="source-actions"></div>
     </template>
 
+    <ElementCards
+      v-if="mode === 'cards'"
+      :table="elementTable"
+      :data="data"
+      :selectable="true"
+      :from="pagination.from"
+      :to="pagination.to"
+      :total="pagination.total"
+      :enable-adjust-page-size="true"
+    >
+      <template #table-header>
+        <ElementIndexToolbar
+          v-model:search="filters.form.search"
+          v-model:status="filters.form.status"
+          :processing="filters.form.processing"
+          :status-options="statusOptions"
+          :view-modes="visibleViewModes"
+          :column-options="columnOptions"
+          v-model:mode="mode"
+          v-model:sort-field="sortField"
+          v-model:sort-direction="sortDirection"
+          v-model:table-columns="tableColumns"
+          @submit="filters.submit"
+          @reorder="reorder"
+        />
+      </template>
+    </ElementCards>
+
     <AdminTable
+      v-else
       :table="elementTable"
       :selectable="true"
       :from="pagination.from"

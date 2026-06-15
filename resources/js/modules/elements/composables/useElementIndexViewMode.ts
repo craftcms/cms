@@ -1,4 +1,4 @@
-import {computed, type Ref} from 'vue';
+import {computed, onMounted, type Ref} from 'vue';
 import {router} from '@inertiajs/vue3';
 import {index} from '@/routes/craft/cp/content/index.js';
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
@@ -46,6 +46,35 @@ export function useElementIndexViewMode(
         }
       );
     },
+  });
+
+  // On a fresh full-page load the server renders for the default `table` mode
+  // (it has no access to the persisted view state), so if local storage restored
+  // a non-table mode, re-request the server-rendered elements for it — mirroring
+  // how `useElementIndexSort` restores a persisted sort into the URL on load.
+  onMounted(() => {
+    const params = new URLSearchParams(window.location.search);
+    const persisted = viewState.value.mode;
+
+    if (params.has('viewMode') || persisted === 'table') {
+      return;
+    }
+
+    router.visit(
+      index(
+        {
+          page: props.page ?? '',
+          sectionHandle: props.sectionHandle ?? undefined,
+        },
+        {query: {...Object.fromEntries(params), viewMode: persisted}}
+      ),
+      {
+        only: ['data', 'pagination', 'contentHtml'],
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+      }
+    );
   });
 
   return {mode};
