@@ -8,12 +8,17 @@ export type ViewMode = {
   availableOnMobile?: boolean;
 };
 
-/** A source's persisted column overrides (visible columns + their order). */
-export type SourceColumnState = {
+/** A source's persisted view overrides (columns + sort). */
+export type SourceViewState = {
   /** Columns the user has explicitly chosen to show, in selection order. */
   visible?: Array<string>;
   /** The user's column ordering for this source. */
   order?: Array<string>;
+  /**
+   * The user's explicit sort for this source. Absent entries fall back to the
+   * source's `defaultSort` (resolved server-side).
+   */
+  sort?: Array<SortItem>;
 };
 
 /**
@@ -23,13 +28,13 @@ export type ViewState = {
   inlineEditing: boolean;
   mode: ViewMode['mode'];
   /**
-   * Per-source column overrides, keyed by source key. Absent entries fall back
-   * to the source's `tableAttributes` (or the element-type defaults).
+   * Per-source view overrides (columns + sort), keyed by source key. Absent
+   * entries fall back to the source's own config (`tableAttributes` /
+   * `defaultSort`) or the element-type defaults.
    */
-  columns?: Record<string, SourceColumnState>;
+  sources?: Record<string, SourceViewState>;
   nestedInputNamespace?: string | null;
   showHeaderColumn: boolean;
-  sort: Array<SortItem>;
   static: boolean;
 };
 

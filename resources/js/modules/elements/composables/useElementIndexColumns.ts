@@ -44,7 +44,7 @@ export function useElementIndexColumns(
   const sourceKey = computed(() => props.source?.key ?? '*');
 
   const sourceColumnState = computed(
-    () => viewState.value.columns?.[sourceKey.value]
+    () => viewState.value.sources?.[sourceKey.value]
   );
 
   // The source's configured columns (custom sources only).
@@ -119,14 +119,14 @@ export function useElementIndexColumns(
     })),
   ]);
 
-  // Merge a patch into the active source's column state (and persist it).
+  // Merge a patch into the active source's view state (and persist it).
   function patchSourceColumnState(patch: {
     visible?: Array<string>;
     order?: Array<string>;
   }) {
-    const columns = {...(viewState.value.columns ?? {})};
-    columns[sourceKey.value] = {...columns[sourceKey.value], ...patch};
-    viewState.value.columns = columns;
+    const sources = {...(viewState.value.sources ?? {})};
+    sources[sourceKey.value] = {...sources[sourceKey.value], ...patch};
+    viewState.value.sources = sources;
   }
 
   // Writable model for the toolbar's column toggles: reading yields the

@@ -37,6 +37,26 @@ class ContentIndexController
         private readonly ElementAttributeRenderer $attributeRenderer,
     ) {}
 
+    /**
+     * Resolves the default sort for a source from its configured `defaultSort`
+     * (`[attribute, direction]`), falling back to `dateCreated desc`.
+     *
+     * @return array<int, array{field: string, direction: string}>
+     */
+    private function defaultSortForSource(?array $source): array
+    {
+        $defaultSort = $source['defaultSort'] ?? null;
+
+        if (is_array($defaultSort) && isset($defaultSort[0])) {
+            return [[
+                'field' => $defaultSort[0],
+                'direction' => ($defaultSort[1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
+            ]];
+        }
+
+        return [['field' => 'dateCreated', 'direction' => 'desc']];
+    }
+
     public function __invoke(Request $request, string $page, ?string $sectionHandle = null)
     {
         $elementType = Entry::class;
@@ -44,10 +64,6 @@ class ContentIndexController
             'page' => $page,
             'sectionHandle' => $sectionHandle ?? '',
             'elementType' => $elementType,
-        ];
-
-        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
-            ['field' => 'dateCreated', 'direction' => 'desc'],
         ];
 
         ($this->prepareElementIndexVariables)($context);
@@ -62,6 +78,13 @@ class ContentIndexController
 
         $renderContext = 'index';
         [$sourceKey, $source] = $this->resolveSource($elementType, $request->input('source', '*'), $renderContext);
+
+        // A requested sort wins; otherwise fall back to the source's configured
+        // `defaultSort` (e.g. `['postDate', 'desc']`), then a sensible default.
+        $sort = ! empty($request->array('sort'))
+            ? $request->array('sort')
+            : $this->defaultSortForSource($source);
+
         $elementQuery = $this->buildElementQueryState($elementType, $source, null)['query'];
 
         if ($request->has('status')) {

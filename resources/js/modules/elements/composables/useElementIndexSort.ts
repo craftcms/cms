@@ -4,11 +4,13 @@ import {index} from '@/routes/craft/cp/content/index.js';
 import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
 import type {SortItem} from '@/common/types';
 import type {ViewState} from '@/modules/elements/types/view-state';
+import type {SourceItem} from '@/modules/elements/types/sources';
 
 interface ElementIndexSortContext {
   page: string;
   sectionHandle?: string | number;
   sort: Array<SortItem>;
+  source?: SourceItem | null;
 }
 
 interface UseElementIndexSortOptions {
@@ -58,8 +60,20 @@ export function useElementIndexSort(
     sectionHandle: props.sectionHandle ?? undefined,
   });
 
+  // The user's sort is persisted per source, so each source falls back to its
+  // own `defaultSort` (resolved server-side) until the user sorts it.
+  const sourceKey = () => props.source?.key ?? '*';
+
+  const persistedSort = () => viewState.value.sources?.[sourceKey()]?.sort;
+
+  function setPersistedSort(sort: Array<SortItem>): void {
+    const sources = {...(viewState.value.sources ?? {})};
+    sources[sourceKey()] = {...sources[sourceKey()], sort};
+    viewState.value.sources = sources;
+  }
+
   const {sortingState, sortingConfig, onSortingChange} = useServerSort({
-    initialState: normalizeSort(props.sort ?? viewState.value.sort),
+    initialState: normalizeSort(props.sort ?? persistedSort()),
     onChange: ({query}) => {
       router.visit(index(routeArgs(), {query}), {
         only: ['data', 'sort', 'pagination'],
@@ -79,7 +93,7 @@ export function useElementIndexSort(
         id: item.field,
         desc: item.direction === 'desc',
       }));
-      viewState.value.sort = next;
+      setPersistedSort(next);
       options.onSortChange?.(next);
     }
   );
@@ -88,7 +102,7 @@ export function useElementIndexSort(
   // previous visit, restore it into the URL (without adding a history entry).
   onMounted(() => {
     const params = new URLSearchParams(window.location.search);
-    const persisted = normalizeSort(viewState.value.sort);
+    const persisted = normalizeSort(persistedSort());
 
     // The sort is serialized as `sort[0][field]`, `sort[0][direction]`, … so we
     // can't look for a literal `sort` key — check for any bracketed sort param.

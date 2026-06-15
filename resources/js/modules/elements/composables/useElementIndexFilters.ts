@@ -2,12 +2,14 @@ import type {Ref} from 'vue';
 import {useForm} from '@inertiajs/vue3';
 import {index} from '@/routes/craft/cp/content/index.js';
 import type {ViewState} from '@/modules/elements/types/view-state';
+import type {SourceItem} from '@/modules/elements/types/sources';
 
 interface ElementIndexFiltersContext {
   search?: string | null;
   status: string | null;
   page: string;
   sectionHandle?: string | number;
+  source?: SourceItem | null;
 }
 
 /**
@@ -25,10 +27,14 @@ export function useElementIndexFilters(
   });
 
   function submit() {
+    // Preserve the active per-source sort across the filter submit; an absent
+    // entry lets the server fall back to the source's `defaultSort`.
+    const sourceKey = props.source?.key ?? '*';
+
     form
       .transform((data) => ({
         ...data,
-        sort: viewState.value.sort,
+        sort: viewState.value.sources?.[sourceKey]?.sort,
         viewMode: viewState.value.mode,
       }))
       .submit(
