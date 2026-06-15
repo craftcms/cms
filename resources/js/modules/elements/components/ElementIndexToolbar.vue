@@ -67,6 +67,7 @@
 
       <craft-button-group
         name="viewState[mode]"
+        .value="mode"
         @change="(event: CustomEvent) => (mode = event.detail.value)"
       >
         <template v-for="viewMode in viewModes" :key="viewMode.mode">
@@ -75,7 +76,6 @@
             :appearance="Appearance.Fill"
             :icon="viewMode.icon"
             :aria-label="viewMode.title"
-            :active="mode === viewMode.mode"
             :value="viewMode.mode"
           ></craft-button>
         </template>

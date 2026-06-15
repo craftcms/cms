@@ -11,13 +11,14 @@
     type RowSelectionState,
     useVueTable,
   } from '@tanstack/vue-table';
-  import {ref} from 'vue';
+  import {computed, ref} from 'vue';
   import type {PaginationData, SortItem} from '@/common/types';
   import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
   import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
   import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
   import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
   import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
+  import {useElementIndexViewMode} from '@/modules/elements/composables/useElementIndexViewMode';
   import type {
     SortOption,
     ViewMode,
@@ -67,6 +68,16 @@
   const {sortingState, sortingConfig, sortField, sortDirection} =
     useElementIndexSort(props, viewState);
   const {paginationState, paginationConfig} = useElementIndexPagination(props);
+  const {mode} = useElementIndexViewMode(props, viewState);
+
+  // The structure view mode only applies to structure sources, so hide it
+  // (and any other `structuresOnly` mode) unless the active source is one.
+  const visibleViewModes = computed(() =>
+    (props.viewModes ?? []).filter(
+      (viewMode) =>
+        !viewMode.structuresOnly || props.source?.structureId != null
+    )
+  );
 
   const visibleColumns = ref({});
 
@@ -176,9 +187,9 @@
           v-model:status="filters.form.status"
           :processing="filters.form.processing"
           :status-options="statusOptions"
-          :view-modes="viewModes"
+          :view-modes="visibleViewModes"
           :column-options="columnOptions"
-          v-model:mode="viewState.mode"
+          v-model:mode="mode"
           v-model:sort-field="sortField"
           v-model:sort-direction="sortDirection"
           v-model:table-columns="tableColumns"

@@ -7,6 +7,8 @@ interface BaseSource {
   defaultSort?: string[];
   sites?: number[];
   data?: Record<string, any>;
+  /** Set when the source is a structure; gates the structure view mode. */
+  structureId?: number | null;
 }
 
 interface SourceNative extends BaseSource {
