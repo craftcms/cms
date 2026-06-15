@@ -18,7 +18,9 @@ export function useElementIndexViewState(props: ElementIndexViewStateContext) {
   const initialViewState: ViewState = {
     inlineEditing: false,
     mode: 'table',
-    tableColumns: ['title', 'dateCreated'],
+    // Column visibility is resolved per-source in `useElementIndexColumns`
+    // (source `tableAttributes` → element-type defaults), so it isn't seeded
+    // here; only the user's explicit per-source overrides live in `columns`.
     nestedInputNamespace: null,
     showHeaderColumn: true,
     sort: props.sort ?? [{field: 'dateCreated', direction: 'desc'}],

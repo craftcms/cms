@@ -8,14 +8,25 @@ export type ViewMode = {
   availableOnMobile?: boolean;
 };
 
+/** A source's persisted column overrides (visible columns + their order). */
+export type SourceColumnState = {
+  /** Columns the user has explicitly chosen to show, in selection order. */
+  visible?: Array<string>;
+  /** The user's column ordering for this source. */
+  order?: Array<string>;
+};
+
 /**
  * @TODO should inlineEditing and static be a "mode"?
  */
 export type ViewState = {
   inlineEditing: boolean;
   mode: ViewMode['mode'];
-  tableColumns: Array<string>;
-  columnOrder?: Array<string>;
+  /**
+   * Per-source column overrides, keyed by source key. Absent entries fall back
+   * to the source's `tableAttributes` (or the element-type defaults).
+   */
+  columns?: Record<string, SourceColumnState>;
   nestedInputNamespace?: string | null;
   showHeaderColumn: boolean;
   sort: Array<SortItem>;

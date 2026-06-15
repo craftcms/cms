@@ -15,6 +15,12 @@ interface SourceNative extends BaseSource {
 
 interface SourceCustom extends BaseSource {
   type: 'custom';
+  tableAttributes?: Array<string>;
+  condition?: {
+    class: string;
+    elementType: string;
+    fieldContext: string;
+  } | null;
 }
 
 /** A selectable source (i.e. anything that isn't a heading). */

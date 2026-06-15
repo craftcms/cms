@@ -46,6 +46,7 @@
       viewState: Partial<ViewState>;
       data?: Array<Element>;
       tableColumns: Array<{label: string; value: string}>;
+      defaultTableColumns?: Array<string>;
       viewModes?: Array<ViewMode>;
       baseSortOptions: Array<SortOption>;
       pagination: PaginationData;
@@ -61,11 +62,8 @@
 
   const viewState = useElementIndexViewState(props);
   const filters = useElementIndexFilters(props, viewState);
-  const {columns, columnOrder, columnOptions, reorder} = useElementIndexColumns(
-    props,
-    viewState,
-    {key: 'title', label: t('Entry')}
-  );
+  const {columns, columnOrder, columnOptions, reorder, tableColumns} =
+    useElementIndexColumns(props, viewState, {key: 'title', label: t('Entry')});
   const {sortingState, sortingConfig, sortField, sortDirection} =
     useElementIndexSort(props, viewState);
   const {paginationState, paginationConfig} = useElementIndexPagination(props);
@@ -183,7 +181,7 @@
           v-model:mode="viewState.mode"
           v-model:sort-field="sortField"
           v-model:sort-direction="sortDirection"
-          v-model:table-columns="viewState.tableColumns"
+          v-model:table-columns="tableColumns"
           @submit="filters.submit"
           @reorder="reorder"
         />

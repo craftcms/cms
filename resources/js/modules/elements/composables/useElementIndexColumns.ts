@@ -1,13 +1,19 @@
 import {computed, type Ref} from 'vue';
 import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
+import type {SourceItem} from '@/modules/elements/types/sources';
 
 // Element index rows are dynamic attribute maps, so the column helper is typed
 // against an open record (matching the page's `Element` type).
 type Row = Record<any, any>;
 
 interface ElementIndexColumnsContext {
+  /** Columns available for the current source: `{label, value}` per column. */
   tableColumns: Array<{label: string; value: string}>;
+  /** The active source; a custom source may carry its own `tableAttributes`. */
+  source?: SourceItem | null;
+  /** Element-type default columns, used when the source defines none. */
+  defaultTableColumns?: Array<string>;
 }
 
 interface PinnedColumn {
@@ -19,20 +25,52 @@ interface PinnedColumn {
 /**
  * Derives everything column-shaped for an element index from the available
  * columns and the persisted view state: the TanStack column definitions, the
- * table's column order, the toggle/sort options, and a reorder handler that
- * persists the new order. A single pinned column (e.g. the element's title) is
- * always rendered first and excluded from reordering.
+ * table's column order, the toggle/sort options, and a reorder handler.
+ *
+ * Visible columns follow Craft's precedence, resolved per source:
+ *   user override (`viewState.columns[sourceKey]`)
+ *     → the source's own `tableAttributes` (custom sources)
+ *     → the element-type defaults.
+ * A single pinned column (e.g. the element's title) is always rendered first
+ * and excluded from toggling/reordering.
  */
 export function useElementIndexColumns(
   props: ElementIndexColumnsContext,
   viewState: Ref<ViewState>,
   pinned: PinnedColumn
 ) {
-  // Available columns ordered by the persisted column order (unknown/new
-  // columns fall to the end in their natural order). Each column is keyed by its
+  // Column state is stored per source; fall back to a shared bucket when there
+  // is no resolved source (e.g. the implicit "all elements" view).
+  const sourceKey = computed(() => props.source?.key ?? '*');
+
+  const sourceColumnState = computed(
+    () => viewState.value.columns?.[sourceKey.value]
+  );
+
+  // The source's configured columns (custom sources only).
+  const sourceTableAttributes = computed<Array<string> | undefined>(() =>
+    props.source && 'tableAttributes' in props.source
+      ? props.source.tableAttributes
+      : undefined
+  );
+
+  // Default visible set when the user hasn't customized this source: the
+  // source's own `tableAttributes` win over the element-type defaults.
+  const defaultVisible = computed<Array<string>>(
+    () => sourceTableAttributes.value ?? props.defaultTableColumns ?? []
+  );
+
+  // Effective visible columns: the user's per-source selection if present,
+  // otherwise the source/element-type default.
+  const visibleKeys = computed<Array<string>>(
+    () => sourceColumnState.value?.visible ?? defaultVisible.value
+  );
+
+  // Available columns ordered by the persisted (per-source) order; unknown/new
+  // columns fall to the end in their natural order. Each column is keyed by its
   // `value` (e.g. `field:{uuid}`), which matches the row data's attribute keys.
   const orderedColumns = computed<Array<[string, {label: string}]>>(() => {
-    const order = viewState.value.columnOrder ?? [];
+    const order = sourceColumnState.value?.order ?? [];
     return props.tableColumns
       .map((column): [string, {label: string}] => [column.value, column])
       .sort(([a], [b]) => {
@@ -48,9 +86,7 @@ export function useElementIndexColumns(
   // The selected columns, in display order (drives both the table columns and
   // the table's column order).
   const visibleOrderedColumns = computed(() =>
-    orderedColumns.value.filter(([key]) =>
-      viewState.value.tableColumns?.includes(key)
-    )
+    orderedColumns.value.filter(([key]) => visibleKeys.value.includes(key))
   );
 
   const columnHelper = createCraftColumnHelper<Row>();
@@ -83,13 +119,32 @@ export function useElementIndexColumns(
     })),
   ]);
 
-  function reorder(options: Array<{value: string}>) {
-    // Persist the new column order; the pinned column always stays first, so
-    // it's excluded from the stored order.
-    viewState.value.columnOrder = options
-      .map((option) => option.value)
-      .filter((value) => value !== pinned.key);
+  // Merge a patch into the active source's column state (and persist it).
+  function patchSourceColumnState(patch: {
+    visible?: Array<string>;
+    order?: Array<string>;
+  }) {
+    const columns = {...(viewState.value.columns ?? {})};
+    columns[sourceKey.value] = {...columns[sourceKey.value], ...patch};
+    viewState.value.columns = columns;
   }
 
-  return {columns, columnOrder, columnOptions, reorder};
+  // Writable model for the toolbar's column toggles: reading yields the
+  // effective visible keys; writing records a per-source override.
+  const tableColumns = computed<Array<string>>({
+    get: () => visibleKeys.value,
+    set: (value) => patchSourceColumnState({visible: value}),
+  });
+
+  function reorder(options: Array<{value: string}>) {
+    // Persist the new column order for this source; the pinned column always
+    // stays first, so it's excluded from the stored order.
+    patchSourceColumnState({
+      order: options
+        .map((option) => option.value)
+        .filter((value) => value !== pinned.key),
+    });
+  }
+
+  return {columns, columnOrder, columnOptions, reorder, tableColumns};
 }
