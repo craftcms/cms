@@ -16,6 +16,7 @@
 - Fixed a bug where queue job progress labels weren’t getting translated.
 - Fixed a bug where the control panel sidebar and Queue Manager were showing completed jobs.
 - Fixed a bug where `CraftCms\Yii2Adapter\Mixins\ValidateMixin::addErrors()` had incorrect arguments. ([#19065](https://github.com/craftcms/cms/pull/19065))
+- Fixed a bug where plugin templates were not being loaded correctly
 
 ## 6.0.0-alpha.6 - 2026-06-03
 
