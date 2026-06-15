@@ -21,6 +21,7 @@
 - Fixed a SQL error that could occur when uploading an asset, if it contained non-UTF-8 alt text in its metadata. ([#19069](https://github.com/craftcms/cms/issues/19069))
 - Fixed an error that could occur when editing an entry if a soft-deleted user had recently edited the same entry. ([#19081](https://github.com/craftcms/cms/issues/19081))
 - Fixed a PHP error that occurred when setting general config settings via `config/general.console.php` or `config/general.web.php`. ([#19083](https://github.com/craftcms/cms/pull/19083))
+- Fixed a bug where address cards would show “0, 0” for Longitude/Latitude values when neither field had been populated. ([#19093](https://github.com/craftcms/cms/issues/19093))
 - Fixed a styling issue.
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
