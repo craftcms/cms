@@ -4,22 +4,54 @@ import styles from './card.styles.js';
 import type {CSSResultGroup} from 'lit';
 
 /**
- * @summary Short summary of the component's intended use.
+ * @summary A surface that groups related content into a bordered, rounded
+ * container with optional header and footer regions. Used for element cards in
+ * index views and other standalone content blocks.
  *
- * @event craft-event-name - Emitted as an example.
+ * The header region is only rendered when the `label` attribute is set or the
+ * `header`, `label`, or `actions` slot is filled. When no `header` slot is
+ * provided, the header falls back to showing the `label` and `actions` slots
+ * (with the `label` attribute as the default label content). The footer region
+ * is only rendered when the `footer` slot is filled.
  *
- * @slot - The default slot.
- * @slot example - An example slot.
+ * Host attributes are applied directly to the element, so the server-rendered
+ * wrapper attributes that accompany an element's card HTML (its `id`, `style`
+ * custom properties, and `data-*` metadata) can be spread onto it with the
+ * `attrs()` utility — e.g. `v-bind="attrs(element.cardAttributes)"`. `class` is
+ * usually excluded from that bind (`{exclude: ['class']}`), since the component
+ * renders its own card chrome rather than the server's `.card` classes.
  *
- * @csspart base - The component's base wrapper.
+ * @slot - The card's body content.
+ * @slot header - The full header region. Replaces the default
+ *   `label`/`actions` content when provided.
+ * @slot label - Label content shown in the header; defaults to the `label`
+ *   attribute.
+ * @slot actions - Action content shown at the end of the header, e.g. buttons.
+ * @slot footer - Footer content. The footer is only rendered when this slot is
+ *   filled.
  *
- * @cssproperty --example - An example CSS custom property.
+ * @csspart label - The label slot within the header.
+ *
+ * @cssproperty --c-card-radius - Corner radius. Defaults to `--c-radius-md`.
+ * @cssproperty --c-card-shadow - Box shadow. Defaults to `--c-shadow-sm`.
+ * @cssproperty --c-card-padding-inline - Inline (horizontal) padding of the
+ *   header, body, and footer. Defaults to `--c-spacing-md`.
+ * @cssproperty --c-card-padding-block - Block (vertical) padding of the header,
+ *   body, and footer. Defaults to `--c-spacing-sm` for the header/footer and
+ *   `--c-spacing-md` for the body.
  */
 export default class CraftCard extends LitElement {
   static override styles: CSSResultGroup = [styles];
 
-  /** Label for the card. */
+  /** Label shown in the header when the `label` slot is not filled. */
   @property() label = '';
+
+  /**
+   * Whether the card is in an active/selected state. Reflected to the host as
+   * an `active` attribute (e.g. ElementCards binds this to row selection).
+   */
+  @property({type: Boolean, reflect: true})
+  active = false;
 
   override render() {
     const hasSlottedHeader =

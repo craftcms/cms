@@ -29,6 +29,7 @@
     ViewMode,
     ViewState,
   } from '@/modules/elements/types/view-state';
+  import VarDump from '@/common/components/VarDump.vue';
 
   type Element = Record<any, any>;
 

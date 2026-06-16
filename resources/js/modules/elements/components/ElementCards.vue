@@ -1,10 +1,11 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {attrs, t} from '@craftcms/cp';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import Text from '@/common/components/Text.vue';
   import Select from '@/common/form/Select.vue';
   import Empty from '@/common/components/Empty.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   // Cards mode rows carry `{id, cardHtml}`, but the index page types its rows as
   // an open record (shared with the table view), so accept that shape here.
@@ -105,19 +106,17 @@
     </div>
 
     <div class="cp-table-body">
-      <template v-if="data.length > 0">
-        <div class="header" v-if="selectable">
-          <span class="selectallcontainer">
-            <craft-checkbox
-              label-sr-only
-              .checked="table.getIsAllRowsSelected()"
-              .indeterminate="table.getIsSomeRowsSelected()"
-              .disabled="readOnly"
-              @model-value-changed="onToggleAllSelected"
-            >
-              <label slot="label">{{ t('Select all') }}</label>
-            </craft-checkbox>
-          </span>
+      <template v-if="data!.length > 0">
+        <div class="card-grid-header" v-if="selectable">
+          <craft-checkbox
+            label-sr-only
+            .checked="table.getIsAllRowsSelected()"
+            .indeterminate="table.getIsSomeRowsSelected()"
+            .disabled="readOnly"
+            @model-value-changed="onToggleAllSelected"
+          >
+            <label slot="label">{{ t('Select all') }}</label>
+          </craft-checkbox>
         </div>
 
         <ul class="card-grid">
@@ -127,18 +126,29 @@
             :data-id="element.id"
             :class="{element: true, sel: rowFor(element.id)?.getIsSelected()}"
           >
-            <span v-if="selectable" class="card-select">
-              <craft-checkbox
-                label-sr-only
-                .checked="rowFor(element.id)?.getIsSelected()"
-                .disabled="readOnly || !rowFor(element.id)?.getCanSelect()"
-                @model-value-changed="onToggleCardSelected(element.id, $event)"
-              >
-                <label slot="label">{{ t('Select') }}</label>
-              </craft-checkbox>
-            </span>
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <div class="card-shell" v-html="element.cardHtml"></div>
+            <craft-card v-bind="attrs(element.cardAttributes, {exclude: ['class']})" :active="rowFor(element.id)?.getIsSelected()">
+              <div slot="header">
+                <div class="flex gap-2 items-center">
+                  <craft-checkbox
+                    v-if="selectable"
+                    label-sr-only
+                    .checked="rowFor(element.id)?.getIsSelected()"
+                    .disabled="readOnly || !rowFor(element.id)?.getCanSelect()"
+                    @model-value-changed="
+                      onToggleCardSelected(element.id, $event)
+                    "
+                  >
+                    <label slot="label">{{ t('Select') }}</label>
+                  </craft-checkbox>
+                  <DynamicHtmlRenderer :html="element.cardHeaderHtml" />
+                </div>
+              </div>
+              <DynamicHtmlRenderer :html="element.cardContentHtml" />
+              <DynamicHtmlRenderer
+                :html="element.cardFooterHtml"
+                slot="footer"
+              />
+            </craft-card>
           </li>
         </ul>
       </template>
@@ -216,6 +226,16 @@
 </template>
 
 <style scoped lang="scss">
+  .card-grid-header {
+    padding: var(--c-spacing-md);
+    background-color: var(--c-color-neutral-fill-quiet);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .card-grid {
+    padding: var(--c-spacing-md);
+  }
+
   .cp-table-wrapper {
     overflow-y: clip;
   }

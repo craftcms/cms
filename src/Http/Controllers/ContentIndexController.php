@@ -177,19 +177,36 @@ class ContentIndexController
             // so the card itself is display-only: no Garnish-managed edit button
             // or auto-reload, and the title is hyperlinked to the edit URL.
             $elements = collect($paginator->items())
-                ->map(fn (ElementInterface $element) => [
-                    // `id` keys row selection (see `getRowId`) so selection
-                    // tracks elements across sorting and pagination.
-                    'id' => $element->id,
-                    'cardHtml' => $this->elementHtml->elementCardHtml($element, [
+                ->map(function (ElementInterface $element) use ($renderContext) {
+                    // A per-element `id` is shared across the full card and its
+                    // parts so the header/body/footer line up if they're
+                    // recomposed client-side, while staying unique per card.
+                    $cardConfig = [
+                        'id' => sprintf('card-%s', mt_rand()),
                         'context' => $renderContext,
                         'hyperlink' => true,
                         'showEditButton' => false,
                         'autoReload' => false,
                         'selectable' => false,
                         'sortable' => false,
-                    ]),
-                ]);
+                    ];
+
+                    return [
+                        // `id` keys row selection (see `getRowId`) so selection
+                        // tracks elements across sorting and pagination.
+                        'id' => $element->id,
+                        // The full composed card is kept for backwards
+                        // compatibility; the individual parts let the Vue shell
+                        // render each region. `cardAttributes` are the structured
+                        // tag attributes for the wrapper `.card` div, matching
+                        // what `cardHtml` applies to that element.
+                        'cardHtml' => $this->elementHtml->elementCardHtml($element, $cardConfig),
+                        'cardAttributes' => $this->elementHtml->elementCardAttributes($element, $cardConfig),
+                        'cardHeaderHtml' => $this->elementHtml->elementCardHeaderHtml($element, $cardConfig),
+                        'cardContentHtml' => $this->elementHtml->elementCardContentHtml($element, $cardConfig),
+                        'cardFooterHtml' => $this->elementHtml->elementCardFooterHtml($element, $cardConfig),
+                    ];
+                });
         } else {
             // @TODO: this should be from the view state
             // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];

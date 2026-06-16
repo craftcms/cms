@@ -277,3 +277,12 @@ Modify with `cp-table--auto` to apply table-layout: auto
   align-items: center;
   justify-content: space-between;
 }
+
+.cp-table-footer {
+  border-block-start-color: ;
+}
+
+.cp-table-body__header {
+  padding: var(--c-spacing-md);
+  height: calc(50rem / 16);
+}

@@ -69,6 +69,7 @@ export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
 export * from './utilities/string.js';
 export * from './utilities/dom.js';
+export * from './utilities/attrs.js';
 export * from './utilities/thumbnail-loader.js';
 
 // Services
