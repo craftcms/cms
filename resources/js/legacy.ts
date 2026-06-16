@@ -5,7 +5,7 @@ import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import Cp from './bootstrap/cp.js';
 
-window.Cp = Cp;
+window.Cp = Cp as unknown as typeof window.Cp;
 
 /**
  * Components - dynamically imported after Craft is initialized
