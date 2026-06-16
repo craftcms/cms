@@ -9,8 +9,9 @@
     defineProps<{
       sources: Array<Source>;
       activeSource?: string | null;
+      viewMode?: string | null;
     }>(),
-    {activeSource: null}
+    {activeSource: null, viewMode: null}
   );
 
   const {site} = useCraftData();
@@ -40,10 +41,20 @@
   // `index.url()` returns the plain string URL (vs. `index()`, which returns a
   // `{url, method}` pair). craft-nav-item needs a real string href so it renders
   // an interactive link; we intercept the click for SPA navigation.
+  // Carry the active view mode so the server renders data for the mode the page
+  // is actually showing. Without it, the source visit would fall back to the
+  // default `table` mode while the restored local view state still shows cards
+  // (mirrors how `useElementIndexViewMode` pushes a `viewMode` query param).
   function sourceUrl(key: string) {
     return index.url(
       {page: 'entries'},
-      {query: {source: key, site: site?.handle}}
+      {
+        query: {
+          source: key,
+          site: site?.handle,
+          ...(props.viewMode ? {viewMode: props.viewMode} : {}),
+        },
+      }
     );
   }
 
