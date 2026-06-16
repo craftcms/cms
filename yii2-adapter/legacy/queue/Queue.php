@@ -554,7 +554,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $info = [];
 
         foreach ($results as $result) {
-            if (!app()->hasDebugModeEnabled() && !Auth::user()?->isAdmin()) {
+            if (!app()->hasDebugModeEnabled() && !Auth::craftUser()?->isAdmin()) {
                 $result['error'] = t('A server error occurred.');
             }
 

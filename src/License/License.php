@@ -267,7 +267,7 @@ readonly class License
                     [
                         'name' => $licenseData->name,
                         'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseData->id}",
-                        'buyUrl' => $this->auth->user()?->isAdmin() && $this->generalConfig->allowAdminChanges
+                        'buyUrl' => $this->auth->craftUser()?->isAdmin() && $this->generalConfig->allowAdminChanges
                             ? Url::cpUrl("plugin-store/buy/$licenseData->handle/$licenseData->currentEdition")
                             : "https://plugins.craftcms.com/$licenseData->handle",
                     ]),

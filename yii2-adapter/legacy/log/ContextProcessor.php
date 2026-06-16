@@ -56,8 +56,8 @@ class ContextProcessor implements ProcessorInterface
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
-        if ($user && ($identity = Auth::user())) {
-            $data['userId'] = $identity->getId();
+        if ($user && ($identity = Auth::craftUser())) {
+            $data['userId'] = $identity->getCraftUserId();
         }
 
         /** @var Session|null $session */

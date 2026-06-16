@@ -293,10 +293,10 @@ class ErrorHandler extends \yii\web\ErrorHandler
             return true;
         }
 
-        $user = Auth::user();
+        $user = Auth::craftUser();
         return (
             $user &&
-            $user->admin &&
+            $user->isAdmin() &&
             $user->getPreference('showExceptionView')
         );
     }

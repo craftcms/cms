@@ -179,7 +179,7 @@ readonly class ApiController extends GqlController
         $requestHeaders = $request->headers;
 
         if ($requestHeaders->has('X-Craft-Gql-Schema')) {
-            $user = $request->user();
+            $user = $request->craftUser();
 
             abort_if(! $user, 401, 'Unauthenticated.');
             abort_unless($user->isAdmin(), 403, 'User is not permitted to perform this action.');

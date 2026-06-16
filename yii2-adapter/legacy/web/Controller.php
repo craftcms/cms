@@ -543,7 +543,7 @@ abstract class Controller extends \yii\web\Controller
         $this->requireLogin();
 
         // Make sure they're an admin
-        if (!Auth::user()?->isAdmin()) {
+        if (!Auth::craftUser()?->isAdmin()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action.');
         }
 

@@ -106,8 +106,6 @@ readonly class LoginController extends AuthenticationController
 
         /**
          * @var EloquentUserProvider $provider
-         *
-         * @phpstan-ignore method.notFound
          */
         $provider = auth()->getProvider();
 
