@@ -12,7 +12,7 @@
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t returning boolean values for environment variable names that resolved to `true`/`false` values. ([#19029](https://github.com/craftcms/cms/issues/19029))
 - Fixed a bug where the submit button within Live Preview was labelled “Submit” rather than “Save”. ([#19056](https://github.com/craftcms/cms/issues/19056))
 - Fixed a bug where the selected site wasn’t being remembered after saving an element. ([#19054](https://github.com/craftcms/cms/discussions/19054))
-- Fixed a bug where transformed SVG images could have two sets of `width` and `height` attributes. ([#19027](https://github.com/craftcms/cms/pull/19027))
+- Fixed a bug where transformed SVG images could have two sets of `width` and `height` attributes. ([#1902w7](https://github.com/craftcms/cms/pull/19027))
 - Fixed an infinite recursion bug. ([#19063](https://github.com/craftcms/cms/issues/19063))
 - Fixed a JavaScript error that could occur if there was an error rendering an element condition rule’s Twig template.
 - Fixed a bug where relational fields’ element selector modals weren’t showing any results if they were configured to only relate to elements in a specific site, and the author didn’t have permission to access that site. ([#19078](https://github.com/craftcms/cms/issues/19078))
@@ -26,6 +26,11 @@
 - Fixed a bug where verification code inputs weren’t always getting autofilled by password managers. ([#19094](https://github.com/craftcms/cms/issues/19094))
 - Fixed a bug where the “Use defaults” button in element index view menus wasn’t being shown automatically after a column header was pressed on. ([#19101](https://github.com/craftcms/cms/issues/19101))
 - Fixed a styling issue.
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) potential path traversal vulnerability.
 
 ## 5.10.5 - 2026-06-02
 
