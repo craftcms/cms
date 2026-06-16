@@ -957,8 +957,7 @@ class Gql
 
             // If devMode enabled or exception is safe to show, substitute the original exception here.
             if (
-                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())
-                ) &&
+                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())) &&
                 ! empty($originException->getMessage())
             ) {
                 $error = $originException;
