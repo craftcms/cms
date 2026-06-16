@@ -242,7 +242,6 @@
         />
       </template>
     </AdminTable>
-    <VarDump :data="data" />
   </IndexLayout>
 </template>
 
