@@ -26,7 +26,7 @@ Route::middleware([
     'web',
     'craft',
     'craft.cp',
-    'auth:craft',
+    'auth',
     'can:accessCp',
     ExcludeCsrfValidationForLegacyController::class,
     LegacyMiddleware::class,

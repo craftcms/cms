@@ -23,7 +23,7 @@ if (Edition::get()->registersFrontendUserRoutes()) {
         Route::post(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'store']);
     }
 
-    Route::middleware('auth:craft')->group(function () {
+    Route::middleware('auth')->group(function () {
         if (Cms::config()->logoutPath !== false) {
             Route::get(Cms::config()->logoutPath, [LoginController::class, 'logout']);
         }
