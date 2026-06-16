@@ -149,7 +149,8 @@ Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
-  --_cell-spacing-block: var(--c-spacing-md);
+  --_cell-spacing-block: 0;
+  --_row-height: auto;
   text-align: left;
   width: 100%;
   border-spacing: 0;
@@ -169,10 +170,18 @@ Modify with `cp-table--auto` to apply table-layout: auto
     padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);
     position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 0;
+    height: var(--_row-height);
 
     &:has(.cp-table-input:not([type='checkbox']):not([type='radio'])) {
       padding: 0;
     }
+  }
+
+  tbody tr {
   }
 
   td,
@@ -253,18 +262,11 @@ Modify with `cp-table--auto` to apply table-layout: auto
 }
 
 .cp-table--compact {
-  --_cell-spacing-block: var(--c-spacing-sm);
+  --_row-height: calc(40rem / 16);
 }
 
 .cp-table--spacious {
-  --_cell-spacing-block: var(--c-spacing-lg);
-}
-
-.cp-table-cell {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 0;
+  --_row-height: calc(50rem / 16);
 }
 
 .cp-table-header,

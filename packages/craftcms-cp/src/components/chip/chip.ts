@@ -1,11 +1,12 @@
 import {property} from 'lit/decorators.js';
-import type {CSSResultGroup} from 'lit';
+import type {CSSResultGroup, PropertyValueMap, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import styles from './chip.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance, type AppearanceValue} from '@src/constants/appearances';
 import {Variant, type VariantValue} from '@src/constants/variants';
 import type {SizeValue} from '@src/constants/size';
+import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
 
 /**
  * @summary A compact, inline element that pairs a label with an optional
@@ -51,16 +52,32 @@ export default class CraftChip extends LitElement {
   /** Shortcut for adding an icon as the prefix */
   @property() icon: string | null = null;
 
+  #thumbLoader = new ThumbnailLoader();
+
   renderPrefix() {
-    return html`<div class="cp-chip__prefix" part="prefix">
+    const hasThumb = !!this.querySelector('[slot="thumbnail"]');
+    const hasIndicator = !!this.querySelector('[slot="indicator"]');
+
+    return html` <div class="cp-chip__prefix" part="prefix">
       <slot name="prefix">
-        <slot name="icon">
+        ${hasThumb
+          ? html`<slot class="cp-chip__thumbnail" name="thumbnail"></slot>`
+          : nothing}
+        ${hasIndicator
+          ? html`<slot class="cp-chip__indicator" name="indicator"></slot>`
+          : nothing}
+        <slot class="cp-chip__icon" name="icon">
           ${this.icon
-            ? html`<craft-icon name="${this.icon}"></craft-icon>`
+            ? html` <craft-icon name="${this.icon}"></craft-icon>`
             : nothing}
         </slot>
       </slot>
     </div>`;
+  }
+
+  protected override firstUpdated(_changedProperties: PropertyValues) {
+    super.firstUpdated(_changedProperties);
+    this.#thumbLoader.load(this);
   }
 
   override render() {
@@ -68,6 +85,8 @@ export default class CraftChip extends LitElement {
     const renderPrefix =
       !!this.querySelector('[slot="prefix"]') ||
       !!this.querySelector('[slot="icon"]') ||
+      !!this.querySelector('[slot="thumbnail"]') ||
+      !!this.querySelector('[slot="indicator"]') ||
       this.icon;
     const renderSuffix = !!this.querySelector('[slot="suffix"]');
 
@@ -87,7 +106,7 @@ export default class CraftChip extends LitElement {
           <slot></slot>
         </div>
         ${renderSuffix
-          ? html`<div class="cp-chip__suffix" part="suffix">
+          ? html` <div class="cp-chip__suffix" part="suffix">
               <slot name="suffix"></slot>
             </div>`
           : nothing}

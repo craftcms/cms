@@ -13,7 +13,11 @@
     useVueTable,
   } from '@tanstack/vue-table';
   import {computed, ref} from 'vue';
-  import type {PaginationData, SortItem} from '@/common/types';
+  import {
+    type PaginationData,
+    type SortItem,
+    TableSpacing,
+  } from '@/common/types';
   import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
   import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
   import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
@@ -210,6 +214,7 @@
       :to="pagination.to"
       :total="pagination.total"
       :enable-adjust-page-size="true"
+      :spacing="TableSpacing.Spacious"
     >
       <template #table-header>
         <ElementIndexToolbar
