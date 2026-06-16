@@ -6,6 +6,7 @@
   import Select from '@/common/form/Select.vue';
   import Empty from '@/common/components/Empty.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import LoadingSkeleton from '@/common/components/LoadingSkeleton.vue';
 
   // Cards mode rows carry `{id, cardHtml}`, but the index page types its rows as
   // an open record (shared with the table view), so accept that shape here.
@@ -20,6 +21,7 @@
       data?: Array<CardElement>;
       selectable?: boolean;
       readOnly?: boolean;
+      loading?: boolean;
       from?: number;
       to?: number;
       total?: number;
@@ -29,6 +31,7 @@
     {
       data: () => [],
       selectable: false,
+      loading: false,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
     }
@@ -36,6 +39,15 @@
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
+
+  // Roughly match the number of skeleton cards to what's currently shown (the
+  // previous page stays in `data` during a refetch), clamped so a large page
+  // size doesn't render an excessive placeholder.
+  const skeletonCount = computed(() => {
+    const size =
+      props.data?.length || props.table.getState().pagination.pageSize || 6;
+    return Math.min(Math.max(size, 3), 12);
+  });
 
   // Look up the table row for a card so selection reads/writes the same model
   // the table view uses (keyed by element id via `getRowId`).
@@ -105,8 +117,9 @@
       <slot name="table-header"></slot>
     </div>
 
-    <div class="cp-table-body">
-      <template v-if="data!.length > 0">
+    <div class="cp-table-body" :aria-busy="loading ? 'true' : undefined">
+      <LoadingSkeleton v-if="loading" variant="cards" :count="skeletonCount" />
+      <template v-else-if="data!.length > 0">
         <div class="card-grid-header" v-if="selectable">
           <craft-checkbox
             label-sr-only
@@ -126,7 +139,10 @@
             :data-id="element.id"
             :class="{element: true, sel: rowFor(element.id)?.getIsSelected()}"
           >
-            <craft-card v-bind="attrs(element.cardAttributes, {exclude: ['class']})" :active="rowFor(element.id)?.getIsSelected()">
+            <craft-card
+              v-bind="attrs(element.cardAttributes, {exclude: ['class']})"
+              :active="rowFor(element.id)?.getIsSelected()"
+            >
               <div slot="header">
                 <div class="flex gap-2 items-center">
                   <craft-checkbox

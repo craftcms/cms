@@ -24,6 +24,7 @@
   import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
   import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
   import {useElementIndexViewMode} from '@/modules/elements/composables/useElementIndexViewMode';
+  import {useElementIndexLoading} from '@/modules/elements/composables/useElementIndexLoading';
   import type {
     SortOption,
     ViewMode,
@@ -75,6 +76,7 @@
     useElementIndexSort(props, viewState);
   const {paginationState, paginationConfig} = useElementIndexPagination(props);
   const {mode} = useElementIndexViewMode(props, viewState);
+  const {loading} = useElementIndexLoading();
 
   // The structure view mode only applies to structure sources, so hide it
   // (and any other `structuresOnly` mode) unless the active source is one.
@@ -163,7 +165,11 @@
         <h2 id="source-heading" class="sr-only">
           {{ t('Sources') }}
         </h2>
-        <ElementSources :sources="sources" :active-source="source?.key" />
+        <ElementSources
+          :sources="sources"
+          :active-source="source?.key"
+          :view-mode="mode"
+        />
       </nav>
 
       <div class="mt-4">
@@ -184,6 +190,7 @@
       :table="elementTable"
       :data="data"
       :selectable="true"
+      :loading="loading"
       :from="pagination.from"
       :to="pagination.to"
       :total="pagination.total"
@@ -211,6 +218,7 @@
       v-else
       :table="elementTable"
       :selectable="true"
+      :loading="loading"
       :from="pagination.from"
       :to="pagination.to"
       :total="pagination.total"
@@ -234,6 +242,7 @@
         />
       </template>
     </AdminTable>
+    <VarDump :data="data" />
   </IndexLayout>
 </template>
 

@@ -10,6 +10,7 @@
   import Select from '@/common/form/Select.vue';
   import Text from '@/common/components/Text.vue';
   import Empty from '@/common/components/Empty.vue';
+  import LoadingSkeleton from '@/common/components/LoadingSkeleton.vue';
   import {usePage} from '@inertiajs/vue3';
 
   const props = withDefaults(
@@ -19,6 +20,7 @@
       reorderable?: boolean;
       selectable?: boolean;
       readOnly?: boolean;
+      loading?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
       from?: number;
@@ -31,6 +33,7 @@
     {
       reorderable: false,
       selectable: false,
+      loading: false,
       layout: 'auto',
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
@@ -39,6 +42,24 @@
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
+
+  // Roughly match the skeleton to the table currently shown (the previous rows
+  // stay mounted during a refetch), clamped so a large page size doesn't render
+  // an excessive placeholder.
+  const skeletonCount = computed(() => {
+    const size =
+      props.table.getRowModel().rows.length ||
+      props.table.getState().pagination.pageSize ||
+      6;
+    return Math.min(Math.max(size, 3), 12);
+  });
+
+  // Skeleton column count mirrors the visible data columns plus the selection
+  // column, so the placeholder lines up with the real header.
+  const skeletonColumns = computed(
+    () =>
+      props.table.getVisibleLeafColumns().length + (props.selectable ? 1 : 0)
+  );
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
   }>();
@@ -214,8 +235,15 @@
       <slot name="table-header"> </slot>
     </div>
 
-    <div class="cp-table-body">
+    <div class="cp-table-body" :aria-busy="loading ? 'true' : undefined">
+      <LoadingSkeleton
+        v-if="loading"
+        variant="table"
+        :count="skeletonCount"
+        :columns="skeletonColumns"
+      />
       <table
+        v-else
         :class="{
           'cp-table': true,
           'cp-table--grid': false,
