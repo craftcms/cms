@@ -224,6 +224,7 @@ Route::prefix(implode('/', [
         Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
         Route::post('app/render-elements', [RenderController::class, 'elements']);
         Route::post('app/render-components', [RenderController::class, 'components']);
+        Route::post('app/render-markdown', [RenderController::class, 'markdown']);
 
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
@@ -265,6 +266,8 @@ Route::prefix(implode('/', [
         Route::post('delete-elements/delete', [DeleteElementsController::class, 'destroy']);
         Route::any('delete-elements/replace-relations-modal', [DeleteElementsController::class, 'replaceRelationsModal']);
         Route::post('delete-elements/replace-relations', [DeleteElementsController::class, 'replaceRelations']);
+        Route::any('delete-elements/replace-references-modal', [DeleteElementsController::class, 'replaceReferencesModal']);
+        Route::post('delete-elements/replace-references', [DeleteElementsController::class, 'replaceReferences']);
 
         Route::post('elements/create', CreateElementController::class);
         Route::any('elements/edit', EditElementController::class);

@@ -49,6 +49,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
@@ -4024,6 +4025,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function whereIn($column, $values, $boolean = 'and', $not = false): static
     {
         return $this->andWhere(['in', $column, $values]);
+    }
+
+    /**
+     * @return LazyCollection<int, TElement|array>
+     */
+    public function cursor(): LazyCollection
+    {
+        return LazyCollection::make(function() {
+            foreach (Db::each($this) as $element) {
+                yield $element;
+            }
+        });
     }
 
     /**

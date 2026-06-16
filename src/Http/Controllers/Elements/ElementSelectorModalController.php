@@ -18,6 +18,7 @@ readonly class ElementSelectorModalController
     {
         $request->validate([
             'showSiteMenu' => ['nullable', 'in:0,1'],
+            'siteIds' => ['nullable', 'array', 'min:1'],
             'sources' => ['nullable', function (string $attribute, mixed $value, $fail): void {
                 if (! is_array($value) && ! is_string($value)) {
                     $fail(t('The {attribute} field must be a string or array.', ['attribute' => $attribute]));
@@ -57,6 +58,7 @@ readonly class ElementSelectorModalController
                 'context' => $request->context(),
                 'registerJs' => false,
                 'showSiteMenu' => $request->input('showSiteMenu', 'auto'),
+                'siteIds' => $request->input('siteIds'),
                 'showStatusMenu' => $hasStatuses,
                 'sources' => $request->input('sources'),
                 'statuses' => $statuses ?? null,

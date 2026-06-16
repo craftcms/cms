@@ -8,7 +8,9 @@ use CraftCms\Cms\Field\Commands\DeleteFieldsCommand;
 use CraftCms\Cms\Field\Commands\FieldsAutoMergeCommand;
 use CraftCms\Cms\Field\Commands\FieldsMergeCommand;
 use CraftCms\Cms\Field\IdeHelper\CustomFieldIdeHelperGenerator;
+use CraftCms\Cms\Field\Listeners\FieldReferenceEventSubscriber;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class FieldsServiceProvider extends ServiceProvider
@@ -20,6 +22,8 @@ class FieldsServiceProvider extends ServiceProvider
             FieldsMergeCommand::class,
             FieldsAutoMergeCommand::class,
         ]);
+
+        Event::subscribe(FieldReferenceEventSubscriber::class);
 
         $this->registerIdeHelperListeners($projectConfig, $generator);
     }

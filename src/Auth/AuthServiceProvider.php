@@ -6,8 +6,10 @@ namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Policies\AddressPolicy;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
+use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
@@ -17,6 +19,8 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Policies\ContentBlockPolicy;
+use CraftCms\Cms\Structure\Data\Structure;
+use CraftCms\Cms\Structure\Policies\StructurePolicy;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -172,8 +176,10 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Element::class, ElementPolicy::class);
         Gate::policy(Address::class, AddressPolicy::class);
         Gate::policy(Asset::class, AssetPolicy::class);
+        Gate::policy(VolumeFolder::class, VolumeFolderPolicy::class);
         Gate::policy(ContentBlock::class, ContentBlockPolicy::class);
         Gate::policy(Entry::class, EntryPolicy::class);
+        Gate::policy(Structure::class, StructurePolicy::class);
         Gate::policy(UserElement::class, UserPolicy::class);
     }
 }

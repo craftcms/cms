@@ -26,7 +26,7 @@ class DynamicRoute
 
     public function handle(Request $request): Response
     {
-        $variables = Arr::pull($this->params, 'variables', []) + $request->query->all();
+        $variables = Arr::pull($this->params, 'variables', []);
 
         if (in_array($this->route, [
             Cms::config()->actionTrigger.'/templates/render',

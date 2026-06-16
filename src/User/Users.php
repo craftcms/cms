@@ -1000,6 +1000,7 @@ class Users
                     ->whereColumn('password_reset_tokens.email', 'users.email')
                     ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->purgePendingUsersDuration));
             })
+            ->cursor()
             ->each(function (User $user) {
                 try {
                     $this->elements->deleteElement($user);

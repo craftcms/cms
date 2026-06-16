@@ -74,7 +74,7 @@ class UpdateElementSlugsAndUris extends Job
     {
         $this->totalToProcess += $query->count();
 
-        $query->each(function ($element) {
+        $query->cursor()->each(function ($element) {
             // totalToProcess can be 0 somehow (https://github.com/craftcms/cms/issues/16787)
             $this->setProgress((int) (($this->totalProcessed / max($this->totalToProcess, $this->totalProcessed + 1)) * 100));
             $this->totalProcessed++;
@@ -97,6 +97,6 @@ class UpdateElementSlugsAndUris extends Job
                     ->descendantDist(1);
                 $this->processElements($childQuery);
             }
-        }, 100);
+        });
     }
 }

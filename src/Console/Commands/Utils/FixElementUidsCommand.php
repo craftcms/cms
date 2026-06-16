@@ -42,6 +42,7 @@ class FixElementUidsCommand extends Command
 
         $duplicateUidRowsQuery
             ->orderBy('id')
+            ->cursor()
             ->each(function (object $row) use (&$seenUids, $connection) {
                 if (isset($seenUids[$row->uid])) {
                     $newUid = Str::uuid();

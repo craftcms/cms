@@ -55,6 +55,8 @@ readonly class Table
 
     public const string FIELDLAYOUTS = 'fieldlayouts';
 
+    public const string FIELDREFERENCES = 'fieldreferences';
+
     public const string FIELDS = 'fields';
 
     public const string GQLSCHEMAS = 'gqlschemas';

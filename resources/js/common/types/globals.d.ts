@@ -69,6 +69,21 @@ interface SlideoutInstance {
   on(event: string, callback: () => void): void;
 }
 
+interface ElementSelectorModalInstance {
+  show(): void;
+  on(event: string, callback: () => void): void;
+}
+
+interface ElementSelectorModalSettings {
+  closeOtherModals?: boolean;
+  criteria?: Record<string, unknown>;
+  hideOnSelect?: boolean;
+  modalTitle?: string;
+  multiSelect?: boolean;
+  onSelect?: (elements: any[]) => void;
+  sources?: string[];
+}
+
 interface CraftStatic {
   csrfTokenName?: string;
   csrfTokenValue?: string;
@@ -77,6 +92,10 @@ interface CraftStatic {
   t(message: string, params?: object, category?: string): string;
   sendActionRequest(method: string, action: string, options?: object): Promise;
   initUiElements($container: JQuery): void;
+  createElementSelectorModal(
+    elementType: string,
+    settings?: ElementSelectorModalSettings
+  ): ElementSelectorModalInstance;
   expandPostArray(arr: object): any;
   escapeHtml(str: string);
   sites: Site[];

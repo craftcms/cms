@@ -330,10 +330,11 @@ class Folders
 
         Asset::find()
             ->folderId($allFolderIds)
+            ->cursor()
             ->each(function (Asset $asset) use ($deleteDir) {
                 $asset->keepFileOnDelete = ! $deleteDir;
                 Elements::deleteElement($asset, true);
-            }, 100);
+            });
 
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
     }

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added a new core Markdown field ([#18960](https://github.com/craftcms/cms/pull/18960))
+- Added a way for fields to track references and register a deletion blocker for them ([#19014](https://github.com/craftcms/cms/pull/19014))
+- Added `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$ruleset`.
+- Relaxed the allowed types in the `ValidationRulesResolving` event to include any implementation `ValidatesWithRuleset` or a `Illuminate\Http\Request` object.
+- Renamed `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$component` to `$subject`.
+- Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\` to reflect its broader applicability to components and rulesets.
 - Fixed errors that could occur when Craft user elements were expected but the authenticated user was resolved as a Laravel user model. ([#19051](https://github.com/craftcms/cms/pull/19051))
 - Fixed a bug where the `craft:install` command would hang if run within a production environment.
 - Fixed a bug where “Replace relation” action buttons weren’t working.
@@ -9,10 +15,10 @@
 - Fixed an error that could occur during Craft 6 upgrades when legacy relational or Matrix field settings included `showCardsInGrid`. ([#19047](https://github.com/craftcms/cms/pull/19047))
 - Fixed a bug where queue job progress labels weren’t getting translated.
 - Fixed a bug where the control panel sidebar and Queue Manager were showing completed jobs.
-- Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\ValidationRulesResolving` to reflect its broader applicability to components and rulesets.
-- Relaxed the allowed types in the `ValidationRulesResolving` event to include any implementation `ValidatesWithRuleset` or a `Illuminate\Http\Request` object.
-- Renamed `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$component` to `$subject`
-- Added `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$ruleset`
+- Fixed a bug where `CraftCms\Yii2Adapter\Mixins\ValidateMixin::addErrors()` had incorrect arguments. ([#19065](https://github.com/craftcms/cms/pull/19065))
+- Fixed a bug where plugin templates were not being loaded correctly
+- Fixed a bug where query string params were getting registered as variables in Twig templates. ([#19090](https://github.com/craftcms/cms/discussions/19090))
+- Fixed a bug where parsed site URLs would get saved to the project config. ([#19092](https://github.com/craftcms/cms/issues/19092))
 
 ## 6.0.0-alpha.6 - 2026-06-03
 

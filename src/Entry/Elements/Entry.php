@@ -443,7 +443,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     if ($type === SectionType::Structure->value) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $source['structureEditable'] = $user && $user->can("saveEntries:$section->uid");
+                        $structure = $section->structureId ? Structures::getStructureById($section->structureId) : null;
+                        $source['structureEditable'] = $user && $structure && $user->can('edit', $structure);
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -2015,49 +2016,7 @@ JS, [
             return false;
         }
 
-        if (! $section = $this->getSection()) {
-            return false;
-        }
-
-        $userId = $user->getCraftUserId();
-
-        // disallow moving singles and trashed entries
-        if ($section->type === SectionType::Single || $this->trashed) {
-            return false;
-        }
-
-        // if there aren't any compatible sections, just don't bother with further checks
-        if (! $this->_moveCompatibleSectionsCount()) {
-            return false;
-        }
-
-        if ($this->getIsDraft()) {
-            return $this->draftCreatorId === $userId || $user->can("savePeerEntryDrafts:$section->uid");
-        }
-
-        if (! $user->can("saveEntries:$section->uid")) {
-            return false;
-        }
-
-        return ($userId !== null && in_array($userId, $this->getAuthorIds(), true)) || $user->can("savePeerEntries:$section->uid");
-    }
-
-    /**
-     * Get sections that this entry could be moved to - sections that use the exact same entry type.
-     */
-    private function _moveCompatibleSectionsCount(): int
-    {
-        // get entry type id
-        $entryTypeId = $this->getType()->id;
-
-        // get sections all editable sections without singles and without the section this entry belongs to
-        // get all entry types for them
-        return Sections::getEditableSections()
-            ->filter(fn (Section $s) => $s->type !== SectionType::Single && $s->id !== $this->sectionId)
-            ->map(fn (Section $s) => ['entryTypes' => $s->getEntryTypes()])
-            // get sections that use the same entry type as this entry
-            ->filter(fn (array $s) => collect($s['entryTypes'])->contains('id', $entryTypeId))
-            ->count();
+        return $user->can('move', $this);
     }
 
     #[Override]
@@ -2248,14 +2207,7 @@ JS;
             return false;
         }
 
-        $section = $this->getSection();
-        $authorIds = $this->getAuthorIds();
-        $userId = $user->getCraftUserId();
-
-        return
-            empty($authorIds) ||
-            ($userId !== null && in_array($userId, $authorIds, true)) ||
-            $user->can("changeAuthorForPeerEntries:$section->uid");
+        return $user->can('changeAuthor', $this);
     }
 
     #[Override]

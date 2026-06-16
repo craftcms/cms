@@ -967,6 +967,10 @@ class FieldLayout extends Component
         }
 
         if ($element) {
+            if (! $layoutElement->showInForm($element)) {
+                return null;
+            }
+
             return $layoutElement->previewHtml($element);
         }
 

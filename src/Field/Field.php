@@ -26,6 +26,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
+use CraftCms\Cms\Field\Events\FieldElementDeletedForSite;
 use CraftCms\Cms\Field\Events\FieldElementDeleting;
 use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
@@ -1073,7 +1074,10 @@ JS, [
 
     public function afterElementDeleteForSite(ElementInterface $element): void
     {
-        // carry on
+        event(new FieldElementDeletedForSite(
+            field: $this,
+            element: $element,
+        ));
     }
 
     public function beforeElementRestore(ElementInterface $element): bool

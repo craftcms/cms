@@ -1,6 +1,9 @@
 <?php
 
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Facades\Search;
 
 test('search', function () {
     $entry1 = EntryModel::factory()->title('Foo')->indexed()->create();
@@ -31,4 +34,17 @@ test('search with score', function () {
 
     expect($results[0]->id)->toBe($entry1->id);
     expect($results[1]->id)->toBe($entry2->id);
+});
+
+test('asset search with score', function () {
+    $asset = AssetModel::factory()->create([
+        'filename' => 'foo-searchable.jpg',
+    ]);
+
+    Search::indexElementAttributes(AssetElement::find()->id($asset->id)->one());
+
+    $results = assetQuery()->search('foo-searchable')->orderByDesc('score')->get();
+
+    expect($results)->toHaveCount(1);
+    expect($results[0]->id)->toBe($asset->id);
 });
