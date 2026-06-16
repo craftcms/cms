@@ -23,6 +23,7 @@
 - Fixed a PHP error that occurred when setting general config settings via `config/general.console.php` or `config/general.web.php`. ([#19083](https://github.com/craftcms/cms/pull/19083))
 - Fixed a bug where address cards would show “0, 0” for Longitude/Latitude values when neither field had been populated. ([#19093](https://github.com/craftcms/cms/issues/19093))
 - Fixed a bug where field conditions within Matrix blocks weren’t always working when editing the owner element in a slideout. ([#19084](https://github.com/craftcms/cms/issues/19084))
+- Fixed a bug where verification code inputs weren’t always getting autofilled by password managers. ([#19094](https://github.com/craftcms/cms/issues/19094))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
