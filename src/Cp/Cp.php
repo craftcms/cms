@@ -129,6 +129,7 @@ readonly class Cp
             'registeredJsFiles' => [], // force encode as JS object
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'systemUid' => Cms::systemUid(),
+            'systemName' => Cms::systemName(),
             'timepickerOptions' => self::timepickerOptions($formattingLocale, $orientation),
             'timezone' => Cms::timezone(),
             'tokenParam' => $generalConfig->tokenParam,
