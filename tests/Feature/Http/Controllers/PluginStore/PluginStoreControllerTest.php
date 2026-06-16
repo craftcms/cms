@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -37,7 +38,7 @@ it('renders the plugin store', function () {
 it('can return craft data', function () {
     getJson(action([PluginStoreController::class, 'craftData']))
         ->assertOk()
-        ->assertJsonFragment(['currentUser' => auth()->craftUser()?->asElement()->email])
+        ->assertJsonFragment(['currentUser' => currentUser()?->asElement()->email])
         ->assertJsonFragment(['CraftSolo' => Edition::Solo->value])
         ->assertJsonFragment(['CraftTeam' => Edition::Team->value])
         ->assertJsonFragment(['CraftPro' => Edition::Pro->value])

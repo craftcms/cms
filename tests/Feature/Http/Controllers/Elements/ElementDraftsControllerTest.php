@@ -29,6 +29,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -127,7 +128,7 @@ describe('ensure', function () {
             ->andReturn($entry);
         $request->shouldReceive('craftUser')
             ->once()
-            ->andReturn(auth()->craftUser());
+            ->andReturn(currentUser());
 
         app()->instance('request', Request::create('/actions/elements/ensure-draft', 'POST', [], [], [], [
             'HTTP_ACCEPT' => 'application/json',
@@ -228,7 +229,7 @@ describe('store', function () {
                 ->where('canonicalId', $entry->id)
                 ->where('draftName', 'Ported Draft')
                 ->where('draftNotes', 'Ported draft notes')
-                ->where('creator', auth()->craftUser()->asElement()->getName())
+                ->where('creator', currentUser()->asElement()->getName())
                 ->etc()
             );
 
@@ -465,7 +466,7 @@ describe('store', function () {
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
         ]);
-        $request->setUserResolver(fn () => auth()->craftUser());
+        $request->setUserResolver(fn () => currentUser());
         app()->instance('request', $request);
 
         $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class)) extends ElementDraftsController

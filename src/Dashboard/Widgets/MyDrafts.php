@@ -9,10 +9,10 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Html;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class MyDrafts extends Widget
@@ -68,7 +68,7 @@ class MyDrafts extends Widget
         $drafts = Entry::find()
             ->drafts()
             ->status(null)
-            ->draftCreator(Auth::craftUser()?->getCraftUserId())
+            ->draftCreator(currentUser()?->getCraftUserId())
             ->section('*')
             ->site('*')
             ->unique()

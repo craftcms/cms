@@ -8,6 +8,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -85,7 +86,7 @@ test('store clears existing address fields', function () {
 });
 
 test('store ignores ownership attributes', function () {
-    $user = auth()->craftUser();
+    $user = currentUser();
     $otherUser = UserModel::factory()->createElement();
 
     postJson(action([AddressesController::class, 'store']), [

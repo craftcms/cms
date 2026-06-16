@@ -22,10 +22,11 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Override;
+
+use function CraftCms\Cms\currentUser;
 
 /**
  * @template T of Entry
@@ -227,7 +228,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return;
         }
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         if (! $user) {
             throw new QueryAbortedException;

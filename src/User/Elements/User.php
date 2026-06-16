@@ -79,6 +79,7 @@ use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -1233,7 +1234,7 @@ XML;
             return false;
         }
 
-        return Auth::craftUser()?->getCraftUserId() === $this->id;
+        return currentUser()?->getCraftUserId() === $this->id;
     }
 
     /**
@@ -1309,7 +1310,7 @@ XML;
             return parent::safeActionMenuItems();
         }
 
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser instanceof CraftUser) {
             return parent::safeActionMenuItems();
@@ -1509,7 +1510,7 @@ JS, [
             return parent::destructiveActionMenuItems();
         }
 
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser instanceof CraftUser) {
             return parent::destructiveActionMenuItems();
@@ -1754,7 +1755,7 @@ JS, [
     #[Override]
     protected function htmlAttributes(string $context): array
     {
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         return [
             'data' => [

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
@@ -44,7 +45,7 @@ it('can store permissions and groups', function () {
     $this->withoutExceptionHandling();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
     $group = UserGroup::factory()->create();
 
     expect(UserPermissions::doesUserHavePermission($user->id, 'accessCp'))->toBeFalse();
@@ -84,7 +85,7 @@ test('store can assign multiple groups', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
     $group1 = UserGroup::factory()->create();
     $group2 = UserGroup::factory()->create();
 
@@ -103,7 +104,7 @@ test('store can remove all permissions', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
 
     // First assign some permissions
     postJson(action([PermissionsController::class, 'store']), [
@@ -124,7 +125,7 @@ test('store can remove all groups', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
     $group = UserGroup::factory()->create();
 
     // First assign a group
@@ -164,7 +165,7 @@ test('store returns success message', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
 
     postJson(action([PermissionsController::class, 'store']), [
         'userId' => $user->id,

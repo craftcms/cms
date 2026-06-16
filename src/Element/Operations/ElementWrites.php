@@ -45,13 +45,13 @@ use CraftCms\Cms\Support\Url;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -664,7 +664,7 @@ readonly class ElementWrites
                 }
 
                 if ($trackChanges) {
-                    $userId = Auth::craftUser()?->getCraftUserId();
+                    $userId = currentUser()?->getCraftUserId();
                     $timestamp = now();
 
                     foreach ($dirtyAttributes as $attributeName) {
@@ -882,7 +882,7 @@ readonly class ElementWrites
     ): bool {
         $propagateToSite = $this->sites->getSiteById($siteElement->siteId);
 
-        $user = Auth::craftUser()?->asElement();
+        $user = currentUser()?->asElement();
         $message = t('Validation errors for site: “{siteName}“', [
             'siteName' => $propagateToSite?->getName(),
         ]);

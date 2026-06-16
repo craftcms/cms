@@ -4,6 +4,7 @@ use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\User\Elements\User;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
@@ -15,7 +16,7 @@ test('markRead', function () {
     $announcement = Announcement::factory()
         ->unread()
         ->create([
-            'userId' => auth()->craftUser()?->getCraftUserId(),
+            'userId' => currentUser()?->getCraftUserId(),
         ]);
 
     expect($announcement->fresh()->unread)->toBeTrue();

@@ -29,6 +29,8 @@ use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\cp_url;
+
 abstract readonly class AuthenticationController
 {
     use RespondsWithFlash;
@@ -99,7 +101,7 @@ abstract readonly class AuthenticationController
         return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
-    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = []): View|InertiaResponse
+    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = []): View|InertiaResponse|Response
     {
         if (view()->exists(request()->craftPath())) {
             return view(request()->craftPath(), $data);
@@ -110,6 +112,10 @@ abstract readonly class AuthenticationController
         }
 
         TemplateMode::set(TemplateMode::Cp);
+
+        if (! view()->exists('craftcms::'.$cpTemplate)) {
+            return redirect(cp_url($cpTemplate));
+        }
 
         return view('craftcms::'.Str::start($cpTemplate, ''), $data);
     }

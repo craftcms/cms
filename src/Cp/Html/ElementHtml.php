@@ -29,11 +29,11 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -570,7 +570,7 @@ JS, [
 
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
-        $user = Auth::craftUser();
+        $user = currentUser();
         $editable = $user && $user->can('view', $element);
 
         return Arr::merge(

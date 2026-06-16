@@ -87,7 +87,6 @@ use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -95,6 +94,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -407,7 +407,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             SectionType::Structure->value => t('Structures'),
         ];
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         foreach ($sectionTypes as $type => $heading) {
             if (! empty($sectionsByType[$type])) {
@@ -536,7 +536,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $actions = [];
 
         if ($section) {
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             if (
                 $section->type === SectionType::Structure &&
@@ -1222,7 +1222,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if ($section->type === SectionType::Structure) {
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             $ancestors = $this->getAncestors();
             if ($ancestors instanceof ElementQueryInterface) {
@@ -1812,7 +1812,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if (
             app(ElementRequest::class)->element === $this &&
-            Auth::craftUser()?->isAdmin() &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             // Entry type settings
