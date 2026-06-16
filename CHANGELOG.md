@@ -24,6 +24,7 @@
 - Fixed a bug where address cards would show “0, 0” for Longitude/Latitude values when neither field had been populated. ([#19093](https://github.com/craftcms/cms/issues/19093))
 - Fixed a bug where field conditions within Matrix blocks weren’t always working when editing the owner element in a slideout. ([#19084](https://github.com/craftcms/cms/issues/19084))
 - Fixed a bug where verification code inputs weren’t always getting autofilled by password managers. ([#19094](https://github.com/craftcms/cms/issues/19094))
+- Fixed a bug where the “Use defaults” button in element index view menus wasn’t being shown automatically after a column header was pressed on. ([#19101](https://github.com/craftcms/cms/issues/19101))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
