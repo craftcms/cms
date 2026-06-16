@@ -189,9 +189,9 @@
 - Fixed a bug where relation fields’ element query params weren’t limiting results based on the query’s target site(s). ([#18781](https://github.com/craftcms/cms/issues/18781))
 - Fixed a bug where nested content could be updated unexpectedly or deleted after making successive edits to it. ([#18835](https://github.com/craftcms/cms/pull/18835))
 - Fixed a bug where full-page element edit screens weren’t being reloaded automatically when the element was saved in another tab.
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-f74w-488g-8x5r)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-287w-mxq6-x2cp)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-f74w-488g-8x5r](https://github.com/craftcms/cms/security/advisories/GHSA-f74w-488g-8x5r))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. ([GHSA-c55v-343g-5xff](https://github.com/craftcms/cms/security/advisories/GHSA-c55v-343g-5xff))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. ([GHSA-287w-mxq6-x2cp](https://github.com/craftcms/cms/security/advisories/GHSA-287w-mxq6-x2cp))
 
 ## 5.9.23 - 2026-05-11
 
@@ -205,8 +205,8 @@
 - Fixed a bug where site name values set to environment variables were getting replaced with their resolved values on save. ([#18789](https://github.com/craftcms/cms/pull/18789))
 - Fixed a bug where browser tabs weren’t always getting refreshed when nested elements were reordered on another browser tab.
 - Fixed a bug where reordering nested elements on a draft could reorder them on the canonical owner element as well. ([#18751](https://github.com/craftcms/cms/issues/18751))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-24x4-j6x9-rfw5)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-xrqc-p465-2xvg)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-24x4-j6x9-rfw5](https://github.com/craftcms/cms/security/advisories/GHSA-24x4-j6x9-rfw5))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-xrqc-p465-2xvg](https://github.com/craftcms/cms/security/advisories/GHSA-xrqc-p465-2xvg))
 
 ## 5.9.22 - 2026-04-29
 
