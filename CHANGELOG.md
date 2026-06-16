@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.7 - 2026-06-16
 
 - Added a new core Markdown field ([#18960](https://github.com/craftcms/cms/pull/18960))
 - Added a way for fields to track references and register a deletion blocker for them ([#19014](https://github.com/craftcms/cms/pull/19014))
