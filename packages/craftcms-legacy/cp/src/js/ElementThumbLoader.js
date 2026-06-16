@@ -1,4 +1,5 @@
-import {ThumbnailLoader} from '@craftcms/cp';
+import {ThumbnailLoader} from '@craftcms/cp/utilities/thumbnail-loader.ts.mjs';
+
 /** global: Craft */
 /** global: Garnish */
 /**
