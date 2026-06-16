@@ -3,12 +3,27 @@
 ## Unreleased
 
 - Forward slashes in query strings are now encoded. ([#19057](https://github.com/craftcms/cms/pull/19057))
+- Added `craft\controllers\EVENT_BEFORE_SAVE_IMAGE`. ([#19068](https://github.com/craftcms/cms/pull/19068))
+- Added `craft\events\SaveAssetImageEvent`. ([#19068](https://github.com/craftcms/cms/pull/19068))
+- Added `craft\web\Request::getPreviewParam()`.
 - Updated Axios to 1.17.0. ([#19053](https://github.com/craftcms/cms/issues/19053))
+- Fixed a bug where no-cache and `X-Robots-Tag: none` headers weren’t always being sent for requests with `x-craft-preview` or `x-craft-live-preview` query string params. ([#19060](https://github.com/craftcms/cms/issues/19060))
 - Fixed a bug where the “Delete” element edit page action wasn’t working properly when editing a provisional draft.
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t returning boolean values for environment variable names that resolved to `true`/`false` values. ([#19029](https://github.com/craftcms/cms/issues/19029))
 - Fixed a bug where the submit button within Live Preview was labelled “Submit” rather than “Save”. ([#19056](https://github.com/craftcms/cms/issues/19056))
 - Fixed a bug where the selected site wasn’t being remembered after saving an element. ([#19054](https://github.com/craftcms/cms/discussions/19054))
 - Fixed a bug where transformed SVG images could have two sets of `width` and `height` attributes. ([#19027](https://github.com/craftcms/cms/pull/19027))
+- Fixed an infinite recursion bug. ([#19063](https://github.com/craftcms/cms/issues/19063))
+- Fixed a JavaScript error that could occur if there was an error rendering an element condition rule’s Twig template.
+- Fixed a bug where relational fields’ element selector modals weren’t showing any results if they were configured to only relate to elements in a specific site, and the author didn’t have permission to access that site. ([#19078](https://github.com/craftcms/cms/issues/19078))
+- Fixed a bug where element cards were showing preview values for conditionally-hidden fields. ([#19064](https://github.com/craftcms/cms/discussions/19064))
+- Fixed a bug where some bulk element actions could exhaust the memory limit on large selections. ([#19070](https://github.com/craftcms/cms/issues/19070))
+- Fixed a SQL error that could occur when uploading an asset, if it contained non-UTF-8 alt text in its metadata. ([#19069](https://github.com/craftcms/cms/issues/19069))
+- Fixed an error that could occur when editing an entry if a soft-deleted user had recently edited the same entry. ([#19081](https://github.com/craftcms/cms/issues/19081))
+- Fixed a PHP error that occurred when setting general config settings via `config/general.console.php` or `config/general.web.php`. ([#19083](https://github.com/craftcms/cms/pull/19083))
+- Fixed a bug where address cards would show “0, 0” for Longitude/Latitude values when neither field had been populated. ([#19093](https://github.com/craftcms/cms/issues/19093))
+- Fixed a bug where field conditions within Matrix blocks weren’t always working when editing the owner element in a slideout. ([#19084](https://github.com/craftcms/cms/issues/19084))
+- Fixed a bug where verification code inputs weren’t always getting autofilled by password managers. ([#19094](https://github.com/craftcms/cms/issues/19094))
 - Fixed a styling issue.
 
 ## 5.10.5 - 2026-06-02
@@ -171,9 +186,9 @@
 - Fixed a bug where relation fields’ element query params weren’t limiting results based on the query’s target site(s). ([#18781](https://github.com/craftcms/cms/issues/18781))
 - Fixed a bug where nested content could be updated unexpectedly or deleted after making successive edits to it. ([#18835](https://github.com/craftcms/cms/pull/18835))
 - Fixed a bug where full-page element edit screens weren’t being reloaded automatically when the element was saved in another tab.
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-f74w-488g-8x5r)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-287w-mxq6-x2cp)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-f74w-488g-8x5r](https://github.com/craftcms/cms/security/advisories/GHSA-f74w-488g-8x5r))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. ([GHSA-c55v-343g-5xff](https://github.com/craftcms/cms/security/advisories/GHSA-c55v-343g-5xff))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. ([GHSA-287w-mxq6-x2cp](https://github.com/craftcms/cms/security/advisories/GHSA-287w-mxq6-x2cp))
 
 ## 5.9.23 - 2026-05-11
 
@@ -187,8 +202,8 @@
 - Fixed a bug where site name values set to environment variables were getting replaced with their resolved values on save. ([#18789](https://github.com/craftcms/cms/pull/18789))
 - Fixed a bug where browser tabs weren’t always getting refreshed when nested elements were reordered on another browser tab.
 - Fixed a bug where reordering nested elements on a draft could reorder them on the canonical owner element as well. ([#18751](https://github.com/craftcms/cms/issues/18751))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-24x4-j6x9-rfw5)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-xrqc-p465-2xvg)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-24x4-j6x9-rfw5](https://github.com/craftcms/cms/security/advisories/GHSA-24x4-j6x9-rfw5))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-xrqc-p465-2xvg](https://github.com/craftcms/cms/security/advisories/GHSA-xrqc-p465-2xvg))
 
 ## 5.9.22 - 2026-04-29
 

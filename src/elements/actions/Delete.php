@@ -217,7 +217,7 @@ JS, [
 
         $deleteOwnership = [];
 
-        foreach ($query->all() as $element) {
+        foreach (Db::each($query) as $element) {
             if (!$elementsService->canView($element, $user) || !$elementsService->canDelete($element, $user)) {
                 continue;
             }

@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 use Throwable;
 
 /**
@@ -93,11 +94,10 @@ JS, [
             $query->orderBy(['structureelements.lft' => SORT_ASC]);
         }
 
-        $elements = $query->all();
         $successCount = 0;
         $failCount = 0;
 
-        $this->_duplicateElements($query, $elements, $successCount, $failCount);
+        $this->_duplicateElements($query, $successCount, $failCount);
 
         // Did all of them fail?
         if ($successCount === 0) {
@@ -116,19 +116,18 @@ JS, [
 
     /**
      * @param ElementQueryInterface $query
-     * @param ElementInterface[] $elements
      * @param array<int|string, bool> $duplicatedElementIds
      * @param int $successCount
      * @param int $failCount
      * @param ElementInterface|null $newParent
      */
-    private function _duplicateElements(ElementQueryInterface $query, array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
+    private function _duplicateElements(ElementQueryInterface $query, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
         $elementsService = Craft::$app->getElements();
         $structuresService = Craft::$app->getStructures();
         $user = Craft::$app->getUser()->getIdentity();
 
-        foreach ($elements as $element) {
+        foreach (Db::each($query) as $element) {
             $allowed = $this->asDrafts
                 ? $elementsService->canDuplicateAsDraft($element, $user)
                 : $elementsService->canDuplicate($element, $user);
@@ -180,14 +179,13 @@ JS, [
 
             if ($this->deep) {
                 // Don't use $element->children() here in case its lft/rgt values have changed
-                $children = $element::find()
+                $childQuery = $element::find()
                     ->siteId($element->siteId)
                     ->descendantOf($element->id)
                     ->descendantDist(1)
-                    ->status(null)
-                    ->all();
+                    ->status(null);
 
-                $this->_duplicateElements($query, $children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
+                $this->_duplicateElements($childQuery, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }
         }
     }

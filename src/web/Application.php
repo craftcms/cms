@@ -186,9 +186,10 @@ class Application extends \yii\web\Application
             $response = $this->getResponse();
             $headers = $response->getHeaders();
             $generalConfig = $this->getConfig()->getGeneral();
+            $hasPreviewParam = $request->getPreviewParam() !== null;
 
-            // Set no-cache headers for all action and CP requests
-            if ($request->getIsActionRequest() || $request->getIsCpRequest()) {
+            // Set no-cache headers for all action/CP/preview requests
+            if ($request->getIsActionRequest() || $request->getIsCpRequest() || $hasPreviewParam) {
                 $response->setNoCacheHeaders();
             }
 
@@ -197,12 +198,12 @@ class Application extends \yii\web\Application
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
-            // Tell bots not to index/follow control panel and tokenized pages
+            // Tell bots not to index/follow control panel and tokenized/preview requests
             if (
                 $generalConfig->disallowRobots ||
                 $isCpRequest ||
                 $request->getToken() !== null ||
-                $request->getIsPreview() ||
+                $hasPreviewParam ||
                 ($request->getIsActionRequest() && !($request->getIsLoginRequest() && $request->getIsGet()))
             ) {
                 $headers->set('X-Robots-Tag', 'none');
