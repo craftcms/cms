@@ -214,7 +214,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => app()->runningInConsole() || Gate::check("viewCategories:$group->uid"),
+                'structureEditable' => app()->runningInConsole() || Gate::check("saveCategories:$group->uid"),
             ];
         }
 

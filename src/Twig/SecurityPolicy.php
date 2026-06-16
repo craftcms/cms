@@ -185,7 +185,7 @@ class SecurityPolicy implements SecurityPolicyInterface
         }
 
         if (
-            ($this->isClassAllowed($obj) && ! $this->isDynamicMacroMethod($obj, $method)) ||
+            ($this->isClassAllowed($obj) && ! str_starts_with($method, '__') && ! $this->isDynamicMacroMethod($obj, $method)) ||
             $this->checkForAllowedAttributeInMethod($obj, $method)
         ) {
             return;
