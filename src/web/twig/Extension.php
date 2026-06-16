@@ -1551,6 +1551,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
+        if (str_starts_with(ltrim($class, '\\'), 'Spl')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
+        if (str_ends_with(rtrim($class, '\\'), 'Iterator')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
         /** @var BaseObject */
         return Craft::createObject($type, $params);
     }

@@ -189,7 +189,7 @@ class SecurityPolicy implements SecurityPolicyInterface
         }
 
         if (
-            $this->isClassAllowed($obj) ||
+            ($this->isClassAllowed($obj) && !str_starts_with($method, '__')) ||
             $this->checkForAllowedAttributeInMethod($obj, $method)
         ) {
             return;

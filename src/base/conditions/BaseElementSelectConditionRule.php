@@ -71,6 +71,15 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     {
         if ($parse && is_string($this->_elementId)) {
             $elementId = App::parseEnv($this->_elementId);
+
+            // Only allow combining env & Twig parsing for simple env vars
+            if (
+                $elementId !== $this->_elementId &&
+                !preg_match('/^\$\{?\w+}?$/', trim($this->_elementId))
+            ) {
+                return $elementId;
+            }
+
             if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
                 $referenceElement = $this->condition->referenceElement;
             } else {
@@ -78,6 +87,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             }
             return Craft::$app->getView()->renderSandboxedObjectTemplate($elementId, $referenceElement);
         }
+
         return $this->_elementId;
     }
 
