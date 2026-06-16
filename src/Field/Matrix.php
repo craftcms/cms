@@ -1768,6 +1768,7 @@ JS,
      * The 'entries' array should be keyed by the entry ID if we're updating an existing entry,
      * or by "new:X" key where X is an incremented integer
      */
+    #[Override]
     public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
     {
         $normalizedValue = [
@@ -1800,7 +1801,7 @@ JS,
             $entryType = $allowedEntryTypes[$entry['type']];
 
             // try to match existing matrix entries,
-            // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
+            // but only if owner already has an ID; no point trying to match nested entry for a new owner element
             if (($owner?->id) && isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
                 // try to find an existing entry
                 $query = Entry::find()
