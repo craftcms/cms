@@ -28,7 +28,7 @@ beforeEach(function () {
     $user->shouldReceive('isAdmin')->andReturnTrue();
     $user->shouldReceive('can')->andReturnTrue();
 
-    Auth::shouldReceive('craftUser')->andReturn($user);
+    Auth::shouldReceive('user')->andReturn($user);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
 });
 
