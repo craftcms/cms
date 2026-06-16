@@ -272,7 +272,7 @@ class Asset extends ElementMutationResolver
             try {
                 $ips = $this->urlValidator()->validate($url);
             } catch (UrlValidationException $e) {
-                throw new UserError($e->getMessage());
+                throw new UserError("$url is invalid.", previous: $e);
             }
 
             // Download the file, pinning the connection to the validated IPs
@@ -326,7 +326,7 @@ class Asset extends ElementMutationResolver
                 // Validate the IP again, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
                 $ip = $stats->getHandlerStat('primary_ip');
                 if ($ip && !$this->urlValidator()->validateIp($ip)) {
-                    throw new UserError("$url resolves to an invalid IP address.");
+                    throw new UserError("$url is invalid.");
                 }
             },
         ]);
