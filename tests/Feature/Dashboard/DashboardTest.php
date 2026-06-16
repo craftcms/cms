@@ -93,7 +93,7 @@ it('can get all widgets and adds default widgets', function () {
 });
 
 it('returns missing widgets for saved widget types that can no longer be resolved', function () {
-    $user = auth('craft')->craftUser();
+    $user = auth()->craftUser();
     UserModel::where('id', $user->id)->update(['hasDashboard' => true]);
     $user->hasDashboard = true;
 
@@ -113,7 +113,7 @@ it('returns missing widgets for saved widget types that can no longer be resolve
 });
 
 it('can test if a user has a widget', function () {
-    $user = auth('craft')->craftUser();
+    $user = auth()->craftUser();
     UserModel::where('id', $user->id)->update(['hasDashboard' => true]);
     $user->hasDashboard = true;
 

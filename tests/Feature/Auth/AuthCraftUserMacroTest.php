@@ -9,10 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
 
-beforeEach(function () {
-    Auth::shouldUse('craft');
-});
-
 it('returns the current Craft user', function () {
     $user = User::first();
 
@@ -22,7 +18,7 @@ it('returns the current Craft user', function () {
 });
 
 it('throws when the current auth user is not a Craft user', function () {
-    Auth::guard('craft')->setUser(new class implements Authenticatable
+    Auth::setUser(new class implements Authenticatable
     {
         public function getAuthIdentifierName()
         {
@@ -62,7 +58,7 @@ it('throws when the current auth user is not a Craft user', function () {
 });
 
 it('returns null when there is no current auth user', function () {
-    Auth::guard('craft')->forgetUser();
+    Auth::forgetUser();
 
     expect(Auth::craftUser())->toBeNull();
 });

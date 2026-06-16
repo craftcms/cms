@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Auth\Events\Authenticated;
@@ -35,7 +34,6 @@ use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
@@ -48,7 +46,6 @@ class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        $this->registerGuard();
         $this->registerPermissions();
         $this->registerEvents();
     }
@@ -70,33 +67,6 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         RedirectIfAuthenticated::redirectUsing(fn (Request $request) => URL::defaultReturnUrl());
-    }
-
-    private function registerGuard(): void
-    {
-        if (! Config::has('auth.guards.craft')) {
-            Config::set('auth.guards.craft', [
-                'driver' => 'session',
-                'provider' => 'craft',
-                'remember' => floor(Cms::config()->rememberedUserSessionDuration / 60),
-            ]);
-        }
-
-        if (! Config::has('auth.providers.craft')) {
-            Config::set('auth.providers.craft', [
-                'driver' => 'eloquent',
-                'model' => User::class,
-            ]);
-        }
-
-        if (! Config::has('auth.passwords.craft')) {
-            Config::set('auth.passwords.craft', [
-                'provider' => 'craft',
-                'table' => 'password_reset_tokens',
-                'expire' => Cms::config()->verificationCodeDuration,
-                'throttle' => 60,
-            ]);
-        }
     }
 
     private function registerPermissions(): void

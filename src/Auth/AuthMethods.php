@@ -68,7 +68,7 @@ class AuthMethods
     public function getAllMethods(?CraftUser $user = null): Collection
     {
         /** @var SessionGuard $guard */
-        $guard = auth('craft');
+        $guard = auth();
         $user = $user?->asElement()
             ?? $guard->craftUser()?->asElement()
             ?? $this->getUser();
@@ -357,7 +357,7 @@ class AuthMethods
             $this->setUser(null);
 
             /** @var SessionGuard $guard */
-            $guard = auth('craft');
+            $guard = auth();
 
             // if we're impersonating, pass the user we're impersonating to the complete the login
             if ($this->impersonation->isImpersonating()) {
@@ -370,7 +370,7 @@ class AuthMethods
                 return false;
             }
 
-            auth('craft')->login($authUser, true);
+            auth()->login($authUser, true);
         }
 
         return true;

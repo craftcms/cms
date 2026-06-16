@@ -37,7 +37,7 @@ it('renders the plugin store', function () {
 it('can return craft data', function () {
     getJson(action([PluginStoreController::class, 'craftData']))
         ->assertOk()
-        ->assertJsonFragment(['currentUser' => auth('craft')->craftUser()?->asElement()->email])
+        ->assertJsonFragment(['currentUser' => auth()->craftUser()?->asElement()->email])
         ->assertJsonFragment(['CraftSolo' => Edition::Solo->value])
         ->assertJsonFragment(['CraftTeam' => Edition::Team->value])
         ->assertJsonFragment(['CraftPro' => Edition::Pro->value])

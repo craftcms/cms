@@ -127,7 +127,7 @@ describe('ensure', function () {
             ->andReturn($entry);
         $request->shouldReceive('craftUser')
             ->once()
-            ->andReturn(auth('craft')->craftUser());
+            ->andReturn(auth()->craftUser());
 
         app()->instance('request', Request::create('/actions/elements/ensure-draft', 'POST', [], [], [], [
             'HTTP_ACCEPT' => 'application/json',
@@ -228,7 +228,7 @@ describe('store', function () {
                 ->where('canonicalId', $entry->id)
                 ->where('draftName', 'Ported Draft')
                 ->where('draftNotes', 'Ported draft notes')
-                ->where('creator', auth('craft')->craftUser()->asElement()->getName())
+                ->where('creator', auth()->craftUser()->asElement()->getName())
                 ->etc()
             );
 
@@ -465,7 +465,7 @@ describe('store', function () {
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
         ]);
-        $request->setUserResolver(fn () => auth('craft')->craftUser());
+        $request->setUserResolver(fn () => auth()->craftUser());
         app()->instance('request', $request);
 
         $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class)) extends ElementDraftsController

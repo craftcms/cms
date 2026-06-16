@@ -188,7 +188,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
-            $defaultUrl ??= Auth::guard('craft')->guest()
+            $defaultUrl ??= Auth::guest()
                 ? action_url('users/redirect')
                 : $this->defaultReturnUrl();
 

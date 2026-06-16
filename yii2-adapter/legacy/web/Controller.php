@@ -560,7 +560,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requirePermission(string $permissionName): void
     {
-        Gate::forUser(Auth::guard('craft')->user())->authorize($permissionName);
+        Gate::forUser(Auth::user())->authorize($permissionName);
     }
 
     /**
