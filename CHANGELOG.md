@@ -200,7 +200,7 @@
 - Fixed a bug where site name values set to environment variables were getting replaced with their resolved values on save. ([#18789](https://github.com/craftcms/cms/pull/18789))
 - Fixed a bug where browser tabs weren’t always getting refreshed when nested elements were reordered on another browser tab.
 - Fixed a bug where reordering nested elements on a draft could reorder them on the canonical owner element as well. ([#18751](https://github.com/craftcms/cms/issues/18751))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-24x4-j6x9-rfw5)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-24x4-j6x9-rfw5](https://github.com/craftcms/cms/security/advisories/GHSA-24x4-j6x9-rfw5))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-xrqc-p465-2xvg)
 
 ## 5.9.22 - 2026-04-29
