@@ -30,7 +30,7 @@
 ### System
 - Cross-domain script tags added by JavaScript are now loaded directly, rather than via a proxy. ([#18559](https://github.com/craftcms/cms/pull/18559))
 - Updated the built-in composer.phar to 2.9.8. ([#18761](https://github.com/craftcms/cms/issues/18761))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. ([GHSA-c55v-343g-5xff](https://github.com/craftcms/cms/security/advisories/GHSA-c55v-343g-5xff))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. ([GHSA-287w-mxq6-x2cp](https://github.com/craftcms/cms/security/advisories/GHSA-287w-mxq6-x2cp))
 
 ## 4.17.16 - 2026-05-11
