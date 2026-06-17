@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Added `craft\web\twig\AllowableInSandbox`.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
+
 ## 5.10.6 - 2026-06-16
 
 - Forward slashes in query strings are now encoded. ([#19057](https://github.com/craftcms/cms/pull/19057))

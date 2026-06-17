@@ -38,7 +38,6 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-#[AllowedInSandbox]
 interface ElementInterface extends
     ComponentInterface,
     Chippable,
@@ -684,6 +683,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.2.0
      */
+    #[AllowedInSandbox]
     public function getIsDraft(): bool;
 
     /**
@@ -692,6 +692,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.2.0
      */
+    #[AllowedInSandbox]
     public function getIsRevision(): bool;
 
     /**
@@ -700,6 +701,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getIsCanonical(): bool;
 
     /**
@@ -708,6 +710,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getIsDerivative(): bool;
 
     /**
@@ -719,6 +722,7 @@ interface ElementInterface extends
      * @return self
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getCanonical(bool $anySite = false): self;
 
     /**
@@ -737,6 +741,7 @@ interface ElementInterface extends
      * @return int|null
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getCanonicalId(): ?int;
 
     /**
@@ -755,6 +760,7 @@ interface ElementInterface extends
      * @return string|null
      * @since 3.7.11
      */
+    #[AllowedInSandbox]
     public function getCanonicalUid(): ?string;
 
     /**
@@ -763,6 +769,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.6.0
      */
+    #[AllowedInSandbox]
     public function getIsUnpublishedDraft(): bool;
 
     /**
@@ -785,6 +792,7 @@ interface ElementInterface extends
      *
      * @return Site
      */
+    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -793,6 +801,7 @@ interface ElementInterface extends
      * @return string
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -847,6 +856,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.3.6
      */
+    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -854,6 +864,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -861,6 +872,7 @@ interface ElementInterface extends
      *
      * @return Markup|null
      */
+    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**
@@ -932,6 +944,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getRef(): ?string;
 
     /**
@@ -955,6 +968,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canView(User $user): bool;
 
     /**
@@ -966,6 +980,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canSave(User $user): bool;
 
     /**
@@ -977,6 +992,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDuplicate(User $user): bool;
 
     /**
@@ -986,6 +1002,7 @@ interface ElementInterface extends
      * @return bool
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function canDuplicateAsDraft(User $user): bool;
 
     /**
@@ -995,6 +1012,7 @@ interface ElementInterface extends
      * @return bool
      * @since 5.7.0
      */
+    #[AllowedInSandbox]
     public function canCopy(User $user): bool;
 
     /**
@@ -1006,6 +1024,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDelete(User $user): bool;
 
     /**
@@ -1017,6 +1036,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDeleteForSite(User $user): bool;
 
     /**
@@ -1033,6 +1053,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canCreateDrafts(User $user): bool;
 
     /**
@@ -1115,6 +1136,7 @@ interface ElementInterface extends
      * passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getEnabledForSite(?int $siteId = null): ?bool;
 
     /**
@@ -1133,6 +1155,7 @@ interface ElementInterface extends
      * @return self
      * @since 5.4.0
      */
+    #[AllowedInSandbox]
     public function getRootOwner(): self;
 
     /**
@@ -1140,6 +1163,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getLocalized(): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1148,6 +1172,7 @@ interface ElementInterface extends
      * @param mixed $criteria
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getNext(mixed $criteria = false): ?self;
 
     /**
@@ -1156,6 +1181,7 @@ interface ElementInterface extends
      * @param mixed $criteria
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getPrev(mixed $criteria = false): ?self;
 
     /**
@@ -1177,6 +1203,7 @@ interface ElementInterface extends
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getParent(): ?self;
 
     /**
@@ -1186,6 +1213,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getParentUri(): ?string;
 
     /**
@@ -1201,6 +1229,7 @@ interface ElementInterface extends
      * @param int|null $dist
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1209,6 +1238,7 @@ interface ElementInterface extends
      * @param int|null $dist
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1216,6 +1246,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getChildren(): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1223,6 +1254,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getSiblings(): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1230,6 +1262,7 @@ interface ElementInterface extends
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getPrevSibling(): ?self;
 
     /**
@@ -1237,6 +1270,7 @@ interface ElementInterface extends
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getNextSibling(): ?self;
 
     /**
@@ -1244,6 +1278,7 @@ interface ElementInterface extends
      *
      * @return bool
      */
+    #[AllowedInSandbox]
     public function getHasDescendants(): bool;
 
     /**
@@ -1251,6 +1286,7 @@ interface ElementInterface extends
      *
      * @return int
      */
+    #[AllowedInSandbox]
     public function getTotalDescendants(): int;
 
     /**
@@ -1259,6 +1295,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isAncestorOf(self $element): bool;
 
     /**
@@ -1267,6 +1304,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isDescendantOf(self $element): bool;
 
     /**
@@ -1275,6 +1313,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isParentOf(self $element): bool;
 
     /**
@@ -1283,6 +1322,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isChildOf(self $element): bool;
 
     /**
@@ -1291,6 +1331,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isSiblingOf(self $element): bool;
 
     /**
@@ -1299,6 +1340,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isPrevSiblingOf(self $element): bool;
 
     /**
@@ -1307,6 +1349,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isNextSiblingOf(self $element): bool;
 
     /**
@@ -1466,6 +1509,7 @@ interface ElementInterface extends
      * @param string $handle
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isFieldEmpty(string $handle): bool;
 
     /**
@@ -1476,6 +1520,7 @@ interface ElementInterface extends
      * returned. If it is an array, only the fields in the array will be returned.
      * @return array The field values (handle => value)
      */
+    #[AllowedInSandbox]
     public function getFieldValues(?array $fieldHandles = null): array;
 
     /**
@@ -1514,6 +1559,7 @@ interface ElementInterface extends
      * @return mixed The field value
      * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
+    #[AllowedInSandbox]
     public function getFieldValue(string $fieldHandle): mixed;
 
     /**
@@ -1695,6 +1741,7 @@ interface ElementInterface extends
      * @param string $handle The handle of the eager-loaded elements
      * @return bool Whether elements have been eager-loaded with the given handle
      */
+    #[AllowedInSandbox]
     public function hasEagerLoadedElements(string $handle): bool;
 
     /**
@@ -1703,6 +1750,7 @@ interface ElementInterface extends
      * @param string $handle The handle of the eager-loaded elements
      * @return ElementCollection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
+    #[AllowedInSandbox]
     public function getEagerLoadedElements(string $handle): ?ElementCollection;
 
     /**
@@ -1729,6 +1777,7 @@ interface ElementInterface extends
      * @return int|null The eager-loaded element count, or null if it hadn't been eager-loaded
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getEagerLoadedElementCount(string $handle): ?int;
 
     /**

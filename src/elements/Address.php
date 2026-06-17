@@ -390,6 +390,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @return bool
      * @since 4.5.13
      */
+    #[AllowedInSandbox]
     public function getBelongsToCurrentUser(): bool
     {
         $owner = $this->getOwner();
