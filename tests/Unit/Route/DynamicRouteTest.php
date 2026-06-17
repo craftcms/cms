@@ -27,7 +27,10 @@ afterEach(function () {
 it('renders public blade templates from the site templates path', function () {
     file_put_contents($this->tempDir.'/blade-page.blade.php', '<p>{{ $name }}</p>');
 
-    $response = new DynamicRoute('templates/render', ['template' => 'blade-page'])
+    $response = new DynamicRoute('templates/render', [
+        'template' => 'blade-page',
+        'variables' => ['name' => '<Rias>'],
+    ])
         ->handle(Request::create('/blade-page', 'GET', ['name' => '<Rias>']));
 
     expect($response->getContent())->toBe('<p>&lt;Rias&gt;</p>');
