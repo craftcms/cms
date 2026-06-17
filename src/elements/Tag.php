@@ -17,6 +17,7 @@ use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
 
@@ -170,6 +171,7 @@ class Tag extends Element
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -287,6 +289,7 @@ class Tag extends Element
      * @return TagGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): TagGroup
     {
         if (!isset($this->groupId)) {

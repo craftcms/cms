@@ -27,7 +27,6 @@ use craft\web\twig\AllowedInSandbox;
  * @author Top Shelf Craft <michael@michaelrog.com>
  * @since 3.0.0
  */
-#[AllowedInSandbox]
 class ColorData extends Model implements Serializable
 {
     /**
@@ -89,6 +88,7 @@ class ColorData extends Model implements Serializable
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getHex(): string
     {
         return $this->_hex;
@@ -99,6 +99,7 @@ class ColorData extends Model implements Serializable
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getRgb(): string
     {
         return "rgb({$this->getRed()},{$this->getGreen()},{$this->getBlue()})";
@@ -110,6 +111,7 @@ class ColorData extends Model implements Serializable
      * @return string
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getHsl(): string
     {
         [$h, $s, $l] = $this->_hsl();
@@ -119,6 +121,7 @@ class ColorData extends Model implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getRed(): int
     {
         return hexdec(substr($this->_hex, 1, 2));
@@ -127,6 +130,7 @@ class ColorData extends Model implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getR(): int
     {
         return $this->getRed();
@@ -135,6 +139,7 @@ class ColorData extends Model implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getGreen(): int
     {
         return hexdec(substr($this->_hex, 3, 2));
@@ -143,6 +148,7 @@ class ColorData extends Model implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getG(): int
     {
         return $this->getGreen();
@@ -151,6 +157,7 @@ class ColorData extends Model implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getBlue(): int
     {
         return hexdec(substr($this->_hex, 5, 2));
@@ -159,6 +166,7 @@ class ColorData extends Model implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getB(): int
     {
         return $this->getBlue();
@@ -168,6 +176,7 @@ class ColorData extends Model implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getHue(): int
     {
         return $this->_hsl()[0];
@@ -177,6 +186,7 @@ class ColorData extends Model implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getH(): int
     {
         return $this->getHue();
@@ -186,6 +196,7 @@ class ColorData extends Model implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getSaturation(): int
     {
         return $this->_hsl()[1];
@@ -195,6 +206,7 @@ class ColorData extends Model implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getS(): int
     {
         return $this->getSaturation();
@@ -204,6 +216,7 @@ class ColorData extends Model implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getLightness(): int
     {
         return $this->_hsl()[2];
@@ -213,6 +226,7 @@ class ColorData extends Model implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getL(): int
     {
         return $this->getLightness();
@@ -271,6 +285,7 @@ class ColorData extends Model implements Serializable
      * @see https://en.wikipedia.org/wiki/Luma_(video) Luma
      * @return float
      */
+    #[AllowedInSandbox]
     public function getLuma(): float
     {
         return (0.2126 * $this->getRed() + 0.7152 * $this->getGreen() + 0.0722 * $this->getBlue()) / 255;

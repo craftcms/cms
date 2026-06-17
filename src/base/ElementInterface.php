@@ -9,7 +9,6 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
@@ -30,7 +29,6 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-#[AllowedInSandbox]
 interface ElementInterface extends ComponentInterface
 {
     /**
@@ -582,6 +580,7 @@ interface ElementInterface extends ComponentInterface
      * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
      * go here rather than only in [[\craft\elements\User]].
      */
+    #[AllowedInSandbox]
     public function getId(): ?int;
 
     /**
@@ -590,6 +589,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 3.2.0
      */
+    #[AllowedInSandbox]
     public function getIsDraft(): bool;
 
     /**
@@ -598,6 +598,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 3.2.0
      */
+    #[AllowedInSandbox]
     public function getIsRevision(): bool;
 
     /**
@@ -606,6 +607,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getIsCanonical(): bool;
 
     /**
@@ -614,6 +616,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getIsDerivative(): bool;
 
     /**
@@ -625,6 +628,7 @@ interface ElementInterface extends ComponentInterface
      * @return self
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getCanonical(bool $anySite = false): self;
 
     /**
@@ -643,6 +647,7 @@ interface ElementInterface extends ComponentInterface
      * @return int|null
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getCanonicalId(): ?int;
 
     /**
@@ -661,6 +666,7 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      * @since 3.7.11
      */
+    #[AllowedInSandbox]
     public function getCanonicalUid(): ?string;
 
     /**
@@ -669,6 +675,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 3.6.0
      */
+    #[AllowedInSandbox]
     public function getIsUnpublishedDraft(): bool;
 
     /**
@@ -691,6 +698,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return Site
      */
+    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -699,6 +707,7 @@ interface ElementInterface extends ComponentInterface
      * @return string
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -753,6 +762,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 3.3.6
      */
+    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -760,6 +770,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -767,6 +778,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return Markup|null
      */
+    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**
@@ -806,6 +818,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getRef(): ?string;
 
     /**
@@ -829,6 +842,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canView(User $user): bool;
 
     /**
@@ -840,6 +854,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canSave(User $user): bool;
 
     /**
@@ -851,6 +866,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDuplicate(User $user): bool;
 
     /**
@@ -862,6 +878,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDelete(User $user): bool;
 
     /**
@@ -873,6 +890,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDeleteForSite(User $user): bool;
 
     /**
@@ -889,6 +907,7 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canCreateDrafts(User $user): bool;
 
     /**
@@ -913,6 +932,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getCpEditUrl(): ?string;
 
     /**
@@ -973,6 +993,7 @@ interface ElementInterface extends ComponentInterface
      * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getThumbUrl(int $size): ?string;
 
     /**
@@ -981,6 +1002,7 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getThumbAlt(): ?string;
 
     /**
@@ -1009,6 +1031,7 @@ interface ElementInterface extends ComponentInterface
      * passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getEnabledForSite(?int $siteId = null): ?bool;
 
     /**
@@ -1026,6 +1049,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getStatus(): ?string;
 
     /**
@@ -1034,6 +1058,7 @@ interface ElementInterface extends ComponentInterface
      * @return self
      * @since 4.12.0
      */
+    #[AllowedInSandbox]
     public function getRootOwner(): self;
 
     /**
@@ -1041,6 +1066,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return ElementQueryInterface|Collection
      */
+    #[AllowedInSandbox]
     public function getLocalized(): ElementQueryInterface|Collection;
 
     /**
@@ -1049,6 +1075,7 @@ interface ElementInterface extends ComponentInterface
      * @param mixed $criteria
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getNext(mixed $criteria = false): ?self;
 
     /**
@@ -1057,6 +1084,7 @@ interface ElementInterface extends ComponentInterface
      * @param mixed $criteria
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getPrev(mixed $criteria = false): ?self;
 
     /**
@@ -1078,6 +1106,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getParent(): ?self;
 
     /**
@@ -1087,6 +1116,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getParentUri(): ?string;
 
     /**
@@ -1102,6 +1132,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $dist
      * @return ElementQueryInterface|Collection
      */
+    #[AllowedInSandbox]
     public function getAncestors(?int $dist = null): ElementQueryInterface|Collection;
 
     /**
@@ -1110,6 +1141,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $dist
      * @return ElementQueryInterface|Collection
      */
+    #[AllowedInSandbox]
     public function getDescendants(?int $dist = null): ElementQueryInterface|Collection;
 
     /**
@@ -1117,6 +1149,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return ElementQueryInterface|Collection
      */
+    #[AllowedInSandbox]
     public function getChildren(): ElementQueryInterface|Collection;
 
     /**
@@ -1124,6 +1157,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return ElementQueryInterface|Collection
      */
+    #[AllowedInSandbox]
     public function getSiblings(): ElementQueryInterface|Collection;
 
     /**
@@ -1131,6 +1165,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getPrevSibling(): ?self;
 
     /**
@@ -1138,6 +1173,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getNextSibling(): ?self;
 
     /**
@@ -1145,6 +1181,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return bool
      */
+    #[AllowedInSandbox]
     public function getHasDescendants(): bool;
 
     /**
@@ -1152,6 +1189,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return int
      */
+    #[AllowedInSandbox]
     public function getTotalDescendants(): int;
 
     /**
@@ -1160,6 +1198,7 @@ interface ElementInterface extends ComponentInterface
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isAncestorOf(self $element): bool;
 
     /**
@@ -1168,6 +1207,7 @@ interface ElementInterface extends ComponentInterface
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isDescendantOf(self $element): bool;
 
     /**
@@ -1176,6 +1216,7 @@ interface ElementInterface extends ComponentInterface
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isParentOf(self $element): bool;
 
     /**
@@ -1184,6 +1225,7 @@ interface ElementInterface extends ComponentInterface
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isChildOf(self $element): bool;
 
     /**
@@ -1192,6 +1234,7 @@ interface ElementInterface extends ComponentInterface
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isSiblingOf(self $element): bool;
 
     /**
@@ -1200,6 +1243,7 @@ interface ElementInterface extends ComponentInterface
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isPrevSiblingOf(self $element): bool;
 
     /**
@@ -1208,6 +1252,7 @@ interface ElementInterface extends ComponentInterface
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isNextSiblingOf(self $element): bool;
 
     /**
@@ -1367,6 +1412,7 @@ interface ElementInterface extends ComponentInterface
      * @param string $handle
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isFieldEmpty(string $handle): bool;
 
     /**
@@ -1377,6 +1423,7 @@ interface ElementInterface extends ComponentInterface
      * returned. If it is an array, only the fields in the array will be returned.
      * @return array The field values (handle => value)
      */
+    #[AllowedInSandbox]
     public function getFieldValues(?array $fieldHandles = null): array;
 
     /**
@@ -1415,6 +1462,7 @@ interface ElementInterface extends ComponentInterface
      * @return mixed The field value
      * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
+    #[AllowedInSandbox]
     public function getFieldValue(string $fieldHandle): mixed;
 
     /**
@@ -1569,6 +1617,7 @@ interface ElementInterface extends ComponentInterface
      * @param string $handle The handle of the eager-loaded elements
      * @return bool Whether elements have been eager-loaded with the given handle
      */
+    #[AllowedInSandbox]
     public function hasEagerLoadedElements(string $handle): bool;
 
     /**
@@ -1577,6 +1626,7 @@ interface ElementInterface extends ComponentInterface
      * @param string $handle The handle of the eager-loaded elements
      * @return Collection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
+    #[AllowedInSandbox]
     public function getEagerLoadedElements(string $handle): ?Collection;
 
     /**
@@ -1594,6 +1644,7 @@ interface ElementInterface extends ComponentInterface
      * @return int The eager-loaded element count
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getEagerLoadedElementCount(string $handle): int;
 
     /**
@@ -1741,7 +1792,6 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Performs actions after an element is deleted.
-     *
      */
     public function afterDelete(): void;
 

@@ -192,6 +192,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @var int|null Sort order
      */
+    #[AllowedInSandbox]
     public ?int $sortOrder = null;
 
     /**
@@ -320,6 +321,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @return MatrixBlockType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getType(): MatrixBlockType
     {
         if (!isset($this->typeId)) {

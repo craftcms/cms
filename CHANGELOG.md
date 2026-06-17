@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added `craft\web\twig\AllowableInSandbox`.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
+
 ## 4.18.2 - 2026-06-16
 
 - Added `craft\controllers\EVENT_BEFORE_SAVE_IMAGE`. ([#19068](https://github.com/craftcms/cms/pull/19068))
