@@ -135,6 +135,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               {{ entry.sectionId }}
      *               ```
      */
+    #[AllowedInSandbox]
     public ?int $sectionId = null;
 
     /**
@@ -1410,6 +1411,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @throws RuntimeException if [[sectionId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getSection(): ?Section
     {
         if (! isset($this->sectionId)) {
@@ -1423,6 +1425,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $section;
     }
 
+    #[AllowedInSandbox]
     public function getTypeId(): int
     {
         return $this->getType()->id;
@@ -1477,6 +1480,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @throws RuntimeException if [[typeId]] is invalid, or the section has no entry types
      */
+    #[AllowedInSandbox]
     public function getType(): EntryType
     {
         if (isset($this->_type)) {

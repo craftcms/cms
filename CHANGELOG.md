@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Added `CraftCms\Cms\Twig\AllowableInSandbox`.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
+
 ## 6.0.0-alpha.7 - 2026-06-16
 
 - Added a new core Markdown field ([#18960](https://github.com/craftcms/cms/pull/18960))
