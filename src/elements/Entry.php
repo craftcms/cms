@@ -2639,23 +2639,24 @@ JS, [
         // Parent
         if ($section?->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
             $fields['parent'] = (function() use ($static, $section) {
+                $parentQuery = self::find()
+                    ->site('*')
+                    ->preferSites([$this->siteId])
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null);
+
                 if ($parentId = $this->getParentId()) {
-                    $parent = Craft::$app->getEntries()->getEntryById($parentId, $this->siteId, [
-                        'drafts' => null,
-                        'draftOf' => false,
-                    ]);
+                    $parentQuery->id($parentId);
                 } else {
                     // If the entry already has structure data, use it. Otherwise, use its canonical entry
-                    /** @var self|null $parent */
-                    $parent = self::find()
-                        ->siteId($this->siteId)
+                    $parentQuery
                         ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
-                        ->ancestorDist(1)
-                        ->drafts(null)
-                        ->draftOf(false)
-                        ->status(null)
-                        ->one();
+                        ->ancestorDist(1);
                 }
+
+                /** @var self|null $parent */
+                $parent = $parentQuery->one();
 
                 return Cp::elementSelectFieldHtml([
                     'label' => Craft::t('app', 'Parent'),
@@ -2665,6 +2666,7 @@ JS, [
                     'selectionLabel' => Craft::t('app', 'Choose'),
                     'sources' => ["section:$section->uid"],
                     'criteria' => $this->_parentOptionCriteria($section),
+                    'showSiteMenu' => true,
                     'limit' => 1,
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
@@ -2830,7 +2832,6 @@ JS;
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [
-            'siteId' => $this->siteId,
             'sectionId' => $section->id,
             'status' => null,
             'drafts' => null,

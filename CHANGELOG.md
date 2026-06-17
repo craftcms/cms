@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t resolving aliases for environment variables that referenced an alias (e.g. `@root/storage/rebrand`). ([#19108](https://github.com/craftcms/cms/issues/19108))
+- Fixed a bug where the “Parent” field on Structure entries’ edit pages wasn’t showing the parent entry if it didn’t exist for the same site being edited, causing the parent relationship to be lost on save. ([#19110](https://github.com/craftcms/cms/issues/19110))
 
 ## 5.10.6 - 2026-06-16
 
