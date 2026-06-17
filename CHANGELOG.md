@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t resolving aliases for environment variables that referenced an alias (e.g. `@root/storage/rebrand`). ([#19029](https://github.com/craftcms/cms/issues/19029))
+- Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t resolving aliases for environment variables that referenced an alias (e.g. `@root/storage/rebrand`). ([#19108](https://github.com/craftcms/cms/issues/19108))
 
 ## 5.10.6 - 2026-06-16
 
