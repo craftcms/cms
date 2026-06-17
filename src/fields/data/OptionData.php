@@ -47,12 +47,14 @@ class OptionData implements Serializable
      * @var string|null
      * @since 5.8.0
      */
+    #[AllowedInSandbox]
     public ?string $icon = null;
 
     /**
      * @var string|null
      * @since 5.8.0
      */
+    #[AllowedInSandbox]
     public ?string $color = null;
 
     /**
