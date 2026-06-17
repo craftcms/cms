@@ -13,7 +13,6 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
 use Illuminate\Contracts\Support\Htmlable;
 
-#[AllowedInSandbox]
 readonly class MarkdownData implements Htmlable, SafeHtml, Serializable
 {
     public function __construct(
@@ -30,21 +29,25 @@ readonly class MarkdownData implements Htmlable, SafeHtml, Serializable
         return $this->getHtml();
     }
 
+    #[AllowedInSandbox]
     public function getRaw(): string
     {
         return $this->raw;
     }
 
+    #[AllowedInSandbox]
     public function getMarkdown(): string
     {
         return $this->raw;
     }
 
+    #[AllowedInSandbox]
     public function getFlavor(): string
     {
         return $this->flavor;
     }
 
+    #[AllowedInSandbox]
     public function getHtml(): string
     {
         $markdown = Elements::parseRefs($this->raw);
@@ -64,6 +67,7 @@ readonly class MarkdownData implements Htmlable, SafeHtml, Serializable
         return app(HtmlSanitizers::class)->sanitize($html, $this->htmlSanitizer);
     }
 
+    #[AllowedInSandbox]
     public function toHtml(): string
     {
         return $this->getHtml();
