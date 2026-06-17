@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t resolving aliases for environment variables that referenced an alias (e.g. `@root/storage/rebrand`). ([#19029](https://github.com/craftcms/cms/issues/19029))
+
 ## 5.10.6 - 2026-06-16
 
 - Forward slashes in query strings are now encoded. ([#19057](https://github.com/craftcms/cms/pull/19057))
