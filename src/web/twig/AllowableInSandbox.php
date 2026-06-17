@@ -11,7 +11,7 @@ namespace craft\web\twig;
  * Interface AllowableInSandbox
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.18.3
+ * @since 5.10.7
  */
 interface AllowableInSandbox
 {
