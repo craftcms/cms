@@ -466,6 +466,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ([
+            /** @phpstan-ignore-next-line */
             AttributeTypecastBehavior::class,
             DirectoryIterator::class,
             Process::class,
