@@ -13,7 +13,7 @@ if (false) {
      * Interface AllowableInSandbox
      *
      * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.17.0
+     * @since 5.10.7
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\AllowableInSandbox} instead.
      */
     interface AllowableInSandbox

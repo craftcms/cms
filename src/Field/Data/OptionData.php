@@ -19,7 +19,9 @@ class OptionData implements Serializable, Stringable
         public bool $selected,
         #[AllowedInSandbox]
         public bool $valid = true,
+        #[AllowedInSandbox]
         public ?string $icon = null,
+        #[AllowedInSandbox]
         public ?string $color = null,
     ) {
         if ($this->icon === '') {
