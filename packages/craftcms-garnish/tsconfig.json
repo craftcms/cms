@@ -1,0 +1,12 @@
+{
+  "extends": "@total-typescript/tsconfig/bundler/dom",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "@src/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "tests", "tsdown.config.ts", "vitest.config.ts"]
+}

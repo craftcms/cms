@@ -1,0 +1,262 @@
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --border: #d6d9de;
+  --text: #1c1f24;
+  --muted: #5c636e;
+  --accent: #1f6feb;
+  --accent-text: #ffffff;
+  --good: #1a7f37;
+  --bad: #b42318;
+  --radius: 6px;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding-bottom: 4rem;
+}
+
+.pg-header {
+  padding: 1.5rem 2rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.pg-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.4rem;
+}
+
+.pg-header p {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--muted);
+}
+
+.pg-main {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem 2rem;
+  max-width: 70ch;
+}
+
+.pg-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+
+.pg-section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.pg-section > p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.pg-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  transition: background 0.12s ease;
+}
+
+button:hover {
+  background: #eef0f3;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+code,
+kbd {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 0.85em;
+}
+
+code {
+  background: #eef0f3;
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+}
+
+kbd {
+  background: #2a2f37;
+  color: #fff;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+}
+
+/* --- Focusable sample --------------------------------------------------- */
+.pg-focus-sample {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.pg-focus-sample > * {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fafbfc;
+  margin: 0;
+}
+
+.pg-focus-sample a {
+  color: var(--accent);
+}
+
+.pg-highlight-focusable {
+  outline: 2px solid var(--good) !important;
+  outline-offset: 1px;
+  background: #e7f6ec !important;
+}
+
+.pg-highlight-keyboard {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* --- Modal + shade (the part the package itself renders) ---------------- */
+.modal-shade {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 18, 22, 0.55);
+  z-index: 100;
+  display: none;
+  opacity: 0;
+}
+
+.pg-modal {
+  position: fixed;
+  z-index: 101;
+  display: none;
+  opacity: 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  min-width: 320px;
+  max-width: 90vw;
+  overflow: auto;
+}
+
+.pg-modal h3 {
+  margin-top: 0;
+}
+
+.pg-modal .pg-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.pg-modal-primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.pg-modal-primary:hover {
+  background: #1a5fce;
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* --- Event log panel ---------------------------------------------------- */
+.pg-log {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: 340px;
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  background: #11151b;
+  color: #e6e9ee;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.pg-log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: #0b0e13;
+  border-bottom: 1px solid #222834;
+}
+
+.pg-log-head button {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  background: #222834;
+  color: #e6e9ee;
+  border-color: #333b48;
+}
+
+.pg-log-list {
+  margin: 0;
+  padding: 0.5rem 0.75rem 0.5rem 2rem;
+  overflow: auto;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 0.78rem;
+  list-style: decimal;
+}
+
+.pg-log-list li {
+  padding: 0.15rem 0;
+  border-bottom: 1px solid #1b212b;
+  word-break: break-word;
+}
+
+.pg-log-list li .pg-log-tag {
+  color: #6ad08a;
+  font-weight: 600;
+}
+
+.pg-log-list li.pg-log-error .pg-log-tag {
+  color: #ff8a7a;
+}
+
+.pg-log-list li time {
+  color: #7b8493;
+  margin-right: 0.4rem;
+}

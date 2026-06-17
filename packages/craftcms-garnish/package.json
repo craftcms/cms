@@ -1,0 +1,71 @@
+{
+  "name": "@craftcms/garnish",
+  "version": "0.0.0",
+  "description": "Modern, tree-shakeable TypeScript rewrite of Craft CMS's Garnish UI library",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craftcms/npm-packages.git"
+  },
+  "keywords": [
+    "craftcms",
+    "garnish",
+    "ui"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "dev": "vite",
+    "playground:build": "vite build",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write ./src ./tests",
+    "check:format": "prettier --check ./src ./tests",
+    "check:types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "npm run check:types && npm run check:format"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./compat": {
+      "types": "./dist/compat.d.ts",
+      "import": "./dist/compat.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "jquery": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "jquery": {
+      "optional": true
+    }
+  },
+  "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/craftcms/npm-packages/issues"
+  },
+  "homepage": "https://github.com/craftcms/npm-packages#readme",
+  "devDependencies": {
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "happy-dom": "^20.9.0",
+    "tsdown": "^0.21.10",
+    "typescript": "^6.0.3",
+    "vite": "^7.1.5",
+    "vitest": "^4.1.5"
+  }
+}

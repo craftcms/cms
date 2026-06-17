@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@craftcms/garnish — Playground</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="pg-header">
+      <h1>@craftcms/garnish playground</h1>
+      <p>
+        Interactive demos wired against the real source (<code
+          >../src/index.ts</code
+        >
+        + <code>../src/compat.ts</code>) with Vite HMR. Open the event-log panel
+        (bottom-right) to watch events fire.
+      </p>
+    </header>
+
+    <main class="pg-main">
+      <!-- ============================ MODAL ============================ -->
+      <section class="pg-section" id="section-modal">
+        <h2>1. Modal</h2>
+        <p>
+          Construct <code>new Modal()</code> instances and drive their
+          lifecycle. Every
+          <code>show / hide / fadeIn / fadeOut / escape</code> event is piped
+          into the log panel.
+        </p>
+        <div class="pg-controls">
+          <button data-modal="basic-show">new Modal() + show()</button>
+          <button data-modal="basic-hide">hide()</button>
+          <button data-modal="quick-show">quickShow()</button>
+          <button data-modal="quick-hide">quickHide()</button>
+          <button data-modal="esc-shade">
+            Modal (hideOnEsc + hideOnShadeClick)
+          </button>
+          <button data-modal="close-others">Modal (closeOtherModals)</button>
+          <button data-modal="destroy-all">destroy() all modals</button>
+        </div>
+      </section>
+
+      <!-- ===================== FOCUSABLE / FOCUS TRAP ===================== -->
+      <section class="pg-section" id="section-focus">
+        <h2>2. Focusable matcher &amp; focus trap</h2>
+        <p>
+          The container below mixes focusable and non-focusable elements. Run
+          the matcher to highlight what <code>getFocusableElements</code> /
+          <code>isKeyboardFocusable</code> select, then open the focus-trap
+          modal and press <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> to see cycling
+          stay trapped.
+        </p>
+        <div class="pg-controls">
+          <button data-focus="highlight">Highlight focusable elements</button>
+          <button data-focus="clear">Clear highlights</button>
+          <button data-focus="trap-modal">Open focus-trap modal</button>
+        </div>
+
+        <div class="pg-focus-sample" id="focus-sample">
+          <a href="#">Link with href (focusable)</a>
+          <a>Link, no href (not focusable)</a>
+          <button>Enabled button (focusable)</button>
+          <button disabled>Disabled button (not focusable)</button>
+          <input type="text" placeholder="Text input (focusable)" />
+          <input type="text" disabled placeholder="Disabled input" />
+          <span tabindex="0">Span tabindex=0 (keyboard focusable)</span>
+          <span tabindex="-1">Span tabindex=-1 (focusable, not keyboard)</span>
+          <span>Plain span (not focusable)</span>
+          <textarea placeholder="Textarea (focusable)"></textarea>
+        </div>
+      </section>
+
+      <!-- ====================== COMPAT UPGRADE PATH ====================== -->
+      <section class="pg-section" id="section-compat">
+        <h2>3. Compat upgrade path</h2>
+        <p>
+          Calls <code>installGarnishCompat()</code>, then defines a subclass
+          with the legacy
+          <code>Garnish.Modal.extend({ init, onShow })</code> API and a
+          <code>this.base()</code> super-call — proving the legacy authoring
+          contract works in the browser against the modern
+          <code>class Modal</code>.
+        </p>
+        <div class="pg-controls">
+          <button data-compat="install">installGarnishCompat()</button>
+          <button data-compat="extend">
+            Instantiate Garnish.Modal.extend(...) subclass
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================== EVENTS / UTILITIES ====================== -->
+      <section class="pg-section" id="section-utils">
+        <h2>4. Events &amp; utilities</h2>
+        <p>
+          Small demos of core utilities and the synthetic <code>activate</code>
+          custom event.
+        </p>
+        <div class="pg-controls">
+          <button data-util="hasattr">
+            Garnish.hasAttr(this, "data-demo")
+          </button>
+          <button data-util="getdist">getDist(0,0,3,4)</button>
+          <button data-util="activate" data-demo="yes">
+            activate me (click / Space / Enter)
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================ EVENT LOG ============================ -->
+    <aside class="pg-log" id="pg-log">
+      <div class="pg-log-head">
+        <strong>Event log</strong>
+        <button id="pg-log-clear" type="button">clear</button>
+      </div>
+      <ol class="pg-log-list" id="pg-log-list"></ol>
+    </aside>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
