@@ -11,6 +11,8 @@
   import Text from '@/common/components/Text.vue';
   import Empty from '@/common/components/Empty.vue';
   import LoadingSkeleton from '@/common/components/LoadingSkeleton.vue';
+  import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
+  import type {BulkActionItem} from '@/modules/elements/types/actions';
   import {usePage} from '@inertiajs/vue3';
 
   const props = withDefaults(
@@ -28,6 +30,12 @@
       total?: number;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: Array<number>;
+      // Bulk-action context: when `actions` are passed and rows are selected, a
+      // sticky bulk-actions bar is rendered in the footer.
+      actions?: Array<BulkActionItem> | null;
+      elementType?: string;
+      source?: string | null;
+      context?: string;
     }>(),
 
     {
@@ -37,8 +45,37 @@
       layout: 'auto',
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
+      actions: () => [],
+      source: null,
+      context: 'index',
     }
   );
+
+  const emit = defineEmits<{
+    reorder: [startIndex: number, finishIndex: number];
+    /** Re-emitted after a bulk action succeeds, so the page can refresh. */
+    'action-performed': [];
+  }>();
+
+  // Selection is read straight off the tanstack table instance; keyed by
+  // element id (see the page's `getRowId`) so it survives sort/pagination.
+  const selectedIds = computed<Array<string | number>>(() =>
+    props.table.getSelectedRowModel().rows.map((row: any) => row.original.id)
+  );
+  const hasSelection = computed(() => selectedIds.value.length > 0);
+  const hasBulkActions = computed(() => (props.actions?.length ?? 0) > 0);
+
+  function clearSelection() {
+    props.table.resetRowSelection();
+  }
+
+  function onActionPerformed() {
+    // The list refresh is owned by the page (it knows the Inertia route +
+    // which props to reload); clearing selection is safe to do locally too,
+    // but the page also clears after the refresh resolves.
+    clearSelection();
+    emit('action-performed');
+  }
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
@@ -60,10 +97,6 @@
     () =>
       props.table.getVisibleLeafColumns().length + (props.selectable ? 1 : 0)
   );
-  const emit = defineEmits<{
-    reorder: [startIndex: number, finishIndex: number];
-  }>();
-
   const {setRowRef, setHandleRef, getDragState, getDropState} =
     useReorderableRows({
       getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
@@ -111,8 +144,22 @@
   const showDisplayedRows = computed(
     () => props.from && props.to && props.total
   );
+  // The footer also stays visible while a selection exists so the sticky
+  // bulk-actions bar can ride along with it.
+  const showBulkActions = computed(
+    () => props.selectable && hasBulkActions.value
+  );
+  // While the bulk-actions bar owns the footer, the pagination + page-size
+  // controls are hidden so the row reads as a single selection toolbar.
+  const bulkActionsActive = computed(
+    () => showBulkActions.value && hasSelection.value
+  );
   const showFooter = computed(
-    () => showPagination.value || showPageSize.value || showDisplayedRows.value
+    () =>
+      showPagination.value ||
+      showPageSize.value ||
+      showDisplayedRows.value ||
+      (showBulkActions.value && hasSelection.value)
   );
 
   function resolveMetaClasses(value: any) {
@@ -232,7 +279,7 @@
 <template>
   <div class="cp-table-wrapper">
     <div class="cp-table-header" v-if="$slots['table-header']">
-      <slot name="table-header"> </slot>
+      <slot name="table-header"></slot>
     </div>
 
     <div class="cp-table-body" :aria-busy="loading ? 'true' : undefined">
@@ -268,9 +315,9 @@
             :key="headerGroup.id"
           >
             <template v-if="!readOnly && reorderable">
-              <th class="cell cell--header">
+              <TH class="cell cell--header">
                 <span class="sr-only">Reorder</span>
-              </th>
+              </TH>
             </template>
             <th
               v-if="selectable"
@@ -425,16 +472,30 @@
       </table>
     </div>
 
-    <div class="cp-table-footer" v-if="showFooter">
-      <div>
+    <div
+      class="cp-table-footer"
+      :class="{'cp-table-footer--has-selection': showBulkActions && hasSelection}"
+      v-if="showFooter"
+    >
+      <div class="cp-table-footer__lead">
+        <BulkActionsBar
+          v-if="showBulkActions && hasSelection"
+          :selected-ids="selectedIds"
+          :actions="actions"
+          :element-type="elementType ?? ''"
+          :source="source"
+          :context="context"
+          @performed="onActionPerformed"
+          @clear="clearSelection"
+        />
         <Text
-          v-if="showDisplayedRows"
+          v-else-if="showDisplayedRows"
           template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
           :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
         />
       </div>
       <div class="flex gap-1">
-        <template v-if="showPagination">
+        <template v-if="showPagination && !bulkActionsActive">
           <craft-button
             type="button"
             @click="table.previousPage()"
@@ -477,7 +538,7 @@
         </template>
       </div>
       <div class="flex gap-2 items-center">
-        <template v-if="showPageSize">
+        <template v-if="showPageSize && !bulkActionsActive">
           {{ t('Items per page:') }}
           <Select
             small
@@ -498,6 +559,22 @@
 
   .cp-table-body {
     overflow-x: auto;
+  }
+
+  // The footer sticks to the bottom of the scroll viewport so the bulk-actions
+  // bar never slides out from under the cursor while a selection exists and
+  // stays visible regardless of how far the list scrolls.
+  .cp-table-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background-color: var(--c-surface-default);
+  }
+
+  // When the bulk-actions bar takes over the lead zone, let it own the row's
+  // width so the "N selected" + actions layout can breathe.
+  .cp-table-footer--has-selection .cp-table-footer__lead {
+    flex: 1 1 auto;
   }
 
   :deep(.cell) {

@@ -7,6 +7,8 @@
   import Empty from '@/common/components/Empty.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import LoadingSkeleton from '@/common/components/LoadingSkeleton.vue';
+  import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
+  import type {BulkActionItem} from '@/modules/elements/types/actions';
 
   // Cards mode rows carry `{id, cardHtml}`, but the index page types its rows as
   // an open record (shared with the table view), so accept that shape here.
@@ -27,6 +29,12 @@
       total?: number;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: Array<number>;
+      // Bulk-action context (mirrors AdminTable) so cards offer the same sticky
+      // bulk-actions bar when rows are selected.
+      actions?: Array<BulkActionItem> | null;
+      elementType?: string;
+      source?: string | null;
+      context?: string;
     }>(),
     {
       data: () => [],
@@ -34,8 +42,38 @@
       loading: false,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
+      actions: () => [],
+      source: null,
+      context: 'index',
     }
   );
+
+  const emit = defineEmits<{
+    'action-performed': [];
+  }>();
+
+  const selectedIds = computed<Array<string | number>>(() =>
+    props.table.getSelectedRowModel().rows.map((row: any) => row.original.id)
+  );
+  const hasSelection = computed(() => selectedIds.value.length > 0);
+  const hasBulkActions = computed(() => (props.actions?.length ?? 0) > 0);
+  const showBulkActions = computed(
+    () => props.selectable && hasBulkActions.value
+  );
+  // While the bulk-actions bar owns the footer, the pagination + page-size
+  // controls are hidden so the row reads as a single selection toolbar.
+  const bulkActionsActive = computed(
+    () => showBulkActions.value && hasSelection.value
+  );
+
+  function clearSelection() {
+    props.table.resetRowSelection();
+  }
+
+  function onActionPerformed() {
+    clearSelection();
+    emit('action-performed');
+  }
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
@@ -107,7 +145,11 @@
     () => props.from && props.to && props.total
   );
   const showFooter = computed(
-    () => showPagination.value || showPageSize.value || showDisplayedRows.value
+    () =>
+      showPagination.value ||
+      showPageSize.value ||
+      showDisplayedRows.value ||
+      (showBulkActions.value && hasSelection.value)
   );
 </script>
 
@@ -175,16 +217,30 @@
       </template>
     </div>
 
-    <div class="cp-table-footer" v-if="showFooter">
-      <div>
+    <div
+      class="cp-table-footer"
+      :class="{'cp-table-footer--has-selection': showBulkActions && hasSelection}"
+      v-if="showFooter"
+    >
+      <div class="cp-table-footer__lead">
+        <BulkActionsBar
+          v-if="showBulkActions && hasSelection"
+          :selected-ids="selectedIds"
+          :actions="actions"
+          :element-type="elementType ?? ''"
+          :source="source"
+          :context="context"
+          @performed="onActionPerformed"
+          @clear="clearSelection"
+        />
         <Text
-          v-if="showDisplayedRows"
+          v-else-if="showDisplayedRows"
           template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
           :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
         />
       </div>
       <div class="flex gap-1">
-        <template v-if="showPagination">
+        <template v-if="showPagination && !bulkActionsActive">
           <craft-button
             type="button"
             @click="table.previousPage()"
@@ -227,7 +283,7 @@
         </template>
       </div>
       <div class="flex gap-2 items-center">
-        <template v-if="showPageSize">
+        <template v-if="showPageSize && !bulkActionsActive">
           {{ t('Items per page:') }}
           <Select
             small
@@ -254,6 +310,19 @@
 
   .cp-table-wrapper {
     overflow-y: clip;
+  }
+
+  // Sticky footer so the bulk-actions bar tracks with the viewport (mirrors
+  // AdminTable).
+  .cp-table-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background-color: var(--c-surface-default);
+  }
+
+  .cp-table-footer--has-selection .cp-table-footer__lead {
+    flex: 1 1 auto;
   }
 
   .card-grid > li {
