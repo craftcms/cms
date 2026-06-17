@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.6 - 2026-06-16
 
 - Forward slashes in query strings are now encoded. ([#19057](https://github.com/craftcms/cms/pull/19057))
 - Added `craft\controllers\EVENT_BEFORE_SAVE_IMAGE`. ([#19068](https://github.com/craftcms/cms/pull/19068))
@@ -22,6 +22,9 @@
 - Fixed an error that could occur when editing an entry if a soft-deleted user had recently edited the same entry. ([#19081](https://github.com/craftcms/cms/issues/19081))
 - Fixed a PHP error that occurred when setting general config settings via `config/general.console.php` or `config/general.web.php`. ([#19083](https://github.com/craftcms/cms/pull/19083))
 - Fixed a bug where address cards would show “0, 0” for Longitude/Latitude values when neither field had been populated. ([#19093](https://github.com/craftcms/cms/issues/19093))
+- Fixed a bug where field conditions within Matrix blocks weren’t always working when editing the owner element in a slideout. ([#19084](https://github.com/craftcms/cms/issues/19084))
+- Fixed a bug where verification code inputs weren’t always getting autofilled by password managers. ([#19094](https://github.com/craftcms/cms/issues/19094))
+- Fixed a bug where the “Use defaults” button in element index view menus wasn’t being shown automatically after a column header was pressed on. ([#19101](https://github.com/craftcms/cms/issues/19101))
 - Fixed a styling issue.
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
