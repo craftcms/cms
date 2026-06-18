@@ -294,8 +294,12 @@
     "file": "assets/bg-Q3Hwq_lI.js",
     "name": "bg"
   },
-  "_cp-BEg3V9Ka.js": {
-    "file": "assets/cp-BEg3V9Ka.js",
+  "_cp-Ci2VJcYL.css": {
+    "file": "assets/cp-Ci2VJcYL.css",
+    "src": "_cp-Ci2VJcYL.css"
+  },
+  "_cp-DxH4oSiE.js": {
+    "file": "assets/cp-DxH4oSiE.js",
     "name": "cp",
     "imports": [
       "__plugin-vue_export-helper-0vLWKQyu.js",
@@ -349,10 +353,6 @@
     "css": [
       "assets/cp-Ci2VJcYL.css"
     ]
-  },
-  "_cp-Ci2VJcYL.css": {
-    "file": "assets/cp-Ci2VJcYL.css",
-    "src": "_cp-Ci2VJcYL.css"
   },
   "_cp-jJ3_BvRA.js": {
     "file": "assets/cp-jJ3_BvRA.js",
@@ -1493,28 +1493,28 @@
     "isEntry": true
   },
   "resources/js/bootstrap/cp.ts": {
-    "file": "assets/cp-BUA5gqb3.js",
+    "file": "assets/cp-CBVxI069.js",
     "name": "cp",
     "src": "resources/js/bootstrap/cp.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_cp-BEg3V9Ka.js"
+      "_cp-DxH4oSiE.js"
     ]
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-D4sRhMYp.js",
+    "file": "assets/cp-DL9vEN-O.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "_cp-jJ3_BvRA.js",
-      "_cp-BEg3V9Ka.js",
+      "_cp-DxH4oSiE.js",
       "_CpQueueIndicator-qDO_6YFI.js",
       "_CpGlobalSidebar-quHGy5Is.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-v7nogWAv.js",
+    "file": "assets/legacy-CkdSmSVu.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
@@ -1525,7 +1525,7 @@
       "_login-form-Cr7oaEHF.js",
       "_totp-form-R9SZwKY9.js",
       "_recovery-code-form-D8GRkE3O.js",
-      "_cp-BEg3V9Ka.js",
+      "_cp-DxH4oSiE.js",
       "_nav-list.ts-DjsniC4m.js",
       "packages/craftcms-cp/dist/components/nav-item/nav-item.ts.mjs",
       "_CpGlobalSidebar-quHGy5Is.js",
@@ -1867,7 +1867,7 @@
     ]
   },
   "resources/js/pages/settings/SectionsEdit.vue": {
-    "file": "assets/SectionsEdit-uGPDdjJW.js",
+    "file": "assets/SectionsEdit-BhOBu1R2.js",
     "name": "SectionsEdit",
     "src": "resources/js/pages/settings/SectionsEdit.vue",
     "isDynamicEntry": true,
@@ -1924,7 +1924,7 @@
     ]
   },
   "resources/js/pages/settings/SitesEdit.vue": {
-    "file": "assets/SitesEdit-CwjFQK4p.js",
+    "file": "assets/SitesEdit-YuZkALKb.js",
     "name": "SitesEdit",
     "src": "resources/js/pages/settings/SitesEdit.vue",
     "isDynamicEntry": true,

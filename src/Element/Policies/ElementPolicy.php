@@ -52,7 +52,8 @@ class ElementPolicy
         }
 
         // Site authorization (for view and save)
-        if (in_array($ability, ['view', 'save'], true)
+        if ($this->shouldCheckSiteAuthorization($element)
+            && in_array($ability, ['view', 'save'], true)
             && $this->checkSiteAuthorization($user, $element) === false
         ) {
             return false;
@@ -112,6 +113,11 @@ class ElementPolicy
         return new ReflectionMethod($element, $method)
             ->getDeclaringClass()
             ->getName() !== Element::class;
+    }
+
+    protected function shouldCheckSiteAuthorization(ElementInterface $element): bool
+    {
+        return true;
     }
 
     private function checkSiteAuthorization(CraftUser $user, ElementInterface $element): ?bool

@@ -21,12 +21,15 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\cp_url;
 
 abstract readonly class AuthenticationController
 {
@@ -39,7 +42,7 @@ abstract readonly class AuthenticationController
 
     protected function completeLogin(Request $request, CraftUser $user, bool $remember): Response
     {
-        auth('craft')->loginUsingId($user->getAuthIdentifier(), $remember);
+        auth()->loginUsingId($user->getAuthIdentifier(), $remember);
 
         return $this->handleSuccessfulLogin($request, $user);
     }
@@ -90,7 +93,7 @@ abstract readonly class AuthenticationController
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
         event(new Failed(
-            guard: 'craft',
+            guard: Auth::getDefaultDriver(),
             user: $user,
             credentials: $request->only('loginName', 'password'),
         ));
@@ -98,7 +101,7 @@ abstract readonly class AuthenticationController
         return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
-    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = []): View|InertiaResponse
+    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = []): View|InertiaResponse|Response
     {
         if (view()->exists(request()->craftPath())) {
             return view(request()->craftPath(), $data);
@@ -109,6 +112,10 @@ abstract readonly class AuthenticationController
         }
 
         TemplateMode::set(TemplateMode::Cp);
+
+        if (! view()->exists('craftcms::'.$cpTemplate)) {
+            return redirect(cp_url($cpTemplate));
+        }
 
         return view('craftcms::'.Str::start($cpTemplate, ''), $data);
     }
@@ -133,13 +140,13 @@ abstract readonly class AuthenticationController
 
         // If someone is logged in and it’s not this person, log them out
         if ($request->craftUser() && $request->craftUser()->getCraftUserId() !== $user->id) {
-            auth('craft')->logout();
+            auth()->logout();
         }
 
         event(new UserEmailVerifying($user));
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
+        $broker = Password::broker();
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }
@@ -158,7 +165,7 @@ abstract readonly class AuthenticationController
         }
 
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
-        if ($user && ! auth('craft')->guest()) {
+        if ($user && ! auth()->guest()) {
             return redirect(URL::returnUrl());
         }
 
@@ -189,7 +196,7 @@ abstract readonly class AuthenticationController
             return false;
         }
 
-        return (bool) auth('craft')->loginUsingId($user->id);
+        return (bool) auth()->loginUsingId($user->id);
     }
 
     protected function redirectUserToCp(User $user): ?Response

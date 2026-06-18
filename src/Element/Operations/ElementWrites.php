@@ -45,13 +45,13 @@ use CraftCms\Cms\Support\Url;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -138,7 +138,7 @@ readonly class ElementWrites
             $position = 0;
 
             try {
-                $query->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
+                $query->cursor()->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     $position++;
 
                     $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
@@ -177,7 +177,6 @@ readonly class ElementWrites
 
                     event(new ElementResaved($query, $element, $position, $throwable));
                 });
-                /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
                 // Fail silently
             }
@@ -201,7 +200,7 @@ readonly class ElementWrites
             $position = 0;
 
             try {
-                $query->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
+                $query->cursor()->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
                     $position++;
 
                     event(new ElementPropagating($query, $element, $position));
@@ -244,7 +243,6 @@ readonly class ElementWrites
                     BulkOps::trackElement($element);
                     $this->elementCaches->invalidateForElement($element);
                 });
-                /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
                 // Fail silently
             }
@@ -666,7 +664,7 @@ readonly class ElementWrites
                 }
 
                 if ($trackChanges) {
-                    $userId = Auth::craftUser()?->getCraftUserId();
+                    $userId = currentUser()?->getCraftUserId();
                     $timestamp = now();
 
                     foreach ($dirtyAttributes as $attributeName) {
@@ -884,7 +882,7 @@ readonly class ElementWrites
     ): bool {
         $propagateToSite = $this->sites->getSiteById($siteElement->siteId);
 
-        $user = Auth::craftUser()?->asElement();
+        $user = currentUser()?->asElement();
         $message = t('Validation errors for site: “{siteName}“', [
             'siteName' => $propagateToSite?->getName(),
         ]);

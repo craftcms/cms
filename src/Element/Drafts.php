@@ -21,7 +21,6 @@ use CraftCms\Cms\User\Elements\User;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +28,7 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -48,7 +48,7 @@ readonly class Drafts
      */
     public function getEditableDrafts(ElementInterface $element, ?string $permission = null): Collection
     {
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         if (! $user) {
             return collect();

@@ -1273,6 +1273,7 @@
           [param('visibleLayoutElements')]: this.visibleLayoutElements,
           [param('staticLayoutElements')]: this.staticLayoutElements,
           [param('elementType')]: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          [param('siteId')]: this.matrix.settings.siteId,
           [param('ownerId')]: this.matrix.settings.ownerId,
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,

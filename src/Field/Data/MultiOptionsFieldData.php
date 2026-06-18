@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Field\Data;
 use ArrayObject;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
-#[AllowedInSandbox]
 class MultiOptionsFieldData extends ArrayObject
 {
     /** @var OptionData[] */
@@ -16,6 +15,7 @@ class MultiOptionsFieldData extends ArrayObject
     /**
      * @return OptionData[]
      */
+    #[AllowedInSandbox]
     public function getOptions(): array
     {
         return $this->_options;
@@ -29,6 +29,7 @@ class MultiOptionsFieldData extends ArrayObject
         $this->_options = $options;
     }
 
+    #[AllowedInSandbox]
     public function contains(mixed $value): bool
     {
         $value = (string) $value;

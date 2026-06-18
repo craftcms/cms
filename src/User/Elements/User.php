@@ -79,6 +79,7 @@ use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -100,7 +101,9 @@ use function CraftCms\Cms\t;
 #[Ruleset(UserRules::class)]
 class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, MustVerifyEmailContract
 {
-    use Authenticatable;
+    use Authenticatable {
+        getAuthPassword as getAuthPasswordAuthenticatable;
+    }
     use Authorizable;
     use CanResetPassword, CraftUserTrait {
         CraftUserTrait::sendPasswordResetNotification insteadof CanResetPassword;
@@ -368,6 +371,29 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function getAuthIdentifierName(): string
     {
         return 'id';
+    }
+
+    public function getAuthPassword(): ?string
+    {
+        $password = $this->getAuthPasswordAuthenticatable();
+
+        if (is_null($password)) {
+            return null;
+        }
+
+        // Ensure the password starts with `$2y$` for BC with older passwords
+        // (h/t https://stackoverflow.com/a/79217475)
+        return Str::replaceStart('$2a$', '$2y$', $password);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        // Allow can() to be called from sandboxed templates
+        return strtolower($method) === 'can' || parent::methodAllowedInSandbox($method);
     }
 
     public function asElement(): self
@@ -1233,7 +1259,7 @@ XML;
             return false;
         }
 
-        return Auth::craftUser()?->getCraftUserId() === $this->id;
+        return currentUser()?->getCraftUserId() === $this->id;
     }
 
     /**
@@ -1309,7 +1335,7 @@ XML;
             return parent::safeActionMenuItems();
         }
 
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser instanceof CraftUser) {
             return parent::safeActionMenuItems();
@@ -1317,6 +1343,8 @@ XML;
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
+        $canActivate = Gate::check('activate', $this);
+        $canSendActivationEmail = Gate::check('sendActivationEmail', $this);
 
         $isCurrentUser = $this->getIsCurrent();
 
@@ -1344,7 +1372,7 @@ XML;
                 case self::STATUS_PENDING:
                     // Only provide activation actions if they have an email address
                     if ($this->email) {
-                        if ($this->pending || $canModerateUsers) {
+                        if ($canSendActivationEmail) {
                             $statusItems[] = [
                                 'icon' => 'paperplane',
                                 'label' => t('Send activation email'),
@@ -1354,7 +1382,7 @@ XML;
                                 ],
                             ];
                         }
-                        if ($canAdministrateUsers) {
+                        if ($canActivate) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (! $this->password) {
                                 $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'));
@@ -1507,13 +1535,13 @@ JS, [
             return parent::destructiveActionMenuItems();
         }
 
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser instanceof CraftUser) {
             return parent::destructiveActionMenuItems();
         }
 
-        $canAdministrateUsers = $currentUser->can('administrateUsers');
+        $currentUser->can('administrateUsers');
 
         $isCurrentUser = $this->getIsCurrent();
 
@@ -1533,19 +1561,16 @@ JS, [
                 }
             }
 
-            // Destructive actions that should only be performed on non-admins, unless the current user is also an admin
-            if (! $this->admin || $currentUser->isAdmin()) {
-                if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
-                    $items[] = [
-                        'icon' => 'disabled',
-                        'label' => t('Deactivate'),
-                        'action' => 'users/deactivate-user',
-                        'params' => [
-                            'userId' => $this->id,
-                        ],
-                        'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
-                    ];
-                }
+            if (Gate::check('deactivate', $this) && ($this->active || $this->pending)) {
+                $items[] = [
+                    'icon' => 'disabled',
+                    'label' => t('Deactivate'),
+                    'action' => 'users/deactivate-user',
+                    'params' => [
+                        'userId' => $this->id,
+                    ],
+                    'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                ];
             }
         }
 
@@ -1755,7 +1780,7 @@ JS, [
     #[Override]
     protected function htmlAttributes(string $context): array
     {
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         return [
             'data' => [

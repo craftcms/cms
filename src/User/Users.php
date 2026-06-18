@@ -257,7 +257,7 @@ class Users
      */
     public function sendPasswordResetEmail(User $user): bool
     {
-        return Password::broker('craft')->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
+        return Password::broker()->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
     }
 
     /**
@@ -951,7 +951,7 @@ class Users
         $userModel = UserModel::findOrFail($user->id);
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
+        $broker = Password::broker();
         $token = $broker->createToken($user);
 
         // Make sure they are set to pending, if not already active
@@ -1000,6 +1000,7 @@ class Users
                     ->whereColumn('password_reset_tokens.email', 'users.email')
                     ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->purgePendingUsersDuration));
             })
+            ->cursor()
             ->each(function (User $user) {
                 try {
                     $this->elements->deleteElement($user);

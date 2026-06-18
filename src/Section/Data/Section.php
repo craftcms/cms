@@ -23,10 +23,10 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Ruleset(SectionRules::class)]
@@ -210,7 +210,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 

@@ -28,7 +28,7 @@ readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
-    public const string VERSION = '6.0.0-alpha.6';
+    public const string VERSION = '6.0.0-alpha.8';
 
     public const string SCHEMA_VERSION = '6.0.0.3';
 
@@ -111,7 +111,7 @@ readonly class Cms
             return Sites::getCurrentSite()->getLanguage();
         }
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         if (
             ($id = $user?->getAuthIdentifier()) &&

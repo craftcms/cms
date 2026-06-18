@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -25,7 +25,6 @@ use function CraftCms\Cms\template;
 
 readonly class ImageEditorController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -43,8 +42,7 @@ readonly class ImageEditorController
 
         abort_if(! $asset, 400, t('The asset you’re trying to edit does not exist.'));
 
-        $this->requireVolumePermissionByAsset('editImages', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+        Gate::authorize('editImage', $asset);
 
         abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
 
@@ -70,8 +68,7 @@ readonly class ImageEditorController
 
         abort_if(! $asset, 400, "Invalid asset ID: $asset");
 
-        $this->requireVolumePermissionByAsset('editImages', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+        Gate::authorize('editImage', $asset);
 
         abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
 
@@ -122,8 +119,7 @@ readonly class ImageEditorController
 
         // Do what you want with your own photo.
         if ($asset->id !== $request->craftUser()?->asElement()->photoId) {
-            $this->requireVolumePermissionByAsset('editImages', $asset);
-            $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+            Gate::authorize('editImage', $asset);
         }
 
         // Verify parameter adequacy
@@ -278,8 +274,7 @@ readonly class ImageEditorController
 
         abort_if(! $asset, 400, "Invalid asset UID: $assetUid");
 
-        $this->requireVolumePermissionByAsset('editImages', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+        Gate::authorize('editImage', $asset);
 
         $asset->setFocalPoint($focalData);
         $elements->saveElement($asset);

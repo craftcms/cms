@@ -114,15 +114,21 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         if ($parse && is_string($this->_elementIds)) {
             $elementIds = Env::parse($this->_elementIds);
 
-            if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
-                $referenceElement = $this->condition->referenceElement;
-            } else {
-                $referenceElement = new stdClass;
-            }
+            // Only allow combining env & Twig parsing for simple env vars
+            if (
+                $elementIds === $this->_elementIds ||
+                preg_match('/^\$\{?\w+}?$/', trim($this->_elementIds))
+            ) {
+                if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
+                    $referenceElement = $this->condition->referenceElement;
+                } else {
+                    $referenceElement = new stdClass;
+                }
 
-            try {
-                $elementIds = renderSandboxedObjectTemplate($elementIds, $referenceElement);
-            } catch (Throwable) {
+                try {
+                    $elementIds = renderSandboxedObjectTemplate($elementIds, $referenceElement);
+                } catch (Throwable) {
+                }
             }
 
             return array_values(array_filter(array_map(

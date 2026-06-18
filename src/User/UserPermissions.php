@@ -35,11 +35,12 @@ use CraftCms\Cms\Utility\Utility;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -118,8 +119,9 @@ class UserPermissions
      */
     public function getAssignablePermissions(?User $user = null): Collection
     {
-        // If either user is an admin, all permissions are fair game
-        if (Auth::craftUser()?->isAdmin() || ($user !== null && $user->admin)) {
+        $currentUser = currentUser();
+
+        if (($currentUser !== null && $currentUser->isAdmin()) || ($user !== null && $user->admin)) {
             return $this->getAllPermissions();
         }
 
@@ -746,14 +748,14 @@ class UserPermissions
      */
     private function filterUnassignablePermissions(Collection $permissions, ?User $user = null): Collection
     {
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser && ! $user) {
             return new Collection;
         }
 
         return $permissions->map(function (Permission $permission) use ($currentUser, $user) {
-            if ($currentUser !== null && ! $currentUser->can($permission->key)) {
+            if ($currentUser !== null && ! Gate::check($permission->key)) {
                 return null;
             }
 

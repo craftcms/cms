@@ -23,6 +23,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\LazyCollection;
 
 beforeEach(function () {
     Event::fake([
@@ -186,16 +187,9 @@ it('fails silently when the query aborts', function () {
 function mockResaveQuery(array $elements): ElementQueryInterface
 {
     $query = Mockery::mock(ElementQueryInterface::class);
-    $query->shouldReceive('each')
+    $query->shouldReceive('cursor')
         ->once()
-        ->with(Mockery::type(Closure::class))
-        ->andReturnUsing(function (Closure $callback) use ($elements) {
-            foreach ($elements as $element) {
-                $callback($element);
-            }
-
-            return null;
-        });
+        ->andReturn(LazyCollection::make(fn () => yield from $elements));
 
     return $query;
 }
@@ -203,9 +197,8 @@ function mockResaveQuery(array $elements): ElementQueryInterface
 function mockAbortedResaveQuery(): ElementQueryInterface
 {
     $query = Mockery::mock(ElementQueryInterface::class);
-    $query->shouldReceive('each')
+    $query->shouldReceive('cursor')
         ->once()
-        ->with(Mockery::type(Closure::class))
         ->andThrow(new QueryAbortedException);
 
     return $query;
