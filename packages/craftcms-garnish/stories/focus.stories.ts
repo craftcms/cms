@@ -19,7 +19,7 @@ type Story = StoryObj;
 
 export const FocusableMatcherAndTrap: Story = {
   render: () => {
-    const log = createEventLog('Focus story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -100,6 +100,6 @@ export const FocusableMatcherAndTrap: Story = {
       btn.addEventListener('click', () => actions[btn.dataset.act!]?.());
     });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

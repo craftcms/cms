@@ -36,7 +36,7 @@ export const AnchoredPopover: Story = {
     preferredOrientation: 'auto',
   },
   render: (args) => {
-    const log = createEventLog('HUD story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -112,6 +112,6 @@ export const AnchoredPopover: Story = {
         log.log('hud', `Destroyed ${count} HUD instance(s)`);
       });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

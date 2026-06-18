@@ -17,7 +17,7 @@ type Story = StoryObj;
 
 export const EventsAndUtilities: Story = {
   render: () => {
-    const log = createEventLog('Utilities story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>Small demos of core utilities and the synthetic <code>activate</code> custom event.</p>
@@ -57,6 +57,6 @@ export const EventsAndUtilities: Story = {
       btn.addEventListener('click', () => actions[btn.dataset.act!]?.(btn));
     });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

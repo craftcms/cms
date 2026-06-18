@@ -27,7 +27,7 @@ packages/craftcms-garnish/
     preview.ts     # global parameters + theme decorator; imports preview.css
     preview.css    # demo globals migrated from the old playground/styles.css
   stories/
-    _log.ts        # shared event-log panel + drag-event wiring + layout helper
+    _log.ts        # Actions-panel event logger + drag-event wiring + layout helper
     _helpers.ts    # shared modal-container builders
     modal.stories.ts
     focus.stories.ts
@@ -63,18 +63,25 @@ npm run build:storybook  # static build (compiles every story — the CI proof)
 under the hood and supplies its own pipeline (there is no package-root
 `vite.config.ts` anymore — it only ever served the playground).
 
-## The event-log helper
+## The event logger (Storybook Actions)
 
-Drag/menu/modal stories surface the events the real widgets fire. `stories/_log.ts`
-exports:
+Drag/menu/modal stories surface the events the real widgets fire by logging them
+to Storybook's built-in **Actions** panel (the "Actions" tab in the addons panel),
+rather than a hand-rolled in-canvas panel. `stories/_log.ts` wraps
+`storybook/actions` and exports:
 
-- `createEventLog(initialMessage?)` → `{panel, log, clear}`. Mount `panel` in the
-  story; call `log(tag, message, isError?)` from your event handlers.
+- `createEventLog()` → `{log}`. Call `log(tag, message)` from your event handlers;
+  each `tag` becomes a named action so the panel groups events by tag (e.g.
+  `modal`, `drag`, `disclosure`). No DOM panel to mount.
 - `wireDragEvents(log, dragger, tag, label)` — subscribes a dragger's
   `dragStart`/`drag`/`dragStop` into the log, coalescing the per-RAF-frame `drag`
-  to a single line per gesture.
-- `storyLayout(main, log?)` — wraps the demo column and (optional) log panel in the
-  `.pg-story` flex layout the global styles expect.
+  to a single line per gesture so the panel stays readable.
+- `storyLayout(main)` — tags the demo element with `.pg-story` for the global
+  styles; the canvas is just the demo.
+
+The Actions panel is part of Storybook core in 10.x — no `@storybook/addon-actions`
+entry is needed in `.storybook/main.ts`; importing `action` from
+`storybook/actions` is enough.
 
 Typical story shape:
 
@@ -89,10 +96,10 @@ type Story = StoryObj;
 
 export const Basic: Story = {
   render: () => {
-    const log = createEventLog('Modal story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
-    // …build controls, `new Modal(container)`, wire events to `log.log(...)`…
-    return storyLayout(main, log);
+    // …build controls, `new Modal(container)`, wire events to `log.log('modal', …)`…
+    return storyLayout(main);
   },
 };
 ```

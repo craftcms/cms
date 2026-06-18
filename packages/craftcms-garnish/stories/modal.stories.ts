@@ -59,7 +59,7 @@ export const Basic: Story = {
     closeOtherModals: false,
   },
   render: (args) => {
-    const log = createEventLog('Modal story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -113,12 +113,12 @@ export const Basic: Story = {
         try {
           actions[btn.dataset.act!]?.();
         } catch (err) {
-          log.log('modal', `Error: ${(err as Error).message}`, true);
+          log.log('modal', `Error: ${(err as Error).message}`);
         }
       });
     });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };
 
@@ -143,7 +143,7 @@ export const DraggableAndResizable: StoryObj<DragModalArgs> = {
     resizable: true,
   },
   render: (args) => {
-    const log = createEventLog('Draggable/resizable Modal story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -201,11 +201,11 @@ export const DraggableAndResizable: StoryObj<DragModalArgs> = {
         try {
           actions[btn.dataset.act!]?.();
         } catch (err) {
-          log.log('modal', `Error: ${(err as Error).message}`, true);
+          log.log('modal', `Error: ${(err as Error).message}`);
         }
       });
     });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

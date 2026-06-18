@@ -23,12 +23,9 @@
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 }
 
-/* --- Story layout (demo column + embedded event log) -------------------- */
+/* --- Story layout ------------------------------------------------------- */
+/* Events surface in Storybook's Actions panel, so the canvas is just the demo. */
 .pg-story {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
   font-family:
     system-ui,
     -apple-system,
@@ -37,17 +34,12 @@
     sans-serif;
   color: var(--text);
   line-height: 1.5;
+  max-width: 60ch;
 }
 
-.pg-story-main {
-  flex: 1 1 360px;
-  min-width: 300px;
-}
-
-.pg-story-main > p {
+.pg-story > p {
   margin: 0 0 1rem;
   color: var(--muted);
-  max-width: 60ch;
 }
 
 .pg-controls {
@@ -475,76 +467,6 @@ body.no-scroll {
   border: 2px dashed var(--accent);
   border-radius: var(--radius);
   background: #e6f0ff;
-}
-
-/* --- Event log panel (embedded per-story) ------------------------------- */
-.pg-log {
-  width: 320px;
-  flex: 0 0 auto;
-  max-height: 420px;
-  display: flex;
-  flex-direction: column;
-  background: #11151b;
-  color: #e6e9ee;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
-.pg-log-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  background: #0b0e13;
-  border-bottom: 1px solid #222834;
-}
-
-.pg-log-head strong {
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
-  font-size: 0.85rem;
-}
-
-.pg-log-head button {
-  padding: 0.15rem 0.5rem;
-  font-size: 0.75rem;
-  background: #222834;
-  color: #e6e9ee;
-  border: 1px solid #333b48;
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-
-.pg-log-list {
-  margin: 0;
-  padding: 0.5rem 0.75rem 0.5rem 2rem;
-  overflow: auto;
-  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  font-size: 0.78rem;
-  list-style: decimal;
-}
-
-.pg-log-list li {
-  padding: 0.15rem 0;
-  border-bottom: 1px solid #1b212b;
-  word-break: break-word;
-}
-
-.pg-log-list li .pg-log-tag {
-  color: #6ad08a;
-  font-weight: 600;
-}
-
-.pg-log-list li.pg-log-error .pg-log-tag {
-  color: #ff8a7a;
-}
-
-.pg-log-list li time {
-  color: #7b8493;
-  margin-right: 0.4rem;
 }
 
 /* --- HUD / anchored popover -------------------------------------------- */

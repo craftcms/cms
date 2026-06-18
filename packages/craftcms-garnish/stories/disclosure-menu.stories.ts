@@ -37,7 +37,7 @@ function wireMenuEvents(
 
 export const Dropdown: Story = {
   render: () => {
-    const log = createEventLog('DisclosureMenu story loaded.');
+    const log = createEventLog();
     const menuId = nextId();
     const main = document.createElement('div');
     main.innerHTML = `
@@ -85,7 +85,7 @@ export const Dropdown: Story = {
         log.log('disclosure', 'Destroyed the DisclosureMenu instance');
       });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };
 
@@ -104,7 +104,7 @@ export const Filterable: StoryObj<FilterableArgs> = {
     withSearchInput: true,
   },
   render: (args) => {
-    const log = createEventLog('DisclosureMenu (filterable) story loaded.');
+    const log = createEventLog();
     const menuId = nextId();
     const main = document.createElement('div');
     main.innerHTML = `
@@ -142,6 +142,6 @@ export const Filterable: StoryObj<FilterableArgs> = {
       }))
     );
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

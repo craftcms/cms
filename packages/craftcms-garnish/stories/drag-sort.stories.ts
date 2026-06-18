@@ -19,7 +19,7 @@ type Story = StoryObj;
 
 export const ReorderableList: Story = {
   render: () => {
-    const log = createEventLog('DragSort story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -97,6 +97,6 @@ export const ReorderableList: Story = {
         log.log('dragsort', `Reset list order → [${currentOrder()}]`);
       });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

@@ -15,7 +15,7 @@ type Story = StoryObj;
 
 export const StandaloneBoxes: Story = {
   render: () => {
-    const log = createEventLog('BaseDrag / DragMove story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -94,13 +94,13 @@ export const StandaloneBoxes: Story = {
         log.log('drag', 'Reset box positions');
       });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };
 
 export const AutoScroll: Story = {
   render: () => {
-    const log = createEventLog('Auto-scroll story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -139,6 +139,6 @@ export const AutoScroll: Story = {
         log.log('autoscroll', 'Reset scroll item + scroll position');
       });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

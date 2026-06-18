@@ -19,7 +19,7 @@ type Story = StoryObj;
 
 export const DropTargets: Story = {
   render: () => {
-    const log = createEventLog('DragDrop story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -98,6 +98,6 @@ export const DropTargets: Story = {
         log.log('dragdrop', 'Reset chips + cleared zone highlights');
       });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

@@ -328,7 +328,7 @@ Interactive component demos live in **Storybook** (`npm run dev` or
 `npm run storybook` → http://localhost:6006), with one story file per component
 under `stories/`. Stories import the real source from `../src`, so edits
 hot-reload instantly. See [`docs/17-storybook-notes.md`](docs/17-storybook-notes.md)
-for how stories are organized, the shared event-log helper, and how to add a story
+for how stories are organized, the Actions-panel event logger, and how to add a story
 when porting a new component.
 
 ## Status

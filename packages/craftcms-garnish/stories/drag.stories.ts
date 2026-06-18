@@ -56,7 +56,7 @@ export const Helpers: Story = {
     dropMode: 'return',
   },
   render: (args) => {
-    const log = createEventLog('Drag (helpers) story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -98,6 +98,6 @@ export const Helpers: Story = {
       wireHelperDragEvents(log, dragger, `item ${item.dataset.helperItem}`);
     });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };

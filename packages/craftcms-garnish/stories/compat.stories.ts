@@ -30,7 +30,7 @@ interface GarnishGlobalLike {
 
 export const ExtendUpgradePath: Story = {
   render: () => {
-    const log = createEventLog('Compat story loaded.');
+    const log = createEventLog();
     const main = document.createElement('div');
     main.innerHTML = `
       <p>
@@ -103,11 +103,11 @@ export const ExtendUpgradePath: Story = {
         try {
           actions[btn.dataset.act!]?.();
         } catch (err) {
-          log.log('compat', `Error: ${(err as Error).message}`, true);
+          log.log('compat', `Error: ${(err as Error).message}`);
         }
       });
     });
 
-    return storyLayout(main, log);
+    return storyLayout(main);
   },
 };
