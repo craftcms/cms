@@ -69,11 +69,12 @@
                 {{ forms.selectField({
                     name: col.prefixedHandle,
                     options: sourceDataCols,
-                    value: col.prefixedHandleWithoutMap|reduce(
+                    value: import.map ? col.prefixedHandleWithoutMap|reduce(
                         (value, part) => attribute(value, part),
                         import.map
-                    )
+                    ) : ''
                 }) }}
+                {{ col.prefixedHandle }}
             {% endif %}
         </td>
     </tr>
