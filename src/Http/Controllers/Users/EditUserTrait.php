@@ -12,9 +12,9 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -42,7 +42,7 @@ trait EditUserTrait
     protected function editedUser(?int $userId): User
     {
         if ($userId === null) {
-            return $this->editedUser(Auth::craftUser()?->getCraftUserId());
+            return $this->editedUser(currentUser()?->getCraftUserId());
         }
 
         /** @var User|null $user */
@@ -180,7 +180,7 @@ trait EditUserTrait
 
     private function showPermissionsScreen(): bool
     {
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser) {
             return false;

@@ -20,10 +20,10 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Auth\AuthManager;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -38,7 +38,6 @@ readonly class License
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private AuthManager $auth,
         private Plugins $plugins,
     ) {}
 
@@ -267,7 +266,7 @@ readonly class License
                     [
                         'name' => $licenseData->name,
                         'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseData->id}",
-                        'buyUrl' => $this->auth->user()?->isAdmin() && $this->generalConfig->allowAdminChanges
+                        'buyUrl' => currentUser()?->isAdmin() && $this->generalConfig->allowAdminChanges
                             ? Url::cpUrl("plugin-store/buy/$licenseData->handle/$licenseData->currentEdition")
                             : "https://plugins.craftcms.com/$licenseData->handle",
                     ]),

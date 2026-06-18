@@ -161,7 +161,7 @@ foreach ([
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
     Route::post('migrate', MigrateController::class);
 
-    Route::middleware(['auth:craft'])->group(function () {
+    Route::middleware(['auth'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
         Route::post('users/save-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
         Route::post('users/delete-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
@@ -209,7 +209,7 @@ Route::prefix(implode('/', [
     /**
      * Actions needing auth
      */
-    Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
+    Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);

@@ -18,9 +18,10 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
+
+use function CraftCms\Cms\currentUser;
 
 /**
  * @extends ElementQuery<Asset>
@@ -119,7 +120,7 @@ class AssetQuery extends ElementQuery
             return;
         }
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         if (! $user) {
             throw new QueryAbortedException;

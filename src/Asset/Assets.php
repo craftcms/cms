@@ -39,7 +39,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
@@ -47,6 +46,7 @@ use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -94,7 +94,7 @@ class Assets
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
         $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
-        $asset->uploaderId = Auth::craftUser()?->getCraftUserId();
+        $asset->uploaderId = currentUser()?->getCraftUserId();
         $asset->avoidFilenameConflicts = true;
         $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
