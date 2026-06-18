@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User as UserModel;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -125,7 +124,6 @@ it('can get available entry move target sections', function () {
         ])
         ->create();
 
-    Auth::shouldUse('craft');
     actingAs($user);
     $this->sections->refreshSections();
 

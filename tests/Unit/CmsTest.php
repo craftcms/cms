@@ -144,7 +144,7 @@ it('uses a valid CP user language preference', function () {
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
-    Auth::shouldReceive('craftUser')->once()->andReturn($user);
+    Auth::shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('pt-BR');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('pt-BR')->andReturn(true);
 
@@ -156,7 +156,7 @@ it('falls back to the configured default CP language', function () {
     Cms::config()->cpTrigger = 'admin';
     Cms::config()->defaultCpLanguage = 'es';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    Auth::shouldReceive('craftUser')->once()->andReturnNull();
+    Auth::shouldReceive('user')->once()->andReturnNull();
 
     expect(Cms::targetLanguage(Request::create('/admin')))->toBe('es');
 });
@@ -168,7 +168,7 @@ it('falls back to the accepted language when the CP user preference is invalid a
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
-    Auth::shouldReceive('craftUser')->once()->andReturn($user);
+    Auth::shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('not-real');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('not-real')->andReturn(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['it', 'en']));

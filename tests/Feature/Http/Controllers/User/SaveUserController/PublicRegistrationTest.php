@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
@@ -299,7 +300,7 @@ it('logs user in after registration when autoLoginAfterAccountActivation is true
         ->assertSessionHasNoErrors();
 
     expect(Auth::check())->toBeTrue();
-    expect(Auth::craftUser()?->asElement()->email)->toBe('autologin@example.com');
+    expect(currentUser()?->asElement()->email)->toBe('autologin@example.com');
 });
 
 it('can upload a photo', function () {

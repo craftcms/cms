@@ -26,7 +26,7 @@ readonly class Enforce2fa
             return $next($request);
         }
 
-        if (! $user = $request->user('craft')) {
+        if (! $user = $request->craftUser()) {
             return $next($request);
         }
 

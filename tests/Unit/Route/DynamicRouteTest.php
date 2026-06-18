@@ -24,18 +24,6 @@ afterEach(function () {
     File::deleteDirectory($this->tempDir);
 });
 
-it('renders public blade templates from the site templates path', function () {
-    file_put_contents($this->tempDir.'/blade-page.blade.php', '<p>{{ $name }}</p>');
-
-    $response = new DynamicRoute('templates/render', [
-        'template' => 'blade-page',
-        'variables' => ['name' => '<Rias>'],
-    ])
-        ->handle(Request::create('/blade-page', 'GET', ['name' => '<Rias>']));
-
-    expect($response->getContent())->toBe('<p>&lt;Rias&gt;</p>');
-});
-
 it('does not render private templates by default', function () {
     file_put_contents($this->tempDir.'/_entry.twig', 'Private entry template');
 

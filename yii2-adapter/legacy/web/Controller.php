@@ -32,6 +32,8 @@ use yii\web\JsonResponseFormatter;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
+
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -294,7 +296,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public static function currentUser(bool $autoRenew = true): ?User
     {
-        return Auth::craftUser()?->asElement();
+        return currentUser()?->asElement();
     }
 
     /**
@@ -543,7 +545,7 @@ abstract class Controller extends \yii\web\Controller
         $this->requireLogin();
 
         // Make sure they're an admin
-        if (!Auth::user()?->isAdmin()) {
+        if (!currentUser()?->isAdmin()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action.');
         }
 
@@ -560,7 +562,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requirePermission(string $permissionName): void
     {
-        Gate::forUser(Auth::guard('craft')->user())->authorize($permissionName);
+        Gate::forUser(Auth::user())->authorize($permissionName);
     }
 
     /**

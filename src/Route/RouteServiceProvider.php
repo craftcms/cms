@@ -27,7 +27,6 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
-use CraftCms\Cms\Http\Middleware\SetCraftGuard;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
@@ -154,7 +153,6 @@ class RouteServiceProvider extends ServiceProvider
         collect([
             EnsureInstalled::class,
             AddLogContext::class,
-            SetCraftGuard::class,
             ResolveSite::class,
             UpdateLocale::class,
             CheckSchemaVersion::class,

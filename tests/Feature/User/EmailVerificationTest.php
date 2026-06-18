@@ -88,7 +88,7 @@ test('purgeExpiredPendingUsers deletes users with expired tokens', function () {
     $user = User::find()->id($user->id)->one();
 
     // Create a token and backdate it
-    Password::broker('craft')->createToken($user);
+    Password::broker()->createToken($user);
     DB::table('password_reset_tokens')
         ->where('email', $user->email)
         ->update(['created_at' => now()->subDays(10)]);
