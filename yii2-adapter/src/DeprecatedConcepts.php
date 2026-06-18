@@ -53,6 +53,7 @@ use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Events\CpDataResolving;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\Field\Events\FieldTypesResolving;
@@ -67,6 +68,7 @@ use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\DB;
@@ -464,6 +466,21 @@ class DeprecatedConcepts
                 }
             },
         );
+
+        Event::listen(CpDataResolving::class, function(CpDataResolving $event) {
+            $upToDate = Cms::isInstalled() && !app(Updates::class)->areMigrationsPending();
+
+            if ($upToDate && DeprecatedConcepts::supportsCategories()) {
+                $event->data['editableCategoryGroups'] = collect(Craft::$app->getCategories()->getEditableGroups())
+                    ->map(fn(CategoryGroup $group) => [
+                        'handle' => $group->handle,
+                        'id' => (int)$group->id,
+                        'name' => Craft::t('site', $group->name),
+                        'uid' => $group->uid,
+                    ])
+                    ->all();
+            }
+        });
 
         YiiEvent::on(
             UrlManager::class,
