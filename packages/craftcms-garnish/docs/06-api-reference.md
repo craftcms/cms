@@ -175,6 +175,70 @@ addBtn.addEventListener('click', () => hud.show());
 
 ---
 
+## `DisclosureMenu`
+
+`class DisclosureMenu extends Base<DisclosureMenuSettings>` — the disclosure
+dropdown/menu. Pairs a trigger button (`aria-controls` / `aria-expanded`) with a
+pre-existing menu panel: anchors it below the trigger (flipping above when there's
+no room) and aligns it left/center/right, manages keyboard nav + type-ahead
+search and focus, registers a UI layer + Escape shortcut (via the shared
+`UiLayerManager`, like `Modal`/`HUD`), dismisses on outside click, and exposes
+item/group builders. Show is instant; hide fades out (WAAPI, reduced-motion aware).
+
+**Constructor:** `new DisclosureMenu(trigger, settings?)` — `trigger` is an
+`ElementInput` (coerced via `getElement`) carrying `aria-controls` (or with the
+panel as its next sibling). No param shift (legacy `init(trigger, settings)` has no
+body arg). This is the CP call shape: `new DisclosureMenu($trigger, {...})`.
+
+### Statics
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `DisclosureMenu.instances` | `DisclosureMenu[]` | All live menus. |
+| `DisclosureMenu.defaults` | `DisclosureMenuSettings` | Default settings (below). |
+| `DisclosureMenu.getInstance(el)` | `(Element \| null) => DisclosureMenu \| undefined` | The menu registered for a trigger/container (native `$el.data('disclosureMenu')`). |
+
+### Settings (`DisclosureMenuSettings`)
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `position` | `null` | `'below'` forces the panel below; else clearance picks above/below. |
+| `windowSpacing` | `5` | Min gap (px) to the viewport edge. |
+| `withSearchInput` | `false` | Render a live item-filtering search input (also via `data-with-search-input`). |
+
+### Methods & properties
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `show` / `hide` | `() => void` | Show / hide; no-op if already in that state (show also no-ops on a `.disabled` trigger). |
+| `handleTriggerClick` | `() => void` | Toggle (re-captures the alignment element). |
+| `isExpanded` | `() => boolean` | Whether `aria-expanded === 'true'`. |
+| `setContainerPosition` | `() => void` | Above/below + left/center/right positioning (also the scroll/resize handler). |
+| `focusElement` | `(el \| 'prev' \| 'next') => void` | Focus an element, or move within the menu's focusables. |
+| `addItem` / `addItems` | `(item(s), ul?, prepend?) => HTMLElement \| void` | Build + insert item(s); returns the item's element. |
+| `createItem` | `(item) => HTMLLIElement` | Build an item `<li>` from a config (or pass an element through). |
+| `addGroup` / `addList` / `addHr` | — | Add a group (`<h3>` + `<ul>`) / a bare `<ul>` / an `<hr>`. |
+| `toggleItem` / `showItem` / `hideItem` / `removeItem` | `(el, show?) => void` | Item visibility. |
+| `updateVisibility` / `hasVisibleItems` / `getFirstDestructiveGroup` / `isPadded` | — | Visibility/query helpers. |
+| `clearSearchStr` | `() => void` | Reset the type-ahead buffer + timeout. |
+| `destroy` | `() => void` | Drop registrations, remove from `instances`, base teardown. |
+| `$trigger` / `$container` / `$alignmentElement` / `$searchInput` / `$nextFocusableElement` | `HTMLElement \| null` | Element refs. |
+| `searchStr` | `string` | The current type-ahead buffer. |
+
+**Events:** `beforeShow`, `show`, `hide`, `destroy`. Item selection is per-item
+(`onActivate` / `callback` on `activate`, then the menu hides).
+
+```ts
+import {DisclosureMenu} from '@craftcms/garnish';
+
+const menu = new DisclosureMenu(trigger); // trigger has aria-controls="#panel"
+menu.addItem({label: 'Rename', onActivate: (el) => rename(el)});
+menu.addItem({label: 'Delete', destructive: true, onActivate: () => remove()});
+menu.on('show', () => console.log('opened'));
+```
+
+---
+
 ## `BaseDrag`
 
 `class BaseDrag<S extends BaseDragSettings = BaseDragSettings> extends Base<S>` —

@@ -10,6 +10,7 @@
 import {
   Modal,
   HUD,
+  DisclosureMenu,
   BaseDrag,
   Drag,
   DragDrop,
@@ -831,5 +832,70 @@ if (hudArena) {
       [...HUD.instances].forEach((h) => h.destroy());
       huds.clear();
       log('hud', `Destroyed ${count} HUD instance(s)`);
+    });
+}
+
+/* ------------------------------------------------------------------------- *
+ * 12. DisclosureMenu — dropdown menu
+ * ------------------------------------------------------------------------- */
+
+const discActionsTrigger = document.querySelector<HTMLButtonElement>(
+  '[aria-controls="pg-disc-menu-actions"]'
+);
+const discFilterTrigger = document.querySelector<HTMLButtonElement>(
+  '[aria-controls="pg-disc-menu-filter"]'
+);
+
+if (discActionsTrigger && discFilterTrigger) {
+  /** Wire a menu's lifecycle events into the log. */
+  const wireMenuEvents = (menu: DisclosureMenu, label: string): void => {
+    for (const evt of ['beforeShow', 'show', 'hide'] as const) {
+      menu.on(evt, () => log('disclosure', `${label}: ${evt}`));
+    }
+  };
+
+  // Menu 1 — static markup. Log a selection when any item is activated.
+  const actionsMenu = new DisclosureMenu(discActionsTrigger);
+  wireMenuEvents(actionsMenu, 'actions');
+  actionsMenu
+    .$container!.querySelectorAll<HTMLButtonElement>('.menu-item:not(.disabled)')
+    .forEach((item) => {
+      installActivate(item);
+      item.addEventListener('activate', () => {
+        const label = item.querySelector('.menu-item-label')?.textContent ?? '?';
+        log('disclosure', `actions: selected "${label}"`);
+      });
+    });
+
+  // Menu 2 — items built via the API, with a live search input.
+  const filterMenu = new DisclosureMenu(discFilterTrigger, {
+    withSearchInput: true,
+  });
+  wireMenuEvents(filterMenu, 'filter');
+  const fruits = [
+    'Apple',
+    'Apricot',
+    'Banana',
+    'Blueberry',
+    'Cherry',
+    'Grape',
+    'Mango',
+    'Orange',
+    'Peach',
+    'Pear',
+  ];
+  filterMenu.addItems(
+    fruits.map((name) => ({
+      label: name,
+      onActivate: () => log('disclosure', `filter: selected "${name}"`),
+    }))
+  );
+
+  document
+    .querySelector<HTMLButtonElement>('[data-disclosure="destroy"]')
+    ?.addEventListener('click', () => {
+      const count = DisclosureMenu.instances.length;
+      [...DisclosureMenu.instances].forEach((m) => m.destroy());
+      log('disclosure', `Destroyed ${count} DisclosureMenu instance(s)`);
     });
 }

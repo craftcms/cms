@@ -649,3 +649,105 @@ body.no-scroll {
   background: rgba(15, 18, 22, 0.25);
   display: none;
 }
+
+/* --- DisclosureMenu / dropdown menu ----------------------------------- */
+.pg-disc-trigger {
+  font-weight: 600;
+}
+
+/* The menu panel — the JS sets display/top/left/right/opacity inline. */
+.menu.menu--disclosure {
+  position: absolute;
+  display: none;
+  z-index: 102;
+  min-width: 180px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  opacity: 0;
+}
+
+.menu.menu--disclosure.visible {
+  display: block;
+}
+
+.menu--disclosure ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu--disclosure h3 {
+  margin: 0.4rem 0 0.2rem;
+  padding: 0 0.6rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.menu--disclosure hr {
+  margin: 0.35rem 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.menu--disclosure .menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.menu--disclosure .menu-item:hover,
+.menu--disclosure .menu-item:focus {
+  background: var(--accent-soft, #eef2ff);
+  outline: none;
+}
+
+.menu--disclosure .menu-item.sel {
+  font-weight: 600;
+}
+
+.menu--disclosure .menu-item.error {
+  color: #c0392b;
+}
+
+.menu--disclosure .menu-item.disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.menu--disclosure .search-container {
+  padding: 0.25rem 0.25rem 0.5rem;
+}
+
+.menu--disclosure .search-container input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font: inherit;
+}
+
+.menu--disclosure .clear-btn {
+  display: none;
+}
+
+/* Hidden / filtered items + their empty groups/separators collapse. */
+.menu--disclosure li.hidden,
+.menu--disclosure li.filtered,
+.menu--disclosure ul.hidden,
+.menu--disclosure hr.hidden,
+.menu--disclosure h3.hidden {
+  display: none;
+}

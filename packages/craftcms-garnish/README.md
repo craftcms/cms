@@ -204,6 +204,36 @@ The constructor mirrors the legacy shape — `new HUD(trigger, bodyContents?, se
 with a `new HUD(trigger, settings)` param shift — so a legacy
 `new Garnish.HUD($addBtn, {...})` call ports across unchanged.
 
+#### Dropdown menus — `DisclosureMenu`
+
+`DisclosureMenu` is the disclosure dropdown/menu: a trigger button (carrying
+`aria-controls` / `aria-expanded`) paired with a menu panel referenced by that id.
+It anchors the panel below the trigger (flipping above when there's no room),
+aligns it left/center/right, manages full keyboard navigation + type-ahead search
+and focus, registers a UI layer + Escape shortcut, dismisses on an outside click,
+and exposes item/group builders (`addItem` / `addGroup` / `addHr`) consumers use to
+populate it. An optional `withSearchInput` filters items live.
+
+```ts
+import {DisclosureMenu} from '@craftcms/garnish';
+
+// <button aria-controls="actions" aria-expanded="false">Actions ▾</button>
+// <div id="actions" class="menu menu--disclosure"><ul>…</ul></div>
+const menu = new DisclosureMenu(document.querySelector('button')!);
+
+menu.addItem({label: 'Rename', onActivate: (el) => rename(el)});
+const group = menu.addGroup('Danger zone');
+menu.addItem({label: 'Delete', destructive: true, onActivate: () => remove()}, group);
+
+menu.on('show', () => console.log('opened'));
+// menu.show();  menu.hide();  menu.isExpanded();  menu.destroy();
+```
+
+Selection is per-item: each item's `onActivate` / `callback` runs on activation,
+then the menu hides. `DisclosureMenu.getInstance(triggerOrContainer)` is the native
+replacement for the legacy `$el.data('disclosureMenu')`. A legacy
+`new Garnish.DisclosureMenu($trigger, settings)` call ports across unchanged.
+
 **No-jQuery guarantee:** importing from `@craftcms/garnish` (the `.` entry) never
 pulls in jQuery, never reads `window.jQuery`/`$`, and never assigns
 `window.Garnish`. Those behaviors live exclusively in the `compat` entry.
@@ -316,10 +346,15 @@ drag foundation, and the compat layer are complete and tested.
   positioning, a tip/arrow, scroll-follow, focus trapping, and `UiLayerManager`
   layer + Escape integration. This was the last `FieldLayoutDesigner` overlay
   blocker.
+- **`DisclosureMenu`** is **supported** (Phase 3): the disclosure dropdown/menu
+  with above/below + left/center/right positioning, full keyboard navigation +
+  type-ahead search, focus management, `UiLayerManager` layer + Escape, an
+  optional search input, and the item/group builder surface (~19 CP sites depend
+  on it). It was the largest remaining component (~1,008 LOC).
 
 The **drag cluster is COMPLETE** — `BaseDrag`, `DragMove`, `Drag`, `DragDrop`, and
-`DragSort` are all ported, with no drag modules pending. With **`HUD`** landed, the
-overlay set (`Modal` + `HUD`) is ported too.
+`DragSort` are all ported, with no drag modules pending. The overlay/menu set
+(`Modal` + `HUD` + `DisclosureMenu`) is ported too.
 
 ## License
 

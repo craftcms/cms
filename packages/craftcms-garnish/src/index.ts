@@ -34,6 +34,7 @@ import {UiLayerManager} from './managers/ui-layer-manager';
 import {setUiLayerManager} from './managers/registry';
 import {Modal, type ModalSettings} from './modal';
 import {HUD, type HUDSettings} from './hud';
+import {DisclosureMenu, type DisclosureMenuSettings} from './disclosure-menu';
 import {BaseDrag, type BaseDragSettings} from './drag/base-drag';
 import {Drag, type DragSettings} from './drag/drag';
 import {DragDrop, type DragDropSettings} from './drag/drag-drop';
@@ -66,6 +67,11 @@ export {UiLayerManager};
 export {Modal, type ModalSettings};
 export {HUD, type HUDSettings};
 export type {HUDOrientation, HUDBodyContents} from './hud';
+export {DisclosureMenu, type DisclosureMenuSettings};
+export type {
+  DisclosureMenuItem,
+  DisclosureMenuItemConfig,
+} from './disclosure-menu';
 export {BaseDrag, type BaseDragSettings};
 export {Drag, type DragSettings};
 export {DragDrop, type DragDropSettings};
@@ -172,6 +178,7 @@ export const Garnish = {
   UiLayerManager,
   Modal,
   HUD,
+  DisclosureMenu,
   BaseDrag,
   Drag,
   DragDrop,

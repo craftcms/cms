@@ -351,6 +351,88 @@
           </button>
         </div>
       </section>
+
+      <!-- ====================== DISCLOSURE MENU ====================== -->
+      <section class="pg-section" id="section-disclosure">
+        <h2>12. DisclosureMenu — dropdown menu</h2>
+        <p>
+          A <code>new DisclosureMenu(trigger)</code> pairs a trigger button
+          (<code>aria-controls</code> / <code>aria-expanded</code>) with a menu
+          panel. Click a trigger to toggle it; the panel anchors under the trigger
+          (flipping above when there's no room) and aligns left/center/right.
+          Open one and use <kbd>↑</kbd>/<kbd>↓</kbd> to move between items, type a
+          letter for <strong>type-ahead</strong> search, <kbd>Esc</kbd> to close,
+          or click outside. The second menu has a <strong>search input</strong>
+          (<code>withSearchInput</code>) that filters items live. Every
+          <code>beforeShow / show / hide</code> and item selection fires into the
+          log.
+        </p>
+        <div class="pg-controls">
+          <button
+            type="button"
+            class="pg-disc-trigger"
+            aria-controls="pg-disc-menu-actions"
+            aria-expanded="false"
+          >
+            Actions ▾
+          </button>
+          <button
+            type="button"
+            class="pg-disc-trigger"
+            aria-controls="pg-disc-menu-filter"
+            aria-expanded="false"
+          >
+            Filterable ▾
+          </button>
+          <button data-disclosure="destroy">Destroy these menus</button>
+        </div>
+
+        <!-- Static markup menu: groups, items, an hr, a disabled + destructive item. -->
+        <div
+          id="pg-disc-menu-actions"
+          class="menu menu--disclosure"
+          data-align="left"
+        >
+          <ul>
+            <li>
+              <button type="button" class="menu-item">
+                <span class="menu-item-label">New entry</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="menu-item sel">
+                <span class="menu-item-label">Duplicate</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="menu-item disabled" disabled>
+                <span class="menu-item-label">Rename (disabled)</span>
+              </button>
+            </li>
+          </ul>
+          <hr />
+          <h3 class="h6">Danger zone</h3>
+          <ul>
+            <li>
+              <button
+                type="button"
+                class="menu-item error"
+                data-destructive="true"
+              >
+                <span class="menu-item-label">Delete</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Search-input menu: items added via the API, filtered live. -->
+        <div
+          id="pg-disc-menu-filter"
+          class="menu menu--disclosure"
+          data-align="left"
+          data-with-search-input
+        ></div>
+      </section>
     </main>
 
     <!-- ============================ EVENT LOG ============================ -->
