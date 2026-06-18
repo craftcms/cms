@@ -446,19 +446,19 @@ class DeprecatedConcepts
                 $label = t('Content');
                 if (DeprecatedConcepts::supportsGlobalSets()) {
                     $event->settings[$label]['globals'] = [
-                        'iconMask' => '@craftcms/resources/icons/light/globe.svg',
+                        'iconName' => 'light/globe',
                         'label' => t('Globals', category: 'yii2-adapter'),
                     ];
                 }
                 if (DeprecatedConcepts::supportsCategories()) {
                     $event->settings[$label]['categories'] = [
-                        'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
+                        'iconName' => 'light/sitemap',
                         'label' => t('Categories'),
                     ];
                 }
                 if (DeprecatedConcepts::supportsTags()) {
                     $event->settings[$label]['tags'] = [
-                        'iconMask' => '@craftcms/resources/icons/light/tags.svg',
+                        'iconName' => 'light/tags',
                         'label' => t('Tags', category: 'yii2-adapter'),
                     ];
                 }

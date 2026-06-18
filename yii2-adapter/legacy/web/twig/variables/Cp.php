@@ -152,17 +152,21 @@ class Cp extends Component
 
         Event::listen(function(RegisterCpSettings $event) {
             if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_CP_SETTINGS)) {
-                $yiiEvent = new RegisterCpSettingsEvent(['settings' => &$event->settings]);
+                $yiiEvent = new RegisterCpSettingsEvent(['settings' => $event->settings]);
 
                 \yii\base\Event::trigger(self::class, self::EVENT_REGISTER_CP_SETTINGS, $yiiEvent);
+
+                $event->settings = $yiiEvent->settings;
             }
         });
 
         Event::listen(function(RegisterReadonlyCpSettings $event) {
             if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS)) {
-                $yiiEvent = new RegisterCpSettingsEvent(['settings' => &$event->settings]);
+                $yiiEvent = new RegisterCpSettingsEvent(['settings' => $event->settings]);
 
                 \yii\base\Event::trigger(self::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS, $yiiEvent);
+
+                $event->settings = $yiiEvent->settings;
             }
         });
 
@@ -178,9 +182,11 @@ class Cp extends Component
 
         Event::listen(function(FormActionsResolving $event) {
             if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_FORM_ACTIONS)) {
-                $yiiEvent = new FormActionsEvent(['formActions' => &$event->formActions]);
+                $yiiEvent = new FormActionsEvent(['formActions' => $event->formActions]);
 
                 \yii\base\Event::trigger(self::class, self::EVENT_REGISTER_FORM_ACTIONS, $yiiEvent);
+
+                $event->formActions = $yiiEvent->formActions;
             }
         });
     }

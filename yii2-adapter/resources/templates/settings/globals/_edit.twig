@@ -35,7 +35,7 @@
         id: 'name',
         name: 'name',
         value: globalSet.name,
-        errors: globalSet.errors.get('name'),
+        errors: globalSet.getErrors('name'),
         autofocus: true,
         required: true,
         disabled: readOnly,
@@ -50,7 +50,7 @@
         autocorrect: false,
         autocapitalize: false,
         value: globalSet.handle,
-        errors: globalSet.errors.get('handle'),
+        errors: globalSet.getErrors('handle'),
         required: true,
         disabled: readOnly,
     }) }}
