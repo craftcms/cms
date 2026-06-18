@@ -511,7 +511,7 @@ class Import
             return null;
         }
 
-        return ['Please select' => ''] + $headings;
+        return [['label' => 'Please select', 'value' => '', 'children' => []]] + $headings;
     }
 
     final public function processData(BaseImporter $config, array $data, mixed $element): array

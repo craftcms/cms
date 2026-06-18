@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Contracts;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use Illuminate\Validation\Validator;
 
 /**
  * ImportableElementContainerFieldInterface defines the common interface to be implemented by field classes
@@ -21,4 +23,14 @@ interface ImportableElementContainerFieldInterface extends FieldInterface
      * @return array The normalized data item.
      */
     public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array;
+
+    /**
+     * Returns a namespace prefix that is used on the mapping screen.
+     */
+    public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string;
+
+    /**
+     * Validates field's mapping.
+     */
+    public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool;
 }

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Concerns;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use Illuminate\Validation\Validator;
 
 /**
  * ImportableElementContainerFieldTrait provides a base implementation for {@see ImportableElementContainerFieldInterface}.
@@ -36,5 +38,21 @@ trait ImportableElementContainerField
         }
 
         return $dataItem;
+    }
+
+    // todo: maybe remove me - maybe I'm temporary?
+    /**
+     * @see ImportableElementContainerFieldInterface::getMappingUiPrefix()
+     */
+    public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string
+    {
+        // by default return empty string?
+        return '';
+    }
+
+    // todo: maybe remove me - maybe I'm temporary?
+    public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
+    {
+        return true;
     }
 }

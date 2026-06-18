@@ -7,14 +7,14 @@ namespace CraftCms\Cms\Import\Importers;
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
@@ -127,6 +127,22 @@ class ElementImporter extends BaseImporter
         return true;
     }
 
+    #[Override]
+    public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
+    {
+        // in case of an element importer, the $params might contain the field this map partial is for
+        // if $params is empty, then we're validating the whole map
+        if (! empty($params['field'])) {
+            $field = $params['field'];
+
+            if ($field instanceof ImportableElementContainerFieldInterface) {
+                $field->validateMapping($value, $attribute, $fail, $validator, $params);
+            }
+        }
+
+        return true;
+    }
+
     public static function create(): self
     {
         return new self;
@@ -232,29 +248,12 @@ class ElementImporter extends BaseImporter
             return [];
         }
 
-        $cols = [];
         // get all the field layout elements and create an array that contains their handles;
-        // if FLE is nestable (element container type) then its content is an array of its FLE handles
+        // if FLE is nestable (element container type), then its content is an array of its FLE handles
         // and so on
         $fieldLayout = app(Fields::class)->getLayoutByUid($this->fieldLayoutUid);
-        if ($fieldLayout) {
-            $allElements = $fieldLayout->getAllElements();
 
-            foreach ($allElements as $element) {
-                $field = null;
-                if ($element instanceof CustomField) {
-                    $field = $element->getField();
-                }
-                $cols[] = [
-                    'handle' => $element->attribute(),
-                    // $element->getField() needs to be called before calling $element->label() or we won't always get the label
-                    'label' => $element->label(),
-                    'isContainer' => $field instanceof ElementContainerFieldInterface,
-                ];
-            }
-        }
-
-        return $cols;
+        return ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
     }
 
     #[Override]

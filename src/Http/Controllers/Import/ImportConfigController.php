@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Import;
 
+use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Validator;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -281,22 +286,29 @@ class ImportConfigController
 
     public function storeMap(Request $request): Response
     {
-        $importConfigUid = $request->input('uid');
+        $importConfigUid = $request->input('importUid');
         abort_if(empty($importConfigUid), 400, 'No import config UID provided');
 
         $request->validate([
-            'uid' => ['string', 'max:36'],
+            'importUid' => ['string', 'max:36'],
         ]);
 
         abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
         $request->validate([
             'fieldLayoutId' => ['nullable', 'integer'],
+            'map' => [
+                'required',
+                'array',
+                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
+            ],
         ]);
 
         if (property_exists($import, 'fieldLayoutId')) {
             $import->fieldLayoutId($request->input('fieldLayoutId', $import->fieldLayoutId));
         }
+
+        $import->map($request->input('map', $import->map));
 
         if (! $this->importService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
@@ -308,6 +320,102 @@ class ImportConfigController
             t('Import config saved.'),
             'import',
         );
+    }
+
+    public function editNestedFieldMapping(Request $request): CpScreenResponse
+    {
+        [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids($request);
+
+        $fieldHandle = $request->input('fieldHandle');
+        $ownerPrefix = $request->input('ownerPrefix');
+
+        $cols = [];
+
+        if ($field instanceof ImportableElementContainerFieldInterface) {
+            $providers = $field->getFieldLayoutProviders();
+            foreach ($providers as $provider) {
+                $fieldLayout = $provider->getFieldLayout();
+                $cols[$provider->getHandle()] = [
+                    'provider' => $provider,
+                    'destinationCols' => ImportHelper::getDestinationColsForFieldLayout($fieldLayout, $field, $provider, $ownerPrefix),
+                ];
+            }
+        }
+
+        $currentUser = auth('craft')->user();
+
+        $templateVars = [
+            'readOnly' => $this->readOnly,
+            'static' => ! $currentUser?->can('editImportConfigs'),
+            'import' => $import,
+            'field' => $field,
+            'destinationCols' => $cols,
+            'sourceDataCols' => $import->getSourceDataCols(),
+            'nested' => true,
+            'fieldHandle' => $fieldHandle,
+        ];
+
+        return new CpScreenResponse()
+            ->title(t('Edit map for {fieldName}', ['fieldName' => $field->name]))
+//            ->addCrumb(t('Import'), 'import')
+//            ->addCrumb(t('Configs'), 'import/configs')
+//            ->addCrumb(t($import->name), 'import/configs/'.$import->handle)
+            ->contentTemplate('import/configs/_map.twig', $templateVars)
+            ->unless(
+                $this->readOnly || ! $currentUser?->can('editImportConfigs'),
+                callback: function (CpScreenResponse $response) {
+                    $response
+                        ->action('import/configs/saveNestedFieldMapping')
+                        ->redirectUrl('import/configs/{handle}/map');
+                },
+                default: function (CpScreenResponse $response) {
+                    if ($this->readOnly) {
+                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
+                    }
+                },
+            );
+    }
+
+    public function storeNestedFieldMapping(Request $request): Response
+    {
+        [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids($request);
+
+        $fieldHandle = $request->input('fieldHandle', $field->handle);
+
+        // validate the map fragment;
+        // if it errors, a toast notification will show with the error
+        $request->validate([
+            'fieldHandle' => ['required', 'string', 'max:255'],
+            "map.$fieldHandle" => [
+                'required',
+                'array',
+                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
+            ],
+        ]);
+
+        // todo: if it errors - return asJsonError() and show the errors in the slideout?
+
+        $map = $request->input("map.$fieldHandle");
+
+        // and return it
+        return $this->asJsonSuccess(null, ['fieldHandle' => $fieldHandle, 'map' => $map]);
+    }
+
+    private function fieldImportUids(Request $request): array
+    {
+        $fieldUid = $request->input('fieldUid');
+        abort_if(empty($fieldUid), 400, 'No field UID provided');
+
+        $field = Fields::getFieldByUid($fieldUid);
+        abort_if(is_null($field), 400, 'Invalid field UID.');
+
+        $importUid = $request->input('importUid');
+        abort_if(empty($importUid), 400, 'No import UID provided');
+
+        $import = $this->importService->getConfigByUid($importUid);
+        abort_if(is_null($import), 400, 'Invalid import UID.');
+
+        return [$fieldUid, $field, $importUid, $import];
     }
 
     public function destroy(Request $request): Response

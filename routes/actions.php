@@ -367,6 +367,8 @@ Route::prefix(implode('/', [
             Route::post('import/configs/save', [ImportConfigController::class, 'store']);
             Route::post('import/configs/saveFieldLayoutProvider', [ImportConfigController::class, 'storeFieldLayoutProvider']);
             Route::post('import/configs/saveMap', [ImportConfigController::class, 'storeMap']);
+            Route::get('import/configs/editNestedFieldMapping', [ImportConfigController::class, 'editNestedFieldMapping']);
+            Route::post('import/configs/saveNestedFieldMapping', [ImportConfigController::class, 'storeNestedFieldMapping']);
         });
         Route::middleware('can:deleteImportConfigs')->post('import/configs/delete', [ImportConfigController::class, 'destroy']);
 

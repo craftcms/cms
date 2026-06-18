@@ -1,27 +1,71 @@
 {% import '_includes/forms.twig' as forms %}
 
-<table>
-    {% for col in destinationCols %}
-        <tr>
-            <td>
-                {{ col.label }} <pre>({{ col.handle }})</pre>
-            </td>
-            <td>
-                {% if col.isContainer %}
-                    SPECIAL BUTTON
-                {% else %}
-                    {{ forms.selectField({
-                        name: 'map[' ~ col.handle ~ ']',
-                        options: sourceDataCols,
-                        value: import.map[col.handle] ?? ''
-                    }) }}
-                {% endif %}
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+{% set readOnly = readOnly ?? false %}
+{% set nested = nested ?? false %}
+{% set field = field ?? null %}
+{% set fieldHandle = fieldHandle ?? null %}
 
-<div>
+<p>File: {{ import.file }}</p>
+
+{% if not readOnly %}
+    {{ hiddenInput('importUid', import.uid) }}
+    {% if field %}
+        {{ hiddenInput('fieldUid', field.uid) }}
+    {% endif %}
+    {% if fieldHandle %}
+        {{ hiddenInput('fieldHandle', fieldHandle) }}
+    {% endif %}
+{% endif %}
+
+{% if nested %}
+    {% for item in destinationCols %}
+        <h3>{{ item.provider.name }}</h3>
+        {{ _self.fieldLayoutTable(item.destinationCols, sourceDataCols, import, field) }}
+    {% endfor %}
+{% else %}
+    {{ _self.fieldLayoutTable(destinationCols, sourceDataCols, import) }}
+{% endif %}
+
+
+{% macro fieldLayoutTable(destinationCols, sourceDataCols, import, field = null) %}
+    <table>
+        {% for col in destinationCols %}
+            <tr>
+                <td>
+                    {{ col.label }} <pre>({{ col.handle }})</pre>
+                </td>
+                <td>
+                    {% if col.isContainer %}
+                        {{ hiddenInput(col.prefixedHandle, null) }}
+                        <a href="#"
+                           class="btn mapping-slideout"
+                           data-field-uid="{{ col.fieldUid ?? '' }}" {# this is the global field UID #}
+                           data-field-handle="{{ col.handle }}" {# this will be the layout handle, so can be overwritten #}
+                           data-import-uid="{{ import.uid }}"
+                           data-owner-prefix="{{ col.prefixedHandle }}"
+                        >
+                            Map field
+                        </a>
+
+                        {{ col.prefixedHandle }}
+                    {% else %}
+                        {{ forms.selectField({
+                            name: col.prefixedHandle,
+                            options: sourceDataCols,
+                            value: import.map[col.prefixedHandleWithoutMap] ?? ''
+                        }) }}
+
+                        {{ col.prefixedHandle }}
+{#                        {{ col.prefixedHandleWithoutMap }}#}
+{#                        {{ col.handle }}#}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endmacro %}
+
+{#<div>
     <p>
         mapping stuff goes here<br />
         if it's element-based, we want a list of all the field layout elements that are importable
@@ -32,11 +76,50 @@
         if there's a nestable field in there - another modal (or slideout) can be open - and so on
     </p>
     <p>
+        maybe:<br />
         if we're editing something that already exists, this is prepopulated with what's already saved;<br />
         if it's a new config (or the map in the config is empty), you use the UI to create your mapping;<br />
         which means you can create a new config, leave mapping empty, then go edit the mapping in the php file,
         if that's easier for you and then go back here to tweak
     </p>
-</div>
-{{ dump(destinationCols) }}
-{{ dump(sourceDataCols) }}
+</div>#}
+{#{{ dump(destinationCols) }}#}
+{#{{ dump(sourceDataCols) }}#}
+
+
+{# TODO: this whole thing will move to a separate file #}
+{% js %}
+$('.mapping-slideout').on('activate', function(e) {
+    e.preventDefault();
+
+    const fieldUid = $(this).data('field-uid');
+    const fieldHandle = $(this).data('field-handle');
+    const importUid = $(this).data('import-uid');
+    const ownerPrefix = $(this).data('owner-prefix');
+
+    console.log(ownerPrefix);
+
+    let data;
+    try {
+        const slideout = new Craft.CpScreenSlideout(
+            'import/configs/editNestedFieldMapping',
+            {
+                params: {'fieldUid': fieldUid, 'fieldHandle': fieldHandle, 'importUid': importUid, 'ownerPrefix': ownerPrefix},
+            }
+        );
+        slideout.on('submit', (ev) => {
+            const data = ev.response.data;
+            let $input = $(this).prev('input[name$="' + ownerPrefix + '"]');
+    console.log($input);
+    console.log(data.map);
+            $input.val(JSON.stringify(data.map));
+        });
+{#        slideout.on('close', () => {#}
+{#            slideout.destroy();#}
+{#        });#}
+    } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        throw e;
+    }
+});
+{% endjs %}

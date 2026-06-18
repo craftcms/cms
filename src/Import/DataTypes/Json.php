@@ -44,32 +44,42 @@ class Json implements DataTypeInterface
         //            |> array_unique(...)
         //            |> array_values(...);
 
-        $keys = static::collectUniqueKeys($array);
+        //        $keys = static::collectUniqueKeys($array);
+        $keys = static::flattenKeys($array);
+        sort($keys);
+
         array_walk($keys, function (&$value, $key) {
-            $value = ['label' => $key, 'value' => $key, 'children' => $value];
+            $value = ['label' => $value, 'value' => $value];
         });
 
         return $keys;
     }
 
-    private static function getData(string $data): array
-    {
-        return JsonHelper::decode($data);
-    }
-
-    private static function collectUniqueKeys(array $items): array
+    private static function flattenKeys(array $data, string $prefix = ''): array
     {
         $keys = [];
 
-        foreach ($items as $item) {
-            if (! is_array($item)) {
-                continue;
+        foreach ($data as $key => $value) {
+            $isListItem = is_int($key);
+            $path = $isListItem
+                ? $prefix
+                : ($prefix === '' ? (string) $key : $prefix.'.'.$key);
+
+            if (! $isListItem && $path !== '') {
+                $keys[] = $path;
             }
 
-            static::collectKeysFromArray($item, $keys);
+            if (is_array($value)) {
+                $keys = array_merge($keys, self::flattenKeys($value, $path));
+            }
         }
 
-        return $keys;
+        return array_values(array_unique($keys));
+    }
+
+    private static function getData(string $data): array
+    {
+        return JsonHelper::decode($data);
     }
 
     private static function collectKeysFromArray(array $array, array &$keys): void

@@ -373,3 +373,41 @@ describe('nested matrix', function () {
         expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(2);
     });
 });
+
+it('skips blocks that are missing a type', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        ['title' => 'no type block', 'fields' => ['plainText' => 'foo']],
+        ['type' => 'secondEt', 'title' => 'valid block', 'fields' => ['plainText' => 'bar']],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+    expect($entry->getFieldValue('myMatrix')->one()->title)->toBe('valid block');
+});
+
+it('skips blocks with a type not allowed by the field', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        ['type' => 'notAnEntryType', 'title' => 'bad block', 'fields' => ['plainText' => 'foo']],
+        ['type' => 'secondEt', 'title' => 'valid block', 'fields' => ['plainText' => 'bar']],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+    expect($entry->getFieldValue('myMatrix')->one()->title)->toBe('valid block');
+});
+
+it('accepts the sortOrder/entries keyed input format', function () {
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'sortOrder' => ['new:1', 'new:2'],
+        'entries' => [
+            'new:1' => ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
+            'new:2' => ['type' => 'firstEt', 'title' => 'block 2', 'fields' => ['plainText' => 'bar']],
+        ],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+});

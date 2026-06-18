@@ -34,6 +34,7 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
@@ -70,6 +71,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
@@ -1851,5 +1853,48 @@ JS,
         }
 
         return $normalizedValue;
+    }
+
+    /**
+     * Matrix fields can have multiple field layout providers (multiple entry types),
+     * so the prefix needs to account for that.
+     */
+    #[Override]
+    public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string
+    {
+        $newPrefix = '';
+
+        if (! empty($prefix)) {
+            $newPrefix = $prefix;
+        }
+
+        // bail silently if we don't have an entry type here
+        if (empty($provider)) {
+            return $newPrefix;
+        }
+
+        return $newPrefix."[type][$provider->handle]";
+    }
+
+    #[Override]
+    public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
+    {
+        $field = $params['field'];
+
+        // validate that the provider types are allowed
+        $providers = $field->getFieldLayoutProviders();
+        $providerHandles = array_map(fn ($provider) => $provider->getHandle(), $providers);
+
+        $typesFromMap = array_unique(array_keys($value['type']));
+
+        if (array_diff($typesFromMap, $providerHandles)) {
+            $fail($attribute, t('The map contains mapping for entry types that aren’t allowed for this field.'));
+
+            return false;
+        }
+
+        // TODO: validate that the fields in each provider are allowed
+
+        return true;
     }
 }

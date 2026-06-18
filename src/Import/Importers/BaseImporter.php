@@ -236,6 +236,21 @@ abstract class BaseImporter
      */
     public function map(array $map): self
     {
+        // json to array
+        foreach ($map as &$value) {
+            if (! is_string($value)) {
+                continue;
+            }
+
+            $json = json_decode($value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $value = $json;
+            }
+        }
+        unset($value);
+
+        // set
         $this->map = $map;
 
         return $this;
@@ -400,6 +415,12 @@ abstract class BaseImporter
         $fail($attribute, t('Transformer has to be empty, a valid class or a closure.'));
 
         return false;
+    }
+
+    public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
+    {
+        // by default this does nothing
+        return true;
     }
 
     /**
