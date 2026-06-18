@@ -44,7 +44,9 @@
   function handleFinish(): void {
     setTimeout(() => {
       window.location.href =
-        state.value.returnUrl || props.returnUrl || `/${general.cpTrigger}/dashboard`;
+        state.value.returnUrl ||
+        props.returnUrl ||
+        `/${general.cpTrigger}/dashboard`;
     }, 750);
   }
 

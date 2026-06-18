@@ -8,8 +8,33 @@ import {promisify} from 'util';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import {wayfinder} from '@laravel/vite-plugin-wayfinder';
+import {
+  transformWayfinderSource,
+  isWayfinderRouteModule,
+} from './scripts/wayfinder-cp-trigger.mjs';
 
 const execAsync = promisify(exec);
+
+/**
+ * Rewrites Wayfinder-generated route URLs to use the runtime CP trigger instead
+ * of the `/admin` prefix baked in at generation time. Runs at import time so it
+ * survives the wayfinder() plugin regenerating the files on disk.
+ */
+function wayfinderCpTrigger() {
+  return {
+    name: 'wayfinder-cp-trigger',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!isWayfinderRouteModule(id)) {
+        return null;
+      }
+
+      const transformed = transformWayfinderSource(code);
+
+      return transformed ? {code: transformed, map: null} : null;
+    },
+  };
+}
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -151,6 +176,7 @@ export default defineConfig(({mode}) => {
         path: 'resources/js',
         command: './vendor/bin/testbench wayfinder:generate',
       }),
+      wayfinderCpTrigger(),
       vue({
         template: {
           compilerOptions: {

@@ -15,6 +15,7 @@ import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetInde
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import {setCpTrigger} from '@/wayfinder/cp-trigger';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -53,6 +54,9 @@ const Cp = {
 
   init() {
     config.initialize(this.initialConfig);
+
+    // Make Wayfinder-generated route URLs use the runtime-configured CP trigger.
+    setCpTrigger(config.get('cpTrigger'));
     queue.initialize({
       runAutomatically: config.get('runQueueAutomatically', true),
       enabled: true,
