@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Auth\Events\Authenticated;
@@ -33,6 +34,7 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -46,6 +48,10 @@ class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        if (! class_exists($this->app->make(Repository::class)->get('auth.providers.users.model'))) {
+            $this->app->make(Repository::class)->set('auth.providers.users.model', User::class);
+        }
+
         $this->registerPermissions();
         $this->registerEvents();
     }
