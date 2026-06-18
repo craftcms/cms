@@ -100,7 +100,9 @@ use function CraftCms\Cms\t;
 #[Ruleset(UserRules::class)]
 class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, MustVerifyEmailContract
 {
-    use Authenticatable;
+    use Authenticatable {
+        getAuthPassword as getAuthPasswordAuthenticatable;
+    }
     use Authorizable;
     use CanResetPassword, CraftUserTrait {
         CraftUserTrait::sendPasswordResetNotification insteadof CanResetPassword;
@@ -368,6 +370,19 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function getAuthIdentifierName(): string
     {
         return 'id';
+    }
+
+    public function getAuthPassword(): ?string
+    {
+        $password = $this->getAuthPasswordAuthenticatable();
+
+        if (is_null($password)) {
+            return null;
+        }
+
+        // Ensure the password starts with `$2y$` for BC with older passwords
+        // (h/t https://stackoverflow.com/a/79217475)
+        return Str::replaceStart('$2a$', '$2y$', $password);
     }
 
     /**
