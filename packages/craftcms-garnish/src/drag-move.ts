@@ -1,25 +1,31 @@
 /**
- * DragMove — drag-to-move helper.
+ * DragMove — trivial `BaseDrag` subclass that positions the dragged element's
+ * top-left at the cursor (minus the grab offset) on each drag frame.
  *
- * The legacy `DragMove` is a ~15-line subclass of `BaseDrag`, which updates an
- * element's `left`/`top` as the pointer moves. `BaseDrag` (~580 lines) is
- * intentionally NOT part of the modern core for the vertical-slice PoC (doc 03
- * §2/§5: Tier 2), so there is nothing to subclass yet.
- *
- * Rather than ship a half-built dragger, this is a clearly-marked placeholder.
- * `Modal` defaults `draggable:false`/`resizable:false` and throws a descriptive
- * error if either is enabled, so no consumer path silently relies on this.
- *
- * When `BaseDrag` lands, replace this with the real `class DragMove extends
- * BaseDrag` and remove the throwing constructor.
+ * The legacy `DragMove.onDrag` *replaced* `BaseDrag.onDrag` and did not call
+ * super, so it never emitted the `drag` event. We call `super.onDrag()` here
+ * (doc 07 §5 Option A) so `DragMove` is strictly more capable — it also emits
+ * `drag` / invokes `settings.onDrag`. The CSS write happens synchronously before
+ * delegating to the RAF-deferred `super.onDrag()`.
  */
 
-export class DragMove {
-  constructor() {
-    throw new Error(
-      'Garnish.DragMove is not yet supported in the modern build: BaseDrag is out of PoC scope. ' +
-        'Modal’s `draggable`/`resizable` options remain disabled until BaseDrag is ported.'
-    );
+import {BaseDrag, type BaseDragSettings} from './drag/base-drag';
+
+export {type BaseDragSettings};
+
+/**
+ * Drag-to-move helper: a {@link BaseDrag} subclass whose only job is to set the
+ * dragged element's `left`/`top` so it follows the cursor. Used by `Modal`'s
+ * `draggable` option.
+ */
+export class DragMove extends BaseDrag {
+  override onDrag(): void {
+    if (this.$targetItem) {
+      this.$targetItem.style.left = `${this.mouseX! - this.mouseOffsetX!}px`;
+      this.$targetItem.style.top = `${this.mouseY! - this.mouseOffsetY!}px`;
+    }
+
+    super.onDrag();
   }
 }
 

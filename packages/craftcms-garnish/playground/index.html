@@ -90,9 +90,92 @@
         </div>
       </section>
 
+      <!-- ====================== DRAGGABLE / RESIZABLE MODAL ====================== -->
+      <section class="pg-section" id="section-drag-modal">
+        <h2>4. Draggable &amp; resizable Modal</h2>
+        <p>
+          Modal's <code>draggable</code> / <code>resizable</code> options are
+          now fully supported (they used to throw). Open each modal and
+          drag/resize it live — <code>dragStart / drag / dragStop</code> events
+          are piped into the log panel.
+        </p>
+        <div class="pg-controls">
+          <button data-dragmodal="container">
+            Draggable modal (drag anywhere)
+          </button>
+          <button data-dragmodal="handle">
+            Draggable modal (dragHandleSelector: header only)
+          </button>
+          <button data-dragmodal="resizable">
+            Resizable modal (corner handle)
+          </button>
+          <button data-dragmodal="both">Draggable + resizable modal</button>
+          <button data-dragmodal="destroy">Destroy these modals</button>
+        </div>
+      </section>
+
+      <!-- ====================== STANDALONE BASEDRAG / DRAGMOVE ====================== -->
+      <section class="pg-section" id="section-drag-standalone">
+        <h2>5. Standalone BaseDrag / DragMove</h2>
+        <p>
+          Free-floating boxes inside the bounded area below. The green boxes use
+          <code>new DragMove(box)</code> directly; the blue box uses a raw
+          <code>new BaseDrag(box, {onDrag})</code> that sets
+          <code>left/top</code> itself. Every
+          <code>dragStart / drag / dragStop</code> fires into the log (drag
+          events are throttled in the log to one line per gesture). The third
+          green box is X-axis-locked (<code>{axis: 'x'}</code>).
+        </p>
+        <div class="pg-controls">
+          <button data-dragbox="reset">Reset box positions</button>
+        </div>
+        <div class="pg-drag-arena" id="drag-arena">
+          <div class="pg-drag-box pg-drag-box--move" data-box="move-1">
+            DragMove #1
+          </div>
+          <div class="pg-drag-box pg-drag-box--move" data-box="move-2">
+            DragMove #2
+          </div>
+          <div
+            class="pg-drag-box pg-drag-box--move pg-drag-box--xlock"
+            data-box="move-x"
+          >
+            DragMove (x-axis only)
+          </div>
+          <div class="pg-drag-box pg-drag-box--base" data-box="base-1">
+            BaseDrag + onDrag
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================== AUTO-SCROLL ====================== -->
+      <section class="pg-section" id="section-drag-autoscroll">
+        <h2>6. Auto-scroll while dragging</h2>
+        <p>
+          The orange item lives inside a tall scrollable container. Grab it and
+          drag toward the top or bottom edge (within ~25px) — the container
+          should auto-scroll via the RAF loop. (Dragging near the window's
+          top/bottom edges exercises the window-scroll path + cursor
+          correction.)
+        </p>
+        <div class="pg-controls">
+          <button data-autoscroll="reset">Reset</button>
+        </div>
+        <div class="pg-scroll-container" id="scroll-container">
+          <div class="pg-scroll-tall">
+            <div class="pg-drag-box pg-drag-box--scroll" data-box="scroll-1">
+              Drag me near an edge
+            </div>
+            <p class="pg-scroll-filler">↑ tall scrollable content ↑</p>
+            <p class="pg-scroll-filler">scroll me by dragging to the edges</p>
+            <p class="pg-scroll-filler">↓ keep going ↓</p>
+          </div>
+        </div>
+      </section>
+
       <!-- ====================== EVENTS / UTILITIES ====================== -->
       <section class="pg-section" id="section-utils">
-        <h2>4. Events &amp; utilities</h2>
+        <h2>7. Events &amp; utilities</h2>
         <p>
           Small demos of core utilities and the synthetic <code>activate</code>
           custom event.

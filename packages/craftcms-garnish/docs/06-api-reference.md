@@ -61,9 +61,9 @@ Event objects passed to handlers are `GarnishEvent` (for DOM events, the native
 | Key | Default | Description |
 | --- | --- | --- |
 | `autoShow` | `true` | Show immediately on construction (when a container is given). |
-| `draggable` | `false` | **PoC:** throws if enabled. |
-| `dragHandleSelector` | `null` | Drag handle selector (PoC). |
-| `resizable` | `false` | **PoC:** throws if enabled. |
+| `draggable` | `false` | Make the modal draggable (via `DragMove` on its container). |
+| `dragHandleSelector` | `null` | Restrict dragging to this selector within the container (e.g. a header). |
+| `resizable` | `false` | Add a corner resize handle (via `BaseDrag`). |
 | `minGutter` | `10` | Min px between modal and viewport edge. |
 | `onShow` / `onHide` | no-op | Show/hide callbacks. |
 | `onFadeIn` / `onFadeOut` | no-op | Post-fade callbacks. |
@@ -88,9 +88,86 @@ Event objects passed to handlers are `GarnishEvent` (for DOM events, the native
 | `$container` / `$shade` / `$liveRegion` / `$triggerElement` | `HTMLElement \| Element \| null` | Element refs. |
 | `visible` | `boolean` | Whether currently shown. |
 | `desiredWidth` / `desiredHeight` | `number \| null` | Optional fixed dimensions. |
+| `dragger` | `DragMove \| null` | The `DragMove` driving `draggable` (when enabled), else `null`. |
+| `resizeDragger` | `BaseDrag \| null` | The `BaseDrag` driving `resizable` (on the resize handle), else `null`. |
 
 **Events:** `show`, `hide`, `fadeIn`, `fadeOut`, `updateSizeAndPosition`, `escape`,
 `destroy`.
+
+---
+
+## `BaseDrag`
+
+`class BaseDrag<S extends BaseDragSettings = BaseDragSettings> extends Base<S>` —
+the jQuery-free drag foundation. Uses the Pointer Events API (mouse + touch + pen)
+and a native RAF auto-scroll loop. Subclasses (`DragMove`, and later `Drag` /
+`DragSort`) override the drag hooks to manipulate the dragged element(s).
+
+**Constructor:** `new BaseDrag(items?, settings?)` — `items` is a selector,
+element, or list of elements made draggable immediately; `settings` overrides the
+defaults. Also `new BaseDrag(settings)` (param shift when the first arg is a plain
+object).
+
+> Drag handles require `touch-action: none` (CSS or inline) so the browser doesn't
+> consume the gesture on touch devices. `Modal` sets this on its generated resize
+> handle; for your own handles you must set it.
+
+### Statics
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `BaseDrag.minMouseDist` | `number` (`1`) | Fallback when `settings.minMouseDist === null`. |
+| `BaseDrag.windowScrollTargetSize` | `number` (`25`) | px edge band that triggers auto-scroll. |
+| `BaseDrag.defaults` | `BaseDragSettings` | Default settings (below). |
+| `getItemDragger(item)` | `(Element) => BaseDrag \| undefined` | Named export: read the dragger that owns an item. |
+
+### Settings (`BaseDragSettings`)
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `minMouseDist` | `null` | Min px the pointer must travel before a drag starts (`null` → `BaseDrag.minMouseDist`, i.e. `1`). |
+| `handle` | `null` | Drag handle: element(s), a selector resolved within each item, a `(item) => handle` function, or `null` (the item itself). |
+| `axis` | `null` | Restrict movement to `X_AXIS` (`'x'`), `Y_AXIS` (`'y'`), or `null` (both). |
+| `ignoreHandleSelector` | `'input, textarea, button, select, .btn'` | Pointer-down on a descendant matching this is ignored (unless it IS the handle). |
+| `onBeforeDragStart` / `onDragStart` / `onDrag` / `onDragStop` | no-op | Lifecycle callbacks (fire alongside the matching events). |
+
+### Methods & properties
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `$items` | `Element[]` | The draggable items (native elements; legacy held a jQuery collection). |
+| `$targetItem` | `HTMLElement \| null` | The element currently being dragged, or `null`. |
+| `dragging` | `boolean` | Whether a drag is in progress. |
+| `mouseX` / `mouseY` | `number \| null` | Axis-constrained pointer page coords (what subclasses read). |
+| `realMouseX` / `realMouseY` | `number \| null` | Unconstrained pointer page coords (before axis lock). |
+| `mousedownX` / `mousedownY` | `number \| null` | Pointer-down page coords. |
+| `mouseDistX` / `mouseDistY` | `number \| null` | `mouseX/Y - mousedownX/Y` (read by `Modal._handleResize`). |
+| `mouseOffsetX` / `mouseOffsetY` | `number \| null` | Grab offset: pointer-down page coord minus the target's offset. |
+| `scrollProperty` / `scrollAxis` / `scrollDist` / `scrollFrame` | `… \| null` | Auto-scroll loop state. |
+| `addItems` / `removeItems` | `(items) => void` | Add/remove draggable items (binds/unbinds the handle listener). |
+| `removeAllItems` | `() => void` | Stop tracking every item. |
+| `getPrevItem` / `getNextItem` | `(item) => Element \| null` | Neighbor in `$items`. |
+| `allowDragging` | `() => boolean` | Default `true`; override to gate dragging. |
+| `startDragging` / `drag` / `stopDragging` | overridable | Drag lifecycle (subclasses call via `super`). |
+| `setScrollContainer` / `isScrollingWindow` | `() => void` / `() => boolean` | Resolve / query the scroll container. |
+| `onBeforeDragStart` | `() => void` | **Sync** hook: emits `beforeDragStart` + runs the callback. |
+| `onDragStart` / `onDrag` / `onDragStop` | `() => void` | **RAF-deferred** hooks: emit the event + run the callback. |
+| `destroy` | `() => void` | `removeAllItems()` then base teardown. |
+
+**Events:** `beforeDragStart`, `dragStart`, `drag`, `dragStop`, plus inherited
+`destroy`.
+
+---
+
+## `DragMove`
+
+`class DragMove extends BaseDrag` — a trivial subclass whose only job is to set the
+dragged element's `left`/`top` so it follows the cursor (minus the grab offset).
+Used by `Modal`'s `draggable` option. Same constructor and surface as `BaseDrag`.
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `onDrag` | `() => void` | Sets `$targetItem.style.left/top` synchronously, then calls `super.onDrag()` (so `DragMove` also emits the `drag` event — a deliberate improvement over legacy). |
 
 ---
 
@@ -126,8 +203,8 @@ object carrying every class, constant, utility, and flag — the legacy-shaped
 singleton, for incremental migration. **Prefer the tree-shakeable named exports in
 new code.**
 
-- **Classes:** `Base`, `Modal`, `UiLayerManager`, `EscManager`, `DragMove`,
-  `ShortcutManager` (_deprecated_ alias of `UiLayerManager`).
+- **Classes:** `Base`, `Modal`, `BaseDrag`, `DragMove`, `UiLayerManager`,
+  `EscManager`, `ShortcutManager` (_deprecated_ alias of `UiLayerManager`).
 - **Globals/flags:** `win`, `doc`, `bod`, `scrollContainer` (get/set), `rtl`, `ltr`,
   `activateEventsMuted` (get/set), `resizeEventsMuted` (get/set).
 - **Class-level events:** `on(Class, …)`, `off(Class, …)`, `once(Class, …)`.
@@ -298,7 +375,8 @@ gracefully.
 
 ---
 
-## Not yet supported (PoC scope)
+## Not yet supported
 
-- **`Modal` `draggable` / `resizable`** — default `false`; **throw** when enabled.
-- **`DragMove`** — placeholder; its constructor **throws** (`BaseDrag` not ported).
+- **`Drag`**, **`DragDrop`**, **`DragSort`** — the higher-level drag behaviors built
+  on `BaseDrag`. (`BaseDrag`, `DragMove`, and `Modal` `draggable`/`resizable` are
+  implemented and supported.)

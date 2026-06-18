@@ -7,10 +7,14 @@ export {
   getElement,
   hasAttr,
   getOffset,
+  getOuterWidth,
+  getOuterHeight,
   hitTest,
   isCursorOver,
   copyTextStyles,
 } from './dom';
+
+export {getScrollParent, isWindowScrollContainer} from './scroll';
 
 export {
   isFocusable,

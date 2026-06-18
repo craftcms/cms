@@ -15,15 +15,18 @@
  *   `prefersReducedMotion`. `.velocity('stop')` → `cancel()` of the tracked
  *   animation.
  *
- * Draggable/resizable are deliberately out of PoC scope: `BaseDrag`/`DragMove`
- * are not in the modern core, so `draggable`/`resizable` default to `false` and
- * the relevant code paths throw a clear "not yet supported" error if turned on.
+ * Draggable/resizable are wired through `DragMove`/`BaseDrag` (doc 07 §6): a
+ * draggable modal uses a `DragMove` on its container (or `dragHandleSelector`),
+ * and a resizable modal uses a `BaseDrag` on a generated resize handle.
  */
 
 import {Base} from './base';
-import {bod, win} from './globals';
+import {bod, globals, win} from './globals';
 import {ESC_KEY, FX_DURATION} from './constants';
 import {getUiLayerManager} from './managers/registry';
+import {BaseDrag} from './drag/base-drag';
+import {DragMove} from './drag-move';
+import {ResizeHandle} from './icons/resize-handle';
 import {
   addModalAttributes,
   hideModalBackgroundLayers,
@@ -57,17 +60,11 @@ type FocusTarget =
 export interface ModalSettings extends GarnishBaseSettings {
   /** Show the modal immediately on construction (when a container is given). Default `true`. */
   autoShow: boolean;
-  /**
-   * Allow dragging the modal by its handle.
-   * @remarks Not yet supported in the modern build — enabling it throws. Default `false`.
-   */
+  /** Allow dragging the modal by its handle. Default `false`. */
   draggable: boolean;
   /** Selector for the drag handle (only relevant when `draggable`). Default `null`. */
   dragHandleSelector: string | null;
-  /**
-   * Allow resizing the modal.
-   * @remarks Not yet supported in the modern build — enabling it throws. Default `false`.
-   */
+  /** Allow resizing the modal via a generated resize handle. Default `false`. */
   resizable: boolean;
   /** Minimum gutter (px) between the modal and the viewport edge. Default `10`. */
   minGutter: number;
@@ -117,9 +114,9 @@ const noop: ModalCallback = () => {};
  * legacy-compatible param shift: `new Modal(settings)` is treated as
  * `new Modal(null, settings)` when the first argument is a plain object.
  *
- * @remarks `draggable` and `resizable` are **not yet supported** in the modern
- * build (the drag system is out of PoC scope); both default to `false` and
- * enabling either throws a descriptive error.
+ * @remarks `draggable` and `resizable` are supported via `DragMove`/`BaseDrag`;
+ * both default to `false`. Drag handles get `touch-action: none` so touch
+ * gestures drive the drag rather than panning the page.
  *
  * @example Modern usage
  * ```ts
@@ -177,9 +174,10 @@ export class Modal extends Base<ModalSettings> {
   /** Whether the modal is currently shown. */
   visible = false;
 
-  // Draggable/resizable are unsupported in the PoC; kept for shape parity.
-  dragger: unknown = null;
-  resizeDragger: unknown = null;
+  /** The `DragMove` driving `draggable`, or `null`. */
+  dragger: DragMove | null = null;
+  /** The `BaseDrag` driving `resizable` (on the resize handle), or `null`. */
+  resizeDragger: BaseDrag | null = null;
   resizeStartWidth: number | null = null;
   resizeStartHeight: number | null = null;
 
@@ -259,7 +257,6 @@ export class Modal extends Base<ModalSettings> {
    * already attached to this element, it is destroyed first.
    *
    * @param container - The element to use as the modal container.
-   * @throws If `draggable` or `resizable` is enabled (not yet supported).
    */
   setContainer(container: Element): void {
     this.$container = container as HTMLElement;
@@ -274,15 +271,24 @@ export class Modal extends Base<ModalSettings> {
     containerModals.set(container, this);
 
     if (this.settings!.draggable) {
-      throw new Error(
-        'Garnish.Modal: `draggable` is not yet supported in the modern build (DragMove/BaseDrag are out of PoC scope).'
-      );
+      const handle = this.settings!.dragHandleSelector
+        ? this.$container.querySelector(this.settings!.dragHandleSelector)
+        : this.$container;
+      this.dragger = new DragMove(this.$container, {handle});
     }
 
     if (this.settings!.resizable) {
-      throw new Error(
-        'Garnish.Modal: `resizable` is not yet supported in the modern build (BaseDrag is out of PoC scope).'
-      );
+      const handle = document.createElement('div');
+      handle.className = 'resizehandle';
+      handle.innerHTML = ResizeHandle;
+      // touch-action: none lets the pointer drive the resize on touch devices.
+      handle.style.touchAction = 'none';
+      this.$container.appendChild(handle);
+
+      this.resizeDragger = new BaseDrag(handle, {
+        onDragStart: () => this._handleResizeStart(),
+        onDrag: () => this._handleResize(),
+      });
     }
 
     this.addLiveRegion();
@@ -594,6 +600,9 @@ export class Modal extends Base<ModalSettings> {
    * listeners). Override and call `super.destroy()` to clean up extra state.
    */
   override destroy(): void {
+    this.dragger?.destroy();
+    this.resizeDragger?.destroy();
+
     if (this.$container) {
       containerModals.delete(this.$container);
       this.$container.remove();
@@ -619,6 +628,29 @@ export class Modal extends Base<ModalSettings> {
     if (ev.target === window) {
       this.updateSizeAndPosition();
     }
+  }
+
+  /** Resize drag start: snapshot the current dimensions. */
+  private _handleResizeStart(): void {
+    this.resizeStartWidth = this.getWidth();
+    this.resizeStartHeight = this.getHeight();
+  }
+
+  /**
+   * Resize drag: grow/shrink symmetrically from the snapshot by 2× the pointer
+   * delta (RTL mirrors the horizontal direction), then re-center.
+   */
+  private _handleResize(): void {
+    if (globals.ltr) {
+      this.desiredWidth =
+        this.resizeStartWidth! + this.resizeDragger!.mouseDistX! * 2;
+    } else {
+      this.desiredWidth =
+        this.resizeStartWidth! - this.resizeDragger!.mouseDistX! * 2;
+    }
+    this.desiredHeight =
+      this.resizeStartHeight! + this.resizeDragger!.mouseDistY! * 2;
+    this.updateSizeAndPosition();
   }
 
   /**

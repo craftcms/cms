@@ -33,6 +33,7 @@ import {EscManager} from './managers/esc-manager';
 import {UiLayerManager} from './managers/ui-layer-manager';
 import {setUiLayerManager} from './managers/registry';
 import {Modal, type ModalSettings} from './modal';
+import {BaseDrag, type BaseDragSettings} from './drag/base-drag';
 import {DragMove} from './drag-move';
 import {ResizeHandle} from './icons/resize-handle';
 import {garnishClassBus, globals, win, doc, bod} from './globals';
@@ -59,6 +60,7 @@ export type {TextchangeOptions, ActivateOptions} from './custom-events';
 export {EscManager};
 export {UiLayerManager};
 export {Modal, type ModalSettings};
+export {BaseDrag, type BaseDragSettings};
 export {DragMove};
 export {ResizeHandle};
 export {win, doc, bod};
@@ -160,6 +162,7 @@ export const Garnish = {
   EscManager,
   UiLayerManager,
   Modal,
+  BaseDrag,
   DragMove,
   /** @deprecated Use UiLayerManager instead. */
   ShortcutManager: UiLayerManager,

@@ -198,6 +198,133 @@ body.no-scroll {
   overflow: hidden;
 }
 
+/* Draggable modal: give it a draggable look + a grabbable header. */
+.pg-modal.pg-modal--draggable {
+  cursor: grab;
+  /* Handles must opt out of browser touch gestures so pointer drags work on
+     touch devices (doc 08 §4). */
+  touch-action: none;
+}
+
+.pg-modal-drag-handle {
+  margin: -1.5rem -1.5rem 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #11151b;
+  color: #e6e9ee;
+  border-radius: var(--radius) var(--radius) 0 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+/* The resize handle Modal injects (.resizehandle) — give it a visible target. */
+.pg-modal .resizehandle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nwse-resize;
+  touch-action: none;
+  color: var(--muted);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 2px;
+}
+
+.pg-modal .resizehandle svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* --- Standalone drag arena --------------------------------------------- */
+.pg-drag-arena {
+  position: relative;
+  margin-top: 1rem;
+  height: 280px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: repeating-linear-gradient(
+    45deg,
+    #fafbfc,
+    #fafbfc 10px,
+    #f2f4f7 10px,
+    #f2f4f7 20px
+  );
+  overflow: hidden;
+}
+
+.pg-drag-box {
+  position: absolute;
+  width: 130px;
+  min-height: 56px;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: var(--shadow);
+  cursor: grab;
+  user-select: none;
+  /* Required so pointer drags aren't eaten by touch scrolling/panning. */
+  touch-action: none;
+}
+
+.pg-drag-box:active {
+  cursor: grabbing;
+}
+
+.pg-drag-box--move {
+  background: var(--good);
+}
+
+.pg-drag-box--xlock {
+  background: #0a6d2f;
+}
+
+.pg-drag-box--base {
+  background: var(--accent);
+}
+
+.pg-drag-box--scroll {
+  background: #b85c00;
+}
+
+/* --- Auto-scroll container ---------------------------------------------- */
+.pg-scroll-container {
+  position: relative;
+  margin-top: 1rem;
+  height: 260px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+
+.pg-scroll-tall {
+  position: relative;
+  height: 1100px;
+  padding: 1rem;
+}
+
+.pg-scroll-filler {
+  margin: 0;
+  padding: 8rem 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.pg-scroll-container .pg-drag-box--scroll {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
 /* --- Event log panel ---------------------------------------------------- */
 .pg-log {
   position: fixed;

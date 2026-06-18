@@ -6,7 +6,8 @@
  */
 
 import {SHAKE_STEP_DURATION, SHAKE_STEPS} from '../constants';
-import {doc, globals, win} from '../globals';
+import {doc, win} from '../globals';
+import {getScrollParent} from './scroll';
 
 /** Re-export of the native RAF (vendor prefixes are long dead). */
 export const requestAnimationFrame: typeof window.requestAnimationFrame =
@@ -29,28 +30,6 @@ export function getUserPreferredAnimationDuration(
   duration: number | string
 ): number | string {
   return prefersReducedMotion() ? 0 : duration;
-}
-
-/**
- * Finds the nearest scrollable ancestor of an element (native replacement for
- * jQuery's `.scrollParent()`).
- */
-function getScrollParent(el: Element): Element | Window {
-  let node: Element | null = el.parentElement;
-  while (node) {
-    const style = window.getComputedStyle(node);
-    const overflowY = style.overflowY;
-    if (
-      (overflowY === 'auto' ||
-        overflowY === 'scroll' ||
-        overflowY === 'overlay') &&
-      node.scrollHeight > node.clientHeight
-    ) {
-      return node;
-    }
-    node = node.parentElement;
-  }
-  return win;
 }
 
 /**

@@ -84,6 +84,23 @@ export function getOffset(elem: Element): {top: number; left: number} {
 }
 
 /**
+ * Border-box width of an element (native replacement for jQuery's
+ * `.outerWidth()`). Reserved for the downstream `Drag` port, which reads
+ * `this.$targetItem.outerWidth()`.
+ */
+export function getOuterWidth(elem: HTMLElement): number {
+  return elem.offsetWidth;
+}
+
+/**
+ * Border-box height of an element (native replacement for jQuery's
+ * `.outerHeight()`). Reserved for the downstream `Drag` port.
+ */
+export function getOuterHeight(elem: HTMLElement): number {
+  return elem.offsetHeight;
+}
+
+/**
  * Whether an element's bounding box contains a page-coordinate point.
  * Uses page coords (adds `scrollX/Y`) to match legacy `hitTest`.
  */

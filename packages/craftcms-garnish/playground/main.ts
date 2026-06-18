@@ -9,6 +9,8 @@
 
 import {
   Modal,
+  BaseDrag,
+  DragMove,
   getFocusableElements,
   isKeyboardFocusable,
   installActivate,
@@ -81,6 +83,26 @@ function wireModalEvents(modal: Modal, label: string): void {
   for (const evt of ['show', 'hide', 'fadeIn', 'fadeOut', 'escape'] as const) {
     modal.on(evt, () => log('modal', `${label}: ${evt}`));
   }
+}
+
+/**
+ * Wire a dragger's lifecycle events into the log panel. `drag` fires once per
+ * RAF frame, so it is coalesced to a single "drag (moving…)" line per gesture to
+ * keep the log readable; `dragStart` / `dragStop` always log.
+ */
+function wireDragEvents(dragger: BaseDrag, tag: string, label: string): void {
+  let dragging = false;
+  dragger.on('dragStart', () => {
+    dragging = false;
+    log(tag, `${label}: dragStart`);
+  });
+  dragger.on('drag', () => {
+    if (!dragging) {
+      dragging = true;
+      log(tag, `${label}: drag (moving…)`);
+    }
+  });
+  dragger.on('dragStop', () => log(tag, `${label}: dragStop`));
 }
 
 /* ------------------------------------------------------------------------- *
@@ -288,7 +310,203 @@ document.querySelectorAll<HTMLButtonElement>('[data-compat]').forEach((btn) => {
 });
 
 /* ------------------------------------------------------------------------- *
- * 4. Events & utilities
+ * 4. Draggable / resizable Modal demos
+ * ------------------------------------------------------------------------- */
+
+/** Build a modal container styled to look draggable, optionally with a header handle. */
+function buildDragModalContainer(
+  title: string,
+  body: string,
+  withHandle: boolean
+): HTMLElement {
+  const el = document.createElement('div');
+  el.className = 'pg-modal pg-modal--draggable';
+  const handleHtml = withHandle
+    ? `<div class="pg-modal-drag-handle" data-drag-handle>${title} — drag here</div>`
+    : `<h3>${title}</h3>`;
+  el.innerHTML = `
+    ${handleHtml}
+    <div class="pg-modal-body">${body}</div>
+    <div class="pg-modal-actions">
+      <button type="button" class="pg-modal-primary" data-modal-close>Close (hide)</button>
+    </div>
+  `;
+  document.body.appendChild(el);
+  el.querySelector('[data-modal-close]')!.addEventListener('click', () => {
+    const owner = Modal.instances.find((m) => m.$container === el);
+    owner?.hide();
+  });
+  return el;
+}
+
+const dragModals: Modal[] = [];
+
+function openDragModal(
+  label: string,
+  settings: Partial<ModalSettings>,
+  body: string,
+  withHandle = false
+): void {
+  const container = buildDragModalContainer(label, body, withHandle);
+  const modal = new Modal(container, settings);
+  wireModalEvents(modal, label);
+  // The Modal creates its dragger/resizeDragger during construction; wire their
+  // events so live drags/resizes appear in the log.
+  if (modal.dragger) {
+    wireDragEvents(modal.dragger, 'modal-drag', `${label} (move)`);
+  }
+  if (modal.resizeDragger) {
+    wireDragEvents(modal.resizeDragger, 'modal-drag', `${label} (resize)`);
+  }
+  dragModals.push(modal);
+  log('modal', `Opened "${label}" — drag/resize it; watch the log.`);
+}
+
+const dragModalActions: Record<string, () => void> = {
+  container: () =>
+    openDragModal(
+      'Draggable modal',
+      {draggable: true},
+      '<p>Drag this modal from <strong>anywhere</strong> on its surface (the whole container is the handle).</p>'
+    ),
+
+  handle: () =>
+    openDragModal(
+      'Header-handle modal',
+      {draggable: true, dragHandleSelector: '[data-drag-handle]'},
+      '<p>This modal only moves when you drag the dark <strong>header bar</strong> (<code>dragHandleSelector</code>). Dragging the body does nothing.</p>',
+      true
+    ),
+
+  resizable: () =>
+    openDragModal(
+      'Resizable modal',
+      {resizable: true},
+      '<p>Grab the resize handle in the bottom-right corner and drag — the modal grows/shrinks symmetrically about its center.</p>'
+    ),
+
+  both: () =>
+    openDragModal(
+      'Draggable + resizable',
+      {
+        draggable: true,
+        dragHandleSelector: '[data-drag-handle]',
+        resizable: true,
+      },
+      '<p>Drag the header to move; drag the corner handle to resize. Both draggers are independent.</p>',
+      true
+    ),
+
+  destroy: () => {
+    const count = dragModals.length;
+    dragModals.splice(0).forEach((m) => m.destroy());
+    log('modal', `Destroyed ${count} draggable/resizable modal(s)`);
+  },
+};
+
+document
+  .querySelectorAll<HTMLButtonElement>('[data-dragmodal]')
+  .forEach((btn) => {
+    btn.addEventListener('click', () => {
+      try {
+        dragModalActions[btn.dataset.dragmodal!]?.();
+      } catch (err) {
+        log('modal', `Error: ${(err as Error).message}`, true);
+      }
+    });
+  });
+
+/* ------------------------------------------------------------------------- *
+ * 5. Standalone BaseDrag / DragMove demos
+ * ------------------------------------------------------------------------- */
+
+const dragArena = document.getElementById('drag-arena');
+
+if (dragArena) {
+  // Initial positions keyed by data-box, so "reset" can restore them.
+  const boxHomes: Record<string, {left: number; top: number}> = {
+    'move-1': {left: 16, top: 16},
+    'move-2': {left: 170, top: 16},
+    'move-x': {left: 16, top: 100},
+    'base-1': {left: 170, top: 100},
+  };
+
+  const placeBox = (box: HTMLElement): void => {
+    const home = boxHomes[box.dataset.box!];
+    if (home) {
+      box.style.left = `${home.left}px`;
+      box.style.top = `${home.top}px`;
+    }
+  };
+
+  const boxes = Array.from(
+    dragArena.querySelectorAll<HTMLElement>('[data-box]')
+  );
+  boxes.forEach(placeBox);
+
+  // Green boxes: DragMove drives left/top for us.
+  const moveBoxes = dragArena.querySelectorAll<HTMLElement>(
+    '.pg-drag-box--move:not(.pg-drag-box--xlock)'
+  );
+  moveBoxes.forEach((box) => {
+    const dragger = new DragMove(box);
+    wireDragEvents(dragger, 'drag', box.dataset.box!);
+  });
+
+  // X-axis-locked DragMove.
+  const xBox = dragArena.querySelector<HTMLElement>('.pg-drag-box--xlock');
+  if (xBox) {
+    const dragger = new DragMove(xBox, {axis: 'x'});
+    wireDragEvents(dragger, 'drag', `${xBox.dataset.box} (x-locked)`);
+  }
+
+  // Blue box: raw BaseDrag with an onDrag that positions it ourselves.
+  const baseBox = dragArena.querySelector<HTMLElement>('.pg-drag-box--base');
+  if (baseBox) {
+    const dragger: BaseDrag = new BaseDrag(baseBox, {
+      onDrag: () => {
+        baseBox.style.left = `${dragger.mouseX! - dragger.mouseOffsetX!}px`;
+        baseBox.style.top = `${dragger.mouseY! - dragger.mouseOffsetY!}px`;
+      },
+    });
+    wireDragEvents(dragger, 'drag', 'base-1 (manual onDrag)');
+  }
+
+  document
+    .querySelector<HTMLButtonElement>('[data-dragbox="reset"]')
+    ?.addEventListener('click', () => {
+      boxes.forEach(placeBox);
+      log('drag', 'Reset box positions');
+    });
+}
+
+/* ------------------------------------------------------------------------- *
+ * 6. Auto-scroll while dragging
+ * ------------------------------------------------------------------------- */
+
+const scrollContainer = document.getElementById('scroll-container');
+
+if (scrollContainer) {
+  const scrollBox = scrollContainer.querySelector<HTMLElement>(
+    '.pg-drag-box--scroll'
+  );
+  if (scrollBox) {
+    const dragger = new DragMove(scrollBox);
+    wireDragEvents(dragger, 'autoscroll', 'scroll-box');
+
+    document
+      .querySelector<HTMLButtonElement>('[data-autoscroll="reset"]')
+      ?.addEventListener('click', () => {
+        scrollBox.style.left = '20px';
+        scrollBox.style.top = '20px';
+        scrollContainer.scrollTop = 0;
+        log('autoscroll', 'Reset scroll item + scroll position');
+      });
+  }
+}
+
+/* ------------------------------------------------------------------------- *
+ * 7. Events & utilities
  * ------------------------------------------------------------------------- */
 
 const utilActions: Record<string, (btn: HTMLButtonElement) => void> = {

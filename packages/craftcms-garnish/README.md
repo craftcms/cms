@@ -84,6 +84,34 @@ Utilities are individual named exports — import only what you use:
 import {trapFocusWithin, releaseFocusWithin, getPostData} from '@craftcms/garnish';
 ```
 
+#### Dragging — `BaseDrag` / `DragMove`
+
+`BaseDrag` is the jQuery-free drag foundation (Pointer Events, native auto-scroll).
+`DragMove` is a thin subclass that positions the dragged element under the cursor.
+Drag handles need `touch-action: none` so the browser doesn't eat the gesture on
+touch devices.
+
+```ts
+import {DragMove} from '@craftcms/garnish';
+
+const box = document.querySelector('#draggable')!;
+box.style.touchAction = 'none'; // required for touch/pen
+
+const dragger = new DragMove(box, {
+  // axis: 'x',                 // optionally lock to one axis
+  // handle: '.drag-handle',    // drag only by a child selector
+  onDragStart: () => console.log('start'),
+  onDrag: () => console.log('moving'),
+  onDragStop: () => console.log('stop'),
+});
+
+dragger.on('drag', () => {/* same events are also emitted */});
+// later: dragger.destroy();
+```
+
+For full control, use `BaseDrag` directly and position the element yourself in
+`onDrag` (read `mouseX/mouseY`/`mouseOffsetX/mouseOffsetY` off the dragger).
+
 **No-jQuery guarantee:** importing from `@craftcms/garnish` (the `.` entry) never
 pulls in jQuery, never reads `window.jQuery`/`$`, and never assigns
 `window.Garnish`. Those behaviors live exclusively in the `compat` entry.
@@ -175,13 +203,21 @@ directory).
 
 ## Status
 
-This is the vertical-slice proof of concept. The modern core, `Base`, `Modal`, and
-the compat layer are complete and tested. Some surfaces are intentionally not yet
-ported:
+This is the vertical-slice proof of concept. The modern core, `Base`, `Modal`, the
+drag foundation, and the compat layer are complete and tested.
 
-- **`Modal` `draggable` / `resizable`** default to `false` and **throw** if enabled
-  — the drag system (`BaseDrag` / `DragMove`) is out of PoC scope. `DragMove`'s
-  constructor throws for the same reason.
+- **`BaseDrag` / `DragMove`** are implemented (Pointer Events, native auto-scroll)
+  and available as named exports.
+- **`Modal` `draggable` / `resizable`** are **supported** (still `false` by default).
+  A draggable modal uses `DragMove` on its container — or on the element matched by
+  `dragHandleSelector` for a header-only handle — and a resizable modal uses
+  `BaseDrag` on a generated corner handle. (They previously threw; that limitation
+  is gone.)
+
+Still pending (not yet ported):
+
+- **`Drag`**, **`DragDrop`**, and **`DragSort`** — the higher-level drag behaviors
+  built on top of `BaseDrag`.
 
 ## License
 

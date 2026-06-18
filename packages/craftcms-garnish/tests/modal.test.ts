@@ -1,9 +1,12 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {Modal} from '../src/modal';
+import {BaseDrag} from '../src/drag/base-drag';
+import {DragMove} from '../src/drag-move';
 import {UiLayerManager} from '../src/managers/ui-layer-manager';
 import {setUiLayerManager} from '../src/managers/registry';
 import {ESC_KEY} from '../src/constants';
+import {globals} from '../src/globals';
 
 // happy-dom does not implement `element.animate`, so Modal's `_fade` takes its
 // immediate-complete fallback path — fade-in/out resolve synchronously here,
@@ -289,18 +292,100 @@ describe('Modal destroy', () => {
   });
 });
 
-describe('Modal draggable/resizable (PoC unsupported)', () => {
-  it('throws a clear error when draggable is enabled', () => {
+describe('Modal draggable/resizable', () => {
+  it('constructs without throwing and creates a DragMove when draggable', () => {
     const container = makeContainer();
-    expect(
-      () => new Modal(container, {autoShow: false, draggable: true})
-    ).toThrow(/not yet supported/);
+    const modal = new Modal(container, {autoShow: false, draggable: true});
+    expect(modal.dragger).toBeInstanceOf(DragMove);
+    // The container itself is the default handle (registered with the dragger).
+    expect(modal.dragger!.$items).toContain(container);
   });
 
-  it('throws a clear error when resizable is enabled', () => {
+  it('uses the dragHandleSelector as the DragMove handle when given', () => {
     const container = makeContainer();
-    expect(
-      () => new Modal(container, {autoShow: false, resizable: true})
-    ).toThrow(/not yet supported/);
+    const handle = document.createElement('div');
+    handle.className = 'drag-handle';
+    container.appendChild(handle);
+    const modal = new Modal(container, {
+      autoShow: false,
+      draggable: true,
+      dragHandleSelector: '.drag-handle',
+    });
+    // The item is still the container; only the handle differs (drag from it).
+    expect(modal.dragger).toBeInstanceOf(DragMove);
+    expect(modal.dragger!.$items).toContain(container);
+  });
+
+  it('constructs without throwing and creates a BaseDrag + resize handle when resizable', () => {
+    const container = makeContainer();
+    const modal = new Modal(container, {autoShow: false, resizable: true});
+    expect(modal.resizeDragger).toBeInstanceOf(BaseDrag);
+    const handle = container.querySelector('.resizehandle');
+    expect(handle).not.toBeNull();
+    expect(modal.resizeDragger!.$items).toContain(handle);
+  });
+
+  it('does not create draggers by default', () => {
+    const container = makeContainer();
+    const modal = new Modal(container, {autoShow: false});
+    expect(modal.dragger).toBeNull();
+    expect(modal.resizeDragger).toBeNull();
+  });
+
+  it('_handleResize grows width/height symmetrically (ltr) from the start size', () => {
+    const container = makeContainer();
+    const modal = new Modal(container, {autoShow: false, resizable: true});
+    document.body.classList.remove('rtl');
+    globals.rtl = false;
+
+    vi.spyOn(modal, 'getWidth').mockReturnValue(400);
+    vi.spyOn(modal, 'getHeight').mockReturnValue(300);
+    const update = vi
+      .spyOn(modal, 'updateSizeAndPosition')
+      .mockImplementation(() => {});
+
+    // Drive the resize handlers directly with a fake dragger delta.
+    (modal as unknown as {_handleResizeStart(): void})._handleResizeStart();
+    modal.resizeDragger!.mouseDistX = 10;
+    modal.resizeDragger!.mouseDistY = 5;
+    (modal as unknown as {_handleResize(): void})._handleResize();
+
+    expect(modal.desiredWidth).toBe(400 + 10 * 2);
+    expect(modal.desiredHeight).toBe(300 + 5 * 2);
+    expect(update).toHaveBeenCalled();
+  });
+
+  it('_handleResize mirrors the horizontal direction in rtl', () => {
+    const container = makeContainer();
+    const modal = new Modal(container, {autoShow: false, resizable: true});
+    globals.rtl = true;
+
+    vi.spyOn(modal, 'getWidth').mockReturnValue(400);
+    vi.spyOn(modal, 'getHeight').mockReturnValue(300);
+    vi.spyOn(modal, 'updateSizeAndPosition').mockImplementation(() => {});
+
+    (modal as unknown as {_handleResizeStart(): void})._handleResizeStart();
+    modal.resizeDragger!.mouseDistX = 10;
+    modal.resizeDragger!.mouseDistY = 5;
+    (modal as unknown as {_handleResize(): void})._handleResize();
+
+    expect(modal.desiredWidth).toBe(400 - 10 * 2);
+    expect(modal.desiredHeight).toBe(300 + 5 * 2);
+
+    globals.rtl = false;
+  });
+
+  it('tears down both draggers on destroy', () => {
+    const container = makeContainer();
+    const modal = new Modal(container, {
+      autoShow: false,
+      draggable: true,
+      resizable: true,
+    });
+    const dragDestroy = vi.spyOn(modal.dragger!, 'destroy');
+    const resizeDestroy = vi.spyOn(modal.resizeDragger!, 'destroy');
+    modal.destroy();
+    expect(dragDestroy).toHaveBeenCalledOnce();
+    expect(resizeDestroy).toHaveBeenCalledOnce();
   });
 });
