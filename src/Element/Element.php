@@ -18,6 +18,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Twig\AllowableInSandbox;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
@@ -38,7 +39,7 @@ use function CraftCms\Cms\t;
  * @property ElementRules $ruleset
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements ElementInterface
+abstract class Element extends Component implements AllowableInSandbox, ElementInterface
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -389,6 +390,30 @@ abstract class Element extends Component implements ElementInterface
         } catch (BadMethodCallException) {
             return parent::__call($name, $params);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        // Allow field handles
+        if (
+            $this->hasEagerLoadedElements($property) ||
+            $this->fieldByHandle($property) !== null
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -1,7 +1,8 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.8 - 2026-06-17
 
+- Added `CraftCms\Cms\Twig\AllowableInSandbox`.
 - Fixed a bug where Blade templates weren’t loading for text/Markdown mail. ([#19106](https://github.com/craftcms/cms/pull/19106))
 - Fixed a bug where it wasn’t possible to change the primary site, or edit site statuses. ([#19109](https://github.com/craftcms/cms/issues/19109))
 
