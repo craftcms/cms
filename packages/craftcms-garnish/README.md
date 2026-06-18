@@ -112,6 +112,36 @@ dragger.on('drag', () => {/* same events are also emitted */});
 For full control, use `BaseDrag` directly and position the element yourself in
 `onDrag` (read `mouseX/mouseY`/`mouseOffsetX/mouseOffsetY` off the dragger).
 
+#### Helpers &amp; drop targets — `Drag` / `DragDrop`
+
+`Drag` picks up the selected element(s): on drag start it builds floating
+*helper* clones that trail the cursor with lag, and on drop you choose what
+happens — animate them back to their source (`returnHelpersToDraggees()`, a Web
+Animations API tween that respects `prefers-reduced-motion`) or fade them out
+(`fadeOutHelpers()`). `DragDrop` adds drop targets on top: while dragging, the
+target under the cursor is highlighted (its `activeDropTargetClass` is toggled)
+and `onDropTargetChange` fires; there is no separate `drop` event — read
+`$activeDropTarget` inside your own `dragStop` handler to perform the drop.
+
+```ts
+import {DragDrop} from '@craftcms/garnish';
+
+const dd = new DragDrop({
+  dropTargets: '.dropzone', // selector, element(s), or a () => elements fn
+  onDropTargetChange: (active) => console.log('over:', active),
+  onDragStop() {
+    if (dd.$activeDropTarget) {
+      // a raw HTMLElement | null — NOT a jQuery object (drop the `[0]`)
+      console.log('dropped on', dd.$activeDropTarget);
+    }
+    dd.returnHelpersToDraggees(); // send the helper clone home
+  },
+});
+dd.addItems(document.querySelectorAll('.chip')); // items added after construction
+```
+
+As with `BaseDrag`, draggable items and handles need `touch-action: none`.
+
 **No-jQuery guarantee:** importing from `@craftcms/garnish` (the `.` entry) never
 pulls in jQuery, never reads `window.jQuery`/`$`, and never assigns
 `window.Garnish`. Those behaviors live exclusively in the `compat` entry.
@@ -178,8 +208,9 @@ import. Migrate one class at a time:
 ## Documentation
 
 - [`docs/06-api-reference.md`](docs/06-api-reference.md) — the public API cheat sheet
-  (signatures + one-liners) for `Base`, `Modal`, the `Garnish` namespace utilities,
-  and the compat exports.
+  (signatures + one-liners) for `Base`, `Modal`, the drag classes (`BaseDrag`,
+  `DragMove`, `Drag`, `DragDrop`), the `Garnish` namespace utilities, and the compat
+  exports.
 - [`docs/00-migration-plan.md`](docs/00-migration-plan.md) §2 — the compat design and
   upgrade-path rationale.
 - [`docs/01-core-design.md`](docs/01-core-design.md) — core architecture and the
@@ -208,6 +239,9 @@ drag foundation, and the compat layer are complete and tested.
 
 - **`BaseDrag` / `DragMove`** are implemented (Pointer Events, native auto-scroll)
   and available as named exports.
+- **`Drag` / `DragDrop`** are **supported** and available as named exports.
+  `Drag` adds helper clones + return-to-source / fade-out (Web Animations API,
+  reduced-motion aware); `DragDrop` adds drop targets + hit detection on top.
 - **`Modal` `draggable` / `resizable`** are **supported** (still `false` by default).
   A draggable modal uses `DragMove` on its container — or on the element matched by
   `dragHandleSelector` for a header-only handle — and a resizable modal uses
@@ -216,8 +250,8 @@ drag foundation, and the compat layer are complete and tested.
 
 Still pending (not yet ported):
 
-- **`Drag`**, **`DragDrop`**, and **`DragSort`** — the higher-level drag behaviors
-  built on top of `BaseDrag`.
+- **`DragSort`** — the sortable-list drag behavior built on top of `Drag`. (`Drag`,
+  `DragDrop`, `BaseDrag`, and `DragMove` are all ported.)
 
 ## License
 

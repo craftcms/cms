@@ -173,9 +173,80 @@
         </div>
       </section>
 
+      <!-- ====================== DRAG WITH HELPERS ====================== -->
+      <section class="pg-section" id="section-drag-helpers">
+        <h2>7. Drag with helpers (clones + return-to-source)</h2>
+        <p>
+          These rows use <code>new Drag(items, {...})</code>. Grabbing an item
+          builds floating <strong>helper clones</strong> that trail the cursor
+          with lag (<code>createHelper</code> + the lag-follow RAF loop). On
+          drop the helpers animate back to their source via the Web Animations
+          API (<code>returnHelpersToDraggees</code>) — or fade out
+          (<code>fadeOutHelpers</code>) if you chose that mode. Every
+          <code>dragStart / drag / dragStop</code> (and
+          <code>returnHelpersToDraggees</code>) fires into the log.
+        </p>
+        <div class="pg-controls">
+          <button data-draghelper="mode-return">
+            Drop mode: return-to-source
+          </button>
+          <button data-draghelper="mode-fade">Drop mode: fade out</button>
+        </div>
+        <div class="pg-helper-list" id="drag-helper-list">
+          <div class="pg-helper-item" data-helper-item="1">
+            <span class="pg-helper-grip" aria-hidden="true">⠿</span> Draggable
+            item #1 — grab &amp; drag me
+          </div>
+          <div class="pg-helper-item" data-helper-item="2">
+            <span class="pg-helper-grip" aria-hidden="true">⠿</span> Draggable
+            item #2 — a helper clone trails the cursor
+          </div>
+          <div class="pg-helper-item" data-helper-item="3">
+            <span class="pg-helper-grip" aria-hidden="true">⠿</span> Draggable
+            item #3 — release to animate home
+          </div>
+          <div class="pg-helper-item" data-helper-item="4">
+            <span class="pg-helper-grip" aria-hidden="true">⠿</span> Draggable
+            item #4
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================== DRAGDROP / DROP TARGETS ====================== -->
+      <section class="pg-section" id="section-dragdrop">
+        <h2>8. DragDrop — drop targets &amp; hit detection</h2>
+        <p>
+          A <code>new DragDrop({ dropTargets, ... })</code> wired to the
+          draggable chips on the left and the three drop zones on the right.
+          While you drag a chip, the zone under the cursor highlights (the
+          <code>activeDropTargetClass</code> is toggled) and
+          <code>dropTargetChange</code> logs the new active target (or
+          <code>null</code>). On release, the demo reads
+          <code>$activeDropTarget</code> in its own
+          <code>dragStop</code> handler to report which zone — if any — the drop
+          landed on. Overlap resolves to the first target in document order
+          (first-match wins).
+        </p>
+        <div class="pg-controls">
+          <button data-dragdrop="reset">Reset chips</button>
+        </div>
+        <div class="pg-dragdrop-layout">
+          <div class="pg-dragdrop-chips" id="dragdrop-chips">
+            <div class="pg-dragdrop-chip" data-dragdrop-chip="a">Chip A</div>
+            <div class="pg-dragdrop-chip" data-dragdrop-chip="b">Chip B</div>
+            <div class="pg-dragdrop-chip" data-dragdrop-chip="c">Chip C</div>
+          </div>
+          <div class="pg-dragdrop-zones" id="dragdrop-zones">
+            <div class="pg-dropzone" data-dropzone="inbox">Inbox</div>
+            <div class="pg-dropzone" data-dropzone="archive">Archive</div>
+            <div class="pg-dropzone" data-dropzone="trash">Trash</div>
+          </div>
+        </div>
+      </section>
+
       <!-- ====================== EVENTS / UTILITIES ====================== -->
       <section class="pg-section" id="section-utils">
-        <h2>7. Events &amp; utilities</h2>
+        <h2>9. Events &amp; utilities</h2>
         <p>
           Small demos of core utilities and the synthetic <code>activate</code>
           custom event.

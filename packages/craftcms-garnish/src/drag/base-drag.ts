@@ -25,7 +25,7 @@ import {doc, globals, win} from '../globals';
 import {requestAnimationFrame, cancelAnimationFrame} from '../utils/animation';
 import {coerceElements, getOffset} from '../utils/dom';
 import {isPrimaryClick} from '../utils/env';
-import {getDist} from '../utils/misc';
+import {getDist, isPlainObject} from '../utils/misc';
 import {getScrollParent, isWindowScrollContainer} from '../utils/scroll';
 import type {GarnishEvent} from './../events';
 import type {ElementInput, GarnishBaseSettings} from '../types';
@@ -663,20 +663,6 @@ export class BaseDrag<
     this.removeAllListeners(this._getItemHandle(item));
     dragRegistry.delete(item);
   }
-}
-
-function isPlainObject(val: unknown): val is Record<string, unknown> {
-  return (
-    typeof val === 'object' &&
-    val !== null &&
-    !(val instanceof Element) &&
-    !(typeof Node !== 'undefined' && val instanceof Node) &&
-    !Array.isArray(val) &&
-    typeof (val as {length?: unknown}).length !== 'number' &&
-    typeof (val as EventTarget).addEventListener !== 'function' &&
-    (Object.getPrototypeOf(val) === Object.prototype ||
-      Object.getPrototypeOf(val) === null)
-  );
 }
 
 export default BaseDrag;

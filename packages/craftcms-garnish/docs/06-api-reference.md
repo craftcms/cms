@@ -171,6 +171,113 @@ Used by `Modal`'s `draggable` option. Same constructor and surface as `BaseDrag`
 
 ---
 
+## `Drag`
+
+`class Drag<S extends DragSettings = DragSettings> extends BaseDrag<S>` — "picks
+up" the selected element(s): snapshots the target geometry + draggee set, builds
+floating *helper* clones that follow the cursor with lag, and animates them back
+home (or fades them out) when the drag ends. It does **not** decide what to do with
+a dragged element — that's `DragDrop` / `DragSort`.
+
+**Constructor:** `new Drag(items?, settings?)` — same `items` shapes as `BaseDrag`;
+also `new Drag(settings)` (param shift when the first arg is a plain object).
+
+> Like `BaseDrag`, the dragged items / handles need `touch-action: none`.
+
+### Statics
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `Drag.defaults` | `DragSettings` | Default settings (below). |
+
+### Settings (`DragSettings`, extends `BaseDragSettings`)
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `filter` | `null` | Which item(s) to drag: a `() => elements` fn, a selector that filters `$items`, or `null` → just `$targetItem`. |
+| `singleHelper` | `false` | Build one helper for the whole draggee set instead of one per draggee. |
+| `collapseDraggees` | `false` | Collapse the other draggees into the target (hide the rest). |
+| `removeDraggee` | `false` | Hide every draggee (`display:none`) while dragging. |
+| `hideDraggee` | `true` | Hide draggees via `visibility:hidden` while dragging. |
+| `copyDraggeeInputValuesToHelper` | `false` | Copy `<input>`/`<select>`/`<textarea>` values from source into the clone. |
+| `helperOpacity` | `1` | Helper opacity (`1` → no override). |
+| `moveHelperToCursor` | `false` | Put the helper's top-left at the cursor instead of the grab offset. |
+| `helper` | `null` | Helper wrapper: `(helper, index) => wrapped`, an element/markup to wrap into, or `null` (bare clone). |
+| `helperBaseZindex` | `1000` | Base z-index for helpers. |
+| `helperLagBase` | `3` | Base follow-lag divisor. |
+| `helperLagIncrementDividend` | `1.5` | Per-helper lag increment dividend. |
+| `helperSpacingX` / `helperSpacingY` | `5` / `5` | Per-index helper offset (px). |
+| `onReturnHelpersToDraggees` | no-op | Callback fired (RAF-deferred) when helpers finish returning. |
+
+### Methods & properties
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `$draggee` | `HTMLElement[]` | The dragged element(s); target item is always index 0. |
+| `otherItems` / `totalOtherItems` | `Element[]` / `number \| null` | Items not in `$draggee`, and their count. |
+| `helpers` | `HTMLElement[]` | The floating helper clones (native, not jQuery). |
+| `helperTargets` / `helperPositions` | `Array<{left, top}>` | Per-helper target / current positions. |
+| `targetItemWidth` / `targetItemHeight` / `targetItemPositionInDraggee` | `number \| null` | Snapshotted target geometry / index. |
+| `draggeeVirtualMidpointX` / `draggeeVirtualMidpointY` | `number \| null` | Virtual midpoint of the draggee (read by `DragSort`). |
+| `findDraggee` | `() => HTMLElement[]` | Resolve which items are dragged (`filter`/selector/`$targetItem`). |
+| `setDraggee` / `appendDraggee` | `(draggee) => void` | Set / append the draggee set (creates helpers, applies hide/collapse). |
+| `getHelperTargetX` / `getHelperTargetY` | `(real?) => number` | Helper target coord (`real` skips the `moveHelperToCursor` snap). |
+| `returnHelpersToDraggees` | `() => void` | Animate every helper back to its source's offset, then show + remove (WAAPI, reduced-motion aware). |
+| `fadeOutHelpers` | `() => void` | Fade each helper out and remove it (no return tween). |
+| `allowDragging` | `() => boolean` | `false` while helpers are returning, else `true`. |
+| `startDragging` / `drag` / `stopDragging` | overridable | Drag lifecycle (snapshot + helper build + lag loop). |
+| `onReturnHelpersToDraggees` | `() => void` | **RAF-deferred** hook: emits `returnHelpersToDraggees` + runs the callback. |
+| `destroy` | `() => void` | Cancel the lag loop + return anims, remove helpers, base teardown. |
+
+**Events:** `returnHelpersToDraggees`, plus all inherited `BaseDrag` events
+(`beforeDragStart`, `dragStart`, `drag`, `dragStop`, `destroy`).
+
+> `Drag` does **not** auto-return helpers on drop — the consumer calls
+> `returnHelpersToDraggees()` or `fadeOutHelpers()` from its own `dragStop`/
+> `onDragStop` handler (legacy contract).
+
+---
+
+## `DragDrop`
+
+`class DragDrop<S extends DragDropSettings = DragDropSettings> extends Drag<S>` —
+adds drop targets + hit detection on top of `Drag`. Hit-testing reuses the
+`hitTest` util (page coords), so this layer is thin.
+
+**Constructor:** `new DragDrop(settings?)` — **settings only** (no positional
+`items`); add draggable items afterwards with `addItems(...)`.
+
+### Statics
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `DragDrop.defaults` | `DragDropSettings` | Default settings (below). |
+
+### Settings (`DragDropSettings`, extends `DragSettings`)
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `dropTargets` | `null` | Drop-target element(s), a selector, or a `() => elements` resolver. |
+| `onDropTargetChange` | no-op | Called with the new active target (or `null`) whenever it changes. |
+| `activeDropTargetClass` | `'active'` | Class toggled on the active drop target. |
+
+### Methods & properties
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `$dropTargets` | `HTMLElement[] \| null` | Resolved drop targets (`null` when none). |
+| `$activeDropTarget` | `HTMLElement \| null` | The element the cursor is over — a **raw `HTMLElement`, not jQuery** (no `[0]`). |
+| `updateDropTargets` | `() => void` | Re-resolve `settings.dropTargets` into `$dropTargets`. |
+| `onDragStart` / `onDrag` / `onDragStop` | overridable | Resolve targets / first-match hit-detect + class toggle / strip active class. |
+
+**Hit detection:** first-match wins (iterate `$dropTargets` in order, `break` on the
+first hit). `onDropTargetChange` fires only on a *change* (incl. target↔null).
+**There is no `drop` event** — read `$activeDropTarget` in your own `dragStop`/
+`onDragStop` handler to perform the drop. `DragDrop` inherits `Drag`'s helper/return
+machinery and all `BaseDrag` events.
+
+---
+
 ## `UiLayerManager`
 
 `class UiLayerManager extends Base` — manages the stack of UI layers (document,
@@ -203,8 +310,9 @@ object carrying every class, constant, utility, and flag — the legacy-shaped
 singleton, for incremental migration. **Prefer the tree-shakeable named exports in
 new code.**
 
-- **Classes:** `Base`, `Modal`, `BaseDrag`, `DragMove`, `UiLayerManager`,
-  `EscManager`, `ShortcutManager` (_deprecated_ alias of `UiLayerManager`).
+- **Classes:** `Base`, `Modal`, `BaseDrag`, `Drag`, `DragDrop`, `DragMove`,
+  `UiLayerManager`, `EscManager`, `ShortcutManager` (_deprecated_ alias of
+  `UiLayerManager`).
 - **Globals/flags:** `win`, `doc`, `bod`, `scrollContainer` (get/set), `rtl`, `ltr`,
   `activateEventsMuted` (get/set), `resizeEventsMuted` (get/set).
 - **Class-level events:** `on(Class, …)`, `off(Class, …)`, `once(Class, …)`.
@@ -377,6 +485,6 @@ gracefully.
 
 ## Not yet supported
 
-- **`Drag`**, **`DragDrop`**, **`DragSort`** — the higher-level drag behaviors built
-  on `BaseDrag`. (`BaseDrag`, `DragMove`, and `Modal` `draggable`/`resizable` are
-  implemented and supported.)
+- **`DragSort`** — the sortable-list drag behavior built on top of `Drag`.
+  (`BaseDrag`, `DragMove`, `Drag`, `DragDrop`, and `Modal`
+  `draggable`/`resizable` are all implemented and supported.)

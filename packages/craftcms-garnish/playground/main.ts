@@ -10,6 +10,8 @@
 import {
   Modal,
   BaseDrag,
+  Drag,
+  DragDrop,
   DragMove,
   getFocusableElements,
   isKeyboardFocusable,
@@ -506,7 +508,159 @@ if (scrollContainer) {
 }
 
 /* ------------------------------------------------------------------------- *
- * 7. Events & utilities
+ * 7. Drag with helpers (clones + return-to-source)
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Wire a Drag's lifecycle into the log. Like `wireDragEvents`, but also logs the
+ * `returnHelpersToDraggees` event so the return/fade tail is observable. `drag`
+ * is coalesced to one line per gesture.
+ */
+function wireHelperDragEvents(dragger: Drag, tag: string, label: string): void {
+  let dragging = false;
+  dragger.on('dragStart', () => {
+    dragging = false;
+    log(tag, `${label}: dragStart (helper clone created)`);
+  });
+  dragger.on('drag', () => {
+    if (!dragging) {
+      dragging = true;
+      log(tag, `${label}: drag (helper trailing cursor…)`);
+    }
+  });
+  dragger.on('dragStop', () => log(tag, `${label}: dragStop`));
+  dragger.on('returnHelpersToDraggees', () =>
+    log(tag, `${label}: returnHelpersToDraggees (helpers home)`)
+  );
+}
+
+const dragHelperList = document.getElementById('drag-helper-list');
+
+if (dragHelperList) {
+  // Drop mode is shared across the items; the dragStop handler reads it to pick
+  // return-to-source (default) vs. fadeOutHelpers.
+  let dropMode: 'return' | 'fade' = 'return';
+
+  const helperItems = Array.from(
+    dragHelperList.querySelectorAll<HTMLElement>('[data-helper-item]')
+  );
+
+  helperItems.forEach((item) => {
+    const dragger = new Drag(item, {
+      // Hide the source while its helper clone is in flight, then reveal it
+      // again when the helper returns.
+      hideDraggee: true,
+      helperOpacity: 0.92,
+      onDragStop() {
+        // Default Drag does NOT auto-return; the consumer decides. Mirror the
+        // legacy contract: pick return-to-source or a fade-out on drop.
+        if (dropMode === 'fade') {
+          dragger.fadeOutHelpers();
+          log('draghelper', `${item.dataset.helperItem}: fadeOutHelpers()`);
+        } else {
+          dragger.returnHelpersToDraggees();
+        }
+      },
+    });
+    wireHelperDragEvents(
+      dragger,
+      'draghelper',
+      `item ${item.dataset.helperItem}`
+    );
+  });
+
+  const dragHelperActions: Record<string, () => void> = {
+    'mode-return': () => {
+      dropMode = 'return';
+      log('draghelper', 'Drop mode → return-to-source');
+    },
+    'mode-fade': () => {
+      dropMode = 'fade';
+      log('draghelper', 'Drop mode → fade out');
+    },
+  };
+
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-draghelper]')
+    .forEach((btn) => {
+      btn.addEventListener('click', () => {
+        try {
+          dragHelperActions[btn.dataset.draghelper!]?.();
+        } catch (err) {
+          log('draghelper', `Error: ${(err as Error).message}`, true);
+        }
+      });
+    });
+}
+
+/* ------------------------------------------------------------------------- *
+ * 8. DragDrop — drop targets & hit detection
+ * ------------------------------------------------------------------------- */
+
+const dragDropChips = document.getElementById('dragdrop-chips');
+const dragDropZones = document.getElementById('dragdrop-zones');
+
+if (dragDropChips && dragDropZones) {
+  const chips = Array.from(
+    dragDropChips.querySelectorAll<HTMLElement>('[data-dragdrop-chip]')
+  );
+  const zones = Array.from(
+    dragDropZones.querySelectorAll<HTMLElement>('[data-dropzone]')
+  );
+
+  // A single DragDrop owns all the chips; its dropTargets are the three zones.
+  const dragDrop = new DragDrop({
+    dropTargets: zones,
+    hideDraggee: true,
+    helperOpacity: 0.92,
+    // Fires only when the active target changes (incl. → null). The class is
+    // toggled by DragDrop itself; we just narrate it.
+    onDropTargetChange(activeDropTarget) {
+      const name = activeDropTarget?.dataset.dropzone ?? 'none';
+      log('dragdrop', `dropTargetChange → ${name}`);
+    },
+    onDragStop() {
+      // Legacy contract: there is no `drop` event — read $activeDropTarget here.
+      const target = dragDrop.$activeDropTarget;
+      if (target) {
+        log(
+          'dragdrop',
+          `dropped on "${target.dataset.dropzone}" (read from $activeDropTarget)`
+        );
+        target.classList.add('pg-dropzone--hit');
+        setTimeout(() => target.classList.remove('pg-dropzone--hit'), 600);
+      } else {
+        log('dragdrop', 'dropped outside any drop target');
+      }
+      // Return the chip's helper home so the chip reappears in place.
+      dragDrop.returnHelpersToDraggees();
+    },
+  });
+  dragDrop.addItems(chips);
+
+  // Also surface the raw drag lifecycle.
+  let dragging = false;
+  dragDrop.on('dragStart', () => {
+    dragging = false;
+    log('dragdrop', 'dragStart');
+  });
+  dragDrop.on('drag', () => {
+    if (!dragging) {
+      dragging = true;
+      log('dragdrop', 'drag (over zones…)');
+    }
+  });
+
+  document
+    .querySelector<HTMLButtonElement>('[data-dragdrop="reset"]')
+    ?.addEventListener('click', () => {
+      zones.forEach((z) => z.classList.remove('active', 'pg-dropzone--hit'));
+      log('dragdrop', 'Reset chips + cleared zone highlights');
+    });
+}
+
+/* ------------------------------------------------------------------------- *
+ * 9. Events & utilities
  * ------------------------------------------------------------------------- */
 
 const utilActions: Record<string, (btn: HTMLButtonElement) => void> = {

@@ -325,6 +325,122 @@ body.no-scroll {
   left: 20px;
 }
 
+/* --- Drag with helpers (section 7) -------------------------------------- */
+.pg-helper-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pg-helper-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: grab;
+  user-select: none;
+  /* Required so pointer drags aren't eaten by touch scrolling/panning. */
+  touch-action: none;
+}
+
+.pg-helper-item:active {
+  cursor: grabbing;
+}
+
+.pg-helper-grip {
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  letter-spacing: -0.15em;
+}
+
+/* The clone Drag creates gets the .draghelper class; give it a lifted look. */
+.draghelper {
+  box-shadow: var(--shadow);
+  opacity: 0.92;
+  border-color: var(--accent) !important;
+  cursor: grabbing;
+}
+
+/* --- DragDrop / drop targets (section 8) -------------------------------- */
+.pg-dragdrop-layout {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.pg-dragdrop-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+
+.pg-dragdrop-chip {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-align: center;
+  cursor: grab;
+  user-select: none;
+  /* Required so pointer drags aren't eaten by touch scrolling/panning. */
+  touch-action: none;
+}
+
+.pg-dragdrop-chip:active {
+  cursor: grabbing;
+}
+
+.pg-dragdrop-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pg-dropzone {
+  padding: 1.1rem 0.75rem;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--surface);
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+/* DragDrop toggles `activeDropTargetClass` (default: 'active') on hover. */
+.pg-dropzone.active {
+  border-color: var(--good);
+  border-style: solid;
+  background: #e7f6ec;
+  color: var(--good);
+}
+
+/* Briefly flashed by the demo when a drop lands on a zone. */
+.pg-dropzone.pg-dropzone--hit {
+  border-color: var(--accent);
+  background: #e6f0ff;
+  color: var(--accent);
+}
+
 /* --- Event log panel ---------------------------------------------------- */
 .pg-log {
   position: fixed;

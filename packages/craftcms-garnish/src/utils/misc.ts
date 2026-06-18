@@ -4,6 +4,29 @@
 
 import {RETURN_KEY, SPACE_KEY, TEXT_NODE} from '../constants';
 
+/**
+ * Whether a value is a "plain object" — the native replacement for jQuery's
+ * `$.isPlainObject`, used by the drag classes' `(items, settings)` param-shift to
+ * detect a settings object passed as the first argument.
+ *
+ * Excludes DOM nodes, arrays, array-likes (anything with a numeric `length`), and
+ * event targets, so an element / element list passed as `items` is never mistaken
+ * for settings.
+ */
+export function isPlainObject(val: unknown): val is Record<string, unknown> {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    !(val instanceof Element) &&
+    !(typeof Node !== 'undefined' && val instanceof Node) &&
+    !Array.isArray(val) &&
+    typeof (val as {length?: unknown}).length !== 'number' &&
+    typeof (val as EventTarget).addEventListener !== 'function' &&
+    (Object.getPrototypeOf(val) === Object.prototype ||
+      Object.getPrototypeOf(val) === null)
+  );
+}
+
 /** Euclidean distance between two coordinates. */
 export function getDist(
   x1: number,

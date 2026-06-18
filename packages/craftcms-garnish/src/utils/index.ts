@@ -71,6 +71,7 @@ export {
   within,
   isString,
   isArray,
+  isPlainObject,
   isTextNode,
   log,
   handleActivatingKeypress,
