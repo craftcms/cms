@@ -51,13 +51,14 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
+
+use function CraftCms\Cms\currentUser;
 
 #[Scoped]
 class Sections
@@ -257,7 +258,7 @@ class Sections
             return $this->getAllSections();
         }
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         if (! $user) {
             return collect();
@@ -277,7 +278,7 @@ class Sections
         int $siteId,
         string $currentSectionUid,
     ): array {
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         if (! $user) {
             return [];

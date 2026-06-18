@@ -21,12 +21,12 @@ use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Override;
 use RuntimeException;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -289,7 +289,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 

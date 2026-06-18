@@ -90,7 +90,7 @@ readonly class TwigExceptionMapper
 
         $template = new $class(Twig::get());
         $src = $template->getSourceContext();
-        $templatePath = $src->getPath() ?: null;
+        $templatePath = $src->getPath() ?: $src->getName();
         $templateLine = null;
 
         if ($line !== null) {

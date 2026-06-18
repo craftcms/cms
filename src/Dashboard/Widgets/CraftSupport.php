@@ -13,11 +13,11 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\View\LegacyAssets\CraftSupportAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Override;
 
 use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -43,7 +43,7 @@ class CraftSupport extends Widget
     public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
-        return parent::isSelectable() && Auth::craftUser()?->isAdmin();
+        return parent::isSelectable() && currentUser()?->isAdmin();
     }
 
     #[Override]
@@ -68,7 +68,7 @@ class CraftSupport extends Widget
     public function getBodyHtml(): ?string
     {
         // Only admins get the Craft Support widget.
-        if (! Auth::craftUser()?->isAdmin()) {
+        if (! currentUser()?->isAdmin()) {
             return null;
         }
 

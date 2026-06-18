@@ -31,10 +31,10 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use Illuminate\Support\Facades\Auth;
 use Override;
 use RuntimeException;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -360,7 +360,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         if (
             app(ElementRequest::class)->element === $this &&
-            Auth::craftUser()->isAdmin() &&
+            currentUser()->isAdmin() &&
             Cms::config()->allowAdminChanges &&
             ! empty($this->fieldId)
         ) {

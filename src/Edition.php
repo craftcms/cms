@@ -10,7 +10,6 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Request;
@@ -123,7 +122,7 @@ enum Edition: int implements Arrayable
 
     public static function canUpgrade(): bool
     {
-        if (! Auth::craftUser()?->isAdmin()) {
+        if (! currentUser()?->isAdmin()) {
             return false;
         }
 

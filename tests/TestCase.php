@@ -220,7 +220,6 @@ class TestCase extends Orchestra
 
         tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
             $config->set('inertia.pages.paths', [__DIR__.'/../resources/js/pages']);
-            $config->set('auth.defaults.guard', 'craft');
 
             $connection = env('DB_CONNECTION', 'testing');
             $driver = $config->get("database.connections.{$connection}.driver");

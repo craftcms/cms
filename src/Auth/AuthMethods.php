@@ -23,7 +23,6 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
-use Illuminate\Auth\SessionGuard;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Collection;
@@ -34,6 +33,8 @@ use RuntimeException;
 use SensitiveParameter;
 use Webauthn\Exception\InvalidUserHandleException;
 
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -67,10 +68,8 @@ class AuthMethods
      */
     public function getAllMethods(?CraftUser $user = null): Collection
     {
-        /** @var SessionGuard $guard */
-        $guard = auth('craft');
         $user = $user?->asElement()
-            ?? $guard->craftUser()?->asElement()
+            ?? currentUserElement()
             ?? $this->getUser();
 
         if (! $user?->id) {
@@ -356,21 +355,18 @@ class AuthMethods
         if ($user) {
             $this->setUser(null);
 
-            /** @var SessionGuard $guard */
-            $guard = auth('craft');
-
             // if we're impersonating, pass the user we're impersonating to the complete the login
             if ($this->impersonation->isImpersonating()) {
-                $authUser = $guard->craftUser();
+                $authUser = currentUser();
             }
 
-            $authUser ??= $guard->getProvider()->retrieveById($user->id);
+            $authUser ??= auth()->getProvider()->retrieveById($user->id);
 
             if (! $authUser) {
                 return false;
             }
 
-            auth('craft')->login($authUser, true);
+            auth()->login($authUser, true);
         }
 
         return true;
