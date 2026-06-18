@@ -1,3 +1,14 @@
+/**
+ * Global demo styles for @craftcms/garnish stories.
+ *
+ * Migrated from the old `playground/styles.css`. Stories reuse the same `.pg-*`
+ * class names so the imperative widgets (which the package itself renders into
+ * `.modal-shade`, `.hud .tip`, `.menu--disclosure`, etc.) look identical to the
+ * playground. The only structural change from the playground: the event-log
+ * panel is mounted INSIDE each story (`.pg-story` flex layout) instead of being
+ * a single page-fixed panel, so it scopes to the story canvas.
+ */
+
 :root {
   --bg: #f4f5f7;
   --surface: #ffffff;
@@ -10,65 +21,33 @@
   --bad: #b42318;
   --radius: 6px;
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+/* --- Story layout (demo column + embedded event log) -------------------- */
+.pg-story {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
   font-family:
     system-ui,
     -apple-system,
     'Segoe UI',
     Roboto,
     sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: var(--bg);
   color: var(--text);
   line-height: 1.5;
-  padding-bottom: 4rem;
 }
 
-.pg-header {
-  padding: 1.5rem 2rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+.pg-story-main {
+  flex: 1 1 360px;
+  min-width: 300px;
 }
 
-.pg-header h1 {
-  margin: 0 0 0.25rem;
-  font-size: 1.4rem;
-}
-
-.pg-header p {
-  margin: 0;
-  max-width: 60ch;
-  color: var(--muted);
-}
-
-.pg-main {
-  display: grid;
-  gap: 1.25rem;
-  padding: 1.5rem 2rem;
-  max-width: 70ch;
-}
-
-.pg-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
-}
-
-.pg-section h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
-}
-
-.pg-section > p {
+.pg-story-main > p {
   margin: 0 0 1rem;
   color: var(--muted);
+  max-width: 60ch;
 }
 
 .pg-controls {
@@ -77,7 +56,7 @@ body {
   gap: 0.5rem;
 }
 
-button {
+.pg-story button {
   font: inherit;
   cursor: pointer;
   padding: 0.45rem 0.9rem;
@@ -88,28 +67,28 @@ button {
   transition: background 0.12s ease;
 }
 
-button:hover {
+.pg-story button:hover {
   background: #eef0f3;
 }
 
-button:focus-visible {
+.pg-story button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-code,
-kbd {
+.pg-story code,
+.pg-story kbd {
   font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-size: 0.85em;
 }
 
-code {
+.pg-story code {
   background: #eef0f3;
   padding: 0.05rem 0.3rem;
   border-radius: 4px;
 }
 
-kbd {
+.pg-story kbd {
   background: #2a2f37;
   color: #fff;
   padding: 0.05rem 0.35rem;
@@ -165,6 +144,7 @@ kbd {
   display: none;
   opacity: 0;
   background: var(--surface);
+  color: var(--text);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1.5rem;
@@ -184,14 +164,24 @@ kbd {
   flex-wrap: wrap;
 }
 
+.pg-modal button {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
 .pg-modal-primary {
-  background: var(--accent);
-  color: var(--accent-text);
-  border-color: var(--accent);
+  background: var(--accent) !important;
+  color: var(--accent-text) !important;
+  border-color: var(--accent) !important;
 }
 
 .pg-modal-primary:hover {
-  background: #1a5fce;
+  background: #1a5fce !important;
 }
 
 body.no-scroll {
@@ -325,7 +315,7 @@ body.no-scroll {
   left: 20px;
 }
 
-/* --- Drag with helpers (section 7) -------------------------------------- */
+/* --- Drag with helpers -------------------------------------------------- */
 .pg-helper-list {
   margin-top: 1rem;
   display: flex;
@@ -368,7 +358,7 @@ body.no-scroll {
   cursor: grabbing;
 }
 
-/* --- DragDrop / drop targets (section 8) -------------------------------- */
+/* --- DragDrop / drop targets -------------------------------------------- */
 .pg-dragdrop-layout {
   margin-top: 1rem;
   display: grid;
@@ -441,7 +431,7 @@ body.no-scroll {
   color: var(--accent);
 }
 
-/* --- DragSort / reorderable list (section 9) ---------------------------- */
+/* --- DragSort / reorderable list ---------------------------------------- */
 .pg-sort-list {
   margin-top: 1rem;
   padding: 0;
@@ -487,20 +477,17 @@ body.no-scroll {
   background: #e6f0ff;
 }
 
-/* --- Event log panel ---------------------------------------------------- */
+/* --- Event log panel (embedded per-story) ------------------------------- */
 .pg-log {
-  position: fixed;
-  right: 1rem;
-  bottom: 1rem;
-  width: 340px;
-  max-height: 50vh;
+  width: 320px;
+  flex: 0 0 auto;
+  max-height: 420px;
   display: flex;
   flex-direction: column;
   background: #11151b;
   color: #e6e9ee;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  z-index: 9999;
   overflow: hidden;
 }
 
@@ -513,12 +500,22 @@ body.no-scroll {
   border-bottom: 1px solid #222834;
 }
 
+.pg-log-head strong {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 0.85rem;
+}
+
 .pg-log-head button {
   padding: 0.15rem 0.5rem;
   font-size: 0.75rem;
   background: #222834;
   color: #e6e9ee;
-  border-color: #333b48;
+  border: 1px solid #333b48;
+  border-radius: var(--radius);
+  cursor: pointer;
 }
 
 .pg-log-list {
@@ -650,7 +647,7 @@ body.no-scroll {
   display: none;
 }
 
-/* --- DisclosureMenu / dropdown menu ----------------------------------- */
+/* --- DisclosureMenu / dropdown menu ------------------------------------ */
 .pg-disc-trigger {
   font-weight: 600;
 }
@@ -663,6 +660,7 @@ body.no-scroll {
   min-width: 180px;
   padding: 4px;
   background: var(--surface);
+  color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);

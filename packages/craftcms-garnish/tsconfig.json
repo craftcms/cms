@@ -8,5 +8,12 @@
       "@src/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests", "tsdown.config.ts", "vitest.config.ts"]
+  "include": [
+    "src",
+    "tests",
+    "stories",
+    ".storybook",
+    "tsdown.config.ts",
+    "vitest.config.ts"
+  ]
 }

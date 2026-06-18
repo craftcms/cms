@@ -314,15 +314,22 @@ Public API symbols carry TSDoc — your editor's IntelliSense is the fastest ref
 ## Development
 
 ```bash
-npm run dev          # tsdown watch build
+npm run dev          # Storybook dev server at http://localhost:6006
+npm run storybook    # alias of `npm run dev`
+npm run build:storybook  # static Storybook build
 npm run build        # production build (dual `.` + `/compat` entries)
+npm run build:watch  # tsdown watch build
 npm run test         # Vitest suite
-npm run check:types  # tsc --noEmit
-npm run format       # Prettier (writes ./src)
+npm run check:types  # tsc --noEmit (includes stories)
+npm run format       # Prettier (writes ./src ./tests ./stories ./.storybook)
 ```
 
-An interactive playground is available via `npm run dev` (see the `playground/`
-directory).
+Interactive component demos live in **Storybook** (`npm run dev` or
+`npm run storybook` → http://localhost:6006), with one story file per component
+under `stories/`. Stories import the real source from `../src`, so edits
+hot-reload instantly. See [`docs/17-storybook-notes.md`](docs/17-storybook-notes.md)
+for how stories are organized, the shared event-log helper, and how to add a story
+when porting a new component.
 
 ## Status
 
