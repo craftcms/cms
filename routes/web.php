@@ -9,8 +9,11 @@ use CraftCms\Cms\Http\Controllers\Auth\OAuthController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
+use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Route;
+
+$routes = app(CraftRoutes::class);
 
 if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::config()->loginPath !== false) {
@@ -31,11 +34,11 @@ if (Edition::get()->registersFrontendUserRoutes()) {
 }
 
 if (OAuth::isAvailable()) {
-    Route::middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () {
+    Route::middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () use ($routes) {
         Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
         Route::get('oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
-        Route::prefix(Cms::config()->cpTrigger)->middleware('craft.cp')->group(function () {
+        Route::prefix($routes->cpTriggerRoutePrefix())->middleware('craft.cp')->group(function () {
             Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect']);
         });
     });
