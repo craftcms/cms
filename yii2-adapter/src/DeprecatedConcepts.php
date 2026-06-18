@@ -70,9 +70,13 @@ use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Yii2Adapter\Policies\CategoryPolicy;
+use CraftCms\Yii2Adapter\Policies\GlobalSetPolicy;
+use CraftCms\Yii2Adapter\Policies\TagPolicy;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use PDOException;
 
@@ -137,6 +141,16 @@ class DeprecatedConcepts
 
     public function boot(): void
     {
+        if (DeprecatedConcepts::supportsCategories()) {
+            Gate::policy(Category::class, CategoryPolicy::class);
+        }
+        if (DeprecatedConcepts::supportsGlobalSets()) {
+            Gate::policy(GlobalSet::class, GlobalSetPolicy::class);
+        }
+        if (DeprecatedConcepts::supportsTags()) {
+            Gate::policy(Tag::class, TagPolicy::class);
+        }
+
         Event::listen(FieldTypesResolving::class, function(FieldTypesResolving $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->types->add(CategoriesField::class);
