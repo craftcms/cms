@@ -40,14 +40,16 @@ trait ImportableElementContainerField
         return $dataItem;
     }
 
-    // todo: maybe remove me - maybe I'm temporary?
     /**
+     * Some element container fields only have one field layout provider.
+     * In that case, the new prefix is "simply" based on whatever was passed in as a previous prefix.
+     * For other fields, like Matrix, this is more complex, and those fields implement their own version of this method.
+     *
      * @see ImportableElementContainerFieldInterface::getMappingUiPrefix()
      */
     public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string
     {
-        // by default return empty string?
-        return '';
+        return ! empty($prefix) ? $prefix : '';
     }
 
     // todo: maybe remove me - maybe I'm temporary?

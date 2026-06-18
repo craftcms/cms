@@ -366,7 +366,7 @@ abstract class BaseImporter
 
         if (preg_match('/^fn\s*\(\s*(?:\$(\w+)\s*)?\)\s*=>\s*(.+)/', $transformer, $match)) {
             $var = $match[1];
-            $php = sprintf('return %s;', Str::removeLeft(rtrim($match[2], ';'), 'return '));
+            $php = sprintf('return %s;', Str::chopStart(rtrim($match[2], ';'), 'return '));
 
             return function (ElementInterface $element) use ($var, $php) {
                 if ($var) {

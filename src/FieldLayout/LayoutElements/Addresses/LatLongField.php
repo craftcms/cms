@@ -7,16 +7,20 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
 
-class LatLongField extends BaseNativeField
+class LatLongField extends BaseNativeField implements ImportableFieldLayoutElementInterface
 {
     #[Override]
     public string $attribute = 'latLong';
@@ -148,5 +152,37 @@ class LatLongField extends BaseNativeField
         }
 
         return '61.108, -149.779';
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    {
+        $cols = [
+            'multiple' => true,
+            'heading' => $this->label(),
+        ];
+
+        $subfields = [];
+
+        $parts = [
+            ['attribute' => 'latitude', 'label' => t('Latitude')],
+            ['attribute' => 'longitude', 'label' => t('Longitude')],
+        ];
+
+        foreach ($parts as $part) {
+            [$prefixedHandle, $prefixedHandleWithoutMap] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+
+            $subfields[] = [
+                'handle' => $part['attribute'],
+                'label' => $part['label'],
+                'prefixedHandle' => $prefixedHandle,
+                'prefixedHandleWithoutMap' => $prefixedHandleWithoutMap,
+                'isContainer' => false,
+            ];
+        }
+
+        $cols['subfields'] = $subfields;
+
+        return $cols;
     }
 }

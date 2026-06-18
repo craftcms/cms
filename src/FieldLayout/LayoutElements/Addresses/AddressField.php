@@ -8,10 +8,14 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use InvalidArgumentException;
 use Override;
 
@@ -20,7 +24,7 @@ use function CraftCms\Cms\t;
 /**
  * AddressField represents an Address field that can be included within an Address field layout designer.
  */
-class AddressField extends BaseField
+class AddressField extends BaseField implements ImportableFieldLayoutElementInterface
 {
     public function attribute(): string
     {
@@ -203,5 +207,45 @@ class AddressField extends BaseField
         return Html::tag('div', app(Addresses::class)->formatAddress($address), [
             'class' => 'no-truncate',
         ]);
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    {
+        $cols = [
+            'multiple' => true,
+            'heading' => $this->label(),
+        ];
+
+        $subfields = [];
+
+        // we have to show all the possible address fields as at this stage we have no idea which country we're importing for
+        // and each row could be a different country anyway
+        $parts = [
+            ['attribute' => 'addressLine1', 'label' => t('Address Line 1')],
+            ['attribute' => 'addressLine2', 'label' => t('Address Line 2')],
+            ['attribute' => 'addressLine3', 'label' => t('Address Line 3')],
+            ['attribute' => 'administrativeArea', 'label' => t('Administrative Area')],
+            ['attribute' => 'locality', 'label' => t('Locality')],
+            ['attribute' => 'dependentLocality', 'label' => t('Dependent Locality')],
+            ['attribute' => 'postalCode', 'label' => t('Postal Code')],
+            ['attribute' => 'sortingCode', 'label' => t('Sorting Code')],
+        ];
+
+        foreach ($parts as $part) {
+            [$prefixedHandle, $prefixedHandleWithoutMap] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+
+            $subfields[] = [
+                'handle' => $part['attribute'],
+                'label' => $part['label'],
+                'prefixedHandle' => $prefixedHandle,
+                'prefixedHandleWithoutMap' => $prefixedHandleWithoutMap,
+                'isContainer' => false,
+            ];
+        }
+
+        $cols['subfields'] = $subfields;
+
+        return $cols;
     }
 }

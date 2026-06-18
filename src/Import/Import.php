@@ -47,7 +47,7 @@ use Throwable;
 class Import
 {
     public function __construct(
-        private readonly ProjectConfig $projectConfig,
+        // private readonly ProjectConfig $projectConfig,
         private ?LaravelCollection $configs = null,
         private ?LaravelCollection $runs = null,
     ) {}

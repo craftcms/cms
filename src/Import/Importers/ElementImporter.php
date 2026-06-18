@@ -198,9 +198,9 @@ class ElementImporter extends BaseImporter
             }
             $this->fieldLayoutUid = $fieldLayout->uid;
         } elseif (is_string($value)) {
-            $fieldLayout = $fieldsService->getLayoutByUid($value) ?? $fieldsService->getLayoutByHandle($value);
+            $fieldLayout = $fieldsService->getLayoutByUid($value);
             if ($fieldLayout === null) {
-                throw new InvalidArgumentException("No field layout found with UID or handle: \"$value\".");
+                throw new InvalidArgumentException("No field layout found with UID: \"$value\".");
             }
             $this->fieldLayoutUid = $fieldLayout->uid;
         }

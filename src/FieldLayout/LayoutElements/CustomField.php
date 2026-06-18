@@ -13,15 +13,19 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
@@ -41,7 +45,7 @@ use function CraftCms\Cms\template;
  * @property string $fieldUid The UID of the field this layout field is based on
  * @property UserCondition|null $editCondition The user condition which determines who can edit this field
  */
-class CustomField extends BaseField
+class CustomField extends BaseField implements ImportableFieldLayoutElementInterface
 {
     private static UserCondition $defaultEditCondition;
 
@@ -886,5 +890,33 @@ class CustomField extends BaseField
         }
 
         return $items;
+    }
+
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    {
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return [];
+        }
+
+        $attribute = $this->attribute();
+        [$prefixedHandle, $prefixedHandleWithoutMap] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
+
+        $content = [
+            'handle' => $attribute,
+            'label' => $this->label(),
+            'prefixedHandle' => $prefixedHandle,
+            'prefixedHandleWithoutMap' => $prefixedHandleWithoutMap,
+            'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
+        ];
+
+        if ($content['isContainer']) {
+            $content['fieldUid'] = $field->uid;
+        }
+
+        return $content;
     }
 }

@@ -42,7 +42,7 @@ class ImportRunController
 
     public function create(Request $request): CpScreenResponse
     {
-        $old = $request->session()?->get('run');
+        $old = $request->session()->get('run');
         if (! empty($old)) {
             $run = new ImportRun($old);
         } else {
@@ -62,7 +62,7 @@ class ImportRunController
 
         abort_if(is_null($found = $this->importService->getImportRunByHandle($handle)), 404, 'Import run not found');
 
-        $old = $request->session()?->get('run');
+        $old = $request->session()->get('run');
         if (! empty($old)) {
             $run = new ImportRun($old);
         }
@@ -129,7 +129,6 @@ class ImportRunController
         abort_if(is_null($run = $this->importService->getImportRunByUid($uid)), 400, 'Import run not found.');
 
         try {
-            /** @phpstan-ignore-next-line */
             $this->importService->dispatchImport($run);
         } catch (Throwable $e) {
             Log::warning("Import run failed: {$e->getMessage()}");

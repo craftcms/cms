@@ -88,7 +88,9 @@ use function CraftCms\Cms\template;
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {
-    use ImportableElementContainerField;
+    use ImportableElementContainerField {
+        validateMapping as traitValidateMapping;
+    }
 
     public const string VIEW_MODE_CARDS = 'cards';
 
@@ -1894,6 +1896,10 @@ JS,
         }
 
         // TODO: validate that the fields in each provider are allowed
+        foreach ($providers as $provider) {
+            $fieldLayout = $provider->getFieldLayout();
+            // self::traitValidateMapping($value,  $attribute,  $fail,  $validator, $params);
+        }
 
         return true;
     }

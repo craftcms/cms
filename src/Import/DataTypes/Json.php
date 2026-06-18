@@ -45,7 +45,7 @@ class Json implements DataTypeInterface
         //            |> array_values(...);
 
         //        $keys = static::collectUniqueKeys($array);
-        $keys = static::flattenKeys($array);
+        $keys = self::flattenKeys($array);
         sort($keys);
 
         array_walk($keys, function (&$value, $key) {
@@ -88,7 +88,7 @@ class Json implements DataTypeInterface
             $keys[$key] ??= [];
 
             if (is_array($value)) {
-                static::collectKeysFromArray($value, $keys[$key]);
+                self::collectKeysFromArray($value, $keys[$key]);
             }
         }
     }

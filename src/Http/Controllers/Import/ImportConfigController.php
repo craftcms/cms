@@ -12,6 +12,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\View\HtmlStack;
@@ -55,7 +56,7 @@ class ImportConfigController
     {
         $validTypes = $this->importService->getAllImporterTypes();
 
-        $old = $request->old() ?? $request->session()?->get('import');
+        $old = $request->old() ?? $request->session()->get('import');
         if (! empty($old)) {
             $type = $old['type'] ?? null;
             abort_unless(is_string($type) && in_array($type, $validTypes, strict: true), 400, 'Invalid importer type.');
@@ -159,7 +160,7 @@ class ImportConfigController
         );
     }
 
-    public function editFieldLayoutProvider(Request $request, ?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
+    public function editFieldLayoutProvider(Request $request, ?ElementImporter $import = null, ?string $handle = null): CpScreenResponse
     {
         $handle ??= $import->handle ?? $request->input('handle');
 
@@ -168,6 +169,7 @@ class ImportConfigController
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
         if ($import === null) {
+            /** @var ElementImporter $import */
             $import = $found;
         }
 
@@ -221,6 +223,7 @@ class ImportConfigController
             'fieldLayoutUid' => ['nullable', 'string', 'max:36'],
         ]);
 
+        /** @var ElementImporter $import */
         if (property_exists($import, 'fieldLayoutUid')) {
             $import->fieldLayoutUid($request->input('fieldLayoutUid', $import->fieldLayoutUid));
         }
@@ -305,6 +308,7 @@ class ImportConfigController
         ]);
 
         if (property_exists($import, 'fieldLayoutId')) {
+            /** @phpstan-ignore-next-line */
             $import->fieldLayoutId($request->input('fieldLayoutId', $import->fieldLayoutId));
         }
 
@@ -459,7 +463,7 @@ class ImportConfigController
         }
 
         return new CpScreenResponse()
-            ->title(! isset($import?->uid) ? t('Create a new import config') : t('Edit {name} import config', ['name' => $import->name]))
+            ->title(! isset($import->uid) ? t('Create a new import config') : t('Edit {name} import config', ['name' => $import->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Configs'), 'import/configs')
             ->contentTemplate('import/configs/_edit.twig', $templateVars)

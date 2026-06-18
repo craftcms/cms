@@ -19,7 +19,7 @@
 
 {% if nested %}
     {% for item in destinationCols %}
-        <h3>{{ item.provider.name }}</h3>
+        <h3>{{ item.provider.name ?? field.name ?? 'Nested Field Mapping' }}</h3>
         {{ _self.fieldLayoutTable(item.destinationCols, sourceDataCols, import, field) }}
     {% endfor %}
 {% else %}
@@ -30,39 +30,54 @@
 {% macro fieldLayoutTable(destinationCols, sourceDataCols, import, field = null) %}
     <table>
         {% for col in destinationCols %}
-            <tr>
-                <td>
-                    {{ col.label }} <pre>({{ col.handle }})</pre>
-                </td>
-                <td>
-                    {% if col.isContainer %}
-                        {{ hiddenInput(col.prefixedHandle, null) }}
-                        <a href="#"
-                           class="btn mapping-slideout"
-                           data-field-uid="{{ col.fieldUid ?? '' }}" {# this is the global field UID #}
-                           data-field-handle="{{ col.handle }}" {# this will be the layout handle, so can be overwritten #}
-                           data-import-uid="{{ import.uid }}"
-                           data-owner-prefix="{{ col.prefixedHandle }}"
-                        >
-                            Map field
-                        </a>
-
-                        {{ col.prefixedHandle }}
-                    {% else %}
-                        {{ forms.selectField({
-                            name: col.prefixedHandle,
-                            options: sourceDataCols,
-                            value: import.map[col.prefixedHandleWithoutMap] ?? ''
-                        }) }}
-
-                        {{ col.prefixedHandle }}
-{#                        {{ col.prefixedHandleWithoutMap }}#}
-{#                        {{ col.handle }}#}
-                    {% endif %}
-                </td>
-            </tr>
+            {% if col.multiple is defined and col.multiple == true %}
+                <th>
+                    <td colspan="2">
+                        <strong>{{ col.heading ?? 'FLD' }}</strong>
+                    </td>
+                </th>
+                {% for subcol in col.subfields %}
+                    {{ _self.row(subcol, import, sourceDataCols) }}
+                {% endfor %}
+            {% elseif col is not empty %}
+                {{ _self.row(col, import, sourceDataCols) }}
+            {% endif %}
         {% endfor %}
     </table>
+{% endmacro %}
+
+{% macro row(col, import, sourceDataCols) %}
+    <tr>
+        <td>
+            {{ col.label }} <pre>({{ col.handle }})</pre>
+        </td>
+        <td>
+            {% if col.isContainer %}
+                {{ hiddenInput(col.prefixedHandle, null) }}
+                <a href="#"
+                   class="btn mapping-slideout"
+                   data-field-uid="{{ col.fieldUid ?? '' }}" {# this is the global field UID #}
+                   data-field-handle="{{ col.handle }}" {# this will be the layout handle, so can be overwritten #}
+                   data-import-uid="{{ import.uid }}"
+                   data-owner-prefix="{{ col.prefixedHandle }}"
+                >
+                    Map field
+                </a>
+
+                {{ col.prefixedHandle }}
+            {% else %}
+                {{ forms.selectField({
+                    name: col.prefixedHandle,
+                    options: sourceDataCols,
+                    value: import.map[col.prefixedHandleWithoutMap] ?? ''
+                }) }}
+
+                {{ col.prefixedHandle }}
+                {#                        {{ col.prefixedHandleWithoutMap }}#}
+                {#                        {{ col.handle }}#}
+            {% endif %}
+        </td>
+    </tr>
 {% endmacro %}
 
 {#<div>
