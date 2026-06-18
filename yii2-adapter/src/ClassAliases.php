@@ -349,6 +349,7 @@ use craft\nameparsing\CustomLanguage;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
+use craft\web\twig\AllowableInSandbox;
 use craft\web\twig\AllowedInSandbox;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
@@ -745,6 +746,7 @@ class ClassAliases
         class_alias(\CraftCms\Cms\Twig\SecurityPolicy::class, SecurityPolicy::class);
         class_alias(\CraftCms\Cms\Twig\TemplateLoader::class, TemplateLoader::class);
         class_alias(\CraftCms\Cms\Twig\Attributes\AllowedInSandbox::class, AllowedInSandbox::class);
+        class_alias(\CraftCms\Cms\Twig\AllowableInSandbox::class, AllowableInSandbox::class);
         class_alias(\CraftCms\Cms\Twig\Contracts\SafeHtml::class, SafeHtml::class);
         class_alias(\CraftCms\Cms\Twig\Exceptions\TemplateLoaderException::class, TemplateLoaderException::class);
         class_alias(\CraftCms\Cms\Twig\Extensions\CpExtension::class, CpExtension::class);

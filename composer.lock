@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b958943aaa951fca6c36ce6c38f5b550",
+    "content-hash": "42ccf518a26c9c69ec8a5daa11c55ad4",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -709,6 +709,62 @@
                 "source": "https://github.com/craftcms/server-check"
             },
             "time": "2026-05-06T18:15:11+00:00"
+        },
+        {
+            "name": "craftcms/url-validator",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/craftcms/url-validator.git",
+                "reference": "75b44bc4d3f89feb9410b85d385f01210edd5eb1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/craftcms/url-validator/zipball/75b44bc4d3f89feb9410b85d385f01210edd5eb1",
+                "reference": "75b44bc4d3f89feb9410b85d385f01210edd5eb1",
+                "shasum": ""
+            },
+            "require": {
+                "ext-filter": "*",
+                "php": "^8.0.2"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.29",
+                "nunomaduro/collision": "^8.1",
+                "pestphp/pest": "^3.0",
+                "phpstan/phpstan": "^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "CraftCms\\UrlValidator\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pixel & Tonic",
+                    "homepage": "https://pixelandtonic.com/"
+                }
+            ],
+            "description": "Validate URLs and IP addresses against SSRF, DNS rebinding, and cloud-metadata attacks.",
+            "homepage": "https://github.com/craftcms/url-validator",
+            "keywords": [
+                "IP",
+                "craftcms",
+                "security",
+                "ssrf",
+                "url",
+                "validation"
+            ],
+            "support": {
+                "issues": "https://github.com/craftcms/url-validator/issues",
+                "source": "https://github.com/craftcms/url-validator/tree/1.0.0"
+            },
+            "time": "2026-06-15T17:29:09+00:00"
         },
         {
             "name": "dasprid/enum",

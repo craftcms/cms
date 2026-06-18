@@ -11,14 +11,14 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Twig\AllowableInSandbox;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use IteratorAggregate;
 use Override;
 use Stringable;
 use Traversable;
 
-#[AllowedInSandbox]
-class JsonData extends Component implements IteratorAggregate, Serializable, Stringable
+class JsonData extends Component implements AllowableInSandbox, IteratorAggregate, Serializable, Stringable
 {
     public function __construct(
         private mixed $value,
@@ -47,6 +47,17 @@ class JsonData extends Component implements IteratorAggregate, Serializable, Str
         }
     }
 
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        return true;
+    }
+
+    #[AllowedInSandbox]
     public function getType(): string
     {
         $type = gettype($this->value);
@@ -57,11 +68,13 @@ class JsonData extends Component implements IteratorAggregate, Serializable, Str
         };
     }
 
+    #[AllowedInSandbox]
     public function getValue(): mixed
     {
         return $this->value;
     }
 
+    #[AllowedInSandbox]
     public function getJson(bool $pretty = false, string $indent = '  '): string
     {
         if (isset($this->value['__ERROR__'], $this->value['__VALUE__'])) {

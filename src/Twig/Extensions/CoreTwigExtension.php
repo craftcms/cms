@@ -65,6 +65,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\TemplateGlobals;
 use DirectoryIterator;
+use GuzzleHttp\Psr7\FnStream;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\Auth;
@@ -84,6 +85,7 @@ use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+use yii\behaviors\AttributeTypecastBehavior;
 
 use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\renderObjectTemplate;
@@ -464,8 +466,11 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ([
+            /** @phpstan-ignore-next-line */
+            AttributeTypecastBehavior::class,
             DirectoryIterator::class,
             Process::class,
+            FnStream::class,
             SimpleXMLElement::class,
         ] as $blockedClass) {
             if (is_a($class, $blockedClass, true)) {
@@ -473,8 +478,12 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        if (! is_subclass_of($class, Component::class)) {
-            throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', Component::class));
+        if (str_starts_with(ltrim($class, '\\'), 'Spl')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
+        if (str_ends_with(rtrim($class, '\\'), 'Iterator')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
         $object = app()->make($class, $params);

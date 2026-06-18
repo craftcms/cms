@@ -1,6 +1,12 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.8 - 2026-06-17
+
+- Added `CraftCms\Cms\Twig\AllowableInSandbox`.
+- Fixed a bug where Blade templates weren’t loading for text/Markdown mail. ([#19106](https://github.com/craftcms/cms/pull/19106))
+- Fixed a bug where it wasn’t possible to change the primary site, or edit site statuses. ([#19109](https://github.com/craftcms/cms/issues/19109))
+
+## 6.0.0-alpha.7 - 2026-06-16
 
 - Added a new core Markdown field ([#18960](https://github.com/craftcms/cms/pull/18960))
 - Added a way for fields to track references and register a deletion blocker for them ([#19014](https://github.com/craftcms/cms/pull/19014))
