@@ -50,6 +50,6 @@ class ImportHelper
             $prefixedHandle = 'map['.$attribute.']';
         }
 
-        return [$attribute, $prefixedHandle, $prefixedHandleWithoutMap];
+        return [$prefixedHandle, $prefixedHandleWithoutMap];
     }
 }
