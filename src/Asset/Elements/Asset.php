@@ -163,6 +163,7 @@ class Asset extends Element
      *
      * @internal
      */
+    #[AllowedInSandbox]
     public bool $isFolder = false;
 
     /**
@@ -170,21 +171,25 @@ class Asset extends Element
      *
      * @internal
      */
+    #[AllowedInSandbox]
     public ?array $sourcePath = null;
 
     /**
      * @var int|null Folder ID
      */
+    #[AllowedInSandbox]
     public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
+    #[AllowedInSandbox]
     public ?int $uploaderId = null;
 
     /**
      * @var string|null Folder path
      */
+    #[AllowedInSandbox]
     public ?string $folderPath = null;
 
     /**
@@ -208,16 +213,19 @@ class Asset extends Element
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
+    #[AllowedInSandbox]
     public ?bool $keptFile = null;
 
     /**
      * @var DateTimeInterface|null Date modified
      */
+    #[AllowedInSandbox]
     public ?DateTimeInterface $dateModified = null;
 
     /**
      * @var string|null New file location
      */
+    #[AllowedInSandbox]
     public ?string $newLocation = null;
 
     /**
@@ -225,6 +233,7 @@ class Asset extends Element
      *
      * @see AssetLocationRule
      */
+    #[AllowedInSandbox]
     public ?string $locationError = null;
 
     /**
@@ -1160,6 +1169,7 @@ class Asset extends Element
     /**
      * Returns the volume’s ID.
      */
+    #[AllowedInSandbox]
     public function getVolumeId(): ?int
     {
         return (int) $this->_volumeId ?: null;
@@ -1802,6 +1812,7 @@ JS, [
      *
      * @throws RuntimeException if [[folderId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getFolder(): VolumeFolder
     {
         if (! isset($this->folderId)) {
@@ -1820,6 +1831,7 @@ JS, [
      *
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getVolume(): Volume
     {
         if (isset($this->_volume)) {
@@ -1840,6 +1852,7 @@ JS, [
     /**
      * Returns the user that uploaded the asset, if known.
      */
+    #[AllowedInSandbox]
     public function getUploader(): ?User
     {
         if (isset($this->_uploader)) {
@@ -2279,6 +2292,7 @@ JS, [
      *
      * @param  string|null  $filename  Filename to use. If not specified, the asset's filename will be used.
      */
+    #[AllowedInSandbox]
     public function getPath(?string $filename = null): string
     {
         return $this->folderPath.($filename ?: $this->_filename);
@@ -2321,6 +2335,7 @@ JS, [
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws FilesystemException if a stream cannot be created
      */
+    #[AllowedInSandbox]
     public function getStream()
     {
         $stream = $this->getVolume()->sourceDisk()->readStream($this->getPath());
@@ -2338,6 +2353,7 @@ JS, [
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws AssetException if a stream could not be created
      */
+    #[AllowedInSandbox]
     public function getContents(): string
     {
         return stream_get_contents($this->getStream());
@@ -2368,6 +2384,7 @@ JS, [
     /**
      * Returns whether a user-defined focal point is set on the asset.
      */
+    #[AllowedInSandbox]
     public function getHasFocalPoint(): bool
     {
         return isset($this->_focalPoint);
@@ -2378,6 +2395,7 @@ JS, [
      *
      * @param  bool  $asCss  whether the value should be returned in CSS syntax ("50% 25%") instead
      */
+    #[AllowedInSandbox]
     public function getFocalPoint(bool $asCss = false): array|string|null
     {
         if (! in_array($this->kind, [FileKind::Image->value, FileKind::Video->value], true)) {

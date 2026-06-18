@@ -135,6 +135,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               {{ entry.sectionId }}
      *               ```
      */
+    #[AllowedInSandbox]
     public ?int $sectionId = null;
 
     /**
@@ -1410,6 +1411,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @throws RuntimeException if [[sectionId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getSection(): ?Section
     {
         if (! isset($this->sectionId)) {
@@ -1423,6 +1425,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $section;
     }
 
+    #[AllowedInSandbox]
     public function getTypeId(): int
     {
         return $this->getType()->id;
@@ -1477,6 +1480,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @throws RuntimeException if [[typeId]] is invalid, or the section has no entry types
      */
+    #[AllowedInSandbox]
     public function getType(): EntryType
     {
         if (isset($this->_type)) {
@@ -2056,23 +2060,24 @@ JS, [
         // Parent
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
             $fields['parent'] = (function () use ($static, $section) {
+                $parentQuery = self::find()
+                    ->site('*')
+                    ->preferSites([$this->siteId])
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null);
+
                 if ($parentId = $this->getParentId()) {
-                    $parent = Entries::getEntryById($parentId, $this->siteId, [
-                        'drafts' => null,
-                        'draftOf' => false,
-                    ]);
+                    $parentQuery->id($parentId);
                 } else {
                     // If the entry already has structure data, use it. Otherwise, use its canonical entry
-                    /** @var self|null $parent */
-                    $parent = self::find()
-                        ->siteId($this->siteId)
+                    $parentQuery
                         ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
-                        ->ancestorDist(1)
-                        ->drafts(null)
-                        ->draftOf(false)
-                        ->status(null)
-                        ->one();
+                        ->ancestorDist(1);
                 }
+
+                /** @var self|null $parent */
+                $parent = $parentQuery->one();
 
                 return FormFields::elementSelectFieldHtml([
                     'label' => t('Parent'),
@@ -2082,6 +2087,7 @@ JS, [
                     'selectionLabel' => t('Choose'),
                     'sources' => ["section:$section->uid"],
                     'criteria' => $this->_parentOptionCriteria($section),
+                    'showSiteMenu' => true,
                     'limit' => 1,
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
@@ -2216,7 +2222,6 @@ JS;
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [
-            'siteId' => $this->siteId,
             'sectionId' => $section->id,
             'status' => null,
             'drafts' => null,

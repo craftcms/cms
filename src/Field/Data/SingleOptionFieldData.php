@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Data;
 
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+
 /**
  * Single-select option field data class.
  */
@@ -17,6 +19,7 @@ class SingleOptionFieldData extends OptionData
      *
      * @return OptionData[]
      */
+    #[AllowedInSandbox]
     public function getOptions(): array
     {
         return $this->_options;

@@ -74,7 +74,7 @@ trait QueriesStructures
      *
      * @used-by descendantOf()
      */
-    public ElementInterface|int|null $descendantOf = null;
+    public ElementInterface|int|false|null $descendantOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].

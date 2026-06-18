@@ -18,6 +18,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
@@ -160,17 +161,20 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
     /**
      * @var string|null Name
      */
+    #[AllowedInSandbox]
     public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
+    #[AllowedInSandbox]
     public ?string $handle = null;
 
     /**
      * @var int|null Sort order
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public ?int $sortOrder = null;
 
     /**

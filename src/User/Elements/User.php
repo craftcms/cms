@@ -371,6 +371,16 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return 'id';
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        // Allow can() to be called from sandboxed templates
+        return strtolower($method) === 'can' || parent::methodAllowedInSandbox($method);
+    }
+
     public function asElement(): self
     {
         return $this;

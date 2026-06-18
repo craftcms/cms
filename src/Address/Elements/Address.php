@@ -345,6 +345,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * Returns whether the address belongs to the currently logged-in user.
      */
+    #[AllowedInSandbox]
     public function getBelongsToCurrentUser(): bool
     {
         $owner = $this->getOwner();
