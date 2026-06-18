@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where Blade templates weren’t loading for text/Markdown mail. ([#19106](https://github.com/craftcms/cms/pull/19106))
+- Fixed a bug where it wasn’t possible to change the primary site, or edit site statuses. ([#19109](https://github.com/craftcms/cms/issues/19109))
 
 ## 6.0.0-alpha.7 - 2026-06-16
 
