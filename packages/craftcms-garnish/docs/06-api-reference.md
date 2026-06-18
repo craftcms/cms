@@ -278,6 +278,66 @@ machinery and all `BaseDrag` events.
 
 ---
 
+## `DragSort`
+
+`class DragSort<S extends DragSortSettings = DragSortSettings> extends Drag<S>` — the
+sortable-list dragger: drag items to reorder them within their container, with **live
+insertion feedback** (the draggee is re-inserted into the DOM at the closest landing
+spot as the cursor moves, and an optional `insertion` placeholder marks it). On drop
+the new order is committed and `sortChange` fires if anything moved.
+
+**Constructor:** `new DragSort(items?, settings?)` — same `items` shapes + plain-object
+param-shift as `Drag`.
+
+> Like `Drag`, the sortable items / handles need `touch-action: none`.
+
+### Statics
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `DragSort.defaults` | `DragSortSettings` | Default settings (below). |
+
+### Settings (`DragSortSettings`, extends `DragSettings`)
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `container` | `null` | The list container (element / selector / list). Walked up at drag start to the nearest ancestor that has a height; the drag only sorts while the cursor is over it. |
+| `insertion` | `null` | Placeholder shown at the landing spot: a `(draggee) => element \| markup` fn, an element, an HTML string, or `null`. |
+| `moveTargetItemToFront` | `false` | Move the target to the front of the draggee block at drag start (and leave it there on drop). |
+| `magnetStrength` | `1` | Divides the helper's pull toward the cursor. `1` → exact tracking; `>1` → rubber-band toward the draggee's home. |
+| `onInsertionPointChange` | no-op | Fired (RAF-deferred) whenever the insertion point moves. |
+| `onSortChange` | no-op | Fired (RAF-deferred) on drop when the order actually changed. |
+| `canInsertBefore` | `() => true` | Gate: may the draggee be inserted *before* this item? |
+| `canInsertAfter` | `() => true` | Gate: may the draggee be inserted *after* this item? |
+
+### Methods & properties
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `$heightedContainer` | `HTMLElement \| null` | Resolved heighted container (the sort bounds). |
+| `$insertion` | `HTMLElement \| null` | The placeholder element (raw, not jQuery). |
+| `insertionVisible` | `boolean` | Whether the placeholder is in the DOM. |
+| `closestItem` | `HTMLElement \| null` | The item the draggee is currently closest to. |
+| `oldDraggeeIndexes` / `newDraggeeIndexes` | `number[] \| null` | Draggee indexes (into `$items`) at drag start / drop. |
+| `createInsertion` | `() => HTMLElement \| null` | Build the placeholder from `settings.insertion`. |
+| `canInsertBefore` / `canInsertAfter` | `(item) => boolean` | Insertion gates (delegate to settings). |
+| `getHelperTargetX` / `getHelperTargetY` | `(real?) => number` | Helper target coord; applies `magnetStrength` rubber-banding. |
+| `onInsertionPointChange` / `onSortChange` | `() => void` | **RAF-deferred** hooks: emit the event + run the callback. |
+| `onDragStart` / `onDrag` / `onDragStop` | overridable | Record order + create insertion / closest-item detect + reflow / commit + return + `sortChange`. |
+
+**Events:** `insertionPointChange`, `sortChange`, plus all inherited `Drag`/`BaseDrag`
+events (`returnHelpersToDraggees`, `beforeDragStart`, `dragStart`, `drag`, `dragStop`,
+`destroy`).
+
+**Spatial hit-test (`_getClosestItem`):** distances are measured from the draggee's
+virtual midpoint (axis-aware: `x`/`y`/Euclidean), walking outward from the draggee with
+a monotonic-distance early-skip and `canInsertBefore`/`canInsertAfter` gating. Midpoints
+are cached once per drag (`_precalculateMidpoints`) and only the moved item + neighbors
+are recomputed per insertion; lists `> 200` items use a viewport filter. Unlike
+`DragDrop`, `DragSort` **auto-returns** the helpers on drop.
+
+---
+
 ## `UiLayerManager`
 
 `class UiLayerManager extends Base` — manages the stack of UI layers (document,
@@ -310,9 +370,9 @@ object carrying every class, constant, utility, and flag — the legacy-shaped
 singleton, for incremental migration. **Prefer the tree-shakeable named exports in
 new code.**
 
-- **Classes:** `Base`, `Modal`, `BaseDrag`, `Drag`, `DragDrop`, `DragMove`,
-  `UiLayerManager`, `EscManager`, `ShortcutManager` (_deprecated_ alias of
-  `UiLayerManager`).
+- **Classes:** `Base`, `Modal`, `BaseDrag`, `Drag`, `DragDrop`, `DragSort`,
+  `DragMove`, `UiLayerManager`, `EscManager`, `ShortcutManager` (_deprecated_ alias
+  of `UiLayerManager`).
 - **Globals/flags:** `win`, `doc`, `bod`, `scrollContainer` (get/set), `rtl`, `ltr`,
   `activateEventsMuted` (get/set), `resizeEventsMuted` (get/set).
 - **Class-level events:** `on(Class, …)`, `off(Class, …)`, `once(Class, …)`.
@@ -483,8 +543,8 @@ gracefully.
 
 ---
 
-## Not yet supported
+## Everything ported
 
-- **`DragSort`** — the sortable-list drag behavior built on top of `Drag`.
-  (`BaseDrag`, `DragMove`, `Drag`, `DragDrop`, and `Modal`
-  `draggable`/`resizable` are all implemented and supported.)
+The full drag cluster (`BaseDrag`, `DragMove`, `Drag`, `DragDrop`, `DragSort`) and
+`Modal` (incl. `draggable`/`resizable`) are implemented and supported — no drag
+modules are pending.

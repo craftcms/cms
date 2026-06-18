@@ -441,6 +441,52 @@ body.no-scroll {
   color: var(--accent);
 }
 
+/* --- DragSort / reorderable list (section 9) ---------------------------- */
+.pg-sort-list {
+  margin-top: 1rem;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pg-sort-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: grab;
+  user-select: none;
+  /* Required so pointer drags aren't eaten by touch scrolling/panning. */
+  touch-action: none;
+}
+
+.pg-sort-item:active {
+  cursor: grabbing;
+}
+
+.pg-sort-grip {
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  letter-spacing: -0.15em;
+}
+
+/* The placeholder DragSort inserts at the landing spot. */
+.pg-sort-insertion {
+  list-style: none;
+  height: 2.5rem;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius);
+  background: #e6f0ff;
+}
+
 /* --- Event log panel ---------------------------------------------------- */
 .pg-log {
   position: fixed;

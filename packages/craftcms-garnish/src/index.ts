@@ -36,6 +36,7 @@ import {Modal, type ModalSettings} from './modal';
 import {BaseDrag, type BaseDragSettings} from './drag/base-drag';
 import {Drag, type DragSettings} from './drag/drag';
 import {DragDrop, type DragDropSettings} from './drag/drag-drop';
+import {DragSort, type DragSortSettings} from './drag/drag-sort';
 import {DragMove} from './drag-move';
 import {ResizeHandle} from './icons/resize-handle';
 import {garnishClassBus, globals, win, doc, bod} from './globals';
@@ -65,6 +66,7 @@ export {Modal, type ModalSettings};
 export {BaseDrag, type BaseDragSettings};
 export {Drag, type DragSettings};
 export {DragDrop, type DragDropSettings};
+export {DragSort, type DragSortSettings};
 export {DragMove};
 export {ResizeHandle};
 export {win, doc, bod};
@@ -169,6 +171,7 @@ export const Garnish = {
   BaseDrag,
   Drag,
   DragDrop,
+  DragSort,
   DragMove,
   /** @deprecated Use UiLayerManager instead. */
   ShortcutManager: UiLayerManager,

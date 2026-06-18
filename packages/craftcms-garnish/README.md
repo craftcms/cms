@@ -142,6 +142,39 @@ dd.addItems(document.querySelectorAll('.chip')); // items added after constructi
 
 As with `BaseDrag`, draggable items and handles need `touch-action: none`.
 
+#### Sortable lists — `DragSort`
+
+`DragSort` is the sortable-list dragger built on `Drag`: drag an item to reorder it
+within its container, with **live insertion feedback** — as the cursor moves, the
+dragged item (and an optional `insertion` placeholder) is re-inserted into the DOM at
+the spot it will land, so the surrounding items reflow in real time. On drop the new
+order is committed and `sortChange` fires if anything moved. `insertionPointChange`
+fires whenever the landing spot moves.
+
+```ts
+import {DragSort} from '@craftcms/garnish';
+
+const list = document.querySelector('#sortable')!;
+const sort = new DragSort(list.querySelectorAll('li'), {
+  container: list, // the sort is constrained to this (heighted) container
+  axis: 'y', // single-column list
+  insertion: () => {
+    const ph = document.createElement('li');
+    ph.className = 'insertion';
+    return ph; // a placeholder shown at the landing spot
+  },
+  onInsertionPointChange: () => console.log('insertion moved'),
+  onSortChange: () => console.log('new order committed'),
+  // gate where items may land:
+  // canInsertBefore: (item) => !item.classList.contains('locked'),
+});
+sort.on('sortChange', () => persistOrder());
+```
+
+`magnetStrength > 1` rubber-bands the helper toward the dragged item's home;
+`moveTargetItemToFront` keeps a multi-select drag's target leading the block. As with
+`BaseDrag`, the sortable items / handles need `touch-action: none`.
+
 **No-jQuery guarantee:** importing from `@craftcms/garnish` (the `.` entry) never
 pulls in jQuery, never reads `window.jQuery`/`$`, and never assigns
 `window.Garnish`. Those behaviors live exclusively in the `compat` entry.
@@ -239,19 +272,20 @@ drag foundation, and the compat layer are complete and tested.
 
 - **`BaseDrag` / `DragMove`** are implemented (Pointer Events, native auto-scroll)
   and available as named exports.
-- **`Drag` / `DragDrop`** are **supported** and available as named exports.
-  `Drag` adds helper clones + return-to-source / fade-out (Web Animations API,
-  reduced-motion aware); `DragDrop` adds drop targets + hit detection on top.
+- **`Drag` / `DragDrop` / `DragSort`** are **supported** and available as named
+  exports. `Drag` adds helper clones + return-to-source / fade-out (Web Animations
+  API, reduced-motion aware); `DragDrop` adds drop targets + hit detection; `DragSort`
+  adds sortable lists with live insertion feedback (the `_getClosestItem` spatial
+  hit-test + midpoint caching, the `insertion` placeholder, and `sortChange` /
+  `insertionPointChange` events).
 - **`Modal` `draggable` / `resizable`** are **supported** (still `false` by default).
   A draggable modal uses `DragMove` on its container — or on the element matched by
   `dragHandleSelector` for a header-only handle — and a resizable modal uses
   `BaseDrag` on a generated corner handle. (They previously threw; that limitation
   is gone.)
 
-Still pending (not yet ported):
-
-- **`DragSort`** — the sortable-list drag behavior built on top of `Drag`. (`Drag`,
-  `DragDrop`, `BaseDrag`, and `DragMove` are all ported.)
+The **drag cluster is COMPLETE** — `BaseDrag`, `DragMove`, `Drag`, `DragDrop`, and
+`DragSort` are all ported, with no drag modules pending.
 
 ## License
 

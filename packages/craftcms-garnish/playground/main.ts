@@ -12,6 +12,7 @@ import {
   BaseDrag,
   Drag,
   DragDrop,
+  DragSort,
   DragMove,
   getFocusableElements,
   isKeyboardFocusable,
@@ -666,7 +667,77 @@ if (dragDropChips && dragDropZones) {
 }
 
 /* ------------------------------------------------------------------------- *
- * 9. Events & utilities
+ * 9. DragSort — reorderable list
+ * ------------------------------------------------------------------------- */
+
+const dragSortList = document.getElementById('dragsort-list');
+
+if (dragSortList) {
+  const items = Array.from(
+    dragSortList.querySelectorAll<HTMLElement>('[data-sort-item]')
+  );
+
+  // Snapshot the original markup so "reset" can restore the order.
+  const originalOrder = items.map((el) => el.dataset.sortItem!);
+
+  /** Read the current visible order as a list of item ids. */
+  const currentOrder = (): string =>
+    Array.from(dragSortList.querySelectorAll<HTMLElement>('[data-sort-item]'))
+      .map((el) => el.dataset.sortItem)
+      .join(', ');
+
+  const dragSort = new DragSort(items, {
+    // The list itself is the heighted container the sort is constrained to.
+    container: dragSortList,
+    // Lock to the vertical axis — this is a single-column list.
+    axis: 'y',
+    // Hide the source row while its helper clone is in flight.
+    hideDraggee: true,
+    helperOpacity: 0.95,
+    // A dashed placeholder element shown at the landing spot.
+    insertion: () => {
+      const ph = document.createElement('li');
+      ph.className = 'pg-sort-insertion';
+      return ph;
+    },
+    onInsertionPointChange() {
+      log('dragsort', `insertionPointChange → order now [${currentOrder()}]`);
+    },
+    onSortChange() {
+      log('dragsort', `sortChange → new order [${currentOrder()}]`);
+    },
+  });
+
+  // Surface the raw drag lifecycle too (coalesce the per-frame `drag`).
+  let dragging = false;
+  dragSort.on('dragStart', () => {
+    dragging = false;
+    log('dragsort', 'dragStart');
+  });
+  dragSort.on('drag', () => {
+    if (!dragging) {
+      dragging = true;
+      log('dragsort', 'drag (reordering…)');
+    }
+  });
+  dragSort.on('dragStop', () => log('dragsort', 'dragStop'));
+
+  document
+    .querySelector<HTMLButtonElement>('[data-dragsort="reset"]')
+    ?.addEventListener('click', () => {
+      // Re-append the rows in their original order.
+      for (const id of originalOrder) {
+        const el = dragSortList.querySelector<HTMLElement>(
+          `[data-sort-item="${id}"]`
+        );
+        if (el) dragSortList.appendChild(el);
+      }
+      log('dragsort', `Reset list order → [${currentOrder()}]`);
+    });
+}
+
+/* ------------------------------------------------------------------------- *
+ * 10. Events & utilities
  * ------------------------------------------------------------------------- */
 
 const utilActions: Record<string, (btn: HTMLButtonElement) => void> = {
