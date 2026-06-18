@@ -36,6 +36,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
@@ -403,6 +404,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -783,6 +785,7 @@ class Category extends Element
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): CategoryGroup
     {
         if (!isset($this->groupId)) {
