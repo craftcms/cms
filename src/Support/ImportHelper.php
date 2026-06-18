@@ -50,6 +50,10 @@ class ImportHelper
             $prefixedHandle = 'map['.$attribute.']';
         }
 
+        $prefixedHandleWithoutMap = $prefixedHandleWithoutMap
+                |> (fn ($v) => str_replace(']', '', $v))
+                |> (fn ($v) => explode('[', (string) $v));
+
         return [$prefixedHandle, $prefixedHandleWithoutMap];
     }
 }

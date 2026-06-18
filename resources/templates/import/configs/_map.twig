@@ -33,7 +33,7 @@
             {% if col.multiple is defined and col.multiple == true %}
                 <th>
                     <td colspan="2">
-                        <strong>{{ col.heading ?? 'FLD' }}</strong>
+                        <strong>{{ col.heading ?? 'Field' }}</strong>
                     </td>
                 </th>
                 {% for subcol in col.subfields %}
@@ -69,12 +69,11 @@
                 {{ forms.selectField({
                     name: col.prefixedHandle,
                     options: sourceDataCols,
-                    value: import.map[col.prefixedHandleWithoutMap] ?? ''
+                    value: col.prefixedHandleWithoutMap|reduce(
+                        (value, part) => attribute(value, part),
+                        import.map
+                    )
                 }) }}
-
-                {{ col.prefixedHandle }}
-                {#                        {{ col.prefixedHandleWithoutMap }}#}
-                {#                        {{ col.handle }}#}
             {% endif %}
         </td>
     </tr>
