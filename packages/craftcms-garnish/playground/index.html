@@ -296,6 +296,61 @@
           </button>
         </div>
       </section>
+
+      <!-- ====================== HUD / ANCHORED POPOVER ====================== -->
+      <section class="pg-section" id="section-hud">
+        <h2>11. HUD — anchored popover</h2>
+        <p>
+          Each button in the arena below anchors a <code>new HUD(trigger, …)</code>.
+          Click a trigger to toggle its HUD: the HUD picks one of four orientations
+          (<code>bottom / top / right / left</code>) from the clearance around the
+          trigger and draws a <strong>tip</strong> pointing back at it. Triggers sit
+          near different edges so you can see the side flip; scroll or resize the
+          window to watch the HUD <strong>follow</strong> its trigger. Every
+          <code>show / hide / updateSizeAndPosition</code> (with the chosen
+          orientation) fires into the log.
+        </p>
+        <div class="pg-controls">
+          <button data-hud="destroy">Destroy all HUDs</button>
+        </div>
+        <div class="pg-hud-arena" id="hud-arena">
+          <button
+            class="pg-hud-trigger"
+            data-hud-trigger="top-left"
+            style="top: 12px; left: 12px"
+          >
+            Top-left
+          </button>
+          <button
+            class="pg-hud-trigger"
+            data-hud-trigger="top-right"
+            style="top: 12px; right: 12px"
+          >
+            Top-right
+          </button>
+          <button
+            class="pg-hud-trigger"
+            data-hud-trigger="mid-left"
+            style="top: 50%; left: 12px"
+          >
+            Mid-left
+          </button>
+          <button
+            class="pg-hud-trigger"
+            data-hud-trigger="mid-right"
+            style="top: 50%; right: 12px"
+          >
+            Mid-right
+          </button>
+          <button
+            class="pg-hud-trigger"
+            data-hud-trigger="bottom-center"
+            style="bottom: 12px; left: 50%; transform: translateX(-50%)"
+          >
+            Bottom-center
+          </button>
+        </div>
+      </section>
     </main>
 
     <!-- ============================ EVENT LOG ============================ -->

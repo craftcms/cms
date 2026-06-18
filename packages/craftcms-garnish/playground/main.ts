@@ -9,6 +9,7 @@
 
 import {
   Modal,
+  HUD,
   BaseDrag,
   Drag,
   DragDrop,
@@ -769,3 +770,66 @@ const utilActions: Record<string, (btn: HTMLButtonElement) => void> = {
 document.querySelectorAll<HTMLButtonElement>('[data-util]').forEach((btn) => {
   btn.addEventListener('click', () => utilActions[btn.dataset.util!]?.(btn));
 });
+
+/* ------------------------------------------------------------------------- *
+ * 11. HUD — anchored popover
+ * ------------------------------------------------------------------------- */
+
+const hudArena = document.getElementById('hud-arena');
+
+if (hudArena) {
+  // One lazily-created HUD per trigger; recreated if it was destroyed.
+  const huds = new Map<HTMLElement, HUD>();
+
+  const hudBody = (label: string): string => `
+    <div class="pg-hud-content">
+      <h4>HUD: ${label}</h4>
+      <p>
+        Orientation is chosen from the clearance around this trigger. Scroll or
+        resize the window to watch the HUD follow.
+      </p>
+      <button type="button" class="pg-modal-primary" data-hud-close>Close</button>
+    </div>`;
+
+  const getHud = (trigger: HTMLElement): HUD => {
+    const existing = huds.get(trigger);
+    if (existing && HUD.instances.includes(existing)) {
+      return existing;
+    }
+
+    const id = trigger.dataset.hudTrigger!;
+    const hud = new HUD(trigger, hudBody(id), {
+      showOnInit: false,
+      hudClass: 'hud pg-hud',
+    });
+
+    hud.on('show', () => log('hud', `${id}: show`));
+    hud.on('hide', () => log('hud', `${id}: hide`));
+    hud.on('updateSizeAndPosition', () =>
+      log('hud', `${id}: positioned → orientation "${hud.orientation}"`)
+    );
+
+    // The close button lives inside the HUD body (this.$main).
+    hud.$main
+      ?.querySelector<HTMLButtonElement>('[data-hud-close]')
+      ?.addEventListener('click', () => hud.hide());
+
+    huds.set(trigger, hud);
+    return hud;
+  };
+
+  hudArena
+    .querySelectorAll<HTMLButtonElement>('[data-hud-trigger]')
+    .forEach((trigger) => {
+      trigger.addEventListener('click', () => getHud(trigger).toggle());
+    });
+
+  document
+    .querySelector<HTMLButtonElement>('[data-hud="destroy"]')
+    ?.addEventListener('click', () => {
+      const count = HUD.instances.length;
+      [...HUD.instances].forEach((h) => h.destroy());
+      huds.clear();
+      log('hud', `Destroyed ${count} HUD instance(s)`);
+    });
+}

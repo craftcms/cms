@@ -96,6 +96,85 @@ Event objects passed to handlers are `GarnishEvent` (for DOM events, the native
 
 ---
 
+## `HUD`
+
+`class HUD extends Base<HUDSettings>` — an anchored, accessible popover/bubble with
+smart 4-way positioning and scroll-follow. Attaches to a trigger element, picks the
+best of four orientations from the available clearance, draws a tip pointing back at
+the trigger, traps Tab focus between trigger and body, and registers a UI layer +
+Escape shortcut (via the shared `UiLayerManager`, like `Modal`). Show/hide are
+display toggles — legacy HUD does not animate.
+
+**Constructor:** `new HUD(trigger, bodyContents?, settings?)` — also
+`new HUD(trigger, settings)` (param shift when the 2nd arg is a plain object). This
+is exactly the `FieldLayoutDesigner` call shape: `new HUD($addBtn, {...})`.
+
+### Statics
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `HUD.instances` | `HUD[]` | All live HUDs. |
+| `HUD.activeHUDs` | `Record<string, HUD>` | Open HUDs by namespace (powers `closeOtherHUDs`). |
+| `HUD.tipClasses` | `Record<HUDOrientation, string>` | Orientation → tip-class suffix. |
+| `HUD.defaults` | `HUDSettings` | Default settings (below). |
+
+### Settings (`HUDSettings`)
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `hudClass` | `'hud'` | Class(es) for the HUD container (multi-class string OK). |
+| `tipClass` | `'tip'` | Base class for the tip; orientation suffix appended. |
+| `shadeClass` | `'hud-shade'` | Class for the shade/backdrop. |
+| `bodyClass` / `mainContainerClass` / `mainClass` | `'body'` / `'main-container'` / `'main'` | Body / scroll-wrapper / content classes. |
+| `headerClass` / `footerClass` | `'hud-header'` / `'hud-footer'` | Header/footer hoisted out of the body content. |
+| `orientations` | `['bottom','top','right','left']` | Sides to try, in order of preference. |
+| `triggerSpacing` / `windowSpacing` | `10` / `10` | Gap to the trigger / viewport edge (px). |
+| `tipWidth` | `30` | Tip/arrow width (px). |
+| `minBodyWidth` / `minBodyHeight` | `200` / `0` | Min body dimensions (px). |
+| `withShade` | `true` | Render a shade behind the HUD. |
+| `onShow` / `onHide` / `onSubmit` | no-op | Registered as `show`/`hide`/`submit` handlers. |
+| `closeBtn` | `null` | Element whose `activate` hides the HUD. |
+| `listenToMainResize` | `true` | Reposition on the main element's `resize`. |
+| `showOnInit` | `true` | Show immediately on construction. |
+| `closeOtherHUDs` | `true` | Hide every other open HUD on show. |
+| `hideOnEsc` | `true` | Hide on Escape. |
+| `hideOnShadeClick` | `true` | Hide on shade click. |
+
+### Methods & properties
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `show` / `hide` | `(ev?) => void` / `() => void` | Show / hide (display toggle); no-op if already in that state. |
+| `toggle` | `() => void` | Flip visibility. |
+| `showContainer` / `hideContainer` | `() => void` | The raw display toggles (overridable). |
+| `updateBody` | `(contents) => void` | Replace body content; re-extract header/footer. |
+| `updateRecords` | `() => boolean` | Re-measure; returns whether anything changed. |
+| `updateSizeAndPosition` | `(force?) => void` | Schedule a RAF reposition. |
+| `updateSizeAndPositionInternal` | `() => void` | The 4-way positioning pass. |
+| `submit` | `() => void` | Fire the `submit` flow. |
+| `onShow` / `onHide` / `onSubmit` | `() => void` | Overridable hooks (emit the event). |
+| `destroy` | `() => void` | Remove DOM, drop from `instances`/`activeHUDs`, base teardown. |
+| `$trigger` / `$hud` / `$tip` / `$body` / `$main` / `$mainContainer` / `$header` / `$footer` / `$shade` | `HTMLElement \| null` | Element refs (`$main` is where consumers append content). |
+| `showing` | `boolean` | Whether currently shown. |
+| `orientation` | `HUDOrientation \| null` | The chosen side after positioning. |
+
+**Events:** `show`, `hide`, `submit`, `updateSizeAndPosition`, `destroy`.
+
+```ts
+import {HUD} from '@craftcms/garnish';
+
+const hud = new HUD(addBtn, {
+  hudClass: 'hud fld-library-hud',
+  orientations: ['right', 'bottom', 'left'],
+  showOnInit: false,
+});
+hud.on('show', () => populate(hud.$main!)); // $main is a raw HTMLElement
+hud.on('hide', () => addBtn.focus());
+addBtn.addEventListener('click', () => hud.show());
+```
+
+---
+
 ## `BaseDrag`
 
 `class BaseDrag<S extends BaseDragSettings = BaseDragSettings> extends Base<S>` —
@@ -545,6 +624,7 @@ gracefully.
 
 ## Everything ported
 
-The full drag cluster (`BaseDrag`, `DragMove`, `Drag`, `DragDrop`, `DragSort`) and
-`Modal` (incl. `draggable`/`resizable`) are implemented and supported — no drag
-modules are pending.
+The full drag cluster (`BaseDrag`, `DragMove`, `Drag`, `DragDrop`, `DragSort`),
+`Modal` (incl. `draggable`/`resizable`), and `HUD` (Phase 3 — anchored popover with
+4-way positioning + scroll-follow) are implemented and supported — no drag modules
+are pending, and the last `FieldLayoutDesigner` overlay blocker (`HUD`) is done.

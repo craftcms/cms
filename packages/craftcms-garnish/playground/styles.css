@@ -549,3 +549,103 @@ body.no-scroll {
   color: #7b8493;
   margin-right: 0.4rem;
 }
+
+/* --- HUD / anchored popover -------------------------------------------- */
+.pg-hud-arena {
+  position: relative;
+  margin-top: 1rem;
+  height: 360px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: repeating-linear-gradient(
+    -45deg,
+    #fafbfc,
+    #fafbfc 10px,
+    #f2f4f7 10px,
+    #f2f4f7 20px
+  );
+}
+
+.pg-hud-trigger {
+  position: absolute;
+}
+
+/* The HUD container — the HUD JS sets display/position/left/top inline. */
+.hud {
+  z-index: 102;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.hud .body {
+  margin: 0;
+}
+
+.hud .main-container {
+  overflow: hidden;
+}
+
+.hud .main {
+  padding: 0.9rem 1.1rem;
+  min-width: 200px;
+  max-width: 260px;
+}
+
+/* The tip/arrow. The JS positions it along the relevant edge (the perpendicular
+   offset), and the orientation class (tip-top/-bottom/-left/-right) pins it to
+   the correct edge. */
+.hud .tip {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+}
+
+.hud .tip::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+.hud .tip-top {
+  top: -15px;
+}
+
+.hud .tip-bottom {
+  bottom: -15px;
+}
+
+.hud .tip-left {
+  left: -15px;
+}
+
+.hud .tip-right {
+  right: -15px;
+}
+
+.pg-hud-content h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.pg-hud-content p {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hud-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 18, 22, 0.25);
+  display: none;
+}

@@ -33,6 +33,7 @@ import {EscManager} from './managers/esc-manager';
 import {UiLayerManager} from './managers/ui-layer-manager';
 import {setUiLayerManager} from './managers/registry';
 import {Modal, type ModalSettings} from './modal';
+import {HUD, type HUDSettings} from './hud';
 import {BaseDrag, type BaseDragSettings} from './drag/base-drag';
 import {Drag, type DragSettings} from './drag/drag';
 import {DragDrop, type DragDropSettings} from './drag/drag-drop';
@@ -63,6 +64,8 @@ export type {TextchangeOptions, ActivateOptions} from './custom-events';
 export {EscManager};
 export {UiLayerManager};
 export {Modal, type ModalSettings};
+export {HUD, type HUDSettings};
+export type {HUDOrientation, HUDBodyContents} from './hud';
 export {BaseDrag, type BaseDragSettings};
 export {Drag, type DragSettings};
 export {DragDrop, type DragDropSettings};
@@ -168,6 +171,7 @@ export const Garnish = {
   EscManager,
   UiLayerManager,
   Modal,
+  HUD,
   BaseDrag,
   Drag,
   DragDrop,

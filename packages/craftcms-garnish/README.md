@@ -175,6 +175,35 @@ sort.on('sortChange', () => persistOrder());
 `moveTargetItemToFront` keeps a multi-select drag's target leading the block. As with
 `BaseDrag`, the sortable items / handles need `touch-action: none`.
 
+#### Anchored popovers — `HUD`
+
+`HUD` is the anchored popover/bubble. It attaches to a trigger element, picks one of
+four orientations (`bottom` / `top` / `right` / `left`) from the available clearance
+around the trigger, draws a tip pointing back at it, follows the trigger on
+scroll/resize, traps `Tab` focus between the trigger and the body, and registers a
+UI layer + Escape shortcut (the same `UiLayerManager` `Modal` uses). Append your
+content into `hud.$main` — a raw `HTMLElement`, not a jQuery object.
+
+```ts
+import {HUD} from '@craftcms/garnish';
+
+const addBtn = document.querySelector('#add-btn')!;
+const hud = new HUD(addBtn, {
+  hudClass: 'hud fld-library-hud',
+  orientations: ['right', 'bottom', 'left'],
+  showOnInit: false,
+});
+
+hud.on('show', () => hud.$main!.append(library)); // $main is an HTMLElement
+hud.on('hide', () => addBtn.focus());
+addBtn.addEventListener('click', () => hud.show());
+// hud.toggle();  hud.updateSizeAndPosition();  hud.destroy();
+```
+
+The constructor mirrors the legacy shape — `new HUD(trigger, bodyContents?, settings?)`,
+with a `new HUD(trigger, settings)` param shift — so a legacy
+`new Garnish.HUD($addBtn, {...})` call ports across unchanged.
+
 **No-jQuery guarantee:** importing from `@craftcms/garnish` (the `.` entry) never
 pulls in jQuery, never reads `window.jQuery`/`$`, and never assigns
 `window.Garnish`. Those behaviors live exclusively in the `compat` entry.
@@ -283,9 +312,14 @@ drag foundation, and the compat layer are complete and tested.
   `dragHandleSelector` for a header-only handle — and a resizable modal uses
   `BaseDrag` on a generated corner handle. (They previously threw; that limitation
   is gone.)
+- **`HUD`** is **supported** (Phase 3): the anchored popover with smart 4-way
+  positioning, a tip/arrow, scroll-follow, focus trapping, and `UiLayerManager`
+  layer + Escape integration. This was the last `FieldLayoutDesigner` overlay
+  blocker.
 
 The **drag cluster is COMPLETE** — `BaseDrag`, `DragMove`, `Drag`, `DragDrop`, and
-`DragSort` are all ported, with no drag modules pending.
+`DragSort` are all ported, with no drag modules pending. With **`HUD`** landed, the
+overlay set (`Modal` + `HUD`) is ported too.
 
 ## License
 
