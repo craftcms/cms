@@ -4,8 +4,10 @@
   import {usePost} from '@/common/composables/useFetch';
   import {usePage} from '@inertiajs/vue3';
   import Pane from '@/common/components/Pane.vue';
+  import useCraftData from '@/common/composables/useCraftData';
 
   const {props: pageProps} = usePage();
+  const {general} = useCraftData();
 
   const props = defineProps<{
     data: any;
@@ -17,7 +19,7 @@
     isSuccess,
     isLoading,
     isError,
-  } = usePost('/admin/actions/install/install', {
+  } = usePost(`/${general.cpTrigger}/actions/install/install`, {
     onSuccess: () => {
       setTimeout(() => {
         window.location.href = pageProps.postCpLoginRedirect as string;

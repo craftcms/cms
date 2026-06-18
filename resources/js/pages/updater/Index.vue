@@ -7,6 +7,9 @@
     type UpdaterState,
     useUpdater,
   } from '@/modules/updater/composables/useUpdater';
+  import useCraftData from '@/common/composables/useCraftData';
+
+  const {general} = useCraftData();
 
   const props = defineProps<{
     title: string;
@@ -41,7 +44,7 @@
   function handleFinish(): void {
     setTimeout(() => {
       window.location.href =
-        state.value.returnUrl || props.returnUrl || '/admin/dashboard';
+        state.value.returnUrl || props.returnUrl || `/${general.cpTrigger}/dashboard`;
     }, 750);
   }
 
