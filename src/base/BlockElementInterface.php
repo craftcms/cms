@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**
@@ -25,5 +26,6 @@ interface BlockElementInterface
      * @return ElementInterface|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getOwner(): ?ElementInterface;
 }

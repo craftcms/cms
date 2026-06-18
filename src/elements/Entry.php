@@ -697,6 +697,7 @@ class Entry extends Element implements ExpirableElementInterface
      * {{ entry.sectionId }}
      * ```
      */
+    #[AllowedInSandbox]
     public ?int $sectionId = null;
 
     /**
@@ -1134,6 +1135,7 @@ class Entry extends Element implements ExpirableElementInterface
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getExpiryDate(): ?DateTime
     {
         return $this->expiryDate;
@@ -1153,6 +1155,7 @@ class Entry extends Element implements ExpirableElementInterface
      * @return Section
      * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getSection(): Section
     {
         if (!isset($this->sectionId)) {
@@ -1172,6 +1175,7 @@ class Entry extends Element implements ExpirableElementInterface
      * @return int
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getTypeId(): int
     {
         return $this->getType()->id;
@@ -1231,6 +1235,7 @@ class Entry extends Element implements ExpirableElementInterface
      * @return EntryType
      * @throws InvalidConfigException if the section has no entry types
      */
+    #[AllowedInSandbox]
     public function getType(): EntryType
     {
         if (!isset($this->_typeId)) {

@@ -350,6 +350,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @return bool
      * @since 4.5.13
      */
+    #[AllowedInSandbox]
     public function getBelongsToCurrentUser(): bool
     {
         $owner = $this->getOwner();

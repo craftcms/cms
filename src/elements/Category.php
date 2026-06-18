@@ -31,6 +31,7 @@ use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\web\CpScreenResponseBehavior;
+use craft\web\twig\AllowedInSandbox;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\Response;
@@ -357,6 +358,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -736,6 +738,7 @@ class Category extends Element
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): CategoryGroup
     {
         if (!isset($this->groupId)) {
