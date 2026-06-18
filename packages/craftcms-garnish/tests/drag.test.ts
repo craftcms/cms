@@ -431,6 +431,34 @@ describe('DragMove', () => {
     d.onDrag();
     expect(drag).toHaveBeenCalled();
   });
+
+  it('subtracts page scroll for a position:fixed target (no scroll-jump)', () => {
+    // A fixed element's containing block is the viewport (anchored at the page
+    // scroll offset), so a page-coordinate target must have the scroll
+    // subtracted — otherwise the element jumps down by scrollY on the first drag
+    // frame. Repro of the draggable-Modal "jumps down the page" bug.
+    const a = makeItem();
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+      position: 'fixed',
+    } as CSSStyleDeclaration);
+    Object.defineProperty(window, 'scrollX', {value: 0, configurable: true});
+    Object.defineProperty(window, 'scrollY', {value: 300, configurable: true});
+
+    const d = new DragMove();
+    d.$targetItem = a;
+    d.mouseX = 100; // pageX
+    d.mouseY = 380; // pageY = viewport 80 + scrollY 300
+    d.mouseOffsetX = 10;
+    d.mouseOffsetY = 5;
+    d.onDrag();
+
+    // left: 100 - 10 - 0 = 90; top: 380 - 5 - 300 = 75 (viewport-relative).
+    expect(a.style.left).toBe('90px');
+    expect(a.style.top).toBe('75px');
+
+    Object.defineProperty(window, 'scrollX', {value: 0, configurable: true});
+    Object.defineProperty(window, 'scrollY', {value: 0, configurable: true});
+  });
 });
 
 describe('getScrollParent (axis-aware)', () => {

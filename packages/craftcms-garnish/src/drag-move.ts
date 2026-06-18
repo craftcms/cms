@@ -16,23 +16,40 @@ export {type BaseDragSettings};
 
 /**
  * Page-coordinate origin of `el`'s containing block — the box its CSS
- * `left`/`top` are resolved against. For an absolutely-positioned element that
- * is the padding box of its nearest positioned ancestor (`offsetParent`),
- * adjusted for that ancestor's border (`clientLeft/Top`) and scroll. When there
- * is no positioned ancestor (`offsetParent` is null, `<body>`, or `<html>`) the
- * containing block is the initial containing block at the page origin, so this
- * returns `{0, 0}` — matching the legacy assumption that draggable elements
- * were positioned relative to `<body>` (so `Modal` etc. are unchanged).
+ * `left`/`top` are resolved against. We convert the pointer's PAGE coordinates
+ * into this space before writing `left`/`top`:
+ *
+ * - **Positioned ancestor** (`offsetParent` is an element): the padding box of
+ *   that ancestor, adjusted for its border (`clientLeft/Top`) and scroll.
+ * - **`position: fixed`** (`offsetParent` is `null`): the containing block is
+ *   the viewport, whose top-left sits at the page scroll offset — so the origin
+ *   is `{scrollX, scrollY}`. Without this a fixed element (e.g. a `Modal`) jumps
+ *   *down/right by the scroll amount* on the first drag frame.
+ * - **`position: absolute` with no positioned ancestor** (`offsetParent` is
+ *   `<body>`/`<html>`), or a detached/`display:none` element: the initial
+ *   containing block anchored at the page origin → `{0, 0}`.
  */
 function containingBlockOrigin(el: HTMLElement): {left: number; top: number} {
   const parent = el.offsetParent as HTMLElement | null;
-  if (
-    !parent ||
-    parent === document.body ||
-    parent === document.documentElement
-  ) {
+
+  if (!parent) {
+    // No offsetParent: position:fixed (containing block = the viewport), or a
+    // detached/display:none element. Only fixed needs the scroll correction.
+    if (
+      typeof window.getComputedStyle === 'function' &&
+      window.getComputedStyle(el).position === 'fixed'
+    ) {
+      return {left: window.scrollX, top: window.scrollY};
+    }
     return {left: 0, top: 0};
   }
+
+  if (parent === document.body || parent === document.documentElement) {
+    // Absolute with no positioned ancestor → initial containing block at the
+    // page origin (matches the legacy <body>-relative assumption).
+    return {left: 0, top: 0};
+  }
+
   const offset = getOffset(parent);
   return {
     left: offset.left + parent.clientLeft - parent.scrollLeft,
