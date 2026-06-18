@@ -1049,6 +1049,7 @@ function initialize() {
             // Prevent buttons from getting focus on click
             if (
               e.currentTarget.nodeName === 'BUTTON' ||
+              e.currentTarget.nodeName === 'CRAFT-BUTTON' ||
               e.currentTarget.role === 'button'
             ) {
               e.preventDefault();
@@ -1075,6 +1076,7 @@ function initialize() {
 
             if (
               e.currentTarget.nodeName === 'BUTTON' ||
+              e.currentTarget.nodeName === 'CRAFT-BUTTON' ||
               e.currentTarget.role === 'button'
             ) {
               e.preventDefault();
@@ -1099,6 +1101,7 @@ function initialize() {
 
             if (
               e.currentTarget.nodeName === 'BUTTON' ||
+              e.currentTarget.nodeName === 'CRAFT-BUTTON' ||
               e.currentTarget.role === 'button'
             ) {
               e.preventDefault();

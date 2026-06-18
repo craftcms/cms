@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -48,6 +49,7 @@ class EntryTypesController
         Fields $fields,
         GeneralConfig $generalConfig,
         private readonly EntryTypes $entryTypes,
+        private readonly FieldLayoutDesigner $fieldLayoutDesigner,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
@@ -134,15 +136,16 @@ class EntryTypesController
             }
         }
 
-        // The field layout designer UI is deferred; round-trip the current config so saves preserve the layout.
-        $fieldLayoutConfig = [
-            'uid' => $fieldLayout->uid,
-            ...(array) $fieldLayout->getConfig(),
+        // Render just the designer markup (with `autoBoot: false`, so it doesn't queue its
+        // own boot JS).
+        $fieldLayoutDesigner = [
+            'html' => $this->fieldLayoutDesigner->html($fieldLayout, [
+                'disabled' => $this->readOnly,
+                'withGeneratedFields' => true,
+                'withCardViewDesigner' => true,
+                'autoBoot' => false,
+            ]),
         ];
-        if ($fieldLayout->id) {
-            $fieldLayoutConfig['id'] = $fieldLayout->id;
-        }
-        $fieldLayoutConfig['type'] = Entry::class;
 
         $translationMethodOptions = [
             ['value' => TranslationMethod::None->value, 'label' => t('Not translatable')],
@@ -169,7 +172,7 @@ class EntryTypesController
                 'slugTranslationKeyFormat' => $entryType->slugTranslationKeyFormat,
                 'showStatusField' => (bool) $entryType->showStatusField,
             ],
-            'fieldLayoutConfig' => $fieldLayoutConfig,
+            'fieldLayoutDesigner' => $fieldLayoutDesigner,
             'translationMethodOptions' => $translationMethodOptions,
             'typeName' => Entry::displayName(),
             'lowerTypeName' => Entry::lowerDisplayName(),

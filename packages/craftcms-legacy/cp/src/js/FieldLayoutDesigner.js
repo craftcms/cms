@@ -46,7 +46,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       this.$innerContainer = this.$container.children('.fld-container');
       const $workspace = this.$innerContainer.children('.fld-workspace');
       this.$tabContainer = $workspace.children('.fld-tabs');
-      this.$newTabBtn = $workspace.children('.fld-new-tab-btn');
+      this.$newTabBtn = $workspace.find('[command="--add-tab"]');
       this.$libraryContainer = this.$innerContainer.children('.fld-library');
 
       this.$fieldLibrary = this.$selectedLibrary =
@@ -245,9 +245,16 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
     </div>
   </div>
   <div class="fld-tabcontent">
-    <button class="btn add icon dashed fullwidth fld-add-btn" type="button">
+    <craft-button 
+      appearance="outline"
+      size="small"
+      class="w-full fld-add-btn" 
+      type="button"
+      command="--add-field"
+    >
+      <craft-icon name="plus"></craft-icon>
       ${Craft.t('app', 'Add')}
-    </button>
+    </craft-button>
   </div>
 </div>
 `);
@@ -500,7 +507,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
       this.designer.tabGrid.refreshCols(true);
     });
 
-    this.$addBtn = $tabContent.children('.fld-add-btn');
+    this.$addBtn = $tabContent.find('[command="--add-field"]');
 
     const hud = new Garnish.HUD(this.$addBtn, {
       hudClass: 'hud fld-library-hud cp-legacy',
@@ -523,7 +530,9 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
       hud.show();
     });
 
-    const $elements = $tabContent.children().not(this.$addBtn);
+    // Match the drag system's item selector (ElementDrag.findItems) so every
+    // draggable element gets initialized, regardless of how it's nested.
+    const $elements = $tabContent.find('.fld-element');
 
     for (let i = 0; i < $elements.length; i++) {
       this.initElement($($elements[i]));
@@ -533,16 +542,23 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
   createMenu: function () {
     const $tab = this.$container.find('.tabs .tab');
     const menuId = `actionmenu${Math.floor(Math.random() * 1000000)}`;
-    const $btn = $('<button/>', {
+    const $btn = $('<craft-button/>', {
       type: 'button',
-      class: 'btn action-btn',
+      icon: true,
+      size: 'small',
+      appearance: 'plain',
       'data-disclosure-trigger': 'true',
       'aria-controls': menuId,
       'aria-haspopup': 'true',
-      'aria-label': Craft.t('app', 'Actions'),
-      title: Craft.t('app', 'Actions'),
       disabled: this.designer.settings.readOnly,
     }).appendTo($tab);
+
+    $('<craft-icon/>', {
+      slot: 'prefix',
+      name: 'ellipsis',
+      label: Craft.t('app', 'Actions')
+    }).appendTo($btn);
+
     const $menu = $('<div/>', {
       id: menuId,
       class: 'menu menu--disclosure',
@@ -930,16 +946,23 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
 
     // create the action menu
     const menuId = `actionmenu${Math.floor(Math.random() * 1000000)}`;
-    this.$actionBtn = $('<button/>', {
+    this.$actionBtn = $('<craft-button/>', {
       type: 'button',
-      class: 'btn action-btn',
+      size: 'small',
       'data-disclosure-trigger': 'true',
       'aria-controls': menuId,
       'aria-haspopup': 'true',
-      'aria-label': Craft.t('app', 'Actions'),
-      title: Craft.t('app', 'Actions'),
+      icon: true,
+      appearance: 'plain',
       disabled: this.tab.designer.settings.readOnly,
     }).appendTo(this.$container);
+
+    $('<craft-icon/>', {
+      label: Craft.t('app', 'Actions'),
+      slot: 'prefix',
+      name: 'ellipsis',
+    }).appendTo(this.$actionBtn);
+
     $('<div/>', {
       id: menuId,
       class: 'menu menu--disclosure',
@@ -1785,7 +1808,7 @@ Craft.FieldLayoutDesigner.ElementDrag =
       for (let i = 0; i < $fieldContainers.length; i++) {
         $caboose = $caboose.add(
           $('<div/>').insertBefore(
-            $fieldContainers.eq(i).children('.fld-add-btn')
+            $fieldContainers.eq(i).find('[command="--add-field"]')
           )
         );
       }

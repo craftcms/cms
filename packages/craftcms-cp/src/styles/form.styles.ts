@@ -62,6 +62,11 @@ export const baseFieldStyles = css`
 export const inputStyles = css`
   ${baseFieldStyles}
 
+  :host([monospace]) .input-group__container {
+    font-family: var(--c-font-mono);
+    font-size: 0.9em;
+  }
+
   ::slotted([slot='input']) {
     font: inherit;
     padding-block: 0;

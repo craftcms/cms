@@ -74,6 +74,8 @@ interface ElementSelectorModalInstance {
   on(event: string, callback: () => void): void;
 }
 
+type FieldLayoutDesignerInstance = any;
+
 interface ElementSelectorModalSettings {
   closeOtherModals?: boolean;
   criteria?: Record<string, unknown>;
@@ -140,6 +142,9 @@ interface CraftStatic {
   };
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
+  };
+  FieldLayoutDesigner: {
+    new (container: any, settings?: object): FieldLayoutDesignerInstance;
   };
 }
 

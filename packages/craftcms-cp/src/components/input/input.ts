@@ -14,6 +14,8 @@ export default class CraftInput extends LionInput {
   @property({reflect: true, type: Boolean}) small = false;
   @property({reflect: true, type: Boolean}) center = false;
 
+  @property({reflect: true, type: Boolean}) monospace = false;
+
   override connectedCallback() {
     super.connectedCallback();
 

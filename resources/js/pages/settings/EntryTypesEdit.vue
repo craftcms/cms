@@ -8,8 +8,13 @@
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
+  import {ref} from 'vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import {
+    useFieldLayoutDesigner,
+    type FieldLayoutDesignerData,
+  } from '@/common/composables/useFieldLayoutDesigner';
   import useCraftData from '@/common/composables/useCraftData';
   import Pane from '@/common/components/Pane.vue';
   import {store} from '@actions/Settings/EntryTypesController';
@@ -36,7 +41,7 @@
     crumbs: Array<any>;
     entryType: EntryTypeData;
     brandNew: boolean;
-    fieldLayoutConfig: Record<string, any>;
+    fieldLayoutDesigner: FieldLayoutDesignerData;
     translationMethodOptions: Array<SelectOption>;
     typeName: string;
     lowerTypeName: string;
@@ -61,10 +66,13 @@
     slugTranslationMethod: props.entryType.slugTranslationMethod,
     slugTranslationKeyFormat: props.entryType.slugTranslationKeyFormat ?? '',
     showStatusField: props.entryType.showStatusField,
-    // The field layout designer UI is deferred — round-trip the existing layout
-    // config unchanged so saving preserves it. (Submitted as a JSON string.)
-    fieldLayout: JSON.stringify(props.fieldLayoutConfig),
+    // `fieldLayout` (+ generatedFields / card view) are merged in at submit from
+    // the designer's own inputs — see the transform passed to useSettingsSave.
   });
+
+  // Boot the (legacy) field layout designer and read its value back at submit.
+  const fldHost = ref<HTMLElement>();
+  const fld = useFieldLayoutDesigner(fldHost, props.fieldLayoutDesigner);
 
   // Auto-generate the handle from the name for new entry types.
   const handleGenerator = useInputGenerator(
@@ -87,7 +95,9 @@
     () => form.showSlugField && form.slugTranslationMethod === 'custom'
   );
 
-  const {save} = useSettingsSave(form, store);
+  const {save} = useSettingsSave(form, store, {
+    transform: (data) => ({...data, fieldLayout: fld.serialize()}),
+  });
 </script>
 
 <template>
@@ -193,7 +203,7 @@
           v-model="form.uiLabelFormat"
           :disabled="readOnly"
           :error="errors?.uiLabelFormat"
-          class="font-mono"
+          monospaced
         />
       </div>
 
@@ -247,7 +257,7 @@
           v-model="form.titleFormat"
           :disabled="readOnly"
           :error="errors?.titleFormat"
-          class="font-mono"
+          monospace
         />
 
         <!-- Allow line breaks in titles -->
@@ -327,19 +337,11 @@
           </p>
 
           <!--
-            DEFERRED: the field layout designer UI isn't wired up yet (the
-            craft-field-layout-designer web component is mid-rewrite). The
-            existing layout is round-tripped via form.fieldLayout so saving
-            preserves it; replace this placeholder with the designer once the
-            component is interactive.
+            The (legacy) field layout designer is server-rendered and booted via
+            useFieldLayoutDesigner — the same way a slideout loads CP content. Its
+            value is read back into the submission by the transform above.
           -->
-          <craft-callout variant="info" appearance="outline-fill">
-            {{
-              t(
-                'The field layout designer will be available here soon. Existing field layouts are preserved when saving.'
-              )
-            }}
-          </craft-callout>
+          <div ref="fldHost"></div>
         </div>
       </div>
     </Pane>
