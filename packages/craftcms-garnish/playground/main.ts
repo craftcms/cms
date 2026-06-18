@@ -462,13 +462,19 @@ if (dragArena) {
     wireDragEvents(dragger, 'drag', `${xBox.dataset.box} (x-locked)`);
   }
 
-  // Blue box: raw BaseDrag with an onDrag that positions it ourselves.
+  // Blue box: raw BaseDrag with an onDrag that positions it ourselves. We track
+  // the box's start position and move it by the cursor delta (mouseDistX/Y) —
+  // robust regardless of the box's offset parent (the arena is positioned).
   const baseBox = dragArena.querySelector<HTMLElement>('.pg-drag-box--base');
   if (baseBox) {
+    let start = {left: 0, top: 0};
     const dragger: BaseDrag = new BaseDrag(baseBox, {
+      onDragStart: () => {
+        start = {left: baseBox.offsetLeft, top: baseBox.offsetTop};
+      },
       onDrag: () => {
-        baseBox.style.left = `${dragger.mouseX! - dragger.mouseOffsetX!}px`;
-        baseBox.style.top = `${dragger.mouseY! - dragger.mouseOffsetY!}px`;
+        baseBox.style.left = `${start.left + dragger.mouseDistX!}px`;
+        baseBox.style.top = `${start.top + dragger.mouseDistY!}px`;
       },
     });
     wireDragEvents(dragger, 'drag', 'base-1 (manual onDrag)');
