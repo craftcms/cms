@@ -19,7 +19,7 @@
     groupId?: number | string;
     flash?: Record<any, any>;
     errors: Record<any, any> | null;
-    isMultisite: boolean;
+    isMultiSite: boolean;
   }>();
 
   const form = useForm({
