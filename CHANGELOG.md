@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a “This password does not use the Bcrypt algorithm” error that could occur when logging in with a user whose password was set in an earlier version of Craft.
+
 ## 6.0.0-alpha.8 - 2026-06-17
 
 - Added `CraftCms\Cms\Twig\AllowableInSandbox`.
