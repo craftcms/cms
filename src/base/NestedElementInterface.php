@@ -46,6 +46,7 @@ interface NestedElementInterface extends ElementInterface
      * @return ElementInterface|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getPrimaryOwner(): ?ElementInterface;
 
     /**
@@ -78,6 +79,7 @@ interface NestedElementInterface extends ElementInterface
      * @return ElementInterface|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getOwner(): ?ElementInterface;
 
     /**
@@ -95,6 +97,7 @@ interface NestedElementInterface extends ElementInterface
      * @throws InvalidConfigException if the element is misconfigured
      * @since 5.8.17
      */
+    #[AllowedInSandbox]
     public function getOwners(array $criteria = []): array;
 
     /**
@@ -103,6 +106,7 @@ interface NestedElementInterface extends ElementInterface
      * @return ElementContainerFieldInterface|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getField(): ?ElementContainerFieldInterface;
 
     /**
@@ -110,6 +114,7 @@ interface NestedElementInterface extends ElementInterface
      *
      * @return int|null
      */
+    #[AllowedInSandbox]
     public function getSortOrder(): ?int;
 
     /**

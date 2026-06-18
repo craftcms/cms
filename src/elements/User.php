@@ -718,16 +718,19 @@ class User extends Element implements IdentityInterface
     /**
      * @var int|null Invalid login count
      */
+    #[AllowedInSandbox]
     public ?int $invalidLoginCount = null;
 
     /**
      * @var DateTime|null Last invalid login date
      */
+    #[AllowedInSandbox]
     public ?DateTime $lastInvalidLoginDate = null;
 
     /**
      * @var DateTime|null Lockout date
      */
+    #[AllowedInSandbox]
     public ?DateTime $lockoutDate = null;
 
     /**
@@ -744,6 +747,7 @@ class User extends Element implements IdentityInterface
     /**
      * @var DateTime|null Last password change date
      */
+    #[AllowedInSandbox]
     public ?DateTime $lastPasswordChangeDate = null;
 
     /**
@@ -774,6 +778,7 @@ class User extends Element implements IdentityInterface
     /**
      * @var string|null Last login attempt IP address.
      */
+    #[AllowedInSandbox]
     public ?string $lastLoginAttemptIp = null;
 
     /**
@@ -1126,6 +1131,7 @@ class User extends Element implements IdentityInterface
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getIsCredentialed(): bool
     {
         return $this->active || $this->pending;
@@ -1839,6 +1845,7 @@ XML;
      *
      * @return bool
      */
+    #[AllowedInSandbox]
     public function getIsCurrent(): bool
     {
         if (!$this->id) {
@@ -1855,6 +1862,7 @@ XML;
      * @param string $permission
      * @return bool
      */
+    #[AllowedInSandbox]
     public function can(string $permission): bool
     {
         if (
@@ -1930,6 +1938,7 @@ XML;
      *
      * @return DateTime|null
      */
+    #[AllowedInSandbox]
     public function getCooldownEndTime(): ?DateTime
     {
         // There was an old bug that where a user’s lockoutDate could be null if they’ve
@@ -1952,6 +1961,7 @@ XML;
      *
      * @return DateInterval|null
      */
+    #[AllowedInSandbox]
     public function getRemainingCooldownTime(): ?DateInterval
     {
         if ($this->locked) {
@@ -2301,6 +2311,7 @@ JS, [
      *
      * @return string|null The preferred language
      */
+    #[AllowedInSandbox]
     public function getPreferredLanguage(): ?string
     {
         return $this->_validateLocale($this->getPreference('language'), false);
@@ -2314,6 +2325,7 @@ JS, [
      * @return string|null The preferred locale
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getPreferredLocale(): ?string
     {
         return $this->_validateLocale($this->getPreference('locale'), true);

@@ -852,6 +852,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * {{ entry.sectionId }}
      * ```
      */
+    #[AllowedInSandbox]
     public ?int $sectionId = null;
 
     /**
@@ -1660,6 +1661,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return Section|null
      * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getSection(): ?Section
     {
         if (!isset($this->sectionId)) {
@@ -1679,6 +1681,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return int
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getTypeId(): int
     {
         return $this->getType()->id;
@@ -1748,6 +1751,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      * @return EntryType
      * @throws InvalidConfigException if [[typeId]] is invalid, or the section has no entry types
      */
+    #[AllowedInSandbox]
     public function getType(): EntryType
     {
         if (!isset($this->_type)) {

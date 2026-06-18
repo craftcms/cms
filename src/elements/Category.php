@@ -34,6 +34,7 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\web\twig\AllowedInSandbox;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
@@ -395,6 +396,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -788,6 +790,7 @@ class Category extends Element
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): CategoryGroup
     {
         if (!isset($this->groupId)) {
