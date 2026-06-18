@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.7 - 2027-06-17
 
 - Added `craft\web\twig\AllowableInSandbox`.
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t resolving aliases for environment variables that referenced an alias (e.g. `@root/storage/rebrand`). ([#19108](https://github.com/craftcms/cms/issues/19108))
