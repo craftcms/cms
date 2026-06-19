@@ -70,6 +70,7 @@ use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use CraftCms\Yii2Adapter\Policies\CategoryPolicy;
 use CraftCms\Yii2Adapter\Policies\GlobalSetPolicy;
 use CraftCms\Yii2Adapter\Policies\TagPolicy;
@@ -92,24 +93,24 @@ class DeprecatedConcepts
 
     public static function supportsCategories(): bool
     {
-        return self::$supportsCategories ??= self::supports('categories');
+        return self::$supportsCategories ??= self::supports(DeprecatedTable::CATEGORIES);
     }
 
     public static function supportsGlobalSets(): bool
     {
-        return self::$supportsGlobalSets ??= self::supports('globalsets');
+        return self::$supportsGlobalSets ??= self::supports(DeprecatedTable::GLOBALSETS);
     }
 
     public static function supportsTags(): bool
     {
-        return self::$supportsTags ??= self::supports('tags');
+        return self::$supportsTags ??= self::supports(DeprecatedTable::TAGS);
     }
 
     private static function supports(string $table): bool
     {
         try {
             return Schema::hasTable($table);
-        } catch (PDOException $e) {
+        } catch (PDOException) {
             return false;
         }
     }
@@ -170,16 +171,16 @@ class DeprecatedConcepts
             $event->garbageCollection->runActions(array_filter([
                 [HardDelete::class, [
                     'tables' => array_filter([
-                        'categorygroups',
-                        'taggroups',
+                        DeprecatedTable::CATEGORYGROUPS,
+                        DeprecatedTable::TAGGROUPS,
                     ], fn(string $table) => Schema::hasTable($table)),
                 ]],
-                DeprecatedConcepts::supportsCategories() ? [DeletePartialElements::class, ['elementType' => Category::class, 'table' => 'categories']] : null,
-                DeprecatedConcepts::supportsGlobalSets() ? [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']] : null,
-                DeprecatedConcepts::supportsTags() ? [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => 'tags']] : null,
-                DeprecatedConcepts::supportsCategories() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => 'categorygroups']] : null,
-                DeprecatedConcepts::supportsGlobalSets() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']] : null,
-                DeprecatedConcepts::supportsTags() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => 'taggroups']] : null,
+                DeprecatedConcepts::supportsCategories() ? [DeletePartialElements::class, ['elementType' => Category::class, 'table' => DeprecatedTable::CATEGORIES]] : null,
+                DeprecatedConcepts::supportsGlobalSets() ? [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => DeprecatedTable::GLOBALSETS]] : null,
+                DeprecatedConcepts::supportsTags() ? [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => DeprecatedTable::TAGS]] : null,
+                DeprecatedConcepts::supportsCategories() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => DeprecatedTable::CATEGORYGROUPS]] : null,
+                DeprecatedConcepts::supportsGlobalSets() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => DeprecatedTable::GLOBALSETS]] : null,
+                DeprecatedConcepts::supportsTags() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => DeprecatedTable::TAGGROUPS]] : null,
             ]));
         });
 
