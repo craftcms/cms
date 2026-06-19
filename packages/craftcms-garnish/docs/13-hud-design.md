@@ -208,7 +208,7 @@ orientation class's job; the JS only sets the perpendicular offset along that ed
 | `Garnish.within(...)` | `within` (`utils/misc`) |
 | `Garnish.requestAnimationFrame` | the native RAF re-export (`utils/animation`) |
 | `Garnish.uiLayerManager` | `getUiLayerManager()` (`managers/registry`) |
-| `.velocity()` / `.show()` / `.hide()` | **n/a** — legacy HUD has no Velocity; show/hide are `style.display` toggles |
+| `.velocity()` / `.show()` / `.hide()` | **n/a** — legacy HUD has no Velocity; show/hide are explicit `style.display = 'block' \| 'none'` toggles (`'block'`, not `''`, since `.hud` defaults to `display: none` — see doc 14) |
 | `$header.insertBefore($mainContainer)` / `insertAfter` | `mainContainer.before(header)` / `.after(footer)` |
 
 ## 6. Testing strategy

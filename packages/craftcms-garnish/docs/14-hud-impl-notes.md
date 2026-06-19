@@ -112,9 +112,19 @@ The modern HUD covers all of it:
    and `showOnInit` just sets `opacity` 0→1 around the first positioning pass. The
    migration-plan table (doc 00) lists `.velocity()` as a HUD jQuery-removal, but
    that does not match the current source, so there is **no Velocity→WAAPI
-   conversion** here. We port the display toggles to `style.display = ''` / `'none'`
-   and keep the opacity-0-until-positioned flicker guard. (If a fade is wanted later,
-   reuse `Modal._fade` — but that would be a new feature, not parity.)
+   conversion** here. We port the display toggles to `style.display = 'block'` /
+   `'none'` and keep the opacity-0-until-positioned flicker guard. (If a fade is
+   wanted later, reuse `Modal._fade` — but that would be a new feature, not parity.)
+
+   **`showContainer` must set an explicit `display`, not `''`.** The CP stylesheet
+   defaults `.hud` (and `.hud-shade:not(.visible)`) to `display: none`, so jQuery
+   `.show()` resolved that to an explicit inline `display: block`. Clearing the inline
+   value (`style.display = ''`) would let the element fall back to the cascade —
+   `display: none` — and the HUD would stay invisible even though it's in the DOM and
+   fully populated. Both `showContainer()` and the shade reveal in `show()` therefore
+   set `style.display = 'block'`; `hideContainer()` sets `'none'`. (Inline `block`
+   outranks the class-based `none` rule, so this is robust regardless of which
+   stylesheet defines `.hud`.)
 
 2. **`$body.width()/.height()` → rect-minus-box, not `clientWidth`.** jQuery
    `.width()/.height()` is the content box. The port computes it from
