@@ -2,7 +2,7 @@ import {FieldLayoutDesigner} from './FieldLayoutDesigner';
 import {Tab} from './Tab';
 import {Element} from './Element';
 import {CardViewDesigner} from './CardViewDesigner';
-import {BaseDrag, TabDrag, ElementDrag} from './drags';
+import {BaseDrag, ElementDrag, TabDrag} from './drags';
 
 // Re-expose the sub-classes on the constructor, exactly as the legacy bundle
 // did (`Craft.FieldLayoutDesigner.Tab`, `.Element`, `.CardViewDesigner`,
@@ -21,7 +21,6 @@ FLD.ElementDrag = ElementDrag;
 const craft = (window as any).Craft ?? ((window as any).Craft = {});
 craft.FieldLayoutDesigner = FieldLayoutDesigner;
 
-console.log('hey from the new code');
 export {
   FieldLayoutDesigner,
   Tab,

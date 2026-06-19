@@ -1,4 +1,5 @@
 import {onMounted, type Ref} from 'vue';
+import {FieldLayoutDesigner} from '@/modules/field-layout-designer';
 
 export interface FieldLayoutDesignerData {
   /** Server-rendered field layout designer markup (rendered with `autoBoot: false`). */
@@ -26,7 +27,7 @@ export function useFieldLayoutDesigner(
     const designerEl = host.querySelector<HTMLElement>('.layoutdesigner');
     if (designerEl) {
       const settings = JSON.parse(designerEl.dataset.settings ?? '{}');
-      new window.Craft.FieldLayoutDesigner(designerEl, settings);
+      new FieldLayoutDesigner(designerEl, settings);
     }
 
     window.Craft?.initUiElements?.(host);
