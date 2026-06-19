@@ -297,7 +297,7 @@ describe('HUD show/hide', () => {
     hud.hideContainer();
     expect(hud.$hud!.style.display).toBe('none');
     hud.showContainer();
-    expect(hud.$hud!.style.display).toBe('');
+    expect(hud.$hud!.style.display).toBe('block');
   });
 });
 

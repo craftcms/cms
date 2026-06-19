@@ -479,7 +479,7 @@ export class HUD extends Base<HUDSettings> {
     // Move it to the end of <body> for the highest sub-z-index.
     if (this.settings!.withShade) {
       bod.appendChild(this.$shade!);
-      this.$shade!.style.display = '';
+      this.$shade!.style.display = 'block';
     }
 
     bod.appendChild(this.$hud!);
@@ -531,7 +531,7 @@ export class HUD extends Base<HUDSettings> {
 
   /** Reveal the HUD container (display toggle; legacy `$hud.show()`). */
   showContainer(): void {
-    this.$hud!.style.display = '';
+    this.$hud!.style.display = 'block';
   }
 
   /**

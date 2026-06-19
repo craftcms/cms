@@ -61,7 +61,7 @@ export class Tab extends Base {
     this.$addBtn = $tabContent.querySelector(':scope > .fld-add-btn');
 
     const hud = new HUD(this.$addBtn, {
-      hudClass: 'hud fld-library-hud cp-legacy',
+      hudClass: 'hud fld-library-hud',
       listenToMainResize: false,
       showOnInit: false,
       orientations: ['right', 'bottom', 'left'],
