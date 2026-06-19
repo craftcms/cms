@@ -1072,7 +1072,18 @@ class User extends Element implements IdentityInterface
      */
     public function setAttributesFromRequest($values): void
     {
-        unset($values['unverifiedEmail']);
+        unset(
+            $values['invalidLoginCount'],
+            $values['lastInvalidLoginDate'],
+            $values['lastLoginAttemptIp'],
+            $values['lastLoginDate'],
+            $values['lastPasswordChangeDate'],
+            $values['lockoutDate'],
+            $values['newPassword'],
+            $values['password'],
+            $values['unverifiedEmail'],
+            $values['verificationCodeIssuedDate'],
+        );
 
         if (isset($values['email'])) {
             $values['email'] = trim($values['email']);

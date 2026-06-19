@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
 ## 5.10.7 - 2027-06-17
 
