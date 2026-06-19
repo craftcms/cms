@@ -42,7 +42,9 @@
   function handleFinish(): void {
     setTimeout(() => {
       window.location.href =
-        state.value.returnUrl || props.returnUrl || ConfigService.getInstance().getCpUrl('dashboard');
+        state.value.returnUrl ||
+        props.returnUrl ||
+        ConfigService.getInstance().getCpUrl('dashboard');
     }, 750);
   }
 
