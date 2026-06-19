@@ -56,8 +56,7 @@
                 (value, part) => value and value is iterable ? attribute(value, part) : null,
                 import.map) : null %}
 
-            {{ dump(sourceDataCols) }}
-            {{ dump(nestedFieldValue) }}
+{#            {{ dump(nestedFieldValue) }}#}
             {% if col.isContainer %}
                 {{ hiddenInput(col.prefixedHandle, nestedFieldValue|json_encode) }}
                 <a href="#"
@@ -114,20 +113,26 @@ $('.mapping-slideout').on('activate', function(e) {
     const fieldHandle = $(this).data('field-handle');
     const importUid = $(this).data('import-uid');
     const ownerPrefix = $(this).data('owner-prefix');
+    let $input = $(this).prev('input[type="hidden"]');
 
-    console.log(ownerPrefix);
+    console.log($input);
 
     let data;
     try {
         const slideout = new Craft.CpScreenSlideout(
             'import/configs/editNestedFieldMapping',
             {
-                params: {'fieldUid': fieldUid, 'fieldHandle': fieldHandle, 'importUid': importUid, 'ownerPrefix': ownerPrefix},
+                params: {
+                    'fieldUid': fieldUid,
+                    'fieldHandle': fieldHandle,
+                    'importUid': importUid,
+                    'ownerPrefix': ownerPrefix,
+                    'currentMap': $input.val(),
+                },
             }
         );
         slideout.on('submit', (ev) => {
             const data = ev.response.data;
-            let $input = $(this).prev('input[type="hidden"]');
     console.log($input);
     console.log(data.map);
             $input.val(JSON.stringify(data.map));

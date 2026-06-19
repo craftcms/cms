@@ -36,9 +36,9 @@ class ImportHelper
     }
 
     /**
-     * Ensures that the given initial array value doesn't contain any json encoded arrays.
+     * Ensures that if the initial value is an array, any json encoded arrays in it are decoded.
      */
-    public static function ensureCleanArray(mixed $value): array
+    public static function ensureCleanArray(mixed $value): mixed
     {
         if (! empty($value) && is_string($value) &&
             $decoded = json_decode($value, true)) {

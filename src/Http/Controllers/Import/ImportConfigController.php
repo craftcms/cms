@@ -15,6 +15,7 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -332,6 +333,18 @@ class ImportConfigController
 
         $fieldHandle = $request->input('fieldHandle');
         $ownerPrefix = $request->input('ownerPrefix');
+        $currentMap = $request->input('currentMap');
+
+        if (is_string($currentMap)) {
+            $currentMap = Json::decodeIfJson($currentMap);
+
+            // if you added mapping via a slideout, closed that slideout by clicking "apply" and you then open that slideout again,
+            // if the config we have in the hidden field is different to the one coming from the server,
+            // use the one coming from the hidden field
+            if ($currentMap != $import->map[$fieldHandle]) {
+                $import->map([$fieldHandle => $currentMap]);
+            }
+        }
 
         $cols = [];
 
@@ -365,6 +378,7 @@ class ImportConfigController
 //            ->addCrumb(t('Configs'), 'import/configs')
 //            ->addCrumb(t($import->name), 'import/configs/'.$import->handle)
             ->contentTemplate('import/configs/_map.twig', $templateVars)
+            ->submitButtonLabel(t('Apply'))
             ->unless(
                 $this->readOnly || ! $currentUser?->can('editImportConfigs'),
                 callback: function (CpScreenResponse $response) {

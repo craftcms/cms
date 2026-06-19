@@ -56,11 +56,16 @@
                                 label: 'Edit'|t('app'),
                                 url: url('import/configs/' ~ config.handle),
                             },
-                            {
-                                label: 'Edit Mapping'|t('app'),
-                                url: url('import/configs/' ~ config.handle ~ '/map'),
-                            },
                         ] %}
+
+                        {% if not config.isElementImport() or config.fieldLayoutUid is not empty %}
+                            {% set actionItems = actionItems|merge([
+                                {
+                                    label: 'Edit Mapping'|t('app'),
+                                    url: url('import/configs/' ~ config.handle ~ '/map'),
+                                },
+                            ]) %}
+                        {% endif %}
 
                         {# todo: maybe we could have a link to edit field layout element screen; but not all element imports need it;
                             if so, it should come before the Edit Mapping button #}
