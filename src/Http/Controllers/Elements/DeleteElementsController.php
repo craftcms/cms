@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Jobs\ReplaceReferences;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\FieldReferences;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -111,7 +112,7 @@ readonly class DeleteElementsController
     public function replaceRelationsModal(): CpModalResponse
     {
         $this->request->validate([
-            'sourceElementType' => ['required', 'string'],
+            'sourceElementType' => ['required', 'string', new ElementTypeRule],
         ]);
 
         /** @var class-string<ElementInterface> $sourceElementType */
@@ -142,7 +143,7 @@ readonly class DeleteElementsController
     public function replaceRelations(): Response
     {
         $this->request->validate([
-            'sourceElementType' => ['required', 'string'],
+            'sourceElementType' => ['required', 'string', new ElementTypeRule],
             'newTargetId' => ['required', 'integer'],
         ]);
 

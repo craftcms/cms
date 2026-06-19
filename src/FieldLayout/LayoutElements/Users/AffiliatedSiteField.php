@@ -11,10 +11,10 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class AffiliatedSiteField extends BaseNativeField
@@ -86,7 +86,7 @@ class AffiliatedSiteField extends BaseNativeField
     {
         $items = [];
 
-        if (Auth::craftUser()?->isAdmin()) {
+        if (currentUser()?->isAdmin()) {
             $items[] = $this->copyAttributeAction([
                 'attribute' => 'affiliatedSite',
             ]);

@@ -108,6 +108,7 @@ use Stringable;
 use Throwable;
 use Twig\Markup;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -1544,7 +1545,7 @@ JS, [
 
         if (
             app(ElementRequest::class)->element() === $this &&
-            Auth::craftUser()->isAdmin() &&
+            currentUser()->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $items[] = ['type' => MenuItemType::HR];
@@ -2537,7 +2538,7 @@ JS, [
         // See if we can show a thumbnail
         try {
             // Is the image editable, and is the user allowed to edit?
-            $user = Auth::craftUser();
+            $user = currentUser();
             $previewable = AssetsService::getAssetPreviewHandler($this) !== null;
             $editable = (
                 $this->getSupportsImageEditor() &&
@@ -3075,7 +3076,7 @@ JS;
                 ],
             ];
 
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             if ($user && Gate::check('moveFolderFrom', $this->getFolder())) {
                 $attributes['data']['movable'] = true;

@@ -16,7 +16,6 @@ use CraftCms\Cms\Site\Sites as SiteSites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -24,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use ValueError;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 readonly class ApiController extends GqlController
@@ -179,7 +179,7 @@ readonly class ApiController extends GqlController
         $requestHeaders = $request->headers;
 
         if ($requestHeaders->has('X-Craft-Gql-Schema')) {
-            $user = $request->user('craft');
+            $user = $request->craftUser();
 
             abort_if(! $user, 401, 'Unauthenticated.');
             abort_unless($user->isAdmin(), 403, 'User is not permitted to perform this action.');
@@ -324,7 +324,7 @@ readonly class ApiController extends GqlController
             return true;
         }
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         return $user && $user->isAdmin() && $user->getPreference('showExceptionView');
     }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Conditions;
 
-use Illuminate\Support\Facades\Auth;
+use function CraftCms\Cms\currentUser;
 
 trait HintableConditionRuleTrait
 {
     public function showLabelHint(): bool
     {
-        return Auth::craftUser()?->getPreference('showFieldHandles') ?? false;
+        return currentUser()?->getPreference('showFieldHandles') ?? false;
     }
 }

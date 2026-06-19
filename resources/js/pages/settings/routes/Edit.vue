@@ -38,7 +38,7 @@
   );
 
   const routeAction = () =>
-    props.route.uid ? update(props.route.uid) : store();
+    props.route.uid ? update({uid: props.route.uid}) : store();
 
   const {save: saveRoute} = useSettingsSave(form, routeAction, {
     transform: (data) => ({

@@ -44,7 +44,7 @@
         })
       )
     ) {
-      router.delete(destroy(token.id));
+      router.delete(destroy({tokenId: token.id}));
     }
   }
 
@@ -54,7 +54,10 @@
       return [
         columnHelper.link('name', {
           header: t('Name'),
-          props: ({row}) => ({href: edit(row.original.id).url, inertia: false}),
+          props: ({row}) => ({
+            href: edit({tokenId: row.original.id}).url,
+            inertia: false,
+          }),
         }),
         columnHelper.date('lastUsed', {
           header: t('Last Used'),

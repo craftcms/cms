@@ -87,7 +87,6 @@ use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -95,6 +94,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -408,7 +408,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             SectionType::Structure->value => t('Structures'),
         ];
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         foreach ($sectionTypes as $type => $heading) {
             if (! empty($sectionsByType[$type])) {
@@ -537,7 +537,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $actions = [];
 
         if ($section) {
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             if (
                 $section->type === SectionType::Structure &&
@@ -1223,7 +1223,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if ($section->type === SectionType::Structure) {
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             $ancestors = $this->getAncestors();
             if ($ancestors instanceof ElementQueryInterface) {
@@ -1816,7 +1816,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if (
             app(ElementRequest::class)->element === $this &&
-            Auth::craftUser()?->isAdmin() &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             // Entry type settings
@@ -2060,23 +2060,24 @@ JS, [
         // Parent
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
             $fields['parent'] = (function () use ($static, $section) {
+                $parentQuery = self::find()
+                    ->site('*')
+                    ->preferSites([$this->siteId])
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null);
+
                 if ($parentId = $this->getParentId()) {
-                    $parent = Entries::getEntryById($parentId, $this->siteId, [
-                        'drafts' => null,
-                        'draftOf' => false,
-                    ]);
+                    $parentQuery->id($parentId);
                 } else {
                     // If the entry already has structure data, use it. Otherwise, use its canonical entry
-                    /** @var self|null $parent */
-                    $parent = self::find()
-                        ->siteId($this->siteId)
+                    $parentQuery
                         ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
-                        ->ancestorDist(1)
-                        ->drafts(null)
-                        ->draftOf(false)
-                        ->status(null)
-                        ->one();
+                        ->ancestorDist(1);
                 }
+
+                /** @var self|null $parent */
+                $parent = $parentQuery->one();
 
                 return FormFields::elementSelectFieldHtml([
                     'label' => t('Parent'),
@@ -2086,6 +2087,7 @@ JS, [
                     'selectionLabel' => t('Choose'),
                     'sources' => ["section:$section->uid"],
                     'criteria' => $this->_parentOptionCriteria($section),
+                    'showSiteMenu' => true,
                     'limit' => 1,
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
@@ -2220,7 +2222,6 @@ JS;
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [
-            'siteId' => $this->siteId,
             'sectionId' => $section->id,
             'status' => null,
             'drafts' => null,

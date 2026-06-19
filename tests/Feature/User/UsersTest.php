@@ -451,7 +451,7 @@ test('setVerificationCodeOnUser creates a valid broker token', function () {
     $user = UserModel::factory()->createElement();
     $token = $this->users->setVerificationCodeOnUser($user);
 
-    expect(Password::broker('craft')->tokenExists($user, $token))->toBeTrue();
+    expect(Password::broker()->tokenExists($user, $token))->toBeTrue();
 });
 
 test('sendActivationEmail', function () {

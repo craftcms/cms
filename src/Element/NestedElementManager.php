@@ -35,11 +35,11 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -485,7 +485,7 @@ class NestedElementManager extends Component
         }
 
         $authorizedOwnerId = $owner->id;
-        if ($owner->isProvisionalDraft && $owner->draftCreatorId === Auth::craftUser()?->getCraftUserId()) {
+        if ($owner->isProvisionalDraft && $owner->draftCreatorId === currentUser()?->getCraftUserId()) {
             /** @var ElementInterface $owner */
             $authorizedOwnerId = $owner->getCanonicalId();
         }

@@ -15,10 +15,10 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 readonly class EmailSettingsController
@@ -55,7 +55,7 @@ readonly class EmailSettingsController
                 'envSuggestions' => SelectOptions::getEnvSuggestions(),
                 'templateSuggestions' => SelectOptions::getTemplateSuggestions(),
                 'sites' => $sites,
-                'defaultToEmail' => Auth::craftUser()?->asElement()->email,
+                'defaultToEmail' => currentUser()?->asElement()->email,
             ]);
     }
 

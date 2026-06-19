@@ -154,7 +154,7 @@
       </div>
     </craft-action-menu>
     <a
-      :href="create['/admin/settings/entry-types/new']().url"
+      :href="create['/{cpTrigger?}/settings/entry-types/new']().url"
       class=""
       v-if="!readOnly"
     >

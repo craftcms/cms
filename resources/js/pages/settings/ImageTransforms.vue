@@ -41,7 +41,7 @@
         })
       )
     ) {
-      router.delete(destroy(transform.id));
+      router.delete(destroy({transformId: transform.id}));
     }
   }
 
