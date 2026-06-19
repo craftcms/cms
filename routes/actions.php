@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
@@ -107,21 +106,24 @@ use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
+use CraftCms\Cms\Route\Routes as CraftRoutes;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+$routes = app(CraftRoutes::class);
+$sharedActionRouteGroups = $routes->actionTriggerRoutePrefix() === $routes->cpActionTriggerRoutePrefix()
+    ? [[$routes->cpActionTriggerRoutePrefix(), ['craft.cp']]]
+    : [
+        [$routes->actionTriggerRoutePrefix(), ['craft.web']],
+        [$routes->cpActionTriggerRoutePrefix(), ['craft.cp']],
+    ];
+
 /**
  * Actions that are accessible both with and without CP can be registered here.
  */
-foreach ([
-    Cms::config()->actionTrigger => ['craft.web'],
-    implode('/', [
-        Cms::config()->cpTrigger,
-        Cms::config()->actionTrigger,
-    ]) => ['craft.cp'],
-] as $prefix => $middleware) {
+foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::prefix($prefix)->middleware($middleware)->group(function () use ($middleware) {
         // App
         Route::get('app/health-check', HealthCheckController::class);
@@ -158,7 +160,7 @@ foreach ([
 /**
  * Actions that are accessible without CP can be registered here.
  */
-Route::prefix(Cms::config()->actionTrigger)->group(function () {
+Route::prefix($routes->actionTriggerRoutePrefix())->group(function () {
     Route::post('migrate', MigrateController::class);
 
     Route::middleware(['auth'])->group(function () {
@@ -173,10 +175,7 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
     });
 });
 
-Route::prefix(implode('/', [
-    Cms::config()->cpTrigger,
-    Cms::config()->actionTrigger,
-]))->middleware(['craft.cp'])->group(function () {
+Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->group(function () {
     /**
      * Actions not needing auth
      */

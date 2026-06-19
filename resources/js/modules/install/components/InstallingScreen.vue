@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {onMounted} from 'vue';
-  import {usePost} from '@/common/composables/useFetch';
+  import {useActionClient} from '@/common/composables/useFetch';
   import {usePage} from '@inertiajs/vue3';
   import Pane from '@/common/components/Pane.vue';
 
@@ -17,7 +17,7 @@
     isSuccess,
     isLoading,
     isError,
-  } = usePost('/admin/actions/install/install', {
+  } = useActionClient('install/install', {
     onSuccess: () => {
       setTimeout(() => {
         window.location.href = pageProps.postCpLoginRedirect as string;

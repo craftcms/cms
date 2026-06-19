@@ -43,7 +43,7 @@
         })
       )
     ) {
-      router.delete(destroy(fs.handle));
+      router.delete(destroy({handle: fs.handle}));
     }
   }
 
@@ -61,7 +61,7 @@
     columnHelper.link('name', {
       header: t('Name'),
       props: ({row}) => ({
-        href: edit['/admin/settings/filesystems/{handle}/edit']({
+        href: edit['/{cpTrigger?}/settings/filesystems/{handle}/edit']({
           handle: row.original.handle,
         }).url,
         inertia: false,

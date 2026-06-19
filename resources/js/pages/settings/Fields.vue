@@ -156,9 +156,12 @@
     initialState: props.pagination,
     onChange: ({query}) => {
       router.visit(
-        index({
-          query,
-        }),
+        index(
+          {},
+          {
+            query,
+          }
+        ),
         {
           only: ['data', 'pagination'],
           preserveScroll: true,
@@ -170,9 +173,12 @@
     initialState: props.sort,
     onChange: ({query}) => {
       router.visit(
-        index({
-          query,
-        }),
+        index(
+          {},
+          {
+            query,
+          }
+        ),
         {
           only: ['data', 'sort'],
           preserveScroll: true,
