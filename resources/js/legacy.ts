@@ -1,10 +1,12 @@
+import '../legacy/cp/dist/css/cp.css';
+
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere
-await Promise.all([
-  import('./modules/auth/components/login/login-form.js'),
-  import('./modules/auth/components/totp/totp-form.js'),
-  import('./modules/auth/components/recovery-codes/recovery-code-form.js'),
-]);
+import './modules/auth/components/login/login-form.js';
+import './modules/auth/components/totp/totp-form.js';
+import './modules/auth/components/recovery-codes/recovery-code-form.js';
+
+import './modules/field-layout-designer/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
