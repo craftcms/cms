@@ -17,12 +17,7 @@ import {
 } from './behaviors/preview';
 import {registerShortcutBehavior} from './behaviors/shortcuts';
 import {themeOptions} from './behaviors/theme';
-import {
-  replaceMarkdownGuideButton,
-  syncToolbarKeyboardNavigation,
-  syncToolbarButtonStates,
-  toolbarItems,
-} from './behaviors/toolbar';
+import {replaceMarkdownGuideButton, toolbarItems} from './behaviors/toolbar';
 import {fileUploadOptions} from './behaviors/uploads';
 import markdownIcon from '@icons/brands/markdown.svg?raw';
 import './MarkdownField.css';
@@ -186,8 +181,6 @@ class MarkdownField extends LitElement {
       () => this.linkPopoverController?.destroy(),
       ...(charCounterCleanup ? [charCounterCleanup] : []),
       replaceMarkdownGuideButton(editor),
-      syncToolbarKeyboardNavigation(editor),
-      syncToolbarButtonStates(editor, previewController),
       registerLinkPasteBehavior(editor, previewController),
       registerShortcutBehavior(editor, previewController),
     ];
