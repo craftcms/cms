@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;
 use GuzzleHttp\Utils;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
@@ -53,9 +54,9 @@ use function CraftCms\Cms\t;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public static int $minPasswordLength = 8;
+    public static int $minPasswordLength = UserPasswordRule::MIN_PASSWORD_LENGTH;
 
-    public static int $maxPasswordLength = 160;
+    public static int $maxPasswordLength = UserPasswordRule::MAX_PASSWORD_LENGTH;
 
     private string $root = __DIR__.'/../..';
 

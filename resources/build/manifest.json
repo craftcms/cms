@@ -1514,7 +1514,7 @@
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-CkdSmSVu.js",
+    "file": "assets/legacy-s8Wpfe97.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
@@ -1561,7 +1561,7 @@
     ]
   },
   "resources/js/modules/markdown-field/MarkdownField.ts": {
-    "file": "assets/MarkdownField-Cij93lXa.js",
+    "file": "assets/MarkdownField-D3AqcC3W.js",
     "name": "MarkdownField",
     "src": "resources/js/modules/markdown-field/MarkdownField.ts",
     "isDynamicEntry": true,

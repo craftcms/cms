@@ -185,6 +185,21 @@ describe('validation', function () {
             ->and($transform->errors()->has('handle'))->toBeTrue();
     });
 
+    it('requires valid handles', function (string $handle, bool $expected) {
+        $transform = new ImageTransform([
+            'name' => 'Test',
+            'handle' => $handle,
+        ]);
+
+        expect($transform->validate())->toBe($expected);
+    })->with([
+        'camel case' => ['validHandle', true],
+        'underscore' => ['valid_handle', true],
+        'hyphen' => ['invalid-handle', false],
+        'leading number' => ['1invalid', false],
+        'reserved word' => ['handle', false],
+    ]);
+
     test('fails with invalid mode', function () {
         $transform = new ImageTransform([
             'name' => 'Test',
