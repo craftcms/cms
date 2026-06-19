@@ -32,7 +32,15 @@ trait QueriesStructures
      *
      * @used-by withStructure()
      */
-    public ?bool $withStructure = null;
+    public bool $withStructure {
+        get {
+            if (! isset($this->withStructure)) {
+                $this->withStructure = $this->structureId && ! $this->trashed;
+            }
+
+            return $this->withStructure;
+        }
+    }
 
     /**
      * @var mixed The structure ID that should be used to join in the structureelements table.
@@ -559,9 +567,7 @@ trait QueriesStructures
 
     private function shouldJoinStructureData(): bool
     {
-        return
-            ! $this->revisions &&
-            ($this->withStructure ?? ($this->structureId && ! $this->trashed));
+        return ! $this->revisions && $this->withStructure;
     }
 
     private function applyStructureParams(ElementQuery $elementQuery): void
