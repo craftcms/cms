@@ -20,13 +20,14 @@ trait ImportableFieldLayoutElement
     public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
     {
         $attribute = $this->attribute();
-        [$prefixedHandle, $prefixedHandleWithoutMap] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, null, $fieldLayout, $provider, $prefix);
+        [$prefixedHandle, $prefixedHandleWithoutMap, $prefixedHandleWithoutMapAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, null, $fieldLayout, $provider, $prefix);
 
         return [
             'handle' => $attribute,
             'label' => $this->label(),
             'prefixedHandle' => $prefixedHandle,
             'prefixedHandleWithoutMap' => $prefixedHandleWithoutMap,
+            'prefixedHandleWithoutMapAsArray' => $prefixedHandleWithoutMapAsArray,
             'isContainer' => false,
         ];
     }

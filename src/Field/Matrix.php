@@ -35,6 +35,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
@@ -90,6 +91,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 {
     use ImportableElementContainerField {
         validateMapping as traitValidateMapping;
+        normalizeNestedEntryForImport as traitNormalizeNestedEntryForImport;
     }
 
     public const string VIEW_MODE_CARDS = 'cards';
@@ -1775,6 +1777,10 @@ JS,
     #[Override]
     public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
     {
+        if (! is_array($value)) {
+            return [];
+        }
+
         $normalizedValue = [
             'sortOrder' => [],
             'entries' => [],
@@ -1794,6 +1800,7 @@ JS,
             $entryElement = null;
             $newKey = null;
 
+            // if matrix field entries were keyed by the entry type handle
             // if there's no type or type is not allowed - bail
             if (! isset($entry['type'])) {
                 continue;
@@ -1857,6 +1864,31 @@ JS,
         return $normalizedValue;
     }
 
+    public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
+    {
+        // ensure each entry has the custom fields wrapped in 'fields' key?
+        if (! isset($dataItem['fields'])) {
+            $customFieldHandles = array_filter(
+                array_map(
+                    fn ($fieldLayoutElement) => $fieldLayoutElement instanceof CustomField ? $fieldLayoutElement->attribute() : null,
+                    $fieldLayout->getAllElements()
+                )
+            );
+
+            $customFields = [];
+            foreach ($dataItem as $key => $value) {
+                if (in_array($key, $customFieldHandles)) {
+                    $customFields[$key] = $value;
+                    unset($dataItem[$key]);
+                }
+            }
+
+            $dataItem['fields'] = $customFields;
+        }
+
+        return self::traitNormalizeNestedEntryForImport($dataItem, $fieldLayout, $owner);
+    }
+
     /**
      * Matrix fields can have multiple field layout providers (multiple entry types),
      * so the prefix needs to account for that.
@@ -1875,7 +1907,7 @@ JS,
             return $newPrefix;
         }
 
-        return $newPrefix."[type][$provider->handle]";
+        return $newPrefix."[$provider->handle]";
     }
 
     #[Override]
@@ -1887,7 +1919,7 @@ JS,
         $providers = $field->getFieldLayoutProviders();
         $providerHandles = array_map(fn ($provider) => $provider->getHandle(), $providers);
 
-        $typesFromMap = array_unique(array_keys($value['type']));
+        $typesFromMap = array_unique(array_keys($value));
 
         if (array_diff($typesFromMap, $providerHandles)) {
             $fail($attribute, t('The map contains mapping for entry types that aren’t allowed for this field.'));

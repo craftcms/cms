@@ -48,7 +48,7 @@
                     </td>
                     <td>{{ config.className ?? '' }}</td>
                     <td>
-                        {{ dump(config.map) }}
+{#                        {{ dump(config.map) }}#}
                     </td>
                     <td class="nowrap thin" data-title="{{ 'Actions'|t('app') }}">
                         {% set actionItems = [
@@ -56,7 +56,14 @@
                                 label: 'Edit'|t('app'),
                                 url: url('import/configs/' ~ config.handle),
                             },
+                            {
+                                label: 'Edit Mapping'|t('app'),
+                                url: url('import/configs/' ~ config.handle ~ '/map'),
+                            },
                         ] %}
+
+                        {# todo: maybe we could have a link to edit field layout element screen; but not all element imports need it;
+                            if so, it should come before the Edit Mapping button #}
 
                         {% if not readOnly and currentUser.can('deleteImportConfigs') %}
                             {% set actionItems = actionItems|merge([

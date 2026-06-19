@@ -27,6 +27,7 @@ use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
 use Exception;
@@ -516,7 +517,14 @@ class Import
 
     final public function processData(BaseImporter $config, array $data, mixed $element): array
     {
-        // turn that data into a fractal collection
+        // if we have a map here, hook it up; if we have both the map and the transformer,
+        // then the map is used first and then transformer can do further manipulation;
+        // if there's no map, the transformer acts as one on its own;
+        if ($config->map) {
+            $data = ImportHelper::remapData($config->map, $data);
+        }
+
+        // turn the data from the json/csv/xml file into a fractal collection
         $resource = new Item($data, $config->transformer);
         $resource->setMeta(['config' => $config, 'element' => $element]);
 

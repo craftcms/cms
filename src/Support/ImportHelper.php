@@ -35,6 +35,22 @@ class ImportHelper
         return $cols;
     }
 
+    /**
+     * Ensures that the given initial array value doesn't contain any json encoded arrays.
+     */
+    public static function ensureCleanArray(mixed $value): array
+    {
+        if (! empty($value) && is_string($value) &&
+            $decoded = json_decode($value, true)) {
+            return $decoded;
+        }
+        if (is_array($value)) {
+            return array_map(self::ensureCleanArray(...), $value);
+        }
+
+        return $value;
+    }
+
     public static function getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix): array
     {
         if ($ownerField instanceof ImportableElementContainerFieldInterface) {
@@ -50,10 +66,288 @@ class ImportHelper
             $prefixedHandle = 'map['.$attribute.']';
         }
 
-        $prefixedHandleWithoutMap = $prefixedHandleWithoutMap
+        $prefixedHandleWithoutMapAsArray = $prefixedHandleWithoutMap
                 |> (fn ($v) => str_replace(']', '', $v))
                 |> (fn ($v) => explode('[', (string) $v));
 
-        return [$prefixedHandle, $prefixedHandleWithoutMap];
+        return [$prefixedHandle, $prefixedHandleWithoutMap, $prefixedHandleWithoutMapAsArray];
+    }
+
+    public static function remapData(array $map, array $data): array
+    {
+        return self::mapNode($map, $data, $data, null, true)['data'];
+    }
+
+    protected static function mapNode(
+        array $map,
+        array $rootData,
+        mixed $currentData,
+        ?string $currentBasePath,
+        bool $keepUnused
+    ): array {
+        $result = [];
+        $consumedKeys = [];
+
+        foreach ($map as $targetKey => $rule) {
+            if (is_array($rule)) {
+                $source = self::resolveSourceForArrayRule((string) $targetKey, $rule, $rootData, $currentData, $currentBasePath);
+
+                if ($source === null) {
+                    $nested = self::mapNode($rule, $rootData, $currentData, $currentBasePath, false);
+                    $result[$targetKey] = $nested['data'];
+                    array_push($consumedKeys, ...$nested['consumed']);
+
+                    continue;
+                }
+
+                array_push($consumedKeys, ...$source['consumed']);
+
+                if (self::isBlockTypeContainer($rule, $source['value'])) {
+                    $mapped = self::mapBlockTypeContainer($rule, $rootData, $source['value'], $source['basePath']);
+                    $result[$targetKey] = $mapped['data'];
+                    array_push($consumedKeys, ...$mapped['consumed']);
+                } elseif (array_is_list($source['value'])) {
+                    $result[$targetKey] = array_map(
+                        fn ($row) => is_array($row)
+                            ? self::mapNode($rule, $rootData, $row, $source['basePath'], true)['data']
+                            : $row,
+                        $source['value']
+                    );
+                } else {
+                    $result[$targetKey] = self::mapNode($rule, $rootData, $source['value'], $source['basePath'], true)['data'];
+                }
+
+                continue;
+            }
+
+            if ($rule === null) {
+                $result[$targetKey] = null;
+
+                continue;
+            }
+
+            if ($rule === '""') {
+                $result[$targetKey] = '';
+
+                continue;
+            }
+
+            $mapped = self::mapScalarValue((string) $rule, $rootData, $currentData, $currentBasePath);
+            $result[$targetKey] = $mapped['value'];
+
+            if ($mapped['consumed'] !== null) {
+                $consumedKeys[] = $mapped['consumed'];
+            }
+        }
+
+        if ($keepUnused && is_array($currentData)) {
+            foreach ($currentData as $key => $value) {
+                if (! in_array($key, $consumedKeys, true) && ! array_key_exists($key, $result)) {
+                    $result[$key] = $value;
+                }
+            }
+        }
+
+        return [
+            'data' => $result,
+            'consumed' => array_values(array_unique($consumedKeys)),
+        ];
+    }
+
+    protected static function resolveSourceForArrayRule(
+        string $targetKey,
+        array $rule,
+        array $rootData,
+        mixed $currentData,
+        ?string $currentBasePath
+    ): ?array {
+        if (is_array($currentData) && array_key_exists($targetKey, $currentData) && is_array($currentData[$targetKey])) {
+            return [
+                'value' => $currentData[$targetKey],
+                'basePath' => self::pathJoin($currentBasePath, $targetKey),
+                'consumed' => [$targetKey],
+            ];
+        }
+
+        $sourceRelativePath = self::commonRelativeSourcePath($rule, $currentBasePath);
+
+        if ($sourceRelativePath === null || $sourceRelativePath === '') {
+            return null;
+        }
+
+        $sourceKey = explode('.', $sourceRelativePath)[0];
+
+        if (is_array($currentData) && self::pathExists($currentData, $sourceRelativePath)) {
+            $value = self::getPath($currentData, $sourceRelativePath);
+
+            if (is_array($value)) {
+                return [
+                    'value' => $value,
+                    'basePath' => self::pathJoin($currentBasePath, $sourceRelativePath),
+                    'consumed' => [$sourceKey],
+                ];
+            }
+        }
+
+        $absolutePath = self::pathJoin($currentBasePath, $sourceRelativePath);
+
+        if (self::pathExists($rootData, $absolutePath)) {
+            $value = self::getPath($rootData, $absolutePath);
+
+            if (is_array($value)) {
+                return [
+                    'value' => $value,
+                    'basePath' => $absolutePath,
+                    'consumed' => [$sourceKey],
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    protected static function mapBlockTypeContainer(array $blockTypeMap, array $rootData, array $sourceValue, string $basePath): array
+    {
+        $items = [];
+        $consumedKeys = [];
+
+        foreach ($blockTypeMap as $type => $typeMap) {
+            if (! array_key_exists($type, $sourceValue)) {
+                continue;
+            }
+            if (! is_array($sourceValue[$type])) {
+                continue;
+            }
+            if (! array_is_list($sourceValue[$type])) {
+                continue;
+            }
+            $consumedKeys[] = $type;
+            $typeBasePath = self::pathJoin($basePath, (string) $type);
+
+            foreach ($sourceValue[$type] as $row) {
+                if (is_array($row)) {
+                    $items[] = ['type' => $type] + self::mapNode($typeMap, $rootData, $row, $typeBasePath, true)['data'];
+                }
+            }
+        }
+
+        return [
+            'data' => $items,
+            'consumed' => array_values(array_unique($consumedKeys)),
+        ];
+    }
+
+    protected static function mapScalarValue(string $path, array $rootData, mixed $currentData, ?string $currentBasePath): array
+    {
+        if ($currentBasePath !== null && str_starts_with($path, $currentBasePath.'.')) {
+            $relativePath = substr($path, strlen($currentBasePath) + 1);
+
+            return [
+                'value' => is_array($currentData) ? self::getPath($currentData, $relativePath) : null,
+                'consumed' => explode('.', $relativePath)[0],
+            ];
+        }
+
+        return [
+            'value' => self::getPath($rootData, $path),
+            'consumed' => $currentBasePath === null ? explode('.', $path)[0] : null,
+        ];
+    }
+
+    protected static function commonRelativeSourcePath(array $map, ?string $currentBasePath): ?string
+    {
+        $paths = self::collectRelativeLeafPaths($map, $currentBasePath);
+
+        if ($paths === []) {
+            return null;
+        }
+
+        $common = explode('.', (string) array_shift($paths));
+
+        foreach ($paths as $path) {
+            $parts = explode('.', (string) $path);
+            $next = [];
+
+            for ($i = 0, $max = min(count($common), count($parts)); $i < $max; $i++) {
+                if ($common[$i] !== $parts[$i]) {
+                    break;
+                }
+
+                $next[] = $common[$i];
+            }
+
+            $common = $next;
+        }
+
+        foreach ($common as $index => $part) {
+            if (array_key_exists($part, $map)) {
+                return $index === 0 ? null : implode('.', array_slice($common, 0, $index));
+            }
+        }
+
+        return implode('.', $common);
+    }
+
+    protected static function collectRelativeLeafPaths(array $map, ?string $currentBasePath): array
+    {
+        $paths = [];
+
+        foreach ($map as $rule) {
+            if (is_array($rule)) {
+                array_push($paths, ...self::collectRelativeLeafPaths($rule, $currentBasePath));
+            } elseif (is_string($rule)) {
+                if ($currentBasePath !== null && str_starts_with($rule, $currentBasePath.'.')) {
+                    $paths[] = substr($rule, strlen($currentBasePath) + 1);
+                } elseif ($currentBasePath === null) {
+                    $paths[] = $rule;
+                }
+            }
+        }
+
+        return $paths;
+    }
+
+    protected static function isBlockTypeContainer(array $rule, mixed $sourceValue): bool
+    {
+        if (! is_array($sourceValue) || array_is_list($sourceValue)) {
+            return false;
+        }
+
+        return array_any($rule, fn ($_, $childKey) => array_key_exists((string) $childKey, $sourceValue) && is_array($sourceValue[$childKey]) && array_is_list($sourceValue[$childKey]));
+    }
+
+    protected static function getPath(array $data, string $path): mixed
+    {
+        $current = $data;
+
+        foreach (explode('.', $path) as $part) {
+            if (! is_array($current) || ! array_key_exists($part, $current)) {
+                return null;
+            }
+
+            $current = $current[$part];
+        }
+
+        return $current;
+    }
+
+    protected static function pathExists(array $data, string $path): bool
+    {
+        $current = $data;
+
+        foreach (explode('.', $path) as $part) {
+            if (! is_array($current) || ! array_key_exists($part, $current)) {
+                return false;
+            }
+
+            $current = $current[$part];
+        }
+
+        return true;
+    }
+
+    protected static function pathJoin(?string $basePath, string $key): string
+    {
+        return $basePath === null || $basePath === '' ? $key : $basePath.'.'.$key;
     }
 }

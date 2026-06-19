@@ -845,8 +845,13 @@ JS, [
      *
      * The value has to be an array; each item in the array represents a field inside this singular nested entry.
      */
+    #[Override]
     public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
     {
+        if (! is_array($value)) {
+            return [];
+        }
+
         return $this->normalizeNestedEntryForImport($value, $this->getFieldLayout(), $owner);
     }
 }

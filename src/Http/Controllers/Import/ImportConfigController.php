@@ -384,7 +384,10 @@ class ImportConfigController
     {
         [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids($request);
 
-        $fieldHandle = $request->input('fieldHandle', $field->handle);
+        $fieldHandle = $request->input('fieldHandle', $field->handle)
+                |> (fn ($v) => str_replace('][', '.', $v))
+                |> (fn ($v) => str_replace(['['], '.', $v))
+                |> (fn ($v) => str_replace([']'], '', $v));
 
         // validate the map fragment;
         // if it errors, a toast notification will show with the error
@@ -397,9 +400,9 @@ class ImportConfigController
             ],
         ]);
 
-        // todo: if it errors - return asJsonError() and show the errors in the slideout?
-
         $map = $request->input("map.$fieldHandle");
+
+        $map = array_map(ImportHelper::ensureCleanArray(...), $map);
 
         // and return it
         return $this->asJsonSuccess(null, ['fieldHandle' => $fieldHandle, 'map' => $map]);

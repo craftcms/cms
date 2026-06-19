@@ -170,13 +170,14 @@ class LatLongField extends BaseNativeField implements ImportableFieldLayoutEleme
         ];
 
         foreach ($parts as $part) {
-            [$prefixedHandle, $prefixedHandleWithoutMap] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+            [$prefixedHandle, $prefixedHandleWithoutMap, $prefixedHandleWithoutMapAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
 
             $subfields[] = [
                 'handle' => $part['attribute'],
                 'label' => $part['label'],
                 'prefixedHandle' => $prefixedHandle,
                 'prefixedHandleWithoutMap' => $prefixedHandleWithoutMap,
+                'prefixedHandleWithoutMapAsArray' => $prefixedHandleWithoutMapAsArray,
                 'isContainer' => false,
             ];
         }

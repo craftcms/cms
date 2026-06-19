@@ -909,8 +909,13 @@ JS, [
      *
      * The value has to be an array; each item in the array represents an address.
      */
+    #[Override]
     public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
     {
+        if (! is_array($value)) {
+            return [];
+        }
+
         $normalizedValue = [];
         $fieldLayout = app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout();
         $i = 0;

@@ -52,29 +52,32 @@
             {{ col.label }} <pre>({{ col.handle }})</pre>
         </td>
         <td>
+            {% set nestedFieldValue = import.map ? col.prefixedHandleWithoutMapAsArray|reduce(
+                (value, part) => value and value is iterable ? attribute(value, part) : null,
+                import.map) : null %}
+
+            {{ dump(sourceDataCols) }}
+            {{ dump(nestedFieldValue) }}
             {% if col.isContainer %}
-                {{ hiddenInput(col.prefixedHandle, null) }}
+                {{ hiddenInput(col.prefixedHandle, nestedFieldValue|json_encode) }}
                 <a href="#"
                    class="btn mapping-slideout"
                    data-field-uid="{{ col.fieldUid ?? '' }}" {# this is the global field UID #}
-                   data-field-handle="{{ col.handle }}" {# this will be the layout handle, so can be overwritten #}
+                   data-field-handle="{{ col.prefixedHandleWithoutMap }}" {# this will be the layout handle, so can be overwritten #}
                    data-import-uid="{{ import.uid }}"
                    data-owner-prefix="{{ col.prefixedHandle }}"
                 >
                     Map field
                 </a>
 
-                {{ col.prefixedHandle }}
+{#                {{ col.prefixedHandle }}#}
             {% else %}
                 {{ forms.selectField({
                     name: col.prefixedHandle,
                     options: sourceDataCols,
-                    value: import.map ? col.prefixedHandleWithoutMap|reduce(
-                        (value, part) => attribute(value, part),
-                        import.map
-                    ) : ''
+                    value: nestedFieldValue
                 }) }}
-                {{ col.prefixedHandle }}
+{#                {{ col.prefixedHandle }}#}
             {% endif %}
         </td>
     </tr>
@@ -124,7 +127,7 @@ $('.mapping-slideout').on('activate', function(e) {
         );
         slideout.on('submit', (ev) => {
             const data = ev.response.data;
-            let $input = $(this).prev('input[name$="' + ownerPrefix + '"]');
+            let $input = $(this).prev('input[type="hidden"]');
     console.log($input);
     console.log(data.map);
             $input.val(JSON.stringify(data.map));

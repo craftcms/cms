@@ -903,13 +903,14 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         $attribute = $this->attribute();
-        [$prefixedHandle, $prefixedHandleWithoutMap] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
+        [$prefixedHandle, $prefixedHandleWithoutMap, $prefixedHandleWithoutMapAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
 
         $content = [
             'handle' => $attribute,
             'label' => $this->label(),
             'prefixedHandle' => $prefixedHandle,
             'prefixedHandleWithoutMap' => $prefixedHandleWithoutMap,
+            'prefixedHandleWithoutMapAsArray' => $prefixedHandleWithoutMapAsArray,
             'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
         ];
 
