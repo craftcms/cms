@@ -1,8 +1,10 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.7 - 2027-06-17
 
 - Added `craft\web\twig\AllowableInSandbox`.
+- Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t resolving aliases for environment variables that referenced an alias (e.g. `@root/storage/rebrand`). ([#19108](https://github.com/craftcms/cms/issues/19108))
+- Fixed a bug where the “Parent” field on Structure entries’ edit pages wasn’t showing the parent entry if it didn’t exist for the same site being edited, causing the parent relationship to be lost on save. ([#19110](https://github.com/craftcms/cms/issues/19110))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
 
 ## 5.10.6 - 2026-06-16
