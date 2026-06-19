@@ -46,6 +46,17 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     use QueriesSections;
 
     #[Override]
+    public bool $withStructure {
+        get {
+            if (! isset($this->withStructure)) {
+                $this->withStructure = true;
+            }
+
+            return $this->withStructure;
+        }
+    }
+
+    #[Override]
     protected string $table = Table::ENTRIES;
 
     #[Override]

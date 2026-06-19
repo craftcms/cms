@@ -6,6 +6,7 @@
 - Fixed a “File name is not a string” error that could occur when an error was encountered when rendering a string template. ([#19122](https://github.com/craftcms/cms/pull/19122))
 - Fixed a bug where parsed site names would get saved to the project config. ([#19123](https://github.com/craftcms/cms/issues/19123))
 - Fixed several issues that occurred when Craft was configured with a custom (or no) `cpTrigger`. ([#19127](https://github.com/craftcms/cms/pull/19127))
+- Fixed a bug where entry queries weren’t fetching structure data by default.
 
 ## 6.0.0-alpha.8 - 2026-06-17
 
