@@ -7,6 +7,7 @@
 - Fixed a bug where parsed site names would get saved to the project config. ([#19123](https://github.com/craftcms/cms/issues/19123))
 - Fixed several issues that occurred when Craft was configured with a custom (or no) `cpTrigger`. ([#19127](https://github.com/craftcms/cms/pull/19127))
 - Fixed a bug where entry queries weren’t fetching structure data by default.
+- Fixed a bug where top-level structure elements were always repositioned to the end of the structure on save.
 
 ## 6.0.0-alpha.8 - 2026-06-17
 
