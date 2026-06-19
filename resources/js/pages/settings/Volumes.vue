@@ -58,7 +58,7 @@
         })
       )
     ) {
-      router.delete(destroy(volume.id));
+      router.delete(destroy({volumeId: volume.id}));
     }
   }
 
@@ -108,7 +108,7 @@
     columnHelper.link('name', {
       header: t('Name'),
       props: ({row}) => ({
-        href: edit(row.original.id).url,
+        href: edit({volumeId: row.original.id}).url,
         inertia: false,
       }),
     }),

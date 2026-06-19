@@ -390,8 +390,8 @@ describe('Password validation', function () {
 
         expect($user->errors()->has('newPassword'))->toBe($expectError);
     })->with([
-        '5 chars is too short' => ['12345', true],
-        '6 chars is valid' => ['123456', false],
+        '7 chars is too short' => ['1234567', true],
+        '8 chars is valid' => ['12345678', false],
         '160 chars is valid' => [str_repeat('a', 160), false],
         '161 chars is too long' => [str_repeat('a', 161), true],
         'null is valid' => [null, false],

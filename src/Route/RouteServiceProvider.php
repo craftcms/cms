@@ -18,6 +18,7 @@ use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
+use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
@@ -43,6 +44,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -72,6 +74,11 @@ class RouteServiceProvider extends ServiceProvider
 
     public function boot(Router $router, Routes $routes): void
     {
+        URL::defaults([
+            'cpTrigger' => trim((string) Cms::config()->cpTrigger, '/') ?: null,
+            'actionTrigger' => trim(Cms::config()->actionTrigger, '/'),
+        ]);
+
         $router->patterns($routes->tokens);
 
         $this->bootMiddleware($router);
@@ -124,8 +131,8 @@ class RouteServiceProvider extends ServiceProvider
             'preview/preview',
         ])->flatMap(fn (string $route) => [
             $route,
-            Cms::config()->actionTrigger.Str::start($route, '/'),
-            Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
+            app(Routes::class)->actionTriggerUriPrefix().Str::start($route, '/'),
+            app(Routes::class)->cpActionTriggerUriPrefix().Str::start($route, '/'),
         ])->all());
     }
 
@@ -151,6 +158,7 @@ class RouteServiceProvider extends ServiceProvider
     private function bootMiddleware(Router $router): void
     {
         collect([
+            ForgetTriggerParameters::class,
             EnsureInstalled::class,
             AddLogContext::class,
             ResolveSite::class,

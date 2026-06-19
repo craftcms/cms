@@ -49,7 +49,7 @@
         )
       )
     ) {
-      router.delete(destroy(entryType.id));
+      router.delete(destroy({entryType: entryType.id}));
     }
   }
 
@@ -93,9 +93,12 @@
     initialState: props.pagination,
     onChange: ({query}) => {
       router.visit(
-        index({
-          query,
-        }),
+        index(
+          {},
+          {
+            query,
+          }
+        ),
         {
           only: ['data', 'pagination'],
           preserveScroll: true,
@@ -108,9 +111,12 @@
     initialState: props.sort,
     onChange: ({query}) => {
       router.visit(
-        index({
-          query,
-        }),
+        index(
+          {},
+          {
+            query,
+          }
+        ),
         {
           only: ['data', 'sort'],
           preserveScroll: true,
@@ -149,7 +155,7 @@
     <template #actions>
       <CpLink
         appearance="button"
-        :href="create['/admin/settings/entry-types/new']().url"
+        :href="create['/{cpTrigger?}/settings/entry-types/new']().url"
         variant="accent"
         :inertia="false"
         icon="plus"

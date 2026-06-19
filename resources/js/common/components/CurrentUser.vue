@@ -24,7 +24,9 @@
 </script>
 
 <template>
-  <craft-action-item :href="UsersController.edit['/admin/myaccount']().url">
+  <craft-action-item
+    :href="UsersController.edit['/{cpTrigger?}/myaccount']().url"
+  >
     <div class="flex items-center gap-3">
       <UserThumbnail size="md" />
       <div>

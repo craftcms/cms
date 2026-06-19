@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Image\Data;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use Illuminate\Validation\Rule;
 use Override;
@@ -141,7 +142,7 @@ class ImageTransform extends Component
     {
         return [
             'name' => ['required', 'string'],
-            'handle' => ['required', 'string'],
+            'handle' => ['required', 'string', new HandleRule],
             'width' => ['nullable', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],
             'mode' => ['required', Rule::in(self::MODES)],

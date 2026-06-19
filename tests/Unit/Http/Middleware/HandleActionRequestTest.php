@@ -28,6 +28,26 @@ it('rebinds rewritten action requests as the current request', function () {
         ->and($handledRequest->attributes->get(ActionRoute::class))->toBeInstanceOf(ActionRoute::class);
 });
 
+it('rebinds rewritten root control panel action requests as the current request', function (?string $cpTrigger) {
+    Cms::config()->cpTrigger = $cpTrigger;
+    $request = Request::create('/utilities/query', 'POST', [
+        'action' => 'query/execute',
+    ]);
+    app()->instance('request', $request);
+
+    $handledRequest = app(HandleActionRequest::class)->handle(
+        $request,
+        fn (Request $request) => $request,
+    );
+
+    expect($handledRequest->path())->toBe('actions/query/execute')
+        ->and(request())->toBe($handledRequest)
+        ->and($handledRequest->attributes->get(ActionRoute::class))->toBeInstanceOf(ActionRoute::class);
+})->with([
+    'null' => [null],
+    'slash' => ['/'],
+]);
+
 it('does not rebind action requests that already use the normalized action uri', function () {
     $request = Request::create('/admin/actions/query/execute', 'POST');
     app()->instance('request', $request);

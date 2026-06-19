@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -28,7 +29,7 @@ class NestedElementsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ownerElementType' => ['required', 'string'],
+            'ownerElementType' => ['required', 'string', new ElementTypeRule],
             'ownerId' => ['required', 'integer'],
             'ownerSiteId' => ['required', 'integer'],
             'attribute' => ['required', 'string'],
