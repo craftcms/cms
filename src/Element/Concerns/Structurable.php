@@ -104,7 +104,7 @@ trait Structurable
             $parentId = reset($parentId);
         }
 
-        $this->_parentId = $parentId ?: false;
+        $this->_parentId = $parentId ? (int) $parentId : false;
         $this->_parent = null;
     }
 
@@ -191,13 +191,15 @@ trait Structurable
             return true;
         }
 
-        return $this->_parentId !== static::find()
+        $oldParentId = static::find()
             ->ancestorOf($element)
             ->ancestorDist(1)
             ->siteId($element->siteId)
             ->status(null)
             ->select('elements.id')
             ->first()?->id;
+
+        return $this->_parentId !== ($oldParentId ?: false);
     }
 
     public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection
