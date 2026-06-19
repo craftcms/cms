@@ -16,7 +16,6 @@ use craft\elements\actions\Duplicate;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\categories\CategoryCondition;
-use craft\elements\db\CategoryQuery;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -39,6 +38,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -155,7 +155,7 @@ class Category extends Element
      */
     public static function find(): CategoryQuery
     {
-        return new CategoryQuery(static::class);
+        return new CategoryQuery();
     }
 
     /**
