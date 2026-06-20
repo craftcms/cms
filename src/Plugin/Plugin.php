@@ -153,6 +153,20 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
     public function bootPlugin(): void {}
 
+    protected function copyPublishableFiles(array $paths): void
+    {
+        foreach ($paths as $from => $to) {
+            if (File::isDirectory($from)) {
+                File::copyDirectory($from, $to);
+
+                continue;
+            }
+
+            File::ensureDirectoryExists(dirname($to));
+            File::copy($from, $to);
+        }
+    }
+
     protected function registerSerializableClasses(array $classes): void
     {
         $existing = $this->app->make(Repository::class)->get('cache.serializable_classes');
