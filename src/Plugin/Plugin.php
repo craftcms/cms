@@ -162,7 +162,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
                 continue;
             }
 
-            File::ensureDirectoryExists(dirname($to));
+            File::ensureDirectoryExists(dirname((string) $to));
             File::copy($from, $to);
         }
     }
