@@ -24,6 +24,7 @@ use function CraftCms\Cms\currentUser;
  * @template T of Category
  *
  * @extends ElementQuery<T>
+ * @deprecated in 6.0.0
  */
 class CategoryQuery extends ElementQuery
 {

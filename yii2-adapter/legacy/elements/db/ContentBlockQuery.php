@@ -7,43 +7,30 @@
 
 namespace craft\elements\db;
 
-use craft\db\Table;
-use CraftCms\Cms\Field\Elements\ContentBlock;
+use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 
-/**
- * ContentBlockQuery represents a SELECT SQL statement for content blocks in a way that is independent of DBMS.
- *
- * @template TKey of array-key
- * @template TElement of ContentBlock
- * @extends ElementQuery<TKey,TElement>
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.8.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\ContentBlockQuery} instead.
- * @phpstan-ignore class.missingExtends
- */
-class ContentBlockQuery extends ElementQuery implements \CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface
-{
-    use NestedElementQueryTrait;
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * ContentBlockQuery represents a SELECT SQL statement for content blocks in a way that is independent of DBMS.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.8.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\ContentBlockQuery} instead.
      */
-    protected function beforePrepare(): bool
+    class ContentBlockQuery extends ElementQuery implements NestedElementQueryInterface
     {
-        if (!parent::beforePrepare()) {
-            return false;
+        use QueriesNestedElements;
+
+        public function getFieldIdColumn(): string
+        {
+            return '';
         }
 
-        $this->joinElementTable(Table::CONTENTBLOCKS);
-
-        $this->query->addSelect([
-            'contentblocks.fieldId',
-            'contentblocks.primaryOwnerId',
-        ]);
-
-        $this->applyNestedElementParams('contentblocks.fieldId', 'contentblocks.primaryOwnerId');
-
-        return true;
+        public function getPrimaryOwnerIdColumn(): string
+        {
+            return '';
+        }
     }
 }

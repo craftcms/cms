@@ -17,6 +17,7 @@ use Override;
  * @template T of Tag
  *
  * @extends ElementQuery<T>
+ * @deprecated in 6.0.0
  */
 class TagQuery extends ElementQuery
 {
