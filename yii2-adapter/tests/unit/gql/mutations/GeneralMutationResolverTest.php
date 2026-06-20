@@ -8,16 +8,14 @@
 namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
-use craft\elements\db\EntryQuery;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\models\GqlSchema;
 use craft\records\Section;
-use craft\services\Elements;
 use craft\test\TestCase;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
