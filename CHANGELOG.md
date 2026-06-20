@@ -9,6 +9,7 @@
 - Fixed a “This password does not use the Bcrypt algorithm” error that could occur when logging in with a user whose password was set in an earlier version of Craft.
 - Fixed a “File name is not a string” error that could occur when an error was encountered when rendering a string template. ([#19122](https://github.com/craftcms/cms/pull/19122))
 - Fixed a bug where parsed site names would get saved to the project config. ([#19123](https://github.com/craftcms/cms/issues/19123))
+- Fixed a bug where plugin `$styles`, `$scripts`, and `$publishables` weren’t published automatically when the plugin was installed or enabled. ([#19137](https://github.com/craftcms/cms/pull/19137))
 - Fixed several issues that occurred when Craft was configured with a custom (or no) `cpTrigger`. ([#19127](https://github.com/craftcms/cms/pull/19127))
 - Fixed a bug where entry queries weren’t fetching structure data by default.
 - Fixed a bug where top-level structure elements were always repositioned to the end of the structure on save.
