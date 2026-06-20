@@ -165,7 +165,7 @@ class GlobalSetQuery extends ElementQuery
     {
         // no need to register cache tags for global set queries,
         // unless this is a GraphQL request
-        if (Route::current()->controller instanceof ApiController) {
+        if (Route::current()?->controller instanceof ApiController) {
             return parent::getCacheTags();
         }
 
