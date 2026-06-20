@@ -487,10 +487,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?bool $hasDescendants = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
+     * @var int|ElementInterface|false|null The element (or its ID) that results must be an ancestor of.
      * @used-by ancestorOf()
      */
-    public ElementInterface|int|null $ancestorOf = null;
+    public ElementInterface|int|false|null $ancestorOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[ancestorOf]].
@@ -499,10 +499,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?int $ancestorDist = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that results must be a descendant of.
+     * @var int|ElementInterface|false|null The element (or its ID) that results must be a descendant of.
      * @used-by descendantOf()
      */
-    public ElementInterface|int|null $descendantOf = null;
+    public ElementInterface|int|false|null $descendantOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].
@@ -511,34 +511,34 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?int $descendantDist = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be a sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be a sibling of.
      * @used-by siblingOf()
      */
-    public ElementInterface|int|null $siblingOf = null;
+    public ElementInterface|int|false|null $siblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the result must be the previous sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the result must be the previous sibling of.
      * @used-by prevSiblingOf()
      */
-    public ElementInterface|int|null $prevSiblingOf = null;
+    public ElementInterface|int|false|null $prevSiblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the result must be the next sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the result must be the next sibling of.
      * @used-by nextSiblingOf()
      */
-    public ElementInterface|int|null $nextSiblingOf = null;
+    public ElementInterface|int|false|null $nextSiblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be positioned before.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be positioned before.
      * @used-by positionedBefore()
      */
-    public ElementInterface|int|null $positionedBefore = null;
+    public ElementInterface|int|false|null $positionedBefore = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be positioned after.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be positioned after.
      * @used-by positionedAfter()
      */
-    public ElementInterface|int|null $positionedAfter = null;
+    public ElementInterface|int|false|null $positionedAfter = null;
 
     /**
      * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
@@ -3092,7 +3092,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ];
 
             foreach ($structureParams as $param) {
-                if ($this->$param !== null) {
+                if (!in_array($this->$param, [null, false], true)) {
                     throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");
                 }
             }
