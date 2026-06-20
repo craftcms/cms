@@ -28,7 +28,7 @@ trait QueriesStructures
     public bool $leaves = false;
 
     /**
-     * @var bool|null Whether element structure data should automatically be left-joined into the query.
+     * @var bool Whether element structure data should automatically be left-joined into the query.
      *
      * @used-by withStructure()
      */

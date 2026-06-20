@@ -90,21 +90,6 @@ class CategoryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[$savable]] property.
-     *
-     * @param  bool|null  $value  The property value (defaults to true)
-     * @return self self reference
-     *
-     * @uses $savable
-     */
-    public function savable(?bool $value = true): self
-    {
-        $this->savable = $value;
-
-        return $this;
-    }
-
-    /**
      * Narrows the query results based on the categories’ statuses.
      *
      * Possible values include:
