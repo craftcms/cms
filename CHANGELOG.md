@@ -2,12 +2,20 @@
 
 ## Unreleased
 
+- Added `CraftCms\Yii2Adapter\Database\DeprecatedTable`.
+- `craft\elements\Category::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\CategoryQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- `craft\elements\GlobalSet::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- `craft\elements\Tag::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\TagQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - Fixed a “This password does not use the Bcrypt algorithm” error that could occur when logging in with a user whose password was set in an earlier version of Craft.
 - Fixed a “File name is not a string” error that could occur when an error was encountered when rendering a string template. ([#19122](https://github.com/craftcms/cms/pull/19122))
 - Fixed a bug where parsed site names would get saved to the project config. ([#19123](https://github.com/craftcms/cms/issues/19123))
 - Fixed several issues that occurred when Craft was configured with a custom (or no) `cpTrigger`. ([#19127](https://github.com/craftcms/cms/pull/19127))
 - Fixed a bug where entry queries weren’t fetching structure data by default.
 - Fixed a bug where top-level structure elements were always repositioned to the end of the structure on save.
+- Fixed a bug where the Settings index page didn’t include “Globals”, “Categories”, or “Tags” links, when the concepts were supported. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed errors that occurred when editing global sets, category groups, and tag groups. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a bug where it wasn’t possible to create new categories. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed an error that occurred when editing a category. ([#19120](https://github.com/craftcms/cms/pull/19120))
 
 ## 6.0.0-alpha.8 - 2026-06-17
 

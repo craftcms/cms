@@ -6,13 +6,13 @@ namespace CraftCms\Yii2Adapter\Mixins;
 use Closure;
 use Craft;
 use craft\elements\Category;
-use craft\elements\db\CategoryQuery;
-use craft\elements\db\GlobalSetQuery;
-use craft\elements\db\TagQuery;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\web\twig\variables\Rebrand;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
+use CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery;
+use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
 
 class CraftVariableMixin
 {
@@ -39,7 +39,7 @@ class CraftVariableMixin
          * @return CategoryQuery
          * @deprecated in 6.0.0
          */
-        return function(array $criteria = []) {
+        return function(array $criteria = []): CategoryQuery {
             $query = Category::find();
             Typecast::configure($query, $criteria);
             return $query;

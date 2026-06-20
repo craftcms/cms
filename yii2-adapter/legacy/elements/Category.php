@@ -10,13 +10,11 @@ namespace craft\elements;
 use Craft;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
-use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\categories\CategoryCondition;
-use craft\elements\db\CategoryQuery;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -39,12 +37,15 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Database\DeprecatedTable;
+use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -155,7 +156,7 @@ class Category extends Element
      */
     public static function find(): CategoryQuery
     {
-        return new CategoryQuery(static::class);
+        return new CategoryQuery();
     }
 
     /**
@@ -994,8 +995,8 @@ class Category extends Element
         /** @var self|null $parent */
         $parent = self::find()
             ->structureId($structureId)
-            ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')
-            ->andWhere(['j.id' => $this->id])
+            ->join(new Alias(DeprecatedTable::CATEGORIES, 'j'), 'j.parentId', 'elements.id')
+            ->where('j.id', $this->id)
             ->one();
 
         if (!$parent) {

@@ -6,7 +6,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\elements\Category;
-use craft\elements\db\CategoryQuery;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use GraphQL\Type\Definition\Type;
 
 use Override;
