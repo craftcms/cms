@@ -10,6 +10,8 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Support\Json;
 use Override;
 
+use function CraftCms\Cms\getLocale;
+
 /**
  * Craft's extension of the commerceguys/addressing SubdivisionRepository.
  * Its main purpose is to allow addition of data that's not returned by the commerceguys/addressing library,
@@ -21,11 +23,11 @@ class SubdivisionRepository extends BaseSubdivisionRepository
     public function getList(array $parents, $locale = null): array
     {
         // get the list of subdivisions from commerceguys/addressing
-        $options = parent::getList($parents, app()->getLocale());
+        $options = parent::getList($parents, getLocale());
 
         // if the list is empty (like in case of GB), get the extra options from our files
         if (empty($options)) {
-            $options = $this->getExtraOptions($parents, app()->getLocale());
+            $options = $this->getExtraOptions($parents, getLocale());
         }
 
         // trigger the event to give devs a chance to modify further, and return the list

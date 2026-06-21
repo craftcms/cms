@@ -11,13 +11,15 @@ use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
 use Yiisoft\Translator\Translator;
 
+use function CraftCms\Cms\getLocale;
+
 class TranslationServiceProvider extends ServiceProvider
 {
     #[\Override]
     public function register(): void
     {
         $this->app->singleton(fn (): Translator => new Translator(
-            locale: app()->getLocale(),
+            locale: getLocale(),
             fallbackLocale: $this->app->make(ConfigRepository::class)->get('app.fallback_locale'),
             defaultCategory: 'app',
             eventDispatcher: $this->app->make(LaravelEventDispatcher::class),

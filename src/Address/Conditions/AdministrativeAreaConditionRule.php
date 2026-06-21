@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Override;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
@@ -50,7 +51,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
 
     protected function options(): array
     {
-        $administrativeAreas = Addresses::getSubdivisionRepository()->getList([$this->countryCode], app()->getLocale());
+        $administrativeAreas = Addresses::getSubdivisionRepository()->getList([$this->countryCode], getLocale());
         // Allow custom states that are currently in the administrative areas list to remain in the list.
         foreach ($this->getValues() as $val) {
             if (! in_array($val, $administrativeAreas)) {

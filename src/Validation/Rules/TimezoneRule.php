@@ -10,6 +10,8 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use IntlDateFormatter;
 use IntlException;
 
+use function CraftCms\Cms\getLocale;
+
 readonly class TimezoneRule implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -17,7 +19,7 @@ readonly class TimezoneRule implements ValidationRule
         $timezone = Env::parse($value);
 
         try {
-            $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            $formatter = new IntlDateFormatter(getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
             if (! $formatter->setTimeZone($timezone)) {
                 $fail('The time zone does not appear to be supported by ICU.');

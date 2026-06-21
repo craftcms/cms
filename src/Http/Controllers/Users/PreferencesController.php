@@ -16,6 +16,7 @@ use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 readonly class PreferencesController
@@ -41,7 +42,7 @@ readonly class PreferencesController
             ! $userLanguage ||
             $i18N->getAppLocales()->doesntContain(fn (Locale $locale) => $locale->id === Env::parse($userLanguage))
         ) {
-            $userLanguage = app()->getLocale();
+            $userLanguage = getLocale();
         }
 
         // user locale

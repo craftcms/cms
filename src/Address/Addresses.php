@@ -31,6 +31,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -84,7 +85,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
      */
     public function getCountryList(?string $locale = null): array
     {
-        $locale ??= app()->getLocale();
+        $locale ??= getLocale();
         $countries = $this->countryRepository->getList($locale);
 
         event($event = new AddressCountriesResolving($locale, $countries));
@@ -158,7 +159,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
      */
     public function formatAddress(Address $address, array $options = [], ?FormatterInterface $formatter = null): string
     {
-        $options['locale'] ??= app()->getLocale();
+        $options['locale'] ??= getLocale();
         $formatter ??= $this->formatter;
 
         return $formatter->format($address, $options);

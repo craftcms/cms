@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
+use function CraftCms\Cms\getLocale;
+
 readonly class Search
 {
     /**
@@ -38,7 +40,7 @@ readonly class Search
         $str = mb_strtolower($str);
 
         if ($processCharMap) {
-            $str = strtr($str, Str::asciiCharMap(true, $language ?? app()->getLocale()));
+            $str = strtr($str, Str::asciiCharMap(true, $language ?? getLocale()));
 
             $str = preg_replace(self::getElisionsRegex(), '', $str);
 

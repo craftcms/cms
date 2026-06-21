@@ -19,6 +19,8 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
+use function CraftCms\Cms\getLocale;
+use function CraftCms\Cms\setLocale;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -39,9 +41,9 @@ class SystemMessages
         }
 
         // If the current language isn't one of the site's languages, switch to the primary site's language
-        $language = app()->getLocale();
+        $language = getLocale();
         if (I18N::getSiteLocaleIds()->doesntContain($language)) {
-            app()->setLocale(Sites::getPrimarySite()->getLanguage());
+            setLocale(Sites::getPrimarySite()->getLanguage());
         }
 
         $messages = collect([
@@ -86,7 +88,7 @@ class SystemMessages
         }
 
         // Put the original language back
-        app()->setLocale($language);
+        setLocale($language);
 
         return $this->defaultMessages = $messages;
     }

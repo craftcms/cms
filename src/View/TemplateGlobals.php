@@ -15,6 +15,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
 
 use function CraftCms\Cms\currentUserElement;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -54,7 +55,7 @@ readonly class TemplateGlobals
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
-            'language' => app()->getLocale(),
+            'language' => getLocale(),
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
             'loginUrl' => $this->generalConfig->loginPath !== false

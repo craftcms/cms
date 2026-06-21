@@ -16,6 +16,7 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Support\Query;
 use Override;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 /**
@@ -59,7 +60,7 @@ class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEd
         }
 
         try {
-            return app(Addresses::class)->getCountryRepository()->get($value, app()->getLocale());
+            return app(Addresses::class)->getCountryRepository()->get($value, getLocale());
         } catch (UnknownCountryException) {
             return null;
         }
@@ -68,7 +69,7 @@ class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEd
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $options = app(Addresses::class)->getCountryList(app()->getLocale());
+        $options = app(Addresses::class)->getCountryList(getLocale());
         array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
         return FormFields::selectizeHtml([
@@ -102,7 +103,7 @@ class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEd
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
-            $countries = app(Addresses::class)->getCountryRepository()->getList(app()->getLocale());
+            $countries = app(Addresses::class)->getCountryRepository()->getList(getLocale());
             $value = $countries[array_rand($countries)];
         } else {
             if ($value instanceof CountryModel) {

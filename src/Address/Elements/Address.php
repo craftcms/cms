@@ -35,6 +35,7 @@ use Override;
 use RuntimeException;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 /**
@@ -401,7 +402,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     #[AllowedInSandbox]
     public function getCountry(): Country
     {
-        return app(Addresses::class)->getCountryRepository()->get($this->countryCode, app()->getLocale());
+        return app(Addresses::class)->getCountryRepository()->get($this->countryCode, getLocale());
     }
 
     #[AllowedInSandbox]
@@ -479,7 +480,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     #[AllowedInSandbox]
     public function getLocale(): string
     {
-        return app()->getLocale();
+        return getLocale();
     }
 
     #[Override]

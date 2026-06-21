@@ -21,6 +21,8 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\UserGroups;
 use Illuminate\Http\JsonResponse;
 
+use function CraftCms\Cms\getLocale;
+use function CraftCms\Cms\setLocale;
 use function CraftCms\Cms\t;
 
 readonly class ElementSourcesController
@@ -49,10 +51,10 @@ readonly class ElementSourcesController
         foreach ($sources as &$source) {
             if ($multiPage) {
                 // ensure we're using the EN translation here
-                $language = app()->getLocale();
-                app()->setLocale('en');
+                $language = getLocale();
+                setLocale('en');
                 $source['page'] ??= $elementType::pluralDisplayName();
-                app()->setLocale($language);
+                setLocale($language);
             }
 
             if ($source['type'] === ElementSources::TYPE_HEADING) {

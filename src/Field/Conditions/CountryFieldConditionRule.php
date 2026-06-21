@@ -10,13 +10,15 @@ use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Country;
 use RuntimeException;
 
+use function CraftCms\Cms\getLocale;
+
 class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
     protected function options(): array
     {
-        return app(Addresses::class)->getCountryList(app()->getLocale());
+        return app(Addresses::class)->getCountryList(getLocale());
     }
 
     #[\Override]

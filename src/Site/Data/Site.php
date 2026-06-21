@@ -19,6 +19,7 @@ use Override;
 use RuntimeException;
 use Stringable;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 #[Ruleset(SiteRules::class)]
@@ -206,7 +207,7 @@ class Site extends Component implements Chippable, Stringable
     #[AllowedInSandbox]
     public function getLocale(): Locale
     {
-        if ($this->language === app()->getLocale()) {
+        if ($this->language === getLocale()) {
             return I18N::getLocale();
         }
 

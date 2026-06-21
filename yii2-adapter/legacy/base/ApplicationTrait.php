@@ -94,6 +94,9 @@ use yii\mutex\Mutex;
 use yii\queue\Queue;
 use yii\web\ServerErrorHttpException;
 
+use function CraftCms\Cms\setLocale;
+use function CraftCms\Cms\getLocale;
+
 /**
  * ApplicationTrait
  *
@@ -286,7 +289,7 @@ trait ApplicationTrait
             // We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
             $fallbackLanguage = $this->_getFallbackLanguage();
             $this->_gettingLanguage = false;
-            app()->setLocale($fallbackLanguage);
+            setLocale($fallbackLanguage);
 
             return;
         }
@@ -297,7 +300,7 @@ trait ApplicationTrait
             $useUserLanguage = $this->getRequest()->getIsCpRequest();
         }
 
-        app()->setLocale($this->getTargetLanguage($useUserLanguage));
+        setLocale($this->getTargetLanguage($useUserLanguage));
 
         $this->_gettingLanguage = false;
     }
@@ -1340,7 +1343,7 @@ trait ApplicationTrait
         $this->getRequest();
         $this->getLog();
 
-        $this->language = app()->getLocale();
+        $this->language = getLocale();
         $this->setTimeZone(Cms::timezone());
 
         // Use our own Markdown parser classes

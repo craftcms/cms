@@ -20,6 +20,8 @@ use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\Translator;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\getLocale;
+use function CraftCms\Cms\setLocale;
 
 #[Singleton]
 class I18N
@@ -76,7 +78,7 @@ class I18N
             return $this->getLocaleById(Context::getHidden(self::CONTEXT_LOCALE));
         }
 
-        return $this->getLocaleById(app()->getLocale());
+        return $this->getLocaleById(getLocale());
     }
 
     public function getFormattingLocale(): Locale
@@ -116,7 +118,7 @@ class I18N
 
     public function withLocale(string $language, ?string $formattingLocaleId, callable $callback): mixed
     {
-        $previousLanguage = app()->getLocale();
+        $previousLanguage = getLocale();
         $previousLocale = Context::hasHidden(self::CONTEXT_LOCALE)
             ? Context::getHidden(self::CONTEXT_LOCALE)
             : null;
@@ -126,12 +128,12 @@ class I18N
 
         Context::addHidden(self::CONTEXT_LOCALE, $language);
         Context::addHidden(self::CONTEXT_FORMATTING_LOCALE, $formattingLocaleId ?? $language);
-        app()->setLocale($language);
+        setLocale($language);
 
         try {
             return $callback();
         } finally {
-            app()->setLocale($previousLanguage);
+            setLocale($previousLanguage);
 
             if ($previousLocale === null) {
                 Context::forgetHidden(self::CONTEXT_LOCALE);
@@ -256,10 +258,18 @@ class I18N
 
     /**
      * Normalizes a language into the correct format (e.g. `en-US`).
+     *
+     * @param  string  $delimiter  The string used to separate the language and territory (may be either `-` or `_`).
      */
-    public function normalizeLanguage(string $language): string
+    public function normalizeLanguage(string $language, string $delimiter = '-'): string
     {
-        $language = strtolower(str_replace('_', '-', $language));
+        $language = strtolower($language);
+
+        $language = match ($delimiter) {
+            '-' => str_replace('_', '-', $language),
+            '_' => str_replace('-', '_', $language),
+            default => throw new InvalidArgumentException("Invalid language delimiter:  $delimiter"),
+        };
 
         $allLanguages = $this->getAllLocaleIds()->all();
         $lcLanguages = array_map(strtolower(...), $allLanguages);
@@ -289,7 +299,7 @@ class I18N
 
         $locale = match (true) {
             $localeId === null => $this->getFormattingLocale(),
-            $localeId === app()->getLocale() => $this->getLocale(),
+            $localeId === getLocale() => $this->getLocale(),
             default => $this->getLocaleById($localeId),
         };
 
@@ -364,7 +374,7 @@ class I18N
             return $this->translate(...$args);
         }
 
-        $locale ??= str_replace('_', '-', app()->getLocale());
+        $locale ??= str_replace('_', '-', getLocale());
 
         $translation = $this->translator->translate($message, $parameters, $category, $locale);
 

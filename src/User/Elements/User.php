@@ -80,6 +80,7 @@ use Override;
 use Stringable;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 /**
@@ -706,11 +707,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'preferredLanguage' => [
                 'label' => t('Preferred Language'),
-                'placeholder' => fn () => I18N::getLocaleById('en')->getDisplayName(app()->getLocale()),
+                'placeholder' => fn () => I18N::getLocaleById('en')->getDisplayName(getLocale()),
             ],
             'preferredLocale' => [
                 'label' => t('Preferred Locale'),
-                'placeholder' => fn () => I18N::getLocaleById('en-US')->getDisplayName(app()->getLocale()),
+                'placeholder' => fn () => I18N::getLocaleById('en-US')->getDisplayName(getLocale()),
             ],
             'isCredentialed' => [
                 'label' => t('Credentialed'),
@@ -1733,12 +1734,12 @@ JS, [
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
 
-                return $language ? I18N::getLocaleById($language)->getDisplayName(app()->getLocale()) : '';
+                return $language ? I18N::getLocaleById($language)->getDisplayName(getLocale()) : '';
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
 
-                return $locale ? I18N::getLocaleById($locale)->getDisplayName(app()->getLocale()) : '';
+                return $locale ? I18N::getLocaleById($locale)->getDisplayName(getLocale()) : '';
 
             case 'is2faEnabled':
                 $enabled = app(AuthMethods::class)->hasActiveMethod($this);

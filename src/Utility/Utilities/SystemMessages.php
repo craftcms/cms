@@ -13,6 +13,7 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 /**
@@ -47,7 +48,7 @@ class SystemMessages extends Utility
 
         $locales = I18N::getSiteLocales()->map(fn (Locale $locale) => [
             'value' => $locale->id,
-            'label' => $locale->getDisplayName(app()->getLocale()),
+            'label' => $locale->getDisplayName(getLocale()),
         ])->values()->all();
 
         return Html::tag('SystemMessages', attributes: [

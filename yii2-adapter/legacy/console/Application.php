@@ -27,6 +27,7 @@ use yii\base\Response as BaseResponse;
 use yii\console\controllers\CacheController;
 use yii\console\controllers\MigrateController;
 use yii\console\Response;
+use function CraftCms\Cms\getLocale;
 
 /**
  * Craft Console Application class
@@ -111,7 +112,7 @@ class Application extends \yii\console\Application
         if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
-                new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                new IntlDateFormatter(getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
                 Log::info("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');

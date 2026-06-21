@@ -8,6 +8,7 @@ use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\View\HtmlStack;
 
 use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\getLocale;
 
 /**
  * @deprecated
@@ -26,7 +27,7 @@ class DatepickerI18nAsset implements LegacyAssetInterface
         $languageId = $i18N->getLocale()->getLanguageID();
 
         $languages = [
-            app()->getLocale(),
+            getLocale(),
             $languageId,
         ];
 

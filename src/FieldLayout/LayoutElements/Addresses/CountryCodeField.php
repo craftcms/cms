@@ -16,6 +16,7 @@ use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 class CountryCodeField extends BaseNativeField
@@ -78,7 +79,7 @@ class CountryCodeField extends BaseNativeField
             FormFields::selectizeHtml([
                 'id' => 'countryCode',
                 'name' => 'countryCode',
-                'options' => app(Addresses::class)->getCountryList(app()->getLocale()),
+                'options' => app(Addresses::class)->getCountryList(getLocale()),
                 'value' => $element->countryCode,
                 'autocomplete' => $element->getBelongsToCurrentUser() ? 'country' : 'off',
                 'disabled' => $static,
@@ -94,7 +95,7 @@ class CountryCodeField extends BaseNativeField
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
-            $countries = app(Addresses::class)->getCountryRepository()->getList(app()->getLocale());
+            $countries = app(Addresses::class)->getCountryRepository()->getList(getLocale());
             $value = $countries['US'];
         } else {
             if ($value instanceof Country) {

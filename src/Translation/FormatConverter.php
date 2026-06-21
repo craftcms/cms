@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Translation;
 
 use IntlDateFormatter;
 
+use function CraftCms\Cms\getLocale;
+
 class FormatConverter
 {
     private static array $icuShortFormats = [
@@ -28,7 +30,7 @@ class FormatConverter
      * @param  string  $pattern  date format pattern in ICU format.
      * @param  string  $type  'date', 'time', or 'datetime'.
      * @param  string|null  $locale  the locale to use for converting ICU short patterns `short`, `medium`, `long` and `full`.
-     *                               If not given, `app()->getLocale()` will be used.
+     *                               If not given, `getLocale()` will be used.
      * @return string The converted date format pattern.
      *
      * @throws \Exception
@@ -462,7 +464,7 @@ class FormatConverter
      */
     private static function createFormatter(?string $locale, string $type, string $pattern): string
     {
-        $locale ??= app()->getLocale();
+        $locale ??= getLocale();
 
         $formatter = match ($type) {
             'date' => new IntlDateFormatter($locale, self::$icuShortFormats[$pattern], IntlDateFormatter::NONE),

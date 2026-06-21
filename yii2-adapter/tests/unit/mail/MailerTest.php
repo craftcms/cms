@@ -27,6 +27,8 @@ use ReflectionException;
 use UnitTester;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\setLocale;
+
 /**
  * Unit tests for MailerTest
  *
@@ -305,7 +307,7 @@ class MailerTest extends TestCase
         $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', $isCpRequest);
 
         Sites::getPrimarySite()->setLanguage('nl');
-        app()->setLocale('en-US');
+        setLocale('en-US');
 
         $this->mailer->send($this->mailer->composeFromKey('account_activation', [
             'user' => new User(),

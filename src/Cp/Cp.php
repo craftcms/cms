@@ -40,6 +40,7 @@ use Illuminate\Support\Collection;
 use stdClass;
 
 use function CraftCms\Cms\currentUserElement;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 readonly class Cp
@@ -110,7 +111,7 @@ readonly class Cp
             'Enterprise' => Edition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => Url::actionUrl(),
-            'asciiCharMap' => Str::asciiCharMap(true, app()->getLocale()),
+            'asciiCharMap' => Str::asciiCharMap(true, getLocale()),
             'baseApiUrl' => Api::craftApiEndpoint(),
             'baseSiteUrl' => Url::siteUrl(),
             'baseUrl' => Url::url(),
@@ -118,7 +119,7 @@ readonly class Cp
             'datepickerOptions' => self::datepickerOptions($formattingLocale, $locale),
             'defaultCookieOptions' => self::defaultCookieOptions(),
             'fileKinds' => AssetsHelper::getFileKinds(),
-            'language' => app()->getLocale(),
+            'language' => getLocale(),
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'maxPasswordLength' => AppServiceProvider::$maxPasswordLength,
             'minPasswordLength' => AppServiceProvider::$minPasswordLength,
@@ -133,7 +134,7 @@ readonly class Cp
             'timepickerOptions' => self::timepickerOptions($formattingLocale, $orientation),
             'timezone' => Cms::timezone(),
             'tokenParam' => $generalConfig->tokenParam,
-            'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
+            'translations' => I18N::getAllTranslationsForLocale(getLocale()) ?: new stdClass,
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
         ];
 

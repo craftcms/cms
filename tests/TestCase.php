@@ -42,6 +42,8 @@ use Override;
 use Pdo\Pgsql;
 use ReflectionProperty;
 
+use function CraftCms\Cms\setLocale;
+
 class TestCase extends Orchestra
 {
     use RefreshDatabase;
@@ -66,7 +68,7 @@ class TestCase extends Orchestra
 
         config()->set('app.debug', true);
 
-        app()->setLocale('en-US');
+        setLocale('en-US');
         app()->maintenanceMode()->deactivate();
 
         // Reset timezone to a consistent value for tests

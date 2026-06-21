@@ -41,6 +41,7 @@ use ReflectionClass;
 use RuntimeException;
 use Throwable;
 
+use function CraftCms\Cms\setLocale;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\warning;
@@ -1312,7 +1313,7 @@ class Install extends Migration
             Sites::saveSite($site);
         }
 
-        app()->setLocale($this->site->getLanguage());
+        setLocale($this->site->getLanguage());
 
         $this->task('Saving the first user', function (?Logger $logger = null) {
             $user = new User([

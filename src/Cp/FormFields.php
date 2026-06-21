@@ -24,6 +24,7 @@ use InvalidArgumentException;
 use Stringable;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -765,7 +766,7 @@ readonly class FormFields
         bool $static = false,
     ): string {
         $value = $address->$name;
-        $options = app(Addresses::class)->getSubdivisionRepository()->getList($parents, app()->getLocale());
+        $options = app(Addresses::class)->getSubdivisionRepository()->getList($parents, getLocale());
 
         if ($options) {
             // Persist invalid values in the UI

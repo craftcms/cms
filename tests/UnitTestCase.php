@@ -20,6 +20,8 @@ use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
 
+use function CraftCms\Cms\setLocale;
+
 /**
  * Lightweight test case for unit tests that only need the Laravel
  * service container (no database, no Yii2 bootstrap, no migrations).
@@ -69,7 +71,7 @@ class UnitTestCase extends Orchestra
 
         Sites::setCurrentSite(new Site);
 
-        app()->setLocale('en-US');
+        setLocale('en-US');
 
         Cms::config()->timezone('America/Los_Angeles');
         date_default_timezone_set('America/Los_Angeles');

@@ -6,6 +6,8 @@ use CraftCms\Cms\Support\Money;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
 
+use function CraftCms\Cms\setLocale;
+
 test('toMoney', function (mixed $value, MoneyLibrary|false $expected) {
     expect(Money::toMoney($value))->toEqualCanonicalizing($expected);
 })->with([
@@ -26,7 +28,7 @@ test('toDecimal', function (mixed $value, mixed $expected) {
 
 test('toNumber', function (mixed $value, mixed $expected, ?string $locale = null) {
     if ($locale) {
-        app()->setLocale($locale);
+        setLocale($locale);
     }
 
     expect(Money::toNumber($value))->toEqualCanonicalizing($expected);
@@ -39,7 +41,7 @@ test('toNumber', function (mixed $value, mixed $expected, ?string $locale = null
 
 test('toString', function (mixed $value, mixed $expected, ?string $locale = null) {
     if ($locale) {
-        app()->setLocale($locale);
+        setLocale($locale);
     }
 
     expect(Money::toString($value))->toEqualCanonicalizing($expected);

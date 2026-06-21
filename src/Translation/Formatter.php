@@ -18,6 +18,7 @@ use InvalidArgumentException;
 use NumberFormatter;
 use Throwable;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -28,7 +29,7 @@ class Formatter
     public const string FORMAT_WIDTH_LONG = 'long';
 
     public ?string $locale {
-        get => $this->locale ?? app()->getLocale();
+        get => $this->locale ?? getLocale();
     }
 
     public string $timeZone {

@@ -45,6 +45,16 @@ function t(string|Stringable|null $id, array $parameters = [], ?string $category
     return I18N::translate($id ?? '', $parameters, $category, $locale);
 }
 
+function getLocale(): string
+{
+    return I18N::normalizeLanguage(app()->getLocale());
+}
+
+function setLocale(string $locale): void
+{
+    app()->setLocale(I18N::normalizeLanguage($locale));
+}
+
 function action_url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
 {
     return Url::actionUrl($path, $params, $scheme);

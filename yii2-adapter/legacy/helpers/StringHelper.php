@@ -15,6 +15,7 @@ use Throwable;
 use voku\helper\ASCII;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\getLocale;
 use const ENT_COMPAT;
 
 /**
@@ -1672,7 +1673,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function slugify(string $str, string $replacement = '-', ?string $language = null): string
     {
-        $language ??= app()->getLocale();
+        $language ??= getLocale();
         return Str::slug($str, $replacement, $language);
     }
 
@@ -2139,7 +2140,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         // Normalize NFD chars to NFC
         $str = Normalizer::normalize($str, Normalizer::FORM_C);
-        $language ??= app()->getLocale();
+        $language ??= getLocale();
         return ASCII::to_ascii($str, $language);
     }
 

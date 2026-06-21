@@ -33,6 +33,8 @@ use PDOException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+use function CraftCms\Cms\getLocale;
+
 /**
  * The InstallController class is a controller that directs all installation-related tasks
  * such as creating the database schema and default content for a Craft installation.
@@ -88,7 +90,7 @@ readonly class InstallController
             'localeOptions' => Inertia::defer(fn () => I18N::getAllLocales()->map(fn ($locale) => [
                 'id' => $locale->id,
                 'value' => $locale->id,
-                'label' => $locale->getDisplayName(app()->getLocale()),
+                'label' => $locale->getDisplayName(getLocale()),
                 'selected' => $locale->id === $defaultSiteLanguage,
             ])),
             'timezone' => Inertia::defer(function () {

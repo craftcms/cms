@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 class LanguageConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
@@ -29,7 +30,7 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
     {
         return I18N::getSiteLocales()
             ->keyBy('id')
-            ->map(fn (Locale $locale) => $locale->getDisplayName(app()->getLocale()))
+            ->map(fn (Locale $locale) => $locale->getDisplayName(getLocale()))
             ->all();
     }
 

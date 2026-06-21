@@ -12,6 +12,7 @@ use CraftCms\Cms\SystemMessage\SystemMessageRenderContext;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use InvalidArgumentException;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\renderSandboxedString;
 
 readonly class RenderSystemMessageAction
@@ -77,7 +78,7 @@ readonly class RenderSystemMessageAction
         }
 
         return request()->isSiteRequest()
-            ? app()->getLocale()
+            ? getLocale()
             : $this->sites->getPrimarySite()->getLanguage();
     }
 }

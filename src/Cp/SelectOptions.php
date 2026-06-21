@@ -29,6 +29,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 class SelectOptions
@@ -247,12 +248,12 @@ class SelectOptions
             $allLocales = I18N::getAllLocales();
         }
 
-        $allLocales = $allLocales->sortBy(fn (Locale $locale) => $locale->getDisplayName(app()->getLocale()));
+        $allLocales = $allLocales->sortBy(fn (Locale $locale) => $locale->getDisplayName(getLocale()));
 
         foreach ($allLocales as $locale) {
-            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName(app()->getLocale()) : '';
+            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName(getLocale()) : '';
             $option = [
-                'label' => $locale->getDisplayName(app()->getLocale()),
+                'label' => $locale->getDisplayName(getLocale()),
                 'value' => $locale->id,
                 'data' => [
                     'keywords' => $name,

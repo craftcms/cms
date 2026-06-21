@@ -32,6 +32,7 @@ use Override;
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUserElement;
+use function CraftCms\Cms\getLocale;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -140,7 +141,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'isMultiSite' => fn () => Sites::isMultiSite(),
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
-            'locale' => fn () => app()->getLocale(),
+            'locale' => getLocale(...),
             'craft' => fn () => [
                 'csrfTokenValue' => csrf_token(),
                 'csrfTokenName' => '_token',

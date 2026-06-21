@@ -40,6 +40,7 @@ use yii\base\InvalidRouteException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 /**
@@ -140,7 +141,7 @@ class Application extends \yii\web\Application
         if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
-                new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                new IntlDateFormatter(getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
                 Log::info("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');

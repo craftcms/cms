@@ -45,6 +45,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\maxPowerCaptain;
+use function CraftCms\Cms\setLocale;
 
 #[Scoped]
 class Sites
@@ -223,7 +224,7 @@ class Sites
         // Update the app language if this is a site request
         // (make sure the request component has been initialized first so we don't create an infinite loop)
         if (! request()->isCpRequest()) {
-            app()->setLocale($this->currentSite->getLanguage());
+            setLocale($this->currentSite->getLanguage());
         }
 
         // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars

@@ -24,6 +24,9 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use yii\base\InvalidConfigException;
 use yii\mail\MailEvent;
 
+use function CraftCms\Cms\getLocale;
+use function CraftCms\Cms\setLocale;
+
 /**
  * The Mailer component provides APIs for sending email in Craft.
  * An instance of the Mailer component is globally accessible in Craft via [[\craft\web\Application::mailer|`Craft::$app->mailer`]].
@@ -126,7 +129,7 @@ class Mailer extends \yii\symfonymailer\Mailer
 
         $generalConfig = Cms::config();
         $currentSite = $messageSite = $twig = null;
-        $language = app()->getLocale();
+        $language = getLocale();
         $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
 
         $originalTemplateMode = TemplateMode::get();
@@ -154,7 +157,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                     } else {
                         // Default to the current language.
                         $message->language = Craft::$app->getRequest()->getIsSiteRequest()
-                            ? app()->getLocale()
+                            ? getLocale()
                             : Sites::getPrimarySite()->getLanguage();
                     }
                 }
@@ -205,7 +208,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             return parent::send($message);
         } finally {
             // Set things back to normal.
-            app()->setLocale($language);
+            setLocale($language);
             $generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
 
             if ($currentSite && $messageSite) {

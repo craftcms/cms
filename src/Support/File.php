@@ -17,6 +17,7 @@ use Symfony\Component\Mime\MimeTypes;
 use Throwable;
 use ZipArchive;
 
+use function CraftCms\Cms\getLocale;
 use function Illuminate\Filesystem\join_paths;
 
 class File extends \Illuminate\Support\Facades\File
@@ -312,7 +313,7 @@ class File extends \Illuminate\Support\Facades\File
                 // to ASCII consistently regardless of who is logged in.
                 $language = Sites::getPrimarySite()->getLanguage();
             } catch (SiteNotFoundException) {
-                $language = app()->getLocale();
+                $language = getLocale();
             }
 
             $filename = Str::ascii($filename, $language);

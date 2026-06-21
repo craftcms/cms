@@ -40,6 +40,7 @@ use RuntimeException;
 use Throwable;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -215,7 +216,7 @@ class NestedElementManager extends Component
             ]),
             PropagationMethod::Language => t('{type} will be saved across all {language}-language sites.', [
                 'type' => $this->elementType::pluralDisplayName(),
-                'language' => I18N::getLocaleById($owner->getSite()->getLanguage())->getDisplayName(app()->getLocale()),
+                'language' => I18N::getLocaleById($owner->getSite()->getLanguage())->getDisplayName(getLocale()),
             ]),
             default => null,
         };

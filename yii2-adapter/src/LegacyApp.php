@@ -13,6 +13,7 @@ use CraftCms\Yii2Adapter\Http\Controller;
 use Illuminate\Contracts\Foundation\Application;
 use yii\base\Module;
 use yii\BaseYii;
+use function CraftCms\Cms\getLocale;
 
 readonly class LegacyApp
 {
@@ -53,7 +54,7 @@ readonly class LegacyApp
 
             /** @var \craft\web\Application|\craft\console\Application $craftApp */
             $craftApp->setTimeZone(Cms::timezone());
-            $craftApp->language = app()->getLocale();
+            $craftApp->language = getLocale();
 
             Craft::$app = $craftApp;
             Craft::populateCustomFieldBehavior();

@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Str;
 use Override;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 class TitleField extends TextField
@@ -75,7 +76,7 @@ class TitleField extends TextField
             (! isset($element->slug) || ElementHelper::isTempSlug($element->slug))
         ) {
             $language = $element->getSite()->getLanguage();
-            $charMap = $language !== app()->getLocale()
+            $charMap = $language !== getLocale()
                 ? Str::asciiCharMap(true, $language)
                 : null;
 

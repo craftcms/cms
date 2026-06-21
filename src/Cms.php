@@ -82,7 +82,7 @@ readonly class Cms
         if ($timezone !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
-                $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                $formatter = new IntlDateFormatter(getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
                 if (! $formatter->setTimeZone($timezone)) {
                     $timezone = 'UTC';
                 }

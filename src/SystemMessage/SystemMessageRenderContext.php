@@ -9,6 +9,9 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
 
+use function CraftCms\Cms\getLocale;
+use function CraftCms\Cms\setLocale;
+
 readonly class SystemMessageRenderContext
 {
     public function __construct(
@@ -20,7 +23,7 @@ readonly class SystemMessageRenderContext
     public function run(?int $siteId, string $language, callable $callback): mixed
     {
         $currentSite = $messageSite = $twig = null;
-        $originalLanguage = app()->getLocale();
+        $originalLanguage = getLocale();
         $generateTransformsBeforePageLoad = $this->generalConfig->generateTransformsBeforePageLoad;
 
         $originalTemplateMode = TemplateMode::get();
@@ -42,14 +45,14 @@ readonly class SystemMessageRenderContext
                 }
             }
 
-            app()->setLocale($language);
+            setLocale($language);
 
             // Temporarily disable lazy transform generation.
             $this->generalConfig->generateTransformsBeforePageLoad = true;
 
             return $callback();
         } finally {
-            app()->setLocale($originalLanguage);
+            setLocale($originalLanguage);
             $this->generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
 
             if ($currentSite && $messageSite) {

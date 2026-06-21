@@ -25,6 +25,7 @@ use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use Stringable;
 
+use function CraftCms\Cms\getLocale;
 use function CraftCms\Cms\t;
 
 class Cp extends Component
@@ -277,7 +278,7 @@ class Cp extends Component
      */
     public function getAsciiCharMap(string $language): ?array
     {
-        if ($language === app()->getLocale()) {
+        if ($language === getLocale()) {
             return null;
         }
 
