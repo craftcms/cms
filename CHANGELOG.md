@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where element thumbnails could have inconsistent rounded corners. ([#19117](https://github.com/craftcms/cms/issues/19117))
+
 ## 5.10.7 - 2027-06-17
 
 - Added `craft\web\twig\AllowableInSandbox`.
