@@ -132,7 +132,7 @@ return [
     'Announcements' => 'Aankondigingen',
     'Another page already has that name.' => 'Er bestaat al een pagina met die naam.',
     'Any changes will be lost if you leave this page.' => 'Aanpassingen zullen verloren gaan als u de pagina verlaat.',
-    'Anything cached with {method}' => 'Alles dat is gecachet met {method}',
+    'Anything cached with {method}' => 'Anything cached with {method}',
     'Application Info' => 'Toepassingsgegevens',
     'Applied new migrations successfully.' => 'Nieuwe migraties toegepast.',
     'Applied “{name}”' => '“{name}” toegepast',
