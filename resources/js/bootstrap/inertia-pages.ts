@@ -16,6 +16,10 @@ export type InertiaPageRegistration = InertiaPageComponent | InertiaPageLoader;
 
 export type InertiaPageGlob = Record<string, InertiaPageLoader>;
 
+const coreInertiaPages = import.meta.glob<InertiaPageModule>(
+  '../pages/**/*.vue'
+);
+
 export interface InertiaPageRegistry {
   register(name: string, componentOrLoader: InertiaPageRegistration): void;
   resolve(name: string): Promise<InertiaPageComponent | undefined>;
@@ -42,14 +46,23 @@ export function createInertiaPageRegistry(): InertiaPageRegistry {
         return undefined;
       }
 
-      return resolveRegisteredPage(page);
+      const resolvedPage =
+        typeof page === 'function' ? await (page as InertiaPageLoader)() : page;
+
+      if ('default' in resolvedPage) {
+        return resolvedPage.default;
+      }
+
+      return resolvedPage;
     },
   };
 }
 
+export const inertiaPageRegistry = createInertiaPageRegistry();
+
 export async function resolveCoreInertiaPage(
   name: string,
-  pages: InertiaPageGlob
+  pages: InertiaPageGlob = coreInertiaPages
 ): Promise<InertiaPageComponent | undefined> {
   const loader = pages[`../pages/${name}.vue`];
 
@@ -57,15 +70,20 @@ export async function resolveCoreInertiaPage(
     return undefined;
   }
 
-  return normalizePageModule(await loader());
+  const page = await loader();
+
+  if ('default' in page) {
+    return page.default;
+  }
+
+  return page;
 }
 
 export async function resolveInertiaPage(
   name: string,
-  corePages: InertiaPageGlob,
-  registry: InertiaPageRegistry
+  registry: InertiaPageRegistry = inertiaPageRegistry
 ): Promise<InertiaPageComponent> {
-  const corePage = await resolveCoreInertiaPage(name, corePages);
+  const corePage = await resolveCoreInertiaPage(name);
 
   if (corePage !== undefined) {
     return corePage;
@@ -78,36 +96,4 @@ export async function resolveInertiaPage(
   }
 
   throw new Error(`Page not found: ${name}`);
-}
-
-async function resolveRegisteredPage(
-  page: InertiaPageRegistration
-): Promise<InertiaPageComponent> {
-  if (!isInertiaPageLoader(page)) {
-    return page;
-  }
-
-  return normalizePageModule(await page());
-}
-
-function isInertiaPageLoader(
-  page: InertiaPageRegistration
-): page is InertiaPageLoader {
-  return typeof page === 'function';
-}
-
-function normalizePageModule(
-  page: InertiaPageComponent | InertiaPageModule
-): InertiaPageComponent {
-  if (isInertiaPageModule(page)) {
-    return page.default;
-  }
-
-  return page;
-}
-
-function isInertiaPageModule(
-  page: InertiaPageComponent | InertiaPageModule
-): page is InertiaPageModule {
-  return typeof page === 'object' && page !== null && 'default' in page;
 }

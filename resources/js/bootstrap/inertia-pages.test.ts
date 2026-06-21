@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {
   createInertiaPageRegistry,
+  resolveCoreInertiaPage,
   resolveInertiaPage,
   type InertiaPageComponent,
   type InertiaPageGlob,
@@ -56,7 +57,6 @@ describe('Inertia page registry', () => {
   });
 
   it('resolves core pages with the pages shorthand naming convention', async () => {
-    const registry = createInertiaPageRegistry();
     const corePages: InertiaPageGlob = {
       '../pages/settings/Sites.vue': async () => ({
         default: sitesPage,
@@ -64,7 +64,7 @@ describe('Inertia page registry', () => {
     };
 
     await expect(
-      resolveInertiaPage('settings/Sites', corePages, registry)
+      resolveCoreInertiaPage('settings/Sites', corePages)
     ).resolves.toBe(sitesPage);
   });
 
@@ -74,7 +74,7 @@ describe('Inertia page registry', () => {
     registry.register('test-plugin::Settings', settingsPage);
 
     await expect(
-      resolveInertiaPage('test-plugin::Settings', {}, registry)
+      resolveInertiaPage('test-plugin::Settings', registry)
     ).resolves.toBe(settingsPage);
   });
 
@@ -82,7 +82,7 @@ describe('Inertia page registry', () => {
     const registry = createInertiaPageRegistry();
 
     await expect(
-      resolveInertiaPage('test-plugin::Missing', {}, registry)
+      resolveInertiaPage('test-plugin::Missing', registry)
     ).rejects.toThrow('Page not found: test-plugin::Missing');
   });
 });

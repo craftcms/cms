@@ -17,9 +17,8 @@ import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
 import {setUrlDefaults} from '@/wayfinder';
 import {
-  createInertiaPageRegistry,
+  inertiaPageRegistry,
   resolveInertiaPage,
-  type InertiaPageModule,
 } from './inertia-pages.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
@@ -28,10 +27,6 @@ let bootingCallbacks: Array<(instance: any) => void> = [];
 // Instantiate services
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
-const inertia = createInertiaPageRegistry();
-const coreInertiaPages = import.meta.glob<InertiaPageModule>(
-  '../pages/**/*.vue'
-);
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {
@@ -58,7 +53,7 @@ const Cp = {
   },
 
   get $inertia() {
-    return inertia;
+    return inertiaPageRegistry;
   },
 
   booted(callback: (instance: any) => void) {
@@ -107,7 +102,7 @@ const Cp = {
     bootingCallbacks = [];
 
     await createInertiaApp({
-      resolve: (name) => resolveInertiaPage(name, coreInertiaPages, inertia),
+      resolve: (name) => resolveInertiaPage(name),
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         app.provide(Queue, queue);
