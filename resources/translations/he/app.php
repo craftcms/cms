@@ -132,7 +132,7 @@ return [
     'Announcements' => 'הודעות',
     'Another page already has that name.' => 'לדף אחר יש כבר את השם הזה.',
     'Any changes will be lost if you leave this page.' => 'אם תעזוב את דף זה תאבד את כל השינויים.',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => 'כל מה שהוטמן באמצעות {method}',
     'Application Info' => 'מידע על האפליקציה',
     'Applied new migrations successfully.' => 'העברות חדשות הוחלו בהצלחה.',
     'Applied “{name}”' => 'הוחל "{name}"',
