@@ -16,6 +16,11 @@ import SystemMessages from '@/modules/utilities/components/system-messages/Syste
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
 import {setUrlDefaults} from '@/wayfinder';
+import {
+  createInertiaPageRegistry,
+  resolveInertiaPage,
+  type InertiaPageModule,
+} from './inertia-pages.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -23,6 +28,10 @@ let bootingCallbacks: Array<(instance: any) => void> = [];
 // Instantiate services
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
+const inertia = createInertiaPageRegistry();
+const coreInertiaPages = import.meta.glob<InertiaPageModule>(
+  '../pages/**/*.vue'
+);
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {
@@ -46,6 +55,10 @@ const Cp = {
 
   get $axios() {
     return axios;
+  },
+
+  get $inertia() {
+    return inertia;
   },
 
   booted(callback: (instance: any) => void) {
@@ -94,7 +107,7 @@ const Cp = {
     bootingCallbacks = [];
 
     await createInertiaApp({
-      pages: '../pages',
+      resolve: (name) => resolveInertiaPage(name, coreInertiaPages, inertia),
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         app.provide(Queue, queue);
