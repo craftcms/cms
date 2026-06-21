@@ -639,7 +639,7 @@ JS, [
             'id' => $id,
             'icon' => 'clone-dashed',
             'color' => Color::Fuchsia,
-            'label' => Str::ucfirst(t('Copy all {type}', [
+            'label' => mb_ucfirst(t('Copy all {type}', [
                 'type' => Address::pluralLowerDisplayName(),
             ])),
         ];
