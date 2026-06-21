@@ -132,7 +132,7 @@ return [
     'Announcements' => 'Tillkännagivanden',
     'Another page already has that name.' => 'Det finns redan en annan sida med det namnet.',
     'Any changes will be lost if you leave this page.' => 'Ändringar kommer att gå förlorade om du lämnar sidan.',
-    'Anything cached with {method}' => 'Allt cachat med {method}',
+    'Anything cached with {method}' => 'Anything cached with {method}',
     'Application Info' => 'Programinfo',
     'Applied new migrations successfully.' => 'Har tillämpats för nya migreringar.',
     'Applied “{name}”' => 'Använt “{name}”',
