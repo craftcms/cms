@@ -114,7 +114,7 @@ return [
     'Ancestors' => 'Предки',
     'Announcements' => 'Повідомлення',
     'Any changes will be lost if you leave this page.' => 'Будь-які зміни буде втрачено, якщо ви залишите цю сторінку.',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => 'Усе кешовано за допомогою {method}',
     'Application Info' => 'Про застосунок',
     'Applied new migrations successfully.' => 'Нові перенесення успішно застосовані.',
     'Applied “{name}”' => 'Застосовується «{name}»',

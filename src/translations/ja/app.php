@@ -114,7 +114,7 @@ return [
     'Ancestors' => '先祖',
     'Announcements' => 'お知らせ',
     'Any changes will be lost if you leave this page.' => 'このページから離れるとすべての変更が失われます。',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => '{method} でキャッシュされたもの',
     'Application Info' => 'アプリケーション情報',
     'Applied new migrations successfully.' => '新しいマイグレーションの適用に成功しました。',
     'Applied “{name}”' => '「{name}」を適用',

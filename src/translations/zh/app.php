@@ -114,7 +114,7 @@ return [
     'Ancestors' => '上级',
     'Announcements' => '公告',
     'Any changes will be lost if you leave this page.' => '如果离开该页，所有更改都将丢失。',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => '使用 {method} 缓存的任何内容',
     'Application Info' => '应用信息',
     'Applied new migrations successfully.' => '成功的应用了新的迁移。',
     'Applied “{name}”' => '已应用“{name}”',
