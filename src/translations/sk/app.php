@@ -114,7 +114,7 @@ return [
     'Ancestors' => 'Nadradené prvky',
     'Announcements' => 'Oznámenia',
     'Any changes will be lost if you leave this page.' => 'Všetky zmeny sa stratia, ak túto stránku opustíš.',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => 'Všetko vo vyrovnávacej pamäti s {method}',
     'Application Info' => 'Informácie o aplikácii',
     'Applied new migrations successfully.' => 'Nové migrácie boli úspešne uplatnené.',
     'Applied “{name}”' => 'Použité „{name}“',
