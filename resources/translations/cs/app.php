@@ -132,7 +132,7 @@ return [
     'Announcements' => 'Oznámení',
     'Another page already has that name.' => 'Tento název již používá jiná stránka.',
     'Any changes will be lost if you leave this page.' => 'Pokud tuto stránku opustíte, přijdete o všechny neuložené změny.',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => 'Všechno v mezipaměti s {method}',
     'Application Info' => 'Informace o aplikaci',
     'Applied new migrations successfully.' => 'Nové migrace byly úspěšně použity.',
     'Applied “{name}”' => 'Aplikovaný {name}',
