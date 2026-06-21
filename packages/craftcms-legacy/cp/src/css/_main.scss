@@ -3409,9 +3409,9 @@ table:not(.cp-table) {
 .card,
 .matrixblock {
   position: relative;
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
+    border-radius: var(--radius-lg);
     color: var(--custom-text-color, var(--text-color));
   }
 
@@ -3489,7 +3489,6 @@ table:not(.cp-table) {
   padding-block: 0;
   max-width: 100%;
   gap: var(--xs);
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
     padding-inline: var(--s);
