@@ -132,7 +132,7 @@ return [
     'Announcements' => 'お知らせ',
     'Another page already has that name.' => '同じ名前のページが既に存在します。',
     'Any changes will be lost if you leave this page.' => 'このページから離れるとすべての変更が失われます。',
-    'Anything cached with {method}' => '{method} でキャッシュされたもの',
+    'Anything cached with {method}' => 'Anything cached with {method}',
     'Application Info' => 'アプリケーション情報',
     'Applied new migrations successfully.' => '新しいマイグレーションの適用に成功しました。',
     'Applied “{name}”' => '「{name}」を適用',
