@@ -2910,7 +2910,7 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (! $this->propagating) {
-            $isImage = AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value;
+            $isImage = isset($this->tempFilePath) && AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value;
 
             $fallbackWidth = null;
             $fallbackHeight = null;
