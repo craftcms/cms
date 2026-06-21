@@ -3334,6 +3334,9 @@ JS;
         if (!$this->propagating) {
             $isImage = Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE;
 
+            $fallbackWidth = null;
+            $fallbackHeight = null;
+
             if ($isImage) {
                 // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
                 if (
@@ -3360,23 +3363,20 @@ JS;
                 ) {
                     Image::cleanImageByPath($this->tempFilePath);
                 }
-            }
 
-            // if we're creating or replacing and image, get the width or height via getimagesize
-            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
-            $fallbackWidth = null;
-            $fallbackHeight = null;
-            if (
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
-            ) {
-                $imageSize = getimagesize($this->tempFilePath);
-                if (isset($imageSize[0])) {
-                    $fallbackWidth = (int)$imageSize[0];
-                }
-                if (isset($imageSize[1])) {
-                    $fallbackHeight = (int)$imageSize[1];
+                // if we're creating or replacing and image, get the width or height via getimagesize
+                // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+                if (
+                    isset($this->tempFilePath) &&
+                    in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true)
+                ) {
+                    $imageSize = getimagesize($this->tempFilePath);
+                    if (isset($imageSize[0])) {
+                        $fallbackWidth = (int)$imageSize[0];
+                    }
+                    if (isset($imageSize[1])) {
+                        $fallbackHeight = (int)$imageSize[1];
+                    }
                 }
             }
 
