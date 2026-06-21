@@ -3332,31 +3332,34 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
-            // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
-            if (
-                ($this->alt === null || $this->alt === '') &&
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
-            ) {
-                $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
-                if ($alt !== null) {
-                    // ensure it's UTF-8
-                    // (see https://github.com/craftcms/cms/issues/19069)
-                    $this->alt = StringHelper::convertToUtf8($alt);
-                }
-            }
+            $isImage = Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE;
 
-            // Are we uploading an image that needs to be sanitized?
-            if (
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
-                ($this->sanitizeOnUpload ?? (
-                    !Craft::$app->getRequest()->getIsCpRequest() ||
-                    Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
-                ))
-            ) {
-                Image::cleanImageByPath($this->tempFilePath);
+            if ($isImage) {
+                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+                if (
+                    ($this->alt === null || $this->alt === '') &&
+                    isset($this->tempFilePath) &&
+                    in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
+                ) {
+                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                    if ($alt !== null) {
+                        // ensure it's UTF-8
+                        // (see https://github.com/craftcms/cms/issues/19069)
+                        $this->alt = StringHelper::convertToUtf8($alt);
+                    }
+                }
+
+                // Are we uploading an image that needs to be sanitized?
+                if (
+                    isset($this->tempFilePath) &&
+                    in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                    ($this->sanitizeOnUpload ?? (
+                        !Craft::$app->getRequest()->getIsCpRequest() ||
+                        Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
+                    ))
+                ) {
+                    Image::cleanImageByPath($this->tempFilePath);
+                }
             }
 
             // if we're creating or replacing and image, get the width or height via getimagesize

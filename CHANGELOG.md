@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where element thumbnails could have inconsistent rounded corners. ([#19117](https://github.com/craftcms/cms/issues/19117))
+- Fixed a bug where video file uploads could cause a timeout or exhaust the memory limit. ([#19131](https://github.com/craftcms/cms/issues/19131))
 
 ## 5.10.7 - 2027-06-17
 
