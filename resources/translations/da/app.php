@@ -132,7 +132,7 @@ return [
     'Announcements' => 'Meddelelser',
     'Another page already has that name.' => 'En anden side har allerede det navn.',
     'Any changes will be lost if you leave this page.' => 'Eventuelle ændringer vil gå tabt hvis du forlader denne side.',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => '使用 {method} 缓存的任何内容',
     'Application Info' => 'Applikationsinfo',
     'Applied new migrations successfully.' => 'Anvendte nye migrereringer uden fejl.',
     'Applied “{name}”' => 'Anvendt “{name}”',
