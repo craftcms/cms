@@ -132,7 +132,7 @@ return [
     'Announcements' => 'ประกาศ',
     'Another page already has that name.' => 'มีหน้าอื่นใช้ชื่อนี้แล้ว',
     'Any changes will be lost if you leave this page.' => 'การเปลี่ยนแปลงใดๆ จะสูญหายไป หากคุณออกจากหน้านี้',
-    'Anything cached with {method}' => 'ทั้งหมดที่แคชด้วย {method}',
+    'Anything cached with {method}' => 'Anything cached with {method}',
     'Application Info' => 'ข้อมูลแอปพลิเคชัน',
     'Applied new migrations successfully.' => 'ใช้การโอนย้ายข้อมูลใหม่เรียบร้อยแล้ว',
     'Applied “{name}”' => 'ใช้ “{name}” แล้ว',
