@@ -1234,6 +1234,10 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function lowercaseFirst(string $str): string
     {
+        if (function_exists('mb_lcfirst')) {
+            return mb_lcfirst($str);
+        }
+
         return Str::lcfirst($str);
     }
 
@@ -2593,6 +2597,10 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function upperCaseFirst(string $str): string
     {
+        if (function_exists('mb_ucfirst')) {
+            return mb_ucfirst($str);
+        }
+
         return Str::ucfirst($str);
     }
 
