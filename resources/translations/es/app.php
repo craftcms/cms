@@ -132,7 +132,7 @@ return [
     'Announcements' => 'Anuncios',
     'Another page already has that name.' => 'Otra página ya tiene ese nombre.',
     'Any changes will be lost if you leave this page.' => 'Los cambios realizados se perderán si abandonas esta página.',
-    'Anything cached with {method}' => 'Cualquier contenido almacenado en caché con {method}',
+    'Anything cached with {method}' => 'Anything cached with {method}',
     'Application Info' => 'Información de la aplicación',
     'Applied new migrations successfully.' => 'Se aplicaron nuevas migraciones correctamente.',
     'Applied “{name}”' => 'Se ha aplicado “{name}”',
