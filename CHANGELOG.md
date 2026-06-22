@@ -7,6 +7,7 @@
 - Fixed an error that occurred if a custom source had a condition rule that referenced a field instance that no longer existed. ([#19132](https://github.com/craftcms/cms/issues/19132))
 - Fixed a bug where the relation deletion blocker’s messages weren’t always properly capitalized. ([#19133](https://github.com/craftcms/cms/pull/19133))
 - Fixed a bug where the “Delete” button within element deletion blocker modals wasn’t getting translated properly. ([#19134](https://github.com/craftcms/cms/pull/19134))
+- Fixed a bug where the `previewTokenDuration` config setting was defaulting to 1 day, rather than to the `defaultTokenDuration` value. ([#18550](https://github.com/craftcms/cms/issues/18550))
 
 ## 5.10.7 - 2027-06-17
 
