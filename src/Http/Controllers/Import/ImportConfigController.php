@@ -37,7 +37,8 @@ class ImportConfigController
     private bool $readOnly;
 
     public function __construct(
-        GeneralConfig $generalConfig,
+        private Request $request,
+        private GeneralConfig $generalConfig,
         private HtmlStack $HtmlStack,
         private readonly Import $importService,
     ) {
@@ -53,17 +54,17 @@ class ImportConfigController
         ]);
     }
 
-    public function create(Request $request): CpScreenResponse
+    public function create(): CpScreenResponse
     {
         $validTypes = $this->importService->getAllImporterTypes();
 
-        $old = $request->old() ?? $request->session()->get('import');
+        $old = $this->request->old() ?? $this->request->session()->get('import');
         if (! empty($old)) {
             $type = $old['type'] ?? null;
             abort_unless(is_string($type) && in_array($type, $validTypes, strict: true), 400, 'Invalid importer type.');
             $import = new $type($old);
         } else {
-            $type = $request->input('type');
+            $type = $this->request->input('type');
             if ($type) {
                 abort_unless(in_array($type, $validTypes, strict: true), 400, 'Invalid importer type.');
                 $import = new $type;
@@ -75,19 +76,19 @@ class ImportConfigController
         return $this->cpScreenResponse($import);
     }
 
-    public function renderSettings(Request $request): JsonResponse
+    public function renderSettings(): JsonResponse
     {
-        $request->validate([
+        $this->request->validate([
             'type' => ['required', 'string', Rule::in($this->importService->getAllImporterTypes())],
             'namespace' => ['nullable', 'string'],
         ]);
 
-        $type = $request->input('type');
+        $type = $this->request->input('type');
         $import = new $type;
 
         $html = template('import/configs/_edit', [
             'import' => $import,
-            'namespace' => $request->input('namespace'),
+            'namespace' => $this->request->input('namespace'),
         ]);
 
         return new JsonResponse([
@@ -97,12 +98,12 @@ class ImportConfigController
         ]);
     }
 
-    public function edit(Request $request, ?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
+    public function edit(?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
     {
-        $handle ??= $import->handle ?? $request->input('handle');
+        $handle ??= $import->handle ?? $this->request->input('handle');
 
         if (is_null($handle)) {
-            return $this->create($request);
+            return $this->create();
         }
 
         abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
@@ -115,11 +116,11 @@ class ImportConfigController
         return $this->cpScreenResponse($import);
     }
 
-    public function store(Request $request): Response
+    public function store(): Response
     {
-        $importConfigUid = $request->input('uid');
+        $importConfigUid = $this->request->input('uid');
 
-        $request->validate([
+        $this->request->validate([
             'uid' => ['nullable', 'string', 'max:36'],
             'type' => [
                 Rule::requiredIf(! $importConfigUid),
@@ -132,22 +133,22 @@ class ImportConfigController
         if ($importConfigUid) {
             abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
         } else {
-            $import = new ($request->input('type'));
+            $import = new ($this->request->input('type'));
         }
 
-        $request->validate($import::getRules());
+        $this->request->validate($import::getRules());
 
-        $import->name($request->input('name', $import->name));
-        $import->handle($request->input('handle', $import->handle));
-        $import->description($request->input('description', $import->description));
-        $import->file($request->input('settings.file', $import->file));
+        $import->name($this->request->input('name', $import->name));
+        $import->handle($this->request->input('handle', $import->handle));
+        $import->description($this->request->input('description', $import->description));
+        $import->file($this->request->input('settings.file', $import->file));
         if (property_exists($import, 'site')) {
-            $import->site($request->input('settings.site', $import->site));
+            $import->site($this->request->input('settings.site', $import->site));
         }
-        $import->className($request->has('settings.elementType') ? $request->input('settings.elementType') : $request->input('settings.className'));
-        $import->transformer($request->input('settings.transformer', $import->transformer));
-        $import->map($request->input('settings.map', $import->map));
-        $import->matchCriteria($request->input('settings.matchCriteria', $import->matchCriteria));
+        $import->className($this->request->has('settings.elementType') ? $this->request->input('settings.elementType') : $this->request->input('settings.className'));
+        $import->transformer($this->request->input('settings.transformer', $import->transformer));
+        $import->map($this->request->input('settings.map', $import->map));
+        $import->matchCriteria($this->request->input('settings.matchCriteria', $import->matchCriteria));
 
         if (! $this->importService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
@@ -161,9 +162,9 @@ class ImportConfigController
         );
     }
 
-    public function editFieldLayoutProvider(Request $request, ?ElementImporter $import = null, ?string $handle = null): CpScreenResponse
+    public function editFieldLayoutProvider(?ElementImporter $import = null, ?string $handle = null): CpScreenResponse
     {
-        $handle ??= $import->handle ?? $request->input('handle');
+        $handle ??= $import->handle ?? $this->request->input('handle');
 
         abort_if(is_null($handle), 404, 'Import config not found');
         abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
@@ -174,7 +175,7 @@ class ImportConfigController
             $import = $found;
         }
 
-        $currentUser = auth('craft')->user();
+        $currentUser = $this->request->craftUser();
 
         $templateVars = [
             'readOnly' => $this->readOnly,
@@ -209,24 +210,24 @@ class ImportConfigController
             );
     }
 
-    public function storeFieldLayoutProvider(Request $request): Response
+    public function storeFieldLayoutProvider(): Response
     {
-        $importConfigUid = $request->input('uid');
+        $importConfigUid = $this->request->input('uid');
         abort_if(empty($importConfigUid), 400, 'No import config UID provided');
 
-        $request->validate([
+        $this->request->validate([
             'uid' => ['string', 'max:36'],
         ]);
 
         abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
-        $request->validate([
+        $this->request->validate([
             'fieldLayoutUid' => ['nullable', 'string', 'max:36'],
         ]);
 
         /** @var ElementImporter $import */
         if (property_exists($import, 'fieldLayoutUid')) {
-            $import->fieldLayoutUid($request->input('fieldLayoutUid', $import->fieldLayoutUid));
+            $import->fieldLayoutUid($this->request->input('fieldLayoutUid', $import->fieldLayoutUid));
         }
 
         if (! $this->importService->saveConfig($import)) {
@@ -240,9 +241,9 @@ class ImportConfigController
         );
     }
 
-    public function editMap(Request $request, ?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
+    public function editMap(?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
     {
-        $handle ??= $import->handle ?? $request->input('handle');
+        $handle ??= $import->handle ?? $this->request->input('handle');
 
         abort_if(is_null($handle), 404, 'Import config not found');
         abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
@@ -252,7 +253,7 @@ class ImportConfigController
             $import = $found;
         }
 
-        $currentUser = auth('craft')->user();
+        $currentUser = $this->request->craftUser();
 
         $templateVars = [
             'readOnly' => $this->readOnly,
@@ -288,18 +289,18 @@ class ImportConfigController
             );
     }
 
-    public function storeMap(Request $request): Response
+    public function storeMap(): Response
     {
-        $importConfigUid = $request->input('importUid');
+        $importConfigUid = $this->request->input('importUid');
         abort_if(empty($importConfigUid), 400, 'No import config UID provided');
 
-        $request->validate([
+        $this->request->validate([
             'importUid' => ['string', 'max:36'],
         ]);
 
         abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
-        $request->validate([
+        $this->request->validate([
             'fieldLayoutId' => ['nullable', 'integer'],
             'map' => [
                 'required',
@@ -310,10 +311,10 @@ class ImportConfigController
 
         if (property_exists($import, 'fieldLayoutId')) {
             /** @phpstan-ignore-next-line */
-            $import->fieldLayoutId($request->input('fieldLayoutId', $import->fieldLayoutId));
+            $import->fieldLayoutId($this->request->input('fieldLayoutId', $import->fieldLayoutId));
         }
 
-        $import->map($request->input('map', $import->map));
+        $import->map($this->request->input('map', $import->map));
 
         if (! $this->importService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
@@ -327,13 +328,13 @@ class ImportConfigController
         );
     }
 
-    public function editNestedFieldMapping(Request $request): CpScreenResponse
+    public function editNestedFieldMapping(): CpScreenResponse
     {
-        [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids($request);
+        [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
 
-        $fieldHandle = $request->input('fieldHandle');
-        $ownerPrefix = $request->input('ownerPrefix');
-        $currentMap = $request->input('currentMap');
+        $fieldHandle = $this->request->input('fieldHandle');
+        $ownerPrefix = $this->request->input('ownerPrefix');
+        $currentMap = $this->request->input('currentMap');
 
         if (is_string($currentMap)) {
             $currentMap = Json::decodeIfJson($currentMap);
@@ -359,7 +360,7 @@ class ImportConfigController
             }
         }
 
-        $currentUser = auth('craft')->user();
+        $currentUser = $this->request->craftUser();
 
         $templateVars = [
             'readOnly' => $this->readOnly,
@@ -394,18 +395,18 @@ class ImportConfigController
             );
     }
 
-    public function storeNestedFieldMapping(Request $request): Response
+    public function storeNestedFieldMapping(): Response
     {
-        [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids($request);
+        [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
 
-        $fieldHandle = $request->input('fieldHandle', $field->handle)
+        $fieldHandle = $this->request->input('fieldHandle', $field->handle)
                 |> (fn ($v) => str_replace('][', '.', $v))
                 |> (fn ($v) => str_replace(['['], '.', $v))
                 |> (fn ($v) => str_replace([']'], '', $v));
 
         // validate the map fragment;
         // if it errors, a toast notification will show with the error
-        $request->validate([
+        $this->request->validate([
             'fieldHandle' => ['required', 'string', 'max:255'],
             "map.$fieldHandle" => [
                 'required',
@@ -414,7 +415,7 @@ class ImportConfigController
             ],
         ]);
 
-        $map = $request->input("map.$fieldHandle");
+        $map = $this->request->input("map.$fieldHandle");
 
         $map = array_map(ImportHelper::ensureCleanArray(...), $map);
 
@@ -422,15 +423,15 @@ class ImportConfigController
         return $this->asJsonSuccess(null, ['fieldHandle' => $fieldHandle, 'map' => $map]);
     }
 
-    private function fieldImportUids(Request $request): array
+    private function fieldImportUids(): array
     {
-        $fieldUid = $request->input('fieldUid');
+        $fieldUid = $this->request->input('fieldUid');
         abort_if(empty($fieldUid), 400, 'No field UID provided');
 
         $field = Fields::getFieldByUid($fieldUid);
         abort_if(is_null($field), 400, 'Invalid field UID.');
 
-        $importUid = $request->input('importUid');
+        $importUid = $this->request->input('importUid');
         abort_if(empty($importUid), 400, 'No import UID provided');
 
         $import = $this->importService->getConfigByUid($importUid);
@@ -439,9 +440,9 @@ class ImportConfigController
         return [$fieldUid, $field, $importUid, $import];
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(): Response
     {
-        $uid = $request->input('uid');
+        $uid = $this->request->input('uid');
 
         if (! $uid) {
             throw ValidationException::withMessages([
@@ -463,7 +464,7 @@ class ImportConfigController
 
     private function cpScreenResponse(?BaseImporter $import = null): CpScreenResponse
     {
-        $currentUser = auth('craft')->user();
+        $currentUser = $this->request->craftUser();
 
         $templateVars = [
             'readOnly' => $this->readOnly,
@@ -513,9 +514,9 @@ class ImportConfigController
     }
 
     // TODO: this might be deleted - currently only used for file-based config, to run it from the configs screen
-    public function run(Request $request): Response
+    public function run(): Response
     {
-        $handle = $request->input('handle');
+        $handle = $this->request->input('handle');
 
         abort_if(is_null($handle), 400, 'Import config handle is required.');
         abort_if(is_null($config = $this->importService->getConfigByHandle($handle)), 400, 'Import config not found.');

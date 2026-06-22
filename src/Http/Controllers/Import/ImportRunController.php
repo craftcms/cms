@@ -26,6 +26,7 @@ class ImportRunController
     private bool $readOnly;
 
     public function __construct(
+        private Request $request,
         GeneralConfig $generalConfig,
         private readonly Import $importService,
     ) {
@@ -40,9 +41,9 @@ class ImportRunController
         ]);
     }
 
-    public function create(Request $request): CpScreenResponse
+    public function create(): CpScreenResponse
     {
-        $old = $request->session()->get('run');
+        $old = $this->request->session()->get('run');
         if (! empty($old)) {
             $run = new ImportRun($old);
         } else {
@@ -52,17 +53,17 @@ class ImportRunController
         return $this->cpScreenResponse($run);
     }
 
-    public function edit(Request $request, ?ImportRun $run = null, ?string $handle = null): CpScreenResponse
+    public function edit(?ImportRun $run = null, ?string $handle = null): CpScreenResponse
     {
-        $handle ??= $run->handle ?? $request->input('handle');
+        $handle ??= $run->handle ?? $this->request->input('handle');
 
         if (is_null($handle)) {
-            return $this->create($request);
+            return $this->create();
         }
 
         abort_if(is_null($found = $this->importService->getImportRunByHandle($handle)), 404, 'Import run not found');
 
-        $old = $request->session()->get('run');
+        $old = $this->request->session()->get('run');
         if (! empty($old)) {
             $run = new ImportRun($old);
         }
@@ -74,9 +75,9 @@ class ImportRunController
         return $this->cpScreenResponse($run);
     }
 
-    public function store(Request $request): Response
+    public function store(): Response
     {
-        $runUid = $request->input('uid');
+        $runUid = $this->request->input('uid');
 
         if ($runUid) {
             abort_if(is_null($run = $this->importService->getImportRunByUid($runUid)), 400, "Invalid run UID: $runUid");
@@ -84,10 +85,10 @@ class ImportRunController
             $run = new ImportRun;
         }
 
-        $run->name = $request->input('name', $run->name);
-        $run->handle = $request->input('handle', $run->handle);
-        $run->description = $request->input('description', $run->description);
-        $run->steps = $request->input('steps', $run->steps);
+        $run->name = $this->request->input('name', $run->name);
+        $run->handle = $this->request->input('handle', $run->handle);
+        $run->description = $this->request->input('description', $run->description);
+        $run->steps = $this->request->input('steps', $run->steps);
 
         if (! $this->importService->saveRun($run)) {
             return $this->asModelFailure($run, t('Couldn’t save import run.'), 'run');
@@ -100,9 +101,9 @@ class ImportRunController
         );
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(): Response
     {
-        $uid = $request->input('uid');
+        $uid = $this->request->input('uid');
 
         if (! $uid) {
             throw ValidationException::withMessages([
@@ -121,9 +122,9 @@ class ImportRunController
         ]));
     }
 
-    public function run(Request $request): Response
+    public function run(): Response
     {
-        $uid = $request->input('uid');
+        $uid = $this->request->input('uid');
 
         abort_if(is_null($uid), 400, 'Import run uid is required.');
         abort_if(is_null($run = $this->importService->getImportRunByUid($uid)), 400, 'Import run not found.');
@@ -141,7 +142,7 @@ class ImportRunController
 
     private function cpScreenResponse(ImportRun $run): CpScreenResponse
     {
-        $currentUser = auth('craft')->user();
+        $currentUser = $this->request->craftUser();
 
         return new CpScreenResponse()
             ->title(! isset($run->uid) ? t('Create a new import run') : t('Edit {name} import run', ['name' => $run->name]))
