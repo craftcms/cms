@@ -241,7 +241,12 @@ class TestCase extends Orchestra
                 $connectionConfig = ConnectionConfig::normalize($connectionConfig);
 
                 if (($connectionConfig['driver'] ?? null) === 'sqlite') {
-                    unset($connectionConfig['journal_mode']);
+                    unset(
+                        $connectionConfig['busy_timeout'],
+                        $connectionConfig['journal_mode'],
+                        $connectionConfig['pragmas'],
+                        $connectionConfig['synchronous'],
+                    );
 
                     ConnectionConfig::ensureSqliteDatabaseFile((string) ($connectionConfig['database'] ?? ''));
                 }
