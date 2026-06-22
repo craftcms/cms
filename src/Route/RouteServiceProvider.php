@@ -16,7 +16,9 @@ use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
+use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
+use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
@@ -26,7 +28,6 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
-use CraftCms\Cms\Http\Middleware\SetCraftGuard;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
@@ -34,6 +35,7 @@ use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -41,6 +43,8 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRoute
 use Illuminate\Routing\Router;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -70,6 +74,11 @@ class RouteServiceProvider extends ServiceProvider
 
     public function boot(Router $router, Routes $routes): void
     {
+        URL::defaults([
+            'cpTrigger' => trim((string) Cms::config()->cpTrigger, '/') ?: null,
+            'actionTrigger' => trim(Cms::config()->actionTrigger, '/'),
+        ]);
+
         $router->patterns($routes->tokens);
 
         $this->bootMiddleware($router);
@@ -97,6 +106,18 @@ class RouteServiceProvider extends ServiceProvider
 
             $routes->handleDeletedSite($event);
         });
+
+        RateLimiter::for('password-reset', function ($request) {
+            $loginName = $request->input('loginName');
+
+            // Don't throttle if no loginName provided - validation will handle it
+            if (empty($loginName)) {
+                return Limit::none();
+            }
+
+            // Throttle to prevent enumeration attacks
+            return Limit::perMinute(1)->by($request->ip());
+        });
     }
 
     private function bootRequestForgeryExceptions(): void
@@ -110,8 +131,8 @@ class RouteServiceProvider extends ServiceProvider
             'preview/preview',
         ])->flatMap(fn (string $route) => [
             $route,
-            Cms::config()->actionTrigger.Str::start($route, '/'),
-            Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
+            app(Routes::class)->actionTriggerUriPrefix().Str::start($route, '/'),
+            app(Routes::class)->cpActionTriggerUriPrefix().Str::start($route, '/'),
         ])->all());
     }
 
@@ -122,6 +143,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         PreventRequestsDuringMaintenance::except([
             action([UpdaterController::class, 'precheck']),
+            action([UpdaterController::class, 'composerInstall']),
             action([UpdaterController::class, 'finish']),
             action([UpdaterController::class, 'backup']),
             action([UpdaterController::class, 'serverCheck']),
@@ -136,8 +158,9 @@ class RouteServiceProvider extends ServiceProvider
     private function bootMiddleware(Router $router): void
     {
         collect([
+            ForgetTriggerParameters::class,
+            EnsureInstalled::class,
             AddLogContext::class,
-            SetCraftGuard::class,
             ResolveSite::class,
             UpdateLocale::class,
             CheckSchemaVersion::class,

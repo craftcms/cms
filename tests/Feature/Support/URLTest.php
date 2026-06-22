@@ -28,8 +28,12 @@ describe('buildQuery', function () {
         ['foo%5Bbar%5D=baz', ['foo' => ['bar' => 'baz']]],
         ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
         ['foo%2Bbar=baz', ['foo+bar' => 'baz']],
+        ['foo%2Fbar=baz', ['foo/bar' => 'baz']],
+        ['foo%5B{bar}%5D=baz', ['foo[{bar}]' => 'baz']],
         ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
         ['foo={bar}', ['foo' => '{bar}']],
+        ['foo=some%2Fpath%2F{bar}', ['foo' => 'some/path/{bar}']],
+        ['returnUrl=https%3A%2F%2Fexample.test%2Fpath%2F{id}%3Ffoo%3Dbar', ['returnUrl' => 'https://example.test/path/{id}?foo=bar']],
         ['foo%5B1%5D=bar', ['foo[1]' => 'bar']],
         ['foo%5B1%5D%5Bbar%5D=1&foo%5B1%5D%5Bbaz%5D=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
     ]);
@@ -156,9 +160,19 @@ describe('query and encoding helpers', function () {
             '?param1[]=value1&param1[]=value2',
         ],
         'query-string-with-forward-slash' => [
-            'https://www.craftcms.com/?param1=some/path',
+            'https://www.craftcms.com/?param1=some%2Fpath',
             'https://www.craftcms.com/',
             '?param1=some/path',
+        ],
+        'query-string-with-token-and-forward-slash' => [
+            'https://www.craftcms.com/?param1=some%2Fpath%2F{value}',
+            'https://www.craftcms.com/',
+            '?param1=some/path/{value}',
+        ],
+        'return-url-with-query-string' => [
+            'https://www.craftcms.com/?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fcontent%2Fentries%2Fsingles%3Fsource%3Dsingles',
+            'https://www.craftcms.com/',
+            ['returnUrl' => 'https://example.test/admin/content/entries/singles?source=singles'],
         ],
         'query-string-with-fragment' => [
             'https://www.craftcms.com/?param1=value#anchor',
@@ -245,6 +259,8 @@ describe('query and encoding helpers', function () {
         ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
         ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
         ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
+        ['http://example.test?foo=some%2Fpath%2F{token}', 'http://example.test?foo=some/path/{token}'],
+        ['http://example.test?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'http://example.test?returnUrl=https://example.test/admin/entries?site={handle}'],
     ]);
 
     test('encodes URLs', function (string $expected, string $url) {
@@ -322,21 +338,6 @@ describe('base and control panel helpers', function () {
             ->and(Url::cpHost())->toBe('https://cms.example.test');
     });
 
-    test('returns control panel referral URLs', function (?string $expected, ?string $referrer) {
-        swapUrlRequest('https://localhost/admin/dashboard');
-
-        if ($referrer !== null) {
-            request()->headers->set('referer', $referrer);
-        }
-
-        expect(Url::cpReferralUrl())->toBe($expected);
-    })->with([
-        'missing-referrer' => [null, null],
-        'self-referrer' => [null, 'https://localhost/admin/dashboard'],
-        'external-referrer' => [null, 'https://craftcms.com/admin/dashboard'],
-        'cp-referrer' => ['https://localhost/admin/entries', 'https://localhost/admin/entries'],
-    ]);
-
     test('prepends the control panel trigger', function (string $expected, ?string $cpTrigger, string $path) {
         Cms::config()->cpTrigger = $cpTrigger;
 
@@ -345,6 +346,8 @@ describe('base and control panel helpers', function () {
         'default-trigger' => ['admin/settings', 'admin', 'settings'],
         'empty-path' => ['admin', 'admin', ''],
         'missing-trigger' => ['settings', null, 'settings'],
+        'existing-trigger' => ['admin/settings', 'admin', 'admin/settings'],
+        'similar-prefix' => ['admin/administrator/settings', 'admin', 'administrator/settings'],
     ]);
 });
 
@@ -357,19 +360,24 @@ describe('generated URLs', function () {
     })->with([
         'empty-path' => ['{cpUrl}', '', [], 'https'],
         'with-params' => ['{cpUrl}/nav?param1=entry1&param2=entry2', 'nav', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
+        'with-token-and-forward-slash-params' => ['{cpUrl}/nav?redirect=some%2Fpath%2F{id}&site={handle}', 'nav', ['redirect' => 'some/path/{id}', 'site' => '{handle}'], 'https'],
+        'with-return-url-param' => ['{cpUrl}/nav?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'nav', ['returnUrl' => 'https://example.test/admin/entries?site={handle}'], 'https'],
+        'with-trigger' => ['{cpUrl}/login', 'admin/login', [], 'https'],
         'preserves-query-string' => ['{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2', 'nav?param3=entry3', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
         'absolute-site-url' => ['{siteUrl}?param1=entry1&param2=entry2', 'https://localhost/', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
     ]);
 
-    test('creates site and absolute URLs', function (string $expected, string $path, ?array $params, string $scheme) {
+    test('creates site and absolute URLs', function (string $expected, string $path, ?array $params, ?string $scheme) {
         swapUrlRequest('https://localhost/news');
 
         expect(Url::url($path, $params, $scheme))
-            ->toBe(buildExpectedUrl($expected, $scheme));
+            ->toBe(buildExpectedUrl($expected, $scheme ?? 'https'));
     })->with([
-        ['{siteUrl}endpoint', 'endpoint', null, 'https'],
-        ['https://craftcms.com/', 'http://craftcms.com/', null, 'https'],
-        ['https://craftcms.com/?param1=entry1&param2=entry2', 'http://craftcms.com/', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
+        'base' => ['{siteUrl}endpoint', 'endpoint', null, null],
+        'full-url-scheme' => ['https://craftcms.com/', 'http://craftcms.com/', null, 'https'],
+        'scheme-override-param-add' => ['https://craftcms.com/?param1=entry1&param2=entry2', 'http://craftcms.com/', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
+        'token-and-forward-slash-param-add' => ['http://craftcms.com/?redirect=some%2Fpath%2F{id}', 'http://craftcms.com/', ['redirect' => 'some/path/{id}'], null],
+        'return-url-param-add' => ['http://craftcms.com/?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'http://craftcms.com/', ['returnUrl' => 'https://example.test/admin/entries?site={handle}'], null],
     ]);
 
     test('creates site URLs', function (string $expected, string $path, array|string|null $params, string $scheme, ?int $siteId) {
@@ -378,6 +386,8 @@ describe('generated URLs', function () {
     })->with([
         ['{siteUrl}endpoint', 'endpoint', null, 'https', null],
         ['{siteUrl}endpoint?param1=x&param2%5B0%5D=y&param2%5B1%5D=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z', 'https', null],
+        ['{siteUrl}endpoint?redirect=some%2Fpath%2F{id}', 'endpoint', ['redirect' => 'some/path/{id}'], 'https', null],
+        ['{siteUrl}endpoint?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'endpoint', ['returnUrl' => 'https://example.test/admin/entries?site={handle}'], 'https', null],
     ]);
 
     it('creates action URLs', function () {

@@ -17,5 +17,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Enums\PropagationMethod::class, PropagationMethod::class);

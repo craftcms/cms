@@ -14,11 +14,12 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Support\Json;
-use Illuminate\Contracts\View\View;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -34,11 +35,31 @@ class VolumesController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Volumes $volumes): View
+    public function index(Request $request, Volumes $volumes)
     {
-        return view('settings/assets/volumes/_index', [
-            'volumes' => $volumes->getAllVolumes(),
-            'readOnly' => $this->readOnly,
+        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
+            ['field' => 'sortOrder', 'direction' => 'asc'],
+        ];
+
+        match (Arr::get($sort, '0.field')) {
+            'handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+
+        match (Arr::get($sort, '0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
+
+        return Inertia::render('settings/Volumes', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Assets')],
+            ],
+            'sort' => $sort,
+            'title' => t('Asset Settings'),
+            'volumes' => $volumes->getAllVolumes(...),
         ]);
     }
 
@@ -47,13 +68,11 @@ class VolumesController
         return $this->edit($volumes);
     }
 
-    public function edit(Volumes $volumes, ?int $volumeId = null): CpScreenResponse
+    public function edit(Volumes $volumes, ?Volume $volume = null, ?int $volumeId = null): CpScreenResponse
     {
         if ($volumeId === null && $this->readOnly) {
             abort(403, 'Administrative changes are disallowed in this environment.');
         }
-
-        $volume = null;
 
         if ($volumeId !== null) {
             $volume = $volumes->getVolumeById($volumeId);
@@ -86,11 +105,13 @@ class VolumesController
 
                 return $option;
             })
-            ->sortBy(fn (array $option) => $option['label'])
-            ->values()
-            ->all();
+            ->partition(fn (array $option): bool => str_starts_with((string) $option['value'], Volume::STORAGE_DISK_PREFIX));
 
-        array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '']);
+        [$diskOptions, $craftFilesystemOptions] = $fsOptions;
+
+        $groupedFsOptions = $this->groupFsOptions($craftFilesystemOptions, $diskOptions);
+        $fsOptions = $groupedFsOptions;
+        array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '', 'data' => ['hint' => '']]);
 
         return new CpScreenResponse()
             ->title($title)
@@ -104,6 +125,7 @@ class VolumesController
                 'typeName' => Asset::displayName(),
                 'lowerTypeName' => Asset::lowerDisplayName(),
                 'fsOptions' => $fsOptions,
+                'groupedFsOptions' => $groupedFsOptions,
                 'readOnly' => $this->readOnly,
             ])
             ->unless(
@@ -173,19 +195,40 @@ class VolumesController
 
     public function reorder(Request $request, Volumes $volumes): Response
     {
-        $volumeIds = Json::decode($request->input('ids'));
+        $volumeIds = $request->input('ids', []);
         $volumes->reorderVolumes($volumeIds);
+
+        return $this->asSuccess(t('Order updated.'));
+    }
+
+    public function destroy(Request $request, Volumes $volumes, int $volumeId): Response
+    {
+        $volumes->deleteVolumeById($volumeId);
 
         return $this->asSuccess();
     }
 
-    public function delete(Request $request, Volumes $volumes): Response
+    private function groupFsOptions(Collection $craftFilesystemOptions, Collection $diskOptions): array
     {
-        $request->validate(['id' => ['required', 'integer']]);
+        $options = [];
 
-        $volumes->deleteVolumeById($request->integer('id'));
+        $options[] = ['optgroup' => t('Craft Filesystems')];
+        array_push($options, ...$this->sortFsOptions($craftFilesystemOptions));
 
-        return $this->asSuccess();
+        if ($diskOptions->isNotEmpty()) {
+            $options[] = ['optgroup' => t('Laravel Disks')];
+            array_push($options, ...$this->sortFsOptions($diskOptions));
+        }
+
+        return $options;
+    }
+
+    private function sortFsOptions(Collection $options): array
+    {
+        return $options
+            ->sortBy(fn (array $option) => $option['label'])
+            ->values()
+            ->all();
     }
 
     private function fsOptionTargetKey(mixed $value): ?string

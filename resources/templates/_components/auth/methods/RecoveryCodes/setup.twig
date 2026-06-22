@@ -8,3 +8,7 @@
     label: 'Generate recovery codes'|t('app'),
     spinner: true,
 }) }}
+
+<script type="module">
+  new Craft.RecoveryCodesSetup('{{ containerId }}');
+</script>

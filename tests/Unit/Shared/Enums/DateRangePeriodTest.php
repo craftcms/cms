@@ -14,7 +14,7 @@ afterEach(function () {
 });
 
 test('interval returns expected offsets', function (DateInterval $expected, float|int $length, DateRangePeriod $periodType) {
-    $now = DateTimeHelper::now();
+    $now = now();
     $dateInterval = $periodType->interval($length);
 
     expect((clone $now)->add($dateInterval)->getTimestamp())

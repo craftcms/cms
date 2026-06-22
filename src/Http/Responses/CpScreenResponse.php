@@ -191,7 +191,7 @@ class CpScreenResponse implements Responsable
     public $contextMenuItems;
 
     /**
-     * @var string|callable|null Toolbar HTML
+     * @var string|Stringable|callable|null Toolbar HTML
      *
      * @see toolbarHtml()
      * @see toolbarTemplate()
@@ -213,7 +213,7 @@ class CpScreenResponse implements Responsable
     public ?string $submitButtonLabel = null;
 
     /**
-     * @var string|callable|null Additional buttons’ HTML.
+     * @var string|Stringable|callable|null Additional buttons’ HTML.
      *
      * This will only be used by full-page screens.
      *
@@ -223,7 +223,7 @@ class CpScreenResponse implements Responsable
     public $additionalButtonsHtml;
 
     /**
-     * @var string|callable|null The content HTML.
+     * @var string|Stringable|callable|null The content HTML.
      *
      * @see contentHtml()
      * @see contentTemplate()
@@ -231,7 +231,7 @@ class CpScreenResponse implements Responsable
     public $contentHtml;
 
     /**
-     * @var string|callable|null The right-hand meta sidebar HTML.
+     * @var string|Stringable|callable|null The right-hand meta sidebar HTML.
      *
      * @see metaSidebarHtml()
      * @see metaSidebarTemplate()
@@ -239,7 +239,7 @@ class CpScreenResponse implements Responsable
     public $metaSidebarHtml;
 
     /**
-     * @var string|callable|null The left-hand page sidebar HTML (only used by full-page screens).
+     * @var string|Stringable|callable|null The left-hand page sidebar HTML (only used by full-page screens).
      *
      * @see pageSidebarHtml()
      * @see pageSidebarTemplate()
@@ -247,7 +247,7 @@ class CpScreenResponse implements Responsable
     public $pageSidebarHtml;
 
     /**
-     * @var string|callable|null The content notice HTML.
+     * @var string|Stringable|callable|null The content notice HTML.
      *
      * @see noticeHtml()
      * @see noticeTemplate()
@@ -255,7 +255,7 @@ class CpScreenResponse implements Responsable
     public $noticeHtml;
 
     /**
-     * @var string|callable|null The errors summary HTML (DEV-212).
+     * @var string|Stringable|callable|null The errors summary HTML (DEV-212).
      *
      * @see errorSummary()
      * @see errorSummaryTemplate()
@@ -540,7 +540,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the toolbar HTML.
      */
-    public function toolbarHtml(callable|string|null $value): self
+    public function toolbarHtml(callable|string|Stringable|null $value): self
     {
         $this->toolbarHtml = $value;
 
@@ -606,7 +606,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the content HTML.
      */
-    public function contentHtml(callable|string|null $value): self
+    public function contentHtml(callable|string|Stringable|null $value): self
     {
         $this->contentHtml = $value;
 
@@ -640,7 +640,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the right-hand meta sidebar HTML.
      */
-    public function metaSidebarHtml(callable|string|null $value): self
+    public function metaSidebarHtml(callable|string|Stringable|null $value): self
     {
         $this->metaSidebarHtml = $value;
 
@@ -660,7 +660,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the left-hand page sidebar HTML (only used by full-page screens).
      */
-    public function pageSidebarHtml(callable|string|null $value): self
+    public function pageSidebarHtml(callable|string|Stringable|null $value): self
     {
         $this->pageSidebarHtml = $value;
 
@@ -680,7 +680,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the content notice HTML.
      */
-    public function noticeHtml(callable|string|null $value): self
+    public function noticeHtml(callable|string|Stringable|null $value): self
     {
         $this->noticeHtml = $value;
 
@@ -700,7 +700,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the errors summary HTML.
      */
-    public function errorSummary(callable|string|null $value): self
+    public function errorSummary(callable|string|Stringable|null $value): self
     {
         $this->errorSummary = $value;
 
@@ -719,37 +719,11 @@ class CpScreenResponse implements Responsable
 
     public function toResponse($request): Response
     {
-        if ($this->inertiaPage) {
-            return $this->inertiaResponse($request);
-        }
-
         if ($request->wantsJson()) {
             return $this->jsonResponse($request);
         }
 
         return $this->response($request);
-    }
-
-    private function inertiaResponse(Request $request): Response
-    {
-        if ($this->prepareScreen) {
-            ($this->prepareScreen)($this, $request);
-        }
-
-        $crumbs = $this->crumbs;
-        if ($this->title) {
-            $crumbs[] = ['label' => $this->title];
-        }
-
-        $props = array_filter([
-            'title' => $this->title,
-            'crumbs' => $crumbs,
-        ], fn ($value) => $value !== null);
-
-        return Inertia::render(
-            $this->inertiaPage,
-            [...$props, ...$this->inertiaProps],
-        )->toResponse($request);
     }
 
     private function jsonResponse(Request $request): JsonResponse
@@ -869,50 +843,61 @@ class CpScreenResponse implements Responsable
             app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
         }
 
+        $templateProps = [
+            'docTitle' => $docTitle,
+            'title' => $this->title,
+            'selectedSubnavItem' => $this->selectedSubnavItem,
+            'crumbs' => array_map(function (array $crumb): array {
+                if (isset($crumb['url'])) {
+                    $crumb['url'] = Url::cpUrl($crumb['url']);
+                }
+
+                return $crumb;
+            }, $crumbs ?? []),
+            'contextMenu' => $this->contextMenu(),
+            'toolbar' => $toolbar,
+            'actionMenuItems' => $this->actionMenuItemProps(),
+            'actionMenu' => $this->actionMenu(config: [
+                'hiddenLabel' => t('Actions'),
+                'buttonAttributes' => [
+                    'id' => 'action-btn',
+                    'class' => ['action-btn', 'hairline-dark', 'm'],
+                    'title' => t('Actions'),
+                ],
+            ]),
+            'submitButtonLabel' => $this->submitButtonLabel,
+            'additionalButtons' => $addlButtons,
+            'tabs' => $this->tabs,
+            'fullPageForm' => $isForm,
+            'mainAttributes' => $this->mainAttributes,
+            'mainFormAttributes' => $this->formAttributes,
+            'redirectUrl' => $this->redirectUrl ? Crypt::encrypt($this->redirectUrl) : null,
+            'formActions' => array_map(function (array $action): array {
+                if (isset($action['redirect'])) {
+                    $action['redirect'] = Crypt::encrypt($action['redirect']);
+                }
+
+                return $action;
+            }, $altActions ?? []),
+            'saveShortcutRedirect' => $this->saveShortcutRedirectUrl,
+            'contentNotice' => $notice,
+            'content' => $content,
+            'details' => $sidebar,
+            'sidebar' => $pageSidebar,
+            'errorSummary' => $errorSummary,
+        ];
+
+        if ($this->inertiaPage) {
+            return Inertia::render($this->inertiaPage, [
+                ...$templateProps,
+                ...$this->inertiaProps,
+            ])->toResponse($request);
+        }
+
         // Render and return the template
         return response(pageTemplate(
             '_layouts/cp',
-            [
-                'docTitle' => $docTitle,
-                'title' => $this->title,
-                'selectedSubnavItem' => $this->selectedSubnavItem,
-                'crumbs' => array_map(function (array $crumb): array {
-                    if (isset($crumb['url'])) {
-                        $crumb['url'] = Url::cpUrl($crumb['url']);
-                    }
-
-                    return $crumb;
-                }, $crumbs ?? []),
-                'contextMenu' => $this->contextMenu(),
-                'toolbar' => $toolbar,
-                'actionMenu' => $this->actionMenu(config: [
-                    'hiddenLabel' => t('Actions'),
-                    'buttonAttributes' => [
-                        'id' => 'action-btn',
-                        'class' => ['action-btn', 'hairline-dark', 'm'],
-                        'title' => t('Actions'),
-                    ],
-                ]),
-                'submitButtonLabel' => $this->submitButtonLabel,
-                'additionalButtons' => $addlButtons,
-                'tabs' => $this->tabs,
-                'fullPageForm' => $isForm,
-                'mainAttributes' => $this->mainAttributes,
-                'mainFormAttributes' => $this->formAttributes,
-                'formActions' => array_map(function (array $action): array {
-                    if (isset($action['redirect'])) {
-                        $action['redirect'] = Crypt::encrypt($action['redirect']);
-                    }
-
-                    return $action;
-                }, $altActions ?? []),
-                'saveShortcutRedirect' => $this->saveShortcutRedirectUrl,
-                'contentNotice' => $notice,
-                'content' => $content,
-                'details' => $sidebar,
-                'sidebar' => $pageSidebar,
-                'errorSummary' => $errorSummary,
-            ],
+            $templateProps,
             TemplateMode::Cp
         ));
     }
@@ -929,22 +914,36 @@ class CpScreenResponse implements Responsable
 
     private function actionMenu(bool $withDestructive = true, array $config = [], ?string $namespace = null): ?string
     {
-        if ($this->actionMenuItems === null) {
-            return null;
-        }
+        $itemsFactory = $this->actionMenuItemsFactory($withDestructive);
 
-        if ($withDestructive) {
-            $itemsFactory = $this->actionMenuItems;
-        } else {
-            $itemsFactory = fn () => array_filter(
-                call_user_func($this->actionMenuItems),
-                fn (array $item) => ! ($item['destructive'] ?? false),
-            );
+        if ($itemsFactory === null) {
+            return null;
         }
 
         return $this->menu($itemsFactory, $config + [
             'id' => 'action-menu',
         ], $namespace);
+    }
+
+    private function actionMenuItemProps(bool $withDestructive = true): ?array
+    {
+        return $this->menuItems($this->actionMenuItemsFactory($withDestructive));
+    }
+
+    private function actionMenuItemsFactory(bool $withDestructive): ?callable
+    {
+        if ($this->actionMenuItems === null) {
+            return null;
+        }
+
+        if ($withDestructive) {
+            return $this->actionMenuItems;
+        }
+
+        return fn () => array_filter(
+            call_user_func($this->actionMenuItems),
+            fn (array $item) => ! ($item['destructive'] ?? false),
+        );
     }
 
     private function menu(?callable $itemsFactory, array $config, ?string $namespace): ?string
@@ -954,7 +953,7 @@ class CpScreenResponse implements Responsable
         }
 
         $render = function () use ($itemsFactory, $config): ?string {
-            $items = app(MenuHtml::class)->normalizeMenuItems($itemsFactory() ?? []);
+            $items = $this->menuItems($itemsFactory);
 
             if (empty($items)) {
                 return null;
@@ -968,5 +967,20 @@ class CpScreenResponse implements Responsable
         }
 
         return $render();
+    }
+
+    private function menuItems(?callable $itemsFactory): ?array
+    {
+        if ($itemsFactory === null) {
+            return null;
+        }
+
+        $items = app(MenuHtml::class)->disclosureMenuItems($itemsFactory() ?? []);
+
+        if (empty($items)) {
+            return null;
+        }
+
+        return $items;
     }
 }

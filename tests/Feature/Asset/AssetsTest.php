@@ -5,9 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
-use CraftCms\Cms\Asset\Events\DefineThumbUrl;
-use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Events\AssetReplacing;
+use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -62,8 +62,8 @@ it('can get total assets', function () {
     expect($this->assets->getTotalAssets())->toBe(3);
 });
 
-it('dispatches DefineThumbUrl event in getThumbUrl', function () {
-    Event::fake([DefineThumbUrl::class]);
+it('dispatches ThumbUrlResolving event in getThumbUrl', function () {
+    Event::fake([ThumbUrlResolving::class]);
 
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -76,13 +76,13 @@ it('dispatches DefineThumbUrl event in getThumbUrl', function () {
 
     $this->assets->getThumbUrl($asset, 100);
 
-    Event::assertDispatched(fn (DefineThumbUrl $event) => $event->asset->id === $asset->id
+    Event::assertDispatched(fn (ThumbUrlResolving $event) => $event->asset->id === $asset->id
         && $event->width === 100
         && $event->height === 100);
 });
 
-it('uses DefineThumbUrl event url when set', function () {
-    Event::listen(DefineThumbUrl::class, function (DefineThumbUrl $event) {
+it('uses ThumbUrlResolving event url when set', function () {
+    Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) {
         $event->url = 'https://example.com/custom-thumb.jpg';
     });
 
@@ -100,8 +100,8 @@ it('uses DefineThumbUrl event url when set', function () {
     expect($url)->toBe('https://example.com/custom-thumb.jpg');
 });
 
-it('dispatches RegisterPreviewHandler event', function () {
-    Event::fake([RegisterPreviewHandler::class]);
+it('dispatches PreviewHandlerResolving event', function () {
+    Event::fake([PreviewHandlerResolving::class]);
 
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -114,7 +114,7 @@ it('dispatches RegisterPreviewHandler event', function () {
 
     $this->assets->getAssetPreviewHandler($asset);
 
-    Event::assertDispatched(RegisterPreviewHandler::class);
+    Event::assertDispatched(PreviewHandlerResolving::class);
 });
 
 it('returns default preview handler for known asset kinds', function () {
@@ -173,8 +173,8 @@ it('can get name replacement in folder when no conflict', function () {
     expect($result)->toBe('unique-file.jpg');
 });
 
-it('dispatches BeforeReplaceAsset event with filename', function () {
-    Event::fake([BeforeReplaceAsset::class]);
+it('dispatches AssetReplacing event with filename', function () {
+    Event::fake([AssetReplacing::class]);
 
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -192,7 +192,7 @@ it('dispatches BeforeReplaceAsset event with filename', function () {
         // The save may fail due to missing filesystem setup, but the event should still fire
     }
 
-    Event::assertDispatched(fn (BeforeReplaceAsset $event) => $event->asset->id === $asset->id
+    Event::assertDispatched(fn (AssetReplacing $event) => $event->asset->id === $asset->id
         && $event->filename === 'new-filename.jpg');
 
     @unlink($tempFile);

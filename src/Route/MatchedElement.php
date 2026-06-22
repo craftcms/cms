@@ -5,23 +5,28 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use Illuminate\Support\Facades\Context;
+use Illuminate\Container\Attributes\Scoped;
 
 /**
  * Tracks the element matched for the current site
  * request so its resolved route can be reused
  * later in the request lifecycle.
  */
+#[Scoped]
 class MatchedElement
 {
+    private ElementInterface|false $element = false;
+
+    private array|false $route = false;
+
     public static function get(): ElementInterface|false
     {
-        return Context::getHidden('craft.matchedElement', false);
+        return self::instance()->element;
     }
 
     public static function getRoute(): array|false
     {
-        return Context::getHidden('craft.matchedElementRoute', false);
+        return self::instance()->route;
     }
 
     public static function set(ElementInterface|false|null $element, ?array $route = null): void
@@ -34,7 +39,13 @@ class MatchedElement
             $matchedRoute = is_string($route) ? [$route, []] : $route;
         }
 
-        Context::addHidden('craft.matchedElement', $matchedElement);
-        Context::addHidden('craft.matchedElementRoute', $matchedRoute);
+        $state = self::instance();
+        $state->element = $matchedElement;
+        $state->route = $matchedRoute;
+    }
+
+    private static function instance(): self
+    {
+        return app(self::class);
     }
 }

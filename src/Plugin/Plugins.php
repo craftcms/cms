@@ -11,20 +11,20 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use CraftCms\Cms\Plugin\Events\DisablingPlugin;
-use CraftCms\Cms\Plugin\Events\EnablingPlugin;
-use CraftCms\Cms\Plugin\Events\InstallingPlugin;
-use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
+use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
+use CraftCms\Cms\Plugin\Events\PluginEnabling;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
+use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
-use CraftCms\Cms\Plugin\Events\PluginsLoaded;
+use CraftCms\Cms\Plugin\Events\PluginsLoading;
+use CraftCms\Cms\Plugin\Events\PluginsRegistered;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
-use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -38,12 +38,12 @@ use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Vite;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Vite;
 use InvalidArgumentException;
 use PDOException;
 use ReflectionClass;
@@ -51,6 +51,7 @@ use ReflectionException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -157,7 +158,7 @@ class Plugins
         // Prevent this function from getting called twice.
         $this->loadingPlugins = true;
 
-        event(new LoadingPlugins);
+        event(new PluginsLoading);
 
         // Find all of the installed plugins
         $this->storedPluginInfo = DB::table(Table::PLUGINS)
@@ -250,7 +251,7 @@ class Plugins
         $this->loadingPlugins = false;
         $this->pluginsLoaded = true;
 
-        event(PluginsLoaded::class);
+        event(new PluginsRegistered);
     }
 
     /**
@@ -307,14 +308,14 @@ class Plugins
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = Str::finish(File::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
+            $classPath = Str::finish(File::normalizePath(dirname(new ReflectionClass($class)->getFileName()), '/'), '/');
         } catch (ReflectionException) {
             return $this->classPluginHandles[$class] = null;
         }
 
         // Find the plugin that contains this path (if any)
         foreach ($this->composerPluginInfo as $handle => $info) {
-            if (isset($info['basePath']) && str_starts_with($classPath, Str::finish($info['basePath'], '/'))) {
+            if (isset($info['basePath']) && str_starts_with($classPath, Str::finish(File::normalizePath($info['basePath'], '/'), '/'))) {
                 return $this->classPluginHandles[$class] = $handle;
             }
         }
@@ -356,7 +357,7 @@ class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        event(new EnablingPlugin($plugin));
+        event(new PluginEnabling($plugin));
 
         // Enable the plugin in the project config
         app(ProjectConfig::class)->set(
@@ -395,7 +396,7 @@ class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        event(new DisablingPlugin($plugin));
+        event(new PluginDisabling($plugin));
 
         // Disable the plugin in the project config
         app(ProjectConfig::class)->set(
@@ -457,7 +458,7 @@ class Plugins
 
         $plugin->edition = $edition;
 
-        event(new InstallingPlugin($plugin));
+        event(new PluginInstalling($plugin));
 
         DB::beginTransaction();
 
@@ -564,7 +565,7 @@ class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        event(new UninstallingPlugin($plugin));
+        event(new PluginUninstalling($plugin));
 
         DB::beginTransaction();
         try {
@@ -589,7 +590,14 @@ class Plugins
                 ->where('track', "plugin:$handle")
                 ->delete();
 
-            DB::commit();
+            try {
+                DB::commit();
+            } catch (PDOException $e) {
+                // The transaction could be implicitly committed by Mysql
+                if ($e->getMessage() !== 'There is no active transaction') {
+                    throw $e;
+                }
+            }
         } catch (Throwable $e) {
             DB::rollBack();
             throw $e;
@@ -939,6 +947,7 @@ class Plugins
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
         $info['isEnabled'] = $plugin !== null;
+        $info['isForceDisabled'] = ! ($this->forceDisabledPlugins === null) && ($this->forceDisabledPlugins === '*' || in_array($handle, $this->forceDisabledPlugins, true));
         $info['private'] = str_starts_with($handle, '_');
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
@@ -946,6 +955,7 @@ class Plugins
         $info['hasCpSettings'] = $plugin->hasCpSettings ?? false;
         $info['hasReadOnlyCpSettings'] = $plugin->hasReadOnlyCpSettings ?? false;
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
+        $info['iconSvg'] = $this->getPluginIconSvg($handle);
 
         $licenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
         $pluginCacheKey = Str::start($handle, 'plugin-');
@@ -953,6 +963,10 @@ class Plugins
         $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
         $info['licenseKeyStatus'] = $licenseInfo[$pluginCacheKey]['status'] ?? LicenseKeyStatus::Unknown->value;
         $info['licenseIssues'] = $installed ? $this->getLicenseIssues($handle) : [];
+
+        // Plugin store
+        $info['pluginStoreUrl'] = $info['private'] ? null : cp_url('plugin-store/'.$handle);
+        $info['buyUrl'] = $info['private'] ? null : cp_url('plugin-store/buy/'.$handle.'/'.$info['edition']);
 
         $info['isTrial'] = (
             $installed &&
@@ -1057,19 +1071,29 @@ class Plugins
      */
     public function getPluginIconSvg(string $handle): string
     {
+        $basePaths = [];
+
         // If it's installed, let the plugin say where it lives
         if (($plugin = $this->getPlugin($handle)) !== null) {
-            $basePath = $plugin->getResourcesPath();
-        } else {
-            if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
-                $basePath = Aliases::get($basePath);
-            }
+            $basePaths[] = $plugin->getBasePath();
+            $basePaths[] = $plugin->getResourcesPath();
         }
 
-        $iconPath = ($basePath !== false) ? $basePath.'/icon.svg' : false;
+        if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
+            $basePath = Aliases::get($basePath);
+            $basePaths[] = $basePath;
+            $basePaths[] = dirname($basePath).'/resources';
+        }
 
-        if ($iconPath === false || ! is_file($iconPath) || ! File::isSvg($iconPath)) {
+        $iconPath = Arr::first(
+            array_unique($basePaths),
+            fn (string $basePath) => is_file($basePath.'/icon.svg') && File::isSvg($basePath.'/icon.svg'),
+        );
+
+        if ($iconPath === null) {
             $iconPath = Aliases::get('@appicons/default-plugin.svg');
+        } else {
+            $iconPath .= '/icon.svg';
         }
 
         return file_get_contents($iconPath);
@@ -1205,7 +1229,8 @@ class Plugins
         $html = '';
 
         foreach ($this->viteConfigs as $vite) {
-            $html .= Vite::useHotFile($vite['hotFile'])
+            $html .= (clone app(Vite::class))
+                ->useHotFile($vite['hotFile'])
                 ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/'))
                 ->withEntryPoints($vite['input'])
                 ->toHtml();

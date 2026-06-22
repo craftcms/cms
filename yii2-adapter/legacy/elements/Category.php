@@ -8,14 +8,13 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\LegacyEventConstants;
-use craft\db\Table;
+use craft\db\Connection;
+use craft\db\FixedOrderExpression;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\categories\CategoryCondition;
-use craft\elements\db\CategoryQuery;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -35,15 +34,21 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Database\DeprecatedTable;
+use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -57,8 +62,6 @@ use function CraftCms\Cms\t;
 #[Ruleset(LegacyElementRules::class)]
 class Category extends Element
 {
-    use LegacyEventConstants;
-
     /**
      * @inheritdoc
      */
@@ -153,7 +156,7 @@ class Category extends Element
      */
     public static function find(): CategoryQuery
     {
-        return new CategoryQuery(static::class);
+        return new CategoryQuery();
     }
 
     /**
@@ -213,7 +216,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => app()->runningInConsole() || Gate::check("viewCategories:$group->uid"),
+                'structureEditable' => app()->runningInConsole() || Gate::check("saveCategories:$group->uid"),
             ];
         }
 
@@ -323,6 +326,19 @@ class Category extends Element
             'slug' => t('Slug'),
             'uri' => t('URI'),
             [
+                'label' => t('Group'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $groupIds = Collection::make(Craft::$app->getCategories()->getAllGroups())
+                        ->sort(fn(CategoryGroup $a, CategoryGroup $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(CategoryGroup $group) => $group->id)
+                        ->all();
+                    return new FixedOrderExpression('categories.groupId', $groupIds, $db);
+                },
+                'attribute' => 'group',
+            ],
+            [
                 'label' => t('Date Created'),
                 'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
@@ -341,6 +357,7 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), [
+            'group' => ['label' => t('Group')],
             'ancestors' => ['label' => t('Ancestors')],
             'parent' => ['label' => t('Parent')],
         ]);
@@ -388,6 +405,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -768,6 +786,7 @@ class Category extends Element
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): CategoryGroup
     {
         if (!isset($this->groupId)) {
@@ -785,6 +804,19 @@ class Category extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    protected function attributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'group':
+                return Html::encode($this->getGroup()->getUiLabel());
+            default:
+                return parent::attributeHtml($attribute);
+        }
+    }
 
     /**
      * @inheritdoc
@@ -963,8 +995,8 @@ class Category extends Element
         /** @var self|null $parent */
         $parent = self::find()
             ->structureId($structureId)
-            ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')
-            ->andWhere(['j.id' => $this->id])
+            ->join(new Alias(DeprecatedTable::CATEGORIES, 'j'), 'j.parentId', 'elements.id')
+            ->where('j.id', $this->id)
             ->one();
 
         if (!$parent) {

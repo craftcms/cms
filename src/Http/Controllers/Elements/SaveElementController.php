@@ -105,7 +105,7 @@ readonly class SaveElementController
         $provisional = $element::find()
             ->provisionalDrafts()
             ->draftOf($element->id)
-            ->draftCreator($this->request->user())
+            ->draftCreator($this->request->craftUser()?->asElement())
             ->siteId($element->siteId)
             ->status(null)
             ->one();

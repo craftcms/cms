@@ -13,10 +13,12 @@ use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
+use function Pest\Laravel\withSession;
 
 beforeEach(function () {
     actingAs(User::find()->one());
@@ -36,7 +38,7 @@ it('requires authentication', function () {
     postJson(action([EntryTypesController::class, 'renderOverrideSettings']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'applyOverrideSettings']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'store']))->assertUnauthorized();
-    postJson(action([EntryTypesController::class, 'destroy']))->assertUnauthorized();
+    deleteJson(action([EntryTypesController::class, 'destroy'], [EntryType::first()->id]))->assertUnauthorized();
 });
 
 it('requires admin changes', function () {
@@ -50,7 +52,7 @@ it('requires admin changes', function () {
     postJson(action([EntryTypesController::class, 'renderOverrideSettings']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'applyOverrideSettings']))->assertForbidden();
     postJson(action([EntryTypesController::class, 'store']))->assertForbidden();
-    postJson(action([EntryTypesController::class, 'destroy']))->assertForbidden();
+    deleteJson(action([EntryTypesController::class, 'destroy'], [EntryType::first()->id]))->assertForbidden();
 });
 
 test('index can be loaded', function () {
@@ -66,6 +68,16 @@ test('create can be loaded', function () {
 
 test('it can edit an entry type', function () {
     $entryType = $this->entryTypes->getEntryTypeById(EntryType::first()->id);
+
+    get(action([EntryTypesController::class, 'edit'], [$entryType->id]))
+        ->assertOk()
+        ->assertSee($entryType->name);
+});
+
+test('it ignores stale flashed field layouts when editing an entry type', function () {
+    $entryType = $this->entryTypes->getEntryTypeById(EntryType::first()->id);
+
+    withSession(['oldFieldLayout' => []]);
 
     get(action([EntryTypesController::class, 'edit'], [$entryType->id]))
         ->assertOk()
@@ -143,9 +155,7 @@ it('can delete an entry type', function () {
 
     expect(EntryType::count())->toBe(2);
 
-    postJson(action([EntryTypesController::class, 'destroy']), [
-        'id' => $newEntryType->id,
-    ])->assertOk();
+    deleteJson(action([EntryTypesController::class, 'destroy'], [$newEntryType->id]))->assertOk();
 
     expect(EntryType::count())->toBe(1);
 });

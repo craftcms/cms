@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\UploadFailedException;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -32,7 +32,6 @@ use function CraftCms\Cms\t;
 
 readonly class UploadController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -63,8 +62,8 @@ readonly class UploadController
 
             abort_if(! $field instanceof AssetsField, 400, 'The field provided is not an Assets field');
 
-            if ($elementId = $request->input('elementId')) {
-                $siteId = $request->input('siteId') ?: null;
+            if ($elementId = $request->integer('elementId')) {
+                $siteId = $request->integer('siteId') ?: null;
                 $element = $this->elements->getElementById($elementId, null, $siteId);
             } else {
                 $element = null;
@@ -85,8 +84,7 @@ readonly class UploadController
 
         abort_if(! $folder, 400, 'The target folder provided for uploading is not valid');
 
-        // Check the permissions to upload in the resolved folder.
-        $this->requireVolumePermissionByFolder('saveAssets', $folder);
+        Gate::authorize('uploadAsset', $folder);
 
         $filename = AssetsHelper::prepareAssetName($uploadedFile->getClientOriginalName());
 
@@ -108,7 +106,7 @@ readonly class UploadController
         $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $uploadedFile->getClientMimeType());
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
-        $asset->uploaderId = $request->user()->id;
+        $asset->uploaderId = $request->craftUser()?->getCraftUserId();
         $asset->avoidFilenameConflicts = true;
 
         if (isset($originalFilename)) {
@@ -214,8 +212,13 @@ readonly class UploadController
             abort(404, 'Asset not found.');
         }
 
-        $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace ?: $sourceAsset);
-        $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace ?: $sourceAsset);
+        if ($assetToReplace) {
+            Gate::authorize('replaceFile', $assetToReplace);
+        }
+
+        if ($sourceAsset) {
+            Gate::authorize('replaceFile', $sourceAsset);
+        }
 
         // Handle the Element Action
         if ($assetToReplace !== null && $uploadedFile) {
@@ -258,7 +261,11 @@ readonly class UploadController
             'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => I18N::getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'formattedDateUpdated' => I18N::getFormatter()->asDatetime(
+                $resultingAsset->dateUpdated,
+                Formatter::FORMAT_WIDTH_SHORT,
+                true,
+            ),
             'dimensions' => $resultingAsset->getDimensions(),
             'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
             'resultingUrl' => $resultingAsset->getUrl(),

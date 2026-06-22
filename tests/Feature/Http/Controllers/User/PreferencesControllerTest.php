@@ -4,6 +4,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\User\Elements\User;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -28,7 +29,7 @@ test('index', function () {
 
 test('store', function () {
     /** @var User $user */
-    $user = auth()->user();
+    $user = currentUser();
 
     expect($user->getPreference('language'))->toBe('en-US');
 
@@ -41,7 +42,7 @@ test('store', function () {
 
 test('store saves multiple preferences at once', function () {
     /** @var User $user */
-    $user = auth()->user();
+    $user = currentUser();
 
     postJson(action([PreferencesController::class, 'store'], [
         'preferredLanguage' => 'fr',
@@ -58,7 +59,7 @@ test('store saves multiple preferences at once', function () {
 
 test('store handles __blank__ value for locale', function () {
     /** @var User $user */
-    $user = auth()->user();
+    $user = currentUser();
 
     postJson(action([PreferencesController::class, 'store'], [
         'preferredLocale' => '__blank__',
@@ -69,7 +70,7 @@ test('store handles __blank__ value for locale', function () {
 
 test('store saves notification preferences', function () {
     /** @var User $user */
-    $user = auth()->user();
+    $user = currentUser();
 
     postJson(action([PreferencesController::class, 'store'], [
         'notificationDuration' => 5000,
@@ -82,7 +83,7 @@ test('store saves notification preferences', function () {
 
 test('store saves slideout position preference', function () {
     /** @var User $user */
-    $user = auth()->user();
+    $user = currentUser();
 
     postJson(action([PreferencesController::class, 'store'], [
         'slideoutPosition' => 'left',
@@ -93,33 +94,26 @@ test('store saves slideout position preference', function () {
 
 test('store saves admin-only preferences for admin users', function () {
     /** @var User $user */
-    $user = auth()->user();
+    $user = currentUser();
 
-    // Admin users can set these preferences
-    // The user in tests should already be an admin
     if (! $user->admin) {
         $this->markTestSkipped('User must be admin for this test');
     }
 
     postJson(action([PreferencesController::class, 'store'], [
         'showFieldHandles' => true,
-        'enableDebugToolbarForSite' => true,
-        'enableDebugToolbarForCp' => true,
         'showExceptionView' => true,
         'profileTemplates' => true,
     ]))->assertOk();
 
-    // Verify preferences were saved (admin-only preferences)
     expect($user->getPreference('showFieldHandles'))->toBeTrue();
-    expect($user->getPreference('enableDebugToolbarForSite'))->toBeTrue();
-    expect($user->getPreference('enableDebugToolbarForCp'))->toBeTrue();
     expect($user->getPreference('showExceptionView'))->toBeTrue();
     expect($user->getPreference('profileTemplates'))->toBeTrue();
 });
 
 test('store preserves existing preferences when not provided', function () {
     /** @var User $user */
-    $user = auth()->user();
+    $user = currentUser();
 
     // Set initial preference
     postJson(action([PreferencesController::class, 'store'], [
@@ -138,7 +132,7 @@ test('store preserves existing preferences when not provided', function () {
 
 test('store handles boolean preferences correctly', function () {
     /** @var User $user */
-    $user = auth()->user();
+    $user = currentUser();
 
     postJson(action([PreferencesController::class, 'store'], [
         'useShapes' => false,

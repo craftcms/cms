@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
@@ -159,6 +160,10 @@ JS, [
                 'id' => $id,
                 'elements' => array_filter([$this->element($value)]),
                 'showSiteMenu' => true,
+                'modalSettings' => [
+                    'matchSiteBeforeDisablingElement' => true,
+                    'siteId' => app(RequestedSite::class)->get()?->id,
+                ],
             ])).
             Html::hiddenInput('value', $value);
     }
@@ -210,6 +215,17 @@ JS, [
         return [
             'uri' => 'not :empty:',
         ];
+    }
+
+    #[Override]
+    public function pickerConfig(): array
+    {
+        return array_merge(parent::pickerConfig(), [
+            'kind' => 'element',
+            'elementType' => static::elementType(),
+            'refHandle' => static::elementType()::refHandle(),
+            'elementSelectConfig' => $this->elementSelectConfig(),
+        ]);
     }
 
     public function validateValue(string $value, ?string &$error = null): bool

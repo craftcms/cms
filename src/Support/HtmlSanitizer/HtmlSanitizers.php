@@ -10,13 +10,14 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerAction;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 #[Singleton]
 class HtmlSanitizers
 {
-    /** @var array<string, Closure|HtmlSanitizerInterface> */
+    /** @var array<string, array<string, mixed>|Closure|HtmlSanitizerInterface> */
     private array $definitions = [];
 
     /** @var list<Closure> */
@@ -30,7 +31,7 @@ class HtmlSanitizers
         $this->definitions['default'] = fn () => new HtmlSanitizer($this->defaultConfig());
     }
 
-    public function register(string $name, Closure|HtmlSanitizerInterface $definition): void
+    public function register(string $name, array|Closure|HtmlSanitizerInterface $definition): void
     {
         $this->definitions[$name] = $definition;
         unset($this->resolvedSanitizers[$name]);
@@ -45,6 +46,12 @@ class HtmlSanitizers
     public function has(string $name): bool
     {
         return isset($this->definitions[$name]);
+    }
+
+    /** @return list<string> */
+    public function names(): array
+    {
+        return array_keys($this->definitions);
     }
 
     /** @return Collection<string, HtmlSanitizerInterface> */
@@ -108,7 +115,7 @@ class HtmlSanitizers
         return $config;
     }
 
-    private function resolveDefinition(Closure|HtmlSanitizerInterface $definition): HtmlSanitizerInterface
+    private function resolveDefinition(array|Closure|HtmlSanitizerInterface $definition): HtmlSanitizerInterface
     {
         $resolvedSanitizer = value($definition);
 
@@ -116,6 +123,70 @@ class HtmlSanitizers
             return $resolvedSanitizer;
         }
 
-        throw new InvalidArgumentException('HTML sanitizer definitions must resolve to HtmlSanitizerInterface instances.');
+        if (is_array($resolvedSanitizer)) {
+            return new HtmlSanitizer($this->configFromArray($resolvedSanitizer));
+        }
+
+        throw new InvalidArgumentException('HTML sanitizer definitions must resolve to array configs or HtmlSanitizerInterface instances.');
+    }
+
+    private function configFromArray(array $settings): HtmlSanitizerConfig
+    {
+        $config = new HtmlSanitizerConfig;
+
+        if (array_key_exists('default_action', $settings)) {
+            $config = $config->defaultAction(HtmlSanitizerAction::from($settings['default_action']));
+        }
+
+        foreach (['allow_safe_elements' => 'allowSafeElements', 'allow_static_elements' => 'allowStaticElements'] as $key => $method) {
+            if ($settings[$key] ?? false) {
+                $config = $config->$method();
+            }
+        }
+
+        foreach ($settings['allow_elements'] ?? [] as $element => $attributes) {
+            $config = $config->allowElement($element, $attributes);
+        }
+
+        foreach (['block_elements' => 'blockElement', 'drop_elements' => 'dropElement'] as $key => $method) {
+            foreach ($settings[$key] ?? [] as $element) {
+                $config = $config->$method($element);
+            }
+        }
+
+        foreach (['allow_attributes' => 'allowAttribute', 'drop_attributes' => 'dropAttribute'] as $key => $method) {
+            foreach ($settings[$key] ?? [] as $attribute => $elements) {
+                $config = $config->$method($attribute, $elements);
+            }
+        }
+
+        foreach ($settings['force_attributes'] ?? [] as $element => $attributes) {
+            foreach ($attributes as $attribute => $value) {
+                $config = $config->forceAttribute($element, $attribute, $value);
+            }
+        }
+
+        foreach ([
+            'force_https_urls' => 'forceHttpsUrls',
+            'allowed_link_schemes' => 'allowLinkSchemes',
+            'allowed_link_hosts' => 'allowLinkHosts',
+            'allow_relative_links' => 'allowRelativeLinks',
+            'allowed_media_schemes' => 'allowMediaSchemes',
+            'allowed_media_hosts' => 'allowMediaHosts',
+            'allow_relative_medias' => 'allowRelativeMedias',
+            'max_input_length' => 'withMaxInputLength',
+        ] as $key => $method) {
+            if (array_key_exists($key, $settings)) {
+                $config = $config->$method($settings[$key]);
+            }
+        }
+
+        foreach (['with_attribute_sanitizers' => 'withAttributeSanitizer', 'without_attribute_sanitizers' => 'withoutAttributeSanitizer'] as $key => $method) {
+            foreach ($settings[$key] ?? [] as $sanitizer) {
+                $config = $config->$method(is_string($sanitizer) ? app($sanitizer) : $sanitizer);
+            }
+        }
+
+        return $config;
     }
 }

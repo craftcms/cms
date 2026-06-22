@@ -10,7 +10,6 @@ use craft\events\DefineBehaviorsEvent;
 use CraftCms\Cms\Support\Utils;
 use ReflectionClass;
 use ReflectionMethod;
-use ReflectionObject;
 use ReflectionProperty;
 use Throwable;
 use WeakMap;
@@ -20,6 +19,10 @@ use yii\base\Event as BaseEvent;
 
 class LegacyBehaviorCompatibility
 {
+    private const string DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    private const array BASE_BEHAVIOR_METHODS = ['attach', 'detach', 'events'];
+
     /**
      * @var array<class-string, list<class-string>>
      */
@@ -41,6 +44,37 @@ class LegacyBehaviorCompatibility
         self::$registrations[$class][] = $legacyClass;
     }
 
+    public static function registerEventDefinedBehaviorMethods(string $legacyClass, callable $handler, mixed $data = null): void
+    {
+        $event = new DefineBehaviorsEvent();
+        $event->name = self::DEFINE_BEHAVIORS;
+        $event->data = $data;
+
+        try {
+            $handler($event);
+        } catch (Throwable) {
+            return;
+        }
+
+        foreach (self::targetClassesForLegacyClass($legacyClass) as $targetClass) {
+            foreach ($event->behaviors as $behavior) {
+                self::registerBehaviorDefinitionMethods($targetClass, $behavior);
+            }
+        }
+    }
+
+    public static function registerDefinedBehaviorMethodsFromRegisteredEvents(): void
+    {
+        $eventsProperty = (new ReflectionClass(BaseEvent::class))->getProperty('_events');
+        $events = $eventsProperty->getValue();
+
+        foreach ($events[self::DEFINE_BEHAVIORS] ?? [] as $legacyClass => $handlers) {
+            foreach ($handlers as [$handler, $data]) {
+                self::registerEventDefinedBehaviorMethods($legacyClass, $handler, $data);
+            }
+        }
+    }
+
     public static function ensureBehaviors(object $object): void
     {
         $state = self::state($object);
@@ -53,22 +87,7 @@ class LegacyBehaviorCompatibility
 
         try {
             foreach (self::registrationsFor($object) as $registration) {
-                $behaviors = self::classDefinedBehaviors($object, $registration['legacyClass']);
-
-                if (YiiEvent::hasHandlers($registration['legacyClass'], 'defineBehaviors')) {
-                    $event = new DefineBehaviorsEvent([
-                        'sender' => $object,
-                        'behaviors' => $behaviors,
-                    ]);
-
-                    YiiEvent::trigger($registration['legacyClass'], 'defineBehaviors', $event);
-
-                    $behaviors = $event->behaviors;
-                }
-
-                foreach ($behaviors as $name => $behavior) {
-                    self::attachBehavior($object, is_int($name) ? $name : (string) $name, $behavior, false);
-                }
+                self::attachDefinedBehaviors($object, self::definedBehaviors($object, $registration['legacyClass']));
             }
 
             $state->behaviorsLoaded = true;
@@ -82,32 +101,15 @@ class LegacyBehaviorCompatibility
      */
     public static function getBehaviors(object $object): array
     {
-        self::ensureBehaviors($object);
-
-        return self::state($object)->behaviors;
+        return self::loadedState($object)->behaviors;
     }
 
     public static function getBehavior(object $object, string $name): ?Behavior
     {
-        self::ensureBehaviors($object);
+        $state = self::loadedState($object);
+        $resolvedName = self::resolveBehaviorName($state, $name);
 
-        $behaviors = self::state($object)->behaviors;
-
-        if (isset($behaviors[$name])) {
-            return $behaviors[$name];
-        }
-
-        if (!class_exists($name)) {
-            return null;
-        }
-
-        foreach ($behaviors as $behavior) {
-            if ($behavior instanceof $name) {
-                return $behavior;
-            }
-        }
-
-        return null;
+        return $resolvedName === null ? null : $state->behaviors[$resolvedName];
     }
 
     public static function attachBehavior(
@@ -120,9 +122,7 @@ class LegacyBehaviorCompatibility
             self::ensureBehaviors($object);
         }
 
-        if (!$behavior instanceof Behavior) {
-            $behavior = is_string($behavior) ? new $behavior() : Yii::createObject($behavior);
-        }
+        $behavior = self::makeBehavior($behavior);
 
         $state = self::state($object);
 
@@ -134,11 +134,7 @@ class LegacyBehaviorCompatibility
         $behavior->attach(self::legacyOwner($object));
         self::registerBehaviorMethods($object::class, $behavior);
 
-        if (is_int($name)) {
-            $state->behaviors[] = $behavior;
-        } else {
-            $state->behaviors[$name] = $behavior;
-        }
+        self::storeBehavior($state, $name, $behavior);
 
         return $behavior;
     }
@@ -150,16 +146,12 @@ class LegacyBehaviorCompatibility
     {
         self::ensureBehaviors($object);
 
-        foreach ($behaviors as $name => $behavior) {
-            self::attachBehavior($object, is_int($name) ? $name : (string) $name, $behavior, false);
-        }
+        self::attachDefinedBehaviors($object, $behaviors);
     }
 
     public static function detachBehavior(object $object, string $name): ?Behavior
     {
-        self::ensureBehaviors($object);
-
-        $state = self::state($object);
+        $state = self::loadedState($object);
         $resolvedName = self::resolveBehaviorName($state, $name);
 
         if ($resolvedName === null) {
@@ -175,9 +167,7 @@ class LegacyBehaviorCompatibility
 
     public static function detachBehaviors(object $object): void
     {
-        self::ensureBehaviors($object);
-
-        foreach (array_keys(self::state($object)->behaviors) as $name) {
+        foreach (array_keys(self::loadedState($object)->behaviors) as $name) {
             self::detachBehavior($object, (string) $name);
         }
     }
@@ -192,17 +182,10 @@ class LegacyBehaviorCompatibility
             return false;
         }
 
-        self::ensureBehaviors($object);
-
-        foreach (self::state($object)->behaviors as $behavior) {
-            self::syncObjectToLegacyOwner($object, $behavior);
-
-            if ($behavior->canGetProperty($name, $checkVars)) {
-                return true;
-            }
-        }
-
-        return false;
+        return self::firstBehaviorWhere(
+            $object,
+            fn(Behavior $behavior) => $behavior->canGetProperty($name, $checkVars),
+        ) !== null;
     }
 
     public static function canSetProperty(object $object, string $name, bool $checkVars = true, bool $checkBehaviors = true): bool
@@ -215,17 +198,10 @@ class LegacyBehaviorCompatibility
             return false;
         }
 
-        self::ensureBehaviors($object);
-
-        foreach (self::state($object)->behaviors as $behavior) {
-            self::syncObjectToLegacyOwner($object, $behavior);
-
-            if ($behavior->canSetProperty($name, $checkVars)) {
-                return true;
-            }
-        }
-
-        return false;
+        return self::firstBehaviorWhere(
+            $object,
+            fn(Behavior $behavior) => $behavior->canSetProperty($name, $checkVars),
+        ) !== null;
     }
 
     public static function hasMethod(object $object, string $name, bool $checkBehaviors = true): bool
@@ -238,32 +214,24 @@ class LegacyBehaviorCompatibility
             return false;
         }
 
-        self::ensureBehaviors($object);
-
-        foreach (self::state($object)->behaviors as $behavior) {
-            self::syncObjectToLegacyOwner($object, $behavior);
-
-            if ($behavior->hasMethod($name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return self::firstBehaviorWhere(
+            $object,
+            fn(Behavior $behavior) => $behavior->hasMethod($name),
+        ) !== null;
     }
 
     public static function callBehaviorMethod(object $object, string $method, array $parameters): mixed
     {
-        self::ensureBehaviors($object);
+        $behavior = self::firstBehaviorWhere(
+            $object,
+            fn(Behavior $behavior) => $behavior->hasMethod($method),
+        );
 
-        foreach (self::state($object)->behaviors as $behavior) {
-            self::syncObjectToLegacyOwner($object, $behavior);
+        if ($behavior !== null) {
+            $result = $behavior->$method(...$parameters);
+            self::syncLegacyOwnerToObject($object, $behavior);
 
-            if ($behavior->hasMethod($method)) {
-                $result = $behavior->$method(...$parameters);
-                self::syncLegacyOwnerToObject($object, $behavior);
-
-                return $result;
-            }
+            return $result;
         }
 
         throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', $object::class, $method));
@@ -353,13 +321,97 @@ class LegacyBehaviorCompatibility
         return self::$states[$object] ??= new LegacyBehaviorState();
     }
 
+    private static function loadedState(object $object): LegacyBehaviorState
+    {
+        self::ensureBehaviors($object);
+
+        return self::state($object);
+    }
+
+    private static function firstBehaviorWhere(object $object, callable $callback): ?Behavior
+    {
+        foreach (self::loadedState($object)->behaviors as $behavior) {
+            self::syncObjectToLegacyOwner($object, $behavior);
+
+            if ($callback($behavior)) {
+                return $behavior;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<int|string, string|array|Behavior>  $behaviors
+     */
+    private static function attachDefinedBehaviors(object $object, array $behaviors): void
+    {
+        foreach ($behaviors as $name => $behavior) {
+            self::attachBehavior($object, self::normalizedBehaviorName($name), $behavior, false);
+        }
+    }
+
+    private static function normalizedBehaviorName(int|string $name): int|string
+    {
+        return is_int($name) ? $name : (string) $name;
+    }
+
+    private static function makeBehavior(string|array|Behavior $behavior): Behavior
+    {
+        if ($behavior instanceof Behavior) {
+            return $behavior;
+        }
+
+        if (is_string($behavior)) {
+            return new $behavior();
+        }
+
+        /** @var Behavior $behavior */
+        $behavior = Yii::createObject($behavior);
+
+        return $behavior;
+    }
+
+    private static function storeBehavior(LegacyBehaviorState $state, string|int $name, Behavior $behavior): void
+    {
+        if (is_int($name)) {
+            $state->behaviors[] = $behavior;
+
+            return;
+        }
+
+        $state->behaviors[$name] = $behavior;
+    }
+
+    /**
+     * @param  class-string  $legacyClass
+     * @return array<int|string, string|array|Behavior>
+     */
+    private static function definedBehaviors(object $object, string $legacyClass): array
+    {
+        $behaviors = self::classDefinedBehaviors($object, $legacyClass);
+
+        if (!YiiEvent::hasHandlers($legacyClass, self::DEFINE_BEHAVIORS)) {
+            return $behaviors;
+        }
+
+        $event = new DefineBehaviorsEvent([
+            'sender' => $object,
+            'behaviors' => $behaviors,
+        ]);
+
+        YiiEvent::trigger($legacyClass, self::DEFINE_BEHAVIORS, $event);
+
+        return $event->behaviors;
+    }
+
     /**
      * @param  class-string  $legacyClass
      * @return array<int|string, string|array|Behavior>
      */
     private static function classDefinedBehaviors(object $object, string $legacyClass): array
     {
-        if (!method_exists($legacyClass, 'defineBehaviors')) {
+        if (!method_exists($legacyClass, self::DEFINE_BEHAVIORS)) {
             return [];
         }
 
@@ -373,7 +425,7 @@ class LegacyBehaviorCompatibility
             return [];
         }
 
-        $method = new ReflectionMethod($legacyClass, 'defineBehaviors');
+        $method = new ReflectionMethod($legacyClass, self::DEFINE_BEHAVIORS);
 
         return $method->invoke($owner);
     }
@@ -431,7 +483,9 @@ class LegacyBehaviorCompatibility
      */
     private static function mostSpecificLegacyClass(object $object): string
     {
-        foreach (self::registrationsFor($object) as $registration) {
+        $registrations = self::registrationsFor($object);
+
+        foreach ($registrations as $registration) {
             $legacyClass = $registration['legacyClass'];
 
             if ($object instanceof $legacyClass) {
@@ -439,7 +493,7 @@ class LegacyBehaviorCompatibility
             }
         }
 
-        foreach (array_reverse(self::registrationsFor($object)) as $registration) {
+        foreach (array_reverse($registrations) as $registration) {
             $legacyClass = $registration['legacyClass'];
 
             if (!class_exists($legacyClass)) {
@@ -458,30 +512,33 @@ class LegacyBehaviorCompatibility
 
     private static function syncObjectToLegacyOwner(object $object, ?Behavior $behavior = null): void
     {
-        $owner = $behavior->owner ?? self::legacyOwner($object);
+        $owner = $behavior?->owner;
 
-        if ($owner === $object) {
-            return;
+        if (!is_object($owner)) {
+            $owner = self::legacyOwner($object);
         }
 
-        foreach (self::publicWritableProperties($object) as $name => $value) {
-            try {
-                $owner->$name = $value;
-            } catch (Throwable) {
-                // Read-only
-            }
-        }
+        self::syncWritableProperties($object, $owner);
     }
 
     private static function syncLegacyOwnerToObject(object $object, Behavior $behavior): void
     {
-        if (!is_object($behavior->owner) || $behavior->owner === $object) {
+        if (!is_object($behavior->owner)) {
             return;
         }
 
-        foreach (self::publicWritableProperties($behavior->owner) as $name => $value) {
+        self::syncWritableProperties($behavior->owner, $object);
+    }
+
+    private static function syncWritableProperties(object $source, object $target): void
+    {
+        if ($source === $target) {
+            return;
+        }
+
+        foreach (self::publicWritableProperties($source) as $name => $value) {
             try {
-                $object->$name = $value;
+                $target->$name = $value;
             } catch (Throwable) {
                 // Read-only
             }
@@ -507,11 +564,39 @@ class LegacyBehaviorCompatibility
 
     private static function registerBehaviorMethods(string $targetClass, Behavior $behavior): void
     {
-        foreach (new ReflectionObject($behavior)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        self::registerBehaviorClassMethods($targetClass, $behavior::class);
+    }
+
+    private static function registerBehaviorDefinitionMethods(
+        string $targetClass,
+        string|array|Behavior $behavior,
+    ): void {
+        if ($behavior instanceof Behavior) {
+            self::registerBehaviorMethods($targetClass, $behavior);
+
+            return;
+        }
+
+        $behaviorClass = is_string($behavior) ? $behavior : ($behavior['class'] ?? null);
+
+        if (!is_string($behaviorClass) || !class_exists($behaviorClass)) {
+            return;
+        }
+
+        self::registerBehaviorClassMethods($targetClass, $behaviorClass);
+    }
+
+    private static function registerBehaviorClassMethods(string $targetClass, string $behaviorClass): void
+    {
+        if (!is_callable([$targetClass, 'hasMacro']) || !is_callable([$targetClass, 'macro'])) {
+            return;
+        }
+
+        foreach ((new ReflectionClass($behaviorClass))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             if (
                 $method->isStatic() ||
                 $method->class === Behavior::class ||
-                in_array($method->getName(), ['attach', 'detach', 'events'], true)
+                in_array($method->getName(), self::BASE_BEHAVIOR_METHODS, true)
             ) {
                 continue;
             }
@@ -527,6 +612,44 @@ class LegacyBehaviorCompatibility
                 return LegacyBehaviorCompatibility::callBehaviorMethod($this, $name, $parameters);
             });
         }
+    }
+
+    /**
+     * @return list<class-string>
+     */
+    private static function targetClassesForLegacyClass(string $legacyClass): array
+    {
+        $targets = [];
+        $legacyClass = ltrim($legacyClass, '\\');
+
+        foreach (self::$registrations as $targetClass => $legacyClasses) {
+            foreach ($legacyClasses as $registeredLegacyClass) {
+                if (!self::legacyClassesMatch($registeredLegacyClass, $legacyClass)) {
+                    continue;
+                }
+
+                $targets[] = $targetClass;
+            }
+        }
+
+        return array_values(array_unique($targets));
+    }
+
+    private static function legacyClassesMatch(string $registeredLegacyClass, string $legacyClass): bool
+    {
+        return $registeredLegacyClass === $legacyClass ||
+            self::normalizedClassName($registeredLegacyClass) === self::normalizedClassName($legacyClass);
+    }
+
+    private static function normalizedClassName(string $class): string
+    {
+        $class = ltrim($class, '\\');
+
+        if (!class_exists($class)) {
+            return $class;
+        }
+
+        return (new ReflectionClass($class))->getName();
     }
 
     private static function resolveBehaviorName(LegacyBehaviorState $state, string $name): string|int|null

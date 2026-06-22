@@ -6,9 +6,10 @@ namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Path;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
-use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
+use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use Illuminate\Support\Facades\Context;
+use Illuminate\View\FileViewFinder;
 
 enum TemplateMode: string
 {
@@ -31,6 +32,29 @@ enum TemplateMode: string
     public static function set(self $mode): void
     {
         Context::addHidden(self::class, $mode);
+
+        if ($mode === self::Cp) {
+            /**
+             * Prepend the Craft CMS Control panel views when
+             * we're in CP Template mode. This makes view()
+             * work without a 'craftcms::' prefix.
+             */
+            if (TemplateMode::is(TemplateMode::Cp)) {
+                $templates = dirname(__DIR__, 2).'/resources/templates';
+                $views = dirname(__DIR__, 2).'/resources/views';
+
+                /** @var FileViewFinder $finder */
+                $finder = view()->getFinder();
+
+                if (! in_array($templates, $finder->getPaths())) {
+                    $finder->prependLocation($templates);
+                }
+
+                if (! in_array($views, $finder->getPaths())) {
+                    $finder->prependLocation($views);
+                }
+            }
+        }
     }
 
     public static function is(self $mode): bool
@@ -95,8 +119,8 @@ enum TemplateMode: string
             $templateRoots = [];
 
             event($event = match ($this) {
-                self::Cp => new RegisterCpTemplateRoots,
-                self::Site => new RegisterSiteTemplateRoots,
+                self::Cp => new CpTemplateRootsResolving,
+                self::Site => new SiteTemplateRootsResolving,
             });
 
             foreach ($event->roots as $templatePath => $dir) {

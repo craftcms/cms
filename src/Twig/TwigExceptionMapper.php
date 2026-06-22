@@ -69,7 +69,15 @@ readonly class TwigExceptionMapper
             return false;
         }
 
-        $contents = file_get_contents($path);
+        if (! is_file($path)) {
+            return false;
+        }
+
+        $contents = @file_get_contents($path);
+
+        if ($contents === false) {
+            return false;
+        }
 
         if (! preg_match('/^class (\w+)/m', $contents, $match)) {
             return false;
@@ -82,7 +90,7 @@ readonly class TwigExceptionMapper
 
         $template = new $class(Twig::get());
         $src = $template->getSourceContext();
-        $templatePath = $src->getPath() ?: null;
+        $templatePath = $src->getPath() ?: $src->getName();
         $templateLine = null;
 
         if ($line !== null) {

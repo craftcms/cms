@@ -16,7 +16,10 @@ use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -29,6 +32,8 @@ use yii\web\JsonResponseFormatter;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
+
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -57,6 +62,17 @@ abstract class Controller extends \yii\web\Controller
     public const ALLOW_ANONYMOUS_NEVER = 0;
     public const ALLOW_ANONYMOUS_LIVE = 1;
     public const ALLOW_ANONYMOUS_OFFLINE = 2;
+
+    public $enableCsrfValidation = true {
+        get => $this->enableCsrfValidation;
+        set($value) {
+            $this->enableCsrfValidation = (bool) $value;
+
+            if (!$this->enableCsrfValidation) {
+                $this->registerCsrfValidationExclusion();
+            }
+        }
+    }
 
     /**
      * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.
@@ -139,6 +155,37 @@ abstract class Controller extends \yii\web\Controller
         }
 
         parent::init();
+
+        if (!$this->enableCsrfValidation) {
+            $this->registerCsrfValidationExclusion();
+        }
+    }
+
+    public function registerCsrfValidationExclusion(): void
+    {
+        PreventRequestForgery::except($this->csrfValidationExclusionUris());
+    }
+
+    private function csrfValidationExclusionUris(): array
+    {
+        $route = trim($this->getUniqueId(), '/');
+
+        if ($route === '') {
+            return [];
+        }
+
+        $actionTrigger = trim(Cms::config()->actionTrigger, '/');
+        $cpTrigger = trim(Cms::config()->cpTrigger, '/');
+
+        return collect([
+            $route,
+            implode('/', array_filter([$actionTrigger, $route], fn(string $segment) => $segment !== '')),
+            implode('/', array_filter([$cpTrigger, $actionTrigger, $route], fn(string $segment) => $segment !== '')),
+        ])
+            ->flatMap(fn(string $route) => [$route, "$route/*"])
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
@@ -249,7 +296,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public static function currentUser(bool $autoRenew = true): ?User
     {
-        return Auth::user();
+        return currentUser()?->asElement();
     }
 
     /**
@@ -367,8 +414,8 @@ abstract class Controller extends \yii\web\Controller
                 ];
             }
             $response = $this->asJson($data);
-            if ($this->request->isCpRequest && Cms::config()->enableCsrfProtection) {
-                $response->getHeaders()->setDefault('X-CSRF-Token', $this->request->getCsrfToken());
+            if ($this->request->isCpRequest) {
+                $response->getHeaders()->setDefault('X-CSRF-Token', csrf_token());
             }
             return $response;
         }
@@ -498,7 +545,7 @@ abstract class Controller extends \yii\web\Controller
         $this->requireLogin();
 
         // Make sure they're an admin
-        if (!Auth::user()?->isAdmin()) {
+        if (!currentUser()?->isAdmin()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action.');
         }
 
@@ -515,7 +562,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requirePermission(string $permissionName): void
     {
-        Gate::forUser(Auth::guard('craft')->user())->authorize($permissionName);
+        Gate::forUser(Auth::user())->authorize($permissionName);
     }
 
     /**
@@ -653,6 +700,17 @@ abstract class Controller extends \yii\web\Controller
 
         if ($url && $object) {
             $url = renderObjectTemplate($url, $object);
+        }
+
+        $params = $this->request->getBodyParam('redirectParams');
+        if ($params) {
+            try {
+                $params = Json::decode($params);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException($e->getMessage(), previous: $e);
+            }
+
+            $url = Url::urlWithParams($url, $params);
         }
 
         return $url;

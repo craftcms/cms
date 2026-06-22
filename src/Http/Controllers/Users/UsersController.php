@@ -7,22 +7,16 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DefineUserContentSummary;
-use CraftCms\Cms\User\Users;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -45,6 +39,7 @@ readonly class UsersController
             'buttonLabel' => mb_ucfirst(t('New {type}', [
                 'type' => User::lowerDisplayName(),
             ])),
+            'canRegisterUsers' => Gate::allows('save', new User),
             'source' => $slug ?? $request->input('source'),
         ]);
     }
@@ -56,7 +51,7 @@ readonly class UsersController
         $this->authorize('save', $user);
 
         $user->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        if (! $drafts->saveElementAsDraft($user, $request->user()->id, markAsSaved: false)) {
+        if (! $drafts->saveElementAsDraft($user, $request->craftUser()?->getCraftUserId(), markAsSaved: false)) {
             return $this->asModelFailure($user, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),
             ])), 'user');
@@ -97,93 +92,5 @@ readonly class UsersController
                         ->redirectUrl($this->editUserScreenUrl($user, self::SCREEN_PERMISSIONS));
                 },
             );
-    }
-
-    public function destroy(Request $request, Elements $elements, Users $users): Response
-    {
-        $request->validate([
-            'userId' => ['required', 'integer'],
-        ]);
-
-        $user = $users->getUserById($request->integer('userId'));
-
-        abort_if(! $user, 400, 'User not found');
-
-        if (! $user->getIsCurrent()) {
-            $this->authorize('deleteUsers');
-
-            if ($user->admin) {
-                $this->requireAdmin();
-            }
-        }
-
-        // Are we transferring the user’s content to a different user?
-        $transferContentToId = $request->input('transferContentTo');
-
-        if (is_array($transferContentToId) && isset($transferContentToId[0])) {
-            $transferContentToId = $transferContentToId[0];
-        }
-
-        if ($transferContentToId) {
-            $transferContentTo = $users->getUserById((int) $transferContentToId);
-
-            abort_if(! $transferContentTo, 400, 'User not found');
-        } else {
-            $transferContentTo = null;
-        }
-
-        // Delete the user
-        $user->inheritorOnDelete = $transferContentTo;
-
-        if (! $elements->deleteElement($user)) {
-            return $this->asFailure(t('Couldn’t delete {type}.', [
-                'type' => User::lowerDisplayName(),
-            ]));
-        }
-
-        return $this->asSuccess(t('{type} deleted.', [
-            'type' => User::displayName(),
-        ]));
-    }
-
-    /**
-     * Returns a summary of the content that is owned by a given user ID(s).
-     */
-    public function contentSummary(Request $request, Sections $sections): Response
-    {
-        $validated = $request->validate([
-            'userId' => ['required'],
-        ]);
-
-        $userId = is_array($validated['userId'])
-            ? array_map(fn ($id) => (int) $id, $validated['userId'])
-            : (int) $validated['userId'];
-
-        if ($userId !== $request->user()?->id) {
-            $this->requirePermission('deleteUsers');
-        }
-
-        $summary = $sections->getAllSections()->map(function (Section $section) use ($userId) {
-            $entryCount = Entry::find()
-                ->sectionId($section->id)
-                ->authorId($userId)
-                ->site('*')
-                ->unique()
-                ->status(null)
-                ->count();
-
-            if (! $entryCount) {
-                return null;
-            }
-
-            return t('{num, number} {section} {num, plural, =1{entry} other{entries}}', [
-                'num' => $entryCount,
-                'section' => t($section->name, category: 'site'),
-            ]);
-        })->filter();
-
-        event($event = new DefineUserContentSummary($userId, $summary));
-
-        return new JsonResponse($event->contentSummary->all());
     }
 }

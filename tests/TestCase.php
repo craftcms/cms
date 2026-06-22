@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Tests;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
-use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
@@ -64,6 +63,8 @@ class TestCase extends Orchestra
         $_SERVER['CRAFT_EDITION'] = Edition::Pro->handle();
 
         parent::setUp();
+
+        config()->set('app.debug', true);
 
         app()->setLocale('en-US');
         app()->maintenanceMode()->deactivate();
@@ -201,8 +202,6 @@ class TestCase extends Orchestra
                 $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
             }
 
-            app(LaravelMigrations::class)->install($migrator);
-
             RefreshDatabaseState::$migrated = true;
         }
 
@@ -221,7 +220,6 @@ class TestCase extends Orchestra
 
         tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
             $config->set('inertia.pages.paths', [__DIR__.'/../resources/js/pages']);
-            $config->set('auth.defaults.guard', 'craft');
 
             $connection = env('DB_CONNECTION', 'testing');
             $driver = $config->get("database.connections.{$connection}.driver");

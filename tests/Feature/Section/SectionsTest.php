@@ -2,27 +2,32 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
-use CraftCms\Cms\Section\Events\DeletingSection;
-use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
+use CraftCms\Cms\Section\Events\SectionDeleting;
+use CraftCms\Cms\Section\Events\SectionDeletionApplying;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Section\Events\SectionSaving;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->sections = app(Sections::class);
@@ -57,6 +62,81 @@ it('can get editable sections', function () {
     expect($this->sections->getEditableSections()->pluck('id'))->toContain($section->id);
     expect($this->sections->getEditableSectionIds())->toContain($section->id);
     expect($this->sections->getTotalEditableSections())->toBe(1);
+});
+
+it('can get available entry move target sections', function () {
+    Edition::set(Edition::Pro);
+
+    $entryType = EntryType::factory()->create();
+    $otherEntryType = EntryType::factory()->create();
+    $currentSite = Sites::getCurrentSite();
+    $otherSite = Site::factory()->create();
+
+    $currentSection = Section::factory()->withEntryTypes($entryType)->create([
+        'name' => 'Current',
+        'handle' => 'current',
+    ]);
+
+    $targetBSection = Section::factory()->withEntryTypes($entryType)->create([
+        'name' => 'B Target',
+        'handle' => 'target-b',
+    ]);
+
+    $targetASection = Section::factory()->withEntryTypes($entryType)->create([
+        'name' => 'A Target',
+        'handle' => 'target-a',
+    ]);
+
+    Section::factory()->withEntryTypes($entryType)->create([
+        'name' => 'Single',
+        'handle' => 'single',
+        'type' => SectionType::Single,
+    ]);
+
+    $wrongSiteSection = Section::factory()->withEntryTypes($entryType)->create([
+        'name' => 'Wrong Site',
+        'handle' => 'wrong-site',
+    ]);
+    SectionSiteSettings::query()
+        ->where('sectionId', $wrongSiteSection->id)
+        ->delete();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $wrongSiteSection->id,
+        'siteId' => $otherSite->id,
+    ]);
+
+    Section::factory()->withEntryTypes($otherEntryType)->create([
+        'name' => 'Wrong Type',
+        'handle' => 'wrong-type',
+    ]);
+
+    Section::factory()->withEntryTypes($entryType)->create([
+        'name' => 'Unauthorized',
+        'handle' => 'unauthorized',
+    ]);
+
+    $user = UserModel::factory()
+        ->withPermissions([
+            "viewEntries:{$targetASection->uid}",
+            "saveEntries:{$targetASection->uid}",
+            "viewEntries:{$targetBSection->uid}",
+            "saveEntries:{$targetBSection->uid}",
+        ])
+        ->create();
+
+    actingAs($user);
+    $this->sections->refreshSections();
+
+    $availableSections = $this->sections->getAvailableEntryMoveTargetSections(
+        entryTypeIds: [$entryType->id],
+        siteId: $currentSite->id,
+        currentSectionUid: $currentSection->uid,
+    );
+
+    expect(array_values(array_map(fn (SectionData $section) => $section->uid, $availableSections)))->toBe([
+        $targetASection->uid,
+        $targetBSection->uid,
+    ]);
 });
 
 it('can get sections by type', function () {
@@ -109,11 +189,11 @@ it('can get a section\'s site settings', function () {
 
 it('can save a section', function () {
     Event::fake([
-        SavingSection::class,
+        SectionSaving::class,
         SectionSaved::class,
     ]);
 
-    Event::listen(SavingSection::class, fn () => null);
+    Event::listen(SectionSaving::class, fn () => null);
     Event::listen(SectionSaved::class, fn () => null);
 
     expect(Section::count())->toBe(0);
@@ -132,19 +212,19 @@ it('can save a section', function () {
 
     expect(Section::count())->toBe(1);
 
-    Event::assertDispatchedOnce(SavingSection::class);
+    Event::assertDispatchedOnce(SectionSaving::class);
     Event::assertDispatchedOnce(SectionSaved::class);
 });
 
 it('can delete a section by id', function () {
     Event::fake([
-        DeletingSection::class,
-        ApplyingSectionDelete::class,
+        SectionDeleting::class,
+        SectionDeletionApplying::class,
         SectionDeleted::class,
     ]);
 
-    Event::listen(DeletingSection::class, fn () => null);
-    Event::listen(ApplyingSectionDelete::class, fn () => null);
+    Event::listen(SectionDeleting::class, fn () => null);
+    Event::listen(SectionDeletionApplying::class, fn () => null);
     Event::listen(SectionDeleted::class, fn () => null);
 
     $section = Section::factory()->create();
@@ -157,8 +237,8 @@ it('can delete a section by id', function () {
 
     expect(Section::count())->toBe(0);
 
-    Event::assertDispatchedOnce(DeletingSection::class);
-    Event::assertDispatchedOnce(ApplyingSectionDelete::class);
+    Event::assertDispatchedOnce(SectionDeleting::class);
+    Event::assertDispatchedOnce(SectionDeletionApplying::class);
     Event::assertDispatchedOnce(SectionDeleted::class);
 });
 

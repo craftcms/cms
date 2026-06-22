@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Entry\EntryTypes;
-use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
-use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
+use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
-use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Json;
@@ -82,13 +84,35 @@ it('can get an entry type mixed', function () {
     expect($found->handle)->toBe('A different handle');
 });
 
+it('normalizes empty ui label formats from project config to the title placeholder', function () {
+    $uid = fake()->uuid();
+
+    $this->entryTypes->handleChangedEntryType(new ItemUpdated(
+        path: "entryTypes.$uid",
+        newValue: [
+            'name' => 'Pages',
+            'handle' => 'pages',
+            'hasTitleField' => true,
+            'titleTranslationMethod' => Field::TRANSLATION_METHOD_SITE,
+            'titleFormat' => null,
+            'uiLabelFormat' => '',
+        ],
+        tokenMatches: [$uid],
+    ));
+
+    $found = $this->entryTypes->getEntryTypeByUid($uid);
+
+    expect($found)->toBeInstanceOf(EntryTypeData::class)
+        ->and($found->uiLabelFormat)->toBe('{title}');
+});
+
 it('can save an entry type', function () {
     Event::fake([
-        SavingEntryType::class,
+        EntryTypeSaving::class,
         EntryTypeSaved::class,
     ]);
 
-    Event::listen(SavingEntryType::class, fn () => null);
+    Event::listen(EntryTypeSaving::class, fn () => null);
     Event::listen(EntryTypeSaved::class, fn () => null);
 
     expect(EntryType::count())->toBe(0);
@@ -106,19 +130,19 @@ it('can save an entry type', function () {
         expect($entryType->handle)->toBe('pages');
     });
 
-    Event::assertDispatchedOnce(SavingEntryType::class);
+    Event::assertDispatchedOnce(EntryTypeSaving::class);
     Event::assertDispatchedOnce(EntryTypeSaved::class);
 });
 
 it('can delete an entry type by id', function () {
     Event::fake([
-        DeletingEntryType::class,
-        ApplyingDeleteEntryType::class,
+        EntryTypeDeleting::class,
+        EntryTypeDeletionApplying::class,
         EntryTypeDeleted::class,
     ]);
 
-    Event::listen(DeletingEntryType::class, fn () => null);
-    Event::listen(ApplyingDeleteEntryType::class, fn () => null);
+    Event::listen(EntryTypeDeleting::class, fn () => null);
+    Event::listen(EntryTypeDeletionApplying::class, fn () => null);
     Event::listen(EntryTypeDeleted::class, fn () => null);
 
     $this->entryTypes->saveEntryType($entryType = new EntryTypeData([
@@ -131,8 +155,8 @@ it('can delete an entry type by id', function () {
     $this->entryTypes->deleteEntryTypeById($entryType->id);
     expect(EntryType::count())->toBe(0);
 
-    Event::assertDispatchedOnce(DeletingEntryType::class);
-    Event::assertDispatchedOnce(ApplyingDeleteEntryType::class);
+    Event::assertDispatchedOnce(EntryTypeDeleting::class);
+    Event::assertDispatchedOnce(EntryTypeDeletionApplying::class);
     Event::assertDispatchedOnce(EntryTypeDeleted::class);
 });
 

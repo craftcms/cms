@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -14,22 +12,20 @@ readonly class SessionInfoController
 {
     use ConfirmsPasswords;
 
-    public function show(Request $request, GeneralConfig $generalConfig): JsonResponse
+    public function show(Request $request): JsonResponse
     {
         $data = [
-            'isGuest' => $request->user() === null,
+            'isGuest' => $request->craftUser() === null,
+            'csrfTokenName' => '_token',
+            'csrfTokenValue' => csrf_token(),
         ];
 
-        if ($generalConfig->enableCsrfProtection) {
-            $data['csrfTokenName'] = Cms::config()->csrfTokenName;
-            $data['csrfTokenValue'] = csrf_token();
-        }
-
-        if ($user = $request->user()) {
-            $data['id'] = $user->id;
-            $data['uid'] = $user->uid;
-            $data['username'] = $user->username;
-            $data['email'] = $user->email;
+        if ($user = $request->craftUser()) {
+            $userElement = $user->asElement();
+            $data['id'] = $user->getCraftUserId();
+            $data['uid'] = $userElement->uid;
+            $data['username'] = $userElement->username;
+            $data['email'] = $userElement->email;
         }
 
         return new JsonResponse($data);

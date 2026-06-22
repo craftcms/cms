@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Utility;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\Volumes;
-use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Events\UtilitiesResolving;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
@@ -22,7 +22,8 @@ use CraftCms\Cms\Utility\Utilities\SystemReport;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
+
+use function CraftCms\Cms\currentUser;
 
 #[Singleton]
 readonly class Utilities
@@ -67,7 +68,7 @@ readonly class Utilities
                 Migrations::class,
             );
 
-        event($event = new RegisterUtilities($utilityTypes));
+        event($event = new UtilitiesResolving($utilityTypes));
 
         $disabledUtilities = array_flip($this->generalConfig->disabledUtilities);
 
@@ -94,7 +95,7 @@ readonly class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
-        $user = Auth::user();
+        $user = currentUser();
 
         // The Project Config utility is for admins only!
         if ($class === ProjectConfigUtility::class && ! $user?->isAdmin()) {

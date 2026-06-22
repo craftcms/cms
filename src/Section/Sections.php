@@ -23,11 +23,11 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
-use CraftCms\Cms\Section\Events\DeletingSection;
-use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
+use CraftCms\Cms\Section\Events\SectionDeleting;
+use CraftCms\Cms\Section\Events\SectionDeletionApplying;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Section\Events\SectionSaving;
 use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
@@ -43,6 +43,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -50,12 +51,14 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
+
+use function CraftCms\Cms\currentUser;
 
 #[Scoped]
 class Sections
@@ -187,7 +190,7 @@ class Sections
 
     private function createSectionQuery(): Builder
     {
-        return DB::table(Table::SECTIONS, 'sections')
+        $query = DB::table(Table::SECTIONS, 'sections')
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -208,6 +211,12 @@ class Sections
             })
             ->whereNull('sections.dateDeleted')
             ->orderBy('sections.name');
+
+        if (Schema::hasColumn(Table::SECTIONS, 'minAuthors')) {
+            $query->addSelect('sections.minAuthors');
+        }
+
+        return $query;
     }
 
     /**
@@ -249,7 +258,7 @@ class Sections
             return $this->getAllSections();
         }
 
-        $user = Auth::user();
+        $user = currentUser();
 
         if (! $user) {
             return collect();
@@ -258,6 +267,27 @@ class Sections
         return $this->getAllSections()->filter(
             fn (Section $section) => $user->can("viewEntries:$section->uid"),
         );
+    }
+
+    /**
+     * @param  array<int, int>  $entryTypeIds
+     * @return array<array-key, Section>
+     */
+    public function getAvailableEntryMoveTargetSections(
+        array $entryTypeIds,
+        int $siteId,
+        string $currentSectionUid,
+    ): array {
+        $user = currentUser();
+
+        if (! $user) {
+            return [];
+        }
+
+        return $this->getEditableSections()
+            ->filter(fn (Section $section) => $this->canUseSectionAsEntryMoveTarget($user, $section, $entryTypeIds, $siteId, $currentSectionUid))
+            ->sortBy(fn (Section $section) => $section->getUiLabel())
+            ->all();
     }
 
     /**
@@ -314,6 +344,37 @@ class Sections
     public function getTotalEditableSections(): int
     {
         return $this->getEditableSections()->count();
+    }
+
+    /**
+     * @param  array<int, int>  $entryTypeIds
+     */
+    private function canUseSectionAsEntryMoveTarget(
+        CraftUser $user,
+        Section $section,
+        array $entryTypeIds,
+        int $siteId,
+        string $currentSectionUid,
+    ): bool {
+        if ($section->type === SectionType::Single) {
+            return false;
+        }
+
+        if (! isset($section->getSiteSettings()[$siteId])) {
+            return false;
+        }
+
+        if ($section->uid === $currentSectionUid) {
+            return false;
+        }
+
+        if (! $user->can("saveEntries:$section->uid")) {
+            return false;
+        }
+
+        $sectionEntryTypeIds = array_map(fn ($entryType) => $entryType->id, $section->getEntryTypes());
+
+        return ! empty(array_intersect($entryTypeIds, $sectionEntryTypeIds));
     }
 
     /**
@@ -444,7 +505,7 @@ class Sections
     {
         $isNewSection = ! $section->id;
 
-        event(new SavingSection($section, $isNewSection));
+        event(new SectionSaving($section, $isNewSection));
 
         if ($runValidation && ! $section->validate()) {
             Log::info('Section not saved due to validation error.', [__METHOD__]);
@@ -526,6 +587,7 @@ class Sections
             $sectionModel->handle = $data['handle'];
             $sectionModel->type = $data['type'];
             $sectionModel->enableVersioning = (bool) $data['enableVersioning'];
+            $sectionModel->minAuthors = $data['minAuthors'] ?? null;
             $sectionModel->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionModel->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionModel->defaultPlacement = $data['defaultPlacement'] ?? DefaultPlacement::End;
@@ -798,9 +860,10 @@ class Sections
             ->status(null)
             ->withStructure(false)
             ->orderBy('id')
+            ->cursor()
             ->each(function (Entry $entry) use ($sectionModel) {
                 Structures::appendToRoot($sectionModel->structureId, $entry, Mode::Insert);
-            }, 100);
+            });
     }
 
     /**
@@ -901,6 +964,7 @@ class Sections
             $entry->sectionId = $section->id;
             $entry->setTypeId($entryTypeIds[0]);
             $entry->title = $section->name;
+            $entry->postDate = now();
         }
 
         // Validate first
@@ -933,11 +997,11 @@ class Sections
             ->id(['not', $entry->id])
             ->status(null);
 
-        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry) {
+        $otherEntriesQuery->cursor()->each(function (Entry $entryToDelete) use ($entry) {
             if (! $entryToDelete->getIsDraft() || $entry->canonicalId !== $entry->id) {
                 $this->elements->deleteElement($entryToDelete, true);
             }
-        }, 100);
+        });
 
         return $entry;
     }
@@ -983,7 +1047,7 @@ class Sections
      */
     public function deleteSection(Section $section): bool
     {
-        event(new DeletingSection($section));
+        event(new SectionDeleting($section));
 
         // Remove the section from the project config
         $this->projectConfig->remove(
@@ -1009,7 +1073,7 @@ class Sections
         /** @var Section $section */
         $section = $this->getSectionById($sectionModel->id);
 
-        event(new ApplyingSectionDelete($section));
+        event(new SectionDeletionApplying($section));
 
         DB::beginTransaction();
         try {

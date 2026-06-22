@@ -16,7 +16,7 @@ use CraftCms\Cms\User\Elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Bert Oost <hello@bertoost.com>
  * @since 4.2.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Events\RetrievingLoginUser} or {@see \CraftCms\Cms\Auth\Events\LoginUserRetrieved} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Events\LoginUserRetrieving} or {@see \CraftCms\Cms\Auth\Events\LoginUserRetrieved} instead.
  */
 class FindLoginUserEvent extends Event
 {

@@ -10,7 +10,6 @@ use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -29,7 +28,11 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
+use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
@@ -37,7 +40,6 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -46,6 +48,7 @@ use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -418,7 +421,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
                 if ($element->getIsDerivative() && $address->getPrimaryOwnerId() === $element->getCanonicalId()) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $address = app(Drafts::class)->createDraft($address, Auth::user()->id, null, null, [
+                    $address = app(Drafts::class)->createDraft($address, currentUser()?->getCraftUserId(), null, null, [
                         'canonicalId' => $address->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,
@@ -442,7 +445,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             }
 
             foreach ($nativeFields as $field) {
-                if (isset($addressData[$field])) {
+                if (array_key_exists($field, $addressData)) {
                     $address->$field = $addressData[$field];
                 }
             }
@@ -489,9 +492,11 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->beforeQuery(function (AddressQuery $query) use ($owner) {
-                $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
+            $query->beforeQuery(function (AddressQuery $query) use ($owner) {
                 // Clear out id=false if this query was populated previously
                 if ($query->id === false) {
                     $query->id = null;
@@ -573,6 +578,73 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $this->addressManager()->getTranslationDescription($element);
     }
 
+    #[Override]
+    protected function actionMenuItems(): array
+    {
+        $items = [];
+
+        if ($this->viewMode === self::VIEW_MODE_CARDS && $this->maxAddresses !== 1) {
+            $items[] = $this->copyAction();
+        }
+
+        $parentItems = parent::actionMenuItems();
+
+        if (! empty($items) && ! empty($parentItems)) {
+            return [
+                ...$items,
+                ['type' => 'hr'],
+                ...$parentItems,
+            ];
+        }
+
+        return [...$items, ...$parentItems];
+    }
+
+    private function copyAction(): array
+    {
+        $id = sprintf('action-copy-%s', mt_rand());
+
+        HtmlStack::jsWithVars(fn ($id, $fieldId) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  const field = $('#' + $fieldId);
+  const menu = btn.closest('.menu');
+
+  if (!field.length) {
+    setTimeout(() => {
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
+    }, 1);
+    return;
+  }
+
+  const getAddresses = () => field.find(' > .nested-element-cards > .elements > li > .element');
+
+  btn.on('activate', () => {
+    Craft.cp.copyElements(getAddresses());
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu?.on('show', () => {
+      disclosureMenu.toggleItem(btn[0], !!getAddresses().length);
+    });
+  }, 1);
+})();
+JS, [
+            InputNamespace::namespaceId($id),
+            InputNamespace::namespaceId($this->getInputId()),
+        ]);
+
+        return [
+            'id' => $id,
+            'icon' => 'clone-dashed',
+            'color' => Color::Fuchsia,
+            'label' => mb_ucfirst(t('Copy all {type}', [
+                'type' => Address::pluralLowerDisplayName(),
+            ])),
+        ];
+    }
+
     /**
      * @throws RuntimeException
      */
@@ -605,7 +677,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         }
 
         if ($this->viewMode === self::VIEW_MODE_CARDS) {
-            return $this->addressManager()->getCardsHtml($owner, $config);
+            return Html::tag('div', $this->addressManager()->getCardsHtml($owner, $config), [
+                'id' => $this->getInputId(),
+            ]);
         }
 
         $config += [
@@ -735,7 +809,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 'addresses.id as target',
             ])
             ->join(new Alias(DbTable::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
-                $join->where('elements_owners.elementId', 'addresses.id')
+                $join->whereColumn('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })
             ->where('addresses.fieldId', $this->id)
@@ -752,6 +826,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
             ],
+            'createElement' => fn (AddressQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 

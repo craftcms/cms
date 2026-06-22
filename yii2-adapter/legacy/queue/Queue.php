@@ -22,7 +22,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use DateTime;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use yii\base\Exception;
@@ -34,6 +33,8 @@ use yii\mutex\Mutex;
 use yii\queue\ExecEvent;
 use yii\queue\Queue as BaseQueue;
 use yii\web\Response;
+
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -507,9 +508,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
-            'Pushed at' => $result['timePushed'] ? $formatter->asDatetime($result['timePushed']) : '',
-            'Updated at' => $result['timeUpdated'] ? $formatter->asDatetime($result['timeUpdated']) : '',
-            'Failed at' => $result['dateFailed'] ? $formatter->asDatetime($result['dateFailed']) : '',
+            'Pushed at' => $result['timePushed'] ? $formatter->asDatetime($result['timePushed'], withTimeZone: true) : '',
+            'Updated at' => $result['timeUpdated'] ? $formatter->asDatetime($result['timeUpdated'], withTimeZone: true) : '',
+            'Failed at' => $result['dateFailed'] ? $formatter->asDatetime($result['dateFailed'], withTimeZone: true) : '',
         ]);
     }
 
@@ -554,7 +555,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $info = [];
 
         foreach ($results as $result) {
-            if (!app()->hasDebugModeEnabled() && !Auth::user()?->isAdmin()) {
+            if (!app()->hasDebugModeEnabled() && !currentUser()?->isAdmin()) {
                 $result['error'] = t('A server error occurred.');
             }
 

@@ -8,14 +8,13 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
-use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
+use CraftCms\Cms\Element\Events\CanonicalChangesMerging;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\DateTimeHelper;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -44,7 +43,7 @@ readonly class ElementCanonicalChanges
             throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
         }
 
-        event(new BeforeMergeCanonicalChanges($element));
+        event(new CanonicalChangesMerging($element));
 
         $this->bulkOps->ensure(function () use ($element, $supportedSites) {
             DB::transaction(function () use ($element, $supportedSites) {
@@ -72,7 +71,7 @@ readonly class ElementCanonicalChanges
                 $element->mergeCanonicalChanges();
                 $duplicateOf = $element->duplicateOf;
                 $element->duplicateOf = null;
-                $element->dateLastMerged = DateTimeHelper::now();
+                $element->dateLastMerged = now();
                 $element->mergingCanonicalChanges = true;
                 $this->elementWrites->save(
                     element: $element,
@@ -88,7 +87,7 @@ readonly class ElementCanonicalChanges
             $element->mergingCanonicalChanges = false;
         });
 
-        event(new AfterMergeCanonicalChanges($element));
+        event(new CanonicalChangesMerged($element));
     }
 
     public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface

@@ -4,13 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
-use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Http\Controllers\InstallController;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Tests\TestClasses\TestPlugin\Tests\FakeMigrator;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -22,11 +17,15 @@ beforeEach(function () {
     Cms::setIsInstalled(false);
 });
 
-it('aborts when Craft is already installed', function () {
-    Cms::setIsInstalled();
-    Config::set('app.debug', false);
+afterEach(function () {
+    putenv('INSTALL_TIMEZONE');
+    putenv('INSTALL_BASE_URL');
+});
 
-    get(action([InstallController::class, 'index']))->assertNotFound();
+it('503s if debug is disabled', function () {
+    config()->set('app.debug', false);
+
+    get(action([InstallController::class, 'index']))->assertServiceUnavailable();
 });
 
 it('shows the install page', function () {
@@ -34,11 +33,16 @@ it('shows the install page', function () {
 
     get(action([InstallController::class, 'index']))
         ->assertInertia(function (AssertableInertia $page) {
-            $page->component('Install')
+            $page->component('install/Install')
                 ->missing('licenseHtml')
+                ->missing('localeOptions')
+                ->missing('timezone')
                 ->loadDeferredProps(function (AssertableInertia $reload) {
                     $reload->has('licenseHtml')
-                        ->where('licenseHtml', fn ($html) => str_contains($html, 'Copyright © Pixel &amp; Tonic, Inc.'));
+                        ->where('licenseHtml', fn ($html) => str_contains($html, 'Copyright © Pixel &amp; Tonic, Inc.'))
+                        ->has('localeOptions')
+                        ->has('timezone')
+                        ->where('timezone', fn ($options) => collect($options)->pluck('value')->contains('America/New_York'));
                 });
         })
         ->assertOk();
@@ -159,80 +163,59 @@ it('can validate site', function (array $data, array $errors) {
         ],
         'errors' => ['language'],
     ],
+    'valid timezone' => [
+        'data' => [
+            'name' => 'Craft',
+            'baseUrl' => 'http://localhost',
+            'language' => 'en',
+            'timezone' => 'America/New_York',
+        ],
+        'errors' => [],
+    ],
+    'invalid timezone' => [
+        'data' => [
+            'name' => 'Craft',
+            'baseUrl' => 'http://localhost',
+            'language' => 'en',
+            'timezone' => 'Not/A_Timezone',
+        ],
+        'errors' => ['timezone'],
+    ],
 ]);
 
-test('install invokes the Laravel optional migration installer', function () {
-    $migrator = new FakeMigrator;
+it('accepts environment variables for the timezone and baseUrl when validating site', function () {
+    putenv('INSTALL_TIMEZONE=America/New_York');
+    putenv('INSTALL_BASE_URL=https://example.test');
 
-    $migrator->pendingMigrations = [
-        '/tmp/2026_01_01_000000_first_migration.php',
-        '/tmp/2026_01_01_000001_second_migration.php',
-    ];
-
-    $this->mock(LaravelMigrations::class)
-        ->shouldReceive('install')
-        ->once()
-        ->with($migrator);
-
-    $response = (new InstallController)->install(
-        Request::create('/install', 'POST', [
-            'account' => [
-                'email' => 'support@pixelandtonic.com',
-                'username' => 'admin',
-                'password' => 'asupersecretpassword',
-            ],
-            'site' => [
-                'name' => 'Craft',
-                'baseUrl' => '$APP_URL',
-                'language' => 'en-US',
-            ],
-        ]),
-        $migrator,
-        app(LaravelMigrations::class),
-    );
-
-    expect($response->getStatusCode())->toBe(200)
-        ->and($migrator->tracked)->toBe('craft')
-        ->and($migrator->loggedMigrations)->toBe([
-            ['Install', 1],
-            ['2026_01_01_000000_first_migration', 1],
-            ['2026_01_01_000001_second_migration', 1],
-        ]);
+    postJson(action([InstallController::class, 'validateSite']), [
+        'name' => 'Craft',
+        'baseUrl' => '$INSTALL_BASE_URL',
+        'language' => 'en',
+        'timezone' => '$INSTALL_TIMEZONE',
+    ])->assertOk();
 });
 
-test('install command invokes the Laravel optional migration installer', function () {
-    $migrator = new FakeMigrator;
+it('validates resolved environment variable timezone values when validating site', function () {
+    putenv('INSTALL_TIMEZONE=super-secret-not-a-timezone');
 
-    $migrator->pendingMigrations = [
-        '/tmp/2026_01_01_000000_first_migration.php',
-        '/tmp/2026_01_01_000001_second_migration.php',
-    ];
+    $response = postJson(action([InstallController::class, 'validateSite']), [
+        'name' => 'Craft',
+        'baseUrl' => 'http://localhost',
+        'language' => 'en',
+        'timezone' => '$INSTALL_TIMEZONE',
+    ])->assertJsonValidationErrors('timezone');
 
-    DB::table('info')->delete();
+    $response->assertDontSee('super-secret-not-a-timezone');
+});
 
-    app()->instance(Migrator::class, $migrator);
+it('validates resolved environment variable baseUrl values when validating site', function () {
+    putenv('INSTALL_BASE_URL=not-an-url');
 
-    $this->mock(LaravelMigrations::class)
-        ->shouldReceive('install')
-        ->once()
-        ->with($migrator);
-
-    app(ProjectConfig::class)->writeYamlAutomatically = false;
-
-    $this->artisan('craft:install', [
-        '--email' => 'support@pixelandtonic.com',
-        '--username' => 'admin',
-        '--password' => 'asupersecretpassword',
-        '--siteName' => 'Craft',
-        '--siteUrl' => '$APP_URL',
-        '--language' => 'en-US',
-    ])->assertSuccessful();
-
-    expect($migrator->loggedMigrations)->toBe([
-        ['Install', 1],
-        ['2026_01_01_000000_first_migration', 1],
-        ['2026_01_01_000001_second_migration', 1],
-    ]);
+    postJson(action([InstallController::class, 'validateSite']), [
+        'name' => 'Craft',
+        'baseUrl' => '$INSTALL_BASE_URL',
+        'language' => 'en',
+    ])->assertJsonValidationErrors('baseUrl');
 });
 
 test('Laravel migration installer can recreate the sessions table', function () {

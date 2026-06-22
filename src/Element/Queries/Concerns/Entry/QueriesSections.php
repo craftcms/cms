@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
@@ -43,6 +44,11 @@ trait QueriesSections
     {
         $this->beforeQuery(function (EntryQuery $entryQuery) {
             $this->normalizeSectionId($entryQuery);
+
+            if ($entryQuery->sectionId === []) {
+                throw new QueryAbortedException;
+            }
+
             $this->applySectionIdParam($entryQuery);
         });
     }

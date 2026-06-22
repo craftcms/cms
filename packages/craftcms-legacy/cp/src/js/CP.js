@@ -1,4 +1,8 @@
-import {QueueService} from '@craftcms/cp/dist/services/Queue.ts.mjs';
+// Import from the deep service module rather than the package root. The root
+// entry (`@craftcms/cp`) side-effect-registers WebAwesome components (e.g.
+// `wa-icon`); pulling that into this separately-webpacked legacy bundle causes
+// a duplicate custom-element registration when it loads alongside the Vite app.
+import {QueueService} from '@craftcms/cp/services/Queue.ts.mjs';
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */
@@ -78,7 +82,7 @@ Craft.CP = Garnish.Base.extend(
     resizeTimeout: null,
 
     /** @type QueueService */
-    QueueService: window.Craft.$queue ?? null,
+    QueueService: QueueService.getInstance(),
 
     init: function () {
       this.elementThumbLoader = new Craft.ElementThumbLoader();
@@ -1322,7 +1326,7 @@ Craft.CP = Garnish.Base.extend(
       if (Array.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo(this.$pageContainer);
 
-        for (const alert of alerts) {
+        for (let alert of alerts) {
           if (!$.isPlainObject(alert)) {
             alert = {
               content: alert,

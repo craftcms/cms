@@ -33,92 +33,79 @@ const availableColors = [
   'black',
 ];
 
-function lightScale(color) {
+const semanticColors = {
+  neutral: 'slate',
+  accent: 'red',
+  info: 'blue',
+  success: 'emerald',
+  warning: 'yellow',
+  danger: 'red',
+};
+
+const colorIncrements = {
+  fill: {
+    quiet: 50,
+    normal: 100,
+    loud: 600,
+  },
+  foreground: {
+    quiet: 800,
+    normal: 950,
+    loud: 50,
+  },
+  border: {
+    quiet: 400,
+    normal: 600,
+    loud: 800,
+  },
+};
+
+function colorScale(color) {
   switch (color) {
     case 'white':
       return {
         fillQuiet: 'var(--color-white)',
         fillNormal: 'var(--color-white)',
         fillLoud: 'var(--color-white)',
-        borderQuiet: 'var(--color-gray-200)',
-        borderNormal: 'var(--color-gray-200)',
-        borderLoud: 'var(--color-gray-200)',
-        onQuiet: 'var(--color-gray-800)',
-        onNormal: 'var(--color-gray-800)',
-        onLoud: 'var(--color-gray-800)',
+        borderQuiet: 'var(--color-static-gray-200)',
+        borderNormal: 'var(--color-static-gray-200)',
+        borderLoud: 'var(--color-static-gray-200)',
+        onQuiet: 'var(--color-static-gray-800)',
+        onNormal: 'var(--color-static-gray-800)',
+        onLoud: 'var(--color-static-gray-800)',
       };
     case 'black':
       return {
-        fillQuiet: 'var(--color-gray-900)',
-        fillNormal: 'var(--color-gray-900)',
-        fillLoud: 'var(--color-gray-900)',
-        borderQuiet: 'var(--color-gray-800)',
-        borderNormal: 'var(--color-gray-800)',
-        borderLoud: 'var(--color-gray-800)',
-        onQuiet: 'var(--color-gray-100)',
-        onNormal: 'var(--color-gray-100)',
-        onLoud: 'var(--color-gray-100)',
+        fillQuiet: 'var(--color-static-gray-900)',
+        fillNormal: 'var(--color-static-gray-900)',
+        fillLoud: 'var(--color-static-gray-900)',
+        borderQuiet: 'var(--color-static-gray-800)',
+        borderNormal: 'var(--color-static-gray-800)',
+        borderLoud: 'var(--color-static-gray-800)',
+        onQuiet: 'var(--color-static-gray-100)',
+        onNormal: 'var(--color-static-gray-100)',
+        onLoud: 'var(--color-static-gray-100)',
       };
     default:
+      const {fill, border, foreground} = colorIncrements;
       return {
-        fillQuiet: `var(--color-${color}-50)`,
-        fillNormal: `var(--color-${color}-200)`,
-        fillLoud: `var(--color-${color}-600)`,
-        borderQuiet: `var(--color-${color}-300)`,
-        borderNormal: `var(--color-${color}-600)`,
-        borderLoud: `var(--color-${color}-800)`,
-        onQuiet: `var(--color-${color}-800)`,
-        onNormal: `var(--color-${color}-700)`,
-        onLoud: `var(--color-${color}-50)`,
+        fillQuiet: `var(--color-${color}-${fill.quiet})`,
+        fillNormal: `var(--color-${color}-${fill.normal})`,
+        fillLoud: `var(--color-${color}-${fill.loud})`,
+        borderQuiet: `var(--color-${color}-${border.quiet})`,
+        borderNormal: `var(--color-${color}-${border.normal})`,
+        borderLoud: `var(--color-${color}-${border.loud})`,
+        onQuiet: `var(--color-${color}-${foreground.quiet})`,
+        onNormal: `var(--color-${color}-${foreground.normal})`,
+        onLoud: `var(--color-${color}-${foreground.loud})`,
       };
   }
 }
 
-function darkScale(color) {
-  switch (color) {
-    case 'white':
-      return {
-        fillQuiet: 'var(--color-gray-800)',
-        fillNormal: 'var(--color-gray-800)',
-        fillLoud: 'var(--color-gray-800)',
-        borderQuiet: 'var(--color-gray-700)',
-        borderNormal: 'var(--color-gray-700)',
-        borderLoud: 'var(--color-gray-700)',
-        onQuiet: 'var(--color-gray-200)',
-        onNormal: 'var(--color-gray-200)',
-        onLoud: 'var(--color-gray-200)',
-      };
-    case 'black':
-      return {
-        fillQuiet: 'var(--color-gray-950)',
-        fillNormal: 'var(--color-gray-950)',
-        fillLoud: 'var(--color-gray-950)',
-        borderQuiet: 'var(--color-gray-800)',
-        borderNormal: 'var(--color-gray-800)',
-        borderLoud: 'var(--color-gray-800)',
-        onQuiet: 'var(--color-gray-300)',
-        onNormal: 'var(--color-gray-300)',
-        onLoud: 'var(--color-gray-300)',
-      };
-    default:
-      return {
-        fillQuiet: `var(--color-${color}-950)`,
-        fillNormal: `var(--color-${color}-600)`,
-        fillLoud: `var(--color-${color}-500)`,
-        borderQuiet: `var(--color-${color}-900)`,
-        borderNormal: `var(--color-${color}-900)`,
-        borderLoud: `var(--color-${color}-600)`,
-        onQuiet: `var(--color-${color}-400)`,
-        onNormal: `var(--color-${color}-200)`,
-        onLoud: `var(--color-${color}-50)`,
-      };
-  }
-}
-
-function buildTokens(colors, scaleFn) {
-  return colors
+function buildColorableTokens() {
+  return availableColors
     .map((color) => {
-      const s = scaleFn(color);
+      const s = colorScale(color);
       return [
         `  /* ${color} */`,
         `  --c-color-${color}-fill-quiet: ${s.fillQuiet};`,
@@ -135,8 +122,31 @@ function buildTokens(colors, scaleFn) {
     .join('\n\n');
 }
 
+function buildSemanticTokens() {
+  let declarations = [];
+  for (const [meaning, color] of Object.entries(semanticColors)) {
+    const s = colorScale(color);
+    const variables = [
+      `  /* Semantics colors - ${meaning} */`,
+      `  --c-color-${meaning}-fill-quiet: ${s.fillQuiet};`,
+      `  --c-color-${meaning}-fill-normal: ${s.fillNormal};`,
+      `  --c-color-${meaning}-fill-loud: ${s.fillLoud};`,
+      `  --c-color-${meaning}-border-quiet: ${s.borderQuiet};`,
+      `  --c-color-${meaning}-border-normal: ${s.borderNormal};`,
+      `  --c-color-${meaning}-border-loud: ${s.borderLoud};`,
+      `  --c-color-${meaning}-on-quiet: ${s.onQuiet};`,
+      `  --c-color-${meaning}-on-normal: ${s.onNormal};`,
+      `  --c-color-${meaning}-on-loud: ${s.onLoud};`,
+    ].join('\n');
+
+    declarations.push(variables);
+  }
+
+  return declarations.join('\n\n');
+}
+
 function buildStyleBlock(color) {
-  return `.c-colorable--${color},
+  return `.cp-color-${color},
 [data-color='${color}'] {
   --c-color-fill-quiet: var(--c-color-${color}-fill-quiet);
   --c-color-border-quiet: var(--c-color-${color}-border-quiet);
@@ -154,34 +164,18 @@ function generateStyles(colors) {
   return `/* Auto-generated by scripts/generate-colors.js — do not edit manually */
 
 :root {
-${buildTokens(colors, lightScale)}
+${buildColorableTokens()}
+${buildSemanticTokens()}
 }
 
-[data-theme='dark'] {
-${buildTokens(colors, darkScale)}
-}
-
-.c-colorable,
-[data-color] {
-  --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
-  --c-color-fill-normal: var(--c-color-neutral-fill-normal);
-  --c-color-fill-loud: var(--c-color-neutral-fill-loud);
-  --c-color-border-quiet: var(--c-color-neutral-border-quiet);
-  --c-color-border-normal: var(--c-color-neutral-border-normal);
-  --c-color-border-loud: var(--c-color-neutral-border-loud);
-  --c-color-on-quiet: var(--c-color-neutral-on-quiet);
-  --c-color-on-normal: var(--c-color-neutral-on-normal);
-  --c-color-on-loud: var(--c-color-neutral-on-loud);
-  
-  background-color: var(--c-color-fill-quiet);
-  border-color: var(--c-color-border-quiet);
-  color: var(--c-color-on-quiet);
-}
-
-${colors.map((c) => buildStyleBlock(c)).join('\n')}
+${[...availableColors, ...Object.keys(semanticColors)].map((c) => buildStyleBlock(c)).join('\n')}
 `;
 }
 
-const css = generateStyles(availableColors);
-writeFileSync(OUT_FILE, css);
-console.log(`Generated ${OUT_FILE}`);
+export default function main() {
+  const css = generateStyles(availableColors);
+  writeFileSync(OUT_FILE, css);
+  console.log(`Generated ${OUT_FILE}`);
+}
+
+main();

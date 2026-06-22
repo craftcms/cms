@@ -8,9 +8,9 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Update\Updates as UpdatesService;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\UpdatesWidgetAsset;
-use Illuminate\Support\Facades\Auth;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -33,7 +33,7 @@ class Updates extends Widget
     public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
-        return parent::isSelectable() && Auth::user()->can('performUpdates');
+        return parent::isSelectable() && currentUser()->can('performUpdates');
     }
 
     #[Override]
@@ -52,7 +52,7 @@ class Updates extends Widget
     public function getBodyHtml(): ?string
     {
         // Make sure the user actually has permission to perform updates
-        if (! Auth::user()->can('performUpdates')) {
+        if (! currentUser()->can('performUpdates')) {
             return null;
         }
 

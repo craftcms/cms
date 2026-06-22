@@ -36,7 +36,12 @@ readonly class PasswordController
 
     public function index(Request $request): CpScreenResponse
     {
-        $user = $request->user();
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
+        $user = $currentUser->asElement();
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
@@ -52,8 +57,12 @@ readonly class PasswordController
     {
         $this->requireConfirmedPassword('An elevated session is required to change your password.');
 
-        /** @var User $user */
-        $user = $request->user();
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
+        $user = $currentUser->asElement();
 
         abort_if(! $user->getHasPassword(), 400, 'Only users with current passwords can set new ones.');
 
@@ -158,7 +167,7 @@ readonly class PasswordController
     public function sendPasswordResetEmail(Request $request, Users $users): Response
     {
         $errors = [];
-        $loginName = null;
+        $generalConfig = Cms::config();
 
         // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
         if (Gate::check('editUsers')) {
@@ -170,30 +179,30 @@ readonly class PasswordController
         }
 
         if (! isset($user)) {
-            $loginName = $request->input('loginName');
+            $validated = $request->validate([
+                'loginName' => [
+                    'required',
+                    'string',
+                    Rule::when($generalConfig->useEmailAsUsername, 'email'),
+                ],
+            ]);
 
-            if (! $loginName) {
-                // If they didn't even enter a username/email, just bail now.
-                $errors[] = Cms::config()->useEmailAsUsername
-                    ? t('Email is required.')
-                    : t('Username or email is required.');
-
-                return $this->handleSendPasswordResetError($errors);
-            }
-
+            $loginName = $validated['loginName'];
             $user = $users->getUserByUsernameOrEmail($loginName);
 
             if (
                 ! $user?->getIsCredentialed() ||
                 (! $user->getHasPassword() && $user->getHasSsoIdentity())
             ) {
-                $errors[] = Cms::config()->useEmailAsUsername
+                $errors[] = $generalConfig->useEmailAsUsername
                     ? t('Invalid email.')
                     : t('Invalid username or email.');
             }
         }
 
-        return new Timebox()->call(function (Timebox $timebox) use ($loginName, &$errors, $user, $users): Response {
+        $loginName ??= null;
+
+        return new Timebox()->call(function (Timebox $timebox) use ($loginName, &$errors, $user, $users, $generalConfig): Response {
             // Don't try to send the email if there are already errors or there is no user
             try {
                 if (empty($errors) && $user !== null && ! $users->sendPasswordResetEmail($user)) {
@@ -203,7 +212,7 @@ readonly class PasswordController
                 $errors[] = t('There was a problem sending the password reset email.');
             }
 
-            if (Cms::config()->preventUserEnumeration) {
+            if ($generalConfig->preventUserEnumeration) {
                 if (! empty($errors)) {
                     $list = implode("\n", array_map(fn (string $error) => sprintf('- %s', $error), $errors));
                     Log::warning(sprintf("Password reset email not sent:\n%s", $list), [__METHOD__]);
@@ -214,7 +223,7 @@ readonly class PasswordController
             }
 
             if (empty($errors)) {
-                return $this->asSuccess(t('Password reset email sent.'));
+                return $this->asSuccess(t('Check your email for instructions to reset your password.'));
             }
 
             // Handle the errors.

@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Route;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\Data\Route;
-use CraftCms\Cms\Route\Events\DeletingRoute;
 use CraftCms\Cms\Route\Events\RouteDeleted;
+use CraftCms\Cms\Route\Events\RouteDeleting;
 use CraftCms\Cms\Route\Events\RouteSaved;
-use CraftCms\Cms\Route\Events\SavingRoute;
+use CraftCms\Cms\Route\Events\RouteSaving;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Sites;
@@ -32,8 +32,49 @@ class Routes
             'handle' => '[^\/]+',
             'slug' => '[^\/]+',
             'tag' => '[^\/]+',
+            'cpTrigger' => preg_quote(trim((string) Cms::config()->cpTrigger, '/'), '#') ?: '(?!)',
+            'actionTrigger' => preg_quote(trim(Cms::config()->actionTrigger, '/'), '#') ?: '(?!)',
             '*' => '[^\/]+',
         ];
+    }
+
+    public function cpTriggerRoutePrefix(): string
+    {
+        return trim((string) Cms::config()->cpTrigger, '/') === '' ? '' : '{cpTrigger}';
+    }
+
+    public function actionTriggerRoutePrefix(): string
+    {
+        return trim(Cms::config()->actionTrigger, '/') === '' ? '' : '{actionTrigger}';
+    }
+
+    public function cpActionTriggerRoutePrefix(): string
+    {
+        return $this->joinRoutePrefix([
+            $this->cpTriggerRoutePrefix(),
+            $this->actionTriggerRoutePrefix(),
+        ]);
+    }
+
+    public function actionTriggerUriPrefix(): string
+    {
+        return trim(Cms::config()->actionTrigger, '/');
+    }
+
+    public function cpActionTriggerUriPrefix(): string
+    {
+        return $this->joinRoutePrefix([
+            trim((string) Cms::config()->cpTrigger, '/'),
+            $this->actionTriggerUriPrefix(),
+        ]);
+    }
+
+    public function joinRoutePrefix(array $segments): string
+    {
+        return implode('/', array_filter(
+            $segments,
+            fn (?string $segment) => $segment !== null && $segment !== '',
+        ));
     }
 
     /**
@@ -80,7 +121,7 @@ class Routes
                 template: $route['template'],
                 siteUid: $route['siteUid'] ?? null,
                 uid: $uid,
-                sortOrder: $route['sortOrder'] ?? null,
+                sortOrder: isset($route['sortOrder']) ? (int) $route['sortOrder'] : null,
             );
 
             $uri = $route->getUri();
@@ -106,7 +147,7 @@ class Routes
      */
     public function saveRoute(Route $route): string
     {
-        event(new SavingRoute($route));
+        event(new RouteSaving($route));
 
         if ($route->uid !== null) {
             $sortOrder = $this->projectConfig->get(
@@ -138,7 +179,7 @@ class Routes
             return true;
         }
 
-        event(new DeletingRoute(new Route(
+        event(new RouteDeleting(new Route(
             uriParts: $route['uriParts'],
             template: $route['template'],
             siteUid: $route['siteUid'],

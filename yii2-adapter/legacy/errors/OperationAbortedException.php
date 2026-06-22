@@ -21,5 +21,3 @@ if (false) {
         }
     }
 }
-
-class_alias(\CraftCms\Cms\Shared\Exceptions\OperationAbortedException::class, OperationAbortedException::class);

@@ -15,7 +15,7 @@ use craft\models\ImageTransform;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\Events\SavingTransform}, {@see \CraftCms\Cms\Image\Events\TransformSaved}, {@see \CraftCms\Cms\Image\Events\DeletingTransform}, {@see \CraftCms\Cms\Image\Events\ApplyingTransformDelete}, or {@see \CraftCms\Cms\Image\Events\TransformDeleted} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\Events\TransformSaving}, {@see \CraftCms\Cms\Image\Events\TransformSaved}, {@see \CraftCms\Cms\Image\Events\TransformDeleting}, {@see \CraftCms\Cms\Image\Events\TransformDeletionApplying}, or {@see \CraftCms\Cms\Image\Events\TransformDeleted} instead.
  */
 class ImageTransformEvent extends Event
 {

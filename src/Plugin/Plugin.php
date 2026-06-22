@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Plugin;
 
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\File;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
 use Override;
 use ReflectionClass;
@@ -21,6 +22,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     use Concerns\HasListeners;
     use Concerns\HasPermissions;
     use Concerns\HasRoutes;
+    use Concerns\HasScheduling;
     use Concerns\HasSettings;
     use Concerns\HasTranslations;
     use Concerns\HasUtilities;
@@ -150,6 +152,31 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     public function registerPlugin(): void {}
 
     public function bootPlugin(): void {}
+
+    protected function copyPublishableFiles(array $paths): void
+    {
+        foreach ($paths as $from => $to) {
+            if (File::isDirectory($from)) {
+                File::copyDirectory($from, $to);
+
+                continue;
+            }
+
+            File::ensureDirectoryExists(dirname((string) $to));
+            File::copy($from, $to);
+        }
+    }
+
+    protected function registerSerializableClasses(array $classes): void
+    {
+        $existing = $this->app->make(Repository::class)->get('cache.serializable_classes');
+
+        if ($existing === null || $existing === true) {
+            return;
+        }
+
+        $this->app->make(Repository::class)->set('cache.serializable_classes', array_merge(is_array($existing) ? $existing : [], $classes));
+    }
 
     #[Override]
     public function getBasePath(): string

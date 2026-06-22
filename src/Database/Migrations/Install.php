@@ -9,8 +9,9 @@ namespace CraftCms\Cms\Database\Migrations;
 use Closure;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Database\Migration;
-use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
+use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -26,7 +27,6 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
@@ -38,11 +38,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Prompts\Support\Logger;
 use ReflectionClass;
+use RuntimeException;
 use Throwable;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\task;
 use function Laravel\Prompts\warning;
 
 class Install extends Migration
@@ -52,6 +52,7 @@ class Install extends Migration
         public ?string $password = null,
         public ?string $email = null,
         public ?Site $site = null,
+        public ?string $timezone = null,
         public bool $applyProjectConfigYaml = true,
     ) {
         parent::__construct();
@@ -65,20 +66,21 @@ class Install extends Migration
             return;
         }
 
-        task(
+        PromptTask::run(
             label: str($label)->finish('...')->toString(),
             callback: function (Logger $logger) use ($callback, $label) {
                 $callback($logger);
                 $logger->label($label);
             },
             keepSummary: true,
+            output: $this->output,
         );
     }
 
     public function up(): void
     {
         if (! $this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error Run `composer install` or remove your `config/project/` folder and try again.";
+            $message = "Project config validation failed: $error Run `composer install` or remove your `config/craft/project/` folder and try again.";
 
             error($message);
             error('Aborting install.');
@@ -87,9 +89,13 @@ class Install extends Migration
         }
 
         $this->task('Set up database', function (?Logger $logger = null) {
+            $logger?->subLabel('Ensuring Laravel tables exist...');
+            $this->createLaravelTables();
+            $logger?->success('Laravel tables created.');
+
             $logger?->subLabel('Creating tables...');
             $this->createTables($logger);
-            $logger?->success('Tables created.');
+            $logger?->success('Craft tables created.');
 
             $logger?->subLabel('Creating indexes...');
             $this->createIndexes();
@@ -100,7 +106,7 @@ class Install extends Migration
             $logger?->success('Foreign keys added.');
         });
 
-        event(new PostCreateTables);
+        event(new TablesCreated);
 
         DB::afterCommit(function () {
             try {
@@ -113,10 +119,93 @@ class Install extends Migration
     }
 
     /**
+     * Creates Laravel tables we rely on
+     * if they don't exist yet.
+     */
+    public function createLaravelTables(): void
+    {
+        if (! Schema::hasTable('password_reset_tokens')) {
+            Schema::create('password_reset_tokens', function (Blueprint $table) {
+                $table->string('email')->primary();
+                $table->string('token');
+                $table->timestamp('created_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable('cache')) {
+            Schema::create('cache', function (Blueprint $table) {
+                $table->string('key')->primary();
+                $table->mediumText('value');
+                $table->bigInteger('expiration')->index();
+            });
+        }
+
+        if (! Schema::hasTable('cache_locks')) {
+            Schema::create('cache_locks', function (Blueprint $table) {
+                $table->string('key')->primary();
+                $table->string('owner');
+                $table->bigInteger('expiration')->index();
+            });
+        }
+
+        if (! Schema::hasTable('jobs')) {
+            Schema::create('jobs', function (Blueprint $table) {
+                $table->id();
+                $table->string('queue')->index();
+                $table->longText('payload');
+                $table->unsignedSmallInteger('attempts');
+                $table->unsignedInteger('reserved_at')->nullable();
+                $table->unsignedInteger('available_at');
+                $table->unsignedInteger('created_at');
+            });
+        }
+
+        if (! Schema::hasTable('job_batches')) {
+            Schema::create('job_batches', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->string('name');
+                $table->integer('total_jobs');
+                $table->integer('pending_jobs');
+                $table->integer('failed_jobs');
+                $table->longText('failed_job_ids');
+                $table->mediumText('options')->nullable();
+                $table->integer('cancelled_at')->nullable();
+                $table->integer('created_at');
+                $table->integer('finished_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable('failed_jobs')) {
+            Schema::create('failed_jobs', function (Blueprint $table) {
+                $table->id();
+                $table->string('uuid')->unique();
+                $table->text('connection');
+                $table->text('queue');
+                $table->longText('payload');
+                $table->longText('exception');
+                $table->timestamp('failed_at')->useCurrent();
+            });
+        }
+
+        if (! Schema::hasTable('sessions')) {
+            Schema::create('sessions', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->foreignId('user_id')->nullable()->index();
+                $table->string('ip_address', 45)->nullable();
+                $table->text('user_agent')->nullable();
+                $table->longText('payload');
+                $table->integer('last_activity')->index();
+            });
+        }
+    }
+
+    /**
      * Creates the tables.
      */
     public function createTables(?Logger $logger = null): void
     {
+        $this->dropEmptyStarterTable(Table::USERS);
+
         $logger?->subLabel('addresses');
         Schema::create('addresses', function (Blueprint $table) {
             $table->integer('id', true);
@@ -512,6 +601,16 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
+        $logger?->subLabel('fieldreferences');
+        Schema::create(Table::FIELDREFERENCES, function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->integer('fieldId');
+            $table->uuid('fieldInstanceUid');
+            $table->integer('sourceId');
+            $table->integer('sourceSiteId')->nullable();
+            $table->integer('targetId');
+        });
+
         $logger?->subLabel('gqltokens');
         Schema::create('gqltokens', function (Blueprint $table) {
             $table->integer('id', true);
@@ -586,6 +685,8 @@ class Install extends Migration
             $table->unsignedInteger('delay')->nullable();
             $table->string('progressLabel')->nullable();
             $table->text('error')->nullable();
+            $table->dateTime('dateCompleted')->nullable();
+            $table->dateTime('dateFailed')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
         });
@@ -653,6 +754,7 @@ class Install extends Migration
                 SectionType::Structure->value,
             ])->default(SectionType::Channel->value);
             $table->boolean('enableVersioning')->default(false);
+            $table->unsignedSmallInteger('minAuthors')->default(1);
             $table->unsignedSmallInteger('maxAuthors')->nullable();
             $table->string('propagationMethod')->default(PropagationMethod::All->value);
             $table->enum('defaultPlacement', [
@@ -888,12 +990,6 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::PASSWORD_RESET_TOKENS, function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
         $logger?->subLabel('webauthn');
         Schema::create('webauthn', function (Blueprint $table) {
             $table->integer('id', true);
@@ -919,6 +1015,19 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
         });
+    }
+
+    private function dropEmptyStarterTable(string $table): void
+    {
+        if (! Schema::hasTable($table)) {
+            return;
+        }
+
+        if (DB::table($table)->exists()) {
+            throw new RuntimeException("Craft cannot be installed because the existing [$table] table contains rows.");
+        }
+
+        Schema::drop($table);
     }
 
     public function createIndexes(): void
@@ -969,6 +1078,8 @@ class Install extends Migration
         Schema::createIndex(Table::ENTRYTYPES, ['dateDeleted']);
         Schema::createIndex(Table::FIELDLAYOUTS, ['dateDeleted']);
         Schema::createIndex(Table::FIELDLAYOUTS, ['type']);
+        Schema::createIndex(Table::FIELDREFERENCES, ['fieldId', 'fieldInstanceUid', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
+        Schema::createIndex(Table::FIELDREFERENCES, ['targetId']);
         Schema::createIndex(Table::FIELDS, ['handle', 'context']);
         Schema::createIndex(Table::FIELDS, ['context']);
         Schema::createIndex(Table::FIELDS, ['dateDeleted']);
@@ -1113,6 +1224,9 @@ class Install extends Migration
         Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ENTRYTYPES, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
+        Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('sourceId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::FIELDREFERENCES, fn (Blueprint $table) => $table->foreign('sourceSiteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::GQLTOKENS, fn (Blueprint $table) => $table->foreign('schemaId')->references('id')->on(Table::GQLSCHEMAS)->nullOnDelete());
         Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('sourceId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
@@ -1215,7 +1329,7 @@ class Install extends Migration
             ]);
 
             if (! app()->runningInConsole()) {
-                Auth::guard('craft')->loginUsingId($user->id);
+                Auth::login($user);
             }
 
             $logger?->success('Saved.');
@@ -1295,7 +1409,7 @@ class Install extends Migration
         $siteGroupUid = Str::uuid()->toString();
 
         return [
-            'dateModified' => DateTimeHelper::currentTimeStamp(),
+            'dateModified' => now()->getTimestamp(),
             'siteGroups' => [
                 $siteGroupUid => [
                     'name' => $this->site->getName(),
@@ -1318,7 +1432,7 @@ class Install extends Migration
                 'name' => $this->site->getName(),
                 'live' => true,
                 'schemaVersion' => Cms::SCHEMA_VERSION,
-                'timeZone' => 'America/Los_Angeles',
+                'timeZone' => $this->timezone ?? 'America/Los_Angeles',
             ],
             'users' => [
                 'requireEmailVerification' => true,

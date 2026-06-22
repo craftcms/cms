@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
+use CraftCms\Cms\Element\Events\ElementPreviewTargetsResolving;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Event;
 
@@ -160,12 +160,12 @@ describe('getPreviewTargets', function () {
         expect($targets[0]['refresh'])->toBeFalse();
     });
 
-    test('RegisterPreviewTargets event can add targets', function () {
+    test('ElementPreviewTargetsResolving event can add targets', function () {
         $element = new TestPreviewTargetsElement;
         $element->siteId = $this->primarySiteId;
         $element->setElementUrl('https://example.com/original');
 
-        Event::listen(function (RegisterPreviewTargets $event) {
+        Event::listen(function (ElementPreviewTargetsResolving $event) {
             if ($event->element instanceof TestPreviewTargetsElement) {
                 $event->previewTargets[] = [
                     'label' => 'Added by Event',
@@ -180,7 +180,7 @@ describe('getPreviewTargets', function () {
         expect($targets[1]['label'])->toBe('Added by Event');
     });
 
-    test('RegisterPreviewTargets event can modify existing targets', function () {
+    test('ElementPreviewTargetsResolving event can modify existing targets', function () {
         $element = new TestPreviewTargetsElement;
         $element->siteId = $this->primarySiteId;
         $element->setCustomPreviewTargets([
@@ -190,7 +190,7 @@ describe('getPreviewTargets', function () {
             ],
         ]);
 
-        Event::listen(function (RegisterPreviewTargets $event) {
+        Event::listen(function (ElementPreviewTargetsResolving $event) {
             if ($event->element instanceof TestPreviewTargetsElement) {
                 $event->previewTargets[0]['label'] = 'Modified by Event';
             }

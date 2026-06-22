@@ -18,9 +18,10 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
+
+use function CraftCms\Cms\currentUser;
 
 /**
  * @extends ElementQuery<Asset>
@@ -119,7 +120,7 @@ class AssetQuery extends ElementQuery
             return;
         }
 
-        $user = Auth::user();
+        $user = currentUser();
 
         if (! $user) {
             throw new QueryAbortedException;
@@ -144,7 +145,9 @@ class AssetQuery extends ElementQuery
                 throw new QueryAbortedException;
             }
 
-            $this->where(function (Builder $query) use ($user, $fullyAuthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
+            $userId = $user->getCraftUserId();
+
+            $this->where(function (Builder $query) use ($userId, $fullyAuthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
                 if ($fullyAuthorizedVolumeIds) {
                     $query->orWhereIn('assets.volumeId', $fullyAuthorizedVolumeIds);
                 }
@@ -152,7 +155,7 @@ class AssetQuery extends ElementQuery
                 if ($partiallyAuthorizedVolumeIds) {
                     $query->orWhere(fn (Builder $query) => $query
                         ->whereIn('assets.volumeId', $partiallyAuthorizedVolumeIds)
-                        ->where('assets.uploaderId', $user->id),
+                        ->where('assets.uploaderId', $userId),
                     );
                 }
             });
@@ -164,16 +167,18 @@ class AssetQuery extends ElementQuery
             throw new QueryAbortedException;
         }
 
-        $this->where(function (Builder $query) use ($user, $unauthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
+        $userId = $user->getCraftUserId();
+
+        $this->where(function (Builder $query) use ($userId, $unauthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
             if ($unauthorizedVolumeIds) {
                 $query->orWhereIn('assets.volumeId', $unauthorizedVolumeIds);
             }
 
             if ($partiallyAuthorizedVolumeIds) {
-                $query->orWhere(function (Builder $query) use ($user, $partiallyAuthorizedVolumeIds) {
+                $query->orWhere(function (Builder $query) use ($userId, $partiallyAuthorizedVolumeIds) {
                     $query->whereIn('assets.volumeId', $partiallyAuthorizedVolumeIds)
-                        ->where(function (Builder $query) use ($user) {
-                            $query->where('assets.uploaderId', '!=', $user->id)
+                        ->where(function (Builder $query) use ($userId) {
+                            $query->where('assets.uploaderId', '!=', $userId)
                                 ->orWhereNull('assets.uploaderId');
                         });
                 });

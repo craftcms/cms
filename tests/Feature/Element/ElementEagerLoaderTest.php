@@ -7,7 +7,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeEagerLoadElements;
+use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Operations\ElementEagerLoader;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -264,7 +264,7 @@ it('allows before eager load listeners to replace the plans', function () {
         ['id' => 701, 'siteId' => 1, 'title' => 'Replacement'],
     ]);
 
-    Event::listen(BeforeEagerLoadElements::class, function (BeforeEagerLoadElements $event) {
+    Event::listen(ElementsEagerLoading::class, function (ElementsEagerLoading $event) {
         if ($event->elementType !== TestElementEagerLoaderSourceElement::class) {
             return;
         }

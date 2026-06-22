@@ -1,17 +1,20 @@
-import Cp from './bootstrap/cp.js';
+// We need to globally register these for the moment because an
+// elevated session modal can be called from pretty much anywhere
+await Promise.all([
+  import('./modules/auth/components/login/login-form.js'),
+  import('./modules/auth/components/totp/totp-form.js'),
+  import('./modules/auth/components/recovery-codes/recovery-code-form.js'),
+]);
 
-// @ts-ignore
-window.Cp = {
-  ...(window.Cp || {}),
-  ...Cp,
-};
+const {default: Cp} = await import('./bootstrap/cp.js');
 
-console.log('window.Cp defined', window.Cp);
+window.Cp = Cp;
 
 /**
  * Components - dynamically imported after Craft is initialized
  */
 import('@craftcms/cp/components/nav-list/nav-list.ts.mjs');
 import('@craftcms/cp/components/nav-item/nav-item.ts.mjs');
-import('./components/CpGlobalSidebar.js');
-import('./components/CpQueueIndicator.js');
+import('./modules/navigation/components/CpGlobalSidebar.js');
+import('./modules/navigation/components/CpQueueIndicator.js');
+import('./modules/markdown-field/MarkdownField.js');

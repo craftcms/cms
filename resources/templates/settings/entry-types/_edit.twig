@@ -71,7 +71,7 @@
   id: 'uiLabelFormat',
   name: 'uiLabelFormat',
   class: 'code',
-  value: entryType.uiLabelFormat,
+  value: old('uiLabelFormat', entryType.uiLabelFormat),
   errors: errors.get('uiLabelFormat'),
   data: {
     'error-key': 'uiLabelFormat',
@@ -143,7 +143,7 @@
 {{ forms.lightswitchField({
   label: 'Allow line breaks in titles'|t('app'),
   name: 'allowLineBreaksInTitles',
-  on: entryType.allowLineBreaksInTitles,
+  on: old('allowLineBreaksInTitles', entryType.allowLineBreaksInTitles),
   disabled: readOnly,
 }) }}
 
@@ -217,7 +217,9 @@
 
 {{ forms.fieldLayoutDesignerField({
     id: 'field-layout',
-    fieldLayout: session('oldFieldLayout', entryType.getFieldLayout()),
+    fieldLayout: old('fieldLayout')
+        ? Fields.createLayout(old('fieldLayout'))
+        : entryType.getFieldLayout(),
     withGeneratedFields: true,
     withCardViewDesigner: true,
     disabled: readOnly,

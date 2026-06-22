@@ -5,50 +5,42 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Http\Requests\CreateAssetFolderRequest;
+use CraftCms\Cms\Http\Requests\DeleteAssetFolderRequest;
+use CraftCms\Cms\Http\Requests\MoveAssetFolderRequest;
+use CraftCms\Cms\Http\Requests\RenameAssetFolderRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
 readonly class FolderController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
         private Folders $folders,
     ) {}
 
-    public function create(Request $request): Response
+    public function create(CreateAssetFolderRequest $request): Response
     {
-        $request->validate([
-            'parentId' => ['required', 'integer'],
-            'folderName' => ['required', 'string'],
-        ]);
-
-        $parentId = $request->integer('parentId');
-        $folderName = AssetsHelper::prepareAssetName($request->input('folderName'), false);
-
-        $parentFolder = $this->folders->findFolder(['id' => $parentId]);
-
-        abort_if(! $parentFolder, 400, 'The parent folder cannot be found');
+        $parentFolder = $request->parentFolder();
 
         try {
-            $this->requireVolumePermissionByFolder('createFolders', $parentFolder);
+            Gate::authorize('createFolder', $parentFolder);
 
             $folderModel = new VolumeFolder;
-            $folderModel->name = $folderName;
-            $folderModel->parentId = $parentId;
+            $folderModel->name = $request->folderName();
+            $folderModel->parentId = $request->parentFolderId();
             $folderModel->volumeId = $parentFolder->volumeId;
-            $folderModel->path = $parentFolder->path.$folderName.'/';
+            $folderModel->path = $parentFolder->path.$folderModel->name.'/';
 
             $this->folders->createFolder($folderModel);
 
@@ -62,70 +54,39 @@ readonly class FolderController
         }
     }
 
-    public function delete(Request $request): Response
+    public function delete(DeleteAssetFolderRequest $request): Response
     {
-        $request->validate([
-            'folderId' => ['required', 'integer'],
-        ]);
+        $folder = $request->folder();
 
-        $folderId = $request->integer('folderId');
-        $folder = $this->folders->getFolderById($folderId);
-
-        abort_if(! $folder, 400, 'The folder cannot be found');
-
-        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
-        $this->folders->deleteFoldersByIds($folderId);
+        Gate::authorize('deleteFolder', $folder);
+        $this->folders->deleteFoldersByIds($request->folderId());
 
         return $this->asSuccess();
     }
 
-    public function rename(Request $request): Response
+    public function rename(RenameAssetFolderRequest $request): Response
     {
-        $request->validate([
-            'folderId' => ['required', 'integer'],
-            'newName' => ['required', 'string'],
-        ]);
+        $folder = $request->folder();
 
-        $folderId = $request->integer('folderId');
-        $newName = $request->input('newName');
-        $folder = $this->folders->getFolderById($folderId);
+        Gate::authorize('renameFolder', $folder);
 
-        abort_if(! $folder, 400, 'The folder cannot be found');
-
-        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
-        $this->requireVolumePermissionByFolder('createFolders', $folder);
-
-        $newName = $this->folders->renameFolderById($folderId, $newName);
+        $newName = $this->folders->renameFolderById($request->folderId(), $request->newName());
 
         return $this->asSuccess(data: ['newName' => $newName]);
     }
 
-    public function move(Request $request): Response
+    public function move(MoveAssetFolderRequest $request): Response
     {
-        $request->validate([
-            'folderId' => ['required', 'integer'],
-            'parentId' => ['required', 'integer'],
-        ]);
+        $force = $request->force();
+        $folderToMove = $request->folderToMove();
+        $destinationFolder = $request->destinationFolder();
 
-        $folderBeingMovedId = $request->integer('folderId');
-        $newParentFolderId = $request->integer('parentId');
-        $force = $request->boolean('force');
-        $merge = ! $force && $request->boolean('merge');
-
-        $folderToMove = $this->folders->getFolderById($folderBeingMovedId);
-        $destinationFolder = $this->folders->getFolderById($newParentFolderId);
-
-        abort_if(! $folderToMove, 400, 'The folder you are trying to move does not exist');
-        abort_if(! $destinationFolder, 400, 'The destination folder does not exist');
-
-        $this->requireVolumePermissionByFolder('deleteAssets', $folderToMove);
-        $this->requireVolumePermissionByFolder('createFolders', $destinationFolder);
-        $this->requireVolumePermissionByFolder('saveAssets', $destinationFolder);
+        Gate::authorize('moveFolder', [$folderToMove, $destinationFolder]);
 
         $targetVolume = $destinationFolder->getVolume();
 
         $existingFolder = $this->folders->findFolder([
-            'parentId' => $newParentFolderId,
+            'parentId' => $request->newParentFolderId(),
             'name' => $folderToMove->name,
         ]);
 
@@ -134,11 +95,11 @@ readonly class FolderController
         }
 
         // If there's a conflict and `force`/`merge` flags weren't passed in, then stop
-        if ($existingFolder && ! $force && ! $merge) {
+        if ($existingFolder && ! $force && ! $request->shouldMergeFolders()) {
             return $this->asJsonSuccess(data: [
                 'conflict' => t('Folder "{folder}" already exists at target location', ['folder' => $folderToMove->name]),
-                'folderId' => $folderBeingMovedId,
-                'parentId' => $newParentFolderId,
+                'folderId' => $request->folderBeingMovedId(),
+                'parentId' => $request->newParentFolderId(),
             ]);
         }
 
@@ -148,7 +109,7 @@ readonly class FolderController
             $folderIdChanges = AssetsHelper::mirrorFolderStructure($folderToMove, $destinationFolder);
 
             $allSourceFolderIds = array_keys($sourceTree);
-            $allSourceFolderIds[] = $folderBeingMovedId;
+            $allSourceFolderIds[] = $request->folderBeingMovedId();
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
@@ -180,14 +141,14 @@ readonly class FolderController
             $folderIdChanges = AssetsHelper::mirrorFolderStructure($folderToMove, $destinationFolder, $targetTreeMap);
 
             $allSourceFolderIds = array_keys($sourceTree);
-            $allSourceFolderIds[] = $folderBeingMovedId;
+            $allSourceFolderIds[] = $request->folderBeingMovedId();
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
             $fileTransferList = AssetsHelper::fileTransferList($foundAssets, $folderIdChanges);
         }
 
-        $newFolderId = $folderIdChanges[$folderBeingMovedId] ?? null;
+        $newFolderId = $folderIdChanges[$request->folderBeingMovedId()] ?? null;
         $newFolder = $this->folders->getFolderById($newFolderId);
 
         return $this->asSuccess(data: [

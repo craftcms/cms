@@ -35,7 +35,7 @@
     {% if allowedEnvValues is not defined %}
         {% set allowedEnvValues = options|filter(o => o.optgroup is not defined)|map(o => o.value) %}
     {% endif %}
-    {% set options = options|map(o => o.data.hint is defined ? o : o|merge({
+    {% set options = options|map(o => o.optgroup is defined or o.data.hint is defined ? o : o|merge({
         data: {
             hint: o.value,
         },
@@ -61,7 +61,7 @@
 {% endif %}
 
 {% if includeEnvVars ?? false %}
-    {% set options = options|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
+    {% set options = options|merge(cpEnvOptions(allowedEnvValues)) %}
 {% endif %}
 
 {% include (multi ? '_includes/forms/multiselect.twig' : '_includes/forms/select.twig') with {
@@ -146,21 +146,27 @@
                 }
             }
 
-            {% if addOptionFn is defined and addOptionLabel is defined %}
+            {% if addOptionFn is defined %}
             if ($item.data('add-option')) {
                 selectize.close();
                 selectize.blur();
+                const addOption = selectize.options.__add__;
+                const addOptionLabel = {{ (addOptionLabel ?? null)|json_encode|raw }};
 
                 ({{ addOptionFn|raw }})(item => {
-                    selectize.addOption(item);
+                    if (addOption?.optgroup && !item.optgroup) {
+                        item.optgroup = addOption.optgroup;
+                    }
 
-                    // Remove the “Create” option and re-place it at the end
+                    // Remove the “Create” option so the new option is placed before it.
                     selectize.removeOption('__add__', true);
+                    selectize.addOption(item);
                     selectize.addOption({
-                        text: {{ addOptionLabel|json_encode|raw }} ,
+                        ...addOption,
+                        text: addOptionLabel ?? addOption.text,
                         value: '__add__',
                         addOption: true,
-                        hint: null,
+                        hint: '',
                     });
 
                     selectize.refreshOptions(false);
@@ -208,7 +214,7 @@
                 if (hasData(data, 'addOption')) {
                     attrs.push('data-add-option="1"');
                 }
-                return `<div ${attrs.join(' ')}>${label(data, false)}</div>`;
+                return `<div ${attrs.join(' ')}>${label(data, {{ (showSelectedHint ?? false)|json_encode|raw }})}</div>`;
             },
         },
         onChange: onChange,

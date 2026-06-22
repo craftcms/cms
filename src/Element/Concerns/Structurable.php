@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\Events\AfterMoveInStructure;
-use CraftCms\Cms\Element\Events\BeforeMoveInStructure;
+use CraftCms\Cms\Element\Events\ElementMovedInStructure;
+use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\ElementCaches;
@@ -104,7 +104,7 @@ trait Structurable
             $parentId = reset($parentId);
         }
 
-        $this->_parentId = $parentId ?: false;
+        $this->_parentId = $parentId ? (int) $parentId : false;
         $this->_parent = null;
     }
 
@@ -191,13 +191,15 @@ trait Structurable
             return true;
         }
 
-        return $this->_parentId !== static::find()
+        $oldParentId = static::find()
             ->ancestorOf($element)
             ->ancestorDist(1)
             ->siteId($element->siteId)
             ->status(null)
             ->select('elements.id')
             ->first()?->id;
+
+        return $this->_parentId !== ($oldParentId ?: false);
     }
 
     public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection
@@ -358,14 +360,14 @@ trait Structurable
 
     public function beforeMoveInStructure(int $structureId): bool
     {
-        event($event = new BeforeMoveInStructure($this, $structureId));
+        event($event = new ElementMovingInStructure($this, $structureId));
 
         return $event->isValid;
     }
 
     public function afterMoveInStructure(int $structureId): void
     {
-        event(new AfterMoveInStructure($this, $structureId));
+        event(new ElementMovedInStructure($this, $structureId));
 
         ElementCaches::invalidateForElement($this);
     }

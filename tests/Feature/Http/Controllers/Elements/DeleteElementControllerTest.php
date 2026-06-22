@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\BeforeDelete;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -82,7 +82,7 @@ describe('destroy', function () {
     it('returns a failure response when deleting the element fails', function () {
         $entry = EntryModel::factory()->createElement();
 
-        Event::listen(BeforeDelete::class, function (BeforeDelete $event) use ($entry) {
+        Event::listen(ElementLifecycleDeleting::class, function (ElementLifecycleDeleting $event) use ($entry) {
             if ($event->element->id === $entry->id) {
                 $event->isValid = false;
             }

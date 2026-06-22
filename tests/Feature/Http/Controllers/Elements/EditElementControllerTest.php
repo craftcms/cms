@@ -44,6 +44,20 @@ dataset('editElementEntryRoutes', [
             $entry->slug,
         )),
     ],
+    'entries route without slug' => [
+        fn (Entry $entry) => cp_url(sprintf(
+            'entries/%s/%d',
+            $entry->getSection()->handle,
+            $entry->id,
+        )),
+    ],
+    'content route without slug' => [
+        fn (Entry $entry) => cp_url(sprintf(
+            'content/entries/%s/%d',
+            $entry->getSection()->handle,
+            $entry->id,
+        )),
+    ],
 ]);
 
 beforeEach(function () {
@@ -115,6 +129,7 @@ it('renders the current entry edit screen for each control panel route', functio
 })->with('editElementEntryRoutes');
 
 it('renders the asset edit screen', function () {
+    $this->withoutExceptionHandling();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => $this->folder->id,

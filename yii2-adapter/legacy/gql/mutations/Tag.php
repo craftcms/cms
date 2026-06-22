@@ -58,7 +58,10 @@ class Tag extends Mutation
         if ($createDeleteMutation) {
             $mutationList['deleteTag'] = [
                 'name' => 'deleteTag',
-                'args' => ['id' => Type::nonNull(Type::int())],
+                'args' => [
+                    'id' => Type::nonNull(Type::int()),
+                    'hardDelete' => Type::boolean(),
+                ],
                 'resolve' => [Craft::createObject(TagResolver::class), 'deleteTag'],
                 'description' => 'Delete a tag.',
                 'type' => Type::boolean(),

@@ -1623,6 +1623,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         selectable: this.selectable,
         sortable: this.sortable && sortAttribute === 'sortOrder',
         prevalidate: this.settings.prevalidate,
+        returnUrl: document.location.href,
       };
 
       params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
@@ -1675,7 +1676,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination, pageChanged) {
+    updateElements: function (preservePagination = false) {
       return new Promise((resolve, reject) => {
         // Ignore if we're not fully initialized yet
         if (!this.initialized) {
@@ -1695,7 +1696,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.view.disable();
         }
 
-        if (preservePagination !== true) {
+        if (!preservePagination) {
           this.prevPage = null;
           this.setPage(1);
         }
@@ -2092,6 +2093,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return this.view ? this.view.getSelectedElementIds() : [];
     },
 
+    selectElementById: function (id) {
+      return this.view?.selectElementById(id) ?? false;
+    },
+
+    selectElementsById: function (ids) {
+      this.view?.selectElementsById(ids);
+    },
+
     setStatus: function (status) {
       // Find the option (and make sure it actually exists)
       var $option = this.statusMenu.$options.filter(
@@ -2319,7 +2328,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             },
           }
         );
-      } catch (e) {}
+      } catch (e) {
+        return;
+      }
 
       $source.data(
         'table-col-opts',
@@ -2891,6 +2902,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this._autoSelectElements.push(id);
     },
 
+    selectElementsAfterUpdate: function (ids) {
+      if (this._autoSelectElements === null) {
+        this._autoSelectElements = [];
+      }
+
+      this._autoSelectElements.push(...ids);
+    },
+
     addButton: function ($button) {
       this.getButtonContainer().append($button);
     },
@@ -2937,23 +2956,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         document.activeElement.blur();
       }
 
-      let elementsHeight = this.$elements.height();
-      let windowHeight = window.innerHeight;
-      let scrollTop = $(document).scrollTop();
-
-      if (this.settings.context == 'modal') {
-        windowHeight = this.$elements.parents('.modal').height();
-        scrollTop = this.$elements.scrollParent().scrollTop();
-      }
-
-      if (elementsHeight > windowHeight) {
-        let positionTop = Math.floor(scrollTop + windowHeight / 2) - 100;
-        positionTop = Math.floor((positionTop / elementsHeight) * 100);
-
-        this.$updateSpinner.css({
-          insetBlockStart: `${positionTop}%`,
-        });
-      }
       this.updateLiveRegion(Craft.t('app', 'Loading'));
     },
 
@@ -3615,9 +3617,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (this._autoSelectElements) {
         if (this.selectable) {
-          for (var i = 0; i < this._autoSelectElements.length; i++) {
-            this.view.selectElementById(this._autoSelectElements[i]);
-          }
+          this.selectElementsById(this._autoSelectElements);
         }
 
         this._autoSelectElements = null;
@@ -3740,7 +3740,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (action.trigger) {
           const $trigger = $('<div/>', {
-            id: `${this.namespaceId(action.type)}-actiontrigger`,
+            id: `${this.namespaceId(action.triggerId)}`,
           }).append(action.trigger);
           $trigger.find('.btn').addClass('secondary');
 
@@ -3978,7 +3978,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           $('<li/>')
             .append(
               $('<a/>', {
-                id: `${this.namespaceId(action.type)}-actiontrigger`,
+                id: `${this.namespaceId(action.triggerId)}`,
                 class: destructive ? 'error' : null,
                 data: {action},
                 text: action.name,
@@ -4057,6 +4057,42 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       } else {
         this.$filterBtn.attr('aria-controls', null);
       }
+    },
+
+    onBeforeMoveElementsToPage: async function (selectedItems, page) {
+      await this.settings.onBeforeMoveElementsToPage(selectedItems, page);
+    },
+    onMoveElementsToPage: async function (selectedItems, page) {
+      await this.settings.onMoveElementsToPage(selectedItems, page);
+    },
+    onBeforeReorderElements: async function (selectedItems, offset) {
+      await this.settings.onBeforeReorderElements(selectedItems, offset);
+    },
+    onReorderElements: async function (selectedItems, offset) {
+      await this.settings.onReorderElements(selectedItems, offset);
+    },
+    onBeforeDuplicateElements: async function (selectedItems) {
+      await this.settings.onBeforeDuplicateElements(selectedItems);
+    },
+    onDuplicateElements: async function (selectedItems) {
+      await this.settings.onDuplicateElements(selectedItems);
+
+      // if we’re currently searching, update elements after the queue is finished
+      if (this.searching && Craft.cp.enableQueue) {
+        const searchText = this.searchText;
+        Craft.cp.once('queueCompleted', async () => {
+          if (this.searching && this.searchText === searchText) {
+            this.selectElementsAfterUpdate(this.getSelectedElementIds());
+            await this.updateElements(true);
+          }
+        });
+      }
+    },
+    onBeforeDeleteElements: async function (selectedItems) {
+      await this.settings.onBeforeDeleteElements(selectedItems);
+    },
+    onDeleteElements: async function (selectedItems) {
+      await this.settings.onDeleteElements(selectedItems);
     },
   },
   {
@@ -4336,6 +4372,7 @@ const ViewMenu = Garnish.Base.extend({
     this.menu.on('show', () => {
       this.$trigger.addClass('active');
       this.updateSortField();
+      this.updateRevertBtn();
     });
 
     this.menu.on('hide', () => {
@@ -4394,9 +4431,7 @@ const ViewMenu = Garnish.Base.extend({
           .closest('.table-columns-field')
           .removeClass('hidden');
       }
-      if (this.$revertBtn) {
-        this.$revertBtn.removeClass('hidden');
-      }
+      this.updateRevertBtn();
     } else {
       if (this.$tableColumnsContainer) {
         this.$tableColumnsContainer
@@ -4531,14 +4566,12 @@ const ViewMenu = Garnish.Base.extend({
     this.updateSortField();
     this.updateTableColumnField();
     this.tidyTableColumnField();
+    this.updateRevertBtn();
 
     if (this.elementIndex.settings.context === 'index') {
       // Update the query string
       Craft.setQueryParam('sort', null);
     }
-
-    this.$revertBtn.remove();
-    this.$revertBtn = null;
 
     this.$closeBtn.focus();
     this.elementIndex.updateElements();
@@ -4567,24 +4600,7 @@ const ViewMenu = Garnish.Base.extend({
       class: 'flex-grow',
     }).appendTo($footerContainer);
 
-    // Only create the revert button if there's a custom view state
-    if (
-      this.elementIndex.getSelectedSourceState('order') ||
-      this.elementIndex.getSelectedSourceState('sort') ||
-      this.elementIndex.getSelectedSourceState('tableColumns')
-    ) {
-      this._createRevertBtn();
-    }
-
-    // we only want to show the "Use defaults" btn in table and structure views
-    if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
-    ) {
-      if (this.$revertBtn) {
-        this.$revertBtn.addClass('hidden');
-      }
-    }
+    this.updateRevertBtn();
 
     this.$closeBtn = $('<button/>', {
       type: 'button',
@@ -4797,6 +4813,33 @@ const ViewMenu = Garnish.Base.extend({
     this.elementIndex.setSelectedTableColumns(columns, false);
     this.elementIndex.updateElements();
     this._createRevertBtn();
+  },
+
+  updateRevertBtn: function () {
+    const hasRevertBtn =
+      this.elementIndex.getSelectedSourceState('order') ||
+      this.elementIndex.getSelectedSourceState('sort') ||
+      this.elementIndex.getSelectedSourceState('tableColumns');
+
+    if (!hasRevertBtn) {
+      if (this.$revertBtn) {
+        this.$revertBtn.remove();
+        this.$revertBtn = null;
+      }
+
+      return;
+    }
+
+    if (!this.$revertBtn) {
+      this._createRevertBtn();
+    }
+
+    // Only show it in table and structure views
+    const showRevertBtn = ['table', 'structure'].includes(
+      this.elementIndex.viewMode
+    );
+
+    this.$revertBtn.toggleClass('hidden', !showRevertBtn);
   },
 
   _createRevertBtn: function () {

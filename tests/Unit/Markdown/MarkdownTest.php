@@ -29,6 +29,11 @@ describe('Markdown', function () {
             ->toBe("<p><a>test</a></p>\n");
     });
 
+    it('preserves the starting number for ordered lists', function () {
+        expect($this->markdown->parse("5. five\n6. six"))
+            ->toBe("<ol start=\"5\">\n<li>five</li>\n<li>six</li>\n</ol>\n");
+    });
+
     it('can allow unsafe links for compatibility shims', function () {
         expect($this->markdown->parse('[test](javascript:alert(1))', allowUnsafeLinks: true))
             ->toBe("<p><a href=\"javascript:alert(1)\">test</a></p>\n");
@@ -46,6 +51,16 @@ describe('Markdown', function () {
             ->toContain('<pre><code class="language-html">&lt;b&gt;');
     });
 
+    it('exposes registered flavor names', function () {
+        expect($this->markdown->flavors())->toContain(
+            Markdown::FLAVOR_ORIGINAL,
+            Markdown::FLAVOR_PRE_ENCODED,
+            Markdown::FLAVOR_GFM,
+            Markdown::FLAVOR_GFM_COMMENT,
+            Markdown::FLAVOR_EXTRA,
+        );
+    });
+
     it('supports extending flavors with lazy callables', function () {
         $calls = 0;
 
@@ -61,6 +76,7 @@ describe('Markdown', function () {
             ->toBe("<p>one<br>\ntwo</p>\n")
             ->and($this->markdown->parse('**bold**', 'custom'))
             ->toBe("<p><strong>bold</strong></p>\n")
+            ->and($this->markdown->flavors())->toContain('custom')
             ->and($calls)->toBe(1);
     });
 

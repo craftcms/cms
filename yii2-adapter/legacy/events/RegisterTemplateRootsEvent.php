@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterCpTemplateRoots} or {@see \CraftCms\Cms\View\Events\RegisterSiteTemplateRoots} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\CpTemplateRootsResolving} or {@see \CraftCms\Cms\View\Events\SiteTemplateRootsResolving} instead.
  */
 class RegisterTemplateRootsEvent extends Event
 {

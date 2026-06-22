@@ -3,13 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
@@ -41,7 +44,7 @@ test('requires authentication for save', function () {
 test('requires authentication for delete', function () {
     Auth::logout();
 
-    postJson(action([FilesystemsController::class, 'delete']))
+    deleteJson(action([FilesystemsController::class, 'destroy'], ['handle']))
         ->assertUnauthorized();
 });
 
@@ -55,8 +58,7 @@ test('index shows read-only flag when allowAdminChanges is false', function () {
     Cms::config()->allowAdminChanges = false;
 
     get(action([FilesystemsController::class, 'index']))
-        ->assertOk()
-        ->assertSee(t('Changes to these settings aren’t permitted in this environment.'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
 });
 
 test('create delegates to edit method', function () {
@@ -84,7 +86,7 @@ test('edit shows create form for new filesystem', function () {
 
 test('edit returns 200 for non-existent filesystem handle and shows create form', function () {
     // Non-existent handles are treated as new filesystem creation
-    $response = get(action([FilesystemsController::class, 'edit'], ['non-existent-handle']));
+    $response = get(action([FilesystemsController::class, 'edit'], ['handle' => 'non-existent-handle']));
 
     $response
         ->assertOk()
@@ -104,7 +106,7 @@ test('edit loads existing filesystem by handle', function () {
 
     Filesystems::saveFilesystem($fs);
 
-    $response = get(action([FilesystemsController::class, 'edit'], ['testFilesystem']));
+    $response = get(action([FilesystemsController::class, 'edit'], ['handle' => 'testFilesystem']));
 
     $response->assertOk();
 
@@ -127,7 +129,7 @@ test('edit loads filesystem and shows actions when not in read-only mode', funct
 
     Filesystems::saveFilesystem($fs);
 
-    $response = get(action([FilesystemsController::class, 'edit'], ['testFilesystemActions']));
+    $response = get(action([FilesystemsController::class, 'edit'], ['handle' => 'testFilesystemActions']));
 
     $response->assertOk();
 });
@@ -150,6 +152,24 @@ test('save creates filesystem with valid data', function () {
     $fs = Filesystems::getFilesystemByHandle('newTestFilesystem');
     expect($fs)->not()->toBeNull();
     expect($fs->name)->toBe('New Test Filesystem');
+});
+
+test('save ignores null transient filesystem settings', function () {
+    $response = postJson(action([FilesystemsController::class, 'save']), [
+        'type' => TransientSettingsFilesystem::class,
+        'name' => 'Transient Settings Filesystem',
+        'handle' => 'transientSettingsFilesystem',
+        'types' => [
+            TransientSettingsFilesystem::class => [
+                'transientSetting' => null,
+            ],
+        ],
+    ]);
+
+    $response->assertOk();
+
+    $fs = Filesystems::getFilesystemByHandle('transientSettingsFilesystem');
+    expect($fs)->not()->toBeNull();
 });
 
 test('save updates existing filesystem with oldHandle', function () {
@@ -203,11 +223,6 @@ test('save returns failure on invalid data', function () {
     $response->assertStatus(400);
 });
 
-test('delete validates required id field', function () {
-    postJson(action([FilesystemsController::class, 'delete']), [])
-        ->assertJsonValidationErrors(['id']);
-});
-
 test('delete removes filesystem successfully', function () {
     // Create a filesystem to delete
     $fs = Filesystems::createFilesystem([
@@ -222,9 +237,7 @@ test('delete removes filesystem successfully', function () {
     Filesystems::saveFilesystem($fs);
 
     // Delete it
-    $response = postJson(action([FilesystemsController::class, 'delete']), [
-        'id' => 'toDelete',
-    ]);
+    $response = deleteJson(action([FilesystemsController::class, 'destroy'], [$fs->handle]));
 
     $response->assertOk();
 
@@ -234,9 +247,7 @@ test('delete removes filesystem successfully', function () {
 });
 
 test('delete handles non-existent filesystem gracefully', function () {
-    $response = postJson(action([FilesystemsController::class, 'delete']), [
-        'id' => 'non-existent-filesystem',
-    ]);
+    $response = deleteJson(action([FilesystemsController::class, 'destroy'], ['non-existent-filesystem']));
 
     $response->assertOk();
 });
@@ -256,8 +267,27 @@ test('respects read-only mode for save operation', function () {
 test('respects read-only mode for delete operation', function () {
     Cms::config()->allowAdminChanges = false;
 
-    postJson(action([FilesystemsController::class, 'delete']), [
-        'id' => 'test',
-    ])
+    deleteJson(action([FilesystemsController::class, 'destroy'], ['test']))
         ->assertForbidden();
 });
+
+class TransientSettingsFilesystem extends Filesystem
+{
+    public function __construct(array $config = [])
+    {
+        if (isset($config['transientSetting'])) {
+            unset($config['transientSetting']);
+        }
+
+        parent::__construct($config);
+    }
+
+    #[Override]
+    public function getDiskConfig(): array
+    {
+        return [
+            'driver' => 'local',
+            'root' => sys_get_temp_dir(),
+        ];
+    }
+}

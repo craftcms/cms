@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
-use CraftCms\Cms\Cp\Events\RegisterFormActions;
+use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
@@ -17,12 +17,13 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use DateTime;
+use DateTimeInterface;
 use Deprecated;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Uri;
 use InvalidArgumentException;
+use Stringable;
 
 use function CraftCms\Cms\t;
 
@@ -219,10 +220,10 @@ class Cp extends Component
     /**
      * Returns all known time zones for a time zone input.
      *
-     * @param  DateTime|null  $offsetDate  The [[DateTime]] object that contains the date/time to compute time zone offsets from
+     * @param  DateTimeInterface|null  $offsetDate  The [[DateTime]] object that contains the date/time to compute time zone offsets from
      */
     #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTimezoneOptions]] should be used instead.')]
-    public function getTimeZoneOptions(?DateTime $offsetDate = null): array
+    public function getTimeZoneOptions(?DateTimeInterface $offsetDate = null): array
     {
         return $this->formatLegacyOptions(SelectOptions::getTimeZoneOptions($offsetDate));
     }
@@ -300,7 +301,7 @@ class Cp extends Component
 
     public function prepFormActions(?array $formActions): ?array
     {
-        event($event = new RegisterFormActions($formActions ?? []));
+        event($event = new FormActionsResolving($formActions ?? []));
 
         return $event->formActions;
     }
@@ -313,7 +314,7 @@ class Cp extends Component
      * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      */
-    public function field(string $input, array $config = []): string
+    public function field(string|Stringable $input, array $config = []): string
     {
         return FormFields::fieldHtml($input, $config);
     }
@@ -334,14 +335,14 @@ class Cp extends Component
         $options = [];
 
         foreach ($originalOptions as $value) {
-            if ($value['type'] === 'optgroup') {
+            if (($value['type'] ?? null) === 'optgroup') {
                 $options[] = ['optgroup' => $value['label']];
                 array_push($options, ...($value['options'] ?? []));
             } else {
                 $options[] = [
                     'label' => $value['label'],
                     'value' => $value['value'],
-                    'data' => $value['data'],
+                    'data' => $value['data'] ?? null,
                 ];
             }
         }

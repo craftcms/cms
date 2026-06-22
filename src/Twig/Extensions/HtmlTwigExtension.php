@@ -7,10 +7,11 @@ namespace CraftCms\Cms\Twig\Extensions;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Field\Data\MarkdownData;
+use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\View\InputNamespace;
@@ -67,6 +68,14 @@ class HtmlTwigExtension extends AbstractExtension
             new TwigFunction('svg', $this->svgFunction(...), ['is_safe' => ['html']]),
             new TwigFunction('tag', $this->tagFunction(...), ['is_safe' => ['html']]),
             new TwigFunction('ul', Html::ul(...), ['is_safe' => ['html']]),
+            new TwigFunction('h', $this->headingFunction(...), ['is_safe' => ['html']]),
+            new TwigFunction('h1', fn (array|string $attributes = '') => $this->headingFunction(1, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h2', fn (array|string $attributes = '') => $this->headingFunction(2, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h3', fn (array|string $attributes = '') => $this->headingFunction(3, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h4', fn (array|string $attributes = '') => $this->headingFunction(4, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h5', fn (array|string $attributes = '') => $this->headingFunction(5, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h6', fn (array|string $attributes = '') => $this->headingFunction(6, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('heading', $this->headingFunction(...), ['is_safe' => ['html']]),
         ];
     }
 
@@ -154,19 +163,19 @@ class HtmlTwigExtension extends AbstractExtension
         bool $encode = false,
     ): string {
         if ($encode) {
-            if ($flavor !== null && ! in_array($flavor, ['original', 'pre-encoded'])) {
+            if ($flavor !== null && ! in_array($flavor, [MarkdownService::FLAVOR_ORIGINAL, MarkdownService::FLAVOR_PRE_ENCODED], true)) {
                 throw new InvalidArgumentException('The Markdown flavor cannot be specified when passing `encode=true`.');
             }
 
-            $markdown = Html::encode($markdown);
-            $flavor = 'pre-encoded';
+            $flavor = MarkdownService::FLAVOR_PRE_ENCODED;
         }
 
-        if ($inlineOnly) {
-            return Markdown::parseParagraph((string) $markdown, $flavor);
-        }
-
-        return Markdown::parse((string) $markdown, $flavor);
+        return new MarkdownData(
+            (string) $markdown,
+            $flavor ?? MarkdownService::FLAVOR_ORIGINAL,
+            encode: $encode,
+            inlineOnly: $inlineOnly,
+        )->getHtml();
     }
 
     /**
@@ -188,6 +197,15 @@ class HtmlTwigExtension extends AbstractExtension
         }
     }
 
+    public function headingFunction(int $level, array|string $attributes = ''): string
+    {
+        if ($level < 1 || $level > 6) {
+            throw new InvalidArgumentException("Invalid heading level: $level");
+        }
+
+        return $this->tagFunction("h$level", $attributes);
+    }
+
     public function svgFunction(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null, ?string $class = null): string
     {
         $svg = Html::svg($svg, $sanitize, $namespace);
@@ -206,14 +224,17 @@ class HtmlTwigExtension extends AbstractExtension
         return $svg;
     }
 
-    public function tagFunction(string $type, array $attributes = []): string
+    public function tagFunction(string $type, array|string $attributes = ''): string
     {
-        $html = Arr::pull($attributes, 'html', '');
-        $text = Arr::pull($attributes, 'text');
-
-        if ($text !== null) {
-            $html = Html::encode($text);
+        if (is_array($attributes)) {
+            $html = Arr::pull($attributes, 'html');
+            $text = Arr::pull($attributes, 'text');
+        } else {
+            $text = $attributes;
+            $attributes = [];
         }
+
+        $html ??= Html::encode($text ?? '');
 
         return Html::tag($type, $html, $attributes);
     }

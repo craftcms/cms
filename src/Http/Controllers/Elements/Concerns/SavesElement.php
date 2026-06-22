@@ -7,7 +7,9 @@ namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -15,7 +17,7 @@ trait SavesElement
 {
     protected readonly ElementRequest $request;
 
-    protected function canSave(ElementInterface $element, User $user): bool
+    protected function canSave(ElementInterface $element, CraftUser $user): bool
     {
         if ($element->getIsRevision()) {
             return false;
@@ -84,7 +86,13 @@ trait SavesElement
         $element->ruleset->withScenario(
             ElementRules::SCENARIO_LIVE,
             function () use ($element) {
-                $element->setAttributesFromRequest($this->request->validated() + array_filter(['fieldId' => $this->request->input('fieldId')]));
+                $values = $this->request->validated() + array_filter(['fieldId' => $this->request->input('fieldId')]);
+
+                if ($element instanceof User) {
+                    $values = Arr::except($values, $this->sensitiveAttributes($element));
+                }
+
+                $element->setAttributesFromRequest($values);
 
                 if ($this->request->has('slug')) {
                     $element->slug = $this->request->input('slug');
@@ -97,5 +105,14 @@ trait SavesElement
 
         // Set the custom field values
         $element->setFieldValuesFromRequest($fieldsLocation);
+    }
+
+    private function sensitiveAttributes(User $element): array
+    {
+        if ($element->getIsDraft()) {
+            return array_diff(User::SENSITIVE_ATTRIBUTES, ['email']);
+        }
+
+        return User::SENSITIVE_ATTRIBUTES;
     }
 }

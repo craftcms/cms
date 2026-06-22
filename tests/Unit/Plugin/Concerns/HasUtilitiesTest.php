@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
-use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Events\UtilitiesResolving;
 use CraftCms\Cms\Utility\Utilities\PhpInfo;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Collection;
@@ -13,7 +13,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    app(Dispatcher::class)->forget(RegisterUtilities::class);
+    app(Dispatcher::class)->forget(UtilitiesResolving::class);
     app()->forgetInstance(TestPlugin::class);
 });
 
@@ -26,7 +26,7 @@ it('registers configured utility types', function () {
     $plugin->setUtilities([PhpInfo::class]);
     $plugin->bootHasUtilities();
 
-    $event = new RegisterUtilities(new Collection);
+    $event = new UtilitiesResolving(new Collection);
     event($event);
 
     expect($event->types->all())->toContain(PhpInfo::class);
@@ -40,7 +40,7 @@ it('does not register utility listeners when none are configured', function () {
 
     $plugin->bootHasUtilities();
 
-    $event = new RegisterUtilities(new Collection);
+    $event = new UtilitiesResolving(new Collection);
     event($event);
 
     expect($event->types->all())->toBe([]);

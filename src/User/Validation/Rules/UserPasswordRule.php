@@ -12,7 +12,7 @@ use function CraftCms\Cms\t;
 
 readonly class UserPasswordRule implements ValidationRule
 {
-    public const int MIN_PASSWORD_LENGTH = 6;
+    public const int MIN_PASSWORD_LENGTH = 8;
 
     public const int MAX_PASSWORD_LENGTH = 160;
 

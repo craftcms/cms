@@ -13,7 +13,9 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
@@ -298,7 +300,7 @@ it('logs user in after registration when autoLoginAfterAccountActivation is true
         ->assertSessionHasNoErrors();
 
     expect(Auth::check())->toBeTrue();
-    expect(Auth::user()->email)->toBe('autologin@example.com');
+    expect(currentUser()?->asElement()->email)->toBe('autologin@example.com');
 });
 
 it('can upload a photo', function () {
@@ -340,6 +342,21 @@ it('can upload a photo', function () {
     $user = User::find()->email('newuser@example.com')->one();
 
     expect($user->getPhoto())->not->toBeNull();
+});
+
+it('rejects a photo with a non image client filename extension', function () {
+    $uploadPath = storage_path('framework/testing/avatar-js.gif');
+
+    File::ensureDirectoryExists(dirname($uploadPath));
+    copy(dirname(__DIR__, 5).'/_data/assets/files/example-gif.gif', $uploadPath);
+
+    post(action(SaveUserController::class), [
+        'email' => 'avatarjs@example.com',
+        'password' => 'securePassword123!',
+        'photo' => new UploadedFile($uploadPath, 'avatar.js', 'image/gif', null, true),
+    ])->assertSessionHasErrors(['photo']);
+
+    expect(User::find()->email('avatarjs@example.com')->one())->toBeNull();
 });
 
 it('can upload a photo with different image formats', function () {

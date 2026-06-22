@@ -18,4 +18,16 @@ export default css`
     border: none;
     cursor: pointer;
   }
+
+  .icon {
+    display: inline-block;
+    width: 0.9em;
+    height: 0.9em;
+  }
+
+  svg {
+    fill: currentColor;
+    width: 100%;
+    height: 100%;
+  }
 `;

@@ -65,9 +65,9 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\TemplateGlobals;
 use DirectoryIterator;
+use GuzzleHttp\Psr7\FnStream;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Money\Money;
@@ -80,10 +80,14 @@ use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+use yii\behaviors\AttributeTypecastBehavior;
 
+use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -93,18 +97,18 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         private readonly PageLifecycle $pageLifecycle,
     ) {}
 
-    public static function arraySome(TwigEnvironment $env, mixed $array, mixed $arrow): mixed
+    public static function arraySome(TwigEnvironment $env, mixed $array, mixed $arrow, bool $isSandboxed = false): mixed
     {
-        CoreExtension::checkArrow($env, $arrow, 'has some', 'operator');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'has some', 'operator');
 
-        return CoreExtension::arraySome($env, $array, $arrow);
+        return CoreExtension::arraySome($env, $array, $arrow, $isSandboxed);
     }
 
-    public static function arrayEvery(TwigEnvironment $env, mixed $array, mixed $arrow): mixed
+    public static function arrayEvery(TwigEnvironment $env, mixed $array, mixed $arrow, bool $isSandboxed = false): mixed
     {
-        CoreExtension::checkArrow($env, $arrow, 'has every', 'operator');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'has every', 'operator');
 
-        return CoreExtension::arrayEvery($env, $array, $arrow);
+        return CoreExtension::arrayEvery($env, $array, $arrow, $isSandboxed);
     }
 
     #[Override]
@@ -172,6 +176,14 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigTest('boolean', fn ($obj): bool => is_bool($obj)),
             new TwigTest('callable', fn ($obj): bool => is_callable($obj)),
             new TwigTest('countable', fn ($obj): bool => is_countable($obj)),
+            new TwigTest('empty', function ($obj): bool {
+                if ($obj instanceof Component) {
+                    // assume the IteratorAggregate implementation was not intentional
+                    return false;
+                }
+
+                return CoreExtension::testEmpty($obj);
+            }),
             new TwigTest('float', fn ($obj): bool => is_float($obj)),
             new TwigTest('instance of', fn ($obj, $class) => $obj instanceof $class),
             new TwigTest('integer', fn ($obj): bool => is_int($obj)),
@@ -212,6 +224,8 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             'POS_HEAD' => Position::Head->value,
             'POS_BEGIN' => Position::BodyBegin->value,
             'POS_END' => Position::BodyEnd->value,
+            'POS_READY' => Position::Ready->value,
+            'POS_LOAD' => Position::Load->value,
         ]);
     }
 
@@ -224,6 +238,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('base64_encode', 'base64_encode'),
             new TwigFilter('boolean', 'boolval'),
             new TwigFilter('currency', $this->currencyFilter(...)),
+            new TwigFilter('default', $this->defaultFilter(...), ['node_class' => DefaultFilter::class]),
             new TwigFilter('filesize', $this->filesizeFilter(...)),
             new TwigFilter('float', 'floatval'),
             new TwigFilter('integer', 'intval'),
@@ -252,8 +267,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('clone', $this->cloneFunction(...)),
             new TwigFunction('configure', Typecast::configure(...)),
             new TwigFunction('cpUrl', Url::cpUrl(...)),
+            new TwigFunction('craftAsset', craftAsset(...)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
+            new TwigFunction('dd', dd(...)),
             new TwigFunction('encodeUrl', Url::encodeUrl(...)),
             new TwigFunction('entryType', $this->entryTypeFunction(...)),
             new TwigFunction('expression', $this->expressionFunction(...)),
@@ -277,12 +294,12 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('entries', fn (array $config = []) => new EntryQuery($config)),
             new TwigFunction('users', fn (array $config = []) => new UserQuery($config)),
 
-            new TwigFunction('canCreateDrafts', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('createDrafts', $element)),
-            new TwigFunction('canDelete', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('delete', $element)),
-            new TwigFunction('canDeleteForSite', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('deleteForSite', $element)),
-            new TwigFunction('canDuplicate', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('duplicate', $element)),
-            new TwigFunction('canSave', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('save', $element)),
-            new TwigFunction('canView', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('view', $element)),
+            new TwigFunction('canCreateDrafts', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('createDrafts', $element)),
+            new TwigFunction('canDelete', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('delete', $element)),
+            new TwigFunction('canDeleteForSite', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('deleteForSite', $element)),
+            new TwigFunction('canDuplicate', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('duplicate', $element)),
+            new TwigFunction('canSave', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('save', $element)),
+            new TwigFunction('canView', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('view', $element)),
 
             new TwigFunction('head', $this->pageLifecycle->head(...)),
             new TwigFunction('beginBody', $this->pageLifecycle->beginBody(...)),
@@ -299,13 +316,13 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return app(Addresses::class)->formatAddress($address, $options, $formatter);
     }
 
-    public function moneyFilter(?Money $money, ?string $formatLocale = null): ?string
+    public function moneyFilter(?Money $money, ?string $locale = null): ?string
     {
         if ($money === null) {
             return null;
         }
 
-        return MoneyHelper::toString($money, $formatLocale);
+        return MoneyHelper::toString($money, $locale);
     }
 
     public function translateFilter(mixed $message, mixed $category = null, mixed $params = null, ?string $language = null): string
@@ -338,6 +355,23 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
+    /**
+     * Returns the passed-in value if it’s not empty; otherwise, the provided default value.
+     */
+    public static function defaultFilter(mixed $value, mixed $default = ''): mixed
+    {
+        if ($value instanceof Component) {
+            // assume the IteratorAggregate implementation was not intentional
+            return $value;
+        }
+
+        if (CoreExtension::testEmpty($value)) {
+            return $default;
+        }
+
+        return $value;
+    }
+
     public function filesizeFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
@@ -351,17 +385,24 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
-    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = [], ?string $locale = null): string
     {
         if ($value === null || $value === '') {
             return '';
         }
 
+        $formatter = $locale
+            ? I18N::getLocaleById($locale)->getFormatter()
+            : I18N::getFormatter();
+
         try {
-            return I18N::getFormatter()->asDecimal($value, $decimals, $options);
+            if (! $formatter->willBeMisrepresented($value)) {
+                return $formatter->asDecimal($value, $decimals, $options);
+            }
         } catch (Throwable) {
-            return $value;
         }
+
+        return $value;
     }
 
     public function percentageFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
@@ -425,8 +466,11 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ([
+            /** @phpstan-ignore-next-line */
+            AttributeTypecastBehavior::class,
             DirectoryIterator::class,
             Process::class,
+            FnStream::class,
             SimpleXMLElement::class,
         ] as $blockedClass) {
             if (is_a($class, $blockedClass, true)) {
@@ -434,8 +478,12 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        if (! is_subclass_of($class, Component::class)) {
-            throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', Component::class));
+        if (str_starts_with(ltrim($class, '\\'), 'Spl')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
+        if (str_ends_with(rtrim($class, '\\'), 'Iterator')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
         $object = app()->make($class, $params);

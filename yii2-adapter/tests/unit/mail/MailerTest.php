@@ -18,7 +18,7 @@ use CraftCms\Cms\Config\GeneralConfig as CmsGeneralConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
+use CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Config;
@@ -116,7 +116,7 @@ class MailerTest extends TestCase
 
         // app(ProjectConfig::class)->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
 
-        // Event::listen(RegisterSystemMessages::class, function(RegisterSystemMessages $event) {
+        // Event::listen(SystemMessagesResolving::class, function(SystemMessagesResolving $event) {
         //     $event->messages = collect([
         //         new SystemMessage([
         //             'key' => 'account_activation',

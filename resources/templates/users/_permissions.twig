@@ -1,14 +1,11 @@
 {% import '_includes/forms.twig' as forms %}
 {{ hiddenInput('userId', user.id) }}
 
-{% set showUserGroups = Auth.user.canAssignUserGroups() %}
-{% set showPermissions = Auth.user.can('assignUserPermissions') %}
-
 {% if showUserGroups %}
   <fieldset class="first">
     <h2>{{ 'User Groups'|t('app') }}</h2>
 
-    {% do deltaRegistry.registerName('groups') %}
+    {% do DeltaRegistry.registerName('groups') %}
 
     {% embed '_includes/forms/field.twig' with {
       fieldId: 'user-groups',
@@ -21,7 +18,7 @@
           values: user.getGroups(),
           showDescription: true,
           sortable: false,
-          createAction: Auth.user.admin and config('craft.general.allowAdminChanges') ? 'user-settings/edit-group' : null,
+          createAction: currentUserIsAdmin and config('craft.general.allowAdminChanges') ? 'user-settings/edit-group' : null,
         } %}
       {% endblock %}
     {% endembed %}
@@ -36,7 +33,7 @@
   <div>
     <h2>{{ 'Permissions'|t('app') }}</h2>
 
-    {% if Auth.user.admin %}
+    {% if currentUserIsAdmin %}
       {{ forms.lightswitchField({
         label: 'Admin'|t('app'),
         name: 'admin',
@@ -46,7 +43,7 @@
       }) }}
     {% endif %}
 
-    {% do deltaRegistry.registerName('permissions') %}
+    {% do DeltaRegistry.registerName('permissions') %}
     {{ hiddenInput('permissions', '') }}
 
     <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">

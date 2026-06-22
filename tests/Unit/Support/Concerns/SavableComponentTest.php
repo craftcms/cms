@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Component\Events\ComponentEvent;
+use CraftCms\Cms\Component\Events\ComponentDeleteApplying;
+use CraftCms\Cms\Component\Events\ComponentDeleted;
+use CraftCms\Cms\Component\Events\ComponentDeleting;
+use CraftCms\Cms\Component\Events\ComponentSaved;
+use CraftCms\Cms\Component\Events\ComponentSaving;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
+use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->component = app(CraftSupport::class);
@@ -22,7 +27,7 @@ it('can determine if it is new', function (int|string|null $id, bool $expected) 
 it('can register before save callback', function () {
     $triggered = false;
 
-    $this->component::onBeforeSave(function (ComponentEvent $event) use (&$triggered) {
+    Event::listen(function (ComponentSaving $event) use (&$triggered) {
         $triggered = true;
         expect($event->component)->toBe($this->component);
         expect($event->isNew)->toBeTrue();
@@ -37,10 +42,26 @@ it('can register before save callback', function () {
     expect($triggered)->toBeTrue();
 });
 
+it('filters component helper listeners and supports Laravel listener classes', function () {
+    SavableComponentTestListener::$events = [];
+
+    CraftSupport::onBeforeSave(SavableComponentTestListener::class);
+
+    event(new ComponentSaving(new stdClass, true));
+
+    expect(SavableComponentTestListener::$events)->toBeEmpty();
+
+    $this->component->beforeSave(true);
+
+    expect(SavableComponentTestListener::$events)
+        ->toHaveCount(1)
+        ->and(SavableComponentTestListener::$events[0]->component)->toBe($this->component);
+});
+
 it('can register after save callback', function () {
     $triggered = false;
 
-    $this->component::onAfterSave(function (ComponentEvent $event) use (&$triggered) {
+    Event::listen(function (ComponentSaved $event) use (&$triggered) {
         $triggered = true;
         expect($event->component)->toBe($this->component);
         expect($event->isNew)->toBeTrue();
@@ -53,10 +74,21 @@ it('can register after save callback', function () {
     expect($triggered)->toBeTrue();
 });
 
+class SavableComponentTestListener
+{
+    /** @var array<int, ComponentSaving> */
+    public static array $events = [];
+
+    public function handle(ComponentSaving $event): void
+    {
+        self::$events[] = $event;
+    }
+}
+
 it('can register before delete callback', function () {
     $triggered = false;
 
-    $this->component::onBeforeDelete(function (ComponentEvent $event) use (&$triggered) {
+    Event::listen(function (ComponentDeleting $event) use (&$triggered) {
         $triggered = true;
         expect($event->component)->toBe($this->component);
         expect($event->isNew)->toBeFalse();
@@ -74,7 +106,7 @@ it('can register before delete callback', function () {
 it('can register before apply delete callback', function () {
     $triggered = false;
 
-    $this->component::onBeforeApplyDelete(function (ComponentEvent $event) use (&$triggered) {
+    Event::listen(function (ComponentDeleteApplying $event) use (&$triggered) {
         $triggered = true;
         expect($event->component)->toBe($this->component);
         expect($event->isNew)->toBeFalse();
@@ -90,7 +122,7 @@ it('can register before apply delete callback', function () {
 it('can register after delete callback', function () {
     $triggered = false;
 
-    $this->component::onAfterDelete(function (ComponentEvent $event) use (&$triggered) {
+    Event::listen(function (ComponentDeleted $event) use (&$triggered) {
         $triggered = true;
         expect($event->component)->toBe($this->component);
         expect($event->isNew)->toBeFalse();

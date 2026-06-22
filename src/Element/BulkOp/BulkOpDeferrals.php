@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\BulkOp;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
+use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplayed;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\ConnectionInterface;
@@ -109,7 +109,7 @@ class BulkOpDeferrals
         foreach ($triggers as $event => $watchKeys) {
             foreach (array_keys($watchKeys) as $watchKey) {
                 foreach ($this->handlers[$event][$watchKey] ?? [] as [$handler, $data]) {
-                    $handler(new DeferredBulkOpReplay(
+                    $handler(new DeferredBulkOpReplayed(
                         key: $key,
                         event: $event,
                         watchKey: $watchKey,

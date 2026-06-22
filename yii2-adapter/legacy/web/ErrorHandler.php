@@ -13,7 +13,6 @@ use craft\events\RedirectEvent;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
 use GuzzleHttp\Exception\ClientException;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Throwable;
 use Twig\Error\Error as TwigError;
@@ -25,6 +24,8 @@ use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\UserException;
 use yii\web\HttpException;
+
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -293,10 +294,10 @@ class ErrorHandler extends \yii\web\ErrorHandler
             return true;
         }
 
-        $user = Auth::user();
+        $user = currentUser();
         return (
             $user &&
-            $user->admin &&
+            $user->isAdmin() &&
             $user->getPreference('showExceptionView')
         );
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
+use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use RectorLaravel\Rector\ArrayDimFetch\EnvVariableToEnvHelperRector;
 use RectorLaravel\Rector\Class_\AnonymousMigrationsRector;
@@ -12,7 +13,6 @@ use RectorLaravel\Rector\FuncCall\AppToResolveRector;
 use RectorLaravel\Rector\MethodCall\ResponseHelperCallToJsonResponseRector;
 use RectorLaravel\Rector\MethodCall\UseComponentPropertyWithinCommandsRector;
 use RectorLaravel\Set\LaravelSetList;
-use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -41,10 +41,12 @@ return RectorConfig::configure()
             __DIR__.'/src/Http/Mixins/SessionMixin.php',
         ],
         AppToResolveRector::class,
+        StringClassNameToClassConstantRector::class => [
+            __DIR__.'/src/Console/PromptTask.php',
+        ],
     ])
-    ->withSetProviders(LaravelSetProvider::class)
-    ->withComposerBased(laravel: true)
     ->withSets([
+        LaravelSetList::LARAVEL_130_WITHOUT_ATTRIBUTES,
         LaravelSetList::LARAVEL_ARRAYACCESS_TO_METHOD_CALL,
         LaravelSetList::LARAVEL_ARRAY_STR_FUNCTION_TO_STATIC_CALL,
         LaravelSetList::LARAVEL_CODE_QUALITY,

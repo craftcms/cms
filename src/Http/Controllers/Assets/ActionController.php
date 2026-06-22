@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Database\Table;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Uri;
 use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
@@ -28,7 +28,6 @@ use function CraftCms\Cms\t;
 
 readonly class ActionController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -47,8 +46,7 @@ readonly class ActionController
 
         abort_if(! $asset, 400, "Invalid asset ID: $assetId");
 
-        $this->requireVolumePermissionByAsset('deleteAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
+        Gate::authorize('deleteFile', $asset);
 
         $success = $this->elements->deleteElement($asset);
 
@@ -88,10 +86,7 @@ readonly class ActionController
 
         $filename = $request->input('filename') ?? $asset->getFilename();
 
-        $this->requireVolumePermissionByFolder('saveAssets', $folder);
-        $this->requireVolumePermissionByAsset('deleteAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('savePeerAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
+        Gate::authorize('moveFile', [$asset, $folder]);
 
         if ($request->boolean('force')) {
             /** @var Asset|null $conflictingAsset */
@@ -140,8 +135,7 @@ readonly class ActionController
         abort_if(empty($assets), 400, t('The asset you’re trying to download does not exist.'));
 
         foreach ($assets as $asset) {
-            $this->requireVolumePermissionByAsset('viewAssets', $asset);
-            $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+            Gate::authorize('viewFile', $asset);
         }
 
         // If only one asset was selected, send it back unzipped
@@ -189,8 +183,7 @@ readonly class ActionController
 
         abort_if($asset === null, 400, "Invalid asset ID: $assetId");
 
-        $this->requireVolumePermissionByAsset('viewAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+        Gate::authorize('viewFile', $asset);
 
         $folder = $asset->getFolder();
         $sourcePath[] = $folder->getSourcePathInfo();

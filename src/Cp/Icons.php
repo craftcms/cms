@@ -8,6 +8,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
@@ -123,10 +124,46 @@ readonly class Icons
         return $icon;
     }
 
+    public static function resolveIconFamily(string $icon): string
+    {
+        if (in_array($icon, self::CUSTOM_ICONS)) {
+            return 'custom-icons';
+        }
+
+        return Str::of(self::resolveIconPath($icon))
+            ->replace(Aliases::get('@icons'), '')
+            ->ltrim('/', '')
+            ->before('/')
+            ->toString();
+    }
+
+    public static function resolveIconData(string $icon): array
+    {
+        return [
+            'name' => self::resolveIconName($icon),
+            'family' => self::resolveIconFamily($icon),
+        ];
+    }
+
+    public static function resolveIconPath(string $icon): string
+    {
+        return in_array($icon, self::CUSTOM_ICONS)
+            ? Aliases::get("@craftcms/resources/icons/custom-icons/$icon.svg")
+            : Aliases::get("@appicons/$icon.svg");
+    }
+
     public static function svg(?string $icon, ?string $fallbackLabel = null, ?string $altText = null): ?string
     {
         if ($icon === null) {
             return null;
+        }
+
+        static $cache = [];
+
+        $cacheKey = md5(serialize([$icon, $fallbackLabel, $altText]));
+
+        if (array_key_exists($cacheKey, $cache)) {
+            return $cache[$cacheKey];
         }
 
         $attributes = [
@@ -137,9 +174,7 @@ readonly class Icons
 
         try {
             if (preg_match('/^[\da-z\-]+$/', $icon)) {
-                $path = in_array($icon, self::CUSTOM_ICONS)
-                    ? Aliases::get("@craftcms/resources/icons/custom-icons/$icon.svg")
-                    : Aliases::get("@appicons/$icon.svg");
+                $path = self::resolveIconPath($icon);
 
                 if (! file_exists($path)) {
                     throw new InvalidArgumentException("Invalid system icon: $icon");
@@ -153,10 +188,10 @@ readonly class Icons
             Log::warning("Could not load icon: {$e->getMessage()}", [__METHOD__]);
 
             if (! $fallbackLabel) {
-                return '';
+                return $cache[$cacheKey] = '';
             }
 
-            return self::fallbackSvg($fallbackLabel);
+            return $cache[$cacheKey] = self::fallbackSvg($fallbackLabel);
         }
 
         if ($altText !== null) {
@@ -176,12 +211,14 @@ readonly class Icons
         } catch (InvalidArgumentException) {
         }
 
-        return $svg;
+        return $cache[$cacheKey] = $svg;
     }
 
     public static function fallbackSvg(string $label): string
     {
-        return template('_includes/fallback-icon-svg', [
+        static $cache = [];
+
+        return $cache[$label] ??= template('_includes/fallback-icon-svg', [
             'label' => $label,
         ]);
     }

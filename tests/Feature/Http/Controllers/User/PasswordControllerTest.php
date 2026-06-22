@@ -8,7 +8,10 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
+use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
 
 use function CraftCms\Cms\t;
@@ -18,7 +21,7 @@ use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::find()->addSelect('password')->first());
+    actingAs(UserModel::first());
     Session::passwordConfirmed();
 });
 
@@ -180,17 +183,57 @@ it('allows anonymous access for sendPasswordResetEmail', function () {
     expect($response->status())->not()->toBe(401);
 });
 
-it('requires loginName when not providing userId for sendPasswordResetEmail', function () {
-    $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), []);
+it('sends password reset email for a valid loginName', function () {
+    Notification::fake();
+    auth()->logout();
 
-    expect($response->json('message'))->toContain('Username or email is required.');
+    $user = UserModel::factory()->createElement();
+    $user = User::find()->id($user->id)->one();
+
+    postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => $user->email,
+    ])->assertOk();
+
+    Notification::assertSentTo(
+        UserModel::findOrFail($user->id),
+        ResetPasswordNotification::class,
+        fn ($notification, $channels) => in_array(MailChannel::class, $channels)
+    );
+});
+
+it('requires loginName when not providing userId for sendPasswordResetEmail', function () {
+    postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [])
+        ->assertJsonValidationErrorFor('loginName');
 });
 
 it('returns error for invalid loginName on sendPasswordResetEmail', function () {
+    Cms::config()->preventUserEnumeration = false;
+
     $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'loginName' => 'nonexistent@example.com',
     ]);
 
+    expect($response->json('message'))->toContain('Invalid username or email.');
+});
+
+it('validates loginName as email when useEmailAsUsername is true for sendPasswordResetEmail', function () {
+    Cms::config()->useEmailAsUsername = true;
+
+    postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => 'not-an-email',
+    ])->assertJsonValidationErrorFor('loginName');
+});
+
+it('accepts username when useEmailAsUsername is false for sendPasswordResetEmail', function () {
+    Cms::config()->useEmailAsUsername = false;
+    Cms::config()->preventUserEnumeration = false;
+
+    // Should pass validation but fail because user doesn't exist
+    $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => 'someusername',
+    ]);
+
+    // Should not be a validation error, but an "invalid user" error
     expect($response->json('message'))->toContain('Invalid username or email.');
 });
 
@@ -227,7 +270,7 @@ it('requires password confirmation for store', function () {
 it('aborts for users without current password', function () {
     UserModel::first()->update(['password' => null]);
 
-    actingAs(User::find()->addSelect('password')->first());
+    actingAs(UserModel::first());
 
     post(action([PasswordController::class, 'store']), [
         'newPassword' => 'validPassword123!',
@@ -262,7 +305,7 @@ it('returns failure when save fails', function () {
 
 describe('verifyPassword', function () {
     beforeEach(function () {
-        actingAs(User::find()->addSelect('password')->first());
+        actingAs(UserModel::first());
     });
 
     test('verifyPassword requires login', function () {

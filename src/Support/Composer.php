@@ -42,7 +42,7 @@ class Composer
             return CRAFT_COMPOSER_PATH;
         }
 
-        $jsonPath = Aliases::get('@root/composer.json');
+        $jsonPath = File::normalizePath(Aliases::get('@root/composer.json'));
 
         if (! File::exists($jsonPath)) {
             throw new FileNotFoundException("No Composer config found at $jsonPath.");
@@ -108,7 +108,7 @@ class Composer
 
         if ($requirements !== null) {
             $this->updateRequirements($jsonPath, $requirements);
-            $command = array_merge(['update'], array_keys($requirements), ['--with-all-dependencies']);
+            $command = array_merge(['update'], array_keys($requirements), ['--with-dependencies']);
         } else {
             $command = ['install'];
         }
@@ -168,7 +168,7 @@ class Composer
         if (! $composerPath) {
             $runtimePath = Path::runtime();
 
-            // Copy composer.phar into storage/
+            // Copy composer.phar into the runtime folder
             $pharPath = join_paths($runtimePath, 'composer.phar');
             copy(Aliases::get('@lib/composer.phar'), $pharPath);
 

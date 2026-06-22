@@ -473,8 +473,8 @@ class HtmlHelperTest extends TestCase
             [false, '<!-- comment -->', []],
             [false, '<?xml?>', []],
             // https://github.com/craftcms/cms/issues/4984
-            ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&height=100">', ['class' => 'foo']],
-            ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
+            ['<img src="image.jpg?width=100&amp;height=100" class="foo">', '<img src="image.jpg?width=100&height=100">', ['class' => 'foo']],
+            ['<img src="image.jpg?width=100&amp;height=100" class="foo">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
             // https://github.com/craftcms/cms/issues/6973
             ['<custom-element class="foo"></custom-element>', '<custom-element></custom-element>', ['class' => 'foo']],
             // https://github.com/craftcms/cms/issues/7234

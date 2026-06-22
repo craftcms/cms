@@ -8,9 +8,7 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\LegacyEventConstants;
 use craft\elements\conditions\tags\TagCondition;
-use craft\elements\db\TagQuery;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\helpers\Db;
 use craft\models\TagGroup;
@@ -19,8 +17,10 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -38,8 +38,6 @@ use function CraftCms\Cms\t;
 #[Ruleset(LegacyElementRules::class)]
 class Tag extends Element
 {
-    use LegacyEventConstants;
-
     /**
      * @inheritdoc
      */
@@ -110,7 +108,7 @@ class Tag extends Element
      */
     public static function find(): TagQuery
     {
-        return new TagQuery(static::class);
+        return new TagQuery();
     }
 
     /**
@@ -191,6 +189,7 @@ class Tag extends Element
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -310,6 +309,7 @@ class Tag extends Element
      * @return TagGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): TagGroup
     {
         if (!isset($this->groupId)) {

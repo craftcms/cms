@@ -13,5 +13,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException::class, StaleResourceException::class);

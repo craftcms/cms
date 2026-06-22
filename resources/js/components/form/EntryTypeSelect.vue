@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type {EntryType} from '@/types';
+  import type {EntryType} from '@/common/types/index.js';
   import {computed, ref} from 'vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import ReorderButton from '@/components/ReorderButton.vue';
@@ -7,6 +7,7 @@
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
   import {create} from '@actions/Settings/EntryTypesController';
+  import useCraftData from '@/common/composables/useCraftData.js';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
@@ -17,13 +18,23 @@
     actions?: Array<any>;
   }>();
 
+  const {readOnly} = useCraftData();
+
   const selectedTypes = computed(() => {
     return props.modelValue
       .map((id) => {
         return props.types?.find((type) => type.id === id) ?? null;
       })
-      .filter(Boolean);
+      .filter((type): type is EntryType => type !== null);
   });
+
+  function colorValue(color: EntryType['color']): string {
+    if (!color) {
+      return 'white';
+    }
+
+    return typeof color === 'string' ? color : color.value;
+  }
 
   const entryTypeQuery = ref('');
 
@@ -57,11 +68,11 @@
 
 <template>
   <div>
-    <template v-for="type in selectedTypes">
+    <template v-for="type in selectedTypes" :key="type.id">
       <craft-chip
         v-if="type"
         :icon="type.icon"
-        :data-color="type.color?.value ?? 'white'"
+        :data-color="colorValue(type.color)"
       >
         <div :data-id="type.id">
           <div class="font-bold">{{ type.name }}</div>
@@ -75,15 +86,19 @@
                 label: t('Settings'),
                 icon: 'gear',
               },
-              {
-                label: t('Remove'),
-                variant: 'danger',
-                icon: 'x',
-                onClick: () => removeItem(type.id),
-              },
+              ...[
+                readOnly
+                  ? null
+                  : {
+                      label: t('Remove'),
+                      variant: 'danger',
+                      icon: 'x',
+                      onClick: () => removeItem(type.id),
+                    },
+              ],
             ]"
           />
-          <ReorderButton variant="inherit"></ReorderButton>
+          <ReorderButton v-if="!readOnly" variant="inherit"></ReorderButton>
         </div>
       </craft-chip>
     </template>
@@ -91,7 +106,12 @@
 
   <div class="flex gap-2 mt-3 items-center">
     <craft-action-menu v-if="types?.length">
-      <craft-button type="button" slot="invoker" appearance="filled">
+      <craft-button
+        type="button"
+        slot="invoker"
+        appearance="solid"
+        v-if="!readOnly"
+      >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
         {{ t('Choose') }}
       </craft-button>
@@ -122,7 +142,7 @@
               type="checkbox"
               :icon="type.icon ?? 'empty'"
               :checked="modelValue.includes(type.id)"
-              :data-color="type.color?.value ?? 'white'"
+              :data-color="colorValue(type.color)"
             >
               <div>
                 {{ type.name }}
@@ -133,7 +153,11 @@
         </template>
       </div>
     </craft-action-menu>
-    <a :href="create['/admin/settings/entry-types/new']().url" class="">
+    <a
+      :href="create['/{cpTrigger?}/settings/entry-types/new']().url"
+      class=""
+      v-if="!readOnly"
+    >
       <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t('Create') }}
     </a>

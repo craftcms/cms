@@ -29,7 +29,7 @@ class UserMixin
     public function authenticateWithPasskey(): Closure
     {
         return function(PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
-            Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
+            Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(AuthMethods::class)->authenticateWithPasskey() instead.');
 
             if (is_array($requestOptions)) {
                 $requestOptions = Json::encode($requestOptions);
@@ -54,6 +54,16 @@ class UserMixin
 
             /** @phpstan-ignore-next-line */
             app(AuthMethods::class)->handleInvalidLogin($this);
+        };
+    }
+
+    public function getFullName(): Closure
+    {
+        return function(): ?string {
+            Deprecator::log('User-getFullName', 'Calling ->getFullName on a User is deprecated. Use $user->fullName instead.');
+
+            /** @phpstan-ignore-next-line */
+            return $this->fullName;
         };
     }
 }

@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
@@ -67,10 +69,43 @@ test('index returns Inertia Updater page', function () {
         ],
     ])
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Updater')
+            ->component('updater/Index')
             ->has('title')
             ->has('initialState')
             ->has('actionPrefix')
             ->has('returnUrl')
         );
 });
+
+test('finish returns a control panel return URL', function (?string $returnUrl, string $expected) {
+    $returnUrl = $returnUrl === '{cpTrigger}/login'
+        ? sprintf('%s/login', Cms::config()->cpTrigger)
+        : $returnUrl;
+
+    $data = [];
+
+    if ($returnUrl !== null) {
+        $data['returnUrl'] = $returnUrl;
+    }
+
+    postJson(action([UpdaterController::class, 'finish']), [
+        'data' => Crypt::encrypt(Json::encode($data)),
+    ])->assertOk()
+        ->assertJsonPath('returnUrl', Url::cpUrl($expected));
+})->with([
+    'default redirect' => [null, 'dashboard'],
+    'control panel path' => ['utilities/updates', 'utilities/updates'],
+    'control panel path with trigger' => ['{cpTrigger}/login', 'login'],
+]);
+
+test('finish preserves full return URLs', function (string $returnUrl) {
+    postJson(action([UpdaterController::class, 'finish']), [
+        'data' => Crypt::encrypt(Json::encode([
+            'returnUrl' => $returnUrl,
+        ])),
+    ])->assertOk()
+        ->assertJsonPath('returnUrl', $returnUrl);
+})->with([
+    'absolute URL' => ['https://example.test/admin/login'],
+    'root-relative URL' => ['/admin/login'],
+]);

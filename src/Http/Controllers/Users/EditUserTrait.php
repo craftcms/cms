@@ -7,15 +7,15 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DefineEditUserScreens;
+use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 trait EditUserTrait
@@ -42,7 +42,7 @@ trait EditUserTrait
     protected function editedUser(?int $userId): User
     {
         if ($userId === null) {
-            return $this->editedUser(Auth::user()->id);
+            return $this->editedUser(currentUser()?->getCraftUserId());
         }
 
         /** @var User|null $user */
@@ -79,9 +79,9 @@ trait EditUserTrait
 
         $screens[self::SCREEN_ADDRESSES] = ['label' => t('Addresses')];
 
-        $currentUser = Auth::user();
+        $currentUser = currentUserElement();
 
-        event($event = new DefineEditUserScreens($currentUser, $user, $screens));
+        event($event = new EditUserScreensResolving($currentUser, $user, $screens));
 
         $screens = $event->screens;
 
@@ -163,7 +163,7 @@ trait EditUserTrait
 
     protected function existingPasswordVerified(Request $request): bool
     {
-        if (! $request->user()) {
+        if (! $request->craftUser()) {
             return false;
         }
 
@@ -173,22 +173,20 @@ trait EditUserTrait
             return false;
         }
 
-        $currentHashedPassword = $request->user()->password;
+        $currentHashedPassword = $request->craftUser()->asElement()->password;
 
         return Hash::check($currentPassword, $currentHashedPassword);
     }
 
     private function showPermissionsScreen(): bool
     {
-        $currentUser = Auth::user();
+        $currentUser = currentUser();
 
-        return
-            Edition::get()->value >= Edition::Team->value &&
-            (
-                (Edition::get() === Edition::Team && $currentUser->admin) ||
-                (Edition::get()->value >= Edition::Pro->value && $currentUser->can('assignUserPermissions')) ||
-                $currentUser->canAssignUserGroups()
-            );
+        if (! $currentUser) {
+            return false;
+        }
+
+        return $currentUser->can('viewPermissionsScreen', User::class);
     }
 
     private function editUserScreenUrl(User $user, string $screen): string

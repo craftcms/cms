@@ -6,13 +6,12 @@ import '../../components/callout/callout.js';
 import '../../components/button/button.js';
 import '../../components/indicator/indicator.js';
 
-import {Appearance, Variant} from '@src/types';
+import {appearances} from '@src/constants/appearances';
+import {variants} from '@src/constants/variants';
+import {ButtonVariant, ButtonAppearance} from '@src/components/button/button';
 
-const variants = Object.values(Variant);
-const appearances = Object.values(Appearance);
-
-const buttonVariants = ['primary', 'default', 'danger'] as const;
-const buttonAppearances = ['accent', 'filled', 'dashed', 'plain'] as const;
+const buttonVariants = Object.values(ButtonVariant);
+const buttonAppearances = Object.values(ButtonAppearance);
 
 const meta: Meta = {
   title: 'Tokens/Variants & Appearances',
@@ -33,7 +32,7 @@ export const CalloutMatrix: Story = {
       <table class="cp-table cp-table--padded">
         <thead>
           <tr>
-            <th></th>
+            <th>variant</th>
             ${appearances.map((a) => html`<th>${a}</th>`)}
           </tr>
         </thead>
@@ -65,8 +64,8 @@ export const CalloutMatrix: Story = {
 };
 
 /**
- * Buttons use their own variant subset (primary, default, danger)
- * and appearance subset (accent, filled, dashed, plain).
+ * Buttons use their own variant subset (accent, neutral, danger)
+ * and appearance subset (solid, outline, plain).
  */
 export const ButtonMatrix: Story = {
   name: 'Button Matrix',
@@ -75,7 +74,7 @@ export const ButtonMatrix: Story = {
       <table class="cp-table cp-table--padded">
         <thead>
           <tr>
-            <th></th>
+            <th>variant</th>
             ${buttonAppearances.map((a) => html`<th>${a}</th>`)}
           </tr>
         </thead>
@@ -89,9 +88,7 @@ export const ButtonMatrix: Story = {
                     <td>
                       <craft-button
                         variant="${variant}"
-                        appearance="${appearance === 'accent'
-                          ? nothing
-                          : appearance}"
+                        appearance="${appearance}"
                       >
                         ${variant}
                       </craft-button>
@@ -101,40 +98,6 @@ export const ButtonMatrix: Story = {
               </tr>
             `
           )}
-        </tbody>
-      </table>
-    </div>
-  `,
-};
-
-/**
- * Indicators only use variants (no appearance axis).
- * They demonstrate the simplest use of the variant system.
- */
-export const IndicatorVariants: Story = {
-  name: 'Indicator Variants',
-  render: () => html`
-    <div class="stage">
-      <table class="cp-table cp-table--padded">
-        <thead>
-          <tr>
-            ${variants.map((v) => html`<th>${v}</th>`)}
-            <th>empty</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            ${variants.map(
-              (variant) => html`
-                <td>
-                  <craft-indicator variant="${variant}"></craft-indicator>
-                </td>
-              `
-            )}
-            <td>
-              <craft-indicator variant="empty"></craft-indicator>
-            </td>
-          </tr>
         </tbody>
       </table>
     </div>

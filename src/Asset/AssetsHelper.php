@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\RegisterFileKinds;
+use CraftCms\Cms\Asset\Events\AssetFileKindsResolving;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -28,7 +28,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use DateTime;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -38,7 +38,6 @@ use Throwable;
 use Twig\Error\RuntimeError;
 
 use function CraftCms\Cms\renderObjectTemplate;
-use function CraftCms\Cms\t;
 
 class AssetsHelper
 {
@@ -85,9 +84,9 @@ class AssetsHelper
      * Generates the URL for an asset.
      *
      * @param  string|null  $uri  Asset URI to use. Defaults to the filename.
-     * @param  DateTime|null  $dateUpdated  last datetime the target of the url was updated, if known
+     * @param  DateTimeInterface|null  $dateUpdated  last datetime the target of the url was updated, if known
      */
-    public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTimeInterface $dateUpdated = null): string
     {
         $volume = $asset->getVolume();
         $pathParts = explode('/', $asset->folderPath.($uri ?? $asset->getFilename()));
@@ -104,11 +103,15 @@ class AssetsHelper
     /**
      * Returns revision query parameters that should be appended to as asset URL.
      */
-    public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
+    public static function revParams(Asset $asset, ?DateTimeInterface $dateUpdated = null): array
     {
         $v = [];
 
-        $dateModified = max($asset->dateModified, $dateUpdated);
+        $dateModified = $asset->dateModified;
+
+        if ($dateUpdated && (! $dateModified || $dateUpdated->getTimestamp() > $dateModified->getTimestamp())) {
+            $dateModified = $dateUpdated;
+        }
 
         if ($dateModified) {
             $v[] = $dateModified->getTimestamp();
@@ -130,7 +133,7 @@ class AssetsHelper
      *
      * @param  bool  $fsOnly  Only append a revision param if the URL begins with the asset’s filesystem URL
      */
-    public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null, bool $fsOnly = false): string
+    public static function revUrl(string $url, Asset $asset, ?DateTimeInterface $dateUpdated = null, bool $fsOnly = false): string
     {
         $revParams = static::revParams($asset, $dateUpdated);
 
@@ -408,7 +411,7 @@ class AssetsHelper
         // Merge with the extraFileKinds setting
         self::$_fileKinds = Arr::merge(self::$_fileKinds, Cms::config()->extraFileKinds);
 
-        event($event = new RegisterFileKinds(self::$_fileKinds));
+        event($event = new AssetFileKindsResolving(self::$_fileKinds));
 
         return self::$_fileKinds = Arr::sort($event->fileKinds, 'label');
     }
@@ -533,7 +536,7 @@ class AssetsHelper
             return $path;
         }
 
-        $svg = file_get_contents(Aliases::get('@resources/images/thumbs/file.svg'));
+        $svg = file_get_contents(Aliases::get('@resources/public/images/thumbs/file.svg'));
 
         $extLength = strlen($extension);
 

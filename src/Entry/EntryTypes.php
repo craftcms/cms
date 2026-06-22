@@ -12,11 +12,11 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
-use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
+use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
-use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -283,7 +283,7 @@ class EntryTypes
     {
         $isNewEntryType = ! $entryType->id;
 
-        event(new SavingEntryType($entryType, $isNewEntryType));
+        event(new EntryTypeSaving($entryType, $isNewEntryType));
 
         $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 
@@ -332,7 +332,7 @@ class EntryTypes
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
             $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
-            $entryTypeModel->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
+            $entryTypeModel->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $entryTypeModel->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
@@ -468,7 +468,7 @@ class EntryTypes
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        event(new DeletingEntryType($entryType));
+        event(new EntryTypeDeleting($entryType));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_ENTRY_TYPES.'.'.$entryType->uid,
@@ -493,7 +493,7 @@ class EntryTypes
         /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeModel->id);
 
-        event(new ApplyingDeleteEntryType($entryType));
+        event(new EntryTypeDeletionApplying($entryType));
 
         DB::beginTransaction();
 
@@ -592,17 +592,14 @@ class EntryTypes
 
         foreach ($entryTypes as $entryType) {
             $label = Html::encode($entryType->getUiLabel());
-            $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']).
+            $chipCellContent = Html::beginTag('div', ['class' => 'flex gap-1 items-center row-wrap']).
                 app(ElementHtml::class)->chipHtml($entryType, [
-                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
-                        'class' => ['chip-label', 'cell-bold'],
-                    ]),
+                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl()),
                 ]);
             if ($entryType->description) {
-                $chipCellContent .= Html::tag('span',
+                $chipCellContent .= Html::tag('craft-info-icon',
                     Html::decodeDoubles(Markdown::parse(Html::encodeInvalidTags(Html::encode($entryType->description)),
-                        'gfm-comment')),
-                    ['class' => 'info']);
+                        'gfm-comment')));
             }
             $chipCellContent .= Html::endTag('div');
 

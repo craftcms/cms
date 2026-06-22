@@ -14,8 +14,8 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
-use CraftCms\Cms\Cp\Events\DefineElementCardHtml;
-use CraftCms\Cms\Cp\Events\DefineElementChipHtml;
+use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
+use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -27,11 +27,13 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -82,20 +84,18 @@ readonly class ElementHtml
 
         $attributes = Arr::merge([
             'id' => $config['id'],
+            'size' => $config['size'],
             'class' => [
-                'chip',
+                'cp-color-'.($color->value ?? 'white'),
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'style' => array_filter([
-                '--custom-border-color' => $color?->cssVar(200),
-                '--custom-bg-color' => $color?->cssVar(50),
-                '--custom-text-color' => $color?->cssVar(900),
-                '--custom-sel-bg-color' => $color?->cssVar(900),
-            ]),
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
+                'label' => $component->getUiLabel(),
+                'description' => $component instanceof Describable ? $component->getDescription() : null,
+                'handle' => $component instanceof Grippable ? $component->getHandle() : null,
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => InputNamespace::namespaceId($config['id']),
@@ -112,7 +112,16 @@ readonly class ElementHtml
             ]),
         ], $config['attributes']);
 
-        $html = Html::beginTag('div', $attributes);
+        $html = Html::beginTag('craft-chip', $attributes);
+
+        if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
+            $html .= Html::beginTag('div', ['slot' => 'prefix', 'class' => 'flex items-center gap-1']);
+        }
+
+        if ($config['showStatus']) {
+            /** @var Chippable&Statusable $component */
+            $html .= $this->statusHtml->componentStatusIndicatorHtml($component) ?? '';
+        }
 
         if ($config['showThumb']) {
             if ($component instanceof Thumbable) {
@@ -122,22 +131,17 @@ readonly class ElementHtml
                 /** @var Chippable&Iconic $component */
                 $icon = $component->getIcon();
                 if ($icon || $icon === '0') {
-                    $html .= Html::tag('div', Icons::svg($icon), [
-                        'class' => array_filter(['thumb', 'cp-icon', $color?->value]),
-                    ]);
+                    $html .= Html::tag('craft-icon', '', Icons::resolveIconData($icon));
                 }
             }
         }
-
-        $html .= Html::beginTag('div', ['class' => 'chip-content']);
 
         if ($config['selectable']) {
             $html .= $this->componentCheckboxHtml(sprintf('%s-label', $config['id']));
         }
 
-        if ($config['showStatus']) {
-            /** @var Chippable&Statusable $component */
-            $html .= $this->statusHtml->componentStatusIndicatorHtml($component) ?? '';
+        if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
+            $html .= Html::endTag('div'); // prefix slot
         }
 
         if (isset($config['labelHtml'])) {
@@ -155,9 +159,8 @@ readonly class ElementHtml
                 /** @var Chippable&Describable $component */
                 $description = $component->getDescription();
                 if ($description) {
-                    $labelHtml .= Html::tag('span',
-                        $this->contentHtml->parseMarkdown(Html::encode($description)),
-                        ['class' => 'info']);
+                    $labelHtml .= Html::tag('craft-info-icon',
+                        $this->contentHtml->parseMarkdown(Html::encode($description)));
                 }
             }
 
@@ -168,7 +171,7 @@ readonly class ElementHtml
                 $handle = $component->getHandle();
                 if ($handle) {
                     $labelHtml .= Html::tag('div', Html::encode($handle), [
-                        'class' => ['smalltext', 'light', 'code'],
+                        'class' => ['cp-code'],
                     ]);
                 }
             }
@@ -194,11 +197,10 @@ readonly class ElementHtml
             }
             $html .= Html::tag('div', $labelHtml, [
                 'id' => sprintf('%s-label', $config['id']),
-                'class' => 'chip-label',
             ]);
         }
 
-        $html .= Html::beginTag('div', ['class' => 'chip-actions']);
+        $html .= Html::beginTag('div', ['slot' => 'suffix']);
         if ($config['showActionMenu']) {
             /** @var Chippable&Actionable $component */
             $html .= $this->componentActionMenu($component);
@@ -217,22 +219,52 @@ readonly class ElementHtml
                 ],
             ]);
         }
-        $html .= Html::endTag('div'); // .chip-actions
+        $html .= Html::endTag('div'); // slot=suffix
 
         if ($config['inputName'] !== null) {
             $inputValue = $config['inputValue'] ?? $component->getId();
             $html .= Html::hiddenInput($config['inputName'], (string) $inputValue);
         } // .element
 
-        return $html.(Html::endTag('div').Html::endTag('div'));
+        return $html.Html::endTag('craft-chip');
     }
 
+    /**
+     * Renders an element’s chip HTML.
+     *
+     * The following config settings can be passed to `$config`:
+     *
+     * - `attributes` – Any custom HTML attributes that should be set on the chip
+     * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
+     * - `class` – Class name(s) that should be added to the container element
+     * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
+     * - `hyperlink` – Whether the chip label should be hyperlinked to the element’s URL
+     * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
+     * - `id` – The chip’s `id` attribute
+     * - `inputName` – The `name` attribute that should be set on a hidden input, if set
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set. Defaults to [[\craft\base\Identifiable::getId()`]].
+     * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
+     * - `overrides` – Any config overrides that should persist when the chip is re-rendered
+     * - `selectable` – Whether the chip should include a checkbox input
+     * - `showActionMenu` – Whether the chip should include an action menu
+     * - `showDescription` – Whether the chip should include the element’s description
+     * - `showDraftName` – Whether to show the draft name beside the label if the element is a draft of a published element
+     * - `showHandle` – Whether the element’s handle should be show (only applies if the element implements [[Grippable]])
+     * - `showIndicators` – Whether the element’s indicators should be shown (only applies if the element implements [[Indicative]])
+     * - `showLabel` – Whether the element’s label should be shown
+     * - `showProvisionalDraftLabel` – Whether an “Edited” badge should be added to the label if the element is a provisional draft
+     * - `showStatus` – Whether the element’s status should be shown
+     * - `showThumb` – Whether the element’s thumbnail should be shown
+     * - `size` – The size of the chip (`small` or `large`)
+     * - `sortable` – Whether the chip should include a drag handle
+     */
     public function elementChipHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
             'attributes' => [],
             'autoReload' => true,
             'context' => 'index',
+            'returnUrl' => null,
             'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
             'selectable' => false,
@@ -252,6 +284,7 @@ readonly class ElementHtml
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'context' => $config['context'],
+                        'returnUrl' => $config['returnUrl'],
                         'showDraftName' => $config['showDraftName'],
                         'showProvisionalDraftLabel' => $config['showProvisionalDraftLabel'],
                     ] : false,
@@ -284,11 +317,28 @@ readonly class ElementHtml
 
         $html = $this->chipHtml($element, $config);
 
-        event($event = new DefineElementChipHtml($element, $config['context'], $html));
+        event($event = new ElementChipHtmlResolving($element, $config['context'], $html));
 
         return $event->html;
     }
 
+    /**
+     * Renders an element’s card HTML.
+     *
+     * The following config settings can be passed to `$config`:
+     *
+     * - `attributes` – Any custom HTML attributes that should be set on the card
+     * - `autoReload` – Whether the card should auto-reload itself when it’s saved
+     * - `context` – The context the card is going to be shown in (`index`, `field`, etc.)
+     * - `hyperlink` – Whether the card label should be hyperlinked to the element’s URL
+     * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
+     * - `id` – The card’s `id` attribute
+     * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
+     * - `selectable` – Whether the card should include a checkbox input
+     * - `showActionMenu` – Whether the card should include an action menu
+     * - `showEditButton` – Whether the card should include an edit button
+     * - `sortable` – Whether the card should include a drag handle
+     */
     public function elementCardHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
@@ -296,6 +346,7 @@ readonly class ElementHtml
             'autoReload' => true,
             'context' => 'index',
             'hyperlink' => false,
+            'returnUrl' => null,
             'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
             'selectable' => false,
@@ -375,6 +426,7 @@ JS, [
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'hyperlink' => $config['hyperlink'],
+                        'returnUrl' => $config['returnUrl'],
                         'selectable' => $config['selectable'],
                         'context' => $config['context'],
                         'id' => InputNamespace::namespaceId($config['id']),
@@ -511,14 +563,14 @@ JS, [
 
         $html .= Html::endTag('div'); // .card
 
-        event($event = new DefineElementCardHtml($element, $config['context'], $html));
+        event($event = new ElementCardHtmlResolving($element, $config['context'], $html));
 
         return $event->html;
     }
 
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
-        $user = Auth::user();
+        $user = currentUser();
         $editable = $user && $user->can('view', $element);
 
         return Arr::merge(
@@ -626,6 +678,17 @@ JS, [
                 $config['context'] !== 'modal' &&
                 ($url = $attributes['data']['cp-url'] ?? null)
             ) {
+                $returnUrl = $config['returnUrl'] ?? null;
+                if ($returnUrl) {
+                    if (str_contains((string) $returnUrl, '{')) {
+                        $returnUrl = Crypt::encrypt($returnUrl);
+                    }
+
+                    $url = Url::urlWithParams($url, [
+                        'returnUrl' => $returnUrl,
+                    ]);
+                }
+
                 $content = Html::tag('a', Html::tag('span', $content), [
                     'class' => ['label-link'],
                     'href' => $url,
@@ -676,15 +739,9 @@ JS, [
 
                 return $this->menuHtml->disclosureMenu($actionMenuItems, [
                     'hiddenLabel' => t('Actions'),
-                    'buttonAttributes' => [
-                        'class' => array_keys(array_filter([
-                            'action-btn' => true,
-                            'small' => true,
-                            'hidden' => empty($actionMenuItems),
-                        ])),
-                        'removeClass' => 'menubtn',
-                        'data' => ['icon' => 'ellipsis'],
-                    ],
+                    'buttonHtml' => Html::tag('craft-icon', '', [
+                        'name' => 'ellipsis',
+                    ]),
                     'omitIfEmpty' => false,
                 ]);
             },

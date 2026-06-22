@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Http\Kernel;
@@ -25,7 +26,7 @@ class DynamicRoute
 
     public function handle(Request $request): Response
     {
-        $variables = Arr::pull($this->params, 'variables', []) + $request->query->all();
+        $variables = Arr::pull($this->params, 'variables', []);
 
         if (in_array($this->route, [
             Cms::config()->actionTrigger.'/templates/render',
@@ -36,7 +37,7 @@ class DynamicRoute
         }
 
         return app()->make(Kernel::class)->handle($request->duplicateWithUri(
-            newUri: $request->actionSegmentsToRoute(explode('/', trim($this->route, '/'))),
+            newUri: ActionRoute::uriForSegments(explode('/', trim($this->route, '/')), $request->isCpRequest()),
             query: $variables,
         ));
     }
@@ -44,6 +45,7 @@ class DynamicRoute
     private function renderTemplate(Request $request, array $variables = []): string
     {
         $template = Arr::pull($this->params, 'template');
+        $publicOnly = Arr::pull($this->params, 'publicOnly', true);
 
         foreach (TemplateMode::get()->defaultTemplateExtensions() as $extension) {
             $template = Str::beforeLast($template, ".$extension");
@@ -51,11 +53,19 @@ class DynamicRoute
 
         abort_if(Cms::config()->headlessMode && $request->isSiteRequest(), 404);
 
-        if (Path::ensurePathIsContained($template) && view()->exists($template)) {
-            return view($template, $variables)->render();
+        $resolvedTemplate = app(TemplateResolver::class)->resolve($template, publicOnly: $publicOnly);
+
+        if ($resolvedTemplate === false) {
+            if (app()->hasDebugModeEnabled()) {
+                throw new TemplateLoaderException($template, "Template {$template} not found.");
+            }
+
+            abort(404);
         }
 
-        abort_if(app(TemplateResolver::class)->resolve($template, publicOnly: true) === false, 404);
+        if (Str::endsWith($resolvedTemplate, '.blade.php')) {
+            return view()->file($resolvedTemplate, $variables)->render();
+        }
 
         return pageTemplate($template, $variables);
     }

@@ -101,7 +101,7 @@ trait QueriesSites
         if ($value === null) {
             $this->siteId = null;
         } elseif ($value === '*') {
-            $this->siteId = Sites::getAllSiteIds();
+            $this->siteId = Sites::getAllSiteIds()->all();
         } elseif ($value instanceof Site || $value instanceof SiteModel) {
             $this->siteId = $value->id;
         } elseif (is_string($value)) {
@@ -255,7 +255,7 @@ trait QueriesSites
      */
     private function normalizeSiteId(ElementQuery $query): mixed
     {
-        if (is_null($query->siteId)) {
+        if (is_null($query->siteId) || $query->siteId === '') {
             // Default to the current site
             return Sites::getCurrentSite()->id;
         }

@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Carbon\CarbonInterval;
 use Craft;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -79,7 +80,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function sendUsernameCookie(UserElement $user): void
     {
-        app(\CraftCms\Cms\Auth\AuthMethods::class)->setRememberedUsername($user);
+        app(AuthMethods::class)->setRememberedUsername($user);
     }
 
     /**
@@ -152,7 +153,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function getRememberedUsername(): ?string
     {
-        return app(\CraftCms\Cms\Auth\AuthMethods::class)->getRememberedUsername();
+        return app(AuthMethods::class)->getRememberedUsername();
     }
 
     /**
@@ -342,7 +343,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         // Save the username cookie if they're not being impersonated
         $impersonator = app(Impersonation::class)->getImpersonator();
         if (!$impersonator) {
-            app(\CraftCms\Cms\Auth\AuthMethods::class)->setRememberedUsername(UserElement::find()->id($identity->getId())->firstOrFail());
+            app(AuthMethods::class)->setRememberedUsername(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
         // Update the user record
@@ -424,18 +425,13 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     {
         $this->_clearOtherSessionParams();
 
-        if (Cms::config()->enableCsrfProtection) {
-            // Let's keep the current nonce around.
-            Craft::$app->getRequest()->getCsrfToken(true);
-        }
-
         parent::afterLogout($identity);
     }
 
     private function _clearOtherSessionParams(): void
     {
         // Make sure 2FA data doesn't bleed over
-        app(\CraftCms\Cms\Auth\AuthMethods::class)->setUser(null);
+        app(AuthMethods::class)->setUser(null);
         \Illuminate\Support\Facades\Session::forget(app(Passkeys::class)->passkeyCreationOptionsParam);
     }
 }

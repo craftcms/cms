@@ -23,10 +23,10 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Ruleset(SectionRules::class)]
@@ -46,6 +46,8 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
     public ?string $handle = null;
 
     public ?SectionType $type = null;
+
+    public int $minAuthors = 1;
 
     public ?int $maxAuthors = 1;
 
@@ -186,8 +188,6 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
      * Sets the section's entry types.
      *
      * @param  EntryType[]  $entryTypes
-     *
-     * @since 3.1.0
      */
     public function setEntryTypes(array $entryTypes): void
     {
@@ -210,7 +210,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 
@@ -258,6 +258,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
             'type' => $this->type->value,
             'entryTypes' => array_map(fn (EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
+            'minAuthors' => $this->minAuthors,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],

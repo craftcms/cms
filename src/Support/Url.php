@@ -70,24 +70,27 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * Returns a query string based on the given params.
      *
-     * Param values will be encoded, except for `/`, `{`, and `}` characters.
+     * Param names and values will be encoded, except for `{` and `}` characters.
      */
     public static function buildQuery(array $params): string
     {
         if (empty($params)) {
             return '';
         }
+
         // build the query string
         $query = http_build_query($params);
         if ($query === '') {
             return '';
         }
-        // Decode a few select chars
+
+        // Decode curly braces
         $params = [];
+
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
-            $n = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $n);
-            $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
+            $n = str_replace(['%7B', '%7D'], ['{', '}'], $n);
+            $v = str_replace(['%7B', '%7D'], ['{', '}'], $v);
             $params[] = $v !== '' ? "$n=$v" : $n;
         }
 
@@ -499,31 +502,6 @@ class Url extends \Illuminate\Support\Facades\URL
     }
 
     /**
-     * Returns a CP referral URL.
-     */
-    public static function cpReferralUrl(): ?string
-    {
-        $request = request();
-        $referrer = $request->header('referer');
-
-        if ($referrer === null || $referrer === '') {
-            return null;
-        }
-
-        // Make sure it didn't refer itself
-        if ($referrer === $request->fullUrl()) {
-            return null;
-        }
-
-        // Make sure the CP referred it
-        if (! str_starts_with($referrer, self::baseCpUrl())) {
-            return null;
-        }
-
-        return $referrer;
-    }
-
-    /**
      * Parses a URL for the host info.
      */
     public static function hostInfo(string $url): string
@@ -550,7 +528,14 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     public static function prependCpTrigger(string $path): string
     {
-        return implode('/', array_filter([Cms::config()->cpTrigger, $path]));
+        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $path = trim($path, '/');
+
+        if ($cpTrigger !== '' && ($path === $cpTrigger || str_starts_with($path, "$cpTrigger/"))) {
+            return $path;
+        }
+
+        return implode('/', array_filter([$cpTrigger, $path]));
     }
 
     /**

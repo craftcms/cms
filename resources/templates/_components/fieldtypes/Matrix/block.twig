@@ -72,7 +72,7 @@
   ]) %}
 {% endif %}
 
-{% if entry.id or (Auth.user.admin and config('craft.general.allowAdminChanges')) %}
+{% if entry.id or (currentUser.admin and config('craft.general.allowAdminChanges')) %}
   {% set actionMenuItems = actionMenuItems|push({hr: true}) %}
 
   {% if entry.id and not static %}
@@ -84,7 +84,7 @@
     }) %}
   {% endif %}
 
-  {% if Auth.user.admin and config('craft.general.allowAdminChanges') %}
+  {% if currentUser.admin and config('craft.general.allowAdminChanges') %}
     {% set actionMenuItems = actionMenuItems|push({
       icon: 'gear',
       label: 'Entry type settings'|t('app'),
@@ -120,17 +120,30 @@
   ]) %}
 {% endif %}
 
-{% set actionMenuItems = actionMenuItems|merge([
-  {
-    icon: 'clone-dashed',
-    color: 'fuchsia',
-    label: 'Copy'|t('app'),
-    attributes: {
-      data: {action: 'copy'},
-    },
+{% set actionMenuItems = actionMenuItems|push({
+  icon: 'clone-dashed',
+  color: 'fuchsia',
+  label: 'Copy'|t('app'),
+  attributes: {
+    data: {action: 'copy'},
   },
-  {hr: true},
-]) %}
+}) %}
+
+{% if not staticEntries %}
+  {% set actionMenuItems = actionMenuItems|push({
+    icon: 'duplicate',
+    color: 'fuchsia',
+    label: 'Paste {type} above'|t('app', {type: 'entry'|t('app')}),
+    attributes: {
+      data: {action: 'paste'},
+    },
+    liAttributes: {
+      class: ['hidden'],
+    },
+  }) %}
+{% endif %}
+
+{% set actionMenuItems = actionMenuItems|push({hr: true}) %}
 
 {% if not staticEntries %}
   {% for entryType in entryTypes %}
@@ -180,6 +193,7 @@
     'visible-layout-elements': form.getVisibleElements(),
     'static-layout-elements': form.getStaticElements(),
     'base-input-name': baseInputName|namespaceInputName,
+    'ui-label': entry.getUiLabel(),
   },
   role: 'listitem',
 } %}
@@ -187,7 +201,7 @@
     {{ hiddenInput("#{name}[sortOrder][]", entry.uid) }}
     {# only register a delta name for this entry if it’s not new #}
     {% if entry.id and not entry.getIsUnpublishedDraft() %}
-      {% do deltaRegistry.registerName(baseInputName) %}
+      {% do DeltaRegistry.registerName(baseInputName) %}
     {% endif %}
     {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
     {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}

@@ -10,13 +10,13 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
-use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
-use CraftCms\Cms\Element\Events\RegisterCardAttributes;
-use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
-use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
-use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
-use CraftCms\Cms\Element\Events\RegisterSortOptions;
-use CraftCms\Cms\Element\Events\RegisterTableAttributes;
+use CraftCms\Cms\Element\Events\ElementCardAttributesResolving;
+use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
+use CraftCms\Cms\Element\Events\ElementDefaultTableAttributesResolving;
+use CraftCms\Cms\Element\Events\ElementSearchableAttributesResolving;
+use CraftCms\Cms\Element\Events\ElementSortOptionsResolving;
+use CraftCms\Cms\Element\Events\ElementTableAttributesResolving;
+use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -26,8 +26,6 @@ use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Structures;
-use DateInterval;
-use DateTime;
 use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
 use Illuminate\Support\Facades\DB;
 use Stringable;
@@ -58,7 +56,7 @@ trait DisplayedInIndex
      */
     final public static function searchableAttributes(): array
     {
-        event($event = new RegisterSearchableAttributes(
+        event($event = new ElementSearchableAttributesResolving(
             elementType: static::class,
             attributes: static::defineSearchableAttributes(),
         ));
@@ -141,6 +139,7 @@ trait DisplayedInIndex
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
             'tableName' => static::pluralDisplayName(),
             'elementQuery' => self::elementQueryWithAllDescendants($elementQuery),
+            'returnUrl' => $viewState['returnUrl'] ?? null,
         ];
 
         if (! empty($viewState['order'])) {
@@ -165,20 +164,12 @@ trait DisplayedInIndex
                     unset($viewState['order']);
                 }
             } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
-                if ($orderBy instanceof ExpressionInterface) {
-                    $elementQuery->orderByRaw($orderBy->getValue(DB::getQueryGrammar()));
-                } else {
-                    $elementQuery->orderBy($orderBy);
-                }
+                self::applyIndexOrderBy($elementQuery, $orderBy);
 
                 if ((! is_array($orderBy) || ! isset($orderBy['score'])) && ! empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
                         if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
-                            if ($orderBy[0] instanceof ExpressionInterface) {
-                                $elementQuery->orderByRaw($orderBy[0]->getValue(DB::getQueryGrammar()));
-                            } else {
-                                $elementQuery->orderBy($orderBy[0]);
-                            }
+                            self::applyIndexOrderBy($elementQuery, $orderBy);
                         } else {
                             break;
                         }
@@ -198,7 +189,7 @@ trait DisplayedInIndex
 
             // Prepare the element query for each of the table attributes
             foreach ($variables['attributes'] as $attribute) {
-                event($event = new PrepQueryForTableAttribute(
+                event($event = new QueryForTableAttributePreparing(
                     elementType: static::class,
                     query: $elementQuery,
                     attribute: $attribute[0],
@@ -248,6 +239,27 @@ trait DisplayedInIndex
         $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
 
         return template($template, $variables);
+    }
+
+    /**
+     * Applies a normalized element index ordering to the element query.
+     */
+    private static function applyIndexOrderBy(ElementQueryInterface $elementQuery, ExpressionInterface|array $orderBy): void
+    {
+        foreach (Arr::wrap($orderBy) as $column => $direction) {
+            if ($direction instanceof ExpressionInterface) {
+                $elementQuery->getQuery()->orderByRaw(
+                    $direction->getValue(DB::getQueryGrammar()),
+                );
+
+                continue;
+            }
+
+            $elementQuery->getQuery()->orderBy($column, match ($direction) {
+                'desc', SORT_DESC => 'desc',
+                default => 'asc',
+            });
+        }
     }
 
     /**
@@ -365,7 +377,7 @@ trait DisplayedInIndex
             ...Arr::except($sortOptions, 'id'),
         ];
 
-        event($event = new RegisterSortOptions(
+        event($event = new ElementSortOptionsResolving(
             elementType: static::class,
             sortOptions: $sortOptions,
         ));
@@ -390,7 +402,7 @@ trait DisplayedInIndex
 
     public static function tableAttributes(): array
     {
-        event($event = new RegisterTableAttributes(
+        event($event = new ElementTableAttributesResolving(
             elementType: static::class,
             tableAttributes: static::defineTableAttributes(),
         ));
@@ -437,7 +449,7 @@ trait DisplayedInIndex
      */
     public static function defaultTableAttributes(string $source): array
     {
-        event($event = new RegisterDefaultTableAttributes(
+        event($event = new ElementDefaultTableAttributesResolving(
             elementType: static::class,
             source: $source,
             tableAttributes: static::defineDefaultTableAttributes($source),
@@ -469,7 +481,7 @@ trait DisplayedInIndex
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array
     {
-        event($event = new RegisterCardAttributes(
+        event($event = new ElementCardAttributesResolving(
             elementType: static::class,
             cardAttributes: static::defineCardAttributes(),
             fieldLayout: $fieldLayout,
@@ -491,11 +503,11 @@ trait DisplayedInIndex
         $attributes = [
             'dateCreated' => [
                 'label' => t('Date Created'),
-                'placeholder' => fn () => new DateTime()->sub(new DateInterval('P16D')),
+                'placeholder' => fn () => now()->subDays(16),
             ],
             'dateUpdated' => [
                 'label' => t('Date Updated'),
-                'placeholder' => fn () => new DateTime()->sub(new DateInterval('P15D')),
+                'placeholder' => fn () => now()->subDays(15),
             ],
             'id' => [
                 'label' => t('ID'),
@@ -551,7 +563,7 @@ trait DisplayedInIndex
      */
     public static function defaultCardAttributes(): array
     {
-        event($event = new RegisterDefaultCardAttributes(
+        event($event = new ElementDefaultCardAttributesResolving(
             elementType: static::class,
             cardAttributes: static::defineDefaultCardAttributes(),
         ));

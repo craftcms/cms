@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use CraftCms\Cms\Plugin\Events\DisablingPlugin;
-use CraftCms\Cms\Plugin\Events\EnablingPlugin;
+use CraftCms\Cms\Plugin\Events\PluginDisabling;
+use CraftCms\Cms\Plugin\Events\PluginEnabling;
 use CraftCms\Cms\Plugin\Events\PluginEvent;
-use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
+use CraftCms\Cms\Plugin\Events\PluginInstalling;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\File;
 use Illuminate\Support\Collection;
@@ -30,23 +31,15 @@ trait PublishesFiles
 
     public function registerPublishesFiles(): void
     {
-        Event::listen(EnablingPlugin::class, function (EnablingPlugin $event) {
+        Event::listen([PluginEnabling::class, PluginInstalling::class], function (PluginEvent $event) {
             if (! $event->plugin instanceof static) {
                 return;
             }
 
-            foreach ($event->plugin->publishables as $from => $to) {
-                if (File::isDirectory($from)) {
-                    File::copyDirectory($from, public_path("vendor/{$event->plugin->packageName}/{$to}"));
-
-                    continue;
-                }
-
-                File::copy($from, public_path("vendor/{$event->plugin->packageName}/{$to}/"));
-            }
+            $event->plugin->copyPublishableFiles($event->plugin->publishableFilePaths());
         });
 
-        Event::listen([DisablingPlugin::class, UninstallingPlugin::class], function (PluginEvent $event) {
+        Event::listen([PluginDisabling::class, PluginUninstalling::class], function (PluginEvent $event) {
             if (! $event->plugin instanceof static) {
                 return;
             }
@@ -58,10 +51,8 @@ trait PublishesFiles
     public function bootPublishesFiles(): void
     {
         $handle = self::getInstance()->handle;
-        $name = self::getInstance()->packageName;
 
-        $publishes = Collection::make($this->publishables)
-            ->map(fn (string $to) => public_path("vendor/{$name}/{$to}"));
+        $publishes = Collection::make($this->publishableFilePaths());
 
         if ($publishes->isNotEmpty()) {
             $this->publishes($publishes->all(), $handle);
@@ -71,5 +62,12 @@ trait PublishesFiles
     public function asset(string $path): string
     {
         return asset("vendor/$this->packageName/$path");
+    }
+
+    private function publishableFilePaths(): array
+    {
+        return Collection::make($this->publishables)
+            ->map(fn (string $to) => public_path("vendor/{$this->packageName}/{$to}"))
+            ->all();
     }
 }

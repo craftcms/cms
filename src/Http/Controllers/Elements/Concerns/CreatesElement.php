@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 
 trait CreatesElement
@@ -31,7 +33,13 @@ trait CreatesElement
             $element->setOwnerId($this->request->integer('ownerId'));
         }
 
-        $element->setAttributesFromRequest($this->request->validated() + array_filter(['fieldId' => $this->request->input('fieldId')]));
+        $values = $this->request->validated() + array_filter(['fieldId' => $this->request->input('fieldId')]);
+
+        if ($element instanceof User) {
+            $values = Arr::except($values, User::SENSITIVE_ATTRIBUTES);
+        }
+
+        $element->setAttributesFromRequest($values);
 
         Gate::authorize('save', $element);
 

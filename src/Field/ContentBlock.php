@@ -35,7 +35,6 @@ use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -195,7 +194,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             // Make sure all the elements have a dateAdded value set
             foreach ($layout->getTabs() as $tab) {
                 foreach ($tab->getElements() as $layoutElement) {
-                    $layoutElement->dateAdded ??= new DateTime;
+                    $layoutElement->dateAdded ??= now();
                 }
             }
         }
@@ -217,7 +216,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         // Make sure all the elements have a dateAdded value set
         foreach ($layout->getTabs() as $tab) {
             foreach ($tab->getElements() as $layoutElement) {
-                $layoutElement->dateAdded ??= new DateTime;
+                $layoutElement->dateAdded ??= now();
             }
         }
 
@@ -484,9 +483,11 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
         // Existing element?
         if ($owner?->id) {
-            $query->beforeQuery(function (ContentBlockQuery $query) use ($owner) {
-                $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
+            $query->beforeQuery(function (ContentBlockQuery $query) use ($owner) {
                 // Clear out id=false if this query was populated previously
                 if ($query->id === false) {
                     $query->id = null;

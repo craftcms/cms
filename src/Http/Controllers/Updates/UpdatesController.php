@@ -18,8 +18,8 @@ use CraftCms\Cms\Update\Enums\UpdateStatus;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -58,7 +58,7 @@ readonly class UpdatesController
         $allowUpdates = (
             $this->generalConfig->allowUpdates &&
             $this->generalConfig->allowAdminChanges &&
-            Auth::user()->can('performUpdates')
+            currentUser()->can('performUpdates')
         );
 
         $res = [
@@ -132,7 +132,7 @@ readonly class UpdatesController
             $arr['statusText'] = Html::tag('strong', t('This plugin is no longer maintained.'));
 
             if ($update->replacementName) {
-                if (Auth::user()?->isAdmin() && $this->generalConfig->allowAdminChanges) {
+                if (currentUser()?->isAdmin() && $this->generalConfig->allowAdminChanges) {
                     $replacementUrl = Url::url("plugin-store/$update->replacementHandle");
                 } else {
                     $replacementUrl = $update->replacementUrl;

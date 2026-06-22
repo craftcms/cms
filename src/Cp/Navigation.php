@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
+use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -17,9 +17,10 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
+use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 readonly class Navigation
@@ -34,7 +35,7 @@ readonly class Navigation
 
     public function getItems(): array
     {
-        $user = Auth::user();
+        $user = currentUser();
         $isAdmin = $user?->isAdmin();
 
         $navItems = [
@@ -131,13 +132,13 @@ readonly class Navigation
                 if ($this->generalConfig->allowAdminChanges) {
                     $subNavItems['schemas'] = [
                         'label' => t('Schemas'),
-                        'url' => 'graphql/schemas',
+                        'url' => cp_url('graphql/schemas'),
                     ];
                 }
 
                 $subNavItems['tokens'] = [
                     'label' => t('Tokens'),
-                    'url' => 'graphql/tokens',
+                    'url' => cp_url('graphql/tokens'),
                 ];
 
                 $subNavItems['graphiql'] = [
@@ -149,7 +150,7 @@ readonly class Navigation
                 $navItems[] = [
                     'label' => 'GraphQL',
                     'url' => 'graphql',
-                    'icon' => 'graphql',
+                    'icon' => 'custom-icons/graphql',
                     'subnav' => $subNavItems,
                 ];
             }
@@ -187,7 +188,7 @@ readonly class Navigation
             ];
         }
 
-        event($event = new RegisterCpNavItems($navItems));
+        event($event = new CpNavItemsResolving($navItems));
 
         $navItems = $event->navItems;
 

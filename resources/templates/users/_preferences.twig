@@ -31,7 +31,18 @@
     id: 'weekStartDay',
     name: 'weekStartDay',
     options: I18N.getLocale().getWeekDayNames(),
-    value: Auth.user.getPreference('weekStartDay', config('craft.general.defaultWeekStartDay'))
+    value: currentUser.getPreference('weekStartDay', config('craft.general.defaultWeekStartDay'))
+  }) }}
+
+  {{ forms.timeZoneField({
+    label: 'Time Zone'|t('app'),
+    id: 'time-zone',
+    name: 'timeZone',
+    options: [
+      {label: 'System time zone ({abbr})'|t('app', {abbr: timeZoneAbbr}), value: '__blank__'},
+      ...craft.cp.getTimeZoneOptions(offsetDate ?? null),
+    ],
+    value: currentUser.getPreference('timeZone'),
   }) }}
 </div>
 
@@ -48,13 +59,13 @@
         label: 'Use shapes to represent statuses'|t('app'),
         name: 'useShapes',
         id: 'useShapes',
-        checked: Auth.user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
+        checked: currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
       },
       {
         label: 'Underline links'|t('app'),
         name: 'underlineLinks',
         id: 'underlineLinks',
-        checked: Auth.user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+        checked: currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
       },
     ],
   }) }}
@@ -66,7 +77,7 @@
         label: 'Disable autofocus'|t('app'),
         name: 'disableAutofocus',
         id: 'disableAutofocus',
-        checked: Auth.user.getPreference('disableAutofocus') ?? a11yDefaults['disableAutofocus'] ?? false,
+        checked: currentUser.getPreference('disableAutofocus') ?? a11yDefaults['disableAutofocus'] ?? false,
       },
     ],
   }) }}
@@ -82,7 +93,7 @@
       {value: 10000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t('app', {num: 10})},
       {value: 0, label: 'Show them indefinitely'|t('app')},
     ],
-    value: Auth.user.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
+    value: currentUser.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
   }) }}
 
   {{ forms.buttonGroupField({
@@ -131,7 +142,7 @@
         },
       },
     ],
-    value: Auth.user.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start',
+    value: currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start',
   }) }}
 
   {{ forms.buttonGroupField({
@@ -160,12 +171,12 @@
         },
       },
     ],
-    value: Auth.user.getPreference('slideoutPosition') ?? a11yDefaults['slideoutPosition'] ?? 'end',
+    value: currentUser.getPreference('slideoutPosition') ?? a11yDefaults['slideoutPosition'] ?? 'end',
   }) }}
 
 </div>
 
-{% if Auth.user.admin %}
+{% if currentUser.admin %}
   <hr>
 
   <div>
@@ -178,37 +189,19 @@
           label: 'Show field handles in edit forms'|t('app'),
           name: 'showFieldHandles',
           id: 'showFieldHandles',
-          checked: Auth.user.getPreference('showFieldHandles')
+          checked: currentUser.getPreference('showFieldHandles')
         },
         {
           label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
           name: 'profileTemplates',
           id: 'profileTemplates',
-          checked: Auth.user.getPreference('profileTemplates')
+          checked: currentUser.getPreference('profileTemplates')
         },
         {
           label: 'Show full exception views when Dev Mode is disabled'|t('app'),
           name: 'showExceptionView',
           id: 'showExceptionView',
-          checked: Auth.user.getPreference('showExceptionView')
-        },
-      ],
-    }) }}
-
-    {{ forms.checkboxGroupField({
-      label: 'Debug Toolbar'|t('app'),
-      options: [
-        {
-          label: 'Show the debug toolbar on the front end'|t('app'),
-          name: 'enableDebugToolbarForSite',
-          id: 'enableDebugToolbarForSite',
-          checked: Auth.user.getPreference('enableDebugToolbarForSite')
-        },
-        {
-          label: 'Show the debug toolbar in the control panel'|t('app'),
-          name: 'enableDebugToolbarForCp',
-          id: 'enableDebugToolbarForCp',
-          checked: Auth.user.getPreference('enableDebugToolbarForCp')
+          checked: currentUser.getPreference('showExceptionView')
         },
       ],
     }) }}

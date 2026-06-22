@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Translation;
 
 use Carbon\CarbonInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
-use DateTime;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Date;
@@ -83,7 +83,7 @@ class Formatter
     public function asDate(int|string|DateTimeInterface $value, ?string $format = null): string
     {
         $format ??= $this->defaultDateFormat;
-        [$value] = $this->parseDate($value, $format);
+        [$value] = $this->parseDate($value, $format, false);
 
         if (is_string($value)) {
             return $value;
@@ -107,10 +107,16 @@ class Formatter
         )->format($value->toDateTime());
     }
 
-    public function asDateTime(int|string|DateTimeInterface $value, ?string $format = null): string
+    public function asDateTime(int|string|DateTimeInterface $value, ?string $format = null, bool $withTimeZone = false): string
     {
+        $value = DateTimeHelper::toDateTime(
+            value: $value,
+            assumeSystemTimeZone: false,
+            setToSystemTimeZone: false,
+        );
+
         $format ??= $this->defaultDateFormat;
-        [$value] = $this->parseDate($value, $format);
+        [$value] = $this->parseDate($value, $format, $withTimeZone);
 
         if (is_string($value)) {
             return $value;
@@ -266,7 +272,7 @@ class Formatter
                 $value->invert,
             ],
             is_numeric($value) => [
-                new DateTime()->setTimestamp(abs((int) $value))->diff(new DateTime()->setTimestamp(0)),
+                Date::createFromTimestampUTC(abs((int) $value))->diff(Date::createFromTimestampUTC(0)),
                 $value < 0,
             ],
             str_starts_with($value, 'P-') => [
@@ -426,10 +432,10 @@ class Formatter
         ], locale: $this->locale);
     }
 
-    public function asTime(int|string|DateTimeInterface $value, ?string $format = null): string
+    public function asTime(int|string|DateTimeInterface $value, ?string $format = null, bool $withTimeZone = false): string
     {
         $format ??= $this->defaultDateFormat;
-        [$value] = $this->parseDate($value, $format);
+        [$value] = $this->parseDate($value, $format, $withTimeZone);
 
         if (is_string($value)) {
             return $value;
@@ -456,7 +462,7 @@ class Formatter
     public function asTimestamp(int|string|DateTimeInterface $value, ?string $format = null, bool $withPreposition = false): string
     {
         $format ??= $this->defaultDateFormat;
-        [$dateTime, $hasTimeInfo] = $this->parseDate($value, $format);
+        [$dateTime, $hasTimeInfo] = $this->parseDate($value, $format, false);
 
         if (is_string($dateTime)) {
             return $dateTime;
@@ -588,10 +594,10 @@ class Formatter
     /**
      * @return array{CarbonInterface|string, bool}
      */
-    private function parseDate(int|string|DateTimeInterface $value, string $format): array
+    private function parseDate(int|string|DateTimeInterface $value, string $format, bool $withTimeZone): array
     {
         if ($value instanceof CarbonInterface) {
-            return [$value, true];
+            return [$this->formatParsedDate($value, $format, $withTimeZone), true];
         }
 
         /** Int is always a timestamp */
@@ -628,11 +634,20 @@ class Formatter
             $dateTime = $dateTime->addHours($offset / 3600);
         }
 
-        if (str_starts_with($format, 'php:')) {
-            return [$dateTime->format(Str::after($format, 'php:')), $hasTimeInfo];
+        return [$this->formatParsedDate($dateTime, $format, $withTimeZone), $hasTimeInfo];
+    }
+
+    private function formatParsedDate(CarbonInterface $dateTime, string $format, bool $withTimeZone): CarbonInterface|string
+    {
+        $result = str_starts_with($format, 'php:')
+            ? $dateTime->format(Str::after($format, 'php:'))
+            : $dateTime;
+
+        if (is_string($result) && $withTimeZone && $result !== '') {
+            $result .= ' '.DateTimeHelper::timeZoneAbbreviation($dateTime->getTimezone());
         }
 
-        return [$dateTime, $hasTimeInfo];
+        return $result;
     }
 
     private function normalizeNumericValue(mixed $value): float|int

@@ -83,7 +83,7 @@
 {% set siteErrors = errors.get('sites') %}
 
 {% for site in Sites.getAllSites() %}
-    {% set siteSettings = old('sites.' ~ site.id, section.siteSettings[site.id] ?? null) %}
+    {% set siteSettings = old('sites.' ~ site.handle, section.siteSettings[site.id] ?? null) %}
     {% if siteSettings %}
         {% for attribute, errors in errors.get('sites.' ~ site.id) %}
             {% set siteErrors = siteErrors|merge(errors) %}
@@ -266,6 +266,28 @@
     errors: errors.get('previewTargets'),
     data: {'error-key': 'previewTargets'},
     static: readOnly,
+}) }}
+
+{{ forms.textField({
+  label: 'Min Authors'|t('app'),
+  instructions: 'The minimum number of authors that entries in this section can have.'|t('app'),
+  id: 'minAuthors',
+  name: 'minAuthors',
+  type: 'number',
+  min: 0,
+  max: 32767,
+  autocorrect: false,
+  autocapitalize: false,
+  value: section.minAuthors,
+  errors: section.getErrors('minAuthors'),
+  data: {'error-key': 'minAuthors'},
+  size: 5,
+  disabled: readOnly,
+  fieldClass: {
+    'type-channel': true,
+    'type-structure': true,
+    'hidden': section.type == 'single',
+  }|filter|keys,
 }) }}
 
 {{ forms.textField({

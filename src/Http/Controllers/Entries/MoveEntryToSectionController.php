@@ -10,8 +10,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Http\JsonResponse;
@@ -58,37 +56,12 @@ readonly class MoveEntryToSectionController
             ->pluck('et.id')
             ->all();
 
-        $user = $this->request->user();
-
         // filter all sections to those that have all the entry types we just got
-        $compatibleSections = $this->sections->getEditableSections()
-            ->filter(function (Section $section) use ($entryTypes, $siteId, $currentSectionUid, $user) {
-                // don't allow moving to a single section
-                if ($section->type === SectionType::Single) {
-                    return false;
-                }
-
-                // limit to the sections available for the site we're doing this for
-                if (! isset($section->getSiteSettings()[$siteId])) {
-                    return false;
-                }
-
-                // exclude section we started this move from
-                if ($section->uid === $currentSectionUid) {
-                    return false;
-                }
-
-                // ensure person can save entries in the section we're moving to
-                if (! $user->can("saveEntries:$section->uid")) {
-                    return false;
-                }
-
-                $sectionEntryTypes = array_map(fn ($et) => $et->id, $section->getEntryTypes());
-
-                return ! empty(array_intersect($entryTypes, $sectionEntryTypes));
-            })
-            ->sortBy(fn (Section $section) => $section->getUiLabel())
-            ->all();
+        $compatibleSections = $this->sections->getAvailableEntryMoveTargetSections(
+            entryTypeIds: $entryTypes,
+            siteId: $siteId,
+            currentSectionUid: $currentSectionUid,
+        );
 
         if (empty($compatibleSections)) {
             $listHtml = Html::tag(
@@ -124,7 +97,7 @@ readonly class MoveEntryToSectionController
 
         abort_if(is_null($section), 400, 'Cannot find the section to move the entries to.');
 
-        $this->requirePermission("viewEntries:$section->uid");
+        $this->requirePermission("saveEntries:$section->uid");
 
         /** @var Collection<Entry> $entries */
         $entries = Entry::find()
@@ -138,7 +111,7 @@ readonly class MoveEntryToSectionController
         abort_if($entries->isEmpty(), 400, 'Cannot find the entries to move to the new section.');
 
         foreach ($entries as $entry) {
-            abort_if(! $entry->canMove(), 403, 'User is not authorized to perform this action.');
+            abort_if(! $this->request->craftUser()?->can('moveToSection', [$entry, $section]), 403, 'User is not authorized to perform this action.');
         }
 
         $errors = [];

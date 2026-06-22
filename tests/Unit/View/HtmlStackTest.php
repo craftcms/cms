@@ -179,7 +179,18 @@ describe('js registration', function () {
 
         $body = $this->registry->bodyEndHtml();
 
-        expect($body)->toContain('<script>var x = 1;</script>');
+        expect($body)
+            ->toContain("document.addEventListener('DOMContentLoaded'")
+            ->toContain('run.call(document)')
+            ->toContain('var x = 1;');
+    });
+
+    it('renders body end JS without a ready wrapper', function () {
+        $this->registry->js('var x = 1', Position::BodyEnd);
+
+        $body = $this->registry->bodyEndHtml();
+
+        expect($body)->toContain('<script type="module">var x = 1;</script>');
     });
 });
 
@@ -287,7 +298,7 @@ describe('cssFile registration', function () {
 
         $head = $this->registry->headHtml();
 
-        expect($head)->toContain('<link href="/style.css" rel="stylesheet">');
+        expect($head)->toContain('<link rel="stylesheet" href="/style.css">');
     });
 
     it('deduplicates by URL', function () {
@@ -411,7 +422,7 @@ describe('linkTag registration', function () {
 
         $head = $this->registry->headHtml();
 
-        expect($head)->toContain('<link href="/favicon.ico" rel="icon">');
+        expect($head)->toContain('<link rel="icon" href="/favicon.ico">');
     });
 
     it('deduplicates by explicit key', function () {
@@ -573,7 +584,7 @@ describe('per-key buffer: startBuffer and clearBuffer', function () {
         $this->registry->js('var during = 1');
         $captured = $this->registry->clearBuffer('js');
 
-        expect($captured)->toHaveKey(Position::BodyEnd->value)
+        expect($captured)->toHaveKey(Position::Ready->value)
             ->and($this->registry->bodyEndHtml())->toContain('var before = 1;')
             ->and($this->registry->bodyEndHtml())->not->toContain('var during = 1;');
     });
@@ -675,7 +686,7 @@ describe('per-key buffer: startBuffer and clearBuffer', function () {
 
         // Single key: returns the value directly (position-keyed array), not wrapped in ['js' => ...]
         expect($captured)->toBeArray()
-            ->and($captured)->toHaveKey(Position::BodyEnd->value)
+            ->and($captured)->toHaveKey(Position::Ready->value)
             ->and($captured)->not->toHaveKey('js');
     });
 
@@ -688,7 +699,7 @@ describe('per-key buffer: startBuffer and clearBuffer', function () {
         // Multiple keys: returns ['js' => ..., 'css' => ...]
         expect($captured)->toBeArray()
             ->and($captured)->toHaveKeys(['js', 'css'])
-            ->and($captured['js'])->toHaveKey(Position::BodyEnd->value);
+            ->and($captured['js'])->toHaveKey(Position::Ready->value);
     });
 
     it('returns an empty array when nothing was registered during a single-key buffer', function () {
@@ -821,6 +832,20 @@ describe('legacy asset registry', function () {
             ->not->toContain('window.testBufferedDependency = true;')
             ->and($head)->toContain('window.testBufferedDependency = true;')
             ->and($head)->toContain('/test-buffered-bundle.js');
+    });
+
+    it('can register the same asset again after rendered assets are cleared', function () {
+        $assets = app(InternalAssetRegistry::class);
+
+        $assets->register(TestBufferedBundleAsset::class);
+        $first = $this->registry->headHtml();
+
+        $assets->register(TestBufferedBundleAsset::class);
+        $second = $this->registry->headHtml();
+
+        expect($first)
+            ->toContain('window.testBufferedDependency = true;')
+            ->and($second)->toContain('window.testBufferedDependency = true;');
     });
 });
 

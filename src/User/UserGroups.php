@@ -13,21 +13,23 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\ApplyingUserGroupDelete;
-use CraftCms\Cms\User\Events\DeletingUserGroup;
-use CraftCms\Cms\User\Events\SavingUserGroup;
 use CraftCms\Cms\User\Events\UserGroupDeleted;
+use CraftCms\Cms\User\Events\UserGroupDeleting;
+use CraftCms\Cms\User\Events\UserGroupDeletionApplying;
 use CraftCms\Cms\User\Events\UserGroupSaved;
+use CraftCms\Cms\User\Events\UserGroupSaving;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
+
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 
 #[Singleton]
 readonly class UserGroups
@@ -67,28 +69,30 @@ readonly class UserGroups
      */
     public function getAssignableGroups(?User $user = null): Collection
     {
-        $currentUser = Auth::user();
+        $currentUser = currentUser();
 
         if (! $currentUser && ! $user) {
             return collect();
         }
 
-        // If either user is an admin, all groups are fair game
-        if (($currentUser !== null && $currentUser->admin) || ($user !== null && $user->admin)) {
+        if (($currentUser !== null && $currentUser->isAdmin()) || ($user !== null && $user->admin)) {
             return $this->getAllGroups();
         }
 
-        return $this->getAllGroups()->filter(function (UserGroup $group) use ($currentUser, $user) {
-            if ($currentUser !== null && $currentUser->can("assignUserGroup:$group->uid")) {
-                return true;
-            }
+        $recipient = $user ?? currentUserElement();
 
-            if ($user !== null && $user->isInGroup($group)) {
-                return true;
-            }
+        return $this->getAllGroups()
+            ->filter(function (UserGroup $group) use ($currentUser, $recipient, $user) {
+                if (
+                    $currentUser !== null &&
+                    $recipient !== null &&
+                    $currentUser->can('assignUserGroup', [$recipient, $group])
+                ) {
+                    return true;
+                }
 
-            return false;
-        });
+                return $user !== null && $user->isInGroup($group);
+            });
     }
 
     public function getGroupById(int $groupId): ?UserGroup
@@ -251,7 +255,7 @@ readonly class UserGroups
 
         $isNewGroup = ! $group->id;
 
-        event(new SavingUserGroup($group, $isNewGroup));
+        event(new UserGroupSaving($group, $isNewGroup));
 
         $group->uid ??= $isNewGroup
             ? Str::uuid()->toString()
@@ -309,7 +313,7 @@ readonly class UserGroups
             return;
         }
 
-        event(new ApplyingUserGroupDelete($group));
+        event(new UserGroupDeletionApplying($group));
 
         DB::table(Table::USERGROUPS)->where('uid', $uid)->delete();
 
@@ -336,7 +340,7 @@ readonly class UserGroups
     {
         Edition::require(Edition::Pro);
 
-        event(new DeletingUserGroup($group));
+        event(new UserGroupDeleting($group));
 
         $this->projectConfig->remove(
             ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid,

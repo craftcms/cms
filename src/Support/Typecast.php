@@ -10,10 +10,14 @@ use Carbon\CarbonInterface;
 use DateTime;
 use DateTimeInterface;
 use InvalidArgumentException;
+use PropertyHookType;
 use ReflectionClass;
 use ReflectionNamedType;
+use ReflectionParameter;
+use ReflectionProperty;
 use ReflectionUnionType;
 use RuntimeException;
+use Throwable;
 
 class Typecast
 {
@@ -43,6 +47,12 @@ class Typecast
 
     private static array $types = [];
 
+    private static array $setterTypes = [];
+
+    private static array $setters = [];
+
+    private static array $assignableProperties = [];
+
     /**
      * Configures a component with the initial property values.
      *
@@ -54,13 +64,51 @@ class Typecast
      */
     final public static function configure(object $object, array $properties = []): object
     {
-        self::properties($object::class, $properties);
+        $class = $object::class;
+
+        self::properties($class, $properties);
 
         foreach ($properties as $name => $value) {
-            $object->$name = $value;
+            if (! self::isAssignableProperty($class, $name)) {
+                $setter = self::setter($class, $name);
+                if ($setter !== null) {
+                    $object->$setter($value);
+                }
+
+                continue;
+            }
+
+            try {
+                $object->$name = $value;
+            } catch (Throwable $error) {
+                match (true) {
+                    str_contains($error->getMessage(), 'Cannot modify private(set)') => true,
+                    str_contains($error->getMessage(), 'Cannot modify protected(set)') => true,
+                    str_contains($error->getMessage(), 'is read-only') => true,
+                    default => throw $error,
+                };
+            }
         }
 
         return $object;
+    }
+
+    private static function isAssignableProperty(string $class, string $property): bool
+    {
+        if (! isset(self::$assignableProperties[$class])) {
+            self::resolveClassTypes($class);
+        }
+
+        return self::$assignableProperties[$class][$property] ?? true;
+    }
+
+    private static function setter(string $class, string $property): ?string
+    {
+        if (! isset(self::$setters[$class])) {
+            self::resolveClassTypes($class);
+        }
+
+        return self::$setters[$class][$property] ?? null;
     }
 
     /**
@@ -225,34 +273,122 @@ class Typecast
             self::resolveClassTypes($class);
         }
 
-        return self::$types[$class][$property]
-            ?? self::$types[$class]['_'.lcfirst($property)] // Underscore prefixed private
+        if (
+            array_key_exists($property, self::$types[$class]) &&
+            (self::$assignableProperties[$class][$property] ?? false)
+        ) {
+            return self::$types[$class][$property];
+        }
+
+        if (array_key_exists($property, self::$setterTypes[$class])) {
+            $setterType = self::$setterTypes[$class][$property];
+
+            if ($setterType !== null) {
+                return $setterType;
+            }
+        }
+
+        if (array_key_exists($property, self::$types[$class])) {
+            return self::$types[$class][$property];
+        }
+
+        return self::$types[$class]['_'.lcfirst($property)] // Underscore prefixed private
             ?? false;
     }
 
     private static function resolveClassTypes(string $class): void
     {
         self::$types[$class] = [];
+        self::$setterTypes[$class] = [];
+        self::$setters[$class] = [];
+        self::$assignableProperties[$class] = [];
 
-        $properties = new ReflectionClass($class)->getProperties();
+        $className = $class;
+        $class = new ReflectionClass($className);
 
-        foreach ($properties as $ref) {
+        foreach ($class->getMethods() as $ref) {
+            if ($ref->isStatic()) {
+                continue;
+            }
+            if (! $ref->isPublic()) {
+                continue;
+            }
+            if (! str_starts_with($ref->getName(), 'set')) {
+                continue;
+            }
+            $parameters = $ref->getParameters();
+            if (! isset($parameters[0])) {
+                continue;
+            }
+            if (count(array_filter($parameters, fn (ReflectionParameter $parameter) => ! $parameter->isOptional())) > 1) {
+                continue;
+            }
+
+            $property = lcfirst(substr($ref->getName(), 3));
+
+            if ($property === '') {
+                continue;
+            }
+
+            self::$setterTypes[$className][$property] = self::resolveParameterType($parameters[0]);
+            self::$setters[$className][$property] = $ref->getName();
+        }
+
+        foreach ($class->getProperties() as $ref) {
             if ($ref->isStatic()) {
                 continue;
             }
 
+            self::$assignableProperties[$className][$ref->getName()] = self::reflectionPropertyIsAssignable($ref);
+
             $type = $ref->getType();
 
             if ($type instanceof ReflectionNamedType) {
-                self::$types[$class][$ref->getName()] = [$type->getName(), $type->allowsNull()];
+                self::$types[$className][$ref->getName()] = [$type->getName(), $type->allowsNull()];
             } elseif ($type instanceof ReflectionUnionType) {
                 $resolved = self::resolveUnionType($type);
 
                 if ($resolved !== false) {
-                    self::$types[$class][$ref->getName()] = $resolved;
+                    self::$types[$className][$ref->getName()] = $resolved;
                 }
             }
         }
+    }
+
+    private static function reflectionPropertyIsAssignable(ReflectionProperty $property): bool
+    {
+        if (! $property->isPublic()) {
+            return false;
+        }
+
+        if ($property->isPrivateSet() || $property->isProtectedSet() || $property->isReadOnly()) {
+            return false;
+        }
+
+        if ($property->isVirtual()) {
+            return $property->hasHook(PropertyHookType::Set);
+        }
+
+        return true;
+    }
+
+    private static function resolveParameterType(ReflectionParameter $parameter): array|false|null
+    {
+        $type = $parameter->getType();
+
+        if ($type instanceof ReflectionNamedType) {
+            if ($type->getName() === 'mixed') {
+                return false;
+            }
+
+            return [$type->getName(), $type->allowsNull()];
+        }
+
+        if ($type instanceof ReflectionUnionType) {
+            return self::resolveUnionType($type);
+        }
+
+        return null;
     }
 
     private static function resolveUnionType(ReflectionUnionType $type): array|false

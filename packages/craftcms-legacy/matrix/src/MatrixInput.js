@@ -213,7 +213,7 @@
         return true;
       },
 
-      async pasteEntries() {
+      async pasteEntries($before = null) {
         Craft.cp.announce(Craft.t('app', 'Loading'));
         this.$pasteBtn.addClass('loading');
 
@@ -261,12 +261,22 @@
           await this.elementEditor?.pause();
 
           const $newEntries = $(data.blockHtml);
-          this.$entriesContainer.append($newEntries);
+
+          if ($before) {
+            $newEntries.insertBefore($before);
+          } else {
+            this.$entriesContainer.append($newEntries);
+          }
+
           await Craft.appendHeadHtml(data.headHtml);
           await Craft.appendBodyHtml(data.bodyHtml);
           Craft.initUiElements($newEntries);
 
           $newEntries.each((i, entry) => {
+            if (entry.nodeType !== 1) {
+              return;
+            }
+
             const $entry = $(entry);
             new Craft.MatrixInput.Entry(this, $entry);
             this.trigger('entryAdded', {
@@ -305,7 +315,9 @@
             this.$pasteBtn = Craft.ui
               .createPasteButton()
               .appendTo(this.$addEntryBtnContainer);
-            this.addListener(this.$pasteBtn, 'activate', 'pasteEntries');
+            this.addListener(this.$pasteBtn, 'activate', () => {
+              this.pasteEntries();
+            });
           } else {
             this.$pasteBtn.removeClass('hidden');
           }
@@ -616,6 +628,7 @@
     staticLayoutElements: null,
     cancelToken: null,
     ignoreFailedRequest: false,
+    uiLabel: null,
 
     isNew: null,
     id: null,
@@ -642,14 +655,15 @@
       }
 
       const $actionMenuBtn = this.$container.find('> .actions > .action-btn');
-      const actionDisclosure =
+      this.actionDisclosure =
         $actionMenuBtn.data('disclosureMenu') ||
         new Garnish.DisclosureMenu($actionMenuBtn);
 
-      this.$actionMenu = actionDisclosure.$container;
-      this.actionDisclosure = actionDisclosure;
+      this.$actionMenu = this.actionDisclosure.$container;
 
-      actionDisclosure.on('show', () => {
+      this.uiLabel = this.$container.data('ui-label');
+
+      this.actionDisclosure.on('show', () => {
         this.$container.addClass('active');
         const hideActions = [];
 
@@ -685,16 +699,102 @@
             )
           : $();
 
-        const disclosureMenu = this.$actionMenu.data('disclosureMenu');
         $hideButtons.each((i, button) => {
-          disclosureMenu.hideItem(button);
+          this.actionDisclosure.hideItem(button);
         });
         $buttons.not($hideButtons).each((i, button) => {
-          disclosureMenu.showItem(button);
+          this.actionDisclosure.showItem(button);
         });
+
+        const bulk = this.bulkActionMode();
+        $buttons
+          .filter('[data-action="collapse"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Collapse selected blocks')
+              : Craft.t('app', 'Collapse')
+          );
+        $buttons
+          .filter('[data-action="expand"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Expand selected blocks')
+              : Craft.t('app', 'Expand')
+          );
+        $buttons
+          .filter('[data-action="disable"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Disable selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Disable')
+          );
+        $buttons
+          .filter('[data-action="enable"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Enable selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Enable')
+          );
+        $buttons
+          .filter('[data-action="duplicate"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Duplicate selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Duplicate')
+          );
+        $buttons
+          .filter('[data-action="copy"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Copy selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Copy')
+          );
+        $buttons
+          .filter('[data-action="delete"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Delete selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Delete')
+          );
+
+        const $pasteBtn = $buttons.filter('[data-action="paste"]');
+        const copiedElements = Craft.cp.getCopiedElements();
+        const showPasteButton =
+          copiedElements.length && this.matrix.canPaste(copiedElements);
+        if (showPasteButton) {
+          this.actionDisclosure.showItem($pasteBtn[0]);
+          $pasteBtn.children('.menu-item-label').text(
+            copiedElements.length === 1
+              ? Craft.t('app', 'Paste {type} above', {
+                  type: Craft.t('app', 'block'),
+                })
+              : Craft.t('app', 'Paste {type} above', {
+                  type: Craft.t('app', 'blocks'),
+                })
+          );
+        } else {
+          this.actionDisclosure.hideItem($pasteBtn[0]);
+        }
       });
 
-      actionDisclosure.on('hide', () => {
+      this.actionDisclosure.on('hide', () => {
         this.$container.removeClass('active');
       });
 
@@ -746,6 +846,47 @@
       }
 
       this.$container.addClass('collapsed');
+
+      this.$previewContainer.html(this.previewHtml());
+
+      this.$fieldsContainer.velocity('stop');
+      this.$container.velocity('stop');
+
+      if (animate && !Garnish.prefersReducedMotion()) {
+        this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
+        this.$container.velocity({height: 30}, 'fast');
+      } else {
+        this.$previewContainer.show();
+        this.$fieldsContainer.hide();
+        this.$container.css({height: 30});
+      }
+
+      this.$tabContainer.hide();
+
+      // Remember that?
+      if (!this.isNew) {
+        Craft.MatrixInput.rememberCollapsedEntryId(this.id);
+      } else {
+        if (!this.$collapsedInput) {
+          this.$collapsedInput = $(
+            '<input type="hidden" name="' +
+              this.matrix.inputNamePrefix +
+              '[entries][' +
+              this.id +
+              '][collapsed]" value="1"/>'
+          ).appendTo(this.$container);
+        } else {
+          this.$collapsedInput.val('1');
+        }
+      }
+
+      this.collapsed = true;
+    },
+
+    previewHtml: function () {
+      if (this.uiLabel) {
+        return Craft.escapeHtml(this.uiLabel);
+      }
 
       let previewHtml = '';
       const $fields = this.$fieldsContainer.children().children();
@@ -803,40 +944,7 @@
         }
       }
 
-      this.$previewContainer.html(previewHtml);
-
-      this.$fieldsContainer.velocity('stop');
-      this.$container.velocity('stop');
-
-      if (animate && !Garnish.prefersReducedMotion()) {
-        this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-        this.$container.velocity({height: 30}, 'fast');
-      } else {
-        this.$previewContainer.show();
-        this.$fieldsContainer.hide();
-        this.$container.css({height: 30});
-      }
-
-      this.$tabContainer.hide();
-
-      // Remember that?
-      if (!this.isNew) {
-        Craft.MatrixInput.rememberCollapsedEntryId(this.id);
-      } else {
-        if (!this.$collapsedInput) {
-          this.$collapsedInput = $(
-            '<input type="hidden" name="' +
-              this.matrix.inputNamePrefix +
-              '[entries][' +
-              this.id +
-              '][collapsed]" value="1"/>'
-          ).appendTo(this.$container);
-        } else {
-          this.$collapsedInput.val('1');
-        }
-      }
-
-      this.collapsed = true;
+      return previewHtml;
     },
 
     _inputPreviewText: function ($input) {
@@ -966,15 +1074,19 @@
       this.onActionSelect(event.target);
     },
 
+    bulkActionMode: function () {
+      return (
+        this.matrix.entrySelect.totalSelected > 1 &&
+        this.matrix.entrySelect.isSelected(this.$container)
+      );
+    },
+
     onActionSelect: function (option) {
-      const batchAction =
-          this.matrix.entrySelect.totalSelected > 1 &&
-          this.matrix.entrySelect.isSelected(this.$container),
-        $option = $(option);
+      const $option = $(option);
 
       switch ($option.data('action')) {
         case 'collapse': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.collapseSelectedEntries();
           } else {
             this.collapse(true);
@@ -984,7 +1096,7 @@
         }
 
         case 'expand': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.expandSelectedEntries();
           } else {
             this.expand();
@@ -994,7 +1106,7 @@
         }
 
         case 'disable': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.disableSelectedEntries();
           } else {
             this.disable();
@@ -1004,7 +1116,7 @@
         }
 
         case 'enable': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.enableSelectedEntries();
           } else {
             this.enable();
@@ -1040,7 +1152,7 @@
         }
 
         case 'duplicate': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.duplicateSelectedEntries();
           } else {
             this.duplicate();
@@ -1051,7 +1163,7 @@
 
         case 'copy': {
           let elementInfo = [];
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             let selectedItems = this.matrix.entrySelect.getSelectedItems();
             for (let i = 0; i < selectedItems.length; i++) {
               let entry = $(selectedItems[i]).data('entry');
@@ -1088,8 +1200,12 @@
           break;
         }
 
+        case 'paste':
+          this.matrix.pasteEntries(this.$container);
+          break;
+
         case 'delete': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             if (
               confirm(
                 Craft.t(
@@ -1157,6 +1273,7 @@
           [param('visibleLayoutElements')]: this.visibleLayoutElements,
           [param('staticLayoutElements')]: this.staticLayoutElements,
           [param('elementType')]: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          [param('siteId')]: this.matrix.settings.siteId,
           [param('ownerId')]: this.matrix.settings.ownerId,
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,
@@ -1346,6 +1463,11 @@
             this.tabManager.selectTab(this.tabManager.$tabs.first());
           }
         }
+      }
+
+      this.uiLabel = response.data.uiLabel;
+      if (this.collapsed) {
+        this.$previewContainer.html(this.previewHtml());
       }
 
       await Craft.appendHeadHtml(response.data.headHtml);

@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
+use CraftCms\Cms\Field\Elements\Concerns\LegacyConstants;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\ContentBlock as ContentBlockModel;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -26,6 +27,7 @@ use function CraftCms\Cms\t;
 #[Ruleset(ContentBlockRules::class)]
 class ContentBlock extends Element implements NestedElementInterface
 {
+    use LegacyConstants;
     use NestedElement;
 
     #[Override]

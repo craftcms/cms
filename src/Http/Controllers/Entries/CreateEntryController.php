@@ -48,7 +48,10 @@ readonly class CreateEntryController
             return $site;
         }
 
-        $user = $this->request->user();
+        $user = $this->request->craftUser();
+        if (! $user) {
+            abort(401);
+        }
 
         // Create & populate the draft
         $entry = new Entry;
@@ -59,7 +62,7 @@ readonly class CreateEntryController
             $entry->setAuthorIds(
                 $this->request->input('authorIds') ??
                 $this->request->input('authorId') ??
-                $user->id
+                $user->getCraftUserId()
             );
         }
 
@@ -76,15 +79,11 @@ readonly class CreateEntryController
         }
 
         // Make sure the user is allowed to create this entry
-        $craftUser = $users->getUserById($user->id);
+        $craftUser = $users->getUserById($user->getCraftUserId());
 
         Gate::forUser($craftUser)->authorize('save', $entry);
 
         $this->setTitleAndSlug($entry, $site);
-
-        // Resume time
-        DateTimeHelper::pause();
-
         $this->setDates($entry);
 
         // Custom fields
@@ -96,10 +95,7 @@ readonly class CreateEntryController
 
         // Save it
         $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        $success = $drafts->saveElementAsDraft($entry, $user->id, markAsSaved: false);
-
-        // Resume time
-        DateTimeHelper::resume();
+        $success = $drafts->saveElementAsDraft($entry, $user->getCraftUserId(), markAsSaved: false);
 
         if (! $success) {
             return $this->asModelFailure($entry, mb_ucfirst(t('Couldn’t create {type}.', [
@@ -228,8 +224,6 @@ readonly class CreateEntryController
         // Post & expiry dates
         if (($postDate = $this->request->input('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
-        } else {
-            $entry->postDate = DateTimeHelper::now();
         }
 
         if (($expiryDate = $this->request->input('expiryDate')) !== null) {

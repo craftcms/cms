@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -19,9 +20,10 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\View\TemplateMode;
-use DateTime;
+use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -327,20 +329,18 @@ class SelectOptions
             ->all();
     }
 
-    public static function getTimeZoneOptions(?DateTime $offsetDate = null): array
+    public static function getTimeZoneOptions(?DateTimeInterface $offsetDate = null): array
     {
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $offsetDate ??= new DateTime;
-        $offsetDate->setTimezone(new DateTimeZone('UTC'));
+        $offsetDate = $offsetDate ? Date::instance($offsetDate)->setTimezone('UTC') : now('UTC');
         $offsets = [];
         $timezoneIds = [];
 
         foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
-            $abbr = $transition[0]['abbr'];
+            $abbr = DateTimeHelper::timeZoneAbbreviation($timezone, $offsetDate);
 
             $offset = round($timezone->getOffset($offsetDate) / 60);
 

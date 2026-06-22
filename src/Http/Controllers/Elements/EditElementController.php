@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\MenuItemType;
-use CraftCms\Cms\Element\Events\DefineElementEditorContent;
+use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
@@ -26,10 +26,12 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -115,7 +117,7 @@ class EditElementController
         $canEditMultipleSites = count($propEditableSiteIds) > 1 || $addlEditableSites;
 
         // Permissions
-        $canSave = $this->canSave($element, $this->request->user());
+        $canSave = $this->canSave($element, $this->request->craftUser());
         $canSaveCanonical = Gate::check('saveCanonical', $element);
         $canCreateDrafts = Gate::check('createDrafts', $canonical);
         $canDuplicate = ! $isRevision && Gate::check('duplicateAsDraft', $element);
@@ -143,7 +145,24 @@ class EditElementController
         [$docTitle, $title] = $this->editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getSigned('returnUrl') ?? Url::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
+
+        $redirectUrl = $this->request->query('returnUrl');
+        if ($redirectUrl) {
+            // only require the URL to be hashed if it contains Twig code
+            try {
+                $redirectUrl = Crypt::decrypt($redirectUrl);
+            } catch (DecryptException) {
+                if (str_contains($redirectUrl, '{')) {
+                    abort(400, "Invalid returnUrl param: $redirectUrl");
+                }
+            }
+
+            // swap the QS placeholder with a `?`
+            // (see https://github.com/craftcms/cms/issues/18923)
+            $redirectUrl = str_replace(':QS:', '?', $redirectUrl);
+        } else {
+            $redirectUrl = ElementHelper::postEditUrl($element);
+        }
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -342,7 +361,7 @@ class EditElementController
                 ->orderByDesc('dateUpdated')
                 ->with(['draftCreator'])
                 ->get()
-                ->filter(fn (ElementInterface $draft) => $this->request->user()->can('view', $draft))
+                ->filter(fn (ElementInterface $draft) => $this->request->craftUser()->can('view', $draft))
                 ->all();
         } else {
             $drafts = [];
@@ -431,7 +450,7 @@ class EditElementController
                     /** @var ElementInterface $draft */
                     $creator = $draft->getDraftCreator();
                     $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
-                    $timestampWithDate = $formatter->asDatetime($draft->dateUpdated, Locale::LENGTH_SHORT);
+                    $timestampWithDate = $formatter->asDatetime($draft->dateUpdated, Locale::LENGTH_SHORT, true);
 
                     return [
                         'label' => $draft->draftName,
@@ -461,7 +480,7 @@ class EditElementController
                 'items' => $revisions->map(function (ElementInterface $revision) use ($element, $formatter, $cpEditUrl, $baseParams) {
                     $creator = $revision->getRevisionCreator();
                     $timestamp = $formatter->asTimestamp($revision->dateCreated, Locale::LENGTH_SHORT, true);
-                    $timestampWithDate = $formatter->asDatetime($revision->dateCreated, Locale::LENGTH_SHORT);
+                    $timestampWithDate = $formatter->asDatetime($revision->dateCreated, Locale::LENGTH_SHORT, true);
 
                     return [
                         'label' => $revision->getRevisionLabel(),
@@ -585,9 +604,17 @@ class EditElementController
 
         // Revert content from this revision
         if ($isRevision && $canSaveCanonical && $element->hasRevisions()) {
+            $returnUrl = $this->request->query('returnUrl');
+
             $components[] = Html::beginForm().
                 Html::actionInput('elements/revert').
                 Html::redirectInput('{cpEditUrl}').
+                ($returnUrl
+                    ? Html::hiddenInput('redirectParams', Json::encode([
+                        'returnUrl' => $returnUrl,
+                    ]))
+                    : ''
+                ).
                 Html::hiddenInput('elementId', (string) $canonical->id).
                 Html::hiddenInput('revisionId', (string) $element->revisionId).
                 Html::button(t('Revert content from this revision'), [
@@ -712,7 +739,7 @@ JS, [
     {
         $html = $form?->render() ?? '';
 
-        event($event = new DefineElementEditorContent($element, $html, ! $canSave));
+        event($event = new ElementEditorContentResolving($element, $html, ! $canSave));
 
         return trim($event->html);
     }

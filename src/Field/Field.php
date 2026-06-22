@@ -7,11 +7,9 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
-use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Database\Expressions\Cast;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Table;
@@ -19,20 +17,35 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Concerns\LegacyFieldConstants;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineFieldActionMenuItems;
-use CraftCms\Cms\Field\Events\DefineFieldHtml;
-use CraftCms\Cms\Field\Events\DefineFieldKeywords;
-use CraftCms\Cms\Field\Events\FieldElementEvent;
-use CraftCms\Cms\Field\Events\FieldEvent;
+use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
+use CraftCms\Cms\Field\Events\FieldDeletionApplying;
+use CraftCms\Cms\Field\Events\FieldElementDeleted;
+use CraftCms\Cms\Field\Events\FieldElementDeletedForSite;
+use CraftCms\Cms\Field\Events\FieldElementDeleting;
+use CraftCms\Cms\Field\Events\FieldElementPropagated;
+use CraftCms\Cms\Field\Events\FieldElementRestored;
+use CraftCms\Cms\Field\Events\FieldElementRestoring;
+use CraftCms\Cms\Field\Events\FieldElementSaved;
+use CraftCms\Cms\Field\Events\FieldElementSaving;
+use CraftCms\Cms\Field\Events\FieldHtmlResolving;
+use CraftCms\Cms\Field\Events\FieldKeywordsResolving;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
+use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
+use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Shared\Contracts\Serializable;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -44,13 +57,11 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
@@ -58,12 +69,13 @@ use RuntimeException;
 use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
 {
     use ConfigurableComponent;
-    use HasComponentEvents;
+    use LegacyFieldConstants;
     use SavableComponent;
 
     // Translation methods
@@ -79,111 +91,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public const string TRANSLATION_METHOD_LANGUAGE = TranslationMethod::Language->value;
 
     public const string TRANSLATION_METHOD_CUSTOM = TranslationMethod::Custom->value;
-
-    // Component events
-    // -------------------------------------------------------------------------
-
-    /**
-     * @event DefineFieldHtml The event that is triggered when defining the field’s input HTML.
-     */
-    public const string EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
-
-    /**
-     * @vevent DefineFieldActionMenuItems
-     */
-    public const string EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
-
-    /**
-     * @event DefineFieldKeywordsEvent The event that is triggered when defining the field’s search keywords for an
-     * element.
-     *
-     * Note that you _must_ set [[Event::$handled]] to `true` if you want the field to accept your custom
-     * [[DefineFieldKeywordsEvent::$keywords|$keywords]] value.
-     *
-     * ```php
-     * \CraftCms\Cms\Field\Lightswitch::listen(
-     *     \CraftCms\Cms\Field\Lightswitch::EVENT_DEFINE_KEYWORDS,
-     *     function(\CraftCms\Cms\Field\Events\DefineFieldKeywords $e
-     * ) {
-     *     // @var craft\fields\Lightswitch $field
-     *     $field = $e->field;
-     *
-     *     if ($field->handle === 'fooOrBar') {
-     *         // Override the keywords depending on whether the lightswitch is enabled or not
-     *         $e->keywords = $e->value ? 'foo' : 'bar';
-     *         $e->handled = true;
-     *     }
-     * });
-     * ```
-     */
-    public const string EVENT_DEFINE_KEYWORDS = 'defineKeywords';
-
-    /**
-     * @event FieldEvent The event that is triggered after the field has been merged into another.
-     *
-     * @see afterMergeInto()
-     */
-    public const string EVENT_AFTER_MERGE_INTO = 'afterMergeInto';
-
-    /**
-     * @event FieldEvent The event that is triggered after another field has been merged into this one.
-     *
-     * @see afterMergeFrom()
-     */
-    public const string EVENT_AFTER_MERGE_FROM = 'afterMergeFrom';
-
-    /**
-     * @event ComponentEvent The event that is triggered before the component is saved.
-     *
-     * You may set [[ComponentEvent::$isValid]] to `false` to prevent the component from getting saved.
-     */
-    public const string EVENT_BEFORE_SAVE = 'beforeSave';
-
-    /**
-     * @event ComponentEvent The event that is triggered after the component is saved.
-     */
-    public const string EVENT_AFTER_SAVE = 'afterSave';
-
-    /**
-     * @event FieldElementEvent The event that is triggered before the element is saved.
-     *
-     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
-     */
-    public const string EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
-
-    /**
-     * @event FieldElementEvent The event that is triggered after the element is saved.
-     */
-    public const string EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
-
-    /**
-     * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites.
-     */
-    public const string EVENT_AFTER_ELEMENT_PROPAGATE = 'afterElementPropagate';
-
-    /**
-     * @event FieldElementEvent The event that is triggered before the element is deleted.
-     *
-     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
-     */
-    public const string EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
-
-    /**
-     * @event FieldElementEvent The event that is triggered after the element is deleted.
-     */
-    public const string EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
-
-    /**
-     * @event FieldElementEvent The event that is triggered before the element is restored.
-     *
-     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting restored.
-     */
-    public const string EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
-
-    /**
-     * @event FieldElementEvent The event that is triggered after the element is restored.
-     */
-    public const string EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
 
     // Properties
     // -------------------------------------------------------------------------
@@ -249,8 +156,8 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /** @var string|null The field's UID */
     public ?string $uid = null;
 
-    /** @var DateTime|null The date that the field was trashed */
-    public ?DateTime $dateDeleted = null;
+    /** @var DateTimeInterface|null The date that the field was trashed */
+    public ?DateTimeInterface $dateDeleted = null;
 
     /** @var CustomField|null The field layout element */
     public ?CustomField $layoutElement = null;
@@ -369,7 +276,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
      */
     public function __construct($config = [])
     {
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, ['fieldLimit', 'limitUnit']));
 
         // Validate the translation method
         $supportedTranslationMethods = static::supportedTranslationMethods() ?: [TranslationMethod::None];
@@ -544,7 +451,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 
@@ -555,7 +462,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     {
         $items = $this->actionMenuItems();
 
-        $this->dispatchComponentEvent(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event = new DefineFieldActionMenuItems($this, $items));
+        event($event = new FieldActionMenuItemsResolving($this, $items));
 
         return $event->items;
     }
@@ -568,7 +475,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return $items;
         }
 
-        if (! Auth::user()?->isAdmin()) {
+        if (! currentUser()?->isAdmin()) {
             return $items;
         }
 
@@ -687,7 +594,7 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, false);
 
-        $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
+        event($event = new FieldHtmlResolving(
             field: $this,
             value: $value,
             inline: false,
@@ -705,7 +612,7 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, true);
 
-        $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
+        event($event = new FieldHtmlResolving(
             field: $this,
             value: $value,
             inline: true,
@@ -756,7 +663,7 @@ JS, [
 
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
-        $this->dispatchComponentEvent(self::EVENT_DEFINE_KEYWORDS, $event = new DefineFieldKeywords(
+        event($event = new FieldKeywordsResolving(
             field: $this,
             element: $element,
             value: $value,
@@ -864,7 +771,7 @@ JS, [
      */
     public function afterMergeInto(FieldInterface $persistingField)
     {
-        $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_INTO, new FieldEvent($persistingField));
+        event(new FieldMergeIntoCompleted($this, $persistingField));
     }
 
     /**
@@ -881,7 +788,7 @@ JS, [
                 ]);
         }
 
-        $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_FROM, new FieldEvent($outgoingField));
+        event(new FieldMergeFromCompleted($this, $outgoingField));
     }
 
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
@@ -897,7 +804,7 @@ JS, [
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
             return DateTimeHelper::toIso8601($value);
         }
 
@@ -907,7 +814,7 @@ JS, [
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         // Dates should be stored in UTC w/o the time zone
-        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
             return Query::prepareDateForDb($value);
         }
 
@@ -1086,19 +993,36 @@ JS, [
             $this->context = Fields::getFieldContext();
         }
 
-        $this->dispatchComponentEvent(self::EVENT_BEFORE_SAVE, $event = new ComponentEvent($this, $isNew));
+        event($event = new FieldLifecycleSaving($this, $isNew));
 
         return $event->isValid;
     }
 
     public function afterSave(bool $isNew): void
     {
-        $this->dispatchComponentEvent(self::EVENT_AFTER_SAVE, new ComponentEvent($this, $isNew));
+        event(new FieldLifecycleSaved($this, $isNew));
+    }
+
+    public function beforeDelete(): bool
+    {
+        event($event = new FieldLifecycleDeleting($this));
+
+        return $event->isValid;
+    }
+
+    public function beforeApplyDelete(): void
+    {
+        event(new FieldDeletionApplying($this));
+    }
+
+    public function afterDelete(): void
+    {
+        event(new FieldLifecycleDeleted($this));
     }
 
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_SAVE, $event = new FieldElementEvent(
+        event($event = new FieldElementSaving(
             field: $this,
             element: $element,
             isNew: $isNew
@@ -1109,7 +1033,7 @@ JS, [
 
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
-        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent(
+        event(new FieldElementSaved(
             field: $this,
             element: $element,
             isNew: $isNew
@@ -1118,7 +1042,7 @@ JS, [
 
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent(
+        event(new FieldElementPropagated(
             field: $this,
             element: $element,
             isNew: $isNew
@@ -1127,7 +1051,7 @@ JS, [
 
     public function beforeElementDelete(ElementInterface $element): bool
     {
-        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_DELETE, $event = new FieldElementEvent(
+        event($event = new FieldElementDeleting(
             field: $this,
             element: $element,
         ));
@@ -1137,7 +1061,7 @@ JS, [
 
     public function afterElementDelete(ElementInterface $element): void
     {
-        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent(
+        event(new FieldElementDeleted(
             field: $this,
             element: $element,
         ));
@@ -1150,12 +1074,15 @@ JS, [
 
     public function afterElementDeleteForSite(ElementInterface $element): void
     {
-        // carry on
+        event(new FieldElementDeletedForSite(
+            field: $this,
+            element: $element,
+        ));
     }
 
     public function beforeElementRestore(ElementInterface $element): bool
     {
-        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_RESTORE, $event = new FieldElementEvent(
+        event($event = new FieldElementRestoring(
             field: $this,
             element: $element,
         ));
@@ -1165,7 +1092,7 @@ JS, [
 
     public function afterElementRestore(ElementInterface $element): void
     {
-        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent(
+        event(new FieldElementRestored(
             field: $this,
             element: $element,
         ));

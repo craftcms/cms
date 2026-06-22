@@ -113,6 +113,7 @@ class GlobalsController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $this->requireAdmin();
 
         $setIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getGlobals()->reorderSets($setIds);

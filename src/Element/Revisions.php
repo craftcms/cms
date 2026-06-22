@@ -7,15 +7,14 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\CreatingRevision;
+use CraftCms\Cms\Element\Events\ElementRevertingToRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
-use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
+use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +22,7 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -97,10 +97,10 @@ readonly class Revisions
 
             if ($creatorId === null) {
                 // Default to the logged-in user ID if there is one
-                $creatorId = Auth::user()?->id;
+                $creatorId = currentUser()?->getCraftUserId();
             }
 
-            event($event = new CreatingRevision(
+            event($event = new RevisionCreating(
                 canonical: $canonical,
                 revisionNum: $num,
                 creatorId: $creatorId,
@@ -191,7 +191,7 @@ readonly class Revisions
     {
         $canonical = $revision->getCanonical();
 
-        event(new RevertingToRevision(
+        event(new ElementRevertingToRevision(
             canonical: $canonical,
             revisionNum: $revision->revisionNum,
             creatorId: $creatorId,

@@ -698,7 +698,14 @@ class Raster extends Image
                 return ['animated' => $this->_isAnimated];
 
             case 'webp':
-                return ['animated' => $this->_isAnimated, 'webp_quality' => $quality];
+                $options = ['animated' => $this->_isAnimated];
+                if (Cms::config()->optimizeImageFilesize) {
+                    $options['webp_quality'] = $quality;
+                } else {
+                    $options['webp_lossless'] = true;
+                }
+
+                return $options;
 
             case 'png':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression

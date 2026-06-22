@@ -9,6 +9,7 @@ use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
@@ -36,13 +37,14 @@ use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Actions\NewChild;
 use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
 use CraftCms\Cms\Entry\Actions\NewSiblingBefore;
+use CraftCms\Cms\Entry\Concerns\LegacyConstants;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
-use CraftCms\Cms\Entry\Events\DefineEntryTypes;
-use CraftCms\Cms\Entry\Events\DefineMetaFields;
-use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
+use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
+use CraftCms\Cms\Entry\Events\EntryParentSelectionCriteriaResolving;
+use CraftCms\Cms\Entry\Events\EntryTypesResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Validation\EntryRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -62,7 +64,6 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -80,19 +81,21 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use DateInterval;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -108,6 +111,7 @@ use function CraftCms\Cms\t;
 #[Ruleset(EntryRules::class)]
 class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
 {
+    use LegacyConstants;
     use NestedElement {
         eagerLoadingMap as traitEagerLoadingMap;
         attributes as traitAttributes;
@@ -131,6 +135,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               {{ entry.sectionId }}
      *               ```
      */
+    #[AllowedInSandbox]
     public ?int $sectionId = null;
 
     /**
@@ -139,34 +144,34 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public bool $collapsed = false;
 
     /**
-     * @var DateTime|null Post date
-     *                    ---
-     *                    ```php
-     *                    echo Craft::$app->formatter->asDate($entry->postDate, 'short');
-     *                    ```
-     *                    ```twig
-     *                    {{ entry.postDate|date('short') }}
-     *                    ```
+     * @var DateTimeInterface|null Post date
+     *                             ---
+     *                             ```php
+     *                             echo Craft::$app->formatter->asDate($entry->postDate, 'short');
+     *                             ```
+     *                             ```twig
+     *                             {{ entry.postDate|date('short') }}
+     *                             ```
      */
     #[AllowedInSandbox]
-    public ?DateTime $postDate = null;
+    public ?DateTimeInterface $postDate = null;
 
     /**
-     * @var DateTime|null Expiry date
-     *                    ---
-     *                    ```php
-     *                    if ($entry->expiryDate) {
-     *                    echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
-     *                    }
-     *                    ```
-     *                    ```twig
-     *                    {% if entry.expiryDate %}
-     *                    {{ entry.expiryDate|date('short') }}
-     *                    {% endif %}
-     *                    ```
+     * @var DateTimeInterface|null Expiry date
+     *                             ---
+     *                             ```php
+     *                             if ($entry->expiryDate) {
+     *                             echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
+     *                             }
+     *                             ```
+     *                             ```twig
+     *                             {% if entry.expiryDate %}
+     *                             {{ entry.expiryDate|date('short') }}
+     *                             {% endif %}
+     *                             ```
      */
     #[AllowedInSandbox]
-    public ?DateTime $expiryDate = null;
+    public ?DateTimeInterface $expiryDate = null;
 
     /**
      * @var self::STATUS_*|null The entry’s previous status, if it had one
@@ -403,7 +408,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             SectionType::Structure->value => t('Structures'),
         ];
 
-        $user = Auth::user();
+        $user = currentUser();
 
         foreach ($sectionTypes as $type => $heading) {
             if (! empty($sectionsByType[$type])) {
@@ -430,7 +435,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     if ($type === SectionType::Structure->value) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $source['structureEditable'] = $user && $user->can("saveEntries:$section->uid");
+                        $structure = $section->structureId ? Structures::getStructureById($section->structureId) : null;
+                        $source['structureEditable'] = $user && $structure && $user->can('edit', $structure);
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -488,7 +494,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         if ($source === '*') {
             $sections = Sections::getAllSections()->all();
         } elseif ($source === 'singles') {
-            $sections = Sections::getSectionsByType(SectionType::Single);
+            $sections = Sections::getSectionsByType(SectionType::Single)->all();
         } elseif ($source !== null && preg_match('/^section:(.+)$/', $source, $matches)) {
             $sections = array_filter([
                 Sections::getSectionByUid($matches[1]),
@@ -531,7 +537,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $actions = [];
 
         if ($section) {
-            $user = Auth::user();
+            $user = currentUser();
 
             if (
                 $section->type === SectionType::Structure &&
@@ -678,18 +684,20 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             [
                 'label' => t('Post Date'),
                 'orderBy' => function (int $dir) {
+                    $postDate = DB::getQueryGrammar()->wrap('entries.postDate');
+
                     if ($dir === SORT_ASC) {
                         if (DB::isMysql()) {
-                            return DB::raw('postDate IS NOT NULL DESC, postDate ASC');
+                            return DB::raw("$postDate IS NOT NULL DESC, $postDate ASC");
                         }
 
-                        return DB::raw('postDate ASC NULLS LAST');
+                        return DB::raw("$postDate ASC NULLS LAST");
                     }
                     if (DB::isMysql()) {
-                        return DB::raw('postDate IS NULL DESC, postDate DESC');
+                        return DB::raw("$postDate IS NULL DESC, $postDate DESC");
                     }
 
-                    return DB::raw('postDate DESC NULLS FIRST');
+                    return DB::raw("$postDate DESC NULLS FIRST");
                 },
                 'attribute' => 'postDate',
                 'defaultDir' => 'desc',
@@ -759,7 +767,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     protected static function defineCardAttributes(): array
     {
-        $currentUser = Auth::user();
+        $currentUser = currentUserElement();
 
         $attributes = array_merge(parent::defineCardAttributes(), [
             'section' => [
@@ -784,11 +792,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
             'postDate' => [
                 'label' => t('Post Date'),
-                'placeholder' => fn () => (new DateTime)->sub(new DateInterval('P15D')),
+                'placeholder' => fn () => now()->subDays(15),
             ],
             'expiryDate' => [
                 'label' => t('Expiry Date'),
-                'placeholder' => fn () => (new DateTime)->add(new DateInterval('P15D')),
+                'placeholder' => fn () => now()->addDays(15),
             ],
             'revisionNotes' => [
                 'label' => t('Revision Notes'),
@@ -1215,7 +1223,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if ($section->type === SectionType::Structure) {
-            $user = Auth::user();
+            $user = currentUser();
 
             $ancestors = $this->getAncestors();
             if ($ancestors instanceof ElementQueryInterface) {
@@ -1240,7 +1248,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         if ($this->fieldId) {
             $entryType = $this->getType();
-            if (! $entryType->hasTitleField && ! $entryType->titleFormat && $entryType->uiLabelFormat === '{title}') {
+            if (
+                ! $entryType->hasTitleField &&
+                ! $entryType->titleFormat &&
+                (! $entryType->uiLabelFormat || $entryType->uiLabelFormat === '{title}')
+            ) {
                 return '';
             }
         }
@@ -1250,8 +1262,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     protected function uiLabel(): ?string
     {
-        if ($this->getType()->uiLabelFormat !== '{title}') {
-            $uiLabel = renderObjectTemplate($this->getType()->uiLabelFormat, $this);
+        $entryType = $this->getType();
+
+        if ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}') {
+            $uiLabel = renderObjectTemplate($entryType->uiLabelFormat, $this);
+
             if ($uiLabel !== '') {
                 return $uiLabel;
             }
@@ -1378,7 +1393,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
     }
 
-    public function getExpiryDate(): ?DateTime
+    public function getExpiryDate(): ?DateTimeInterface
     {
         return $this->expiryDate;
     }
@@ -1396,6 +1411,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @throws RuntimeException if [[sectionId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getSection(): ?Section
     {
         if (! isset($this->sectionId)) {
@@ -1409,6 +1425,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $section;
     }
 
+    #[AllowedInSandbox]
     public function getTypeId(): int
     {
         return $this->getType()->id;
@@ -1431,16 +1448,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public function getAvailableEntryTypes(bool $triggerEvent = true): array
     {
         $entryTypes = match (true) {
-            isset($this->fieldId) => array_values(array_filter(
-                $this->getField()->getFieldLayoutProviders(),
-                fn ($provider) => $provider instanceof EntryType,
-            )),
+            isset($this->fieldId) => $this->getFieldEntryTypes(),
             isset($this->sectionId) => $this->getSection()->getEntryTypes(),
             default => throw new RuntimeException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.'),
         };
 
         if ($triggerEvent) {
-            event($event = new DefineEntryTypes($this, $entryTypes));
+            event($event = new EntryTypesResolving($this, $entryTypes));
 
             return $event->entryTypes;
         }
@@ -1466,6 +1480,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @throws RuntimeException if [[typeId]] is invalid, or the section has no entry types
      */
+    #[AllowedInSandbox]
     public function getType(): EntryType
     {
         if (isset($this->_type)) {
@@ -1493,6 +1508,25 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         return $this->_type = $entryType;
+    }
+
+    /**
+     * Returns the field's entry types without resolving nested entry owners.
+     *
+     * @return EntryType[]
+     */
+    private function getFieldEntryTypes(): array
+    {
+        $field = app(Fields::class)->getFieldById($this->fieldId);
+
+        if (! $field instanceof ElementContainerFieldInterface) {
+            throw new RuntimeException("Invalid field ID: $this->fieldId");
+        }
+
+        return array_values(array_filter(
+            $field->getFieldLayoutProviders(),
+            fn ($provider) => $provider instanceof EntryType,
+        ));
     }
 
     #[AllowedInSandbox]
@@ -1673,7 +1707,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     private function _status(): string
     {
-        $now = DateTimeHelper::now();
+        $now = now();
 
         return match (true) {
             ! $this->postDate || $this->postDate > $now => self::STATUS_PENDING,
@@ -1781,7 +1815,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $actions = parent::safeActionMenuItems();
 
         if (
-            Auth::user()?->isAdmin() &&
+            app(ElementRequest::class)->element === $this &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             // Entry type settings
@@ -1833,10 +1868,7 @@ JS, [
             }
 
             // Field settings
-            if (
-                ! empty($this->fieldId) &&
-                app(ElementRequest::class)->element === $this
-            ) {
+            if (! empty($this->fieldId)) {
                 $fieldEditId = sprintf('edit-field-%s', mt_rand());
                 $actions[] = [
                     'id' => $fieldEditId,
@@ -1886,13 +1918,7 @@ JS, [
     {
         switch ($attribute) {
             case 'authors':
-                $authors = $this->getAuthors();
-                $html = '';
-                foreach ($authors as $author) {
-                    $html .= app(ElementHtml::class)->elementChipHtml($author);
-                }
-
-                return $html;
+                return app(PreviewHtml::class)->elementPreviewHtml($this->getAuthors());
             case 'section':
                 $section = $this->getSection();
                 if (! $section) {
@@ -1954,7 +1980,7 @@ JS, [
                     ],
                     'single' => false,
                     'elements' => $authors ?: null,
-                    'disabled' => false,
+                    'disabled' => ! $this->canChangeAuthor(),
                     'errors' => $this->errors()->get('authorIds'),
                     'limit' => $section->maxAuthors,
                 ]);
@@ -1977,55 +2003,15 @@ JS, [
     /**
      * Returns whether the given user is authorized to move this entry to a different section.
      */
-    public function canMove(?User $user = null): bool
+    public function canMove(?CraftUser $user = null): bool
     {
-        $user ??= Auth::user();
+        $user ??= currentUserElement();
 
         if (! $user) {
             return false;
         }
 
-        if (! $section = $this->getSection()) {
-            return false;
-        }
-
-        // disallow moving singles and trashed entries
-        if ($section->type === SectionType::Single || $this->trashed) {
-            return false;
-        }
-
-        // if there aren't any compatible sections, just don't bother with further checks
-        if (! $this->_moveCompatibleSectionsCount()) {
-            return false;
-        }
-
-        if ($this->getIsDraft()) {
-            return $this->draftCreatorId === $user->id || $user->can("savePeerEntryDrafts:$section->uid");
-        }
-
-        if (! $user->can("saveEntries:$section->uid")) {
-            return false;
-        }
-
-        return in_array($user->id, $this->getAuthorIds(), true) || $user->can("savePeerEntries:$section->uid");
-    }
-
-    /**
-     * Get sections that this entry could be moved to - sections that use the exact same entry type.
-     */
-    private function _moveCompatibleSectionsCount(): int
-    {
-        // get entry type id
-        $entryTypeId = $this->getType()->id;
-
-        // get sections all editable sections without singles and without the section this entry belongs to
-        // get all entry types for them
-        return Sections::getEditableSections()
-            ->filter(fn (Section $s) => $s->type !== SectionType::Single && $s->id !== $this->sectionId)
-            ->map(fn (Section $s) => ['entryTypes' => $s->getEntryTypes()])
-            // get sections that use the same entry type as this entry
-            ->filter(fn (array $s) => collect($s['entryTypes'])->contains('id', $entryTypeId))
-            ->count();
+        return $user->can('move', $this);
     }
 
     #[Override]
@@ -2033,7 +2019,7 @@ JS, [
     {
         $fields = [];
         $section = $this->getSection();
-        $user = Auth::user();
+        $user = currentUserElement();
 
         $this->_applyActionBtnEntryTypeCompatibility();
 
@@ -2074,23 +2060,24 @@ JS, [
         // Parent
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
             $fields['parent'] = (function () use ($static, $section) {
+                $parentQuery = self::find()
+                    ->site('*')
+                    ->preferSites([$this->siteId])
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null);
+
                 if ($parentId = $this->getParentId()) {
-                    $parent = Entries::getEntryById($parentId, $this->siteId, [
-                        'drafts' => null,
-                        'draftOf' => false,
-                    ]);
+                    $parentQuery->id($parentId);
                 } else {
                     // If the entry already has structure data, use it. Otherwise, use its canonical entry
-                    /** @var self|null $parent */
-                    $parent = self::find()
-                        ->siteId($this->siteId)
+                    $parentQuery
                         ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
-                        ->ancestorDist(1)
-                        ->drafts(null)
-                        ->draftOf(false)
-                        ->status(null)
-                        ->one();
+                        ->ancestorDist(1);
                 }
+
+                /** @var self|null $parent */
+                $parent = $parentQuery->one();
 
                 return FormFields::elementSelectFieldHtml([
                     'label' => t('Parent'),
@@ -2100,6 +2087,7 @@ JS, [
                     'selectionLabel' => t('Choose'),
                     'sources' => ["section:$section->uid"],
                     'criteria' => $this->_parentOptionCriteria($section),
+                    'showSiteMenu' => true,
                     'limit' => 1,
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
@@ -2150,7 +2138,7 @@ JS, [
                 'label' => t('Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
-                'value' => $this->_userPostDate(),
+                'value' => $this->postDate,
                 'errors' => $this->errors()->get('postDate'),
                 'disabled' => $static,
             ]);
@@ -2169,7 +2157,7 @@ JS, [
 
         $fields[] = parent::metaFieldsHtml($static);
 
-        event($event = new DefineMetaFields($this, $static, $fields));
+        event($event = new EntryMetaFieldsResolving($this, $static, $fields));
 
         return implode("\n", $event->fields);
     }
@@ -2210,24 +2198,13 @@ JS;
     /**
      * Returns whether the current user has permission to change this entry’s author.
      */
-    private function canChangeAuthor(?User $user = null): bool
+    private function canChangeAuthor(?CraftUser $user = null): bool
     {
-        if (! $user && ! $user = Auth::user()) {
+        if (! $user && ! $user = currentUserElement()) {
             return false;
         }
 
-        $section = $this->getSection();
-
-        if (! $user->can("viewPeerEntries:$section->uid")) {
-            return false;
-        }
-
-        $authorIds = $this->getAuthorIds();
-
-        return
-            empty($authorIds) ||
-            in_array($user->id, $authorIds) ||
-            $user->can("changeAuthorForPeerEntries:$section->uid");
+        return $user->can('changeAuthor', $this);
     }
 
     #[Override]
@@ -2245,7 +2222,6 @@ JS;
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [
-            'siteId' => $this->siteId,
             'sectionId' => $section->id,
             'status' => null,
             'drafts' => null,
@@ -2281,7 +2257,7 @@ JS;
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
-        event($event = new DefineParentSelectionCriteria($this, $parentOptionCriteria));
+        event($event = new EntryParentSelectionCriteriaResolving($this, $parentOptionCriteria));
 
         return $event->criteria;
     }
@@ -2317,19 +2293,6 @@ JS;
         }
     }
 
-    /**
-     * Returns the Post Date value that should be shown on the edit form.
-     */
-    private function _userPostDate(): ?DateTime
-    {
-        if (! $this->postDate || ($this->getIsUnpublishedDraft() && $this->postDate == $this->dateCreated)) {
-            // Pretend the post date hasn't been set yet, even if it has
-            return null;
-        }
-
-        return $this->postDate;
-    }
-
     // Events
     // -------------------------------------------------------------------------
 
@@ -2357,7 +2320,7 @@ JS;
                     app(Revisions::class)->createRevision(
                         $current,
                         $current->getAuthorId(),
-                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated)),
+                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated, withTimeZone: true)),
                     );
                 }
             }
@@ -2402,6 +2365,16 @@ JS;
         return parent::beforeSave($isNew);
     }
 
+    #[Override]
+    public function afterAssignedId(): void
+    {
+        if (ElementHelper::isDraftOrRevision($this)) {
+            return;
+        }
+
+        $this->updateTitle();
+    }
+
     /**
      * Set the default values for attributes if certain conditions are met.
      */
@@ -2414,27 +2387,27 @@ JS;
 
         $section = $this->getSection();
         if ($section?->type !== SectionType::Single
-            && $section?->maxAuthors !== 0
+            && $section?->minAuthors === 1
             && empty($this->getAuthors())
-            && $user = Auth::user()
+            && $user = currentUserElement()
         ) {
             $this->setAuthor($user);
         }
 
         if (
-            ! $this->_userPostDate() &&
+            ! $this->postDate &&
+            $this->enabled &&
             (
                 $this->ruleset->inScenarios(ElementRules::SCENARIO_LIVE, ElementRules::SCENARIO_DEFAULT) ||
-                ! $this->getIsDraft()
+                isset($this->fieldId)
             )
         ) {
-            // Default the post date to the current date/time
-            $this->postDate = new DateTime;
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            // Default the post date to the current date/time, without the seconds
+            $now = now();
+            $this->postDate = $now->setTimestamp($now->getTimestamp() - ($now->getTimestamp() % 60));
             // ...unless an expiry date is set in the past
             if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
-                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
+                $this->postDate = Date::instance($this->expiryDate)->subDay();
             }
         }
     }
@@ -2765,14 +2738,17 @@ JS;
         $entryType = $this->getType();
 
         if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
-            $templates[] = [
-                'template' => sprintf(
-                    '%s/%s/%s',
-                    Cms::config()->partialTemplatesPath,
-                    self::refHandle(),
-                    $entryType->original->handle,
-                ),
-                'priority' => 5,
+            return [
+                [
+                    'template' => sprintf(
+                        '%s/%s/%s',
+                        Cms::config()->partialTemplatesPath,
+                        self::refHandle(),
+                        $entryType->original->handle,
+                    ),
+                    'priority' => 5,
+                ],
+                ...$templates,
             ];
         }
 

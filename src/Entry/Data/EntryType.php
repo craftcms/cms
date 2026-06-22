@@ -29,9 +29,9 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use Illuminate\Support\Facades\Auth;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Ruleset(EntryTypeRules::class)]
@@ -166,7 +166,7 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
             return [];
         }
 
-        if (! Auth::user()?->isAdmin()) {
+        if (! currentUser()?->isAdmin()) {
             return [];
         }
 
@@ -182,7 +182,7 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
         ]];
 
         HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-$('#' + $id).on('click', () => {
+$(document).on('click', '#' + $id, () => {
 new Craft.CpScreenSlideout('entry-types/edit', {
 params: $params,
 })
@@ -220,7 +220,7 @@ JS, [
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 

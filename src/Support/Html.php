@@ -28,6 +28,8 @@ use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
 use Yiisoft\Html\Tag\Button;
 use Yiisoft\Html\Tag\Input;
+use Yiisoft\Html\Tag\Ol;
+use Yiisoft\Html\Tag\Ul;
 
 use function CraftCms\Cms\template;
 
@@ -312,6 +314,18 @@ class Html
         }
 
         return self::tag('a', $text, $options);
+    }
+
+    public static function ul(array $items = [], array $attributes = [], bool $encode = true): Ul
+    {
+        return YiiHtml::ul(self::normalizeTagAttributes($attributes))
+            ->strings(array_map(strval(...), $items), encode: $encode);
+    }
+
+    public static function ol(array $items = [], array $attributes = [], bool $encode = true): Ol
+    {
+        return YiiHtml::ol(self::normalizeTagAttributes($attributes))
+            ->strings(array_map(strval(...), $items), encode: $encode);
     }
 
     /**
@@ -881,7 +895,41 @@ class Html
 
     private static function _namespaceInputs(string &$html, string $namespace): void
     {
+        // Escape elements that use name= for non-form purposes
+        $markers = self::_escapeNonFormNameAttributes($html);
+
         $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}'.$namespace.'[$3]$4$2', $html) ?? '';
+
+        // Restore escaped elements
+        if (! empty($markers)) {
+            $html = strtr($html, $markers);
+        }
+    }
+
+    /**
+     * Escapes name= attributes on elements that shouldn't be namespaced.
+     *
+     * @return array<string, string> Markers to original content mapping
+     */
+    private static function _escapeNonFormNameAttributes(string &$html): array
+    {
+        $markers = [];
+
+        // Elements that use name= for non-form purposes
+        $excludedElements = ['slot', 'craft-icon'];
+
+        $html = preg_replace_callback(
+            '/<('.implode('|', $excludedElements).')\b[^>]*>/i',
+            function (array $match) use (&$markers): string {
+                $marker = sprintf('{ns-marker:%s}', mt_rand());
+                $markers[$marker] = $match[0];
+
+                return $marker;
+            },
+            $html
+        ) ?? $html;
+
+        return $markers;
     }
 
     /**
@@ -944,6 +992,7 @@ class Html
                 foreach ($matchIds as $i => $id) {
                     if (
                         $i % 2 === 0 && // not a delimiter
+                        $id !== '' && // check if it's not an empty string, or the next line will error
                         $id[0] !== '.' // not a class name
                     ) {
                         $isHash = $id[0] === '#';
@@ -1302,6 +1351,19 @@ class Html
     public static function jsFile($url, $options = [])
     {
         return YiiHtml::javaScriptFile($url, $options);
+    }
+
+    /**
+     * Returns JavaScript code with the given variables, pre-JSON-encoded.
+     *
+     * @param  callable  $jsFn  callback function that returns the JS code to be registered.
+     * @param  array  $vars  Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     */
+    public static function jsWithVars(callable $jsFn, array $vars): string
+    {
+        $jsVars = array_map(fn ($variable) => Json::encode($variable), $vars);
+
+        return call_user_func($jsFn, ...array_values($jsVars));
     }
 
     public static function endForm(): string

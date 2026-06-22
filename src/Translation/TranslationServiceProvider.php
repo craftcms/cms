@@ -20,6 +20,7 @@ class TranslationServiceProvider extends ServiceProvider
             locale: app()->getLocale(),
             fallbackLocale: $this->app->make(ConfigRepository::class)->get('app.fallback_locale'),
             defaultCategory: 'app',
+            eventDispatcher: $this->app->make(LaravelEventDispatcher::class),
         ));
     }
 

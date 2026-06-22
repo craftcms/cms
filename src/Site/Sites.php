@@ -14,14 +14,14 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
-use CraftCms\Cms\Site\Events\DeletingSite;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
-use CraftCms\Cms\Site\Events\ReorderingSites;
-use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Events\SiteDeleting;
+use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
+use CraftCms\Cms\Site\Events\SiteSaving;
 use CraftCms\Cms\Site\Events\SitesReordered;
+use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
@@ -43,6 +43,7 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\maxPowerCaptain;
 
 #[Scoped]
@@ -279,7 +280,7 @@ class Sites
             return $this->editableSiteIds;
         }
 
-        $user = Auth::user();
+        $user = currentUser();
 
         return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $user?->can("editSite:$site->uid"))->pluck('id')->values();
     }
@@ -411,7 +412,7 @@ class Sites
 
         $primarySite = $this->allSitesById->isEmpty() ? null : $this->getPrimarySite();
 
-        event(new SavingSite(
+        event(new SiteSaving(
             site: $site,
             isNew: $isNewSite,
             oldPrimarySiteId: $primarySite->id ?? null,
@@ -563,7 +564,7 @@ class Sites
      */
     public function reorderSites(array $siteIds): bool
     {
-        event(new ReorderingSites(siteIds: $siteIds));
+        event(new SitesReordering(siteIds: $siteIds));
 
         $uidsByIds = DB::table(Table::SITES)->uidsByIds($siteIds);
 
@@ -621,7 +622,7 @@ class Sites
             throw new Exception('You cannot delete the primary site.');
         }
 
-        event($event = new DeletingSite(site: $site, transferContentTo: $transferContentTo));
+        event($event = new SiteDeleting(site: $site, transferContentTo: $transferContentTo));
 
         if (! $event->isValid) {
             return false;
@@ -759,7 +760,7 @@ class Sites
         /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
-        event(new ApplyingSiteDelete($site));
+        event(new SiteDeletionApplying($site));
 
         DB::transaction(function () use ($siteRecord) {
             DB::table(Table::SITES)->softDelete($siteRecord->id);

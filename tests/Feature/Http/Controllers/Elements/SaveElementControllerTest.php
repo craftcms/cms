@@ -213,6 +213,33 @@ describe('store', function () {
         ])->assertBadRequest();
     });
 
+    it('ignores sensitive attributes when saving a user element', function () {
+        $editor = UserModel::factory()->admin()->createElement();
+        $targetUser = UserModel::factory()->createElement();
+        $originalPassword = DB::table(Table::USERS)
+            ->where('id', $targetUser->id)
+            ->value('password');
+        $originalEmail = $targetUser->email;
+
+        actingAs($editor);
+
+        postJson(action([SaveElementController::class, 'store']), [
+            'elementType' => User::class,
+            'elementId' => $targetUser->id,
+            'email' => 'updated@example.com',
+            'firstName' => 'Updated',
+            'newPassword' => 'SecurePassword123!',
+        ])->assertOk();
+
+        $userRecord = DB::table(Table::USERS)
+            ->where('id', $targetUser->id)
+            ->first();
+
+        expect($userRecord->password)->toBe($originalPassword)
+            ->and($userRecord->email)->toBe($originalEmail)
+            ->and($userRecord->firstName)->toBe('Updated');
+    });
+
     it('forbids saving when the user cannot save the element', function () {
         $entry = EntryModel::factory()
             ->forSection($this->section)
@@ -353,6 +380,7 @@ describe('store', function () {
                 'slug' => 'canonical-title',
             ]);
         app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+        actingAs(UserModel::findOrFail(auth()->id()));
 
         $elements = new class(app(ElementPlaceholders::class)) extends ElementsService
         {

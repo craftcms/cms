@@ -50,9 +50,12 @@ readonly class AddressesController
 
     public function store(Request $request, Elements $elements): Response
     {
-        $user = $request->user();
+        $user = $request->craftUser();
+        if (! $user) {
+            abort(401);
+        }
 
-        $userId = (int) ($request->input('userId') ?? $user->id);
+        $userId = (int) ($request->input('userId') ?? $user->getCraftUserId());
         $addressId = $request->input('addressId');
 
         if ($addressId) {
@@ -76,14 +79,9 @@ readonly class AddressesController
 
         // All safe attributes
         $safeAttributes = [];
-        foreach (array_keys($address->ruleset->rules()) as $name) {
-            if (in_array($name, ['id', 'uid', 'ownerId'])) {
-                continue;
-            }
-
-            $value = $request->input($name);
-            if ($value !== null) {
-                $safeAttributes[$name] = $value;
+        foreach ($address->safeAttributes() as $name) {
+            if ($request->has($name)) {
+                $safeAttributes[$name] = $request->input($name);
             }
         }
 

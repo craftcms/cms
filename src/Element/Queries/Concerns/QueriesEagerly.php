@@ -47,6 +47,8 @@ trait QueriesEagerly
      */
     public bool $eagerly = false;
 
+    private array $eagerLoadCriteriaExclusions = [];
+
     protected function initQueriesEagerly(): void
     {
         $this->afterQuery(function (mixed $result) {
@@ -143,6 +145,17 @@ trait QueriesEagerly
         return $this;
     }
 
+    public function excludeEagerLoadCriteria(array|string $criteria): static
+    {
+        $criteria = is_array($criteria) ? $criteria : [$criteria];
+        $this->eagerLoadCriteriaExclusions = array_values(array_unique([
+            ...$this->eagerLoadCriteriaExclusions,
+            ...$criteria,
+        ]));
+
+        return $this;
+    }
+
     /**
      * Returns whether the query results were already eager loaded by the query's source element.
      */
@@ -204,6 +217,11 @@ trait QueriesEagerly
         };
 
         if (! $eagerLoaded) {
+            $criteria += array_diff_key(
+                $this->getCriteria(),
+                array_flip($this->eagerLoadCriteriaExclusions),
+            ) + ['with' => $this->with];
+
             Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
@@ -211,7 +229,7 @@ trait QueriesEagerly
                     new EagerLoadPlan(
                         handle: $this->eagerLoadHandle,
                         alias: $alias,
-                        criteria: $criteria + $this->getCriteria() + ['with' => $this->with],
+                        criteria: $criteria,
                         all: ! $count,
                         count: $count,
                         lazy: true,

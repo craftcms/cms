@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementActivity;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeDelete;
-use CraftCms\Cms\Element\Events\BeforeSave;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -18,14 +19,17 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -122,9 +126,9 @@ describe('ensure', function () {
             ->once()
             ->with([], true)
             ->andReturn($entry);
-        $request->shouldReceive('user')
+        $request->shouldReceive('craftUser')
             ->once()
-            ->andReturn(auth()->user());
+            ->andReturn(currentUser());
 
         app()->instance('request', Request::create('/actions/elements/ensure-draft', 'POST', [], [], [], [
             'HTTP_ACCEPT' => 'application/json',
@@ -225,7 +229,7 @@ describe('store', function () {
                 ->where('canonicalId', $entry->id)
                 ->where('draftName', 'Ported Draft')
                 ->where('draftNotes', 'Ported draft notes')
-                ->where('creator', auth()->user()->getName())
+                ->where('creator', currentUser()->asElement()->getName())
                 ->etc()
             );
 
@@ -436,7 +440,7 @@ describe('store', function () {
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Failing Draft');
 
-        Event::listen(BeforeSave::class, function (BeforeSave $event) use ($draft) {
+        Event::listen(ElementLifecycleSaving::class, function (ElementLifecycleSaving $event) use ($draft) {
             if ($event->element->id === $draft->id) {
                 $event->isValid = false;
             }
@@ -462,7 +466,7 @@ describe('store', function () {
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
         ]);
-        $request->setUserResolver(fn () => auth()->user());
+        $request->setUserResolver(fn () => currentUser());
         app()->instance('request', $request);
 
         $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class)) extends ElementDraftsController
@@ -471,7 +475,7 @@ describe('store', function () {
 
             protected function applyParamsToElement(ElementInterface $element): void {}
 
-            protected function canSave(ElementInterface $element, User $user): bool
+            protected function canSave(ElementInterface $element, CraftUser $user): bool
             {
                 return ++$this->canSaveCalls === 1;
             }
@@ -542,6 +546,99 @@ describe('apply', function () {
             ->and(Entry::find()->draftId($draft->draftId)->status(null)->one())->toBeNull();
     });
 
+    it('applies email changes from unpublished user drafts', function () {
+        $admin = UserModel::factory()->admin()->createElement();
+
+        actingAs($admin);
+
+        $draft = app(User::class);
+        $draft->username = 'new-user';
+
+        expect(app(Drafts::class)->saveElementAsDraft($draft, $admin->id, markAsSaved: false))->toBeTrue();
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => User::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'email' => 'new-user@example.com',
+            'username' => 'new-user',
+        ])->assertOk()
+            ->assertJsonPath('message', t('{type} created.', [
+                'type' => User::displayName(),
+            ]));
+
+        expect(User::find()
+            ->email('new-user@example.com')
+            ->status(null)
+            ->one()
+        )->not->toBeNull();
+    });
+
+    it('ignores other sensitive attributes when applying user drafts', function () {
+        $admin = UserModel::factory()->admin()->createElement();
+        $targetUser = UserModel::factory()->createElement([
+            'active' => false,
+            'admin' => false,
+            'passwordResetRequired' => false,
+        ]);
+        $originalPassword = DB::table(Table::USERS)
+            ->where('id', $targetUser->id)
+            ->value('password');
+        /** @var User $draft */
+        $draft = app(Drafts::class)->createDraft($targetUser, $admin->id, name: 'User Draft');
+
+        actingAs($admin);
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => User::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'firstName' => 'Updated',
+            'active' => true,
+            'admin' => true,
+            'affiliatedSiteId' => 999,
+            'currentPassword' => 'password',
+            'invalidLoginCount' => 10,
+            'lastInvalidLoginDate' => now()->toDateTimeString(),
+            'lastLoginAttemptIp' => '127.0.0.1',
+            'lastLoginDate' => now()->toDateTimeString(),
+            'lastPasswordChangeDate' => now()->toDateTimeString(),
+            'locked' => true,
+            'lockoutDate' => now()->toDateTimeString(),
+            'newPassword' => 'SecurePassword123!',
+            'password' => 'password',
+            'passwordResetRequired' => true,
+            'pending' => true,
+            'photoId' => 999,
+            'suspended' => true,
+            'unverifiedEmail' => 'unverified@example.com',
+        ])->assertOk();
+
+        /** @var User $updatedUser */
+        $updatedUser = User::find()
+            ->id($targetUser->id)
+            ->status(null)
+            ->one();
+
+        expect($updatedUser->firstName)->toBe('Updated')
+            ->and($updatedUser->active)->toBeFalse()
+            ->and($updatedUser->admin)->toBeFalse()
+            ->and($updatedUser->affiliatedSiteId)->toBeNull()
+            ->and($updatedUser->invalidLoginCount)->toBeNull()
+            ->and($updatedUser->lastInvalidLoginDate)->toBeNull()
+            ->and($updatedUser->lastLoginAttemptIp)->toBeNull()
+            ->and($updatedUser->lastLoginDate)->toBeNull()
+            ->and($updatedUser->lastPasswordChangeDate)->toBeNull()
+            ->and($updatedUser->locked)->toBeFalse()
+            ->and($updatedUser->lockoutDate)->toBeNull()
+            ->and(DB::table(Table::USERS)->where('id', $targetUser->id)->value('password'))->toBe($originalPassword)
+            ->and($updatedUser->passwordResetRequired)->toBeFalse()
+            ->and($updatedUser->pending)->toBeFalse()
+            ->and($updatedUser->photoId)->toBeNull()
+            ->and($updatedUser->suspended)->toBeFalse()
+            ->and($updatedUser->unverifiedEmail)->toBeNull();
+    });
+
     it('forbids applying a draft when the user cannot save the canonical element', function () {
         $entryType = EntryType::factory()->create();
         $section = Section::factory()->withEntryTypes($entryType)->create();
@@ -583,7 +680,7 @@ describe('apply', function () {
 
         $failedSave = false;
 
-        Event::listen(BeforeSave::class, function (BeforeSave $event) use ($draft, &$failedSave) {
+        Event::listen(ElementLifecycleSaving::class, function (ElementLifecycleSaving $event) use ($draft, &$failedSave) {
             if ($event->element->id === $draft->id && ! $failedSave) {
                 $event->isValid = false;
                 $failedSave = true;
@@ -698,7 +795,7 @@ describe('destroy', function () {
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Undeletable Draft');
 
-        Event::listen(BeforeDelete::class, function (BeforeDelete $event) use ($draft) {
+        Event::listen(ElementLifecycleDeleting::class, function (ElementLifecycleDeleting $event) use ($draft) {
             if ($event->element->id === $draft->id) {
                 $event->isValid = false;
             }

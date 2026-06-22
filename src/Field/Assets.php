@@ -20,7 +20,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Field\Events\LocateUploadedFiles;
+use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
@@ -61,12 +61,6 @@ class Assets extends BaseRelationField
     public const string PREVIEW_MODE_FULL = 'full';
 
     public const string PREVIEW_MODE_THUMBS = 'thumbs';
-
-    /**
-     * @event {@see LocateUploadedFiles} The event that is triggered when identifying any uploaded files that
-     * should be stored as assets and related by the field.
-     */
-    public const string EVENT_LOCATE_UPLOADED_FILES = 'locateUploadedFiles';
 
     #[Override]
     public static function displayName(): string
@@ -828,13 +822,13 @@ class Assets extends BaseRelationField
             }
         }
 
-        $event = new LocateUploadedFiles(
+        $event = new AssetsUploadedFilesLocating(
             field: $this,
             element: $element,
             files: $files,
         );
 
-        $this->dispatchComponentEvent(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+        event($event);
 
         return $event->files;
     }

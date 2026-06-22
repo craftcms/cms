@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\DefineKeywords;
+use CraftCms\Cms\Element\Events\ElementKeywordsResolving;
 use CraftCms\Cms\Support\Str;
 
 /**
@@ -37,7 +37,7 @@ trait Searchable
      */
     public function getSearchKeywords(string $attribute): string
     {
-        event($event = new DefineKeywords(
+        event($event = new ElementKeywordsResolving(
             element: $this,
             attribute: $attribute,
         ));

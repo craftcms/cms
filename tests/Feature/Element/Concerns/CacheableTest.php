@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\DefineCacheTags;
+use CraftCms\Cms\Element\Events\ElementCacheTagsResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
@@ -50,7 +50,7 @@ describe('getCacheTags', function () {
         $element = new TestCacheableElement;
         $element->setCustomCacheTags(['original']);
 
-        Event::listen(function (DefineCacheTags $event) {
+        Event::listen(function (ElementCacheTagsResolving $event) {
             $event->tags = array_merge($event->tags, ['added-by-event']);
         });
 

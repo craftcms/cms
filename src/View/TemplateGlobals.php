@@ -10,11 +10,11 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Cms\Update\Updates;
-use CraftCms\Cms\View\Events\RegisterTemplateGlobals;
+use CraftCms\Cms\View\Events\TemplateGlobalsResolving;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Auth;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -50,15 +50,19 @@ readonly class TemplateGlobals
         $globals = [
             'craft' => $this->craftVariable,
             'currentSite' => $currentSite,
-            'currentUser' => Auth::user(),
+            'currentUser' => currentUserElement(),
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
             'language' => app()->getLocale(),
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
-            'loginUrl' => Url::siteUrl($this->generalConfig->getLoginPath()),
-            'logoutUrl' => Url::siteUrl($this->generalConfig->getLogoutPath()),
+            'loginUrl' => $this->generalConfig->loginPath !== false
+                ? Url::siteUrl($this->generalConfig->getLoginPath())
+                : null,
+            'logoutUrl' => $this->generalConfig->logoutPath !== false
+                ? Url::siteUrl($this->generalConfig->getLogoutPath())
+                : null,
             'setPasswordUrl' => $setPasswordRequestPath !== null ? Url::siteUrl($setPasswordRequestPath) : null,
             'now' => now(),
             'today' => today(),
@@ -66,7 +70,7 @@ readonly class TemplateGlobals
             'yesterday' => today()->subDay(),
         ];
 
-        event($event = new RegisterTemplateGlobals($globals));
+        event($event = new TemplateGlobalsResolving($globals));
 
         return $event->globals;
     }

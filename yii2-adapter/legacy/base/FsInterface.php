@@ -21,5 +21,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Filesystem\Contracts\FsInterface::class, FsInterface::class);

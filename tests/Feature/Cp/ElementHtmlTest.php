@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cp\Events\DefineElementCardHtml;
-use CraftCms\Cms\Cp\Events\DefineElementChipHtml;
+use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
+use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
@@ -29,8 +30,8 @@ describe('elementChipHtml', function () {
 
         expect($fieldHtml)->toContain('removable')
             ->and($fieldHtml)->toContain('name="myFieldName[]"')
-            ->and($indexHtml)->toContain('<span class="status')
-            ->and($this->elementHtml->elementChipHtml($user, ['showStatus' => false]))->not->toContain('<span class="status')
+            ->and($indexHtml)->toContain('<craft-indicator')
+            ->and($this->elementHtml->elementChipHtml($user, ['showStatus' => false]))->not->toContain('<craft-indicator')
             ->and($indexHtml)->toContain('thumb')
             ->and($this->elementHtml->elementChipHtml($user, ['showThumb' => false]))->not->toContain('thumb');
 
@@ -60,17 +61,30 @@ describe('elementChipHtml', function () {
             ->and($trashedHtml)->toContain('data-trashed');
     });
 
-    it('dispatches and allows overriding DefineElementChipHtml', function () {
+    it('dispatches and allows overriding ElementChipHtmlResolving', function () {
         $user = User::findOne(1);
         expect($user)->toBeInstanceOf(User::class);
 
-        Event::listen(function (DefineElementChipHtml $event) {
+        Event::listen(function (ElementChipHtmlResolving $event) {
             $event->html = '<div>overridden-chip</div>';
         });
 
         $html = $this->elementHtml->elementChipHtml($user);
 
         expect($html)->toBe('<div>overridden-chip</div>');
+    });
+
+    it('links custom element labels when the element authorizes viewing', function () {
+        $element = new ElementHtmlTestElement;
+        $element->id = 123;
+        $element->title = 'Payment #123';
+
+        $html = $this->elementHtml->elementChipHtml($element, [
+            'hyperlink' => true,
+        ]);
+
+        expect($html)->toContain('<a class="label-link" href="')
+            ->and($html)->toContain('/custom-elements/123');
     });
 });
 
@@ -88,11 +102,11 @@ describe('elementCardHtml', function () {
             ->and($html)->toContain('name="myFieldName[]"');
     });
 
-    it('dispatches and allows overriding DefineElementCardHtml', function () {
+    it('dispatches and allows overriding ElementCardHtmlResolving', function () {
         $user = User::findOne(1);
         expect($user)->toBeInstanceOf(User::class);
 
-        Event::listen(function (DefineElementCardHtml $event) {
+        Event::listen(function (ElementCardHtmlResolving $event) {
             $event->html = '<div>overridden-card</div>';
         });
 
@@ -101,3 +115,17 @@ describe('elementCardHtml', function () {
         expect($html)->toBe('<div>overridden-card</div>');
     });
 });
+
+class ElementHtmlTestElement extends Element
+{
+    #[Override]
+    public function canView(User $user): bool
+    {
+        return true;
+    }
+
+    protected function cpEditUrl(): ?string
+    {
+        return "custom-elements/$this->id";
+    }
+}

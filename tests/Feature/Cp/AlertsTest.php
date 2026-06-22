@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Alerts;
-use CraftCms\Cms\Cp\Events\RegisterCpAlerts;
+use CraftCms\Cms\Cp\Events\CpAlertsResolving;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
@@ -17,10 +17,10 @@ it('returns no alerts for guests', function () {
     expect($alerts)->toBeArray()->toBeEmpty();
 });
 
-it('merges alerts from RegisterCpAlerts listeners', function () {
+it('merges alerts from CpAlertsResolving listeners', function () {
     actingAs(User::findOne());
 
-    Event::listen(function (RegisterCpAlerts $event) {
+    Event::listen(function (CpAlertsResolving $event) {
         $event->alerts[] = 'custom alert from event';
     });
 

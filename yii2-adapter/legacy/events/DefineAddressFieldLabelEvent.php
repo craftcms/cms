@@ -15,7 +15,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Events\DefineAddressFieldLabel} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Events\AddressFieldLabelResolving} instead.
  */
 class DefineAddressFieldLabelEvent extends Event
 {

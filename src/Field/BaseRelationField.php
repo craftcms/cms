@@ -21,7 +21,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\DefineElementCriteria;
+use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -74,24 +74,19 @@ use function CraftCms\Cms\template;
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
-    /**
-     * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
-     */
-    public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+    public const string VIEW_MODE_LIST = 'list';
 
-    public const VIEW_MODE_LIST = 'list';
+    public const string VIEW_MODE_LIST_INLINE = 'list-inline';
 
-    public const VIEW_MODE_LIST_INLINE = 'list-inline';
+    public const string VIEW_MODE_THUMBS = 'thumbs';
 
-    public const VIEW_MODE_THUMBS = 'thumbs';
+    public const string VIEW_MODE_CARDS = 'cards';
 
-    public const VIEW_MODE_CARDS = 'cards';
+    public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
 
-    public const VIEW_MODE_CARDS_GRID = 'cards-grid';
+    public const string DEFAULT_PLACEMENT_BEGINNING = 'beginning';
 
-    public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
-
-    public const DEFAULT_PLACEMENT_END = 'end';
+    public const string DEFAULT_PLACEMENT_END = 'end';
 
     private static bool $validatingRelatedElements = false;
 
@@ -178,6 +173,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if (! empty($value)) {
+            $siteId = ElementQuery::$activeQuery?->siteId;
+
             $filter = new ElementRelationParamFilter(fields: [
                 $field->handle => $field,
             ]);
@@ -188,7 +185,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ];
 
             if ($query instanceof ElementQuery) {
-                $filter->apply($query->getQuery(), $relationCriteria);
+                $filter->apply($query->getQuery(), $relationCriteria, $siteId !== '*' ? $siteId : null);
 
                 return $query;
             }
@@ -767,13 +764,7 @@ JS, [
 
             $relationsAlias = sprintf('relations_%s', Str::random(10));
 
-            $query->beforeQuery(function (ElementQuery $elementQuery) use (
-                $element,
-                $relationsAlias) {
-                if ($elementQuery->id !== null) {
-                    return;
-                }
-
+            $query->beforeQuery(function (ElementQuery $elementQuery) use ($element, $relationsAlias) {
                 // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
                 // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
                 // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
@@ -816,6 +807,12 @@ JS, [
         }
 
         return $query;
+    }
+
+    #[Override]
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $this->normalizeValue($value ?? [], $element);
     }
 
     protected function fetchRelationsFromDbTable(?ElementInterface $element): bool
@@ -1505,6 +1502,8 @@ JS, [
             }
         }
 
+        $targetSiteId = $this->_targetSiteId();
+
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => $elementType,
@@ -1521,6 +1520,7 @@ JS, [
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || ! $this->showSiteMenu || ! static::canShowSiteMenu()) ? false : 'auto',
+            'siteIds' => $targetSiteId ? [$targetSiteId] : null,
             'allowSelfRelations' => $this->allowSelfRelations,
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
@@ -1533,7 +1533,7 @@ JS, [
             'sortable' => $this->sortable && ! $this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
-                'defaultSiteId' => $element->siteId ?? null,
+                'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
     }
@@ -1577,10 +1577,7 @@ JS, [
      */
     public function getInputSelectionCriteria(): array
     {
-        $this->dispatchComponentEvent(
-            self::EVENT_DEFINE_SELECTION_CRITERIA,
-            $event = new DefineElementCriteria,
-        );
+        event($event = new ElementCriteriaResolving(field: $this));
 
         return $event->criteria;
     }

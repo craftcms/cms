@@ -11,9 +11,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
+use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -29,7 +30,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
+use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
@@ -82,11 +83,6 @@ use function CraftCms\Cms\template;
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {
-    /**
-     * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
-     */
-    public const string EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
-
     public const string VIEW_MODE_CARDS = 'cards';
 
     public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
@@ -364,7 +360,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ],
             );
 
-            Event::listen(function (AfterSaveNestedElements $event) {
+            Event::listen(function (NestedElementsSaved $event) {
                 if ($event->manager !== $this->_entryManager) {
                     return;
                 }
@@ -396,7 +392,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $entryTypes = $this->_entryTypes;
 
-        $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
+        event($event = new EntryTypesForFieldResolving(
             field: $this,
             entryTypes: $entryTypes,
             element: $element,
@@ -648,7 +644,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
             // Clear out id=false if this query was populated previously
             if ($query->id === false) {
@@ -739,13 +737,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
+    public function getTranslationDescription(?ElementInterface $element): ?string
+    {
+        return $this->entryManager()->getTranslationDescription($element);
+    }
+
+    #[Override]
     protected function actionMenuItems(): array
     {
-        $items = match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
-            self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
-            default => [],
-        };
+        if ($this->maxEntries !== 1) {
+            $items = match ($this->viewMode) {
+                self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
+                self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
+                default => [],
+            };
+        } else {
+            $items = [];
+        }
 
         $parentItems = parent::actionMenuItems();
 
@@ -787,11 +795,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
   const expandBtn = $('#' + $expandAllId);
   const collapseBtn = $('#' + $collapseAllId);
   const menu = expandBtn.closest('.menu');
-  const getBlocks = () => {
-    const blocks = field.find(' > .blocks > .matrixblock');
-    const selectedBlocks = blocks.filter('.sel');
-    return selectedBlocks.length ? selectedBlocks : blocks;
-  };
+  const getBlocks = () => field.find(' > .blocks > .matrixblock');
 
   expandBtn.on('activate', () => {
     getBlocks().each((i, block) => {
@@ -809,16 +813,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
       let blocks = getBlocks();
-      let expandLabel, collapseLabel;
-      if (blocks.is('.sel')) {
-        expandLabel = Craft.t('app', 'Expand selected blocks');
-        collapseLabel = Craft.t('app', 'Collapse selected blocks');
-      } else {
-        expandLabel = Craft.t('app', 'Expand all blocks');
-        collapseLabel = Craft.t('app', 'Collapse all blocks');
-      }
-      expandBtn.find('.menu-item-label').text(expandLabel);
-      collapseBtn.find('.menu-item-label').text(collapseLabel);
       disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
       disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
     });
@@ -830,23 +824,7 @@ JS, [
             InputNamespace::namespaceId($this->getInputId()),
         ]);
 
-        // Copy, Duplicate, Delete
-        if ($this->maxEntries !== 1) {
-            $items[] = ['type' => 'hr'];
-
-            $type = mb_strtolower(t('Blocks'));
-            $entrySelector = ' > .blocks > .matrixblock';
-
-            $items[] = $this->copyAction($type, $entrySelector);
-            if (! $this->static) {
-                $items[] = $this->duplicateAction($type, $entrySelector, <<<'JS'
-field.data('matrix').duplicateSelectedEntries();
-JS);
-                $items[] = $this->deleteAction($type, $entrySelector, <<<'JS'
-field.data('matrix').deleteSelectedEntries();
-JS);
-            }
-        }
+        $items[] = $this->copyAction(t('blocks'), ' > .blocks > .matrixblock');
 
         return $items;
     }
@@ -855,19 +833,11 @@ JS);
     {
         $items = [];
 
-        // Copy, Duplicate, Delete
-        if ($this->maxEntries !== 1) {
-            $type = Entry::pluralLowerDisplayName();
-            $entrySelector = ' > .nested-element-cards > .elements > li > .element';
-
-            $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->duplicateAction($type, $entrySelector, <<<'JS'
-field.children('.nested-element-cards').data('nestedElementManager').duplicateElements(getEntries());
-JS);
-            $items[] = $this->deleteAction($type, $entrySelector, <<<'JS'
-field.children('.nested-element-cards').data('nestedElementManager').deleteElements(getEntries());
-JS);
-        }
+        // Copy
+        $items[] = $this->copyAction(
+            Entry::pluralLowerDisplayName(),
+            ' > .nested-element-cards > .elements > li > .element',
+        );
 
         return $items;
     }
@@ -880,109 +850,6 @@ JS);
             'type' => Entry::class,
             'fieldId' => $this->id,
         ]);
-
-        HtmlStack::jsWithVars(fn ($id, $fieldId, $entrySelector, $type) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  const field = $('#' + $fieldId);
-  const menu = btn.closest('.menu');
-
-  if (!field.length) {
-    setTimeout(() => {
-      menu.data('disclosureMenu')?.removeItem(btn[0]);
-    }, 1);
-    return;
-  }
-
-  const getEntries = () => {
-    const entries = field.find($entrySelector)
-    const selectedEntries = entries.filter('.sel');
-    return (selectedEntries.length ? selectedEntries : entries).toArray();
-  };
-
-  btn.on('activate', () => {
-    Craft.cp.copyElements(getEntries().map((element) => {
-      element = $(element);
-      return {
-          ... $baseInfo,
-          id: element.data('id'),
-          draftId: element.data('draftId'),
-          revisionId: element.data('revisionId'),
-          ownerId: element.data('ownerId'),
-          siteId: element.data('siteId'),
-        }
-    }));
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      const entries = getEntries();
-      let copyLabel;
-      if ($(entries).is('.sel')) {
-        copyLabel = Craft.t('app', 'Copy selected {type}', {
-          type: $type,
-        })
-      } else {
-        copyLabel = Craft.t('app', 'Copy all {type}', {
-          type: $type,
-        })
-      }
-      btn.find('.menu-item-label').text(copyLabel);
-      disclosureMenu.toggleItem(btn[0], !!entries.length);
-    });
-  }, 1);
-})();
-JS, [
-            InputNamespace::namespaceId($id),
-            InputNamespace::namespaceId($this->getInputId()),
-            $entrySelector,
-            $type,
-        ]);
-
-        return [
-            'id' => $id,
-            'icon' => 'clone-dashed',
-            'color' => Color::Fuchsia,
-            'label' => mb_ucfirst(t('Copy all {type}', [
-                'type' => $type,
-            ])),
-        ];
-    }
-
-    private function duplicateAction(string $type, string $entrySelector, string $activateJs): array
-    {
-        return $this->bulkAction($entrySelector, $activateJs, [
-            'icon' => 'clone',
-            'label' => mb_ucfirst(t('Duplicate selected {type}', [
-                'type' => $type,
-            ])),
-        ]);
-    }
-
-    private function deleteAction(string $type, string $entrySelector, string $activateJs): array
-    {
-        $typeJs = Json::encode($type);
-        $activateJs = <<<JS
-if (confirm(Craft.t('app', 'Are you sure you want to delete the selected {type}?', {
-  type: $typeJs,
-}))) {
-  $activateJs
-}
-JS;
-
-        return $this->bulkAction($entrySelector, $activateJs, [
-            'icon' => 'trash',
-            'label' => mb_ucfirst(t('Delete selected {type}', [
-                'type' => $type,
-            ])),
-            'destructive' => true,
-        ]);
-    }
-
-    private function bulkAction(string $entrySelector, string $activateJs, array $item): array
-    {
-        $id = sprintf('action-%s', mt_rand());
 
         HtmlStack::jsWithVars(fn ($id, $fieldId, $entrySelector) => <<<JS
 (() => {
@@ -997,10 +864,20 @@ JS;
     return;
   }
 
-  const getEntries = () => field.find($entrySelector).filter('.sel').toArray();
+  const getEntries = () => field.find($entrySelector)
 
   btn.on('activate', () => {
-    $activateJs
+    Craft.cp.copyElements(getEntries().toArray().map((element) => {
+      element = $(element);
+      return {
+          ... $baseInfo,
+          id: element.data('id'),
+          draftId: element.data('draftId'),
+          revisionId: element.data('revisionId'),
+          ownerId: element.data('ownerId'),
+          siteId: element.data('siteId'),
+        }
+    }));
   });
 
   setTimeout(() => {
@@ -1017,15 +894,13 @@ JS, [
         ]);
 
         return [
-            ...$item,
             'id' => $id,
+            'icon' => 'clone-dashed',
+            'color' => Color::Fuchsia,
+            'label' => mb_ucfirst(t('Copy all {type}', [
+                'type' => $type,
+            ])),
         ];
-    }
-
-    #[Override]
-    public function getTranslationDescription(?ElementInterface $element): ?string
-    {
-        return $this->entryManager()->getTranslationDescription($element);
     }
 
     /**
@@ -1230,7 +1105,7 @@ JS,
             'showHeaderColumn' => Collection::make($entryTypes)->contains(fn (EntryType $entryType) => (
                 $entryType->hasTitleField ||
                 $entryType->titleFormat ||
-                $entryType->uiLabelFormat !== '{title}'
+                ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}')
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
@@ -1414,6 +1289,9 @@ JS,
                 'revisions' => Collection::make($sourceElements)
                     ->contains(fn ($sourceElement) => $sourceElement->getIsRevision()),
             ],
+            'createElement' => fn (EntryQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 
@@ -1568,7 +1446,7 @@ JS,
     /**
      * Handles nested entry saves.
      */
-    public function afterSaveEntries(AfterSaveNestedElements $event): void
+    public function afterSaveEntries(NestedElementsSaved $event): void
     {
         if (app()->runningInConsole()) {
             return;
@@ -1753,7 +1631,7 @@ JS,
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
-                    $entry->getPrimaryOwnerId() === $element->getCanonicalId() &&
+                    ElementHelper::belongsToCanonicalOwner($entry, $element) &&
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
                     (
@@ -1806,16 +1684,16 @@ JS,
                 $entry->propagateAll = true;
             }
 
-            if (isset($entryData['title']) && $entry->getType()->hasTitleField) {
+            if (array_key_exists('title', $entryData) && $entry->getType()->hasTitleField) {
                 $entry->title = $entryData['title'];
             }
 
-            if (isset($entryData['slug']) && $entry->getType()->showSlugField) {
+            if (array_key_exists('slug', $entryData) && $entry->getType()->showSlugField) {
                 $entry->slug = $entryData['slug'];
             }
 
             // Allow setting the UID for the entry
-            if (isset($entryData['uid'])) {
+            if (array_key_exists('uid', $entryData)) {
                 $entry->uid = $entryData['uid'];
             }
 

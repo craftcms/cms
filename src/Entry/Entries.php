@@ -12,19 +12,21 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
-use CraftCms\Cms\Entry\Events\MovingEntryToSection;
+use CraftCms\Cms\Entry\Events\EntryMovingToSection;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -152,7 +154,7 @@ class Entries
     public function moveEntryToSection(Entry $entry, Section $section): bool
     {
         // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
-        event(new MovingEntryToSection($entry, $section));
+        event(new EntryMovingToSection($entry, $section));
 
         // Make sure the element exists
         if (! $entry->id) {
@@ -231,17 +233,17 @@ class Entries
                         Structures::remove($oldSection->structureId, $entry);
 
                         // remove drafts and revisions from the structure, too
-                        $draftsQuery->each(function (Entry $draft) use ($oldSection) {
+                        $draftsQuery->cursor()->each(function (Entry $draft) use ($oldSection) {
                             if ($draft->lft) {
                                 Structures::remove($oldSection->structureId, $draft);
                             }
-                        }, 100);
+                        });
 
-                        $revisionsQuery->each(function (Entry $revision) use ($oldSection) {
+                        $revisionsQuery->cursor()->each(function (Entry $revision) use ($oldSection) {
                             if ($revision->lft) {
                                 Structures::remove($oldSection->structureId, $revision);
                             }
-                        }, 100);
+                        });
                     }
 
                     // if we're moving it to a Structure section, place it at the root
@@ -282,5 +284,34 @@ class Entries
         event(new EntryMovedToSection($entry, $section));
 
         return true;
+    }
+
+    /**
+     * Reassigns entries to a new author.
+     *
+     * @param  int|int[]  $oldUserId
+     * @return int The number of affected entries
+     */
+    public function reassignEntries(int|array $oldUserId, int $newUserId): int
+    {
+        $count = DB::table(Table::ENTRIES_AUTHORS)
+            ->whereIn('authorId', Arr::wrap($oldUserId))
+            ->whereNotExists(function (Builder $query) use ($newUserId) {
+                $query->selectRaw('1')
+                    ->fromSub(
+                        DB::table(Table::ENTRIES_AUTHORS, 'ea2')
+                            ->select('ea2.entryId')
+                            ->where('ea2.authorId', $newUserId),
+                        'existingAuthor',
+                    )
+                    ->whereColumn('existingAuthor.entryId', Table::ENTRIES_AUTHORS.'.entryId');
+            })
+            ->update([
+                'authorId' => $newUserId,
+            ]);
+
+        ElementCaches::invalidateForElementType(Entry::class);
+
+        return $count;
     }
 }

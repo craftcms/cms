@@ -6,6 +6,8 @@ providers:
   - CraftCms\DependencyAwareCache\CacheServiceProvider
   - CraftCms\Cms\Providers\CraftServiceProvider
   - Laravel\Wayfinder\WayfinderServiceProvider
+  - Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerServiceProvider
+  - Workbench\App\Providers\TypeScriptTransformerServiceProvider
 
 seeders:
   - Workbench\Database\Seeders\DatabaseSeeder
@@ -15,7 +17,6 @@ workbench:
   start: /admin
   install: false # We run the Craft install in DatabaseSeeder
   user: 1
-  guard: craft
   sync:
     - from: resources
       to: public/vendor/craft

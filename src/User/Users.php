@@ -34,32 +34,34 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\ActivatingUser;
-use CraftCms\Cms\User\Events\AssigningUserToDefaultGroups;
-use CraftCms\Cms\User\Events\AssigningUserToGroups;
-use CraftCms\Cms\User\Events\DeactivatingUser;
-use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
-use CraftCms\Cms\User\Events\DeletingUserPhoto;
-use CraftCms\Cms\User\Events\SavingUserPhoto;
-use CraftCms\Cms\User\Events\SuspendingUser;
-use CraftCms\Cms\User\Events\UnlockingUser;
-use CraftCms\Cms\User\Events\UnsuspendingUser;
+use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\UserActivated;
+use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
+use CraftCms\Cms\User\Events\UserDeactivating;
+use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
+use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
+use CraftCms\Cms\User\Events\UserPhotoDeleting;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
+use CraftCms\Cms\User\Events\UserPhotoSaving;
 use CraftCms\Cms\User\Events\UserSuspended;
+use CraftCms\Cms\User\Events\UserSuspending;
 use CraftCms\Cms\User\Events\UserUnlocked;
+use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
+use CraftCms\Cms\User\Events\UserUnsuspending;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use DateTime;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Container\Attributes\Singleton;
@@ -209,21 +211,27 @@ class Users
     /**
      * Saves a user’s preferences.
      *
-     * @param  User  $user  The user
+     * @param  CraftUser  $user  The user
      * @param  array  $preferences  The user’s new preferences
      */
-    public function saveUserPreferences(User $user, array $preferences): void
+    public function saveUserPreferences(CraftUser $user, array $preferences): void
     {
+        $userId = $user->getCraftUserId();
+
+        if (! $userId) {
+            throw new InvalidArgumentException('Cannot save preferences for a user without an ID.');
+        }
+
         // Merge in any other saved preferences
-        $preferences += $this->getUserPreferences($user->id);
+        $preferences += $this->getUserPreferences($userId);
 
         DB::table(Table::USERPREFERENCES)
             ->upsert([
-                'userId' => $user->id,
+                'userId' => $userId,
                 'preferences' => Json::encode($preferences),
             ], ['userId']);
 
-        $this->userPreferences[$user->id] = $preferences;
+        $this->userPreferences[$userId] = $preferences;
     }
 
     /**
@@ -249,7 +257,31 @@ class Users
      */
     public function sendPasswordResetEmail(User $user): bool
     {
-        return Password::broker('craft')->sendResetLink(['loginName' => $user->email]) === Password::RESET_LINK_SENT;
+        return Password::broker()->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
+    }
+
+    /**
+     * Sends a new account activation email to a user.
+     *
+     * @throws InvalidElementException if the user doesn't validate
+     */
+    public function sendActivationEmail(User $user): bool
+    {
+        $user->notify(new ActivationNotification($this->setVerificationCodeOnUser($user)));
+
+        return true;
+    }
+
+    /**
+     * Sends a new email verification email to a user.
+     *
+     * @throws InvalidElementException if the user doesn't validate
+     */
+    public function sendNewEmailVerifyEmail(User $user): bool
+    {
+        $user->sendEmailVerificationNotification();
+
+        return true;
     }
 
     /**
@@ -258,14 +290,14 @@ class Users
      *
      * @throws InvalidElementException if the user doesn't validate
      */
-    public function getActivationUrl(User $user): string
+    public function getActivationUrl(User $user, ?string $token = null): string
     {
         // If the user doesn't have a password yet, use a Password Reset URL
-        if (! $user->password) {
-            return $this->getPasswordResetUrl($user);
+        if (! $user->getHasPassword()) {
+            return $this->getPasswordResetUrl($user, $token);
         }
 
-        return $this->getEmailVerifyUrl($user);
+        return $this->getEmailVerifyUrl($user, $token);
     }
 
     /**
@@ -348,13 +380,16 @@ class Users
     ): void {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
-        if (! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
+        if (
+            ! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION)) ||
+            ! ImageHelper::canManipulateAsImage(pathinfo($filename, PATHINFO_EXTENSION))
+        ) {
             throw new ImageException(t('User photo must be an image that Craft can manipulate.'));
         }
 
         $photoId = $user->photoId;
 
-        event($event = new SavingUserPhoto($user, $photoId));
+        event($event = new UserPhotoSaving($user, $photoId));
 
         // If the photo exists, just replace the file.
         if ($event->photoId && ($photo = AssetsService::getAssetById($event->photoId)) !== null) {
@@ -458,7 +493,7 @@ class Users
     {
         $photoId = $user->photoId;
 
-        event(new DeletingUserPhoto($user, $photoId));
+        event(new UserPhotoDeleting($user, $photoId));
 
         $result = $this->elements->deleteElementById($photoId, Asset::class);
 
@@ -570,7 +605,7 @@ class Users
      */
     public function activateUser(User $user): void
     {
-        event($event = new ActivatingUser($user));
+        event($event = new UserActivating($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -638,7 +673,7 @@ class Users
      */
     public function deactivateUser(User $user): void
     {
-        event($event = new DeactivatingUser($user));
+        event($event = new UserDeactivating($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -740,7 +775,7 @@ class Users
      */
     public function unlockUser(User $user): void
     {
-        event($event = new UnlockingUser($user));
+        event($event = new UserUnlocking($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -784,7 +819,7 @@ class Users
      */
     public function suspendUser(User $user): void
     {
-        event($event = new SuspendingUser($user));
+        event($event = new UserSuspending($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -818,7 +853,7 @@ class Users
      */
     public function unsuspendUser(User $user): void
     {
-        event($event = new UnsuspendingUser($user));
+        event($event = new UserUnsuspending($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -855,9 +890,9 @@ class Users
      *
      * @param  int  $userId  The user’s ID.
      * @param  string  $message  The message to be shunned.
-     * @param  DateTime|null  $expiryDate  When the message should be un-shunned. Defaults to `null` (never un-shun).
+     * @param  DateTimeInterface|null  $expiryDate  When the message should be un-shunned. Defaults to `null` (never un-shun).
      */
-    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): void
+    public function shunMessageForUser(int $userId, string $message, ?DateTimeInterface $expiryDate = null): void
     {
         DB::table(Table::SHUNNEDMESSAGES)
             ->upsert([
@@ -916,7 +951,7 @@ class Users
         $userModel = UserModel::findOrFail($user->id);
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
+        $broker = Password::broker();
         $token = $broker->createToken($user);
 
         // Make sure they are set to pending, if not already active
@@ -965,6 +1000,7 @@ class Users
                     ->whereColumn('password_reset_tokens.email', 'users.email')
                     ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->purgePendingUsersDuration));
             })
+            ->cursor()
             ->each(function (User $user) {
                 try {
                     $this->elements->deleteElement($user);
@@ -1012,7 +1048,7 @@ class Users
 
         $newGroupIds = array_keys($newGroupIds);
 
-        event($event = new AssigningUserToGroups(
+        event($event = new UserGroupsAssigning(
             userId: $userId,
             groupIds: $groupIds,
             removedGroupIds: $removedGroupIds,
@@ -1087,7 +1123,7 @@ class Users
             }
         }
 
-        event($event = new DefineDefaultUserGroups($user, $groups));
+        event($event = new DefaultUserGroupsResolving($user, $groups));
 
         return $event->userGroups;
     }
@@ -1108,7 +1144,7 @@ class Users
             return false;
         }
 
-        event($event = new AssigningUserToDefaultGroups($user, $groups));
+        event($event = new UserDefaultGroupsAssigning($user, $groups));
 
         if (! $event->isValid) {
             return false;
@@ -1177,7 +1213,7 @@ class Users
     /**
      * Returns whether a user is allowed to impersonate another user.
      */
-    public function canImpersonate(User $impersonator, User $impersonatee): bool
+    public function canImpersonate(CraftUser $impersonator, User $impersonatee): bool
     {
         return $impersonator->can('impersonate', $impersonatee);
     }
@@ -1185,7 +1221,7 @@ class Users
     /**
      * Returns whether the user can suspend the given user
      */
-    public function canSuspend(User $suspender, User $suspendee): bool
+    public function canSuspend(CraftUser $suspender, User $suspendee): bool
     {
         return $suspender->can('suspend', $suspendee);
     }
@@ -1250,11 +1286,8 @@ class Users
             $url = Url::siteUrl($path, $params, $scheme, siteId: $siteId);
         }
 
-        if (Url::isRootRelativeUrl($url)) {
-            $request = request();
-            if (! app()->runningInConsole()) {
-                $url = rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/').$url;
-            }
+        if (Url::isRootRelativeUrl($url) && ! app()->runningInConsole()) {
+            return url($url);
         }
 
         return $url;

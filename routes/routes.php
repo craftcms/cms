@@ -1,7 +1,9 @@
 <?php
 
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Route\Routes as CraftRoutes;
 use Illuminate\Support\Facades\Route;
+
+$routes = app(CraftRoutes::class);
 
 Route::middleware(['web', 'craft'])
     ->name('craft.actions.')
@@ -9,7 +11,7 @@ Route::middleware(['web', 'craft'])
 
 Route::middleware(['web', 'craft', 'craft.cp'])
     ->name('craft.cp.')
-    ->prefix(Cms::config()->cpTrigger)
+    ->prefix($routes->cpTriggerRoutePrefix())
     ->group(__DIR__.'/cp.php');
 
 Route::middleware(['web', 'craft', 'craft.web'])

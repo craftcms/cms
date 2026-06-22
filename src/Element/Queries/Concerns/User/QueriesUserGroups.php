@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\User;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
@@ -63,6 +64,10 @@ trait QueriesUserGroups
     protected function initQueriesUserGroups(): void
     {
         $this->beforeQuery(function (UserQuery $userQuery) {
+            if ($userQuery->groupId === []) {
+                throw new QueryAbortedException;
+            }
+
             if (! $userQuery->groupId) {
                 return;
             }
@@ -170,9 +175,10 @@ trait QueriesUserGroups
             fn ($item) => $item instanceof UserGroup ? $item->id : null)) {
             $this->groupId = $value;
         } else {
-            $operator = QueryParam::extractOperator($value);
+            $values = QueryParam::toArray($value);
+            $operator = QueryParam::extractOperator($values);
             $this->groupId = DB::table(Table::USERGROUPS)
-                ->whereParam('handle', $value)
+                ->whereParam('handle', $values)
                 ->pluck('id')
                 ->all();
 

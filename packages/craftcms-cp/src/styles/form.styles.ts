@@ -1,11 +1,17 @@
 import {css} from 'lit';
 
 export const baseInputStyles = css`
+  --_border-width: var(
+    --c-input-border-width,
+    var(--c-form-control-border-width)
+  );
   font: inherit;
   color: var(--c-input-text, var(--c-text-default));
   position: relative;
-  min-height: var(--c-input-height, var(--c-size-control-md));
-  border-width: var(--c-input-border-width, var(--c-form-control-border-width));
+  min-height: calc(
+    var(--c-input-height, var(--c-size-control-md)) - 2 * var(--_border-width)
+  );
+  border-width: var(--_border-width);
   border-style: var(--c-input-border-style, var(--c-form-control-border-style));
   border-color: var(--c-input-border-color, var(--c-form-control-border-color));
   border-radius: var(--c-input-radius, var(--c-radius-sm));
@@ -22,7 +28,10 @@ export const baseInputStyles = css`
 `;
 
 export const baseFieldStyles = css`
-  :host(:not([label-sr-only])) .form-field__group-one {
+  :host(:not([label-sr-only]))
+    .form-field__group-one
+    .form-field__label
+    slot:not(:empty) {
     margin-block-end: var(--c-spacing-sm);
   }
 
@@ -45,7 +54,7 @@ export const baseFieldStyles = css`
     color: var(--c-text-quiet);
   }
 
-  .input-group__after {
+  ::slotted([slot='after']) {
     margin-block-start: var(--c-spacing-sm);
   }
 `;

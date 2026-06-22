@@ -14,12 +14,13 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\ChangeSortOrder;
 use CraftCms\Cms\Element\Actions\MoveDown;
 use CraftCms\Cms\Element\Actions\MoveUp;
+use CraftCms\Cms\Element\Concerns\LegacyNestedElementManager;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
-use CraftCms\Cms\Element\Events\CreateNestedElementRevisions;
-use CraftCms\Cms\Element\Events\DuplicateNestedElementsEvent;
+use CraftCms\Cms\Element\Events\NestedElementRevisionsCreated;
+use CraftCms\Cms\Element\Events\NestedElementsDuplicated;
+use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -34,11 +35,11 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -50,6 +51,8 @@ use function CraftCms\Cms\t;
  */
 class NestedElementManager extends Component
 {
+    use LegacyNestedElementManager;
+
     private const string VIEW_MODE_CARDS = 'cards';
 
     private const string VIEW_MODE_INDEX = 'index';
@@ -293,6 +296,9 @@ class NestedElementManager extends Component
                     'deleteConfirmationMessage' => t('Are you sure you want to delete the selected {type}?', [
                         'type' => $this->elementType::lowerDisplayName(),
                     ]),
+                    'bulkDeleteConfirmationMessage' => t('Are you sure you want to delete the selected {type}?', [
+                        'type' => $this->elementType::pluralLowerDisplayName(),
+                    ]),
                     'showInGrid' => $config['showInGrid'],
                     'selectable' => $config['selectable'],
                 ];
@@ -479,7 +485,7 @@ class NestedElementManager extends Component
         }
 
         $authorizedOwnerId = $owner->id;
-        if ($owner->isProvisionalDraft && $owner->draftCreatorId === Auth::user()?->id) {
+        if ($owner->isProvisionalDraft && $owner->draftCreatorId === currentUser()?->getCraftUserId()) {
             /** @var ElementInterface $owner */
             $authorizedOwnerId = $owner->getCanonicalId();
         }
@@ -710,13 +716,11 @@ JS, [
                     ) {
                         /** @var NestedElementInterface $canonical */
                         $canonical = $element->getCanonical(true);
-                        if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
+                        if (ElementHelper::belongsToCanonicalOwner($canonical, $owner)) {
                             app(Drafts::class)->removeDraftData($element);
                             DB::table(Table::ELEMENTS_OWNERS)
-                                ->where([
-                                    'elementId' => $canonical->id,
-                                    'ownerId' => $owner->id,
-                                ])
+                                ->where('elementId', $canonical->id)
+                                ->where('ownerId', $owner->id)
                                 ->delete();
                         }
                     } elseif (
@@ -825,7 +829,7 @@ JS, [
             throw $e;
         }
 
-        event(new AfterSaveNestedElements(
+        event(new NestedElementsSaved(
             manager: $this,
             elements: $elements,
         ));
@@ -910,7 +914,20 @@ JS, [
                     $newAttributes['siteId'] = $target->siteId;
                 }
 
-                if ($target->updatingFromDerivative && $element->getIsDerivative()) {
+                /** @var NestedElementInterface $canonical */
+                $canonical = $element->getCanonical(true);
+
+                if (
+                    $target->updatingFromDerivative &&
+                    $element->getIsDerivative() &&
+                    (
+                        ElementHelper::isRevision($source) ||
+                        (
+                            $element->getPrimaryOwnerId() === $source->id &&
+                            $canonical->getPrimaryOwnerId() === $target->id
+                        )
+                    )
+                ) {
                     if (
                         ElementHelper::isRevision($source) ||
                         ! empty($target->newSiteIds) ||
@@ -930,9 +947,12 @@ JS, [
                                 ],
                             );
                     } else {
-                        // If we're updating the canonical owner element, then go with the nested element’s canonical ID.
-                        // Otherwise, leave the current ID intact.
-                        $newElementId = $target->getIsCanonical() ? $element->getCanonicalId() : $element->id;
+                        // if the canonical element is owned by the target element, then go with its ID
+                        if ($canonical->getOwnerId() === $target->id) {
+                            $newElementId = $element->getCanonicalId();
+                        } else {
+                            $newElementId = $element->id;
+                        }
                     }
                 } elseif (! $force && $element->getPrimaryOwnerId() === $target->id) {
                     DB::table(Table::ELEMENTS_OWNERS)
@@ -956,7 +976,7 @@ JS, [
                 $newElementIds[$element->id] = $newElementId;
             }
 
-            event(new DuplicateNestedElementsEvent(
+            event(new NestedElementsDuplicated(
                 manager: $this,
                 source: $source,
                 target: $target,
@@ -1086,7 +1106,7 @@ JS, [
         DB::table(Table::ELEMENTS_OWNERS)->insert($ownershipData);
 
         if (! empty($map)) {
-            event(new CreateNestedElementRevisions(
+            event(new NestedElementRevisionsCreated(
                 manager: $this,
                 source: $canonical,
                 target: $revision,

@@ -14,5 +14,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException::class, BusyResourceException::class);

@@ -16,7 +16,7 @@ use CraftCms\Cms\Section\Data\Section;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Events\MovingEntryToSection} or {@see \CraftCms\Cms\Entry\Events\EntryMovedToSection} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Events\EntryMovingToSection} or {@see \CraftCms\Cms\Entry\Events\EntryMovedToSection} instead.
  */
 class MoveEntryEvent extends Event
 {

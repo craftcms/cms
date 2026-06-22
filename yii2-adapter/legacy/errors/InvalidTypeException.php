@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Exceptions\InvalidTypeException::class, InvalidTypeException::class);

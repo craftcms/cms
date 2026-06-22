@@ -8,6 +8,7 @@ import {getDistDir, getRootDir, resolveFrom} from './utils.js';
 import {join} from 'path';
 import {deleteAsync} from 'del';
 import createVueWrappers from './generate-vue-wrappers.js';
+import createColors from './generate-colors.js';
 
 const spinner = ora({text: '@craftcms/cp', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
@@ -29,6 +30,7 @@ async function generateBundle(config = {}) {
       target: 'es2020',
       entry: {
         cp: './src/index.ts',
+        actions: './src/actions/index.ts',
         ...(await resolveFrom(
           './src/components/**/!(*.(stories|styles|test)).ts'
         )),
@@ -94,6 +96,13 @@ async function generateVueWrappers() {
   return Promise.resolve();
 }
 
+async function generateColors() {
+  spinner.start('Generating Colors');
+  createColors();
+  spinner.succeed();
+  return Promise.resolve();
+}
+
 async function buildAll() {
   try {
     const steps = [
@@ -101,6 +110,7 @@ async function buildAll() {
       generateManifest,
       generateStyles,
       generateVueWrappers,
+      generateColors,
       generateBundle,
     ];
 

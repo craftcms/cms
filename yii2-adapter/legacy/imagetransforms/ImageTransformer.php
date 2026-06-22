@@ -18,7 +18,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
-use CraftCms\Cms\Image\Events\TransformingImage;
+use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\ImageTransformer as NewImageTransformer;
 use Illuminate\Support\Facades\Event as EventFacade;
 use yii\base\Component;
@@ -193,7 +193,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
 
     public static function registerEvents(): void
     {
-        EventFacade::listen(TransformingImage::class, function(TransformingImage $event) {
+        EventFacade::listen(ImageTransforming::class, function(ImageTransforming $event) {
             $legacyTransformer = Craft::$app->getImageTransforms()->getImageTransformer(self::class);
 
             if (!$legacyTransformer->hasEventHandlers(self::EVENT_TRANSFORM_IMAGE)) {

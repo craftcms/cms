@@ -15,6 +15,7 @@ use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
@@ -38,7 +39,12 @@ readonly class StoreEntryController
 
     public function __invoke(): Response
     {
-        $entry = $this->getEntry();
+        $currentUser = $this->request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
+        $entry = $this->getEntry($currentUser);
         $entryVariable = $this->request->getSigned('entryVariable') ?? 'entry';
 
         $this->enforeSitePermission($entry->getSite());
@@ -55,7 +61,9 @@ readonly class StoreEntryController
             }
         }
 
-        $this->populateEntry($entry);
+        $this->populateEntry($entry, $currentUser);
+
+        $this->enforceEditEntryPermissions($entry, $duplicate);
 
         if ($forceDisabled) {
             $entry->enabled = false;
@@ -99,7 +107,7 @@ readonly class StoreEntryController
         $provisional = Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
-            ->draftCreator($this->request->user()->id)
+            ->draftCreator($currentUser->getCraftUserId())
             ->siteId($entry->siteId)
             ->status(null)
             ->one();
@@ -139,7 +147,7 @@ readonly class StoreEntryController
         );
     }
 
-    private function getEntry(): Entry
+    private function getEntry(CraftUser $currentUser): Entry
     {
         $entryId = $this->request->input('canonicalId')
             ?? $this->request->input('sourceId')
@@ -164,7 +172,7 @@ readonly class StoreEntryController
             $entry = Entry::find()
                 ->provisionalDrafts()
                 ->draftOf($entryId)
-                ->draftCreator($this->request->user()->id)
+                ->draftCreator($currentUser->getCraftUserId())
                 ->siteId($siteId)
                 ->status(null)
                 ->one();
@@ -214,17 +222,20 @@ readonly class StoreEntryController
         return null;
     }
 
-    private function populateEntry(Entry $entry): void
+    private function populateEntry(Entry $entry, CraftUser $currentUser): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->setAttributesFromRequest(array_filter([
-            'authorIds' => $this->request->input('authors') ?? $this->request->input('author') ?? $entry->getAuthorId() ?? $this->request->user()->id,
-            'expiryDate' => $this->request->input('expiryDate'),
-            'postDate' => $this->request->input('postDate'),
-            'slug' => $this->request->input('slug'),
-            'title' => $this->request->input('title'),
-            'typeId' => $this->request->input('typeId'),
-        ], fn ($value) => $value !== null));
+        $attributes = [
+            'authorIds' => $this->request->input('authors') ?? $this->request->input('author') ?? $entry->getAuthorId() ?? $currentUser->getCraftUserId(),
+        ];
+
+        foreach (['expiryDate', 'postDate', 'slug', 'title', 'typeId'] as $attribute) {
+            if ($this->request->has($attribute)) {
+                $attributes[$attribute] = $this->request->input($attribute);
+            }
+        }
+
+        $entry->setAttributesFromRequest($attributes);
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {
@@ -243,7 +254,7 @@ readonly class StoreEntryController
 
         // Authors
         if (empty($entry->getAuthorIds()) && ! $entry->id) {
-            $entry->setAuthor($this->request->user());
+            $entry->setAuthor($currentUser->asElement());
         }
 
         // Parent

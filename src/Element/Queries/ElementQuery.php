@@ -189,7 +189,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     // -------------------------------------------------------------------------
 
     /**
-     * @var array<string,string> Column alias => name mapping
+     * @var array<string,string|callable|array> Column alias => name mapping
      *
      * @see applyOrderByParams()
      * @see applySelectParam()
@@ -210,6 +210,22 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     private bool $elementQueryBeforeQueryCalled = false;
 
+    private ?Builder $queryBeforePrepare = null;
+
+    private ?array $columnMapBeforePrepare = null;
+
+    private ?array $beforeQueryCallbacksBeforePrepare = null;
+
+    /**
+     * @var array<string,array<int,string>>
+     */
+    private static array $columnListings = [];
+
+    /**
+     * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
+     */
+    public static ?self $activeQuery = null;
+
     /**
      * Create a new Element query instance.
      *
@@ -220,7 +236,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         public string $elementType = Element::class,
         protected array $config = [],
     ) {
-        parent::__construct($config);
+        parent::__construct();
 
         $this->query = DB::table($this->table)->select('**');
 
@@ -252,7 +268,19 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $this->columnMap['title'] = 'elements_sites.title';
         }
 
+        if ($this->hasElementSourceTable) {
+            $columnListing = self::$columnListings[$this->table] ??= DB::getSchemaBuilder()->getColumnListing($this->table);
+
+            foreach ($columnListing as $column) {
+                if (! isset($this->columnMap[$column])) {
+                    $this->columnMap[$column] = "$this->table.$column";
+                }
+            }
+        }
+
         $this->initTraits();
+
+        self::configure($this, $config);
     }
 
     protected function initTraits(): void
@@ -807,9 +835,54 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this;
         }
 
+        if (is_string($column)) {
+            if ($this->isDeprecatedOrderByString($column)) {
+                Deprecator::log(
+                    static::class.'::orderBy(string)',
+                    sprintf('Passing `%s` to %s::orderBy() has been deprecated. Pass the direction as the second argument, or call orderBy() once for each column.', $column, static::class),
+                );
+            }
+
+            foreach ($this->normalizeOrderByString($column, $direction) as [$column, $direction]) {
+                $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
+            }
+
+            return $this;
+        }
+
         $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
 
         return $this;
+    }
+
+    private function isDeprecatedOrderByString(string $columns): bool
+    {
+        return str_contains($columns, ',') || preg_match('/\s+(asc|desc)(?:\s*(?:,|$))/i', $columns) === 1;
+    }
+
+    private function normalizeOrderByString(string $columns, mixed $defaultDirection): array
+    {
+        $defaultDirection = match ($defaultDirection) {
+            SORT_DESC, 'desc' => 'desc',
+            default => 'asc',
+        };
+
+        return str($columns)
+            ->explode(',')
+            ->map(fn (string $column) => trim($column))
+            ->filter()
+            ->map(function (string $column) use ($defaultDirection) {
+                $direction = $defaultDirection;
+
+                if (preg_match('/^(.+?)\s+(asc|desc)$/i', $column, $matches)) {
+                    $column = $matches[1];
+                    $direction = strtolower($matches[2]);
+                }
+
+                return [trim($column), $direction];
+            })
+            ->values()
+            ->all();
     }
 
     /**
@@ -991,12 +1064,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        if (in_array(strtolower($method), ['join', 'orderby', 'orderbydesc', 'select', 'reorder', 'addselect'])) {
-            $this->forwardCallTo($this->query, $method, $parameters);
-
-            return $this;
-        }
-
         $this->forwardCallTo($this->query, $method, $parameters);
 
         return $this;
@@ -1074,7 +1141,25 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function __clone(): void
     {
-        $this->query = clone $this->query;
+        if ($this->queryBeforePrepare !== null) {
+            $beforeQueryCallbacks = array_diff_key(
+                $this->beforeQueryCallbacks,
+                $this->beforeQueryCallbacksBeforePrepare ?? [],
+            );
+
+            $this->query = clone $this->queryBeforePrepare;
+            $this->columnMap = $this->columnMapBeforePrepare ?? $this->columnMap;
+            $this->beforeQueryCallbacks = [
+                ...($this->beforeQueryCallbacksBeforePrepare ?? []),
+                ...$beforeQueryCallbacks,
+            ];
+            $this->elementQueryBeforeQueryCalled = false;
+            $this->queryBeforePrepare = null;
+            $this->columnMapBeforePrepare = null;
+            $this->beforeQueryCallbacksBeforePrepare = null;
+        } else {
+            $this->query = clone $this->query;
+        }
 
         foreach ($this->onCloneCallbacks as $onCloneCallback) {
             $onCloneCallback($this);
@@ -1093,6 +1178,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     public function applyBeforeQueryCallbacks(): void
     {
+        if (! $this->elementQueryBeforeQueryCalled && $this->queryBeforePrepare === null) {
+            $this->queryBeforePrepare = clone $this->query;
+            $this->columnMapBeforePrepare = $this->columnMap;
+            $this->beforeQueryCallbacksBeforePrepare = $this->beforeQueryCallbacks;
+        }
+
         foreach ($this->beforeQueryCallbacks as $i => $callback) {
             $callback($this);
 

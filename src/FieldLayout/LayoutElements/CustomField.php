@@ -25,11 +25,12 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
 use Override;
 use RuntimeException;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -393,6 +394,20 @@ class CustomField extends BaseField
     }
 
     /**
+     * Sets the ID of the field this layout field is based on.
+     */
+    public function setFieldId(int $id): void
+    {
+        $field = Fields::getFieldById($id);
+
+        if (! $field) {
+            throw new FieldNotFoundException($id);
+        }
+
+        $this->setField($field);
+    }
+
+    /**
      * Returns the field’s original handle.
      */
     public function getOriginalHandle(): string
@@ -503,6 +518,9 @@ class CustomField extends BaseField
     #[Override]
     protected function settingsHtml(): ?string
     {
+        // Make sure setField() has had a chance to set the default values
+        $this->getField();
+
         return template('_includes/forms/fld/custom-field-settings', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
@@ -704,7 +722,7 @@ class CustomField extends BaseField
         $editCondition = $this->getEditCondition();
 
         if ($editCondition) {
-            $currentUser = Auth::user();
+            $currentUser = currentUserElement();
             if (! $currentUser || ! $editCondition->matchElement($currentUser)) {
                 return false;
             }
@@ -859,7 +877,7 @@ class CustomField extends BaseField
             $items = [];
         }
 
-        $user = Auth::user();
+        $user = currentUser();
         if ($user?->isAdmin() && ! $user->getPreference('showFieldHandles')) {
             $items[] = $this->copyAttributeAction([
                 'label' => t('Copy field handle'),

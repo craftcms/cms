@@ -155,6 +155,9 @@ trait NestedElement
         return $names;
     }
 
+    /**
+     * @phpstan-impure
+     */
     public function getPrimaryOwnerId(): ?int
     {
         return $this->primaryOwnerId ?? $this->ownerId;
@@ -219,6 +222,9 @@ trait NestedElement
         $this->primaryOwnerId = $owner->id ?? null;
     }
 
+    /**
+     * @phpstan-impure
+     */
     public function getOwnerId(): ?int
     {
         return $this->ownerId ?? $this->primaryOwnerId;
@@ -451,24 +457,35 @@ trait NestedElement
             $this->sortOrder = $max ? $max + 1 : 1;
         }
 
-        $ownerIds = array_unique([
-            $this->getPrimaryOwnerId(),
-            $ownerId,
-        ]);
-
         if (! $isNew) {
             DB::table(Table::ELEMENTS_OWNERS)
                 ->where('elementId', $this->id)
-                ->whereIn('ownerId', $ownerIds)
+                ->where('ownerId', $ownerId)
                 ->delete();
         }
 
-        foreach ($ownerIds as $ownerId) {
-            DB::table(Table::ELEMENTS_OWNERS)->insert([
-                'elementId' => $this->id,
-                'ownerId' => $ownerId,
-                'sortOrder' => $this->sortOrder,
-            ]);
+        DB::table(Table::ELEMENTS_OWNERS)->insert([
+            'elementId' => $this->id,
+            'ownerId' => $ownerId,
+            'sortOrder' => $this->sortOrder,
+        ]);
+
+        // make sure we're also storing ownership for the primary owner
+        // (see https://github.com/craftcms/cms/pull/16933)
+        $primaryOwnerId = $this->getPrimaryOwnerId();
+        if ($primaryOwnerId !== $ownerId) {
+            $exists = DB::table(Table::ELEMENTS_OWNERS)
+                ->where('elementId', $this->id)
+                ->where('ownerId', $primaryOwnerId)
+                ->exists();
+
+            if (! $exists) {
+                DB::table(Table::ELEMENTS_OWNERS)->insert([
+                    'elementId' => $this->id,
+                    'ownerId' => $primaryOwnerId,
+                    'sortOrder' => $this->sortOrder,
+                ]);
+            }
         }
     }
 }

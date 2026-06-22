@@ -45,7 +45,7 @@ class ResaveAddressesCommand extends ResaveCommand
                 ->all();
         }
 
-        $withFields = $this->resolvedWithFields();
+        $withFields = $this->resolvedWithFields;
 
         if (! empty($withFields)) {
             $fieldLayout = $addresses->getFieldLayout();

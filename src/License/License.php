@@ -13,16 +13,17 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Auth\AuthManager;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -37,7 +38,6 @@ readonly class License
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private AuthManager $auth,
         private Plugins $plugins,
     ) {}
 
@@ -74,7 +74,7 @@ readonly class License
             return CRAFT_LICENSE_KEY_PATH;
         }
 
-        return config_path('license.key');
+        return config_path('craft/license.key');
     }
 
     /**
@@ -266,7 +266,7 @@ readonly class License
                     [
                         'name' => $licenseData->name,
                         'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseData->id}",
-                        'buyUrl' => $this->auth->user()?->isAdmin() && $this->generalConfig->allowAdminChanges
+                        'buyUrl' => currentUser()?->isAdmin() && $this->generalConfig->allowAdminChanges
                             ? Url::cpUrl("plugin-store/buy/$licenseData->handle/$licenseData->currentEdition")
                             : "https://plugins.craftcms.com/$licenseData->handle",
                     ]),
@@ -298,10 +298,10 @@ readonly class License
                 'domain' => $domainLink,
             ]);
         } else {
-            $keyPath = $this->keyPath();
+            $keyPath = File::normalizePath($this->keyPath(), '/');
 
             // If the license key path starts with the root project path, trim the project path off
-            $rootPath = Aliases::get('@root');
+            $rootPath = File::normalizePath(Aliases::get('@root'), '/');
             if (str_starts_with($keyPath, $rootPath.'/')) {
                 $keyPath = substr($keyPath, strlen($rootPath) + 1);
             }

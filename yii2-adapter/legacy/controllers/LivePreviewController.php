@@ -8,8 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\elements\db\UserQuery;
 use craft\web\Controller;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\IdentityWrapper;

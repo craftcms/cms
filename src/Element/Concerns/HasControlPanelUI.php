@@ -10,15 +10,15 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\DefineActionMenuItems;
-use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
-use CraftCms\Cms\Element\Events\DefineAltActions;
-use CraftCms\Cms\Element\Events\DefineAttributeHtml;
-use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
-use CraftCms\Cms\Element\Events\DefineMetadata;
-use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
-use CraftCms\Cms\Element\Events\DefineSidebarHtml;
-use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
+use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
+use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
+use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
+use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
+use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementMetadataResolving;
+use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Support\Facades\Gate;
 use Stringable;
@@ -69,7 +70,7 @@ trait HasControlPanelUI
 
     public function getAdditionalButtons(): string|Stringable
     {
-        event($event = new DefineAdditionalButtons($this));
+        event($event = new ElementAdditionalButtonsResolving($this));
 
         return $event->html;
     }
@@ -79,12 +80,20 @@ trait HasControlPanelUI
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $canSaveCanonical = Gate::check('saveCanonical', $this);
 
+        $returnUrl = request()->query('returnUrl');
+        $redirectParams = array_filter([
+            'returnUrl' => $returnUrl,
+        ]);
+
         $altActions = [
             [
                 'label' => $isUnpublishedDraft && $canSaveCanonical
                     ? t('Create and continue editing')
                     : t('Save and continue editing'),
                 'redirect' => '{cpEditUrl}',
+                'params' => array_filter([
+                    'redirectParams' => ! empty($redirectParams) ? Json::encode($redirectParams) : null,
+                ]),
                 'shortcut' => true,
                 'retainScroll' => true,
                 'eventData' => ['autosave' => false],
@@ -101,7 +110,10 @@ trait HasControlPanelUI
                     'shortcut' => true,
                     'shift' => true,
                     'eventData' => ['autosave' => false],
-                    'params' => ['addAnother' => 1],
+                    'params' => [
+                        'addAnother' => 1,
+                        'returnUrl' => $returnUrl,
+                    ],
                 ];
             }
 
@@ -126,12 +138,22 @@ trait HasControlPanelUI
                     'params' => [
                         'asUnpublishedDraft' => true,
                         'deleteProvisionalDraft' => true,
+                        'redirectParams' => ! empty($redirectParams) ? Json::encode($redirectParams) : null,
                     ],
                 ];
             }
         }
 
-        event($event = new DefineAltActions($this, $altActions));
+        if ($this->getIsDraft() && ! $this->getIsUnpublishedDraft() && ! $this->isProvisionalDraft) {
+            $altActions[] = [
+                'label' => t('Save as a new {type}', [
+                    'type' => t('draft'),
+                ]),
+                'action' => 'elements/duplicate',
+            ];
+        }
+
+        event($event = new ElementAltActionsResolving($this, $altActions));
 
         return $event->altActions;
     }
@@ -143,7 +165,7 @@ trait HasControlPanelUI
             ...array_map(fn (array $item) => $item + ['destructive' => true], $this->destructiveActionMenuItems()),
         ];
 
-        event($event = new DefineActionMenuItems($this, $items));
+        event($event = new ElementActionMenuItemsResolving($this, $items));
 
         return $event->items;
     }
@@ -341,22 +363,47 @@ JS, [
             }
 
             if ($canDeleteCanonical) {
+                $deleteId = sprintf('action-delete-%s', mt_rand());
+
                 $items[] = [
+                    'id' => $deleteId,
                     'icon' => 'trash',
                     'label' => mb_ucfirst(t('Delete {type}', [
                         'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
                     ])),
-                    'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
-                    'params' => [
-                        'elementId' => $this->getCanonicalId(),
-                        'siteId' => $this->siteId,
-                    ],
-                    'redirect' => "$redirectUrl#",
-                    'confirm' => t('Are you sure you want to delete this {type}?', [
-                        'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
-                    ]),
-                    'destructive' => true,
                 ];
+
+                HtmlStack::jsWithVars(fn (
+                    $id,
+                    $elementType,
+                    $elementId,
+                    $siteId,
+                    $ownerId,
+                    $confirmationMessage,
+                    $redirect,
+                ) => <<<JS
+$('#' + $id).on('activate', async () => {
+  new Craft.ElementDeletionManager($elementType, [$elementId], {
+    siteId: $siteId,
+    ownerId: $ownerId,
+    confirmationMessage: $confirmationMessage,
+    onSuccess: () => {
+      document.location.href = $redirect;
+    },
+  })
+});
+JS,
+                    [
+                        InputNamespace::namespaceId($deleteId),
+                        static::class,
+                        $this->id,
+                        $this->siteId,
+                        $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        t('Are you sure you want to delete this {type}?', [
+                            'type' => $isDraft ? t('draft') : static::lowerDisplayName(),
+                        ]),
+                        "$redirectUrl#",
+                    ]);
             }
         } elseif ($isDraft && $canDeleteDraft) {
             if ($canDeleteForSite) {
@@ -409,7 +456,7 @@ JS, [
             ],
         ]);
 
-        event($event = new RegisterHtmlAttributes($this, $context, $htmlAttributes));
+        event($event = new ElementHtmlAttributesResolving($this, $context, $htmlAttributes));
 
         return $event->htmlAttributes;
     }
@@ -428,14 +475,14 @@ JS, [
 
     public function getAttributeHtml(string $attribute): string|Stringable
     {
-        event($event = new DefineAttributeHtml($this, $attribute));
+        event($event = new ElementAttributeHtmlResolving($this, $attribute));
 
         return $event->html ?? $this->attributeHtml($attribute);
     }
 
     public function getInlineAttributeInputHtml(string $attribute): string|Stringable
     {
-        event($event = new DefineInlineAttributeInputHtml($this, $attribute));
+        event($event = new ElementInlineAttributeInputHtmlResolving($this, $attribute));
 
         return $event->html ?? $this->inlineAttributeInputHtml($attribute);
     }
@@ -507,7 +554,7 @@ JS, [
 
         $html = implode("\n", $components);
 
-        event($event = new DefineSidebarHtml($this, $static, $html));
+        event($event = new ElementSidebarHtmlResolving($this, $static, $html));
 
         return $event->html;
     }
@@ -519,7 +566,7 @@ JS, [
      */
     protected function metaFieldsHtml(bool $static): string|Stringable
     {
-        event($event = new DefineMetaFieldsHtml($this, $static));
+        event($event = new ElementMetaFieldsHtmlResolving($this, $static));
 
         return $event->html;
     }
@@ -649,7 +696,7 @@ JS, [
     {
         $metadata = $this->metadata();
 
-        event($event = new DefineMetadata($this, $metadata));
+        event($event = new ElementMetadataResolving($this, $metadata));
         $metadata = $event->metadata;
 
         $formatter = I18N::getFormatter();
@@ -681,10 +728,10 @@ JS, [
             },
         ], $metadata, [
             t('Created at') => $this->dateCreated && ! $this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             t('Updated at') => $this->dateUpdated && ! $this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             t('Notes') => function () {
                 if ($this->getIsRevision()) {

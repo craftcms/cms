@@ -184,7 +184,7 @@ it('can track a job starting processing with reserved status', function () {
         ->progress->toBe(0);
 });
 
-it('can track a job completing and removes it from tracking', function () {
+it('can track a job completing', function () {
     $uid = 'completed-job-123';
 
     $this->service->queued($uid, 'Job to Complete');
@@ -192,7 +192,9 @@ it('can track a job completing and removes it from tracking', function () {
 
     $this->service->completed($uid);
 
-    expect($this->service->getProgress($uid))->toBeNull();
+    tap($this->service->getProgress($uid), function ($progress) {
+        expect($progress->dateCompleted)->not->toBeNull();
+    });
 });
 
 it('can track a failed job with error message', function () {
@@ -343,7 +345,6 @@ test('getJobInfo returns sorted job info', function () {
     $this->service->queued('processing', 'Processing job');
     $this->service->processing('processing');
 
-    // Completed jobs are removed
     $this->service->queued('completed', 'Completed job');
     $this->service->completed('completed');
 

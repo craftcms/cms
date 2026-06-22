@@ -15,7 +15,7 @@ use craft\gql\base\ArgumentHandlerInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Events\RegisterGqlArgumentHandlers} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving} instead.
  */
 class RegisterGqlArgumentHandlersEvent extends Event
 {

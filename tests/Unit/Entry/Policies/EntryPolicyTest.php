@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 beforeEach(function () {
@@ -418,6 +420,92 @@ it('allows peer entry with delete peer entries for site permission', function ()
     expect($result)->toBeTrue();
 });
 
+it('allows changing author when the entry has no authors', function () {
+    $user = createEntryTestUser([]);
+    $entry = createEntryTestEntry($this->channelSection);
+
+    $result = $this->policy->changeAuthor($user, $entry);
+
+    expect($result)->toBeTrue();
+});
+
+it('allows changing author for current authors', function () {
+    $user = createEntryTestUser([]);
+    $entry = createEntryTestEntry($this->channelSection, authorIds: [$user->id]);
+
+    $result = $this->policy->changeAuthor($user, $entry);
+
+    expect($result)->toBeTrue();
+});
+
+it('requires peer author permission for entries authored by someone else', function () {
+    $entry = createEntryTestEntry($this->channelSection, authorIds: [999]);
+
+    expect($this->policy->changeAuthor(createEntryTestUser([]), $entry))->toBeFalse()
+        ->and($this->policy->changeAuthor(createEntryTestUser(['changeAuthorForPeerEntries:channel-section-uid']), $entry))->toBeTrue();
+});
+
+it('allows users with view entry permission to author entries', function () {
+    $entry = createEntryTestEntry($this->channelSection);
+
+    expect($this->policy->author(createEntryTestUser([]), $entry))->toBeFalse()
+        ->and($this->policy->author(createEntryTestUser(['viewEntries:channel-section-uid']), $entry))->toBeTrue();
+});
+
+it('allows current authors to move entries when a compatible section exists', function () {
+    $entryType = new EntryType(['id' => 7]);
+    $compatibleSection = createEntryTestSectionWithEntryTypes(4, 'target-section-uid', [$entryType]);
+    SectionsFacade::shouldReceive('getEditableSections')->andReturn(collect([$compatibleSection]));
+
+    $user = createEntryTestUser(['saveEntries:channel-section-uid']);
+    $entry = createEntryTestEntry($this->channelSection, authorIds: [$user->id], typeId: 7);
+
+    $result = $this->policy->move($user, $entry);
+
+    expect($result)->toBeTrue();
+});
+
+it('requires save peer entries permission to move entries authored by someone else', function () {
+    $entryType = new EntryType(['id' => 7]);
+    $compatibleSection = createEntryTestSectionWithEntryTypes(4, 'target-section-uid', [$entryType]);
+    SectionsFacade::shouldReceive('getEditableSections')->andReturn(collect([$compatibleSection]));
+
+    $entry = createEntryTestEntry($this->channelSection, authorIds: [999], typeId: 7);
+
+    expect($this->policy->move(createEntryTestUser(['saveEntries:channel-section-uid']), $entry))->toBeFalse()
+        ->and($this->policy->move(createEntryTestUser([
+            'saveEntries:channel-section-uid',
+            'savePeerEntries:channel-section-uid',
+        ]), $entry))->toBeTrue();
+});
+
+it('does not move entries without a compatible section', function () {
+    SectionsFacade::shouldReceive('getEditableSections')->andReturn(collect());
+
+    $user = createEntryTestUser(['saveEntries:channel-section-uid']);
+    $entry = createEntryTestEntry($this->channelSection, authorIds: [$user->id], typeId: 7);
+
+    $result = $this->policy->move($user, $entry);
+
+    expect($result)->toBeFalse();
+});
+
+it('does not treat a missing user id as the draft creator when moving drafts', function () {
+    $entryType = new EntryType(['id' => 7]);
+    $compatibleSection = createEntryTestSectionWithEntryTypes(4, 'target-section-uid', [$entryType]);
+    SectionsFacade::shouldReceive('getEditableSections')->andReturn(collect([$compatibleSection]));
+
+    $user = createEntryTestUser(['saveEntries:channel-section-uid']);
+    $user->id = null;
+    $entry = createEntryTestEntry($this->channelSection, typeId: 7);
+    $entry->draftId = 100;
+    $entry->draftCreatorId = null;
+
+    $result = $this->policy->move($user, $entry);
+
+    expect($result)->toBeFalse();
+});
+
 // Helper functions
 function createEntryTestUser(array $permissions): User
 {
@@ -441,17 +529,24 @@ function createEntryTestUser(array $permissions): User
     return $user;
 }
 
-function createEntryTestEntry(Section $section, ?int $id = 100, array $authorIds = []): Entry
+function createEntryTestEntry(Section $section, ?int $id = 100, array $authorIds = [], int $typeId = 1): Entry
 {
     $entry = new class extends Entry
     {
         public ?Section $mockSection = null;
+
+        public ?EntryType $mockType = null;
 
         public array $mockAuthorIds = [];
 
         public function getSection(): ?Section
         {
             return $this->mockSection;
+        }
+
+        public function getType(): EntryType
+        {
+            return $this->mockType;
         }
 
         public function getAuthorIds(): array
@@ -464,9 +559,30 @@ function createEntryTestEntry(Section $section, ?int $id = 100, array $authorIds
     $entry->siteId = null;
     $entry->sectionId = $section->id;
     $entry->mockSection = $section;
+    $entry->mockType = new EntryType(['id' => $typeId]);
     $entry->mockAuthorIds = $authorIds;
 
     return $entry;
+}
+
+function createEntryTestSectionWithEntryTypes(int $id, string $uid, array $entryTypes): Section
+{
+    $section = new class extends Section
+    {
+        public array $mockEntryTypes = [];
+
+        public function getEntryTypes(): array
+        {
+            return $this->mockEntryTypes;
+        }
+    };
+
+    $section->id = $id;
+    $section->uid = $uid;
+    $section->type = SectionType::Channel;
+    $section->mockEntryTypes = $entryTypes;
+
+    return $section;
 }
 
 function createEntryTestDraft(Section $section, int $draftCreatorId, ?int $id = 100, bool $unpublished = false): Entry

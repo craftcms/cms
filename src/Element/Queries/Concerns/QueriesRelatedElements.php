@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\ElementRelationParamFilter;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\Query\Builder;
@@ -47,7 +48,7 @@ trait QueriesRelatedElements
                 return;
             }
 
-            new ElementRelationParamFilter(
+            $applied = new ElementRelationParamFilter(
                 fields: $elementQuery->customFields
                     ? Arr::keyBy(
                         $elementQuery->customFields,
@@ -59,6 +60,10 @@ trait QueriesRelatedElements
                 relatedToParam: $elementQuery->relatedTo,
                 siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null
             );
+
+            if (! $applied) {
+                throw new QueryAbortedException;
+            }
         });
     }
 
@@ -82,7 +87,8 @@ trait QueriesRelatedElements
                 )->apply(
                     query: $query,
                     relatedToParam: $notRelatedToParam,
-                    siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null
+                    siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null,
+                    matchNoneWhenInvalid: false,
                 );
             });
         });

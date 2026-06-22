@@ -5,25 +5,32 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
+use CraftCms\Cms\Http\Routing\ActionRoute;
+use CraftCms\Cms\Http\Routing\ActionRouteResolver;
 use Illuminate\Http\Request;
 
 readonly class HandleActionRequest
 {
+    public function __construct(
+        private ActionRouteResolver $actionRoutes,
+    ) {}
+
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $request->isActionRequest()) {
+        $actionRoute = $this->actionRoutes->resolve($request);
+
+        if ($actionRoute === null) {
             return $next($request);
         }
 
-        $route = $request->actionSegmentsToRoute();
-
-        if ($request->path() === $route) {
+        if ($actionRoute->matches($request)) {
             return $next($request);
         }
 
-        $newRequest = $request->duplicate(server: array_merge($request->server->all(), [
-            'REQUEST_URI' => $route,
-        ]));
+        $newRequest = $request->duplicateWithUri($actionRoute->uri);
+        $newRequest->attributes->set(ActionRoute::class, $actionRoute);
+
+        app()->instance('request', $newRequest);
 
         return $next($newRequest);
     }

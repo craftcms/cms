@@ -34,26 +34,14 @@ readonly class PhotoController
 
     public function renderInput(Request $request): JsonResponse
     {
-        $request->validate([
-            'userId' => ['required', 'integer'],
-        ]);
-
-        $user = $this->users->getUserById($request->integer('userId'));
-
-        abort_if(! $user, 400, 'Invalid user ID: '.$request->integer('userId'));
+        $user = $this->authorizeUserPhotoTarget($request);
 
         return $this->renderPhotoTemplate($request, $user);
     }
 
     public function upload(Request $request): Response
     {
-        $request->validate([
-            'userId' => ['required', 'integer'],
-        ]);
-
-        if ($request->integer('userId') !== $request->user()->id) {
-            $this->authorize('editUsers');
-        }
+        $user = $this->authorizeUserPhotoTarget($request);
 
         if (! $request->hasFile('photo')) {
             return new JsonResponse;
@@ -61,10 +49,6 @@ readonly class PhotoController
 
         try {
             $uploadedFile = $request->file('photo');
-
-            $user = $this->users->getUserById($request->integer('userId'));
-
-            abort_if(! $user, 400, 'Invalid user ID: '.$request->integer('userId'));
 
             // Move to our own temp location
             $fileLocation = AssetsHelper::tempFilePath($uploadedFile->extension());
@@ -88,13 +72,7 @@ readonly class PhotoController
 
     public function destroy(Request $request, Elements $elements): JsonResponse
     {
-        $request->validate([
-            'userId' => ['required', 'integer'],
-        ]);
-
-        $user = $this->users->getUserById($request->integer('userId'));
-
-        abort_if(! $user, 400, 'Invalid user ID: '.$request->integer('userId'));
+        $user = $this->authorizeUserPhotoTarget($request);
 
         if ($user->photoId) {
             $elements->deleteElementById($user->photoId, Asset::class);
@@ -104,6 +82,22 @@ readonly class PhotoController
         $elements->saveElement($user, false);
 
         return $this->renderPhotoTemplate($request, $user);
+    }
+
+    private function authorizeUserPhotoTarget(Request $request): User
+    {
+        $request->validate([
+            'userId' => ['required', 'integer'],
+        ]);
+
+        $userId = $request->integer('userId');
+        $user = $this->users->getUserById($userId);
+
+        abort_if(! $user, 400, "Invalid user ID: {$userId}");
+
+        $this->authorize('save', $user);
+
+        return $user;
     }
 
     private function renderPhotoTemplate(Request $request, User $user): JsonResponse

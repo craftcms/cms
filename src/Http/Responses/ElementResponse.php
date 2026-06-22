@@ -39,7 +39,7 @@ class ElementResponse
         ]);
 
         if ($supportsAddAnother && request()->boolean('addAnother')) {
-            $user = request()->user();
+            $user = request()->craftUser();
             $newElement = $element->createAnother();
 
             if (! $newElement || ! Gate::check('save', $newElement)) {
@@ -52,7 +52,7 @@ class ElementResponse
 
             $newElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
-            if (! Drafts::saveElementAsDraft($newElement, $user->id, null, null, false)) {
+            if (! Drafts::saveElementAsDraft($newElement, $user->getCraftUserId(), null, null, false)) {
                 abort(500, sprintf('Unable to create a new element: %s', implode(', ', $element->errors()->all())));
             }
 
@@ -66,6 +66,10 @@ class ElementResponse
                     'siteId' => $newElement->siteId,
                     'fresh' => 1,
                 ]);
+            }
+
+            if ($returnUrl = request()->input('returnUrl')) {
+                $url = Url::urlWithParams($url, ['returnUrl' => $returnUrl]);
             }
 
             return redirect($url);

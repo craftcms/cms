@@ -501,21 +501,16 @@ class Globals extends Component
         DB::beginTransaction();
 
         try {
-            // Get the field layout
+            // Delete the field layout
             $fieldLayoutId = DB::table('globalsets')
                 ->where('id', $globalSetRecord->id)
                 ->value('fieldLayoutId');
 
-            Elements::deleteElementById($globalSetRecord->id);
-
             if ($fieldLayoutId) {
-                $fieldLayout = app(Fields::class)->getLayoutById($fieldLayoutId);
-
-                // Delete the field layout after the element has been deleted
-                if ($fieldLayout) {
-                    app(Fields::class)->deleteLayout($fieldLayout);
-                }
+                \CraftCms\Cms\Support\Facades\Fields::deleteLayoutById($fieldLayoutId, true);
             }
+
+            Elements::deleteElementById($globalSetRecord->id);
 
             DB::commit();
         } catch (Throwable $e) {

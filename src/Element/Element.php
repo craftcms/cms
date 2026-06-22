@@ -10,6 +10,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
@@ -17,11 +18,11 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Twig\AllowableInSandbox;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
@@ -38,7 +39,7 @@ use function CraftCms\Cms\t;
  * @property ElementRules $ruleset
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements ElementInterface
+abstract class Element extends Component implements AllowableInSandbox, ElementInterface
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -53,6 +54,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasCanonical;
     use Concerns\HasControlPanelUI;
     use Concerns\HasCustomFields;
+    use Concerns\HasDeletionBlockers;
     use Concerns\HasGqlType;
     use Concerns\HasLifecycleHooks;
     use Concerns\HasPreviewTargets;
@@ -67,10 +69,10 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\Searchable;
     use Concerns\Structurable;
     use Concerns\TracksChanges;
+    use LegacyConstants;
     use Macroable {
         __call as macroCall;
     }
-    use Validates;
 
     /**
      * @since 3.3.6
@@ -114,24 +116,24 @@ abstract class Element extends Component implements ElementInterface
     public ?string $slug = null;
 
     /**
-     * @var DateTime|null The date that the element was created
+     * @var DateTimeInterface|null The date that the element was created
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateCreated = null;
+    public ?DateTimeInterface $dateCreated = null;
 
     /**
-     * @var DateTime|null The date that the element was last updated
+     * @var DateTimeInterface|null The date that the element was last updated
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateUpdated = null;
+    public ?DateTimeInterface $dateUpdated = null;
 
     /**
-     * @var DateTime|null The date that the element was trashed
+     * @var DateTimeInterface|null The date that the element was trashed
      *
      * @since 3.2.0
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateDeleted = null;
+    public ?DateTimeInterface $dateDeleted = null;
 
     /**
      * @var bool|null Whether the element was deleted along with its owner
@@ -231,7 +233,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private ?array $_attributeNames = null;
 
-    private bool $_initialized = false;
+    private bool $_trackDirtyFields = false;
 
     /**
      * @see toArray()
@@ -255,7 +257,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_savedTitle = $this->title;
         }
 
-        $this->_initialized = true;
+        $this->_trackDirtyFields = true;
     }
 
     public function __clone()
@@ -301,12 +303,19 @@ abstract class Element extends Component implements ElementInterface
         if (str_starts_with($name, 'field:')) {
             return app(Fields::class)->isKnownFieldHandle(substr($name, 6));
         }
+
         if ($name === 'title') {
             return true;
         }
+
+        if (isset($this->_generatedFieldValues[$name])) {
+            return true;
+        }
+
         if ($this->hasEagerLoadedElements($name)) {
             return true;
         }
+
         if (parent::__isset($name)) {
             return true;
         }
@@ -381,6 +390,30 @@ abstract class Element extends Component implements ElementInterface
         } catch (BadMethodCallException) {
             return parent::__call($name, $params);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        // Allow field handles
+        if (
+            $this->hasEagerLoadedElements($property) ||
+            $this->fieldByHandle($property) !== null
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -463,6 +496,8 @@ abstract class Element extends Component implements ElementInterface
     {
         $attributes = $this->attributes();
         $fields = array_combine($attributes, $attributes);
+
+        $fields = $this->formatDateFields($fields);
 
         foreach ($this->fieldLayoutFields() as $field) {
             if (! isset($fields[$field->handle])) {
@@ -687,25 +722,14 @@ abstract class Element extends Component implements ElementInterface
 
     public function safeAttributes(): array
     {
-        return array_keys($this->ruleset->rules());
+        return array_values(array_diff(array_keys($this->ruleset->rules()), [
+            'id',
+            'uid',
+        ]));
     }
 
     public function getIterator(): Traversable
     {
-        $attributes = $this->validationData();
-
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
-
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (! isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
-                }
-            }
-        }
-
-        return new ArrayIterator($attributes);
+        return new ArrayIterator($this->validationData());
     }
 }

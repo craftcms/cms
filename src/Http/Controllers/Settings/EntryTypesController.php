@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -21,6 +21,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
@@ -31,11 +32,10 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
-use Illuminate\Contracts\View\View;
+use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -57,21 +57,34 @@ class EntryTypesController
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
-        /**
-         * We assemble the field layout here before validation runs
-         * so we can flash the old layout to the session.
-         */
         if ($request->route()->getActionMethod() === 'store') {
             $this->fieldLayout = $fields->assembleLayoutFromPost();
             $this->fieldLayout->type = Entry::class;
-
-            Session::flash('oldFieldLayout', $this->fieldLayout);
         }
     }
 
-    public function index(): View
+    public function index(TableRequest $request)
     {
-        return view('settings.entry-types.index');
+        [$pagination, $tableData] = $this->entryTypes->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
+        );
+
+        return Inertia::render('settings/EntryTypes', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Entry Types')],
+            ],
+            'title' => t('Entry Types'),
+            'searchTerm' => $request->search(),
+            'sort' => $request->sort(),
+            'data' => fn () => $tableData,
+            'pagination' => fn () => $pagination,
+            'readOnly' => $this->readOnly,
+        ]);
     }
 
     public function create(): CpScreenResponse
@@ -147,7 +160,7 @@ class EntryTypesController
                 callback: function (CpScreenResponse $response) use ($entryTypeData) {
                     $response
                         ->action('entry-types/save')
-                        ->redirectUrl(Url::cpReferralUrl() ?? 'settings/entry-types')
+                        ->redirectUrl('settings/entry-types')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'settings/entry-types/{id}',
                             'shortcut' => true,
@@ -204,25 +217,15 @@ class EntryTypesController
             );
     }
 
-    public function tableData(Request $request): JsonResponse
+    #[Deprecated(message: 'in 6.0. Use `settings/entry-types` instead.')]
+    public function tableData(TableRequest $request): JsonResponse
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
-        $orderBy = match ($request->input('sort.0.field')) {
-            '__slot:handle' => 'handle',
-            default => 'name',
-        };
-        $sortDir = match ($request->input('sort.0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        [$pagination, $tableData] = $this->entryTypes->getTableData(page: $page,
-            limit: $limit,
-            searchTerm: $searchTerm,
-            orderBy: $orderBy,
-            sortDir: $sortDir,
+        [$pagination, $tableData] = $this->entryTypes->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
         );
 
         return new JsonResponse([
@@ -302,28 +305,24 @@ class EntryTypesController
         return $this->asModelSuccess($entryType, t('Entry type saved.'), 'entryType');
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(Request $request, ?EntryTypeModel $entryType = null): Response
     {
-        $id = $request->input('entryTypeId') ?? $request->input('id');
+        $entryType ??= EntryTypeModel::find($request->input('entryTypeId'));
 
-        if (! $id) {
-            throw ValidationException::withMessages([
-                'id' => t('id or entryTypeId is required.'),
-            ]);
-        }
+        abort_if(is_null($entryType), 404, 'Entry type not found');
 
-        $entryType = $this->entryTypes->getEntryTypeById($id);
+        $entryTypeData = $this->entryTypes->getEntryTypeById($entryType->id);
 
-        abort_if(is_null($entryType), 404, "Invalid entry type ID: $entryType");
+        abort_if(is_null($entryTypeData), 404, 'Entry type not found');
 
-        if (! $this->entryTypes->deleteEntryType($entryType)) {
+        if (! $this->entryTypes->deleteEntryType($entryTypeData)) {
             return $this->asFailure(t('Couldn’t delete “{name}”.', [
-                'name' => $entryType->getUiLabel(),
+                'name' => $entryTypeData->getUiLabel(),
             ]));
         }
 
         return $this->asSuccess(t('“{name}” deleted.', [
-            'name' => $entryType->getUiLabel(),
+            'name' => $entryTypeData->getUiLabel(),
         ]));
     }
 
@@ -384,6 +383,12 @@ class EntryTypesController
         ]);
 
         return new JsonResponse([
+            'entryType' => EntryTypeResource::make($entryType)->additional([
+                'id' => $entryType->id,
+                'name' => $entryType->name,
+                'handle' => $entryType->handle,
+                'description' => $entryType->description,
+            ]),
             'config' => [
                 'id' => $entryType->id,
                 'name' => $entryType->name,
@@ -398,7 +403,7 @@ class EntryTypesController
     {
         $request->validate(['id' => ['required', 'integer']]);
 
-        $id = $request->input('id');
+        $id = (int) $request->input('id');
         $original = $this->entryTypes->getEntryTypeById($id);
 
         abort_if(is_null($original), 400, "Invalid entry type ID: $id");

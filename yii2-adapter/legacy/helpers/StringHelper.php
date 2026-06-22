@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use InvalidArgumentException;
@@ -1154,7 +1153,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function lowercaseFirst(string $str): string
     {
-        return Str::lcfirst($str);
+        return mb_lcfirst($str);
     }
 
     /**
@@ -1931,7 +1930,7 @@ class StringHelper extends \yii\helpers\StringHelper
                     $str .= Str::lower($matches[3]);
                 } elseif ($matches[4]) {
                     // capitalize word w/o internal caps
-                    $str .= Str::ucfirst($matches[4]);
+                    $str .= mb_ucfirst($matches[4]);
                 } else {
                     // preserve other kinds of word (iPhone)
                     $str .= $matches[5];
@@ -1951,7 +1950,7 @@ class StringHelper extends \yii\helpers\StringHelper
                       |  [ ][\'"“‘(\[][ ]* )        # or of inserted subphrase...
                       ( ' . $smallWordsRx . ' ) \\b # ...followed by small word
                      ~uxi',
-            fn(array $matches) => $matches[1] . Str::ucfirst($matches[2]),
+            fn(array $matches) => $matches[1] . mb_ucfirst($matches[2]),
             $str,
         );
 
@@ -1961,7 +1960,7 @@ class StringHelper extends \yii\helpers\StringHelper
                       (?= [[:punct:]]* \Z          # ...at the end of the title...
                       |   [\'"’”)\]] [ ] )         # ...or of an inserted subphrase?
                      ~uxi',
-            fn(array $matches) => Str::ucfirst($matches[1]),
+            fn(array $matches) => mb_ucfirst($matches[1]),
             $str,
         );
 
@@ -1973,7 +1972,7 @@ class StringHelper extends \yii\helpers\StringHelper
                         ( ' . $smallWordsRx . ' )
                         (?= -[[:alpha:]]+)        # lookahead for "-someword"
                        ~uxi',
-            fn(array $matches) => Str::ucfirst($matches[1]),
+            fn(array $matches) => mb_ucfirst($matches[1]),
             $str,
         );
 
@@ -1985,7 +1984,7 @@ class StringHelper extends \yii\helpers\StringHelper
                       ( ' . $smallWordsRx . ' ) # ...followed by small word
                       (?!	- )                 # Negative lookahead for another -
                      ~uxi',
-            fn(array $matches) => $matches[1] . Str::ucfirst($matches[2]),
+            fn(array $matches) => $matches[1] . mb_ucfirst($matches[2]),
             $str,
         );
     }
@@ -2069,7 +2068,7 @@ class StringHelper extends \yii\helpers\StringHelper
                     $str .= Str::lower($matches[3]);
                 } elseif ($matches[4]) {
                     // capitalize word w/o internal caps
-                    $str .= Str::ucfirst($matches[4]);
+                    $str .= mb_ucfirst($matches[4]);
                 } else {
                     // preserve other kinds of word (iPhone)
                     $str .= $matches[5];
@@ -2089,7 +2088,7 @@ class StringHelper extends \yii\helpers\StringHelper
                       |  [ ][\'"“‘(\[][ ]* )        # or of inserted subphrase...
                       ( ' . $smallWordsRx . ' ) \\b # ...followed by small word
                      ~uxi',
-            fn(array $matches) => $matches[1] . Str::ucfirst($matches[2]),
+            fn(array $matches) => $matches[1] . mb_ucfirst($matches[2]),
             $str,
         );
 
@@ -2099,7 +2098,7 @@ class StringHelper extends \yii\helpers\StringHelper
                       (?= [[:punct:]]* \Z          # ...at the end of the title...
                       |   [\'"’”)\]] [ ] )         # ...or of an inserted subphrase?
                      ~uxi',
-            fn(array $matches) => Str::ucfirst($matches[1]),
+            fn(array $matches) => mb_ucfirst($matches[1]),
             $str
         );
 
@@ -2111,7 +2110,7 @@ class StringHelper extends \yii\helpers\StringHelper
                         ( ' . $smallWordsRx . ' )
                         (?= -[[:alpha:]]+)        # lookahead for "-someword"
                        ~uxi',
-            fn(array $matches) => Str::ucfirst($matches[1]),
+            fn(array $matches) => mb_ucfirst($matches[1]),
             $str,
         );
 
@@ -2123,7 +2122,7 @@ class StringHelper extends \yii\helpers\StringHelper
                       ( ' . $smallWordsRx . ' ) # ...followed by small word
                       (?!	- )                 # Negative lookahead for another -
                      ~uxi',
-            fn(array $matches) => $matches[1] . Str::ucfirst($matches[2]),
+            fn(array $matches) => $matches[1] . mb_ucfirst($matches[2]),
             $str,
         );
     }
@@ -2435,7 +2434,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function upperCaseFirst(string $str): string
     {
-        return Str::ucfirst($str);
+        return mb_ucfirst($str);
     }
 
     /**

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section as SectionData;
@@ -21,11 +21,10 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
+use Deprecated;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -43,49 +42,30 @@ readonly class SectionsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request, Sections $sections): \Inertia\Response
+    public function index(TableRequest $request, Sections $sections): CpScreenResponse
     {
-        $pageParam = Cms::config()->getPageTriggerParam();
-        $page = $request->integer($pageParam, 1);
-        $limit = $request->integer('per_page', 50);
-        $searchTerm = $request->input('search');
-
-        $sort = $request->array('sort') ?? [
-            ['field' => 'name', 'direction' => 'asc'],
-        ];
-
-        $orderBy = match (Arr::get($sort, '0.field')) {
-            'handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-
-        $sortDir = match (Arr::get($sort, '0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
         [$pagination, $tableData] = $sections->getSectionTableData(
-            page: $page,
-            limit: $limit,
-            searchTerm: $searchTerm,
-            orderBy: $orderBy,
-            sortDir: $sortDir,
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
         );
 
-        return Inertia::render('SettingsSectionsIndexPage', [
-            'crumbs' => fn () => [
+        return new CpScreenResponse()
+            ->title(t('Sections'))
+            ->crumbs([
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Sections')],
-            ],
-            'title' => t('Sections'),
-            'data' => fn () => $tableData,
-            'pagination' => fn () => $pagination,
-            'sort' => $sort,
-            'searchTerm' => $searchTerm,
-            'emptyMessage' => t('No sections exist yet.'),
-            'readOnly' => $this->readOnly,
-        ]);
+            ])
+            ->inertiaPage('settings/Sections', [
+                'data' => fn () => $tableData,
+                'pagination' => fn () => $pagination,
+                'sort' => $request->sort(),
+                'searchTerm' => $request->search(),
+                'emptyMessage' => t('No sections exist yet.'),
+                'readOnly' => $this->readOnly,
+            ]);
     }
 
     public function create(Sites $sites): CpScreenResponse
@@ -97,8 +77,9 @@ readonly class SectionsController
         return new CpScreenResponse()
             ->title(t('Create a new section'))
             ->addCrumb(t('Settings'), 'settings')
+            ->redirectUrl('settings/sections')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->inertiaPage('SettingsSectionsEditPage', $this->sectionProps($section, $sites, brandNew: true));
+            ->inertiaPage('settings/SectionsEdit', $this->sectionProps($section, $sites, brandNew: true));
     }
 
     public function edit(Sections $sections, Sites $sites, SectionModel $section): CpScreenResponse
@@ -108,9 +89,10 @@ readonly class SectionsController
 
         return new CpScreenResponse()
             ->title(trim($sectionData->name) ?: t('Edit Section'))
+            ->redirectUrl('settings/sections')
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->inertiaPage('SettingsSectionsEditPage', $this->sectionProps($sectionData, $sites, brandNew: false));
+            ->inertiaPage('settings/SectionsEdit', $this->sectionProps($sectionData, $sites, brandNew: false));
     }
 
     private function sectionProps(SectionData $section, Sites $sites, bool $brandNew): array
@@ -168,7 +150,9 @@ readonly class SectionsController
         $section->handle = $request->input('handle');
         $section->type = $request->enum('type', SectionType::class, SectionType::Channel);
         $section->enableVersioning = $request->boolean('enableVersioning', true);
+        $minAuthors = $request->input('minAuthors');
         $maxAuthors = $request->input('maxAuthors');
+        $section->minAuthors = is_numeric($minAuthors) ? (int) $minAuthors : 0;
         $section->maxAuthors = is_numeric($maxAuthors) ? (int) $maxAuthors : null;
         $section->propagationMethod = PropagationMethod::tryFrom($request->input('propagationMethod') ?? '')
             ?? PropagationMethod::All;
@@ -176,8 +160,8 @@ readonly class SectionsController
 
         // Structure settings
         if ($section->type === SectionType::Structure) {
-            $section->maxLevels = $request->input('maxLevels') ?: null;
-            $section->defaultPlacement = $request->input('defaultPlacement') ?? $section->defaultPlacement;
+            $section->maxLevels = $request->integer('maxLevels') ?: null;
+            $section->defaultPlacement = $request->enum('defaultPlacement', DefaultPlacement::class, $section->defaultPlacement);
         }
 
         $section->setEntryTypes($request->array('entryTypes'));
@@ -225,7 +209,7 @@ readonly class SectionsController
             return $this->asModelFailure($section, t('Couldn’t save section.'), 'section');
         }
 
-        return $this->asModelSuccess($section, t('Section saved.'), 'section');
+        return $this->asSuccess(t('Section saved.'));
     }
 
     public function destroy(Request $request, Sections $sections): Response
@@ -245,32 +229,15 @@ readonly class SectionsController
         ]));
     }
 
-    public function tableData(Request $request, Sections $sections): Response
+    #[Deprecated(message: 'in 6.0. Use `settings/sections` instead.')]
+    public function tableData(TableRequest $request, Sections $sections): Response
     {
-        $pageParam = Cms::config()->getPageTriggerParam();
-        $page = (int) $request->input($pageParam, 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
-
-        $sort = $request->input('sort');
-
-        $orderBy = match (Arr::get($sort, '0.field')) {
-            '__slot:handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-
-        $sortDir = match (Arr::get($sort, '0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
         [$pagination, $tableData] = $sections->getSectionTableData(
-            page: $page,
-            limit: $limit,
-            searchTerm: $searchTerm,
-            orderBy: $orderBy,
-            sortDir: $sortDir,
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
         );
 
         return $this->asSuccess(data: [

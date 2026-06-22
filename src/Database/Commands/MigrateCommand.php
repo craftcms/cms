@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
-use CraftCms\Cms\Database\Events\RegisterMigrators;
-use CraftCms\Cms\Database\LaravelMigrations;
+use CraftCms\Cms\Database\Events\MigratorsResolving;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
@@ -18,6 +18,7 @@ use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Foundation\Console\DownCommand;
 use Illuminate\Foundation\Console\UpCommand;
 use Laravel\Prompts\Concerns\Colors;
+use Laravel\Prompts\Support\Logger;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
 use Override;
 use Throwable;
@@ -54,14 +55,12 @@ class MigrateCommand extends Command implements Isolatable
 
     private Plugins $plugins;
 
-    private LaravelMigrations $laravelMigrations;
-
     /**
      * @var array<string, Migrator>
      */
     private array $migrators = [];
 
-    public function handle(Updates $updates, Plugins $plugins, LaravelMigrations $laravelMigrations): int
+    public function handle(Updates $updates, Plugins $plugins): int
     {
         if (! $this->confirmToProceed()) {
             return self::SUCCESS;
@@ -69,7 +68,6 @@ class MigrateCommand extends Command implements Isolatable
 
         $this->updates = $updates;
         $this->plugins = $plugins;
-        $this->laravelMigrations = $laravelMigrations;
 
         try {
             $this->runMigrations();
@@ -201,14 +199,13 @@ class MigrateCommand extends Command implements Isolatable
 
         $noContent = $this->option('no-content') ?? $this->option('noContent');
         if (! $noContent && (! $this->option('track') || $this->option('track') === 'content')) {
-            $this->laravelMigrations->reconcile($this->getMigrator('content'));
             $contentMigrations = $this->getMigrator('content')->getPendingMigrations();
             if (! empty($contentMigrations)) {
                 $migrationsByTrack['content'] = $contentMigrations;
             }
         }
 
-        event($event = new RegisterMigrators);
+        event($event = new MigratorsResolving);
 
         foreach ($event->migrators as $migrator) {
             if (! $migrator instanceof Migrator) {
@@ -244,10 +241,9 @@ class MigrateCommand extends Command implements Isolatable
             return;
         }
 
-        $this->components->info('Preparing database.');
-
-        $this->components->task('Creating migration table', fn () => $this->callSilent('migrate:install') === 0);
-
-        $this->newLine();
+        PromptTask::run('Preparing database', function (Logger $logger) {
+            $logger->subLabel('Creating migration table');
+            $this->callSilent('migrate:install');
+        }, keepSummary: true, output: $this->output);
     }
 }

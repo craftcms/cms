@@ -8,15 +8,17 @@ use CraftCms\Cms\Element\Actions\ElementAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
+use Override;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class UnsuspendUsers extends ElementAction
 {
-    #[\Override]
+    #[Override]
     public function getTriggerLabel(): string
     {
         return t('Unsuspend');
@@ -51,14 +53,18 @@ JS, [
         return null;
     }
 
-    #[\Override]
+    #[Override]
     public function performAction(ElementQueryInterface $query): bool
     {
         // Get the users that are suspended
         $query->status(User::STATUS_SUSPENDED);
         /** @var User[] $users */
         $users = $query->all();
-        $currentUser = Auth::user();
+        $currentUser = currentUser();
+
+        if (! $currentUser instanceof CraftUser) {
+            return false;
+        }
 
         $successCount = count(array_filter($users, function (User $user) use ($currentUser) {
             if (! Users::canSuspend($currentUser, $user)) {

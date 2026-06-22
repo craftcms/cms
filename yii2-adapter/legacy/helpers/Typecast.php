@@ -15,5 +15,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Support\Typecast::class, Typecast::class);

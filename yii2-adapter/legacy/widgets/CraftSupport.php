@@ -8,11 +8,13 @@
 
 namespace craft\widgets;
 
-/**
- * @since 3.0.0
- * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\CraftSupport` instead.
- */
-class CraftSupport extends \CraftCms\Cms\Dashboard\Widgets\CraftSupport
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * @since 3.0.0
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\CraftSupport` instead.
+     */
+    class CraftSupport extends \CraftCms\Cms\Dashboard\Widgets\CraftSupport
+    {
+    }
 }

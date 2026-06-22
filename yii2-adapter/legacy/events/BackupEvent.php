@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Events\BeforeCreateBackup}, {@see \CraftCms\Cms\Database\Events\AfterCreateBackup}, or {@see \CraftCms\Cms\Database\Events\AfterRestoreBackup} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Events\BackupCreating}, {@see \CraftCms\Cms\Database\Events\BackupCreated}, or {@see \CraftCms\Cms\Database\Events\BackupRestored} instead.
  */
 class BackupEvent extends Event
 {

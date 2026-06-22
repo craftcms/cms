@@ -6,9 +6,9 @@ use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
-use CraftCms\Cms\Element\Events\AfterPropagate;
-use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
+use CraftCms\Cms\Element\Events\CanonicalChangesMerging;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
 use CraftCms\Cms\Element\Operations\ElementDuplicates;
 use CraftCms\Cms\Element\Operations\ElementWrites;
@@ -146,9 +146,9 @@ it('throws when the derivative site is unsupported', function () {
 
 it('merges and saves localized derivatives before the requested site', function () {
     Event::fake([
-        AfterMergeCanonicalChanges::class,
-        AfterPropagate::class,
-        BeforeMergeCanonicalChanges::class,
+        CanonicalChangesMerged::class,
+        ElementLifecyclePropagated::class,
+        CanonicalChangesMerging::class,
     ]);
 
     $primarySite = Site::firstOrFail();
@@ -244,18 +244,18 @@ it('merges and saves localized derivatives before the requested site', function 
         ->and($draft->duplicateOf)->toBe($originalDuplicate)
         ->and($draft->mergingCanonicalChanges)->toBeFalse();
 
-    Event::assertDispatchedTimes(BeforeMergeCanonicalChanges::class, 1);
-    Event::assertDispatchedTimes(AfterMergeCanonicalChanges::class, 1);
-    Event::assertDispatched(fn (BeforeMergeCanonicalChanges $event) => $event->element === $draft);
-    Event::assertDispatched(fn (AfterMergeCanonicalChanges $event) => $event->element === $draft);
-    Event::assertDispatched(fn (AfterPropagate $event) => $event->element === $draft && $event->isNew === false);
+    Event::assertDispatchedTimes(CanonicalChangesMerging::class, 1);
+    Event::assertDispatchedTimes(CanonicalChangesMerged::class, 1);
+    Event::assertDispatched(fn (CanonicalChangesMerging $event) => $event->element === $draft);
+    Event::assertDispatched(fn (CanonicalChangesMerged $event) => $event->element === $draft);
+    Event::assertDispatched(fn (ElementLifecyclePropagated $event) => $event->element === $draft && $event->isNew === false);
 });
 
 it('merges localized elements, sets dateLastMerged, and resets the merging flag', function () {
     Event::fake([
-        AfterMergeCanonicalChanges::class,
-        AfterPropagate::class,
-        BeforeMergeCanonicalChanges::class,
+        CanonicalChangesMerged::class,
+        ElementLifecyclePropagated::class,
+        CanonicalChangesMerging::class,
     ]);
 
     $primarySite = Site::firstOrFail();
@@ -293,7 +293,7 @@ it('merges localized elements, sets dateLastMerged, and resets the merging flag'
         ->and($currentSiteElement->mergingCanonicalChanges)->toBeFalse()
         ->and($currentSiteElement->afterPropagateCalls)->toBe(1);
 
-    Event::assertDispatchedOnce(BeforeMergeCanonicalChanges::class);
-    Event::assertDispatchedOnce(AfterMergeCanonicalChanges::class);
-    Event::assertDispatchedOnce(AfterPropagate::class);
+    Event::assertDispatchedOnce(CanonicalChangesMerging::class);
+    Event::assertDispatchedOnce(CanonicalChangesMerged::class);
+    Event::assertDispatchedOnce(ElementLifecyclePropagated::class);
 });

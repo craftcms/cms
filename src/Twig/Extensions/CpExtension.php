@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\FormFields;
@@ -16,12 +16,12 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Vite;
 use Override;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -61,19 +61,36 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('siteMenuItems', app(MenuHtml::class)->siteMenuItems(...)),
             new TwigFunction('statusIndicator', app(StatusHtml::class)->statusIndicatorHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', app(ContentHtml::class)->readOnlyNoticeHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('vite', $this->vite(...), ['is_safe' => ['html']]),
+            new TwigFunction('cpVite', $this->vite(...), ['is_safe' => ['html']]),
+            new TwigFunction('cpEnvOptions', $this->envOptions(...)),
+            new TwigFunction('cpEnvSuggestions', $this->envSuggestions(...)),
+            new TwigFunction('cpTemplateSuggestions', $this->templateSuggestions(...)),
 
             // Legacy Assets - remove once all dependencies on these are removed
-            new TwigFunction('registerLegacyAsset', app(InternalAssetRegistry::class)->register(...)),
+            new TwigFunction('registerLegacyAsset', fn (string $bundle) => app(InternalAssetRegistry::class)->register($bundle)),
         ];
     }
 
-    public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft/build'): string
+    public function envOptions(?array $allowedValues = null): array
+    {
+        return $this->formatLegacyOptions(SelectOptions::getEnvOptions($allowedValues));
+    }
+
+    public function envSuggestions(bool $includeAliases = false, ?callable $filter = null): array
+    {
+        return $this->formatLegacySuggestions(SelectOptions::getEnvSuggestions($includeAliases, $filter));
+    }
+
+    public function templateSuggestions(): array
+    {
+        return $this->formatLegacySuggestions(SelectOptions::getTemplateSuggestions());
+    }
+
+    public function vite(array $entryPoints): string
     {
         try {
-            return Vite::useHotFile(Aliases::get('@resources/hot'))
+            return Cp::vite()
                 ->withEntryPoints($entryPoints)
-                ->useBuildDirectory($buildDirectory)
                 ->toHtml();
         } catch (ViteException $e) {
             if (Cms::config()->devMode) {
@@ -118,5 +135,36 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         }
 
         return [];
+    }
+
+    private function formatLegacySuggestions(array $options): array
+    {
+        return array_map(fn ($group) => [
+            'label' => $group['label'],
+            'data' => array_map(fn (array $option) => [
+                'name' => $option['label'],
+                'hint' => $option['data']['hint'] ?? null,
+            ], $group['options']),
+        ], $options);
+    }
+
+    private function formatLegacyOptions(array $originalOptions): array
+    {
+        $options = [];
+
+        foreach ($originalOptions as $value) {
+            if (($value['type'] ?? null) === 'optgroup') {
+                $options[] = ['optgroup' => $value['label']];
+                array_push($options, ...($value['options'] ?? []));
+            } else {
+                $options[] = [
+                    'label' => $value['label'],
+                    'value' => $value['value'],
+                    'data' => $value['data'] ?? null,
+                ];
+            }
+        }
+
+        return $options;
     }
 }

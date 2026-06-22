@@ -17,5 +17,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Dashboard\Contracts\WidgetInterface::class, WidgetInterface::class);

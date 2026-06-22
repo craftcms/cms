@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
@@ -12,7 +13,10 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
+use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -117,6 +121,56 @@ it('saves inline-edited elements in a batch', function () {
 
     expect(Entry::find()->id($firstEntry->id)->status(null)->one()?->title)->toBe('First After Save')
         ->and(Entry::find()->id($secondEntry->id)->status(null)->one()?->title)->toBe('Second After Save');
+});
+
+it('ignores sensitive attributes when saving user elements in a batch', function () {
+    $field = Field::factory()->create([
+        'name' => 'User Bio',
+        'handle' => 'userBio',
+        'type' => PlainText::class,
+    ]);
+    $fieldLayout = FieldLayout::factory()
+        ->forField($field)
+        ->create([
+            'type' => User::class,
+        ]);
+    FieldsFacade::invalidateCaches();
+
+    $editor = UserModel::factory()->admin()->createElement();
+    $targetUser = UserModel::factory()->createElement();
+    $originalPassword = DB::table(Table::USERS)
+        ->where('id', $targetUser->id)
+        ->value('password');
+    $originalEmail = $targetUser->email;
+
+    actingAs($editor);
+
+    postJson(action(SaveElementIndexElementsController::class), [
+        'elementType' => User::class,
+        'siteId' => $targetUser->siteId,
+        'namespace' => 'elementindex-test',
+        'elementindex-test' => [
+            "element-$targetUser->id" => [
+                'email' => 'updated@example.com',
+                'fields' => [
+                    'userBio' => 'Updated bio',
+                ],
+                'newPassword' => 'SecurePassword123!',
+            ],
+        ],
+    ])->assertOk();
+
+    $updatedUser = User::find()
+        ->id($targetUser->id)
+        ->status(null)
+        ->one();
+    $userRecord = DB::table(Table::USERS)
+        ->where('id', $targetUser->id)
+        ->first();
+
+    expect($userRecord->password)->toBe($originalPassword)
+        ->and($userRecord->email)->toBe($originalEmail)
+        ->and($updatedUser->getFieldValue('userBio'))->toBe('Updated bio');
 });
 
 it('rolls back prior saves when a later element fails', function () {

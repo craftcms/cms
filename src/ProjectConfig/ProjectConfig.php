@@ -23,7 +23,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
-use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
@@ -34,7 +34,6 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -56,6 +55,7 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -336,6 +336,13 @@ class ProjectConfig
         $this->writeYamlAutomatically = ! app()->isEphemeral();
     }
 
+    public function writeYamlAutomatically(bool $writeYamlAutomatically = true): self
+    {
+        $this->writeYamlAutomatically = $writeYamlAutomatically;
+
+        return $this;
+    }
+
     /**
      * Saves the modified project config state and writes out updated YAML files, if needed.
      */
@@ -489,7 +496,7 @@ class ProjectConfig
 
         if ($updateTimestamp && ! $this->_timestampUpdated && $valueHasChanged) {
             $this->_timestampUpdated = true;
-            $this->_setInternal(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(),
+            $this->_setInternal(self::PATH_DATE_MODIFIED, now()->getTimestamp(),
                 'Update timestamp for project config', false, false);
         }
 
@@ -783,7 +790,7 @@ class ProjectConfig
 
         if (! empty($deltaChanges)) {
             $this->storeYamlHistory([
-                'dateApplied' => date('Y-m-d H:i:s'),
+                'dateApplied' => now()->format('Y-m-d H:i:s'),
                 'changes' => $deltaChanges,
             ]);
         }
@@ -1100,7 +1107,7 @@ class ProjectConfig
         unset($config[self::PATH_META]);
 
         $config[self::PATH_ADDRESSES] = $this->_getAddressesData();
-        $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
+        $config[self::PATH_DATE_MODIFIED] = now()->getTimestamp();
         $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
         $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
         $config[self::PATH_FIELDS] = $this->_getFieldData();
@@ -1116,7 +1123,7 @@ class ProjectConfig
         $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
-        event($event = new RebuildConfig($config));
+        event($event = new ProjectConfigRebuilt($config));
 
         // Reset the component name map
         $this->_setInternal(self::PATH_META_NAMES, [], updateTimestamp: false, force: true);
@@ -1346,12 +1353,33 @@ class ProjectConfig
 
         unset($removedItem);
 
-        // Sort by number of dots to ensure deepest paths listed first
+        // Group paths by similarity, sorted by depth (descending), e.g.:
+        // - foo1.bar.baz
+        // - foo1.bar
+        // - foo2.bar.baz
+        // - foo2.bar
         $sorter = function ($a, $b) {
-            $aDepth = ProjectConfigHelper::pathDepth($a);
-            $bDepth = ProjectConfigHelper::pathDepth($b);
+            if (str_starts_with($a, "$b.")) {
+                // a is a subpath of b
+                return -1;
+            }
+            if (str_starts_with($b, "$a.")) {
+                // b is a subpath of a
+                return 1;
+            }
 
-            return $bDepth <=> $aDepth;
+            // find the first segment where they differ and sort based on that
+            $aSegs = ProjectConfigHelper::pathSegments($a);
+            $bSegs = ProjectConfigHelper::pathSegments($b);
+
+            foreach ($aSegs as $i => $aSeg) {
+                $result = $aSeg <=> $bSegs[$i];
+                if ($result !== 0) {
+                    return $result;
+                }
+            }
+
+            return 0;
         };
 
         $newItems = array_unique($newItems);

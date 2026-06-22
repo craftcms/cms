@@ -6,16 +6,18 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Database\Expressions\JsonContains;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
-use CraftCms\Cms\Field\Events\DefineInputOptions;
+use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
@@ -26,6 +28,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
@@ -36,13 +39,8 @@ use function CraftCms\Cms\t;
 /**
  * BaseOptionsField is the base class for classes representing an options field.
  */
-abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
+abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
-    /**
-     * @event {@see DefineInputOptions} Event triggered when defining the options for the field's input.
-     */
-    public const string EVENT_DEFINE_OPTIONS = 'defineOptions';
-
     /**
      * @var bool Whether the field should support multiple selections
      */
@@ -100,22 +98,46 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $negate = false;
         }
 
-        $valueSql = static::valueSql($instances);
+        $valueSql = self::valueColumn($instances);
 
-        return $query->where(function (Builder $query) use ($param, $valueSql) {
+        if ($valueSql === null) {
+            return $query;
+        }
+
+        $isEmptyValueParam = fn (mixed $value): bool => is_string($value) &&
+            in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'], true);
+
+        $applyConditions = function (Builder $query) use ($param, $valueSql, $isEmptyValueParam) {
             foreach ($param->values as $value) {
-                if (
-                    is_string($value) &&
-                    in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
-                ) {
+                if ($isEmptyValueParam($value)) {
                     $query->whereParam($valueSql, $value, columnType: Query::TYPE_JSON, boolean: $param->operator);
 
                     continue;
                 }
 
-                $query->whereJsonContains($valueSql, $value, $param->operator);
+                is_string($valueSql)
+                    ? $query->whereJsonContains($valueSql, $value, boolean: $param->operator)
+                    : $query->where(new JsonContains($valueSql, $value), boolean: $param->operator);
             }
-        }, boolean: $negate ? 'and not' : 'and');
+        };
+
+        if ($negate && Collection::make($param->values)->doesntContain($isEmptyValueParam)) {
+            return $query->where(function (Builder $query) use ($valueSql, $applyConditions) {
+                $query->whereNull($valueSql)
+                    ->orWhereNot($applyConditions);
+            });
+        }
+
+        return $query->where($applyConditions, boolean: $negate ? 'and not' : 'and');
+    }
+
+    private static function valueColumn(array $instances): string|Expression|null
+    {
+        if (count($instances) === 1 && isset($instances[0]->layoutElement)) {
+            return "elements_sites.content->{$instances[0]->layoutElement->uid}";
+        }
+
+        return static::valueSql($instances);
     }
 
     /**
@@ -334,6 +356,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     }
 
     #[Override]
+    public function getDefaultValue(): array|string|null
+    {
+        return $this->defaultValue();
+    }
+
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof MultiOptionsFieldData || $value instanceof SingleOptionFieldData) {
@@ -441,7 +469,9 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 }
             }
 
-            return $serialized;
+            // return null if there are no selected options
+            // (see https://github.com/craftcms/cms/pull/19019)
+            return $serialized ?: null;
         }
 
         return parent::serializeValue($value, $element);
@@ -667,15 +697,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $options = $this->options();
         $translatedOptions = [];
 
-        $this->dispatchComponentEvent(
-            self::EVENT_DEFINE_OPTIONS,
-            $event = new DefineInputOptions(
-                field: $this,
-                options: $options,
-                value: $value,
-                element: $element,
-            ),
-        );
+        event($event = new InputOptionsResolving(
+            field: $this,
+            options: $options,
+            value: $value,
+            element: $element,
+        ));
 
         foreach ($event->options as $option) {
             if (isset($option['optgroup'])) {

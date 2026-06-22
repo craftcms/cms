@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Plugin\Plugin;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -17,29 +17,23 @@ trait HasViews
 {
     public function bootHasViews(): void
     {
-        Event::listen(function (RegisterCpTemplateRoots $event) {
-            $basePath = self::getInstance()->getBasePath();
-            $resourcesPath = self::getInstance()->getResourcesPath();
-            $handle = self::getInstance()->handle;
+        Event::listen(function (CpTemplateRootsResolving $event) {
+            $plugin = self::getInstance();
+            $basePath = $plugin->getBasePath();
+            $resourcesPath = $plugin->getResourcesPath();
+            $handle = $plugin->handle;
 
-            /**
-             * Get the first matching directory for views or templates.
-             */
-            $baseDir = match (true) {
+            $baseDirs = array_values(array_filter([
                 // Laravel Convention
-                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
-                is_dir($baseDir = $resourcesPath.'/views') => $baseDir,
+                $resourcesPath.'/views',
                 // Laravel Convention for resources, Twig convention for templates
-                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
-                is_dir($baseDir = $resourcesPath.'/templates') => $baseDir,
+                $resourcesPath.'/templates',
                 // Craft 5 and earlier
-                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
-                is_dir($baseDir = $basePath.'/templates') => $baseDir,
-                default => false,
-            };
+                $basePath.'/templates',
+            ], is_dir(...)));
 
-            if ($baseDir) {
-                $event->roots[$handle] = $baseDir;
+            if ($baseDirs !== []) {
+                $event->roots[$handle] = $baseDirs;
             }
         });
     }

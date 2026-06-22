@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
@@ -38,7 +39,7 @@ use function CraftCms\Cms\template;
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
  */
-class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Money extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -186,6 +187,11 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         $valueSql = self::valueSql($instances);
 
         return $query->whereMoneyParam($valueSql, $instances[0]->currency, $value);
+    }
+
+    public function getDefaultValue(): float|int|null
+    {
+        return $this->defaultValue;
     }
 
     #[Override]
@@ -339,7 +345,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     #[Override]
     public function prepareForElementValidation(mixed $value): mixed
     {
-        if (! $value instanceof MoneyLibrary) {
+        if ($value && ! $value instanceof MoneyLibrary) {
             $currency = ! $value['currency'] instanceof Currency ? new Currency($value['currency']) : $value['currency'];
             $value = new MoneyLibrary($value['value'], $currency);
         }

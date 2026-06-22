@@ -25,15 +25,15 @@ class ExpiresNode extends Node
                 ->subcompile($expiration)
                 ->raw(";\n")
                 ->write(sprintf(
-                    '$duration = %s::toDateTime($expiration)->getTimestamp() - %s::currentTimeStamp();',
-                    DateTimeHelper::class,
+                    '$duration = %s::toDateTime($expiration)->getTimestamp() - now()->getTimestamp();',
                     DateTimeHelper::class,
                 ));
         } else {
-            $duration = DateTimeHelper::relativeTimeToSeconds(
+            $now = now();
+            $duration = (int) $now->diffInSeconds((clone $now)->add(
                 $this->getAttribute('durationNum'),
                 $this->getAttribute('durationUnit'),
-            );
+            ));
             $compiler->write("\$duration = $duration;\n");
         }
 

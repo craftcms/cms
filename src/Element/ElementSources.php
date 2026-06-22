@@ -9,8 +9,8 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
-use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
+use CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving;
+use CraftCms\Cms\Element\Events\ElementSourceTableAttributesResolving;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
@@ -25,9 +25,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -174,6 +174,10 @@ class ElementSources
                     }
 
                     $source = $elementType::modifyCustomSource($source);
+                }
+
+                if ($source['type'] === self::TYPE_HEADING) {
+                    $source['heading'] ??= '';
                 }
 
                 $sources[] = $source;
@@ -406,7 +410,7 @@ class ElementSources
             return true;
         }
 
-        $user = Auth::user();
+        $user = currentUserElement();
 
         if (! $user) {
             return false;
@@ -452,7 +456,7 @@ class ElementSources
                         'userGroups' => $s['userGroups'] ?? null,
                     ],
                     self::TYPE_HEADING => [
-                        'heading' => $s['heading'] ?? null,
+                        'heading' => $s['heading'] ?? '',
                     ],
                     default => [
                         'disabled' => $s['disabled'] ?? null,
@@ -585,7 +589,7 @@ class ElementSources
 
         $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
-        event($event = new DefineSourceSortOptions(
+        event($event = new ElementSourceSortOptionsResolving(
             elementType: $elementType,
             source: $sourceKey,
             sortOptions: $sortOptions,
@@ -669,7 +673,7 @@ class ElementSources
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
         $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 
-        event($event = new DefineSourceTableAttributes(
+        event($event = new ElementSourceTableAttributesResolving(
             elementType: $elementType,
             source: $sourceKey,
             attributes: $attributes,
@@ -687,7 +691,7 @@ class ElementSources
      */
     public function getTableAttributesForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
-        $user = Auth::user();
+        $user = currentUserElement();
 
         $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */

@@ -15,5 +15,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Search\SearchQuery::class, SearchQuery::class);

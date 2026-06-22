@@ -5,6 +5,10 @@ import {html} from 'lit';
 import './button.js';
 import '../icon/icon.js';
 import '../chip/chip.js';
+import {ButtonVariant, ButtonAppearance} from '@src/components/button/button';
+
+const buttonVariants = Object.values(ButtonVariant);
+const appearance = Object.values(ButtonAppearance);
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
@@ -13,20 +17,31 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: {},
+  args: {
+    label: 'Button',
+    appearance: 'solid',
+    loading: false,
+    variant: 'neutral',
+  },
+  argTypes: {
+    appearance: {
+      control: {type: 'select'},
+      options: appearance,
+    },
+    loading: {
+      control: {type: 'boolean'},
+    },
+  },
   render: (args) => html`
     <div class="grid gap-4">
-      ${['primary', 'default', 'danger'].map(
+      ${buttonVariants.map(
         (variant) => html`
           <div class="flex gap-2">
             <craft-button variant="${variant}"
-              >${variant ?? 'None'}</craft-button
+              >${variant ?? 'None'} solid</craft-button
             >
-            <craft-button appearance="filled" variant="${variant}"
-              >${variant} filled</craft-button
-            >
-            <craft-button appearance="dashed" variant="${variant}"
-              >${variant} dashed</craft-button
+            <craft-button appearance="outline" variant="${variant}"
+              >${variant} outline</craft-button
             >
             <craft-button appearance="plain" variant="${variant}"
               >${variant} plain</craft-button
@@ -37,15 +52,12 @@ const meta = {
 
       <craft-chip data-color="violet">
         <div class="flex gap-2">
-          <craft-button variant="inherit">Chip buttons</craft-button>
-          <craft-button appearance="filled" variant="inherit"
-            >Filled</craft-button
-          >
-          <craft-button appearance="dashed" variant="inherit"
-            >Dashed</craft-button
+          <craft-button variant="inherit">Chip Buttons</craft-button>
+          <craft-button appearance="outline" variant="inherit"
+            >Outline</craft-button
           >
           <craft-button appearance="plain" variant="inherit"
-            >plain</craft-button
+            >Plain</craft-button
           >
         </div>
       </craft-chip>
@@ -59,6 +71,24 @@ type Story = StoryObj<any>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default: Story = {
   args: {},
+};
+
+export const Variants: Story = {
+  args: {
+    variant: 'accent',
+  },
+  argTypes: {
+    variant: {
+      control: {type: 'select'},
+      options: buttonVariants,
+    },
+  },
+  render: () =>
+    html`${buttonVariants.map(
+      (variant) => html`
+        <craft-button variant="${variant}">${variant}</craft-button>
+      `
+    )}`,
 };
 
 export const Sizes: Story = {
@@ -77,16 +107,20 @@ export const Icon: Story = {
   render: (args) => html`
     <div class="flex gap-2 items-center">
       <craft-button icon>
-        <craft-icon name="location"></craft-icon>
+        <craft-icon name="location" label="Location"></craft-icon>
       </craft-button>
       <craft-button icon size="small">
-        <craft-icon name="location"></craft-icon>
+        <craft-icon name="location" label="Location"></craft-icon>
       </craft-button>
     </div>
   `,
 };
 
 export const Loading: Story = {
-  args: {},
-  render: (args) => html` <craft-button loading> Submit </craft-button> `,
+  args: {
+    loading: true,
+  },
+  render: (args) => html`
+    <craft-button ?loading="${args.loading}"> Submit </craft-button>
+  `,
 };

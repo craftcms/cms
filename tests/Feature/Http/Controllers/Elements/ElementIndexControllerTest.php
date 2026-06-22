@@ -11,6 +11,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -61,6 +62,72 @@ it('returns element HTML and action metadata for get-elements', function () {
             'actionsBodyHtml',
             'exporters',
         ]);
+});
+
+it('sorts elements by the requested view state order', function () {
+    EntryModel::factory()->createElement(['title' => 'Charlie']);
+    EntryModel::factory()->createElement(['title' => 'Alpha']);
+    EntryModel::factory()->createElement(['title' => 'Bravo']);
+
+    ($this->postIndexAction)('get-elements', [
+        'viewState' => [
+            'mode' => 'table',
+            'static' => false,
+            'order' => 'title',
+            'sort' => 'asc',
+            'tableColumns' => ['title'],
+        ],
+    ])->assertOk()
+        ->assertJsonPath('html', fn (string $html) => strpos($html, 'Alpha') < strpos($html, 'Bravo') &&
+            strpos($html, 'Bravo') < strpos($html, 'Charlie'));
+});
+
+it('sorts entries by post date ascending from the element index', function () {
+    EntryModel::factory()->createElement([
+        'title' => 'Newest',
+        'postDate' => now()->subDay(),
+    ]);
+    EntryModel::factory()->createElement([
+        'title' => 'Oldest',
+        'postDate' => now()->subDays(3),
+    ]);
+    EntryModel::factory()->createElement([
+        'title' => 'Middle',
+        'postDate' => now()->subDays(2),
+    ]);
+
+    ($this->postIndexAction)('get-elements', [
+        'viewState' => [
+            'mode' => 'table',
+            'static' => false,
+            'order' => 'postDate',
+            'sort' => 'asc',
+            'tableColumns' => ['title', 'postDate'],
+        ],
+    ])->assertOk()
+        ->assertJsonPath('html', fn (string $html) => strpos($html, 'Oldest') < strpos($html, 'Middle') &&
+            strpos($html, 'Middle') < strpos($html, 'Newest'));
+});
+
+it('uses the order history as secondary element index ordering', function () {
+    EntryModel::factory()->createElement(['title' => 'Alpha', 'slug' => 'alpha']);
+    EntryModel::factory()->createElement(['title' => 'Alpha', 'slug' => 'zulu']);
+    EntryModel::factory()->createElement(['title' => 'Bravo', 'slug' => 'bravo']);
+
+    ($this->postIndexAction)('get-elements', [
+        'viewState' => [
+            'mode' => 'table',
+            'static' => false,
+            'order' => 'title',
+            'sort' => 'asc',
+            'orderHistory' => [
+                ['slug', 'desc'],
+            ],
+            'tableColumns' => ['title', 'slug'],
+        ],
+    ])->assertOk()
+        ->assertJsonPath('html', fn (string $html) => strpos($html, 'zulu') < strpos($html, 'alpha') &&
+            strpos($html, 'alpha') < strpos($html, 'bravo'));
 });
 
 it('omits action metadata for get-more-elements', function () {
@@ -123,6 +190,7 @@ it('prefers the current users provisional draft for element table html', functio
     $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
     $draft->title = 'Draft Title';
     Elements::saveElement($draft);
+    actingAs(UserModel::findOrFail(auth()->id()));
 
     postJson(action([ElementIndexController::class, 'elementTableHtml']), [
         'context' => ElementSources::CONTEXT_INDEX,

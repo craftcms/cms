@@ -11,8 +11,12 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Stringable;
 use UnitEnum;
@@ -31,7 +35,9 @@ function enum_value(mixed $value, mixed $default = null): mixed
 
 function craftAsset(string $path, ?bool $secure = null): string
 {
-    return asset("vendor/craft/$path", $secure);
+    $suffix = pathinfo($path, PATHINFO_EXTENSION) !== '' ? '?v='.Cms::version() : '';
+
+    return asset("vendor/craft/$path", $secure).$suffix;
 }
 
 function t(string|Stringable|null $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string
@@ -67,6 +73,25 @@ function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool 
 function debugbar()
 {
     return app()->bound('debugbar') ? app('debugbar') : optional();
+}
+
+function currentUser(): ?CraftUser
+{
+    $user = Auth::user();
+
+    if ($user === null || $user instanceof CraftUser) {
+        return $user;
+    }
+
+    throw new AuthenticationException(sprintf(
+        'The authenticated user must implement %s to be used by Craft.',
+        CraftUser::class,
+    ));
+}
+
+function currentUserElement(): ?UserElement
+{
+    return currentUser()?->asElement();
 }
 
 /**

@@ -13,6 +13,7 @@ use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
@@ -40,7 +41,6 @@ use Symfony\Component\HttpFoundation\Response;
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
  * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
  */
-#[AllowedInSandbox]
 interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, Statusable, Thumbable, Validatable
 {
     /**
@@ -590,6 +590,15 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
 
     /**
+     * Returns any deletion blockers for the given elements.
+     *
+     * @param  ElementCollection  $elements  The elements to be deleted
+     * @param  bool  $hardDelete  Whether the elements will be hard-deleted
+     * @return DeletionBlockerInterface[]
+     */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array;
+
+    /**
      * Returns the base GraphQL type name that represents elements of this type.
      */
     public static function baseGqlType(): Type;
@@ -604,21 +613,25 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns whether this is a draft.
      */
+    #[AllowedInSandbox]
     public function getIsDraft(): bool;
 
     /**
      * Returns whether this is a revision.
      */
+    #[AllowedInSandbox]
     public function getIsRevision(): bool;
 
     /**
      * Returns whether this is the canonical element.
      */
+    #[AllowedInSandbox]
     public function getIsCanonical(): bool;
 
     /**
      * Returns whether this is a derivative element, such as a draft or revision.
      */
+    #[AllowedInSandbox]
     public function getIsDerivative(): bool;
 
     /**
@@ -628,6 +641,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @param  bool  $anySite  Whether the canonical element can be retrieved in any site
      */
+    #[AllowedInSandbox]
     public function getCanonical(bool $anySite = false): self;
 
     /**
@@ -640,6 +654,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * If this is a draft or revision, the canonical element’s ID will be returned.
      */
+    #[AllowedInSandbox]
     public function getCanonicalId(): ?int;
 
     /**
@@ -652,11 +667,13 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * If this is a draft or revision, the canonical element’s UUID will be returned.
      */
+    #[AllowedInSandbox]
     public function getCanonicalUid(): ?string;
 
     /**
      * Returns whether the element is an unpublished draft.
      */
+    #[AllowedInSandbox]
     public function getIsUnpublishedDraft(): bool;
 
     /**
@@ -674,11 +691,13 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the site the element is associated with.
      */
+    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
      * Returns the language of the element.
      */
+    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -724,16 +743,19 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns whether this element represents the site homepage.
      */
+    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
      * Returns the element’s full URL.
      */
+    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
      * Returns an anchor pre-filled with this element’s URL and title.
      */
+    #[AllowedInSandbox]
     public function getLink(): ?HtmlString;
 
     /**
@@ -783,6 +805,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the reference string to this element.
      */
+    #[AllowedInSandbox]
     public function getRef(): ?string;
 
     /**
@@ -800,6 +823,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * If they can view but not [[canSave()|save]], the edit form will either render statically,
      * or be restricted to only saving changes as a draft, depending on [[canCreateDrafts()]].
      */
+    #[AllowedInSandbox]
     public function canView(User $user): bool;
 
     /**
@@ -807,6 +831,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * This will only be called if the element can be [[canView()|viewed]].
      */
+    #[AllowedInSandbox]
     public function canSave(User $user): bool;
 
     /**
@@ -814,16 +839,19 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      */
+    #[AllowedInSandbox]
     public function canDuplicate(User $user): bool;
 
     /**
      * Returns whether the given user is authorized to duplicate this element as an unpublished draft.
      */
+    #[AllowedInSandbox]
     public function canDuplicateAsDraft(User $user): bool;
 
     /**
      * Returns whether the given user is authorized to copy this element, to be duplicated elsewhere.
      */
+    #[AllowedInSandbox]
     public function canCopy(User $user): bool;
 
     /**
@@ -831,6 +859,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      */
+    #[AllowedInSandbox]
     public function canDelete(User $user): bool;
 
     /**
@@ -838,6 +867,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
      */
+    #[AllowedInSandbox]
     public function canDeleteForSite(User $user): bool;
 
     /**
@@ -850,6 +880,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * so drafts can be automatically updated with upstream content changes.
      * :::
      */
+    #[AllowedInSandbox]
     public function canCreateDrafts(User $user): bool;
 
     /**
@@ -912,6 +943,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @return bool|null Whether the element is enabled for the given site. `null` will be returned if a `$siteId` was
      *                   passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
      */
+    #[AllowedInSandbox]
     public function getEnabledForSite(?int $siteId = null): ?bool;
 
     /**
@@ -926,11 +958,13 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the root owner element.
      */
+    #[AllowedInSandbox]
     public function getRootOwner(): self;
 
     /**
      * Returns the same element in other locales.
      */
+    #[AllowedInSandbox]
     public function getLocalized(): ElementQueryInterface|ElementCollection;
 
     /**
@@ -941,11 +975,13 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the next element relative to this one, from a given set of criteria.
      */
+    #[AllowedInSandbox]
     public function getNext(mixed $criteria = false): ?self;
 
     /**
      * Returns the previous element relative to this one, from a given set of criteria.
      */
+    #[AllowedInSandbox]
     public function getPrev(mixed $criteria = false): ?self;
 
     /**
@@ -961,6 +997,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the element’s parent.
      */
+    #[AllowedInSandbox]
     public function getParent(): ?self;
 
     /**
@@ -968,6 +1005,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * If the parent’s URI is `__home__` (the homepage URI), then `null` will be returned.
      */
+    #[AllowedInSandbox]
     public function getParentUri(): ?string;
 
     /**
@@ -978,76 +1016,91 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the element’s ancestors.
      */
+    #[AllowedInSandbox]
     public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s descendants.
      */
+    #[AllowedInSandbox]
     public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s children.
      */
+    #[AllowedInSandbox]
     public function getChildren(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns all of the element’s siblings.
      */
+    #[AllowedInSandbox]
     public function getSiblings(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s previous sibling.
      */
+    #[AllowedInSandbox]
     public function getPrevSibling(): ?self;
 
     /**
      * Returns the element’s next sibling.
      */
+    #[AllowedInSandbox]
     public function getNextSibling(): ?self;
 
     /**
      * Returns whether the element has descendants.
      */
+    #[AllowedInSandbox]
     public function getHasDescendants(): bool;
 
     /**
      * Returns the total number of descendants that the element has.
      */
+    #[AllowedInSandbox]
     public function getTotalDescendants(): int;
 
     /**
      * Returns whether this element is an ancestor of another one.
      */
+    #[AllowedInSandbox]
     public function isAncestorOf(self $element): bool;
 
     /**
      * Returns whether this element is a descendant of another one.
      */
+    #[AllowedInSandbox]
     public function isDescendantOf(self $element): bool;
 
     /**
      * Returns whether this element is a direct parent of another one.
      */
+    #[AllowedInSandbox]
     public function isParentOf(self $element): bool;
 
     /**
      * Returns whether this element is a direct child of another one.
      */
+    #[AllowedInSandbox]
     public function isChildOf(self $element): bool;
 
     /**
      * Returns whether this element is a sibling of another one.
      */
+    #[AllowedInSandbox]
     public function isSiblingOf(self $element): bool;
 
     /**
      * Returns whether this element is the direct previous sibling of another one.
      */
+    #[AllowedInSandbox]
     public function isPrevSiblingOf(self $element): bool;
 
     /**
      * Returns whether this element is the direct next sibling of another one.
      */
+    #[AllowedInSandbox]
     public function isNextSiblingOf(self $element): bool;
 
     /**
@@ -1171,6 +1224,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns whether a field is empty.
      */
+    #[AllowedInSandbox]
     public function isFieldEmpty(string $handle): bool;
 
     /**
@@ -1181,6 +1235,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *                                       returned. If it is an array, only the fields in the array will be returned.
      * @return array The field values (handle => value)
      */
+    #[AllowedInSandbox]
     public function getFieldValues(?array $fieldHandles = null): array;
 
     /**
@@ -1217,6 +1272,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
+    #[AllowedInSandbox]
     public function getFieldValue(string $fieldHandle): mixed;
 
     /**
@@ -1236,6 +1292,13 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @throws InvalidFieldException if `$fieldHandle` is an invalid field handle
      */
     public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
+
+    /**
+     * Enables or disables dirty field tracking.
+     *
+     * @see getDirtyFields()
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void;
 
     /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
@@ -1364,6 +1427,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  string  $handle  The handle of the eager-loaded elements
      * @return bool Whether elements have been eager-loaded with the given handle
      */
+    #[AllowedInSandbox]
     public function hasEagerLoadedElements(string $handle): bool;
 
     /**
@@ -1372,6 +1436,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  string  $handle  The handle of the eager-loaded elements
      * @return ElementCollection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
+    #[AllowedInSandbox]
     public function getEagerLoadedElements(string $handle): ?ElementCollection;
 
     /**
@@ -1396,6 +1461,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  string  $handle  The handle of the eager-loaded elements
      * @return int|null The eager-loaded element count, or null if it hadn't been eager-loaded
      */
+    #[AllowedInSandbox]
     public function getEagerLoadedElementCount(string $handle): ?int;
 
     /**
@@ -1512,6 +1578,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  bool  $isNew  Whether the element is brand new
      */
     public function afterSave(bool $isNew): void;
+
+    /**
+     * Performs actions after the element is assigned an ID.
+     */
+    public function afterAssignedId(): void;
 
     /**
      * Performs actions after an element is fully saved and propagated to other sites.

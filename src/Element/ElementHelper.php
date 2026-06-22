@@ -19,13 +19,13 @@ use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use RuntimeException;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 
 class ElementHelper
@@ -275,7 +275,7 @@ class ElementHelper
      */
     public static function isElementEditable(ElementInterface $element): bool
     {
-        $user = Auth::user();
+        $user = currentUserElement();
 
         if (! $user || ! $element->canView($user)) {
             return false;
@@ -295,7 +295,7 @@ class ElementHelper
      */
     public static function editableSiteIdsForElement(ElementInterface $element): array
     {
-        $user = Auth::user();
+        $user = currentUserElement();
 
         if (! $user || ! $element->canView($user)) {
             return [];
@@ -421,6 +421,25 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given nested element primarily belongs to the given owner element’s canonical element.
+     */
+    public static function belongsToCanonicalOwner(NestedElementInterface $element, ElementInterface $owner): bool
+    {
+        $ownerId = $element->getPrimaryOwnerId();
+
+        if ($ownerId === $owner->getCanonicalId()) {
+            return true;
+        }
+
+        if ($owner->getIsCanonical()) {
+            return false;
+        }
+
+        // try again with the owner's canonical element, in case it is also a derivative
+        return static::belongsToCanonicalOwner($element, $owner->getCanonical());
+    }
+
+    /**
      * Returns whether the given element (or its root element if a block element) is a derivative of another element.
      */
     public static function isDerivative(ElementInterface $element): bool
@@ -534,6 +553,7 @@ class ElementHelper
             'download' => $action->isDownload(),
             'name' => $action->getTriggerLabel(),
             'trigger' => $action->getTriggerHtml(),
+            'triggerId' => $action->getTriggerId(),
             'confirm' => $action->getConfirmationMessage(),
             'settings' => $action->getSettings() ?: null,
         ];

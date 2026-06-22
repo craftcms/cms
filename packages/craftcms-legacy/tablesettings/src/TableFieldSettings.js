@@ -203,6 +203,8 @@
           this.defaultsTableName,
           defaults[rowId],
           true,
+          true,
+          false,
           true
         ).appendTo($tbody);
       }

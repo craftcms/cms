@@ -15,7 +15,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.2
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\LocateUploadedFiles} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating} instead.
  */
 class LocateUploadedFilesEvent extends Event
 {
