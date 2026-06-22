@@ -26,10 +26,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Environment;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
-use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\PageTemplateRendering;
-use CraftCms\Cms\Twig\Events\TemplateRendered;
-use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TemplateRenderer;
@@ -37,7 +33,11 @@ use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
+use CraftCms\Cms\View\Events\PageTemplateRendered;
+use CraftCms\Cms\View\Events\PageTemplateRendering;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
+use CraftCms\Cms\View\Events\TemplateRendered;
+use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateHooks;
@@ -101,13 +101,13 @@ class View extends \yii\web\View
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TemplateRendering} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\TemplateRendering} instead.
      */
     public const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a template gets rendered
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TemplateRendered} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\TemplateRendered} instead.
      */
     public const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
 

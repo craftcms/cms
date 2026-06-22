@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Http\Middleware\SetHeaders;
+use CraftCms\Cms\View\BladeRenderer;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
+beforeEach(function () {
+    TemplateMode::set(TemplateMode::Site);
+    app()->forgetScopedInstances();
+
+    $this->renderer = app(BladeRenderer::class);
+});
+
+afterEach(function () {
+    SetHeaders::reset();
+});
+
+function renderBladeAndApplyHeaders(string $template): Response
+{
+    app(BladeRenderer::class)->renderString($template);
+
+    return app(SetHeaders::class)->handle(Request::create('foo'), fn () => new Response);
+}
+
+it('sets a response header', function () {
+    $response = renderBladeAndApplyHeaders('@craftHeader("X-Custom: test-value")');
+
+    expect($response->headers->get('X-Custom'))->toBe('test-value');
+});
+
+it('sets cache headers with duration', function () {
+    $response = renderBladeAndApplyHeaders('@craftExpires(7200)');
+
+    expect($response->headers->get('Cache-Control'))->toContain('max-age=7200')
+        ->and($response->headers->get('Pragma'))->toBe('cache');
+});

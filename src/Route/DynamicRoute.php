@@ -11,11 +11,10 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateRenderer;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-
-use function CraftCms\Cms\pageTemplate;
 
 class DynamicRoute
 {
@@ -63,10 +62,6 @@ class DynamicRoute
             abort(404);
         }
 
-        if (Str::endsWith($resolvedTemplate, '.blade.php')) {
-            return view()->file($resolvedTemplate, $variables)->render();
-        }
-
-        return pageTemplate($template, $variables);
+        return app(TemplateRenderer::class)->renderResolvedPageTemplate($template, $resolvedTemplate, $variables);
     }
 }

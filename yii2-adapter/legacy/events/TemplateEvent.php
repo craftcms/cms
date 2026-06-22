@@ -14,7 +14,7 @@ use craft\web\View;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TemplateRendering}, {@see \CraftCms\Cms\Twig\Events\TemplateRendered}, {@see \CraftCms\Cms\Twig\Events\PageTemplateRendering}, or {@see \CraftCms\Cms\Twig\Events\PageTemplateRendered} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\TemplateRendering}, {@see \CraftCms\Cms\View\Events\TemplateRendered}, {@see \CraftCms\Cms\View\Events\PageTemplateRendering}, or {@see \CraftCms\Cms\View\Events\PageTemplateRendered} instead.
  */
 class TemplateEvent extends CancelableEvent
 {

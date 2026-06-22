@@ -42,6 +42,44 @@ it('renders private templates when explicitly allowed', function () {
     expect($response->getContent())->toBe('Private entry template');
 });
 
+it('renders Blade templates through the Craft renderer', function () {
+    file_put_contents($this->tempDir.'/entry.blade.php', <<<'BLADE'
+<html>
+<head>@craftHead</head>
+<body>
+@craftEndBody
+@craftJs('console.log("route");')
+Blade route: {{ $title }}
+</body>
+</html>
+BLADE);
+
+    $response = new DynamicRoute('templates/render', [
+        'template' => 'entry',
+        'variables' => ['title' => 'Hello'],
+    ])->handle(Request::create('/entry'));
+
+    expect($response->getContent())
+        ->toContain('Blade route: Hello')
+        ->toContain('console.log("route");')
+        ->not->toContain('CRAFT-BLOCK-BODY-END');
+});
+
+it('does not render private Blade templates by default', function () {
+    file_put_contents($this->tempDir.'/_entry.blade.php', 'Private Blade entry template');
+
+    new DynamicRoute('templates/render', ['template' => '_entry'])
+        ->handle(Request::create('/news/test-entry'));
+})->throws(NotFoundHttpException::class);
+
+it('does not render Blade templates in headless mode', function () {
+    Cms::config()->headlessMode(true);
+    file_put_contents($this->tempDir.'/entry.blade.php', 'Blade entry template');
+
+    new DynamicRoute('templates/render', ['template' => 'entry'])
+        ->handle(Request::create('/news/test-entry'));
+})->throws(NotFoundHttpException::class);
+
 it('does not render internal laravel views through public template routing', function () {
     new DynamicRoute('templates/render', ['template' => 'mail/system-message'])
         ->handle(Request::create('/mail/system-message', 'GET', ['htmlBody' => '<script>alert(1)</script>']));

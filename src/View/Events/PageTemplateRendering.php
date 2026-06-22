@@ -2,19 +2,21 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Twig\Events;
+namespace CraftCms\Cms\View\Events;
 
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
+use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateMode;
 
 /**
- * @event TemplateRendering The event that is triggered before a template gets rendered
+ * @event PageTemplateRendering The event that is triggered before a page template gets rendered
  */
-class TemplateRendering
+class PageTemplateRendering
 {
     use ValidatableEvent;
 
     public function __construct(
+        public TemplateEngine $engine,
         public string $template,
         public array $variables,
         public TemplateMode $templateMode,

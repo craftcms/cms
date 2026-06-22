@@ -5,12 +5,13 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
-use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\PageTemplateRendering;
-use CraftCms\Cms\Twig\Events\TemplateRendered;
-use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\Twig;
+use CraftCms\Cms\View\Events\PageTemplateRendered;
+use CraftCms\Cms\View\Events\PageTemplateRendering;
+use CraftCms\Cms\View\Events\TemplateRendered;
+use CraftCms\Cms\View\Events\TemplateRendering;
+use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
@@ -124,7 +125,8 @@ describe('renderTemplate', function () {
 
         $this->renderer->renderTemplate('test-template.twig', ['name' => 'world']);
 
-        Event::assertDispatched(fn (TemplateRendering $event) => $event->template === 'test-template.twig'
+        Event::assertDispatched(fn (TemplateRendering $event) => $event->engine === TemplateEngine::Twig
+            && $event->template === 'test-template.twig'
             && $event->variables === ['name' => 'world']);
     });
 
@@ -133,7 +135,8 @@ describe('renderTemplate', function () {
 
         $this->renderer->renderTemplate('test-template.twig');
 
-        Event::assertDispatched(fn (TemplateRendered $event) => $event->template === 'test-template.twig');
+        Event::assertDispatched(fn (TemplateRendered $event) => $event->engine === TemplateEngine::Twig
+            && $event->template === 'test-template.twig');
     });
 
     it('returns empty string when TemplateRendering event is cancelled', function () {
