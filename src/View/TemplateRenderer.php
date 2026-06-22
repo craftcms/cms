@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateRenderer as TwigTemplateRenderer;
 use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Container\Attributes\Scoped;
-use RuntimeException;
+
+use function CraftCms\Cms\t;
 
 #[Scoped]
 readonly class TemplateRenderer
@@ -28,7 +30,7 @@ readonly class TemplateRenderer
         $resolvedTemplate = $this->templateResolver->resolve($template, $templateMode, $publicOnly);
 
         if ($resolvedTemplate === false) {
-            throw new RuntimeException("Template {$template} not found.");
+            throw new TemplateLoaderException($template, t('Unable to find the template “{template}”.', ['template' => $template]));
         }
 
         return $this->renderResolvedTemplate($template, $resolvedTemplate, $variables, $templateMode);
@@ -43,7 +45,7 @@ readonly class TemplateRenderer
         $resolvedTemplate = $this->templateResolver->resolve($template, $templateMode, $publicOnly);
 
         if ($resolvedTemplate === false) {
-            throw new RuntimeException("Template {$template} not found.");
+            throw new TemplateLoaderException($template, t('Unable to find the template “{template}”.', ['template' => $template]));
         }
 
         return $this->renderResolvedPageTemplate($template, $resolvedTemplate, $variables, $templateMode);

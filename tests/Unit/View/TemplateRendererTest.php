@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateRenderer as TwigTemplateRenderer;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\BladeRenderer;
@@ -52,4 +53,21 @@ it('resolves page templates using the requested template mode and visibility', f
 
     expect($renderer->renderPageTemplate('articles/show', ['entry' => 'test'], TemplateMode::Site, publicOnly: true))
         ->toBe('rendered-page-template');
+});
+
+it('throws a template loader exception for missing templates', function () {
+    $blade = Mockery::mock(BladeRenderer::class);
+    $resolver = Mockery::mock(TemplateResolver::class);
+    $twig = Mockery::mock(TwigTemplateRenderer::class);
+
+    $resolver
+        ->shouldReceive('resolve')
+        ->once()
+        ->with('missing/template', TemplateMode::Cp, false)
+        ->andReturnFalse();
+
+    $renderer = new TemplateRenderer($blade, $resolver, $twig);
+
+    expect(fn () => $renderer->renderTemplate('missing/template', templateMode: TemplateMode::Cp))
+        ->toThrow(TemplateLoaderException::class, 'Unable to find the template');
 });
