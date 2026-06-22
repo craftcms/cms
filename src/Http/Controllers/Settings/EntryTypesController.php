@@ -160,6 +160,7 @@ class EntryTypesController
             'entryType' => [
                 'id' => $entryType->id,
                 'color' => $entryType->color?->value,
+                'icon' => $entryType->icon,
                 'name' => $entryType->name,
                 'handle' => $entryType->handle,
                 'description' => $entryType->description,

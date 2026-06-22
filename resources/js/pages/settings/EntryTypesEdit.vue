@@ -19,6 +19,8 @@
   import Pane from '@/common/components/Pane.vue';
   import {store} from '@actions/Settings/EntryTypesController';
   import type {SelectOption} from '@/common/types';
+  import IconPicker from '@/common/form/IconPicker.vue';
+  import VarDump from '@/common/components/VarDump.vue';
 
   interface EntryTypeData {
     id: number | null;
@@ -35,6 +37,7 @@
     slugTranslationKeyFormat: string | null;
     showStatusField: boolean;
     color: string | null;
+    icon: string | null;
   }
 
   const props = defineProps<{
@@ -68,6 +71,7 @@
     slugTranslationKeyFormat: props.entryType.slugTranslationKeyFormat ?? '',
     showStatusField: props.entryType.showStatusField,
     color: props.entryType.color ?? '__blank__',
+    icon: props.entryType.icon ?? '',
     // `fieldLayout` (+ generatedFields / card view) are merged in at submit from
     // the designer's own inputs — see the transform passed to useSettingsSave.
   });
@@ -157,21 +161,7 @@
           :error="errors?.description"
         />
 
-        <!--
-          DEFERRED: icon picker. @craftcms/cp has no icon picker component yet.
-          The existing icon value is preserved on save (store falls back to it
-          when the field is absent). Replace with a real picker when available.
-        -->
-        <div>
-          <h3 class="font-bold text-sm">{{ t('Icon') }}</h3>
-          <craft-callout variant="info" appearance="outline-fill">
-            {{
-              t(
-                'The icon picker will be available here soon. The existing icon is preserved when saving.'
-              )
-            }}
-          </craft-callout>
-        </div>
+        <IconPicker :label="t('Icon')" name="icon" v-model="form.icon" />
 
         <CraftSelectColor
           :label="t('Color')"
