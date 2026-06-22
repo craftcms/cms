@@ -25,7 +25,7 @@ readonly class TemplateRenderer
         ?TemplateMode $templateMode = null,
         bool $publicOnly = false,
     ): string {
-        $resolvedTemplate = $this->templateResolver->resolve($template, publicOnly: $publicOnly);
+        $resolvedTemplate = $this->templateResolver->resolve($template, $templateMode, $publicOnly);
 
         if ($resolvedTemplate === false) {
             throw new RuntimeException("Template {$template} not found.");
@@ -40,7 +40,7 @@ readonly class TemplateRenderer
         ?TemplateMode $templateMode = null,
         bool $publicOnly = false,
     ): string {
-        $resolvedTemplate = $this->templateResolver->resolve($template, publicOnly: $publicOnly);
+        $resolvedTemplate = $this->templateResolver->resolve($template, $templateMode, $publicOnly);
 
         if ($resolvedTemplate === false) {
             throw new RuntimeException("Template {$template} not found.");
