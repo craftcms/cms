@@ -13,6 +13,8 @@ class CacheDirective
     public static function register(BladeCompiler $blade): void
     {
         $blade->directive('craftCache', fn (string $expression) => self::compileCache($expression));
+        $blade->directive('craftCacheIf', fn (string $expression) => self::compileConditionalCache('startIf', $expression));
+        $blade->directive('craftCacheUnless', fn (string $expression) => self::compileConditionalCache('startUnless', $expression));
         $blade->directive('endCraftCache', fn (string $expression = '') => '<?php echo '.self::class.'::end(); } ?>');
     }
 
@@ -25,6 +27,15 @@ class CacheDirective
             : var_export($defaultKey, true).", $expression";
 
         return "<?php if (($cacheBody = ".self::class."::start($arguments)) !== null) { echo $cacheBody; } else { ?>";
+    }
+
+    public static function compileConditionalCache(string $method, string $expression): string
+    {
+        $cacheBody = '$__craftCacheBody'.str_replace('.', '', uniqid('', true));
+        $defaultKey = 'blade:'.md5($cacheBody);
+        $arguments = var_export($defaultKey, true).", $expression";
+
+        return "<?php if (($cacheBody = ".self::class."::$method($arguments)) !== null) { echo $cacheBody; } else { ?>";
     }
 
     public static function start(
@@ -65,6 +76,30 @@ class CacheDirective
         ob_start();
 
         return null;
+    }
+
+    public static function startIf(
+        string $defaultKey,
+        bool $condition,
+        ?string $key = null,
+        bool $global = false,
+        ?string $duration = null,
+        mixed $expiration = null,
+        bool $withResources = true,
+    ): ?string {
+        return self::start($defaultKey, $key, $global, $duration, $expiration, $withResources, condition: $condition);
+    }
+
+    public static function startUnless(
+        string $defaultKey,
+        bool $unless,
+        ?string $key = null,
+        bool $global = false,
+        ?string $duration = null,
+        mixed $expiration = null,
+        bool $withResources = true,
+    ): ?string {
+        return self::start($defaultKey, $key, $global, $duration, $expiration, $withResources, unless: $unless);
     }
 
     public static function end(): string
