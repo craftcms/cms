@@ -73,6 +73,7 @@ class TestCase extends Orchestra
         // This is needed because AppServiceProvider::setTimezone() runs during boot,
         // before RefreshDatabase has prepared the database, potentially reading stale data
         Cms::config()->timezone('America/Los_Angeles');
+        Cms::setDefaultTimezone();
 
         // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);

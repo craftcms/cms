@@ -11,6 +11,7 @@
 - Fixed a bug where parsed site names would get saved to the project config. ([#19123](https://github.com/craftcms/cms/issues/19123))
 - Fixed a bug where plugin `$styles`, `$scripts`, and `$publishables` weren’t published automatically when the plugin was installed or enabled. ([#19137](https://github.com/craftcms/cms/pull/19137))
 - Fixed several issues that occurred when Craft was configured with a custom (or no) `cpTrigger`. ([#19127](https://github.com/craftcms/cms/pull/19127))
+- Fixed a bug where Craft wasn’t applying the Settings → General timezone to PHP’s default timezone. ([#19138](https://github.com/craftcms/cms/pull/19138))
 - Fixed a bug where entry queries weren’t fetching structure data by default.
 - Fixed a bug where top-level structure elements were always repositioned to the end of the structure on save.
 - Fixed a bug where the Settings index page didn’t include “Globals”, “Categories”, or “Tags” links, when the concepts were supported. ([#19120](https://github.com/craftcms/cms/pull/19120))
