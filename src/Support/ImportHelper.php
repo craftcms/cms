@@ -51,6 +51,21 @@ class ImportHelper
         return $value;
     }
 
+    public static function bracketsToDots(string $string): string
+    {
+        return $string
+                |> (fn ($v) => str_replace('][', '.', $v))
+                |> (fn ($v) => str_replace(['['], '.', $v))
+                |> (fn ($v) => str_replace([']'], '', $v));
+    }
+
+    public static function bracketsToArray(string $string): array
+    {
+        return $string
+                |> (fn ($v) => str_replace(']', '', $v))
+                |> (fn ($v) => explode('[', (string) $v));
+    }
+
     public static function getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix): array
     {
         if ($ownerField instanceof ImportableElementContainerFieldInterface) {
@@ -66,9 +81,7 @@ class ImportHelper
             $prefixedHandle = 'map['.$attribute.']';
         }
 
-        $prefixedHandleWithoutMapAsArray = $prefixedHandleWithoutMap
-                |> (fn ($v) => str_replace(']', '', $v))
-                |> (fn ($v) => explode('[', (string) $v));
+        $prefixedHandleWithoutMapAsArray = self::bracketsToArray($prefixedHandleWithoutMap);
 
         return [$prefixedHandle, $prefixedHandleWithoutMap, $prefixedHandleWithoutMapAsArray];
     }
@@ -176,6 +189,16 @@ class ImportHelper
         }
 
         $sourceKey = explode('.', $sourceRelativePath)[0];
+
+        // If any direct scalar rule points exactly to the resolved source path, that scalar is
+        // consuming the source container as its whole value — not iterating over its items.
+        // Return null so mapNode processes this rule as a flat dict instead.
+        $sourceAbsPath = self::pathJoin($currentBasePath, $sourceRelativePath);
+        foreach ($rule as $ruleValue) {
+            if (is_string($ruleValue) && $ruleValue === $sourceAbsPath) {
+                return null;
+            }
+        }
 
         if (is_array($currentData) && self::pathExists($currentData, $sourceRelativePath)) {
             $value = self::getPath($currentData, $sourceRelativePath);

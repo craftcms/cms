@@ -334,16 +334,35 @@ class ImportConfigController
 
         $fieldHandle = $this->request->input('fieldHandle');
         $ownerPrefix = $this->request->input('ownerPrefix');
-        $currentMap = $this->request->input('currentMap');
+        $currentPartialMap = $this->request->input('currentMap');
 
-        if (is_string($currentMap)) {
-            $currentMap = Json::decodeIfJson($currentMap);
+        if (is_string($currentPartialMap)) {
+            $currentPartialMap = Json::decodeIfJson($currentPartialMap);
 
             // if you added mapping via a slideout, closed that slideout by clicking "apply" and you then open that slideout again,
             // if the config we have in the hidden field is different to the one coming from the server,
             // use the one coming from the hidden field
-            if ($currentMap != $import->map[$fieldHandle]) {
-                $import->map([$fieldHandle => $currentMap]);
+            $fieldHandleArray = ImportHelper::bracketsToArray($fieldHandle);
+            $savedPartialMap = $import->map ? array_reduce(
+                $fieldHandleArray,
+                static fn ($value, $part) => $value && is_iterable($value)
+                    ? $value[$part] ?? null
+                    : null,
+                $import->map
+            ) : null;
+
+            if ($currentPartialMap != $savedPartialMap) {
+                $map = $import->map;
+                $ref = &$map;
+                foreach ($fieldHandleArray as $part) {
+                    if (! is_array($ref[$part] ?? null)) {
+                        $ref[$part] = [];
+                    }
+                    $ref = &$ref[$part];
+                }
+                $ref = $currentPartialMap;
+                unset($ref);
+                $import->map($map);
             }
         }
 
@@ -399,10 +418,7 @@ class ImportConfigController
     {
         [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
 
-        $fieldHandle = $this->request->input('fieldHandle', $field->handle)
-                |> (fn ($v) => str_replace('][', '.', $v))
-                |> (fn ($v) => str_replace(['['], '.', $v))
-                |> (fn ($v) => str_replace([']'], '', $v));
+        $fieldHandle = ImportHelper::bracketsToDots($this->request->input('fieldHandle', $field->handle));
 
         // validate the map fragment;
         // if it errors, a toast notification will show with the error
