@@ -51,6 +51,8 @@ it('requires admin changes', function () {
 test('create requires pro edition', function () {
     Edition::set(Edition::Team);
 
+    config()->set('app.debug', false);
+
     get(action([UserGroupsController::class, 'create']))->assertNotFound();
 
     Edition::set(Edition::Pro);
