@@ -16,6 +16,9 @@ export default class CraftInput extends LionInput {
 
   @property({reflect: true, type: Boolean}) monospace = false;
 
+  @property({reflect: true, type: Boolean, attribute: 'hidden-input'})
+  hiddenInput = false;
+
   override connectedCallback() {
     super.connectedCallback();
 
