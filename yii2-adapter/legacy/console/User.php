@@ -11,6 +11,8 @@ use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\Auth;
 use yii\base\Component;
 
+use function CraftCms\Cms\currentUser;
+
 /**
  * The User component provides APIs for managing the user authentication status.
  * An instance of the User component is globally accessible in Craft via [[\craft\console\Application::getUser()|`Craft::$app->user`]].
@@ -27,7 +29,7 @@ class User extends Component
      */
     public function getIsAdmin(): bool
     {
-        return Auth::craftUser()?->isAdmin() ?? false;
+        return currentUser()?->isAdmin() ?? false;
     }
 
     /**
@@ -38,7 +40,7 @@ class User extends Component
      */
     public function checkPermission(string $permissionName): bool
     {
-        return Auth::craftUser()?->can($permissionName) ?? false;
+        return currentUser()?->can($permissionName) ?? false;
     }
 
     /**
@@ -49,7 +51,7 @@ class User extends Component
      */
     public function getIdentity(bool $autoRenew = true): UserElement|null
     {
-        return Auth::craftUser()?->asElement();
+        return currentUser()?->asElement();
     }
 
     /**
@@ -70,7 +72,7 @@ class User extends Component
      */
     public function getIsGuest(): bool
     {
-        return Auth::craftUser() === null;
+        return currentUser() === null;
     }
 
     /**
@@ -81,6 +83,6 @@ class User extends Component
      */
     public function getId(): ?int
     {
-        return Auth::craftUser()?->getCraftUserId();
+        return currentUser()?->getCraftUserId();
     }
 }

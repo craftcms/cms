@@ -17,10 +17,10 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 readonly class Navigation
@@ -35,7 +35,7 @@ readonly class Navigation
 
     public function getItems(): array
     {
-        $user = Auth::craftUser();
+        $user = currentUser();
         $isAdmin = $user?->isAdmin();
 
         $navItems = [

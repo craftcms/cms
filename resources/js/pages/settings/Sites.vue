@@ -105,7 +105,7 @@
         h(
           CpLink,
           {
-            href: edit.url(row.original.id),
+            href: edit.url({site: row.original.id}),
           },
           () =>
             h(
@@ -246,7 +246,7 @@
       <CpLink
         v-if="!readOnly"
         as="craft-button"
-        :href="create({query: {groupId: group?.id}}).url"
+        :href="create({}, {query: {groupId: group?.id}}).url"
         variant="accent"
         appearance="button"
       >
@@ -264,7 +264,7 @@
           as="craft-nav-item"
           v-for="g in groups"
           :key="g.id"
-          :href="index.url({query: {groupId: g.id}})"
+          :href="index.url({}, {query: {groupId: g.id}})"
           :active="group && g.id === group.id"
           block
         >
@@ -297,7 +297,7 @@
             <CpLink
               v-if="!readOnly"
               as="craft-button"
-              :href="create({query: {groupId: group?.id}}).url"
+              :href="create({}, {query: {groupId: group?.id}}).url"
               appearance="button"
             >
               <craft-icon name="plus" slot="prefix"></craft-icon>

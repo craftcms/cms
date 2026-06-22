@@ -11,7 +11,7 @@
 
   function createSlideout() {
     const slideout = new Craft.CpScreenSlideout(
-      create['/admin/settings/entry-types/new']().url
+      create['/{cpTrigger?}/settings/entry-types/new']().url
     );
 
     slideout.on('submit', () => {

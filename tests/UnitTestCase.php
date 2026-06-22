@@ -72,7 +72,7 @@ class UnitTestCase extends Orchestra
         app()->setLocale('en-US');
 
         Cms::config()->timezone('America/Los_Angeles');
-        date_default_timezone_set('America/Los_Angeles');
+        Cms::setDefaultTimezone();
 
         if (($token = getenv('TEST_TOKEN')) !== false) {
             $compiledTemplatesPath = storage_path("runtime/compiled_templates_$token");

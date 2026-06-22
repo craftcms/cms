@@ -3173,7 +3173,7 @@ class GeneralConfig extends BaseConfig
             ->cooldownDuration($this->cooldownDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
             ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
-            ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration)
+            ->previewTokenDuration($this->previewTokenDuration)
             ->purgePendingUsersDuration($this->purgePendingUsersDuration)
             ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
             ->rememberUsernameDuration($this->rememberUsernameDuration)
@@ -5398,7 +5398,7 @@ class GeneralConfig extends BaseConfig
      */
     public function previewTokenDuration(mixed $value): self
     {
-        $this->previewTokenDuration = ConfigHelper::durationInSeconds($value);
+        $this->previewTokenDuration = $value !== null ? ConfigHelper::durationInSeconds($value) : null;
 
         return $this;
     }

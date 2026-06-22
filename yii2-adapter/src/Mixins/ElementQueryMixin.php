@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use function CraftCms\Yii2Adapter\Helpers\Queries\buildCondition;
 
 class ElementQueryMixin
 {
@@ -111,17 +111,14 @@ class ElementQueryMixin
         return function($condition) {
             Deprecator::log('ElementQuery-andWhere', 'Calling ->andWhere on an ElementQuery is deprecated. Use ->where() instead.');
 
-            $condition = Craft::$app->getDb()->getQueryBuilder()->buildWhere($condition, $params);
+            [$sql, $bindings] = buildCondition($condition);
 
-            // Yii uses named parameters, Laravel uses positional
-            $condition = preg_replace('/:qp\d+/', '?', $condition);
-
-            if (!$condition) {
+            if ($sql === '') {
                 return $this;
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($condition, array_values($params));
+            return $this->whereRaw($sql, $bindings);
         };
     }
 
@@ -136,12 +133,9 @@ class ElementQueryMixin
                 return $this;
             }
 
-            $condition = Craft::$app->getDb()->getQueryBuilder()->buildWhere($condition, $params);
+            [$sql, $bindings] = buildCondition($condition);
 
-            // Yii uses named parameters, Laravel uses positional
-            $condition = preg_replace('/:qp\d+/', '?', $condition);
-
-            if (!$condition) {
+            if ($sql === '') {
                 return $this;
             }
 
@@ -151,7 +145,7 @@ class ElementQueryMixin
             $this->subQuery->wheres = [];
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($condition, array_values($params));
+            return $this->whereRaw($condition, $bindings);
         };
     }
 
@@ -166,17 +160,14 @@ class ElementQueryMixin
                 return $this;
             }
 
-            $condition = Craft::$app->getDb()->getQueryBuilder()->buildWhere($condition, $params);
+            [$sql, $bindings] = buildCondition($condition);
 
-            // Yii uses named parameters, Laravel uses positional
-            $condition = preg_replace('/:qp\d+/', '?', $condition);
-
-            if (!$condition) {
+            if ($sql === '') {
                 return $this;
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($condition, array_values($params));
+            return $this->whereRaw($condition, $bindings);
         };
     }
 
@@ -191,17 +182,14 @@ class ElementQueryMixin
                 return $this;
             }
 
-            $condition = Craft::$app->getDb()->getQueryBuilder()->buildWhere($condition, $params);
+            [$sql, $bindings] = buildCondition($condition);
 
-            // Yii uses named parameters, Laravel uses positional
-            $condition = preg_replace('/:qp\d+/', '?', $condition);
-
-            if (!$condition) {
+            if ($sql === '') {
                 return $this;
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->orWhereRaw($condition, array_values($params));
+            return $this->orWhereRaw($condition, $bindings);
         };
     }
 

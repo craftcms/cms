@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
-use Closure;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementExporters;
-use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Exporters\Raw;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,11 +28,7 @@ readonly class ExportElementIndexController
             'elementType' => [
                 'required',
                 'string',
-                function (string $attribute, mixed $value, Closure $fail): void {
-                    if (! is_string($value) || ! is_subclass_of($value, ElementInterface::class)) {
-                        $fail(new InvalidTypeException((string) $value, ElementInterface::class)->getMessage());
-                    }
-                },
+                new ElementTypeRule,
             ],
             'type' => ['sometimes', 'string'],
             'format' => ['sometimes', 'string'],

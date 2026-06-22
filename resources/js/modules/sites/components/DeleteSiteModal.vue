@@ -41,7 +41,7 @@
   }
 
   function deleteSite() {
-    form.clearErrors().delete(destroy(props.site.id).url, {
+    form.clearErrors().delete(destroy({site: props.site.id}).url, {
       onSuccess: () => {
         emit('close');
         form.reset();

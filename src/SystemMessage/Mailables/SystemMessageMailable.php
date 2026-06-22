@@ -37,12 +37,12 @@ class SystemMessageMailable extends CraftMailable
 
         $mailable = $this
             ->subject($message->subject)
-            ->text('mail.system-message-text', $formattedMessage->viewData);
+            ->text('c::mail.system-message-text', $formattedMessage->viewData);
 
         if ($formattedMessage->usesCustomTemplate) {
             return $mailable->html($formattedMessage->htmlBody);
         }
 
-        return $mailable->markdown('mail.system-message', $formattedMessage->viewData);
+        return $mailable->markdown('c::mail.system-message', $formattedMessage->viewData);
     }
 }

@@ -108,6 +108,7 @@ use Stringable;
 use Throwable;
 use Twig\Markup;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -162,6 +163,7 @@ class Asset extends Element
      *
      * @internal
      */
+    #[AllowedInSandbox]
     public bool $isFolder = false;
 
     /**
@@ -169,21 +171,25 @@ class Asset extends Element
      *
      * @internal
      */
+    #[AllowedInSandbox]
     public ?array $sourcePath = null;
 
     /**
      * @var int|null Folder ID
      */
+    #[AllowedInSandbox]
     public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
+    #[AllowedInSandbox]
     public ?int $uploaderId = null;
 
     /**
      * @var string|null Folder path
      */
+    #[AllowedInSandbox]
     public ?string $folderPath = null;
 
     /**
@@ -207,16 +213,19 @@ class Asset extends Element
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
+    #[AllowedInSandbox]
     public ?bool $keptFile = null;
 
     /**
      * @var DateTimeInterface|null Date modified
      */
+    #[AllowedInSandbox]
     public ?DateTimeInterface $dateModified = null;
 
     /**
      * @var string|null New file location
      */
+    #[AllowedInSandbox]
     public ?string $newLocation = null;
 
     /**
@@ -224,6 +233,7 @@ class Asset extends Element
      *
      * @see AssetLocationRule
      */
+    #[AllowedInSandbox]
     public ?string $locationError = null;
 
     /**
@@ -1159,6 +1169,7 @@ class Asset extends Element
     /**
      * Returns the volume’s ID.
      */
+    #[AllowedInSandbox]
     public function getVolumeId(): ?int
     {
         return (int) $this->_volumeId ?: null;
@@ -1534,7 +1545,7 @@ JS, [
 
         if (
             app(ElementRequest::class)->element() === $this &&
-            Auth::craftUser()->isAdmin() &&
+            currentUser()->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $items[] = ['type' => MenuItemType::HR];
@@ -1801,6 +1812,7 @@ JS, [
      *
      * @throws RuntimeException if [[folderId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getFolder(): VolumeFolder
     {
         if (! isset($this->folderId)) {
@@ -1819,6 +1831,7 @@ JS, [
      *
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getVolume(): Volume
     {
         if (isset($this->_volume)) {
@@ -1839,6 +1852,7 @@ JS, [
     /**
      * Returns the user that uploaded the asset, if known.
      */
+    #[AllowedInSandbox]
     public function getUploader(): ?User
     {
         if (isset($this->_uploader)) {
@@ -2278,6 +2292,7 @@ JS, [
      *
      * @param  string|null  $filename  Filename to use. If not specified, the asset's filename will be used.
      */
+    #[AllowedInSandbox]
     public function getPath(?string $filename = null): string
     {
         return $this->folderPath.($filename ?: $this->_filename);
@@ -2320,6 +2335,7 @@ JS, [
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws FilesystemException if a stream cannot be created
      */
+    #[AllowedInSandbox]
     public function getStream()
     {
         $stream = $this->getVolume()->sourceDisk()->readStream($this->getPath());
@@ -2337,6 +2353,7 @@ JS, [
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws AssetException if a stream could not be created
      */
+    #[AllowedInSandbox]
     public function getContents(): string
     {
         return stream_get_contents($this->getStream());
@@ -2367,6 +2384,7 @@ JS, [
     /**
      * Returns whether a user-defined focal point is set on the asset.
      */
+    #[AllowedInSandbox]
     public function getHasFocalPoint(): bool
     {
         return isset($this->_focalPoint);
@@ -2377,6 +2395,7 @@ JS, [
      *
      * @param  bool  $asCss  whether the value should be returned in CSS syntax ("50% 25%") instead
      */
+    #[AllowedInSandbox]
     public function getFocalPoint(bool $asCss = false): array|string|null
     {
         if (! in_array($this->kind, [FileKind::Image->value, FileKind::Video->value], true)) {
@@ -2519,7 +2538,7 @@ JS, [
         // See if we can show a thumbnail
         try {
             // Is the image editable, and is the user allowed to edit?
-            $user = Auth::craftUser();
+            $user = currentUser();
             $previewable = AssetsService::getAssetPreviewHandler($this) !== null;
             $editable = (
                 $this->getSupportsImageEditor() &&
@@ -2891,48 +2910,51 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (! $this->propagating) {
-            // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
-            if (
-                ($this->alt === null || $this->alt === '') &&
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
-            ) {
-                $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
-                if ($alt !== null) {
-                    // ensure it's UTF-8
-                    // (see https://github.com/craftcms/cms/issues/19069)
-                    $this->alt = Str::convertToUtf8($alt);
-                }
-            }
+            $isImage = isset($this->tempFilePath) && AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value;
 
-            // Are we uploading an image that needs to be sanitized?
-            if (
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
-                ($this->sanitizeOnUpload ?? (
-                    ! request()->isCpRequest() ||
-                    Cms::config()->sanitizeCpImageUploads
-                ))
-            ) {
-                ImageHelper::cleanImageByPath($this->tempFilePath);
-            }
-
-            // if we're creating or replacing and image, get the width or height via getimagesize
-            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
             $fallbackWidth = null;
             $fallbackHeight = null;
-            if (
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
-            ) {
-                $imageSize = getimagesize($this->tempFilePath);
-                if (isset($imageSize[0])) {
-                    $fallbackWidth = $imageSize[0];
+
+            if ($isImage) {
+                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+                if (
+                    ($this->alt === null || $this->alt === '') &&
+                    isset($this->tempFilePath) &&
+                    $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
+                ) {
+                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                    if ($alt !== null) {
+                        // ensure it's UTF-8
+                        // (see https://github.com/craftcms/cms/issues/19069)
+                        $this->alt = Str::convertToUtf8($alt);
+                    }
                 }
-                if (isset($imageSize[1])) {
-                    $fallbackHeight = $imageSize[1];
+
+                // Are we uploading an image that needs to be sanitized?
+                if (
+                    isset($this->tempFilePath) &&
+                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
+                    ($this->sanitizeOnUpload ?? (
+                        ! request()->isCpRequest() ||
+                        Cms::config()->sanitizeCpImageUploads
+                    ))
+                ) {
+                    ImageHelper::cleanImageByPath($this->tempFilePath);
+                }
+
+                // if we're creating or replacing and image, get the width or height via getimagesize
+                // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+                if (
+                    isset($this->tempFilePath) &&
+                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE)
+                ) {
+                    $imageSize = getimagesize($this->tempFilePath);
+                    if (isset($imageSize[0])) {
+                        $fallbackWidth = $imageSize[0];
+                    }
+                    if (isset($imageSize[1])) {
+                        $fallbackHeight = $imageSize[1];
+                    }
                 }
             }
 
@@ -3057,7 +3079,7 @@ JS;
                 ],
             ];
 
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             if ($user && Gate::check('moveFolderFrom', $this->getFolder())) {
                 $attributes['data']['movable'] = true;

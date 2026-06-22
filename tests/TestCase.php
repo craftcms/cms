@@ -73,6 +73,7 @@ class TestCase extends Orchestra
         // This is needed because AppServiceProvider::setTimezone() runs during boot,
         // before RefreshDatabase has prepared the database, potentially reading stale data
         Cms::config()->timezone('America/Los_Angeles');
+        Cms::setDefaultTimezone();
 
         // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
@@ -220,7 +221,6 @@ class TestCase extends Orchestra
 
         tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
             $config->set('inertia.pages.paths', [__DIR__.'/../resources/js/pages']);
-            $config->set('auth.defaults.guard', 'craft');
 
             $connection = env('DB_CONNECTION', 'testing');
             $driver = $config->get("database.connections.{$connection}.driver");

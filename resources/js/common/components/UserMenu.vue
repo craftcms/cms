@@ -22,11 +22,13 @@
       },
       {type: 'hr' as const},
       {
-        href: UsersController.edit['/admin/myaccount']().url,
+        href: UsersController.edit['/{cpTrigger?}/myaccount']().url,
         label: t('Profile'),
       },
       {
-        href: PermissionsController.index['/admin/myaccount/permissions']().url,
+        href: PermissionsController.index[
+          '/{cpTrigger?}/myaccount/permissions'
+        ]().url,
         label: t('Permissions'),
       },
       {

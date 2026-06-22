@@ -217,11 +217,11 @@ class Site extends Component implements Chippable, Stringable
     {
         return [
             'siteGroup' => $this->getGroup()->uid,
-            'name' => $this->name,
+            'name' => $this->getName(false),
             'handle' => $this->handle,
             'language' => $this->getLanguage(false),
             'hasUrls' => $this->hasUrls,
-            'baseUrl' => $this->_baseUrl ?: null,
+            'baseUrl' => $this->getBaseUrl(false),
             'sortOrder' => $this->sortOrder,
             'primary' => $this->primary,
             'enabled' => $this->getEnabled(false),

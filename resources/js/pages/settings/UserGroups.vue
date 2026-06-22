@@ -29,7 +29,7 @@
         t('Are you sure you want to delete "{name}"?', {name: group.name})
       )
     ) {
-      router.delete(destroy(group.id));
+      router.delete(destroy({groupId: group.id}));
     }
   }
 
@@ -40,7 +40,7 @@
         columnHelper.link('name', {
           header: t('Name'),
           props: ({row}) => ({
-            href: edit(row.original.id).url,
+            href: edit({userGroup: row.original.id}).url,
           }),
         }),
         columnHelper.handle('handle'),
