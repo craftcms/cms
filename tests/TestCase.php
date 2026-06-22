@@ -240,11 +240,13 @@ class TestCase extends Orchestra
             if (is_array($connectionConfig)) {
                 $connectionConfig = ConnectionConfig::normalize($connectionConfig);
 
-                $config->set("database.connections.{$connection}", $connectionConfig);
-
                 if (($connectionConfig['driver'] ?? null) === 'sqlite') {
+                    unset($connectionConfig['journal_mode']);
+
                     ConnectionConfig::ensureSqliteDatabaseFile((string) ($connectionConfig['database'] ?? ''));
                 }
+
+                $config->set("database.connections.{$connection}", $connectionConfig);
             }
 
             if ($connection === 'pgsql') {
