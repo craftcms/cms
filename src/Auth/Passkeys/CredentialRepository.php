@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Auth\Passkeys;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Support\Facades\Auth;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 readonly class CredentialRepository
@@ -82,7 +82,7 @@ readonly class CredentialRepository
 
         if (! $model) {
             $model = new WebAuthn;
-            $model->userId = Auth::craftUser()?->getCraftUserId();
+            $model->userId = currentUser()?->getCraftUserId();
             $model->credentialName = ! empty($credentialName) ? $credentialName : t('Secure credential');
             $model->credentialId = Base64UrlSafe::encodeUnpadded($publicKeyCredentialId);
         }

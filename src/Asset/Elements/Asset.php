@@ -108,6 +108,7 @@ use Stringable;
 use Throwable;
 use Twig\Markup;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -1544,7 +1545,7 @@ JS, [
 
         if (
             app(ElementRequest::class)->element() === $this &&
-            Auth::craftUser()->isAdmin() &&
+            currentUser()->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $items[] = ['type' => MenuItemType::HR];
@@ -2537,7 +2538,7 @@ JS, [
         // See if we can show a thumbnail
         try {
             // Is the image editable, and is the user allowed to edit?
-            $user = Auth::craftUser();
+            $user = currentUser();
             $previewable = AssetsService::getAssetPreviewHandler($this) !== null;
             $editable = (
                 $this->getSupportsImageEditor() &&
@@ -2909,48 +2910,51 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (! $this->propagating) {
-            // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
-            if (
-                ($this->alt === null || $this->alt === '') &&
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
-            ) {
-                $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
-                if ($alt !== null) {
-                    // ensure it's UTF-8
-                    // (see https://github.com/craftcms/cms/issues/19069)
-                    $this->alt = Str::convertToUtf8($alt);
-                }
-            }
+            $isImage = isset($this->tempFilePath) && AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value;
 
-            // Are we uploading an image that needs to be sanitized?
-            if (
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
-                ($this->sanitizeOnUpload ?? (
-                    ! request()->isCpRequest() ||
-                    Cms::config()->sanitizeCpImageUploads
-                ))
-            ) {
-                ImageHelper::cleanImageByPath($this->tempFilePath);
-            }
-
-            // if we're creating or replacing and image, get the width or height via getimagesize
-            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
             $fallbackWidth = null;
             $fallbackHeight = null;
-            if (
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
-            ) {
-                $imageSize = getimagesize($this->tempFilePath);
-                if (isset($imageSize[0])) {
-                    $fallbackWidth = $imageSize[0];
+
+            if ($isImage) {
+                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+                if (
+                    ($this->alt === null || $this->alt === '') &&
+                    isset($this->tempFilePath) &&
+                    $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
+                ) {
+                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                    if ($alt !== null) {
+                        // ensure it's UTF-8
+                        // (see https://github.com/craftcms/cms/issues/19069)
+                        $this->alt = Str::convertToUtf8($alt);
+                    }
                 }
-                if (isset($imageSize[1])) {
-                    $fallbackHeight = $imageSize[1];
+
+                // Are we uploading an image that needs to be sanitized?
+                if (
+                    isset($this->tempFilePath) &&
+                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
+                    ($this->sanitizeOnUpload ?? (
+                        ! request()->isCpRequest() ||
+                        Cms::config()->sanitizeCpImageUploads
+                    ))
+                ) {
+                    ImageHelper::cleanImageByPath($this->tempFilePath);
+                }
+
+                // if we're creating or replacing and image, get the width or height via getimagesize
+                // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+                if (
+                    isset($this->tempFilePath) &&
+                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE)
+                ) {
+                    $imageSize = getimagesize($this->tempFilePath);
+                    if (isset($imageSize[0])) {
+                        $fallbackWidth = $imageSize[0];
+                    }
+                    if (isset($imageSize[1])) {
+                        $fallbackHeight = $imageSize[1];
+                    }
                 }
             }
 
@@ -3075,7 +3079,7 @@ JS;
                 ],
             ];
 
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             if ($user && Gate::check('moveFolderFrom', $this->getFolder())) {
                 $attributes['data']['movable'] = true;

@@ -16,8 +16,8 @@ use CraftCms\Cms\t;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -55,7 +55,7 @@ readonly class Announcements
      */
     public function get(): array
     {
-        $userId = Auth::craftUser()?->getCraftUserId();
+        $userId = currentUser()?->getCraftUserId();
 
         if (! $userId) {
             return [];
@@ -111,7 +111,7 @@ readonly class Announcements
             return;
         }
 
-        $userId = Auth::craftUser()?->getCraftUserId();
+        $userId = currentUser()?->getCraftUserId();
 
         if (! $userId) {
             return;

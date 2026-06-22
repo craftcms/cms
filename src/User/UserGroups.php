@@ -22,12 +22,14 @@ use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
+
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 
 #[Singleton]
 readonly class UserGroups
@@ -67,7 +69,7 @@ readonly class UserGroups
      */
     public function getAssignableGroups(?User $user = null): Collection
     {
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser && ! $user) {
             return collect();
@@ -77,7 +79,7 @@ readonly class UserGroups
             return $this->getAllGroups();
         }
 
-        $recipient = $user ?? $currentUser->asElement();
+        $recipient = $user ?? currentUserElement();
 
         return $this->getAllGroups()
             ->filter(function (UserGroup $group) use ($currentUser, $recipient, $user) {

@@ -37,7 +37,7 @@
         })
       )
     ) {
-      router.delete(destroy(schema.id));
+      router.delete(destroy({schemaId: schema.id}));
     }
   }
 
@@ -48,8 +48,8 @@
         columnHelper.link('name', {
           props: ({row}) => ({
             href: row.original.isPublic
-              ? editPublic()
-              : edit(row.original.id).url,
+              ? editPublic().url
+              : edit({schemaId: row.original.id}).url,
             inertia: false,
           }),
           header: t('Name'),

@@ -46,8 +46,9 @@
           'a',
           {
             class: 'font-bold',
-            href: edit['/admin/settings/sections/{section}'](row.original.id)
-              .url,
+            href: edit['/{cpTrigger?}/settings/sections/{section}']({
+              section: row.original.id,
+            }).url,
           },
           getValue()
         ),
@@ -69,9 +70,12 @@
     initialState: props.pagination,
     onChange: ({query}) => {
       router.visit(
-        index({
-          query,
-        }),
+        index(
+          {},
+          {
+            query,
+          }
+        ),
         {
           only: ['data', 'pagination'],
           preserveScroll: true,
@@ -84,9 +88,12 @@
     initialState: props.sort,
     onChange: ({query}) => {
       router.visit(
-        index({
-          query,
-        }),
+        index(
+          {},
+          {
+            query,
+          }
+        ),
         {
           only: ['data', 'sort'],
           preserveScroll: true,

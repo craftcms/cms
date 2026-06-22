@@ -7,9 +7,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
-use Illuminate\Support\Facades\Auth;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\template;
 
 class TextareaField extends BaseNativeField
@@ -124,7 +124,7 @@ class TextareaField extends BaseNativeField
     {
         $items = [];
 
-        if (Auth::craftUser()?->isAdmin()) {
+        if (currentUser()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

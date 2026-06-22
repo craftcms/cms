@@ -74,7 +74,7 @@
       return;
     }
 
-    router.delete(destroy(route.uid));
+    router.delete(destroy({uid: route.uid}));
   }
 </script>
 
@@ -113,7 +113,7 @@
           </div>
         </div>
 
-        <Link :href="edit(route.uid)" class="route__parts">
+        <Link :href="edit({uid: route.uid})" class="route__parts">
           <div>
             <span
               v-if="route.uriDisplayHtml"
@@ -137,7 +137,7 @@
             as="craft-button"
             size="small"
             appearance="plain"
-            :href="edit(route.uid)"
+            :href="edit({uid: route.uid})"
           >
             <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
           </Link>

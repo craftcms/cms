@@ -11,6 +11,7 @@ use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Events\CpDataResolving;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
@@ -165,7 +166,7 @@ readonly class Cp
             ];
         }
 
-        return $data + [
+        $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
@@ -217,6 +218,10 @@ readonly class Cp
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];
+
+        event($event = new CpDataResolving($data));
+
+        return $event->data;
     }
 
     private static function datepickerOptions(Locale $formattingLocale, Locale $locale): array

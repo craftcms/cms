@@ -61,7 +61,6 @@ use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -70,6 +69,7 @@ use RuntimeException;
 use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
@@ -451,7 +451,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 
@@ -475,7 +475,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return $items;
         }
 
-        if (! Auth::craftUser()?->isAdmin()) {
+        if (! currentUser()?->isAdmin()) {
             return $items;
         }
 

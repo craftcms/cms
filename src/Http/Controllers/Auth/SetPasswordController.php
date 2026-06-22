@@ -66,7 +66,7 @@ readonly class SetPasswordController extends AuthenticationController
         abort_if(is_null($user), 400, 'Invalid user UUID: '.$request->input('id'));
 
         try {
-            $status = PasswordFacade::broker('craft')->reset(
+            $status = PasswordFacade::broker()->reset(
                 [
                     'token' => $request->input('code'),
                     'email' => $user->email,

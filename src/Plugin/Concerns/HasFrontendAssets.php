@@ -8,6 +8,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabling;
 use CraftCms\Cms\Plugin\Events\PluginEvent;
+use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Arr;
@@ -40,24 +41,18 @@ trait HasFrontendAssets
 
     public function registerHasFrontendAssets(): void
     {
-        Event::listen(PluginEnabling::class, function (PluginEnabling $event) {
+        Event::listen([PluginEnabling::class, PluginInstalling::class], function (PluginEvent $event) {
             if (! $event->plugin instanceof static) {
                 return;
             }
 
-            if (! $config = $event->plugin->vite) {
-                return;
+            if ($config = $event->plugin->vite) {
+                [$source, $target] = $this->getSourceAndTarget($event->plugin, $config);
+
+                File::copyDirectory($source, $this->app->publicPath($target));
             }
 
-            [$source, $target] = $this->getSourceAndTarget($event->plugin, $config);
-
-            File::copyDirectory($source, $this->app->publicPath($target));
-
-            foreach (array_merge($event->plugin->styles, $event->plugin->scripts) as $asset) {
-                $destination = Str::afterLast($asset, '/');
-
-                File::copy($asset, public_path("vendor/{$event->plugin->packageName}/{$destination}"));
-            }
+            $event->plugin->copyPublishableFiles($event->plugin->frontendAssetPublishPaths());
         });
 
         Event::listen([PluginDisabling::class, PluginUninstalling::class], function (PluginEvent $event) {
@@ -111,7 +106,7 @@ trait HasFrontendAssets
         $name = static::getInstance()->packageName;
         $version = md5(static::getInstance()->version);
 
-        $assets = collect(array_merge($this->styles, $this->scripts))->mapWithKeys(fn ($public, $resource) => [$resource => $this->app->publicPath($this->getPublishablePath($public))])->all();
+        $assets = $this->frontendAssetPublishPaths();
 
         foreach ($this->styles as $public) {
             $public = "$public?v=$version";
@@ -145,5 +140,12 @@ trait HasFrontendAssets
         $ns = static::getInstance()->packageName;
 
         return "vendor/{$ns}/$path";
+    }
+
+    private function frontendAssetPublishPaths(): array
+    {
+        return collect(array_merge($this->styles, $this->scripts))
+            ->mapWithKeys(fn ($public, $resource) => [$resource => $this->app->publicPath($this->getPublishablePath($public))])
+            ->all();
     }
 }

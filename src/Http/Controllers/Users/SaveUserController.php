@@ -440,7 +440,7 @@ readonly class SaveUserController
             return false;
         }
 
-        auth('craft')->login(UserModel::findOrFail($user->id));
+        auth()->login(UserModel::findOrFail($user->id));
 
         return true;
     }

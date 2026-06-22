@@ -39,7 +39,7 @@
     ) {
       links.push({
         icon: 'gear',
-        href: editSettings(props.plugin.handle).url,
+        href: editSettings({handle: props.plugin.handle}).url,
         text: 'Settings',
       });
     }

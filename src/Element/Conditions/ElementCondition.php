@@ -255,8 +255,12 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     public function modifyQuery(ElementQueryInterface $query): void
     {
         foreach ($this->getConditionRules() as $rule) {
-            /** @var ElementConditionRuleInterface $rule */
-            $rule->modifyQuery($query);
+            try {
+                /** @var ElementConditionRuleInterface $rule */
+                $rule->modifyQuery($query);
+            } catch (RuntimeException) {
+                // The rule is misconfigured
+            }
         }
     }
 

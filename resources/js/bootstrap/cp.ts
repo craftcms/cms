@@ -15,6 +15,7 @@ import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetInde
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import {setUrlDefaults} from '@/wayfinder';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -22,6 +23,14 @@ let bootingCallbacks: Array<(instance: any) => void> = [];
 // Instantiate services
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
+
+function routeSegment(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return value.toString().replace(/^\/+|\/+$/g, '');
+}
 
 // Create our object
 const Cp = {
@@ -53,6 +62,12 @@ const Cp = {
 
   init() {
     config.initialize(this.initialConfig);
+
+    setUrlDefaults(() => ({
+      cpTrigger: routeSegment(config.get('cpTrigger')),
+      actionTrigger: routeSegment(config.get('actionTrigger')),
+    }));
+
     queue.initialize({
       runAutomatically: config.get('runQueueAutomatically', true),
       enabled: true,

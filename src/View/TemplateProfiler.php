@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\View;
 
 use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\debugbar;
 
 #[Scoped]
@@ -96,7 +96,7 @@ class TemplateProfiler
             return $this->shouldProfile = true;
         }
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         if (! $user) {
             return $this->shouldProfile = false;

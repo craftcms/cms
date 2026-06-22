@@ -53,7 +53,7 @@ readonly class PasskeyController extends AuthenticationController
         }
 
         /** @var SessionGuard $guard */
-        $guard = auth('craft');
+        $guard = auth();
         $user = $guard->getProvider()->retrieveById($credential->userId);
 
         if (! $user instanceof CraftUser) {

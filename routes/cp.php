@@ -76,7 +76,7 @@ Route::middleware('craft.web')->group(function () {
 /**
  * Admin requests that require a login
  */
-Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
+Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

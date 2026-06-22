@@ -29,11 +29,11 @@ use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
 use Override;
 use RuntimeException;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -881,7 +881,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             $items = [];
         }
 
-        $user = Auth::craftUser();
+        $user = currentUser();
         if ($user?->isAdmin() && ! $user->getPreference('showFieldHandles')) {
             $items[] = $this->copyAttributeAction([
                 'label' => t('Copy field handle'),

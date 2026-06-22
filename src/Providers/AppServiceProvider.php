@@ -20,10 +20,9 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
-use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;
 use GuzzleHttp\Utils;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
@@ -55,9 +54,9 @@ use function CraftCms\Cms\t;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public static int $minPasswordLength = 8;
+    public static int $minPasswordLength = UserPasswordRule::MIN_PASSWORD_LENGTH;
 
-    public static int $maxPasswordLength = 160;
+    public static int $maxPasswordLength = UserPasswordRule::MAX_PASSWORD_LENGTH;
 
     private string $root = __DIR__.'/../..';
 
@@ -158,19 +157,6 @@ class AppServiceProvider extends ServiceProvider
         Request::mixin(new RequestMixin);
         SessionStore::mixin(new SessionMixin);
 
-        SessionGuard::macro('craftUser', function (): ?CraftUser {
-            $user = $this->user();
-
-            if ($user === null || $user instanceof CraftUser) {
-                return $user;
-            }
-
-            throw new AuthenticationException(sprintf(
-                'The authenticated user must implement %s to be used by Craft.',
-                CraftUser::class,
-            ));
-        });
-
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);
             $this->header('Pragma', 'no-cache', $replace);
@@ -188,7 +174,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
-            $defaultUrl ??= Auth::guard('craft')->guest()
+            $defaultUrl ??= Auth::guest()
                 ? action_url('users/redirect')
                 : $this->defaultReturnUrl();
 

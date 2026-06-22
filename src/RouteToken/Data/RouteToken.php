@@ -7,6 +7,7 @@ namespace CraftCms\Cms\RouteToken\Data;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use Illuminate\Validation\Rule;
 
 class RouteToken extends Component
@@ -34,7 +35,7 @@ class RouteToken extends Component
     public function getRules(): array
     {
         return [
-            'elementType' => ['required', 'string'],
+            'elementType' => ['required', 'string', new ElementTypeRule],
             'siteId' => ['required', 'integer', Rule::exists(Table::SITES, 'id')],
             'canonicalId' => ['nullable', 'required_without:sourceId'],
             'sourceId' => ['nullable', 'required_without:canonicalId'],

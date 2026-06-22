@@ -52,7 +52,7 @@ readonly class ImpersonationController
         $this->impersonation->setImpersonatorId($this->request->craftUser()?->getCraftUserId());
 
         try {
-            if (! Auth::guard('craft')->loginUsingId($user->id)) {
+            if (! Auth::loginUsingId($user->id)) {
                 throw new RuntimeException('Unable to retrieve the user being impersonated.');
             }
         } catch (Throwable) {
@@ -105,7 +105,7 @@ readonly class ImpersonationController
         $this->impersonation->setImpersonatorId($prevUserId);
 
         try {
-            if (! Auth::guard('craft')->loginUsingId($user->id)) {
+            if (! Auth::loginUsingId($user->id)) {
                 throw new RuntimeException('Unable to retrieve the user being impersonated.');
             }
         } catch (Throwable) {

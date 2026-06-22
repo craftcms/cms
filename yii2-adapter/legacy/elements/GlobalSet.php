@@ -8,7 +8,6 @@
 namespace craft\elements;
 
 use craft\behaviors\FieldLayoutBehavior;
-use craft\elements\db\GlobalSetQuery;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
@@ -145,7 +145,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function find(): GlobalSetQuery
     {
-        return new GlobalSetQuery(static::class);
+        return new GlobalSetQuery();
     }
 
     /**

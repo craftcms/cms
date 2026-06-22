@@ -12,9 +12,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Facades\Auth;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class TitleField extends TextField implements ImportableFieldLayoutElementInterface
@@ -113,7 +113,7 @@ JS, [
     {
         $items = [];
 
-        if (Auth::craftUser()?->isAdmin()) {
+        if (currentUser()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

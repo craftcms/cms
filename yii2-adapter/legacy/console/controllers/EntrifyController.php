@@ -16,7 +16,6 @@ use craft\elements\Tag;
 use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Tags;
-use craft\helpers\Db;
 use craft\models\CategoryGroup;
 use craft\models\TagGroup;
 use craft\services\Entries as EntriesService;
@@ -196,7 +195,13 @@ class EntrifyController extends Controller
 
         $entriesByLevel = [];
 
-        foreach (Db::batch($categoryQuery) as $categories) {
+        $categoryQuery->chunk(100, function(Collection $categories) use (
+            $section,
+            $entryType,
+            $author,
+            &$entriesByLevel,
+            $categoryGroup,
+        ) {
             $authorData = [];
 
             foreach ($categories as $category) {
@@ -269,7 +274,7 @@ class EntrifyController extends Controller
 
             DbFacade::table(Table::ENTRIES_AUTHORS)
                 ->insert($authorData);
-        }
+        });
 
         $this->success('Categories converted.');
 
@@ -422,7 +427,7 @@ class EntrifyController extends Controller
                 ->andWhere(['tags.deletedWithGroup' => true]);
         }
 
-        foreach (Db::batch($tagQuery) as $tags) {
+        $tagQuery->chunk(100, function(Collection $tags) use ($section, $entryType, $author) {
             $authorData = [];
 
             foreach ($tags as $tag) {
@@ -463,7 +468,7 @@ class EntrifyController extends Controller
 
             DbFacade::table(Table::ENTRIES_AUTHORS)
                 ->insert($authorData);
-        }
+        });
 
         $this->success('Tags converted.');
 
