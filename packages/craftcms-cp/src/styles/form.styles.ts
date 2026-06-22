@@ -20,6 +20,7 @@ export const baseInputStyles = css`
   flex: 1 1 auto;
   background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
+  overflow: clip;
 
   /* Detect mobile devices and up the font size of inputs to avoid zoom on focus */
   @media (pointer: none), (pointer: coarse) {

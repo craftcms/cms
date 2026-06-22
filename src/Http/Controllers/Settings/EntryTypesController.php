@@ -159,6 +159,7 @@ class EntryTypesController
             'brandNew' => $brandNew,
             'entryType' => [
                 'id' => $entryType->id,
+                'color' => $entryType->color?->value,
                 'name' => $entryType->name,
                 'handle' => $entryType->handle,
                 'description' => $entryType->description,

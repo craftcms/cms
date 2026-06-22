@@ -2,18 +2,18 @@
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {useForm} from '@inertiajs/vue3';
   import {t, toHandle} from '@craftcms/cp';
-  import {computed} from 'vue';
+  import {computed, ref} from 'vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
-  import {ref} from 'vue';
+  import CraftSelectColor from '@craftcms/cp/vue/CraftSelectColor.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {
-    useFieldLayoutDesigner,
     type FieldLayoutDesignerData,
+    useFieldLayoutDesigner,
   } from '@/common/composables/useFieldLayoutDesigner';
   import useCraftData from '@/common/composables/useCraftData';
   import Pane from '@/common/components/Pane.vue';
@@ -34,6 +34,7 @@
     slugTranslationMethod: string;
     slugTranslationKeyFormat: string | null;
     showStatusField: boolean;
+    color: string | null;
   }
 
   const props = defineProps<{
@@ -66,6 +67,7 @@
     slugTranslationMethod: props.entryType.slugTranslationMethod,
     slugTranslationKeyFormat: props.entryType.slugTranslationKeyFormat ?? '',
     showStatusField: props.entryType.showStatusField,
+    color: props.entryType.color ?? '__blank__',
     // `fieldLayout` (+ generatedFields / card view) are merged in at submit from
     // the designer's own inputs — see the transform passed to useSettingsSave.
   });
@@ -171,21 +173,11 @@
           </craft-callout>
         </div>
 
-        <!--
-          DEFERRED: color picker. @craftcms/cp has no color picker component yet.
-          The existing color value is preserved on save (store falls back to it
-          when the field is absent). Replace with a real picker when available.
-        -->
-        <div>
-          <h3 class="font-bold text-sm">{{ t('Color') }}</h3>
-          <craft-callout variant="info" appearance="outline-fill">
-            {{
-              t(
-                'The color picker will be available here soon. The existing color is preserved when saving.'
-              )
-            }}
-          </craft-callout>
-        </div>
+        <CraftSelectColor
+          :label="t('Color')"
+          allow-transparent
+          v-model="form.color"
+        />
 
         <!-- UI Label Format -->
         <CraftInput

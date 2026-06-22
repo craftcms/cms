@@ -45,6 +45,23 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
+    tagName: 'craft-input-color',
+    className: 'CraftInputColor',
+    fileName: 'CraftInputColor',
+    modelType: 'string',
+    importPath: '../components/input-color/input-color',
+    slots: [
+      'label',
+      'help-text',
+      'input',
+      'feedback',
+      'prefix',
+      'suffix',
+      'before',
+      'after',
+    ],
+  },
+  {
     tagName: 'craft-input-handle',
     className: 'CraftInputHandle',
     fileName: 'CraftInputHandle',
@@ -113,6 +130,23 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
+    tagName: 'craft-select-rich',
+    className: 'CraftSelectRich',
+    fileName: 'CraftSelectRich',
+    modelType: 'string',
+    importPath: '../components/select-rich/select-rich',
+    slots: [
+      'label',
+      'help-text',
+      'input',
+      'feedback',
+      'prefix',
+      'suffix',
+      'before',
+      'after',
+    ],
+  },
+  {
     tagName: 'craft-combobox',
     className: 'CraftCombobox',
     fileName: 'CraftCombobox',
@@ -147,6 +181,18 @@ const VALUE_COMPONENTS = [
       'file-select-button',
       'selected-file-list',
     ],
+  },
+  {
+    // Plain LitElement wrapping <craft-select-rich>. Its own modelValue is now
+    // kept in sync with the inner select and it re-dispatches a composed
+    // `model-value-changed`, so the standard value-wrapper works. Options are
+    // supplied via the default slot; the label is an attribute (not a slot).
+    tagName: 'craft-select-color',
+    className: 'CraftSelectColor',
+    fileName: 'CraftSelectColor',
+    modelType: 'string',
+    importPath: '../components/select-color/select-color',
+    slots: ['feedback'],
   },
 ];
 
