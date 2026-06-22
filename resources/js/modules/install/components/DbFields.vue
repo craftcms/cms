@@ -27,9 +27,13 @@
     },
   });
 
+  const isSqlite = computed(() => model.value.driver === 'sqlite');
+
   const options = [
     {value: 'mysql', label: 'MySQL'},
+    {value: 'mariadb', label: 'MariaDB'},
     {value: 'pgsql', label: 'PostgreSQL'},
+    {value: 'sqlite', label: 'SQLite'},
   ];
 
   useFocusField('db-driver');
@@ -45,7 +49,7 @@
   </Callout>
 
   <div class="grid grid-cols-5 gap-2">
-    <div class="col-span-2">
+    <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
       <Select
         :label="t('Driver')"
         name="driver"
@@ -53,10 +57,11 @@
         v-model="model.driver"
         ref="db-driver"
         :options="options"
-        :error="errors?.drive"
+        :error="errors?.driver"
       />
     </div>
-    <div class="col-span-2">
+
+    <div class="col-span-2" v-if="!isSqlite">
       <CraftInput
         :label="t('Host')"
         name="host"
@@ -66,7 +71,8 @@
         :error="errors?.host"
       />
     </div>
-    <div>
+
+    <div v-if="!isSqlite">
       <CraftInput
         :label="t('Port')"
         name="port"
@@ -82,7 +88,7 @@
     </ul>
   </div>
 
-  <div class="grid grid-cols-2 gap-2">
+  <div class="grid grid-cols-2 gap-2" v-if="!isSqlite">
     <div>
       <CraftInput
         :label="t('Username')"
@@ -110,12 +116,13 @@
   </div>
 
   <div class="grid grid-cols-4 gap-2">
-    <div class="col-span-2">
+    <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
       <CraftInput
-        :label="t('Database Name')"
+        :label="isSqlite ? t('Database File Path') : t('Database Name')"
         name="name"
         id="db-database"
         v-model="model.database"
+        :placeholder="isSqlite ? 'database/craft.sqlite' : undefined"
         :errors="errors?.database"
       />
     </div>

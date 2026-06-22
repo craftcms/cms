@@ -18,7 +18,7 @@
   const backgroundImageUrl = computed(() => `url(${backgroundUrl})`);
   const props = defineProps<{
     dbConfig: {
-      driver: 'mysql' | 'pgsql';
+      driver: 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
       url: string | null;
       host: string | null;
       port: string | null;

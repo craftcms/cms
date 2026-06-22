@@ -8,6 +8,7 @@ use Composer\Semver\Comparator;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -20,7 +21,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Override;
-use RequirementsChecker;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Process\Process;
@@ -138,7 +138,7 @@ class UpdaterController extends BaseUpdaterController
 
     public function serverCheck(): Response
     {
-        $reqCheck = new RequirementsChecker;
+        $reqCheck = ConnectionConfig::requirementsChecker();
         $reqCheck->checkCraft();
 
         $errors = [];
