@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use DateTimeInterface;
 use Exception;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -379,6 +380,12 @@ JS,
 
     private function _inclusiveEndDate(): DateTimeInterface
     {
-        return DateTimeHelper::toDateTime($this->_endDate)->modify('+1 day');
+        $endDate = DateTimeHelper::toDateTime($this->_endDate);
+
+        if ($endDate === false) {
+            throw new Exception('Invalid end date.');
+        }
+
+        return Date::instance($endDate)->modify('+1 day');
     }
 }

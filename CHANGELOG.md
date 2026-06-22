@@ -34,6 +34,7 @@
 - Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\` to reflect its broader applicability to components and rulesets.
 - Fixed errors that could occur when Craft user elements were expected but the authenticated user was resolved as a Laravel user model. ([#19051](https://github.com/craftcms/cms/pull/19051))
 - Fixed a bug where the `craft:install` command would hang if run within a production environment.
+- Fixed an error that could occur when `CraftCms\Cms\Support\DateTimeHelper::toDateTime()` returned a `DateTimeInterface` implementation other than `DateTime`. ([#19079](https://github.com/craftcms/cms/pull/19079))
 - Fixed a bug where “Replace relation” action buttons weren’t working.
 - Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
 - Fixed an error that could occur during Craft 6 upgrades when legacy relational or Matrix field settings included `showCardsInGrid`. ([#19047](https://github.com/craftcms/cms/pull/19047))
