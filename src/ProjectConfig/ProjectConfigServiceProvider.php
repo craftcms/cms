@@ -78,6 +78,13 @@ class ProjectConfigServiceProvider extends ServiceProvider
         ]);
 
         $projectConfig
+            // System settings
+            ->onAdd(ProjectConfig::PATH_SYSTEM, fn (ConfigEvent $event) => Cms::setDefaultTimezone($event->newValue['timeZone'] ?? config('app.timezone', 'UTC')))
+            ->onUpdate(ProjectConfig::PATH_SYSTEM, fn (ConfigEvent $event) => Cms::setDefaultTimezone($event->newValue['timeZone'] ?? config('app.timezone', 'UTC')))
+            ->onRemove(ProjectConfig::PATH_SYSTEM, fn () => Cms::setDefaultTimezone(config('app.timezone', 'UTC')))
+            ->onAdd(ProjectConfig::PATH_SYSTEM.'.timeZone', fn (ConfigEvent $event) => Cms::setDefaultTimezone($event->newValue))
+            ->onUpdate(ProjectConfig::PATH_SYSTEM.'.timeZone', fn (ConfigEvent $event) => Cms::setDefaultTimezone($event->newValue))
+            ->onRemove(ProjectConfig::PATH_SYSTEM.'.timeZone', fn () => Cms::setDefaultTimezone(config('app.timezone', 'UTC')))
             // Address field layout
             ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, fn (ConfigEvent $event) => app(Addresses::class)->handleChangedAddressFieldLayout($event))
             ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, fn (ConfigEvent $event) => app(Addresses::class)->handleChangedAddressFieldLayout($event))

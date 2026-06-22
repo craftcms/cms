@@ -1,4 +1,5 @@
 import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
+import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 
 declare module '@tanstack/vue-table' {
   interface ColumnMeta {
@@ -52,8 +53,9 @@ type Site = {
   uid: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface CpStatic extends CpServices {}
+interface CpStatic extends CpServices {
+  $inertia: InertiaPageRegistry;
+}
 
 interface CpNotificationSettings {
   icon: string;

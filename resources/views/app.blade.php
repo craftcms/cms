@@ -7,8 +7,8 @@
         {!! \CraftCms\Cms\Cp\Cp::viteScripts()->toHtml() !!}
         {!! app(\CraftCms\Cms\Plugin\Plugins::class)->getAssetsHtml() !!}
         <script>
-          let Craft = (window.Craft || {});
-          let Cp = (window.Cp || {});
+            window.Craft = window.Craft || {};
+            window.Cp = window.Cp || {};
         </script>
         <x-inertia::head>
             <title>{{ config('app.name') }}</title>
