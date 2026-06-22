@@ -22,6 +22,7 @@ use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Factory;
 use Override;
+use RuntimeException;
 
 class ViewServiceProvider extends ServiceProvider
 {
@@ -90,8 +91,19 @@ class ViewServiceProvider extends ServiceProvider
         });
 
         if ($this->app->resolved('blade.compiler')) {
-            $this->registerBladeDirectivesWith($this->app->make(CompilerInterface::class));
+            $this->registerBladeDirectivesWith($this->bladeCompiler());
         }
+    }
+
+    private function bladeCompiler(): BladeCompiler
+    {
+        $blade = $this->app->make(CompilerInterface::class);
+
+        if (! $blade instanceof BladeCompiler) {
+            throw new RuntimeException('The blade.compiler container binding must resolve to a BladeCompiler instance.');
+        }
+
+        return $blade;
     }
 
     private function registerBladeDirectivesWith(BladeCompiler $blade): void
