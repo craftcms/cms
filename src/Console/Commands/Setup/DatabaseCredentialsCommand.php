@@ -44,6 +44,8 @@ class DatabaseCredentialsCommand extends Command
 {
     use CraftCommand;
 
+    private const string BadUserCredentials = 'bad-user-credentials';
+
     private string $driver;
 
     private ?string $host = null;
@@ -62,8 +64,6 @@ class DatabaseCredentialsCommand extends Command
 
     public function handle(): int
     {
-        $badUserCredentials = false;
-
         top:
 
         $envDriver = Config::get('database.default') ?? Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER'));
@@ -95,30 +95,7 @@ class DatabaseCredentialsCommand extends Command
             ));
         }
 
-        userCredentials:
-
-        if ($this->driver !== 'sqlite') {
-            $this->user = $this->option('username') ?? text(
-                label: 'Database username:',
-                default: $this->user
-                    ?? Config::get("database.connections.{$this->driver}.username")
-                    ?? Env::get('DB_USERNAME', Env::get('CRAFT_DB_USER', 'root')),
-            );
-
-            if (! $this->password = $this->option('password')) {
-                $envPassword = Config::get("database.connections.{$this->driver}.password") ?? Env::get('DB_PASSWORD', Env::get('CRAFT_DB_PASSWORD'));
-                if ($envPassword && confirm('Use the password provided by $DB_PASSWORD?')) {
-                    $this->password = $envPassword;
-                } else {
-                    $this->password = password(label: 'Database password:');
-                }
-            }
-        }
-
-        if ($badUserCredentials) {
-            $badUserCredentials = false;
-            goto startTest;
-        }
+        $this->promptUserCredentials();
 
         if (! $this->input->isInteractive() && ! $this->option('database')) {
             error('The --database option must be set.');
@@ -157,7 +134,7 @@ class DatabaseCredentialsCommand extends Command
 
         startTest:
 
-        $result = PromptTask::run('Testing database credentials...', function (Logger $logger) use (&$config, &$badUserCredentials) {
+        $result = PromptTask::run('Testing database credentials...', function (Logger $logger) use (&$config) {
             test:
 
             $config = ConnectionConfig::normalize(array_filter([
@@ -180,7 +157,7 @@ class DatabaseCredentialsCommand extends Command
                 /** @var Connection $connection */
                 $connection = DB::build($config);
                 $connection->getPdo();
-            } catch (SQLiteDatabaseDoesNotExistException|RuntimeException $e) {
+            } catch (SQLiteDatabaseDoesNotExistException $e) {
                 $logger->error('Failed: '.$e->getMessage());
 
                 return false;
@@ -220,10 +197,13 @@ class DatabaseCredentialsCommand extends Command
                     str_contains($message, "role \"$this->user\" does not exist")
                 ) {
                     $logger->warning('Try with a different username and/or password.');
-                    $badUserCredentials = true;
 
-                    return false;
+                    return self::BadUserCredentials;
                 }
+
+                return false;
+            } catch (RuntimeException $e) {
+                $logger->error('Failed: '.$e->getMessage());
 
                 return false;
             }
@@ -233,11 +213,12 @@ class DatabaseCredentialsCommand extends Command
             return true;
         }, keepSummary: true, output: $this->output);
 
-        if ($result === false) {
-            if ($badUserCredentials) {
-                goto userCredentials;
-            }
+        if ($result === self::BadUserCredentials) {
+            $this->promptUserCredentials();
+            goto startTest;
+        }
 
+        if ($result === false) {
             if (! $this->input->isInteractive()) {
                 return self::FAILURE;
             }
@@ -298,5 +279,33 @@ class DatabaseCredentialsCommand extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    private function promptUserCredentials(): void
+    {
+        if ($this->driver === 'sqlite') {
+            return;
+        }
+
+        $this->user = $this->option('username') ?? text(
+            label: 'Database username:',
+            default: $this->user
+                ?? Config::get("database.connections.{$this->driver}.username")
+                ?? Env::get('DB_USERNAME', Env::get('CRAFT_DB_USER', 'root')),
+        );
+
+        if ($this->password = $this->option('password')) {
+            return;
+        }
+
+        $envPassword = Config::get("database.connections.{$this->driver}.password") ?? Env::get('DB_PASSWORD', Env::get('CRAFT_DB_PASSWORD'));
+
+        if ($envPassword && confirm('Use the password provided by $DB_PASSWORD?')) {
+            $this->password = $envPassword;
+
+            return;
+        }
+
+        $this->password = password(label: 'Database password:');
     }
 }
