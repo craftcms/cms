@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\ConnectionConfig;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 it('stores sqlite credentials without server environment variables', function () {
     $basePath = storage_path('runtime/setup-db-creds-'.uniqid());
     $databasePath = "$basePath/craft.sqlite";
+    $normalizedDatabasePath = ConnectionConfig::normalizeSqliteDatabasePath($databasePath);
     $envPath = "$basePath/.env";
     $originalEnvironmentPath = app()->environmentPath();
     $originalDefaultConnection = config('database.default');
@@ -38,7 +40,7 @@ it('stores sqlite credentials without server environment variables', function ()
         expect(File::isFile($databasePath))->toBeTrue()
             ->and(File::get($envPath))
             ->toContain('DB_CONNECTION=sqlite')
-            ->toContain(sprintf('DB_DATABASE="%s"', $databasePath))
+            ->toContain(sprintf('DB_DATABASE="%s"', $normalizedDatabasePath))
             ->toContain('DB_FOREIGN_KEYS=true')
             ->not->toContain('DB_HOST=')
             ->not->toContain('DB_PORT=')

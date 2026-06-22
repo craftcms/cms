@@ -19,7 +19,7 @@ it('normalizes file-backed sqlite connection config for production use', functio
     expect($config)
         ->toMatchArray([
             'driver' => 'sqlite',
-            'database' => base_path('database/craft.sqlite'),
+            'database' => ConnectionConfig::normalizeSqliteDatabasePath('database/craft.sqlite'),
             'foreign_key_constraints' => true,
             'busy_timeout' => 5000,
             'journal_mode' => 'wal',
@@ -89,7 +89,7 @@ it('builds sqlite requirement checker dsn values from the connection config', fu
 
     $connection = DB::connection('sqlite_dsn_test');
 
-    expect(ConnectionConfig::dsn($connection))->toBe('sqlite:'.base_path('database/craft.sqlite'));
+    expect(ConnectionConfig::dsn($connection))->toBe('sqlite:'.ConnectionConfig::normalizeSqliteDatabasePath('database/craft.sqlite'));
 
     DB::purge('sqlite_dsn_test');
 });

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use Illuminate\Support\Facades\Config;
@@ -112,7 +113,7 @@ it('normalizes sqlite install db config without server credentials', function ()
     expect($data)
         ->toMatchArray([
             'driver' => 'sqlite',
-            'database' => base_path('database/install.sqlite'),
+            'database' => ConnectionConfig::normalizeSqliteDatabasePath('database/install.sqlite'),
             'foreign_key_constraints' => true,
             'busy_timeout' => 5000,
             'journal_mode' => 'wal',
