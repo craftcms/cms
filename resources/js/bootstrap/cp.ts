@@ -16,10 +16,7 @@ import SystemMessages from '@/modules/utilities/components/system-messages/Syste
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
 import {setUrlDefaults} from '@/wayfinder';
-import {
-  inertiaPageRegistry,
-  resolveInertiaPage,
-} from './inertia-pages.js';
+import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
