@@ -38,7 +38,7 @@
     static: static,
 }) }}
 
-{#{{ forms.textField({
+{{ forms.textField({
     label: "Transformer"|t('app'),
     instructions: "The class name (with namespace) of the transformer you’d like to use."|t('app'),
     id: 'transformer',
@@ -52,8 +52,8 @@
     errors: errors.get('transformer'),
     data: {'error-key': 'transformer'},
     disabled: readOnly,
-    placeholder: 'CraftCms\\Cms\Import\\Transformers\\EntryTransformer',
+    placeholder: 'App\\Import\\Transformers\\MyCustomTransformer',
     static: static,
-}) }}#}
+}) }}
 
 <a href="{{ cpUrl('import/configs/' ~ import.handle ~ '/map') }}" class="btn submit">Configure mapping</a>

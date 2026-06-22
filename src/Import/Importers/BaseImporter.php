@@ -7,13 +7,13 @@ namespace CraftCms\Cms\Import\Importers;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
-use League\Fractal\TransformerAbstract;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -30,7 +30,7 @@ abstract class BaseImporter
 
     public protected(set) ?string $file = null;
 
-    public protected(set) string|TransformerAbstract|null $transformer = null;
+    public protected(set) string|BaseTransformer|null $transformer = null;
 
     public protected(set) array $map = [];
 
@@ -220,9 +220,9 @@ abstract class BaseImporter
     /**
      * Sets and normalizes the transformer.
      *
-     * @param  string|null|TransformerAbstract  $transformer  The transformer instance, class name, or null value.
+     * @param  string|null|BaseTransformer  $transformer  The transformer instance, class name, or null value.
      */
-    public function transformer(string|null|TransformerAbstract $transformer): self
+    public function transformer(string|null|BaseTransformer $transformer): self
     {
         $this->transformer = $this->normalizeTransformer($transformer);
 
@@ -339,24 +339,24 @@ abstract class BaseImporter
     }
 
     /**
-     * Normalizes a transformer input into a valid TransformerAbstract instance, a Closure, or null.
+     * Normalizes a transformer input into a valid BaseTransformer instance, a Closure, or null.
      *
      * This method processes various forms of input for transformers, including:
-     * - Instances of TransformerAbstract: These are returned as-is.
+     * - Instances of BaseTransformer: These are returned as-is.
      * - Strings: These are evaluated to determine if they refer to a callable function,
-     *   a PHP closure pattern, or a valid TransformerAbstract class.
+     *   a PHP closure pattern, or a valid BaseTransformer class.
      * - Null values: These are handled gracefully by returning null.
      *
      * If the input defines a callable closure pattern using the `fn` syntax, it generates a Closure
      * that can evaluate the provided logic against an `ElementInterface` instance. Additionally,
-     * transformer class strings are validated to ensure they refer to a valid TransformerAbstract class.
+     * transformer class strings are validated to ensure they refer to a valid BaseTransformer class.
      *
-     * @param  string|TransformerAbstract|null  $transformer  Input transformer to normalize.
-     * @return TransformerAbstract|Closure|null A normalized transformer instance, closure, or null if not valid.
+     * @param  string|BaseTransformer|null  $transformer  Input transformer to normalize.
+     * @return BaseTransformer|Closure|null A normalized transformer instance, closure, or null if not valid.
      */
-    public function normalizeTransformer(string|null|TransformerAbstract $transformer): TransformerAbstract|Closure|null
+    public function normalizeTransformer(string|null|BaseTransformer $transformer): BaseTransformer|Closure|null
     {
-        if ($transformer instanceof TransformerAbstract) {
+        if ($transformer instanceof BaseTransformer) {
             return $transformer;
         }
 
@@ -377,7 +377,7 @@ abstract class BaseImporter
             };
         }
 
-        if (class_exists($transformer) && (new $transformer) instanceof TransformerAbstract) {
+        if (class_exists($transformer) && (new $transformer) instanceof BaseTransformer) {
             return new $transformer;
         }
 
@@ -385,7 +385,7 @@ abstract class BaseImporter
     }
 
     /**
-     * Validates the transformer value to ensure it is either empty, a closure, or a valid class compatible with `TransformerAbstract`.
+     * Validates the transformer value to ensure it is either empty, a closure, or a valid class compatible with `BaseTransformer`.
      *
      * @param  mixed  $value  The value of the transformer being validated.
      * @param  string  $attribute  The name of the attribute being validated.
@@ -407,7 +407,7 @@ abstract class BaseImporter
 
         // if it's a string - the assumption is that it's a class name with namespace (just like with elementType)
         // and we need to check if it exists and is compatible
-        if (class_exists($value) && (new $value) instanceof TransformerAbstract) {
+        if (class_exists($value) && (new $value) instanceof BaseTransformer) {
             return true;
         }
 
@@ -415,6 +415,20 @@ abstract class BaseImporter
         $fail($attribute, t('Transformer has to be empty, a valid class or a closure.'));
 
         return false;
+    }
+
+    public function transformerAsString(): ?string
+    {
+        if ($this->transformer === null) {
+            return $this->transformer;
+        }
+
+        if ($this->transformer instanceof BaseTransformer) {
+            return $this->transformer::class;
+        }
+
+        // todo: maybe show some custom copy if it's a closure??
+        return null;
     }
 
     public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool

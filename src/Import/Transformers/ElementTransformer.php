@@ -6,9 +6,8 @@ namespace CraftCms\Cms\Import\Transformers;
 
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\EntryTypes;
-use League\Fractal\TransformerAbstract;
 
-class ElementTransformer extends TransformerAbstract
+class ElementTransformer extends BaseTransformer
 {
     public ?array $props = null;
 

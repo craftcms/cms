@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Validator;
-use League\Fractal\TransformerAbstract;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -82,7 +82,7 @@ class ModelImporter extends BaseImporter
     }
 
     #[Override]
-    public function transformer(string|null|TransformerAbstract $transformer): self
+    public function transformer(string|null|BaseTransformer $transformer): self
     {
         if ($transformer === null) {
             return $this;

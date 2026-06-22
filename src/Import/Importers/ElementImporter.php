@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -18,7 +19,6 @@ use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
-use League\Fractal\TransformerAbstract;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -209,7 +209,7 @@ class ElementImporter extends BaseImporter
     }
 
     #[Override]
-    public function transformer(string|null|TransformerAbstract $transformer): self
+    public function transformer(string|null|BaseTransformer $transformer): self
     {
         if ($transformer === null) {
             // use the default transformer for a given element;
@@ -218,6 +218,27 @@ class ElementImporter extends BaseImporter
         }
 
         return parent::transformer($transformer);
+    }
+
+    /**
+     * Returns whether the current transformer is the default one for the element type.
+     */
+    public function usesDefaultTransformer(): bool
+    {
+        $currentTransformer = $this->transformer;
+        $defaultTransformer = $this->className::getDefaultTransformer();
+
+        // if they're simply the same - they're the same
+        if ($currentTransformer === $defaultTransformer) {
+            return true;
+        }
+
+        // if the current transformer is an object and the class mathes the default one - they're the same
+        if ($currentTransformer instanceof BaseTransformer && $currentTransformer::class === $defaultTransformer) {
+            return true;
+        }
+
+        return false;
     }
 
     public function getAvailableFieldLayoutProviders(): array

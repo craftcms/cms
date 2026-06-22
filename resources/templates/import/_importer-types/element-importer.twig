@@ -46,7 +46,7 @@
     static: static,
 }) }}
 
-{#{{ forms.textField({
+{{ forms.textField({
     label: "Transformer"|t('app'),
     instructions: "The class name (with namespace) of the transformer you’d like to use."|t('app'),
     id: 'transformer',
@@ -55,14 +55,14 @@
     autocorrect: false,
     autocapitalize: false,
     maxlength: 255,
-    value:  import ? old('settings.transformer', import.transformer) : null,
+    value:  import ? old('settings.transformer', import.usesDefaultTransformer() ? null : import.transformerAsString()) : null,
     required: false,
     errors: errors.get('settings.transformer'),
     data: {'error-key': 'settings.transformer'},
     disabled: readOnly,
-    placeholder: 'CraftCms\\Cms\Import\\Transformers\\ElementTransformer',
+    placeholder: 'CraftCms\\Cms\\Import\\Transformers\\ElementTransformer',
     static: static,
-}) }}#}
+}) }}
 
 
 {# for element types that can have multiple field layout providers (like Entries) we now go to an field layout provider screen

@@ -536,14 +536,25 @@ class Import
         //        $fractalManager->parseIncludes($includes);
         //        $fractalManager->parseExcludes($excludes);
 
-        $data = $fractalManager->createData($resource);
+        $fractalData = $fractalManager->createData($resource);
 
-        // todo: ->toArray() freaks out if the transformer is null; not sure if that's expected or not
-        if ($config->transformer === null) {
-            return $data->getResource()->getData();
+        // set the match criteria
+        // this can be done via the non-editable config - if that's what's used
+        // or for editable configs, it can be set via the transformer, so here
+        // or via the UI - this isn't done yet
+        $transformer = $fractalData->getResource()->getTransformer();
+        if ($transformer && method_exists($transformer, 'matchCriteria')) {
+            $matchCriteria = $transformer->matchCriteria($config, $data, $element);
+
+            $config->matchCriteria($matchCriteria);
         }
 
-        $data = $data->toArray();
+        // todo: ->toArray() freaks out if the transformer is null; not sure if that's expected or not
+        if ($transformer === null) {
+            return $fractalData->getResource()->getData();
+        }
+
+        $data = $fractalData->toArray();
 
         return $data['data'];
     }
