@@ -67,16 +67,26 @@ it('can validate the db', function () {
 
     $response->assertSee($driver === 'sqlite' ? 'is a directory' : 'PDO exception: ');
 
-    postJson(action([InstallController::class, 'validateDb']), [
-        'driver' => Config::get("database.connections.{$connection}.driver"),
-        'host' => Config::get("database.connections.{$connection}.host"),
-        'database' => Config::get("database.connections.{$connection}.database"),
-        'port' => Config::get("database.connections.{$connection}.port"),
-        'username' => Config::get("database.connections.{$connection}.username"),
-        'password' => Config::get("database.connections.{$connection}.password"),
-        'prefix' => Config::get("database.connections.{$connection}.prefix"),
-        'schema' => Config::get("database.connections.{$connection}.schema"),
-    ])->assertOk();
+    $database = $driver === 'sqlite'
+        ? storage_path('runtime/validate-sqlite-'.uniqid().'.sqlite')
+        : Config::get("database.connections.{$connection}.database");
+
+    try {
+        postJson(action([InstallController::class, 'validateDb']), [
+            'driver' => Config::get("database.connections.{$connection}.driver"),
+            'host' => Config::get("database.connections.{$connection}.host"),
+            'database' => $database,
+            'port' => Config::get("database.connections.{$connection}.port"),
+            'username' => Config::get("database.connections.{$connection}.username"),
+            'password' => Config::get("database.connections.{$connection}.password"),
+            'prefix' => Config::get("database.connections.{$connection}.prefix"),
+            'schema' => Config::get("database.connections.{$connection}.schema"),
+        ])->assertOk();
+    } finally {
+        if ($driver === 'sqlite') {
+            File::delete($database);
+        }
+    }
 });
 
 it('can validate and create a sqlite database file', function () {
