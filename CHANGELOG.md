@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `CraftCms\Yii2Adapter\Database\DeprecatedTable`.
+- Updated `webonyx/graphql-php` to 15.33.1. ([#18757](https://github.com/craftcms/cms/pull/18757))
 - `craft\elements\Category::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\CategoryQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - `craft\elements\GlobalSet::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - `craft\elements\Tag::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\TagQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
