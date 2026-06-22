@@ -126,7 +126,7 @@ readonly class Cms
 
     private static function fallbackLanguage(Request $request): string
     {
-        return $request->getPreferredLanguage(I18N::getAppLocaleIds()->all());
+        return I18N::normalizeLanguage($request->getPreferredLanguage(I18N::getAppLocaleIds()->all()));
     }
 
     public static function systemName(): string

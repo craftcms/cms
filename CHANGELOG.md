@@ -17,6 +17,7 @@
 - Fixed errors that occurred when editing global sets, category groups, and tag groups. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - Fixed a bug where it wasn’t possible to create new categories. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - Fixed an error that occurred when editing a category. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a bug where users’ Language preference field could be set to Arabic by default when the browser’s preferred language included a territory ID (e.g. `en-US`).
 
 ## 6.0.0-alpha.8 - 2026-06-17
 
