@@ -127,7 +127,6 @@ it('determines if the edition can be upgraded', function () {
     // Not an admin
     expect(Edition::canUpgrade())->toBefalse();
 
-    actingAs(new User(['admin' => true]));
     Cms::setIsInstalled();
 
     expect(Edition::canUpgrade())->toBeTrue();
