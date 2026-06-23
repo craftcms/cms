@@ -77,6 +77,10 @@ function debugbar()
 
 function currentUser(): ?CraftUser
 {
+    if (! Cms::isInstalled()) {
+        return null;
+    }
+
     $user = Auth::user();
 
     if ($user === null || $user instanceof CraftUser) {
