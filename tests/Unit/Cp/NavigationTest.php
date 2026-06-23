@@ -16,6 +16,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
+    Cms::setIsInstalled();
+
     Cms::config()
         ->cpTrigger('admin')
         ->enableGql(true)

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
@@ -288,7 +289,9 @@ it('adds a plain validation error when a propagated save fails', function () {
 });
 
 it('adds a linked validation error when the current user can fix the propagated site', function () {
-    Auth::setUser(new AuthorizedAuthUser);
+    Cms::setIsInstalled();
+
+    Auth::shouldReceive('user')->andReturn(new AuthorizedAuthUser);
     swapUrlRequest('/admin/entries/100?foo=bar&site=primary');
 
     $this->executor->returnValue = false;
