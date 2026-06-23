@@ -8,6 +8,8 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
+    Cms::config()->isSystemLive = true;
+
     $this->tempDir = sys_get_temp_dir().'/craft-template-request-test-'.uniqid();
 
     File::ensureDirectoryExists($this->tempDir);
@@ -18,6 +20,8 @@ beforeEach(function () {
 });
 
 afterEach(function () {
+    Cms::config()->isSystemLive = null;
+
     File::deleteDirectory($this->tempDir);
 });
 
