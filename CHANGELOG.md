@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## 5.10.8 - 2027-06-23
+## 5.10.8 - 2026-06-23
 
 - Fixed a bug where element thumbnails could have inconsistent rounded corners. ([#19117](https://github.com/craftcms/cms/issues/19117))
 - Fixed a bug where video file uploads could cause a timeout or exhaust the memory limit. ([#19131](https://github.com/craftcms/cms/issues/19131))
@@ -13,7 +13,7 @@
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
-## 5.10.7 - 2027-06-17
+## 5.10.7 - 2026-06-17
 
 - Added `craft\web\twig\AllowableInSandbox`.
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t resolving aliases for environment variables that referenced an alias (e.g. `@root/storage/rebrand`). ([#19108](https://github.com/craftcms/cms/issues/19108))
