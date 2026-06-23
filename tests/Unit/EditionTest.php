@@ -110,25 +110,22 @@ it('can determine if the edition can be tested', function () {
 });
 
 it('determines if the edition can be upgraded', function () {
-    $user = null;
-    Auth::shouldReceive('user')->andReturnUsing(function () use (&$user) {
-        return $user;
-    });
-
     Edition::set(Edition::Solo);
     Cms::setIsInstalled();
-
-    // Not logged in
-    expect(Edition::canUpgrade())->toBefalse();
 
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('isAdmin')->andReturnFalse();
 
-    // Not an admin
+    $admin = Mockery::mock(CraftUser::class);
+    $admin->shouldReceive('isAdmin')->andReturnTrue();
+
+    Auth::shouldReceive('user')->andReturn(null, $user, $admin, $admin, $admin);
+
+    // Not logged in
     expect(Edition::canUpgrade())->toBefalse();
 
-    $user = Mockery::mock(CraftUser::class);
-    $user->shouldReceive('isAdmin')->andReturnTrue();
+    // Not an admin
+    expect(Edition::canUpgrade())->toBefalse();
 
     expect(Edition::canUpgrade())->toBeTrue();
 
