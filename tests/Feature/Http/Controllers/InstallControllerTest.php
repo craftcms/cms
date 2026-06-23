@@ -50,6 +50,16 @@ it('shows the install page', function () {
         ->assertOk();
 });
 
+it('provides driver-specific db defaults to the install page', function () {
+    get(action([InstallController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('dbDefaults.sqlite.database', 'database.sqlite')
+            ->where('dbDefaults.mysql.port', '3306')
+            ->where('dbDefaults.pgsql.port', '5432')
+            ->missing('dbConfig.database'))
+        ->assertOk();
+});
+
 it('can validate the db', function () {
     $connection = config('database.default');
     $driver = Config::get("database.connections.{$connection}.driver");
@@ -107,6 +117,18 @@ it('can validate and create a sqlite database file', function () {
     expect(File::isFile($databasePath))->toBeTrue();
 
     File::delete($databasePath);
+});
+
+it('defaults a blank sqlite database to the sqlite install database path', function () {
+    $data = app(InstallController::class)->validateDbData([
+        'driver' => 'sqlite',
+    ]);
+
+    expect($data)
+        ->toMatchArray([
+            'driver' => 'sqlite',
+            'database' => ConnectionConfig::normalizeSqliteDatabasePath('database.sqlite'),
+        ]);
 });
 
 it('normalizes sqlite install db config without server credentials', function () {

@@ -46,6 +46,10 @@ readonly class InstallController
 {
     use SiteDefaults;
 
+    private const array DbDrivers = ['mysql', 'mariadb', 'pgsql', 'sqlite'];
+
+    private const string DefaultSqliteDatabase = 'database.sqlite';
+
     public function __construct()
     {
         if (! app()->hasDebugModeEnabled()) {
@@ -103,7 +107,10 @@ readonly class InstallController
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
-            'dbConfig' => $dbConfig,
+            'dbConfig' => [
+                'driver' => $this->dbDriver($dbConfig['driver'] ?? null),
+            ],
+            'dbDefaults' => $this->dbDefaults(),
         ]);
     }
 
@@ -285,7 +292,7 @@ readonly class InstallController
         $data = Validator::validate($data, [
             'driver' => ['required', 'string', Rule::in('mysql', 'mariadb', 'pgsql', 'sqlite')],
             'host' => ['nullable', 'string'],
-            'database' => ['required', 'string'],
+            'database' => ['nullable', 'string'],
             'port' => ['nullable', 'integer'],
             'username' => ['nullable', 'string'],
             'password' => ['nullable', 'string'],
@@ -293,19 +300,56 @@ readonly class InstallController
             'schema' => ['nullable', 'string'],
         ]);
 
+        $defaults = $this->dbDefaultsForDriver($data['driver']);
+        $data['database'] = ($data['database'] ?? null) ?: $defaults['database'];
+
         if ($data['driver'] === 'sqlite') {
             return ConnectionConfig::normalize($data);
         }
 
-        $defaultPort = in_array($data['driver'], ['mysql', 'mariadb']) ? 3306 : 5432;
-
-        $data['host'] ??= Config::get("database.connections.{$data['driver']}.host") ?: '127.0.0.1';
-        $data['port'] ??= Config::get("database.connections.{$data['driver']}.port") ?: $defaultPort;
-        $data['username'] ??= Config::get("database.connections.{$data['driver']}.username") ?: 'root';
-        $data['password'] ??= Config::get("database.connections.{$data['driver']}.password");
-        $data['prefix'] ??= Config::get("database.connections.{$data['driver']}.prefix");
+        $data['host'] ??= $defaults['host'];
+        $data['port'] ??= $defaults['port'];
+        $data['username'] ??= $defaults['username'];
+        $data['password'] ??= '';
+        $data['prefix'] ??= $defaults['prefix'];
 
         return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [$key => $value])->all();
+    }
+
+    private function dbDriver(mixed $driver): string
+    {
+        if (is_string($driver) && in_array($driver, self::DbDrivers, true)) {
+            return $driver;
+        }
+
+        return 'sqlite';
+    }
+
+    private function dbDefaults(): array
+    {
+        return collect(self::DbDrivers)
+            ->mapWithKeys(fn (string $driver) => [$driver => $this->dbDefaultsForDriver($driver)])
+            ->all();
+    }
+
+    private function dbDefaultsForDriver(string $driver): array
+    {
+        if ($driver === 'sqlite') {
+            return [
+                'database' => self::DefaultSqliteDatabase,
+                'prefix' => '',
+            ];
+        }
+
+        $defaultPort = in_array($driver, ['mysql', 'mariadb'], true) ? 3306 : 5432;
+
+        return [
+            'host' => '127.0.0.1',
+            'port' => (string) $defaultPort,
+            'database' => 'laravel',
+            'username' => 'root',
+            'prefix' => '',
+        ];
     }
 
     private function writeDbEnv(array $data, string $path): void

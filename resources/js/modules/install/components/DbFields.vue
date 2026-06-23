@@ -7,15 +7,34 @@
   import CraftInputPassword from '@craftcms/cp/vue/CraftInputPassword.vue';
   import Select from '@/common/form/Select.vue';
 
+  type DbDriver = 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
+  type DbFormData = {
+    driver: DbDriver;
+    host?: string;
+    port?: number;
+    database?: string;
+    username?: string;
+    password?: string;
+    prefix?: string;
+  };
+  type DbDefaults = {
+    host?: string;
+    port?: string;
+    database: string;
+    username?: string;
+    prefix?: string;
+  };
+
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: any): void;
+    (e: 'update:modelValue', value: DbFormData): void;
   }>();
   const props = withDefaults(
     defineProps<{
-      modelValue?: any;
+      modelValue: DbFormData;
+      defaults: Record<DbDriver, DbDefaults>;
       errors?: Record<string, string>;
     }>(),
-    {modelValue: () => ({}), errors: () => ({})}
+    {errors: () => ({})}
   );
 
   const model = computed({
@@ -27,7 +46,9 @@
     },
   });
 
-  const isSqlite = computed(() => model.value.driver === 'sqlite');
+  const selectedDriver = computed(() => model.value.driver);
+  const currentDefaults = computed(() => props.defaults[selectedDriver.value]);
+  const isSqlite = computed(() => selectedDriver.value === 'sqlite');
 
   const options = [
     {value: 'mysql', label: 'MySQL'},
@@ -67,7 +88,7 @@
         name="host"
         id="db-host"
         v-model="model.host"
-        placeholder="127.0.0.1"
+        :placeholder="currentDefaults.host ?? undefined"
         :error="errors?.host"
       />
     </div>
@@ -79,6 +100,7 @@
         id="db-port"
         v-model="model.port"
         size="7"
+        :placeholder="currentDefaults.port ?? undefined"
         :error="errors?.port"
       />
     </div>
@@ -95,7 +117,7 @@
         name="username"
         id="db-username"
         v-model="model.username"
-        placeholder="root"
+        :placeholder="currentDefaults.username ?? undefined"
         :error="errors?.username"
       />
     </div>
@@ -122,7 +144,7 @@
         name="name"
         id="db-database"
         v-model="model.database"
-        :placeholder="isSqlite ? 'database/craft.sqlite' : undefined"
+        :placeholder="currentDefaults.database"
         :errors="errors?.database"
       />
     </div>

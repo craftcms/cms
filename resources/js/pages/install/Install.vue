@@ -15,18 +15,21 @@
   import Modal from '@/common/components/Modal.vue';
   import StepScreen from '@/modules/install/components/StepScreen.vue';
 
+  type DbDriver = 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
+  type DbDefaults = {
+    host?: string;
+    port?: string;
+    database: string;
+    username?: string;
+    prefix?: string;
+  };
+
   const backgroundImageUrl = computed(() => `url(${backgroundUrl})`);
   const props = defineProps<{
     dbConfig: {
-      driver: 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
-      url: string | null;
-      host: string | null;
-      port: string | null;
-      database: string | null;
-      username: string | null;
-      password: string | null;
-      prefix: string | null;
+      driver: DbDriver;
     };
+    dbDefaults: Record<DbDriver, DbDefaults>;
     localeOptions?: Array<{id: string; name: string; selected: boolean}>;
     licenseHtml?: string;
     defaultSystemName: string;
@@ -68,12 +71,12 @@
     },
     db: {
       driver: props.dbConfig.driver,
-      host: props.dbConfig.host,
-      port: props.dbConfig.port,
-      database: props.dbConfig.database,
-      username: props.dbConfig.username,
-      password: props.dbConfig.password,
-      prefix: props.dbConfig.prefix,
+      host: undefined,
+      port: undefined,
+      database: undefined,
+      username: undefined,
+      password: undefined,
+      prefix: undefined,
     },
     site: {
       name: props.defaultSystemName,
@@ -181,7 +184,11 @@
               v-if="isCurrent('db')"
               class="screen"
             >
-              <DbFields v-model="formData.db" :errors="errors.db" />
+              <DbFields
+                v-model="formData.db"
+                :defaults="dbDefaults"
+                :errors="errors.db"
+              />
             </StepScreen>
 
             <StepScreen
