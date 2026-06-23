@@ -26,22 +26,22 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Environment;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
-use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\PageTemplateRendering;
-use CraftCms\Cms\Twig\Events\TemplateRendered;
-use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\Twig\Events\TwigCreated;
-use CraftCms\Cms\Twig\PageLifecycle;
-use CraftCms\Cms\Twig\TemplateRenderer;
-use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
+use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
+use CraftCms\Cms\View\Events\PageTemplateRendered;
+use CraftCms\Cms\View\Events\PageTemplateRendering;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
+use CraftCms\Cms\View\Events\TemplateRendered;
+use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -101,13 +101,13 @@ class View extends \yii\web\View
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TemplateRendering} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\TemplateRendering} instead.
      */
     public const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a template gets rendered
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TemplateRendered} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\TemplateRendered} instead.
      */
     public const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
 
@@ -374,13 +374,13 @@ class View extends \yii\web\View
      * Returns whether a template is currently being rendered.
      *
      * @return bool Whether a template is currently being rendered.
-     * @deprecated 6.0.0 use {@see TemplateRenderer::isRenderingTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::isRenderingTemplate()} instead.
      */
     public function getIsRenderingTemplate(): bool
     {
         Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::isRenderingTemplate` instead.');
 
-        return app(TemplateRenderer::class)->isRenderingTemplate();
+        return app(TwigRenderer::class)->isRenderingTemplate();
     }
 
     /**
@@ -389,13 +389,14 @@ class View extends \yii\web\View
      * @param  string  $template  The name of the template to load
      * @param  array  $variables  The variables that should be available to the template
      * @param  string|null  $templateMode  The template mode to use
+     *
      * @return string the rendering result
      *
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
-     * @deprecated 6.0.0 use {@see TemplateRenderer::renderTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::renderTemplate()} instead.
      */
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
@@ -405,7 +406,7 @@ class View extends \yii\web\View
             ? TemplateMode::from($templateMode)
             : TemplateMode::get();
 
-        return app(TemplateRenderer::class)->renderTemplate($template, $variables, $templateMode);
+        return app(TwigRenderer::class)->renderTemplate($template, $variables, $templateMode);
     }
 
     /**
@@ -414,6 +415,7 @@ class View extends \yii\web\View
      * @param  string  $template  The name of the template to load
      * @param  array  $variables  The variables that should be available to the template
      * @param  string|null  $templateMode  The template mode to use
+     *
      * @return string the rendering result
      *
      * @throws TwigLoaderError
@@ -423,26 +425,26 @@ class View extends \yii\web\View
      *
      * @see renderTemplate()
      * @since 4.17.0
-     * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::renderSandboxedTemplate()} instead.
      */
     public function renderSandboxedTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper instead.');
 
-        return app(TemplateRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
+        return app(TwigRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
     }
 
     /**
      * Returns whether a page template is currently being rendered.
      *
      * @return bool Whether a page template is currently being rendered.
-     * @deprecated 6.0.0 use {@see TemplateRenderer::isRenderingPageTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::isRenderingPageTemplate()} instead.
      */
     public function getIsRenderingPageTemplate(): bool
     {
         Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingPageTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::isRenderingPageTemplate` instead.');
 
-        return app(TemplateRenderer::class)->isRenderingPageTemplate();
+        return app(TwigRenderer::class)->isRenderingPageTemplate();
     }
 
     /**
@@ -451,19 +453,20 @@ class View extends \yii\web\View
      * @param  string  $template  The name of the template to load
      * @param  array  $variables  The variables that should be available to the template
      * @param  string|null  $templateMode  The template mode to use
+     *
      * @return string the rendering result
      *
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
-     * @deprecated 6.0.0 use {@see TemplateRenderer::renderPageTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::renderPageTemplate()} instead.
      */
     public function renderPageTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         Deprecator::log(__METHOD__, '`craft\web\View::renderPageTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderPageTemplate()` or the `pageTemplate()` helper instead.');
 
-        return app(TemplateRenderer::class)->renderPageTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
+        return app(TwigRenderer::class)->renderPageTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
     }
 
     /**
@@ -473,17 +476,18 @@ class View extends \yii\web\View
      * @param  array  $variables  Any variables that should be available to the template.
      * @param  string  $templateMode  The template mode to use.
      * @param  bool  $escapeHtml  Whether dynamic HTML should be escaped
+     *
      * @return string The rendered template.
      *
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
-     * @deprecated 6.0.0 use {@see TemplateRenderer::renderString()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::renderString()} instead.
      */
     public function renderString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
         Deprecator::log(__METHOD__, '`craft\web\View::renderString()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderString()` or the `renderString()` helper instead.');
 
-        return app(TemplateRenderer::class)->renderString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
+        return app(TwigRenderer::class)->renderString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
     }
 
     /**
@@ -493,6 +497,7 @@ class View extends \yii\web\View
      * @param  array  $variables  Any variables that should be available to the template.
      * @param  string  $templateMode  The template mode to use.
      * @param  bool  $escapeHtml  Whether dynamic HTML should be escaped
+     *
      * @return string The rendered template.
      *
      * @throws TwigLoaderError
@@ -500,13 +505,13 @@ class View extends \yii\web\View
      *
      * @see renderString()
      * @since 4.17.0
-     * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedString()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::renderSandboxedString()} instead.
      */
     public function renderSandboxedString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
         Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedString()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedString()` or the `renderSandboxedString()` helper instead.');
 
-        return app(TemplateRenderer::class)->renderSandboxedString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
+        return app(TwigRenderer::class)->renderSandboxedString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
     }
 
     /**
@@ -524,17 +529,18 @@ class View extends \yii\web\View
      * @param  mixed  $object  the object that should be passed into the template
      * @param  array  $variables  any additional variables that should be available to the template
      * @param  string  $templateMode  The template mode to use.
+     *
      * @return string The rendered template.
      *
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
-     * @deprecated 6.0.0 use {@see TemplateRenderer::renderObjectTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::renderObjectTemplate()} instead.
      */
     public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = TemplateMode::Site->value): string
     {
         Deprecator::log(__METHOD__, '`craft\web\View::renderObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderObjectTemplate()` or the `renderObjectTemplate()` helper instead.');
 
-        return app(TemplateRenderer::class)->renderObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
+        return app(TwigRenderer::class)->renderObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
     }
 
     /**
@@ -544,6 +550,7 @@ class View extends \yii\web\View
      * @param  mixed  $object  the object that should be passed into the template
      * @param  array  $variables  any additional variables that should be available to the template
      * @param  string  $templateMode  The template mode to use.
+     *
      * @return string The rendered template.
      *
      * @throws Exception in case of failure
@@ -551,7 +558,7 @@ class View extends \yii\web\View
      *
      * @see renderObjectTemplate()
      * @since 4.17.0
-     * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedObjectTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::renderSandboxedObjectTemplate()} instead.
      */
     public function renderSandboxedObjectTemplate(
         string $template,
@@ -561,15 +568,16 @@ class View extends \yii\web\View
     ): string {
         Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper instead.');
 
-        return app(TemplateRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
+        return app(TwigRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
     }
 
     /**
      * Normalizes an object template for [[renderObjectTemplate()]].
      *
      * @param string $template
+     *
      * @return string
-     * @deprecated 6.0.0 use {@see TemplateRenderer::normalizeObjectTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TwigRenderer::normalizeObjectTemplate()} instead.
      */
     public function normalizeObjectTemplate(string $template): string
     {
@@ -577,7 +585,7 @@ class View extends \yii\web\View
 
 
 
-        return app(TemplateRenderer::class)->normalizeObjectTemplate($template);
+        return app(TwigRenderer::class)->normalizeObjectTemplate($template);
     }
 
     /**
@@ -589,9 +597,10 @@ class View extends \yii\web\View
      * @param  string  $name  The name of the template.
      * @param  string|null  $templateMode  The template mode to use.
      * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     *
      * @return bool Whether the template exists.
      *
-     * @deprecated 6.0.0 use {@see TemplateResolver::exists()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateResolver::exists()} instead.
      */
     public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
     {
@@ -668,11 +677,12 @@ class View extends \yii\web\View
      * @param  string  $name  The name of the template.
      * @param  string|null  $templateMode  The template mode to use.
      * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     *
      * @return string|false The path to the template if it exists, or `false`.
      *
      * @throws TwigLoaderError
      *
-     * @deprecated 6.0.0 use {@see TemplateResolver::resolve()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateResolver::resolve()} instead.
      */
     public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
     {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
 
 beforeEach(function () {
     app()->forgetScopedInstances();
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
     $this->assets = app(HtmlStack::class);
 });
 

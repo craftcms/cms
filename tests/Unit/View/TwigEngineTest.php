@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TwigEngine;
@@ -19,10 +19,10 @@ afterEach(function () {
 it('resolves the scoped template renderer for each render', function () {
     $resolutions = 0;
 
-    app()->scoped(TemplateRenderer::class, function () use (&$resolutions) {
+    app()->scoped(TwigRenderer::class, function () use (&$resolutions) {
         $resolutions++;
 
-        $renderer = Mockery::mock(TemplateRenderer::class);
+        $renderer = Mockery::mock(TwigRenderer::class);
         $renderer
             ->shouldReceive('renderPageTemplate')
             ->once()
@@ -55,8 +55,8 @@ it('maps plugin view paths to Craft template root names', function () {
 
     TemplateMode::set(TemplateMode::Cp);
 
-    app()->scoped(TemplateRenderer::class, function () {
-        $renderer = Mockery::mock(TemplateRenderer::class);
+    app()->scoped(TwigRenderer::class, function () {
+        $renderer = Mockery::mock(TwigRenderer::class);
         $renderer
             ->shouldReceive('renderPageTemplate')
             ->once()

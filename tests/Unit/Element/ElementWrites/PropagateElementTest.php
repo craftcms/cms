@@ -290,7 +290,6 @@ it('adds a plain validation error when a propagated save fails', function () {
 });
 
 it('adds a linked validation error when the current user can fix the propagated site', function () {
-    Cms::setIsInstalled();
     Cms::config()
         ->cpTrigger('admin')
         ->baseCpUrl('https://example.test/admin');
@@ -313,6 +312,8 @@ it('adds a linked validation error when the current user can fix the propagated 
     $siteElement->cpEditUrl = '/admin/entries/108';
     $siteElement->errors()->add('title', 'Title is invalid');
     $siteElement->canSave = true;
+
+    Cms::setIsInstalled();
 
     $result = $this->executor->propagate($element, supportedSites(), 2, $siteElement);
     $message = $element->errors()->first('global');
@@ -624,10 +625,15 @@ class AuthorizedUser extends User
 
 class AuthorizedAuthUser extends UserModel
 {
+    public function __construct(private readonly User $user = new AuthorizedUser)
+    {
+        parent::__construct();
+    }
+
     #[Override]
     public function asElement(): User
     {
-        return new AuthorizedUser;
+        return $this->user;
     }
 
     #[Override]
