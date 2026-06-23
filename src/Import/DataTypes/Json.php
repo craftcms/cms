@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\DataTypes;
 
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use InvalidArgumentException;
 use Override;
@@ -36,16 +37,8 @@ class Json implements DataTypeInterface
             return ['success' => false, 'error' => $error];
         }
 
-        // iterate through the array and get all unique properties;
-        // TODO: what about nested arrays?
-        //        return $array
-        //            |> (fn ($array) => array_map(array_keys(...), $array))
-        //            |> (fn ($keys) => array_merge(...$keys))
-        //            |> array_unique(...)
-        //            |> array_values(...);
-
         //        $keys = static::collectUniqueKeys($array);
-        $keys = self::flattenKeys($array);
+        $keys = Arr::uniqueDotifiedKeys($array);
         sort($keys);
 
         array_walk($keys, function (&$value, $key) {
@@ -53,28 +46,6 @@ class Json implements DataTypeInterface
         });
 
         return $keys;
-    }
-
-    private static function flattenKeys(array $data, string $prefix = ''): array
-    {
-        $keys = [];
-
-        foreach ($data as $key => $value) {
-            $isListItem = is_int($key);
-            $path = $isListItem
-                ? $prefix
-                : ($prefix === '' ? (string) $key : $prefix.'.'.$key);
-
-            if (! $isListItem && $path !== '') {
-                $keys[] = $path;
-            }
-
-            if (is_array($value)) {
-                $keys = array_merge($keys, self::flattenKeys($value, $path));
-            }
-        }
-
-        return array_values(array_unique($keys));
     }
 
     private static function getData(string $data): array

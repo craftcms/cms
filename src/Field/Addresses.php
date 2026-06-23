@@ -30,6 +30,7 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -910,7 +911,7 @@ JS, [
      * The value has to be an array; each item in the array represents an address.
      */
     #[Override]
-    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
+    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): array
     {
         if (! is_array($value)) {
             return [];
@@ -926,11 +927,11 @@ JS, [
 
             // try to match existing address entries,
             // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
-            if (($owner?->id) && isset($address['matchCriteria']) && is_array($address['matchCriteria'])) {
+            if (($rootOwner?->id) && isset($address['matchCriteria']) && is_array($address['matchCriteria'])) {
                 // try to find an existing entry
                 $query = Address::find()
                     ->fieldId($this->id)
-                    ->ownerId($owner->id);
+                    ->ownerId($rootOwner->id);
                 $criteria = [];
 
                 foreach ($address['matchCriteria'] as $dbKey => $dataKey) {

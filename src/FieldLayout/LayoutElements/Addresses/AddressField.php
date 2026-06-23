@@ -233,20 +233,29 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
         ];
 
         foreach ($parts as $part) {
-            [$prefixedHandle, $prefixedHandleWithoutMap, $prefixedHandleWithoutMapAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
 
             $subfields[] = [
                 'handle' => $part['attribute'],
                 'label' => $part['label'],
+                'prefixedHandleForMap' => $prefixedHandleForMap,
+                'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
                 'prefixedHandle' => $prefixedHandle,
-                'prefixedHandleWithoutMap' => $prefixedHandleWithoutMap,
-                'prefixedHandleWithoutMapAsArray' => $prefixedHandleWithoutMapAsArray,
+                'prefixedHandleAsArray' => $prefixedHandleAsArray,
                 'isContainer' => false,
+                'canBeMatchCriteria' => $part['canBeMatchCriteria'] ?? false,
             ];
         }
 
         $cols['subfields'] = $subfields;
 
         return $cols;
+    }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        // this is taken care of by the getFieldsForMapping() method
+        return false;
     }
 }

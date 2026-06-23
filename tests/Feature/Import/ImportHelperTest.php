@@ -71,7 +71,7 @@ it('marks ImportableElementContainerFieldInterface fields as containers with a f
     expect($col['fieldUid'])->toBe($matrixFieldModel->uid);
 });
 
-it('uses map[attr] as the prefixedHandle for top-level fields without an owner field', function () {
+it('uses map[attr] as the prefixedHandleForMap for top-level fields without an owner field', function () {
     $plainTextField = Field::factory()->create([
         'name' => 'Plain Text',
         'handle' => 'plainText',
@@ -89,9 +89,10 @@ it('uses map[attr] as the prefixedHandle for top-level fields without an owner f
     $cols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
     $col = collect($cols)->firstWhere('handle', 'plainText');
 
-    expect($col['prefixedHandle'])->toBe('map[plainText]');
-    expect($col['prefixedHandleWithoutMap'])->toBe('plainText');
-    expect($col['prefixedHandleWithoutMapAsArray'])->toBe(['plainText']);
+    expect($col['prefixedHandleForMap'])->toBe('map[plainText]');
+    expect($col['prefixedHandleForMatchCriteria'])->toBe('matchCriteria[plainText]');
+    expect($col['prefixedHandle'])->toBe('plainText');
+    expect($col['prefixedHandleAsArray'])->toBe(['plainText']);
 });
 
 // ensureCleanArray
@@ -111,7 +112,7 @@ it('recursively decodes a JSON-encoded string element inside an array', function
 // getPrefixedHandlesForMapping – third return value
 
 it('returns the handle split into path-part segments as the third return value', function () {
-    [,, $parts] = ImportHelper::getPrefixedHandlesForMapping('title', null, null, null, null, null);
+    [,,, $parts] = ImportHelper::getPrefixedHandlesForMapping('title', null, null, null, null, null);
 
     expect($parts)->toBe(['title']);
 });

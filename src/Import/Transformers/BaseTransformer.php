@@ -9,7 +9,7 @@ use League\Fractal\TransformerAbstract;
 
 abstract class BaseTransformer extends TransformerAbstract
 {
-    public function matchCriteria(BaseImporter $config, array $data, mixed $item): array
+    public function additionalMatchCriteria(BaseImporter $config, array $data): array
     {
         // you can set your match criteria here, instead of using the UI
         // by default, this doesn't do anything

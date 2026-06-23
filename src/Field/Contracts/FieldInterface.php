@@ -17,6 +17,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
@@ -607,5 +608,5 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Normalizes value so that it can be imported into the field.
      */
-    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): mixed;
+    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): mixed;
 }

@@ -289,7 +289,7 @@ class ElementImporter extends BaseImporter
     public function importItem(array $data): void
     {
         // figure out if we're adding or updating
-        $element = $this->getElement($data);
+        $element = $this->getRootElement();
 
         $item = app(Import::class)->processData($this, $data, $element);
 
@@ -301,6 +301,7 @@ class ElementImporter extends BaseImporter
 
         $element->setAttributesFromRequest($attributes);
 
+        // TODO: make the match criteria work for nested elements too!
         $fields = $this->normalizeFields($element, $fields);
 
         $element->setFieldValues($fields);
@@ -308,27 +309,21 @@ class ElementImporter extends BaseImporter
         Elements::saveElement($element);
     }
 
-    private function getElement(array $data): ElementInterface
+    private function getRootElement(): ElementInterface
     {
         // figure out if we're adding or editing
         $element = new $this->className;
-
         // if null then return a brand new ElementInterface object with just the siteId set to the selected value
         if ($this->matchCriteria === null) {
             $element->siteId = $this->site->id;
 
             return $element;
         }
-
         if (is_array($this->matchCriteria)) {
             $query = $element::find();
-            $criteria = [];
-
-            foreach ($this->matchCriteria as $key => $value) {
-                if (array_key_exists((string) $value, $data)) {
-                    $criteria[$key] = $data[$value];
-                }
-            }
+            // by now the match criteria from various sources (ui, config, transformer) should have been merged,
+            // and the values from incoming data should have been applied to it
+            $criteria = $this->matchCriteria;
 
             if (empty($criteria)) {
                 $element->siteId = $this->site?->id;
@@ -346,15 +341,15 @@ class ElementImporter extends BaseImporter
         return $element;
     }
 
-    private function normalizeFields(ElementInterface $element, array $fields): array
+    private function normalizeFields(ElementInterface $rootElement, array $data): array
     {
-        $fieldLayout = $element->getFieldLayout();
+        $fieldLayout = $rootElement->getFieldLayout();
 
         if (! $fieldLayout) {
-            return $fields;
+            return $data;
         }
 
-        foreach ($fields as $handle => $value) {
+        foreach ($data as $handle => $value) {
             $field = $fieldLayout->getFieldByHandle($handle);
             // if we don't have a field, or it doesn't have a normalizeValueForImport() method,
             // we don't have to worry about extra normalization, so carry on
@@ -365,9 +360,9 @@ class ElementImporter extends BaseImporter
                 continue;
             }
 
-            $fields[$handle] = $field->normalizeValueForImport($value, $element);
+            $data[$handle] = $field->normalizeValueForImport($value, $this, $rootElement);
         }
 
-        return $fields;
+        return $data;
     }
 }

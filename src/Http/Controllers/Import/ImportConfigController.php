@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Importers\ElementImporter;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
@@ -307,6 +308,12 @@ class ImportConfigController
                 'array',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
             ],
+            'matchCriteria' => [
+                'nullable',
+                'array',
+                // we're intentionally using validateMap() here as we basically want to check the same thing for map and matchCriteria
+                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
+            ],
         ]);
 
         if (property_exists($import, 'fieldLayoutId')) {
@@ -315,6 +322,7 @@ class ImportConfigController
         }
 
         $import->map($this->request->input('map', $import->map));
+        $import->matchCriteria($this->request->input('matchCriteria', $import->matchCriteria));
 
         if (! $this->importService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
@@ -333,38 +341,11 @@ class ImportConfigController
         [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
 
         $fieldHandle = $this->request->input('fieldHandle');
-        $ownerPrefix = $this->request->input('ownerPrefix');
         $currentPartialMap = $this->request->input('currentMap');
+        $currentPartialMatchCriteria = $this->request->input('currentMatchCriteria');
 
-        if (is_string($currentPartialMap)) {
-            $currentPartialMap = Json::decodeIfJson($currentPartialMap);
-
-            // if you added mapping via a slideout, closed that slideout by clicking "apply" and you then open that slideout again,
-            // if the config we have in the hidden field is different to the one coming from the server,
-            // use the one coming from the hidden field
-            $fieldHandleArray = ImportHelper::bracketsToArray($fieldHandle);
-            $savedPartialMap = $import->map ? array_reduce(
-                $fieldHandleArray,
-                static fn ($value, $part) => $value && is_iterable($value)
-                    ? $value[$part] ?? null
-                    : null,
-                $import->map
-            ) : null;
-
-            if ($currentPartialMap != $savedPartialMap) {
-                $map = $import->map;
-                $ref = &$map;
-                foreach ($fieldHandleArray as $part) {
-                    if (! is_array($ref[$part] ?? null)) {
-                        $ref[$part] = [];
-                    }
-                    $ref = &$ref[$part];
-                }
-                $ref = $currentPartialMap;
-                unset($ref);
-                $import->map($map);
-            }
-        }
+        $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialMap, 'map');
+        $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialMatchCriteria, 'matchCriteria');
 
         $cols = [];
 
@@ -374,7 +355,7 @@ class ImportConfigController
                 $fieldLayout = $provider->getFieldLayout();
                 $cols[$provider->getHandle()] = [
                     'provider' => $provider,
-                    'destinationCols' => ImportHelper::getDestinationColsForFieldLayout($fieldLayout, $field, $provider, $ownerPrefix),
+                    'destinationCols' => ImportHelper::getDestinationColsForFieldLayout($fieldLayout, $field, $provider, $fieldHandle),
                 ];
             }
         }
@@ -414,11 +395,44 @@ class ImportConfigController
             );
     }
 
+    private function applyCurrentPartialValue(BaseImporter $import, string $fieldHandle, mixed $currentPartialValue, string $type): void
+    {
+        if (is_string($currentPartialValue)) {
+            $currentPartialValue = Json::decodeIfJson($currentPartialValue);
+
+            // if you added this via a slideout, closed that slideout by clicking "apply" and you then open that slideout again,
+            // if the config we have in the hidden field is different to the one coming from the server,
+            // use the one coming from the hidden field
+            $fieldHandleArray = Arr::bracketsToArray($fieldHandle);
+            $savedPartialValue = $import->$type ? array_reduce(
+                $fieldHandleArray,
+                static fn ($value, $part) => $value && is_iterable($value)
+                    ? $value[$part] ?? null
+                    : null,
+                $import->$type
+            ) : null;
+
+            if ($currentPartialValue != $savedPartialValue) {
+                $value = $import->$type;
+                $ref = &$value;
+                foreach ($fieldHandleArray as $part) {
+                    if (! is_array($ref[$part] ?? null)) {
+                        $ref[$part] = [];
+                    }
+                    $ref = &$ref[$part];
+                }
+                $ref = $currentPartialValue;
+                unset($ref);
+                $import->$type($value);
+            }
+        }
+    }
+
     public function storeNestedFieldMapping(): Response
     {
         [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
 
-        $fieldHandle = ImportHelper::bracketsToDots($this->request->input('fieldHandle', $field->handle));
+        $fieldHandle = Arr::dotifyKey($this->request->input('fieldHandle', $field->handle));
 
         // validate the map fragment;
         // if it errors, a toast notification will show with the error
@@ -429,14 +443,27 @@ class ImportConfigController
                 'array',
                 fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
             ],
+            "matchCriteria.$fieldHandle" => [
+                'nullable',
+                'array',
+                // we're intentionally using validateMap() here as we basically want to check the same thing for map and matchCriteria
+                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
+            ],
         ]);
 
         $map = $this->request->input("map.$fieldHandle");
+        $matchCriteria = $this->request->input("matchCriteria.$fieldHandle");
 
         $map = array_map(ImportHelper::ensureCleanArray(...), $map);
+        $matchCriteria = array_map(ImportHelper::ensureCleanArray(...), $matchCriteria);
 
         // and return it
-        return $this->asJsonSuccess(null, ['fieldHandle' => $fieldHandle, 'map' => $map]);
+        return $this->asJsonSuccess(null, [
+            'fieldHandle' => $fieldHandle,
+            'map' => $map,
+            'matchCriteria' => $matchCriteria,
+            'namespace' => $this->request->header('X-Craft-Namespace'),
+        ]);
     }
 
     private function fieldImportUids(): array

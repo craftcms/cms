@@ -45,6 +45,7 @@ abstract class BaseImporter
 
     public ?string $uid = null;
 
+    // todo: this should probably go?
     public bool $editable = false;
 
     public function __construct(?array $config = null)
@@ -236,22 +237,7 @@ abstract class BaseImporter
      */
     public function map(array $map): self
     {
-        // json to array
-        foreach ($map as &$value) {
-            if (! is_string($value)) {
-                continue;
-            }
-
-            $json = json_decode($value, true);
-
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $value = $json;
-            }
-        }
-        unset($value);
-
-        // set
-        $this->map = $map;
+        $this->map = $this->unpackJson($map);
 
         return $this;
     }
@@ -264,9 +250,30 @@ abstract class BaseImporter
      */
     public function matchCriteria(array $matchCriteria): self
     {
-        $this->matchCriteria = $matchCriteria;
+        $this->matchCriteria = $this->unpackJson($matchCriteria);
 
         return $this;
+    }
+
+    /**
+     * Ensure that any json values that might be present in the array are unpacked.
+     */
+    private function unpackJson(array $data): array
+    {
+        foreach ($data as &$value) {
+            if (! is_string($value)) {
+                continue;
+            }
+
+            $json = json_decode($value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $value = $json;
+            }
+        }
+        unset($value);
+
+        return $data;
     }
 
     /**

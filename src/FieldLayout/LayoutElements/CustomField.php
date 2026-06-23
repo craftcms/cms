@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -902,16 +903,22 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             return [];
         }
 
+        if (method_exists($field, 'getFieldsForImportMapping')) {
+            return $field->getFieldsForImportMapping();
+        }
+
         $attribute = $this->attribute();
-        [$prefixedHandle, $prefixedHandleWithoutMap, $prefixedHandleWithoutMapAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
+        [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
 
         $content = [
             'handle' => $attribute,
             'label' => $this->label(),
+            'prefixedHandleForMap' => $prefixedHandleForMap,
+            'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
             'prefixedHandle' => $prefixedHandle,
-            'prefixedHandleWithoutMap' => $prefixedHandleWithoutMap,
-            'prefixedHandleWithoutMapAsArray' => $prefixedHandleWithoutMapAsArray,
+            'prefixedHandleAsArray' => $prefixedHandleAsArray,
             'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
+            'canBeMatchCriteria' => $this->canBeMatchCriteria() ?? false,
         ];
 
         if ($content['isContainer']) {
@@ -919,5 +926,30 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         return $content;
+    }
+
+    public function canBeMatchCriteria(): bool
+    {
+        if ($this instanceof ImportableElementContainerFieldInterface) {
+            return false;
+        }
+
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return false;
+        }
+
+        if ($field instanceof BaseRelationField) {
+            return false;
+        }
+
+        if (method_exists($field, 'canBeImportMatchCriteria')) {
+            return $field->canBeImportMatchCriteria();
+        }
+
+        return true;
     }
 }

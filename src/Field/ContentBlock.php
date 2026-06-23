@@ -27,6 +27,7 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
 use CraftCms\Cms\Gql\Types\Input\ContentBlock as ContentBlockInputType;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -846,12 +847,12 @@ JS, [
      * The value has to be an array; each item in the array represents a field inside this singular nested entry.
      */
     #[Override]
-    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
+    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): array
     {
         if (! is_array($value)) {
             return [];
         }
 
-        return $this->normalizeNestedEntryForImport($value, $this->getFieldLayout(), $owner);
+        return $this->normalizeNestedEntryForImport($value, $this->getFieldLayout(), $rootOwner);
     }
 }

@@ -44,6 +44,7 @@ use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -1161,7 +1162,7 @@ JS, [
     }
 
     #[Override]
-    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): mixed
+    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): mixed
     {
         // by default, just return the value we were given
         return $value;

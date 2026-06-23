@@ -264,4 +264,55 @@ class Arr extends \Illuminate\Support\Arr
 
         return $key;
     }
+
+    /**
+     * Normalizes the key from dot notation into brackets notation.
+     * The opposite of `dotifyKey`.
+     */
+    public static function undotifyKey(int|string $key): string|int
+    {
+        if (is_string($key) && str_contains($key, '.')) {
+            $parts = explode('.', $key);
+            $first = array_shift($parts);
+
+            return $first.'['.implode('][', $parts).']';
+        }
+
+        return $key;
+    }
+
+    /**
+     * Normalizes the string from brackets notation into an array.
+     */
+    public static function bracketsToArray(string $string): array
+    {
+        return $string
+                |> (fn ($v) => str_replace(']', '', $v))
+                |> (fn ($v) => explode('[', (string) $v));
+    }
+
+    /**
+     * Returns an array of unique dot-notated keys from a given multidimensional array.
+     */
+    public static function uniqueDotifiedKeys(array $array, string $prepend = ''): array
+    {
+        $keys = [];
+
+        foreach ($array as $key => $value) {
+            $isListItem = is_int($key);
+            $path = $isListItem
+                ? $prepend
+                : ($prepend === '' ? (string) $key : $prepend.'.'.$key);
+
+            if (! $isListItem && $path !== '') {
+                $keys[] = $path;
+            }
+
+            if (is_array($value)) {
+                $keys = array_merge($keys, self::flattenKeys($value, $path));
+            }
+        }
+
+        return array_values(array_unique($keys));
+    }
 }

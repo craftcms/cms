@@ -119,4 +119,10 @@ JS, [
 
         return $items;
     }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        return true;
+    }
 }

@@ -51,21 +51,6 @@ class ImportHelper
         return $value;
     }
 
-    public static function bracketsToDots(string $string): string
-    {
-        return $string
-                |> (fn ($v) => str_replace('][', '.', $v))
-                |> (fn ($v) => str_replace(['['], '.', $v))
-                |> (fn ($v) => str_replace([']'], '', $v));
-    }
-
-    public static function bracketsToArray(string $string): array
-    {
-        return $string
-                |> (fn ($v) => str_replace(']', '', $v))
-                |> (fn ($v) => explode('[', (string) $v));
-    }
-
     public static function getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix): array
     {
         if ($ownerField instanceof ImportableElementContainerFieldInterface) {
@@ -75,15 +60,15 @@ class ImportHelper
             } else {
                 $prefixedHandle = $namePrefix."[$attribute]";
             }
-            $prefixedHandleWithoutMap = preg_replace('/^map\[([^\]]+)\]/', '$1', $prefixedHandle);
         } else {
-            $prefixedHandleWithoutMap = $attribute;
-            $prefixedHandle = 'map['.$attribute.']';
+            $prefixedHandle = $attribute;
         }
 
-        $prefixedHandleWithoutMapAsArray = self::bracketsToArray($prefixedHandleWithoutMap);
+        $prefixedHandleForMap = Html::namespaceInputName($prefixedHandle, 'map');
+        $prefixedHandleForMatchCriteria = Html::namespaceInputName($prefixedHandle, 'matchCriteria');
+        $prefixedHandleAsArray = Arr::bracketsToArray($prefixedHandle);
 
-        return [$prefixedHandle, $prefixedHandleWithoutMap, $prefixedHandleWithoutMapAsArray];
+        return [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandle, $prefixedHandleAsArray];
     }
 
     public static function remapData(array $map, array $data): array

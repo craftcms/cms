@@ -43,6 +43,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -1775,7 +1776,7 @@ JS,
      * or by "new:X" key where X is an incremented integer
      */
     #[Override]
-    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
+    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): array
     {
         if (! is_array($value)) {
             return [];
@@ -1813,22 +1814,32 @@ JS,
 
             // try to match existing matrix entries,
             // but only if owner already has an ID; no point trying to match nested entry for a new owner element
-            if (($owner?->id) && isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
+            if (($rootOwner?->id)) {
                 // try to find an existing entry
                 $query = Entry::find()
                     ->type($entry['type'])
                     ->fieldId($this->id)
-                    ->ownerId($owner->id);
+                    ->ownerId($rootOwner->id);
 
                 $criteria = [];
 
-                foreach ($entry['matchCriteria'] as $dbKey => $dataKey) {
-                    if (array_key_exists((string) $dataKey, $entry)) {
-                        $criteria[$dbKey] = $entry[$dataKey];
-                    } elseif (array_key_exists((string) $dbKey, $entry['fields'])) {
-                        $criteria[$dbKey] = $entry['fields'][$dbKey];
-                    }
-                }
+                $matchCriteria = [];
+                // TODO: do we want to keep the option of defining matchCriteria in the incoming data?
+                //                // if the matchCriteria are coming from the data file
+                //                if (isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
+                //                    $matchCriteria = $entry['matchCriteria'];
+                //
+                //                    foreach ($matchCriteria as $dbKey => $dataKey) {
+                //                        if (array_key_exists((string)$dataKey, $entry)) {
+                //                            $criteria[$dbKey] = $entry[$dataKey];
+                //                        } elseif (array_key_exists((string)$dbKey, $entry['fields'])) {
+                //                            $criteria[$dbKey] = $entry['fields'][$dbKey];
+                //                        }
+                //                    }
+                //                }
+
+                // if the matchCriteria are coming from the
+                // $this->processMatchCriteria($config->matchCriteria, $data, $originalData, $criteria);
 
                 if (! empty($criteria)) {
                     Typecast::configure($query, $criteria);

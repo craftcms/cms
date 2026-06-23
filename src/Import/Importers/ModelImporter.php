@@ -99,8 +99,9 @@ class ModelImporter extends BaseImporter
         return array_map(fn ($col) => [
             'label' => $col,
             'handle' => $col,
-            'prefixedHandle' => $col,
-            'prefixedHandleWithoutMap' => [$col],
+            'prefixedHandleForMap' => $col,
+            'prefixedHandleForMatchCriteria' => $col,
+            'prefixedHandle' => [$col],
             'isContainer' => false,
         ], $columns);
     }

@@ -27,6 +27,10 @@
 {% endif %}
 
 
+
+
+{# ---------------------- MACROS ---------------------- #}
+
 {% macro fieldLayoutTable(destinationCols, sourceDataCols, import, field = null) %}
     <table>
         {% for col in destinationCols %}
@@ -46,60 +50,55 @@
     </table>
 {% endmacro %}
 
+
 {% macro row(col, import, sourceDataCols) %}
     <tr>
         <td>
             {{ col.label }} <pre>({{ col.handle }})</pre>
         </td>
         <td>
-            {% set nestedFieldValue = import.map ? col.prefixedHandleWithoutMapAsArray|reduce(
-                (value, part) => value and value is iterable ? attribute(value, part) : null,
+            {% set nestedFieldValueForMap = import.map ? col.prefixedHandleAsArray|reduce(
+                (value, part) => value and value is iterable and value[part] is defined ? attribute(value, part) : null,
                 import.map) : null %}
 
-{#            {{ dump(nestedFieldValue) }}#}
+            {% set nestedFieldValueForMatchCriteria = import.matchCriteria ? col.prefixedHandleAsArray|reduce(
+                (value, part) => value and value is iterable and value[part] is defined ? attribute(value, part) : null,
+                import.matchCriteria) : null %}
+
+{#            {{ dump(nestedFieldValueForMap) }}#}
             {% if col.isContainer %}
-                {{ hiddenInput(col.prefixedHandle, nestedFieldValue|json_encode) }}
+                {{ hiddenInput(col.prefixedHandleForMap, nestedFieldValueForMap|json_encode) }}
+                {{ hiddenInput(col.prefixedHandleForMatchCriteria, nestedFieldValueForMatchCriteria|json_encode) }}
                 <a href="#"
                    class="btn mapping-slideout"
                    data-field-uid="{{ col.fieldUid ?? '' }}" {# this is the global field UID #}
-                   data-field-handle="{{ col.prefixedHandleWithoutMap }}" {# this will be the layout handle, so can be overwritten #}
+                   data-field-handle="{{ col.prefixedHandle }}" {# this will be the layout handle, so can be the overwritten one #}
                    data-import-uid="{{ import.uid }}"
-                   data-owner-prefix="{{ col.prefixedHandle }}"
                 >
                     Map field
                 </a>
 
-{#                {{ col.prefixedHandle }}#}
+                {#{{ dump(col) }}#}
             {% else %}
                 {{ forms.selectField({
-                    name: col.prefixedHandle,
+                    name: col.prefixedHandleForMap,
                     options: sourceDataCols,
-                    value: nestedFieldValue
+                    value: nestedFieldValueForMap
                 }) }}
-{#                {{ col.prefixedHandle }}#}
+
+                {% if col.canBeMatchCriteria ?? false %}
+                    {{ forms.checkboxField({
+                        name: col.prefixedHandleForMatchCriteria,
+                        label: 'Use this field’s value to match against an existing element.'|t('app'),
+                        checked: nestedFieldValueForMatchCriteria,
+                    }) }}
+                {% endif %}
+                {#{{ dump(col) }}#}
             {% endif %}
         </td>
     </tr>
 {% endmacro %}
 
-{#<div>
-    <p>
-        mapping stuff goes here<br />
-        if it's element-based, we want a list of all the field layout elements that are importable
-        and a list of all the keys from the data array;
-
-        for the nestable fields (element container fields?), we don't show the dropdown, but a button that triggers a modal;
-        in that modal (or maybe a slideout) there's a table that allows you to map the contents of that field;
-        if there's a nestable field in there - another modal (or slideout) can be open - and so on
-    </p>
-    <p>
-        maybe:<br />
-        if we're editing something that already exists, this is prepopulated with what's already saved;<br />
-        if it's a new config (or the map in the config is empty), you use the UI to create your mapping;<br />
-        which means you can create a new config, leave mapping empty, then go edit the mapping in the php file,
-        if that's easier for you and then go back here to tweak
-    </p>
-</div>#}
 {#{{ dump(destinationCols) }}#}
 {#{{ dump(sourceDataCols) }}#}
 
@@ -112,12 +111,10 @@ $('.mapping-slideout').on('activate', function(e) {
     const fieldUid = $(this).data('field-uid');
     const fieldHandle = $(this).data('field-handle');
     const importUid = $(this).data('import-uid');
-    const ownerPrefix = $(this).data('owner-prefix');
-    let $input = $(this).prev('input[type="hidden"]');
-
-    console.log($input);
-
+    let $mapInput = $(this).prevAll('input[type="hidden"][name^="map["], input[type="hidden"][name*="[map]["]');
+    let $matchCriteriaInput = $(this).prevAll('input[type="hidden"][name^="matchCriteria["], input[type="hidden"][name*="[matchCriteria]["]');
     let data;
+
     try {
         const slideout = new Craft.CpScreenSlideout(
             'import/configs/editNestedFieldMapping',
@@ -126,16 +123,16 @@ $('.mapping-slideout').on('activate', function(e) {
                     'fieldUid': fieldUid,
                     'fieldHandle': fieldHandle,
                     'importUid': importUid,
-                    'ownerPrefix': ownerPrefix,
-                    'currentMap': $input.val(),
+                    'currentMap': $mapInput.val(),
+                    'currentMatchCriteria': $matchCriteriaInput.val(),
                 },
             }
         );
         slideout.on('submit', (ev) => {
             const data = ev.response.data;
-    console.log($input);
-    console.log(data.map);
-            $input.val(JSON.stringify(data.map));
+
+            $mapInput.val(JSON.stringify(data.map));
+            $matchCriteriaInput.val(JSON.stringify(data.matchCriteria));
         });
 {#        slideout.on('close', () => {#}
 {#            slideout.destroy();#}

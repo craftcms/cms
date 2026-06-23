@@ -428,10 +428,46 @@ class Import
         }
 
         $data = $event->data;
+        $originalData = $data;
+
+        // if we have a map here, hook it up; if we have both the map and the transformer,
+        // then the map is used first and then transformer can do further manipulation;
+        // if there's no map, the transformer acts as one on its own;
+        if ($config->map) {
+            $data = ImportHelper::remapData($config->map, $data);
+        }
+
+        $criteria = [];
+
+        // get the matchCriteria that are coming from the UI or from a file-based config
+        // and assign the right value coming from the $data
+        // this only works for the top-level data (e.g. root element, not nested ones)
+        $this->processMatchCriteria($config->matchCriteria, $data, $originalData, $criteria);
+
+        $transformer = $config->transformer;
+        if (is_object($transformer) && method_exists($transformer, 'additionalMatchCriteria')) {
+            // and now add any that can be coming from the transformer
+            $this->processMatchCriteria($transformer->additionalMatchCriteria($config, $data), $data, $originalData, $criteria);
+
+            $config->matchCriteria($criteria);
+        }
 
         $config->importItem($data);
 
         event(new DataImported($config, $data));
+    }
+
+    private function processMatchCriteria($matchCriteria, $data, $originalData, &$criteria): void
+    {
+        if (! empty($matchCriteria) && is_array($matchCriteria)) {
+            foreach ($matchCriteria as $handle => $value) {
+                if ($value == 1 || (is_string($value) && array_key_exists($value, $originalData))) {
+                    if (array_key_exists($handle, $data)) {
+                        $criteria[$handle] = $data[$handle];
+                    }
+                }
+            }
+        }
     }
 
     // TODO: might be able to delete this; currently only used by ImportConfigController::run()
@@ -517,13 +553,6 @@ class Import
 
     final public function processData(BaseImporter $config, array $data, mixed $element): array
     {
-        // if we have a map here, hook it up; if we have both the map and the transformer,
-        // then the map is used first and then transformer can do further manipulation;
-        // if there's no map, the transformer acts as one on its own;
-        if ($config->map) {
-            $data = ImportHelper::remapData($config->map, $data);
-        }
-
         // turn the data from the json/csv/xml file into a fractal collection
         $resource = new Item($data, $config->transformer);
         $resource->setMeta(['config' => $config, 'element' => $element]);
@@ -538,19 +567,8 @@ class Import
 
         $fractalData = $fractalManager->createData($resource);
 
-        // set the match criteria
-        // this can be done via the non-editable config - if that's what's used
-        // or for editable configs, it can be set via the transformer, so here
-        // or via the UI - this isn't done yet
-        $transformer = $fractalData->getResource()->getTransformer();
-        if ($transformer && method_exists($transformer, 'matchCriteria')) {
-            $matchCriteria = $transformer->matchCriteria($config, $data, $element);
-
-            $config->matchCriteria($matchCriteria);
-        }
-
         // todo: ->toArray() freaks out if the transformer is null; not sure if that's expected or not
-        if ($transformer === null) {
+        if ($fractalData->getResource()->getTransformer() === null) {
             return $fractalData->getResource()->getData();
         }
 
