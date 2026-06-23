@@ -10,6 +10,8 @@
 - Fixed a bug where the `previewTokenDuration` config setting was defaulting to 1 day, rather than to the `defaultTokenDuration` value. ([#18550](https://github.com/craftcms/cms/issues/18550))
 - Fixed a bug where nested elements weren’t showing validation errors. ([#19147](https://github.com/craftcms/cms/issues/19147))
 - Fixed a bug where error summaries weren’t properly linking to their corresponding fields’ error lists. ([#19147](https://github.com/craftcms/cms/issues/19147))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
 ## 5.10.7 - 2027-06-17
 
