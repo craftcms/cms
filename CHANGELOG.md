@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.8.1 - 2026-06-23
 
 - Fixed an error that occurred when saving an existing asset. ([#19152](https://github.com/craftcms/cms/issues/19152))
 
