@@ -131,6 +131,18 @@ it('defaults a blank sqlite database to the sqlite install database path', funct
         ]);
 });
 
+it('defaults missing database ports to integers for server-backed drivers', function (string $driver, int $port) {
+    $data = app(InstallController::class)->validateDbData([
+        'driver' => $driver,
+    ]);
+
+    expect($data['port'])->toBe($port);
+})->with([
+    'mysql' => ['mysql', 3306],
+    'mariadb' => ['mariadb', 3306],
+    'pgsql' => ['pgsql', 5432],
+]);
+
 it('normalizes sqlite install db config without server credentials', function () {
     $data = app(InstallController::class)->validateDbData([
         'driver' => 'sqlite',
