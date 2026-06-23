@@ -67,7 +67,7 @@ readonly class InstallController
         try {
             DB::reconnect()->getPdo();
             $showDbScreen = false;
-        } catch (PDOException $e) {
+        } catch (PDOException|SQLiteDatabaseDoesNotExistException $e) {
             if ($this->canControlDbConfig()) {
                 $showDbScreen = true;
             } else {

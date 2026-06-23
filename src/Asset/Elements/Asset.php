@@ -2919,7 +2919,6 @@ JS;
                 // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
                 if (
                     ($this->alt === null || $this->alt === '') &&
-                    isset($this->tempFilePath) &&
                     $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
                 ) {
                     $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
@@ -2932,7 +2931,6 @@ JS;
 
                 // Are we uploading an image that needs to be sanitized?
                 if (
-                    isset($this->tempFilePath) &&
                     $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
                     ($this->sanitizeOnUpload ?? (
                         ! request()->isCpRequest() ||
@@ -2944,10 +2942,7 @@ JS;
 
                 // if we're creating or replacing and image, get the width or height via getimagesize
                 // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
-                if (
-                    isset($this->tempFilePath) &&
-                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE)
-                ) {
+                if ($this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE)) {
                     $imageSize = getimagesize($this->tempFilePath);
                     if (isset($imageSize[0])) {
                         $fallbackWidth = $imageSize[0];

@@ -880,7 +880,18 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     public function setAttributesFromRequest($values): void
     {
-        unset($values['unverifiedEmail']);
+        unset(
+            $values['invalidLoginCount'],
+            $values['lastInvalidLoginDate'],
+            $values['lastLoginAttemptIp'],
+            $values['lastLoginDate'],
+            $values['lastPasswordChangeDate'],
+            $values['lockoutDate'],
+            $values['newPassword'],
+            $values['password'],
+            $values['unverifiedEmail'],
+            $values['verificationCodeIssuedDate'],
+        );
 
         if (isset($values['email'])) {
             $values['email'] = trim($values['email']);
