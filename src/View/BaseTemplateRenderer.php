@@ -45,8 +45,12 @@ abstract class BaseTemplateRenderer implements TemplateRendererInterface
      * replacement to {@see PageLifecycle}, keeping template rendering concerns
      * separate from page structure and asset injection.
      */
-    public function renderPageTemplate(string $template, array $variables, ?TemplateMode $templateMode = null): string
-    {
+    public function renderPageTemplate(
+        string $template,
+        array $variables,
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
+    ): string {
         $templateMode ??= TemplateMode::get();
 
         event($event = new PageTemplateRendering(static::class, $template, $variables, $templateMode));
@@ -64,7 +68,7 @@ abstract class BaseTemplateRenderer implements TemplateRendererInterface
 
         try {
             $output = $this->pageLifecycle->wrap(
-                fn () => $this->renderTemplate($template, $variables, $templateMode),
+                fn () => $this->renderTemplate($template, $variables, $templateMode, $resolvedTemplate),
             );
         } finally {
             $this->isRenderingPageTemplate = $isRenderingPageTemplate;

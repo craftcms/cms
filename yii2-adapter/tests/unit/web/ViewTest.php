@@ -210,7 +210,7 @@ class ViewTest extends TestCase
         );
 
         self::assertSame(
-            ['twig', 'html'],
+            ['twig', 'html', 'blade.php'],
             TemplateMode::get()->defaultTemplateExtensions()
         );
 

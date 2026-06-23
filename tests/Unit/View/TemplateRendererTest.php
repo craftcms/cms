@@ -45,16 +45,24 @@ class TemplateRendererTestRenderer implements TemplateRendererInterface
         return in_array($file, self::$supportedFiles, true);
     }
 
-    public function renderTemplate(string $template, array $variables, ?TemplateMode $templateMode = null): string
-    {
-        self::$renderedTemplate = [$template, $variables, $templateMode];
+    public function renderTemplate(
+        string $template,
+        array $variables,
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
+    ): string {
+        self::$renderedTemplate = [$template, $variables, $templateMode, $resolvedTemplate];
 
         return self::$renderTemplateOutput;
     }
 
-    public function renderPageTemplate(string $template, array $variables, ?TemplateMode $templateMode = null): string
-    {
-        self::$renderedPageTemplate = [$template, $variables, $templateMode];
+    public function renderPageTemplate(
+        string $template,
+        array $variables,
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
+    ): string {
+        self::$renderedPageTemplate = [$template, $variables, $templateMode, $resolvedTemplate];
 
         return self::$renderPageTemplateOutput;
     }
@@ -94,7 +102,7 @@ it('resolves templates using the requested template mode', function () {
     expect($renderer->renderTemplate('settings/example', ['value' => 'test'], TemplateMode::Cp))
         ->toBe('rendered-template');
     expect(TemplateRendererTestRenderer::$renderedTemplate)
-        ->toBe(['settings/example', ['value' => 'test'], TemplateMode::Cp]);
+        ->toBe(['settings/example', ['value' => 'test'], TemplateMode::Cp, '/tmp/settings/example.blade.php']);
 });
 
 it('resolves page templates using the requested template mode and visibility', function () {
@@ -114,7 +122,7 @@ it('resolves page templates using the requested template mode and visibility', f
     expect($renderer->renderPageTemplate('articles/show', ['entry' => 'test'], TemplateMode::Site, publicOnly: true))
         ->toBe('rendered-page-template');
     expect(TemplateRendererTestRenderer::$renderedPageTemplate)
-        ->toBe(['articles/show', ['entry' => 'test'], TemplateMode::Site]);
+        ->toBe(['articles/show', ['entry' => 'test'], TemplateMode::Site, '/tmp/articles/show.blade.php']);
 });
 
 it('throws a template loader exception for missing templates', function () {

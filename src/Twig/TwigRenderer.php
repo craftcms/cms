@@ -47,7 +47,8 @@ class TwigRenderer extends BaseTemplateRenderer
     public function renderTemplate(
         string $template,
         array $variables = [],
-        ?TemplateMode $templateMode = null
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
     ): string {
         return $this->renderInternal(
             template: $template,

@@ -12,28 +12,24 @@ use Illuminate\Support\Facades\Blade;
 #[Scoped]
 class BladeRenderer extends BaseTemplateRenderer
 {
-    private string $file;
-
     public function supports(string $file): bool
     {
-        if (str_ends_with($file, '.blade.php')) {
-            $this->file = $file;
-
-            return true;
-        }
-
-        return false;
+        return str_ends_with($file, '.blade.php');
     }
 
-    public function renderTemplate(string $template, array $variables, ?TemplateMode $templateMode = null): string
-    {
+    public function renderTemplate(
+        string $template,
+        array $variables,
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
+    ): string {
         return $this->renderInternal(
             template: $template,
             variables: $variables,
             templateMode: $templateMode,
-            render: fn (string $template, array $variables) => $template
-                ? view($template, $variables)->render()
-                : view()->file($this->file, $variables)->render()
+            render: fn (string $template, array $variables) => $resolvedTemplate
+                ? view()->file($resolvedTemplate, $variables)->render()
+                : view($template, $variables)->render()
         );
     }
 

@@ -20,8 +20,12 @@ class BaseTemplateRendererTestRenderer extends BaseTemplateRenderer
         return true;
     }
 
-    public function renderTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
-    {
+    public function renderTemplate(
+        string $template,
+        array $variables = [],
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
+    ): string {
         return $this->renderInternal(
             $template,
             $variables,

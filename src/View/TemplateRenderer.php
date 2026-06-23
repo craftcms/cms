@@ -62,7 +62,7 @@ class TemplateRenderer
             throw new TemplateLoaderException($template, t('Unable to find the template “{template}”.', ['template' => $template]));
         }
 
-        return $this->rendererForFile($resolvedTemplate)->renderTemplate($template, $variables, $templateMode);
+        return $this->rendererForFile($resolvedTemplate)->renderTemplate($template, $variables, $templateMode, $resolvedTemplate);
     }
 
     public function renderPageTemplate(
@@ -77,6 +77,6 @@ class TemplateRenderer
             throw new TemplateLoaderException($template, t('Unable to find the template “{template}”.', ['template' => $template]));
         }
 
-        return $this->rendererForFile($resolvedTemplate)->renderPageTemplate($template, $variables, $templateMode);
+        return $this->rendererForFile($resolvedTemplate)->renderPageTemplate($template, $variables, $templateMode, $resolvedTemplate);
     }
 }
