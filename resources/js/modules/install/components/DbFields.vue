@@ -141,11 +141,11 @@
     <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
       <CraftInput
         :label="isSqlite ? t('Database File Path') : t('Database Name')"
-        name="name"
+        name="database"
         id="db-database"
         v-model="model.database"
         :placeholder="currentDefaults.database"
-        :errors="errors?.database"
+        :error="errors?.database"
       />
     </div>
 

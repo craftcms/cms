@@ -308,7 +308,7 @@ readonly class InstallController
         }
 
         $data['host'] ??= $defaults['host'];
-        $data['port'] ??= $defaults['port'];
+        $data['port'] ??= (int) $defaults['port'];
         $data['username'] ??= $defaults['username'];
         $data['password'] ??= '';
         $data['prefix'] ??= $defaults['prefix'];
