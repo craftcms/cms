@@ -438,6 +438,15 @@ export function buildGarnishCompat(): GarnishCompatNamespace {
     }
   }
 
+  // --- Listbox onChange → jQuery-wrapped option ----------------------------
+  // The modern `Listbox.select()` calls `onChange(optionElement, index)` with a
+  // native element, but legacy/consumer code (e.g. the FLD) expects a jQuery
+  // collection so it can do `$selectedOption[0]?.dataset.library`. Wrap the
+  // compatified Listbox so a legacy `onChange` receives `$(option)`.
+  if (typeof G.Listbox === 'function') {
+    wrapListboxOnChange(G.Listbox as ConcreteCtor);
+  }
+
   // --- jQuery-only surface (re-added from core, which omitted it) -----------
 
   G.isJquery = isJquery;
@@ -529,6 +538,48 @@ function installJqueryFnSugar(): void {
         : this.trigger(name);
     };
   }
+}
+
+/**
+ * Patch a compatified `Listbox` so a legacy `onChange` setting is handed a
+ * jQuery-wrapped option element (matching the legacy `select()` behavior, which
+ * called `this.settings.onChange($selectedOption, index)`). We wrap the
+ * setting's callback at `setSettings` time: the modern `select()` still calls
+ * `onChange(option, index)` with a native element, but our wrapper re-wraps that
+ * first arg with `$()` before delegating to the user's callback.
+ *
+ * No-op when jQuery is absent (the native element is passed through), and the
+ * default no-op callback is left untouched.
+ */
+function wrapListboxOnChange(Listbox: ConcreteCtor): void {
+  const proto = Listbox.prototype as {
+    setSettings?: (
+      settings?: Record<string, unknown>,
+      defaults?: Record<string, unknown>
+    ) => void;
+  };
+  const original = proto.setSettings;
+  if (typeof original !== 'function') {
+    return;
+  }
+
+  proto.setSettings = function patchedSetSettings(
+    this: object,
+    settings?: Record<string, unknown>,
+    defaults?: Record<string, unknown>
+  ): void {
+    if (settings && typeof settings.onChange === 'function') {
+      const userOnChange = settings.onChange as (...args: unknown[]) => void;
+      settings = {
+        ...settings,
+        onChange: (option: unknown, ...rest: unknown[]): void => {
+          const arg = resolveJQuery() ? toJq(option) : option;
+          userOnChange.call(this, arg, ...rest);
+        },
+      };
+    }
+    original.call(this, settings, defaults);
+  };
 }
 
 function isCompatifiableClass(key: string, value: unknown): boolean {

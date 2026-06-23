@@ -5,6 +5,8 @@
  * Plain numeric/string constants only — no jQuery dependency.
  */
 
+import type {Callback} from './types';
+
 // Key code constants
 export const BACKSPACE_KEY = 8;
 export const TAB_KEY = 9;
@@ -52,3 +54,9 @@ export const TEXT_NODE = 3;
 // Shake animation
 export const SHAKE_STEPS = 10;
 export const SHAKE_STEP_DURATION = 25;
+
+/**
+ * A shared no-op callback — the default for `onX` settings hooks (the modern
+ * replacement for the legacy `$.noop`). Typed as {@link Callback}.
+ */
+export const noop: Callback = () => {};

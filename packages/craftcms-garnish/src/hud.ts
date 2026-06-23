@@ -30,7 +30,7 @@
 
 import {Base} from './base';
 import {bod, globals, win} from './globals';
-import {ESC_KEY, TAB_KEY} from './constants';
+import {ESC_KEY, TAB_KEY, noop} from './constants';
 import {getUiLayerManager} from './managers/registry';
 import {
   getElement,
@@ -43,7 +43,7 @@ import {focusIsInside, getKeyboardFocusableElements} from './utils/focus';
 import {getFocusableElements} from './utils/focusable';
 import {requestAnimationFrame} from './utils/animation';
 import {isPlainObject, within} from './utils/misc';
-import type {ElementInput, GarnishBaseSettings} from './types';
+import type {Callback, ElementInput, GarnishBaseSettings} from './types';
 import type {GarnishEvent} from './events';
 
 /** One of the four sides a HUD can be anchored on, relative to its trigger. */
@@ -57,10 +57,6 @@ export type HUDBodyContents =
   | NodeListOf<Node>
   | null
   | undefined;
-
-type HUDCallback = (...args: unknown[]) => void;
-
-const noop: HUDCallback = () => {};
 
 /**
  * Settings accepted by {@link HUD}. Pass a `Partial<HUDSettings>` to the
@@ -98,11 +94,11 @@ export interface HUDSettings extends GarnishBaseSettings {
   /** Render a shade/backdrop behind the HUD. Default `true`. */
   withShade: boolean;
   /** Callback invoked when the HUD is shown. Default no-op. */
-  onShow: HUDCallback;
+  onShow: Callback;
   /** Callback invoked when the HUD is hidden. Default no-op. */
-  onHide: HUDCallback;
+  onHide: Callback;
   /** Callback invoked when the HUD's body form is submitted. Default no-op. */
-  onSubmit: HUDCallback;
+  onSubmit: Callback;
   /** An element whose `activate` should hide the HUD (e.g. a close button). Default `null`. */
   closeBtn: ElementInput | null;
   /** Reposition when the main-content element fires `resize`. Default `true`. */

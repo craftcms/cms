@@ -1,6 +1,7 @@
 import {
   Base,
   ESC_KEY,
+  Listbox,
   RETURN_KEY,
   hasAttr,
   requestAnimationFrame,
@@ -11,6 +12,7 @@ import {ElementDrag, TabDrag} from './drags';
 import {fldTabData, fldElementData, hudData, htmlToElement} from './support';
 import type {FieldLayoutDesignerSettings, FieldLayoutConfig} from './types';
 import {t} from '@craftcms/cp';
+import {Appearance} from '../../../../packages/craftcms-cp/src';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/Listbox/Slideout return or
@@ -50,7 +52,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   $fields: any = null;
   $createFieldBtn: any = null;
 
-  libraryPicker: any = null;
+  libraryPicker: Listbox | null = null;
   tabGrid: any = null;
   elementDrag: ElementDrag | null = null;
   tabDrag: TabDrag | null = null;
@@ -140,26 +142,29 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     // Set up the library
     if (this.settings!.customizableUi) {
-      const $libraryPicker =
-        this.$libraryContainer.querySelector(':scope > .btngroup');
-      // Craft.Listbox is a jQuery seam; its onChange hands us a jQuery option.
-      this.libraryPicker = new Craft.Listbox($($libraryPicker), {
-        onChange: ($selectedOption: any) => {
-          const library = $selectedOption[0]?.dataset.library;
-          switch (library) {
-            case 'field':
-              this.$fieldLibrary.classList.remove('hidden');
-              this.$uiLibrary.classList.add('hidden');
-              this.$createFieldBtn.classList.remove('hidden');
-              break;
-            case 'ui':
-              this.$fieldLibrary.classList.add('hidden');
-              this.$uiLibrary.classList.remove('hidden');
-              this.$createFieldBtn.classList.add('hidden');
-              break;
-          }
-        },
-      });
+      const $libraryPicker = this.$libraryContainer.querySelector(
+        ':scope > .btngroup'
+      ) as HTMLElement | null;
+      if ($libraryPicker) {
+        this.libraryPicker = new Listbox($libraryPicker, {
+          onChange: (option) => {
+            const library = (option as HTMLElement | undefined)?.dataset
+              .library;
+            switch (library) {
+              case 'field':
+                this.$fieldLibrary.classList.remove('hidden');
+                this.$uiLibrary.classList.add('hidden');
+                this.$createFieldBtn.classList.remove('hidden');
+                break;
+              case 'ui':
+                this.$fieldLibrary.classList.add('hidden');
+                this.$uiLibrary.classList.remove('hidden');
+                this.$createFieldBtn.classList.add('hidden');
+                break;
+            }
+          },
+        });
+      }
     }
 
     this.addListener(this.$fieldSearch, 'input', () => {
@@ -185,13 +190,20 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     this.refreshSelectedFields();
 
+    const libraryFooter = document.createElement('div');
+    libraryFooter.classList.add('pt-4');
+
     // Add the “New Field” button — Craft.ui returns jQuery; unwrap to native.
-    this.$createFieldBtn = Craft.ui.createButton({
-      label: Craft.t('app', 'New field'),
-      class: 'mt-m fullwidth add icon dashed',
-      disabled: this.settings!.readOnly,
-    })[0];
-    this.$libraryContainer.appendChild(this.$createFieldBtn);
+    const createFieldBtn = document.createElement('craft-button');
+    createFieldBtn.appearance = Appearance.Outline;
+    createFieldBtn.size = 'small';
+    createFieldBtn.classList.add('w-full');
+    createFieldBtn.innerText = t('New field');
+    createFieldBtn.disabled = this.settings!.readOnly;
+
+    this.$createFieldBtn = createFieldBtn;
+    libraryFooter.appendChild(this.$createFieldBtn);
+    this.$libraryContainer.appendChild(libraryFooter);
 
     this.addListener(this.$createFieldBtn, 'activate', async () => {
       this.createField();

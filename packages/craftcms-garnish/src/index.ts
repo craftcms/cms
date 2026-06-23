@@ -34,6 +34,7 @@ import {UiLayerManager} from './managers/ui-layer-manager';
 import {setUiLayerManager} from './managers/registry';
 import {Modal, type ModalSettings} from './modal';
 import {HUD, type HUDSettings} from './hud';
+import {Listbox, type ListboxSettings} from './listbox';
 import {DisclosureMenu, type DisclosureMenuSettings} from './disclosure-menu';
 import {BaseDrag, type BaseDragSettings} from './drag/base-drag';
 import {Drag, type DragSettings} from './drag/drag';
@@ -42,7 +43,7 @@ import {DragSort, type DragSortSettings} from './drag/drag-sort';
 import {DragMove} from './drag-move';
 import {ResizeHandle} from './icons/resize-handle';
 import {garnishClassBus, globals, win, doc, bod} from './globals';
-import type {Constructor, GarnishBaseSettings} from './types';
+import type {Callback, Constructor, GarnishBaseSettings} from './types';
 
 import * as constants from './constants';
 import * as utils from './utils';
@@ -50,7 +51,7 @@ import * as utils from './utils';
 // --- Named exports (preferred for new code) ---------------------------------
 
 export {Base};
-export type {GarnishBaseSettings, ElementInput};
+export type {Callback, GarnishBaseSettings, ElementInput};
 export {
   EventEmitter,
   ClassEventBus,
@@ -67,6 +68,7 @@ export {UiLayerManager};
 export {Modal, type ModalSettings};
 export {HUD, type HUDSettings};
 export type {HUDOrientation, HUDBodyContents} from './hud';
+export {Listbox, type ListboxSettings};
 export {DisclosureMenu, type DisclosureMenuSettings};
 export type {
   DisclosureMenuItem,
@@ -178,6 +180,7 @@ export const Garnish = {
   UiLayerManager,
   Modal,
   HUD,
+  Listbox,
   DisclosureMenu,
   BaseDrag,
   Drag,

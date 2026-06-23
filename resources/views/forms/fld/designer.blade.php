@@ -58,29 +58,36 @@
 
         <div class="fld-library">
             @if ($customizableUi)
-                <section
-                    class="btngroup btngroup--exclusive small fullwidth"
+                <craft-button-group
+                    class="btngroup btngroup--exclusive"
                     aria-label="{{ \CraftCms\Cms\t('Layout element types') }}"
                 >
-                    <button
+                    <craft-button
                         type="button"
                         aria-pressed="true"
+                        appearance="outline"
+                        size="small"
                         data-library="field"
+                        class="w-full"
+                        active
                         @disabled($disabled)
-                    >{{ \CraftCms\Cms\t('Fields') }}</button>
-                    <button
+                    >{{ \CraftCms\Cms\t('Fields') }}</craft-button>
+                    <craft-button
                         type="button"
                         aria-pressed="false"
                         data-library="ui"
+                        appearance="outline"
+                        size="small"
+                        class="w-full"
                         @disabled($disabled)
-                    >{{ \CraftCms\Cms\t('UI Elements') }}</button>
-                </section>
+                    >{{ \CraftCms\Cms\t('UI Elements') }}</craft-button>
+                </craft-button-group>
             @endif
 
             <div class="fld-field-library">
                 <div class="texticon search icon clearable">
                     {!! \CraftCms\Cms\Cp\FormFields::textHtml([
-                        'class' => 'fullwidth',
+                        'class' => 'w-full',
                         'inputmode' => 'search',
                         'placeholder' => \CraftCms\Cms\t('Search'),
                         'disabled' => $disabled,

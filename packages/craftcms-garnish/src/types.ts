@@ -8,6 +8,13 @@ export interface GarnishBaseSettings {
 }
 
 /**
+ * A generic event/settings callback. Used for the `onX` setting hooks across
+ * Garnish components (e.g. `onShow`, `onChange`). A no-arg `() => void` is
+ * assignable to this, so stricter callbacks are covered too.
+ */
+export type Callback = (...args: unknown[]) => void;
+
+/**
  * Anything `addListener` / the DOM-listener registry will accept as an element
  * argument. jQuery is intentionally absent; the compat layer coerces jQuery
  * collections into one of these before calling core.

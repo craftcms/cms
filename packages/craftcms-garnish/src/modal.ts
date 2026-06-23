@@ -22,7 +22,7 @@
 
 import {Base} from './base';
 import {bod, globals, win} from './globals';
-import {ESC_KEY, FX_DURATION} from './constants';
+import {ESC_KEY, FX_DURATION, noop} from './constants';
 import {getUiLayerManager} from './managers/registry';
 import {BaseDrag} from './drag/base-drag';
 import {DragMove} from './drag-move';
@@ -39,12 +39,10 @@ import {
   releaseFocusWithin,
 } from './utils/focus';
 import {prefersReducedMotion} from './utils/animation';
-import type {GarnishBaseSettings} from './types';
+import type {Callback, GarnishBaseSettings} from './types';
 
 /** Duration (ms) of the shade fade, matching legacy. */
 const SHADE_FX_DURATION = 50;
-
-type ModalCallback = () => void;
 
 /** A focus target may be an element, or a function returning one. */
 type FocusTarget =
@@ -69,13 +67,13 @@ export interface ModalSettings extends GarnishBaseSettings {
   /** Minimum gutter (px) between the modal and the viewport edge. Default `10`. */
   minGutter: number;
   /** Callback invoked when the modal is shown. Default no-op. */
-  onShow: ModalCallback;
+  onShow: Callback;
   /** Callback invoked when the modal is hidden. Default no-op. */
-  onHide: ModalCallback;
+  onHide: Callback;
   /** Callback invoked after the modal finishes fading in. Default no-op. */
-  onFadeIn: ModalCallback;
+  onFadeIn: Callback;
   /** Callback invoked after the modal finishes fading out. Default no-op. */
-  onFadeOut: ModalCallback;
+  onFadeOut: Callback;
   /** Hide any other visible modal when this one is shown. Default `false`. */
   closeOtherModals: boolean;
   /** Hide the modal when the Escape key is pressed. Default `true`. */
@@ -96,8 +94,6 @@ export interface ModalSettings extends GarnishBaseSettings {
  * replacement for the legacy `$container.data('modal', this)`.
  */
 const containerModals = new WeakMap<Element, Modal>();
-
-const noop: ModalCallback = () => {};
 
 /**
  * An accessible, animated modal dialog — the jQuery-free TypeScript port of
@@ -699,7 +695,7 @@ export class Modal extends Base<ModalSettings> {
     direction: 'in' | 'out',
     duration: number,
     track: 'container' | 'shade',
-    complete?: ModalCallback
+    complete?: Callback
   ): void {
     const finalOpacity = direction === 'in' ? '1' : '0';
 
