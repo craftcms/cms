@@ -388,12 +388,8 @@
       "node_modules/@lion/ui/components/combobox/translations/zh.js"
     ]
   },
-  "_cp-DD153PCl.css": {
-    "file": "assets/cp-DD153PCl.css",
-    "src": "_cp-DD153PCl.css"
-  },
-  "_cp-DKRqHDT_.js": {
-    "file": "assets/cp-DKRqHDT_.js",
+  "_cp-CeT58QCY.js": {
+    "file": "assets/cp-CeT58QCY.js",
     "name": "cp",
     "imports": [
       "_useCraftData-D2M3QL77.js",
@@ -446,6 +442,10 @@
     "css": [
       "assets/cp-DD153PCl.css"
     ]
+  },
+  "_cp-DD153PCl.css": {
+    "file": "assets/cp-DD153PCl.css",
+    "src": "_cp-DD153PCl.css"
   },
   "_createCraftColumnHelper-BVlzPesP.js": {
     "file": "assets/createCraftColumnHelper-BVlzPesP.js",
@@ -1487,28 +1487,28 @@
     "isEntry": true
   },
   "resources/js/bootstrap/cp.ts": {
-    "file": "assets/cp-DIEGhsIi.js",
+    "file": "assets/cp-KGRxNWr7.js",
     "name": "cp",
     "src": "resources/js/bootstrap/cp.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_cp-DKRqHDT_.js"
+      "_cp-CeT58QCY.js"
     ]
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-D_wUyjo4.js",
+    "file": "assets/cp-lwxktwE_.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "_cp-BGj8ev7d.js",
-      "_cp-DKRqHDT_.js",
+      "_cp-CeT58QCY.js",
       "_CpQueueIndicator-D_BG10Ea.js",
       "_CpGlobalSidebar-BJPMRU9_.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-CbiByYRg.js",
+    "file": "assets/legacy-sXjT32-B.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
@@ -1519,7 +1519,7 @@
       "_login-form-CMKlBv30.js",
       "_totp-form--2gbSF1W.js",
       "_recovery-code-form-CQlnjYMf.js",
-      "_cp-DKRqHDT_.js",
+      "_cp-CeT58QCY.js",
       "_nav-list.ts-DjsniC4m.js",
       "packages/craftcms-cp/dist/components/nav-item/nav-item.ts.mjs",
       "_CpGlobalSidebar-BJPMRU9_.js",

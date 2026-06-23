@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `CraftCms\Yii2Adapter\Database\DeprecatedTable`.
+- Added `CraftCms\Cms\Translation\Formatter::asRelativeTime()`. ([#19146](https://github.com/craftcms/cms/pull/19146))
 - `craft\elements\Category::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\CategoryQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - `craft\elements\GlobalSet::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - `craft\elements\Tag::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\TagQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
@@ -11,12 +12,15 @@
 - Fixed a bug where parsed site names would get saved to the project config. ([#19123](https://github.com/craftcms/cms/issues/19123))
 - Fixed a bug where plugin `$styles`, `$scripts`, and `$publishables` weren’t published automatically when the plugin was installed or enabled. ([#19137](https://github.com/craftcms/cms/pull/19137))
 - Fixed several issues that occurred when Craft was configured with a custom (or no) `cpTrigger`. ([#19127](https://github.com/craftcms/cms/pull/19127))
+- Fixed a bug where Craft wasn’t applying the Settings → General timezone to PHP’s default timezone. ([#19138](https://github.com/craftcms/cms/pull/19138))
 - Fixed a bug where entry queries weren’t fetching structure data by default.
 - Fixed a bug where top-level structure elements were always repositioned to the end of the structure on save.
 - Fixed a bug where the Settings index page didn’t include “Globals”, “Categories”, or “Tags” links, when the concepts were supported. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - Fixed errors that occurred when editing global sets, category groups, and tag groups. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - Fixed a bug where it wasn’t possible to create new categories. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - Fixed an error that occurred when editing a category. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a bug where users’ Language preference field could be set to Arabic by default when the browser’s preferred language included a territory ID (e.g. `en-US`).
+- Fixed a bug where preview tokens weren’t taking the `previewTokenDuration` config setting into account.
 
 ## 6.0.0-alpha.8 - 2026-06-17
 
@@ -34,6 +38,7 @@
 - Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\` to reflect its broader applicability to components and rulesets.
 - Fixed errors that could occur when Craft user elements were expected but the authenticated user was resolved as a Laravel user model. ([#19051](https://github.com/craftcms/cms/pull/19051))
 - Fixed a bug where the `craft:install` command would hang if run within a production environment.
+- Fixed an error that could occur when `CraftCms\Cms\Support\DateTimeHelper::toDateTime()` returned a `DateTimeInterface` implementation other than `DateTime`. ([#19079](https://github.com/craftcms/cms/pull/19079))
 - Fixed a bug where “Replace relation” action buttons weren’t working.
 - Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
 - Fixed an error that could occur during Craft 6 upgrades when legacy relational or Matrix field settings included `showCardsInGrid`. ([#19047](https://github.com/craftcms/cms/pull/19047))

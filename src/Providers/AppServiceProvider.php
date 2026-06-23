@@ -95,6 +95,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->setNamespace();
         $this->bootAliases();
+        Cms::setDefaultTimezone();
 
         $this->app->booted(function () {
             /**
