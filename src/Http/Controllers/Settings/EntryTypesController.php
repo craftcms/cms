@@ -147,14 +147,6 @@ class EntryTypesController
             ]),
         ];
 
-        $translationMethodOptions = [
-            ['value' => TranslationMethod::None->value, 'label' => t('Not translatable')],
-            ['value' => TranslationMethod::Site->value, 'label' => t('Translate for each site')],
-            ['value' => TranslationMethod::SiteGroup->value, 'label' => t('Translate for each site group')],
-            ['value' => TranslationMethod::Language->value, 'label' => t('Translate for each language')],
-            ['value' => TranslationMethod::Custom->value, 'label' => t('Custom…')],
-        ];
-
         return [
             'brandNew' => $brandNew,
             'entryType' => [
@@ -175,7 +167,7 @@ class EntryTypesController
                 'showStatusField' => (bool) $entryType->showStatusField,
             ],
             'fieldLayoutDesigner' => $fieldLayoutDesigner,
-            'translationMethodOptions' => $translationMethodOptions,
+            'translationMethodOptions' => TranslationMethod::asOptions(),
             'typeName' => Entry::displayName(),
             'lowerTypeName' => Entry::lowerDisplayName(),
             'isMultiSite' => Sites::isMultiSite(),
