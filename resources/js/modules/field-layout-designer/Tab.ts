@@ -58,7 +58,7 @@ export class Tab extends Base {
       this.designer.tabGrid.refreshCols(true);
     });
 
-    this.$addBtn = $tabContent.querySelector(':scope > .fld-add-btn');
+    this.$addBtn = $tabContent.querySelector('[command="--add-field"]');
 
     const hud = new HUD(this.$addBtn, {
       hudClass: 'hud fld-library-hud',

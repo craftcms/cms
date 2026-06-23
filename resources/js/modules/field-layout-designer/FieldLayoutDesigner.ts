@@ -10,6 +10,7 @@ import {CardViewDesigner} from './CardViewDesigner';
 import {ElementDrag, TabDrag} from './drags';
 import {fldTabData, fldElementData, hudData, htmlToElement} from './support';
 import type {FieldLayoutDesignerSettings, FieldLayoutConfig} from './types';
+import {t} from '@craftcms/cp';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/Listbox/Slideout return or
@@ -86,7 +87,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       ':scope > .fld-workspace'
     );
     this.$tabContainer = $workspace.querySelector(':scope > .fld-tabs');
-    this.$newTabBtn = $workspace.querySelector(':scope > .fld-new-tab-btn');
+    this.$newTabBtn = $workspace.querySelector('[command="--add-tab"]');
     this.$libraryContainer = this.$innerContainer.querySelector(
       ':scope > .fld-library'
     );
@@ -323,9 +324,15 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     </div>
   </div>
   <div class="fld-tabcontent">
-    <button class="btn add icon dashed fullwidth fld-add-btn" type="button">
-      ${Craft.t('app', 'Add')}
-    </button>
+    <craft-button 
+      type="button" 
+      class="w-full fld-add-btn" 
+      command="--add-field"
+      appearance="outline"
+      size="small"
+    >
+      ${t('Add')}
+    </craft-button>
   </div>
 </div>
 `);

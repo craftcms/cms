@@ -498,7 +498,7 @@ export class ElementDrag extends BaseDrag {
 
     for (const $fieldContainer of $fieldContainers) {
       const $div = document.createElement('div');
-      const $addBtn = $fieldContainer.querySelector(':scope > .fld-add-btn');
+      const $addBtn = $fieldContainer.querySelector('[command="--add-field"]');
       if ($addBtn) {
         $addBtn.before($div);
       } else {

@@ -318,11 +318,6 @@
             }}
           </p>
 
-          <!--
-            The (legacy) field layout designer is server-rendered and booted via
-            useFieldLayoutDesigner — the same way a slideout loads CP content. Its
-            value is read back into the submission by the transform above.
-          -->
           <div ref="fldHost"></div>
         </div>
       </div>
