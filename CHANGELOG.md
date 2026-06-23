@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.9 - 2026-06-23
 
 - Added `CraftCms\Yii2Adapter\Database\DeprecatedTable`.
 - Added `CraftCms\Cms\Translation\Formatter::asRelativeTime()`. ([#19146](https://github.com/craftcms/cms/pull/19146))
