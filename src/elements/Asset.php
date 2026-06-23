@@ -3332,7 +3332,7 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
-            $isImage = Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE;
+            $isImage = isset($this->tempFilePath) && Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE;
 
             $fallbackWidth = null;
             $fallbackHeight = null;
@@ -3341,7 +3341,6 @@ JS;
                 // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
                 if (
                     ($this->alt === null || $this->alt === '') &&
-                    isset($this->tempFilePath) &&
                     in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
                 ) {
                     $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
@@ -3354,7 +3353,6 @@ JS;
 
                 // Are we uploading an image that needs to be sanitized?
                 if (
-                    isset($this->tempFilePath) &&
                     in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                     ($this->sanitizeOnUpload ?? (
                         !Craft::$app->getRequest()->getIsCpRequest() ||
@@ -3366,10 +3364,7 @@ JS;
 
                 // if we're creating or replacing and image, get the width or height via getimagesize
                 // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
-                if (
-                    isset($this->tempFilePath) &&
-                    in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true)
-                ) {
+                if (in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true)) {
                     $imageSize = getimagesize($this->tempFilePath);
                     if (isset($imageSize[0])) {
                         $fallbackWidth = (int)$imageSize[0];

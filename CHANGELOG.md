@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that occurred when saving an existing asset. ([#19152](https://github.com/craftcms/cms/issues/19152))
+
 ## 5.10.8 - 2026-06-23
 
 - Fixed a bug where element thumbnails could have inconsistent rounded corners. ([#19117](https://github.com/craftcms/cms/issues/19117))
