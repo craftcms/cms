@@ -56,7 +56,7 @@ export const AllowTransparent: Story = {
       label="Color"
       name="color"
       allow-transparent
-      .modelValue="${'transparent'}"
+      .modelValue="${'__blank__'}"
     ></craft-select-color>
   `,
 };

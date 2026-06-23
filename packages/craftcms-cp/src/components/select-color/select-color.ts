@@ -47,9 +47,9 @@ export default class CraftSelectColor extends LitElement {
   allowTransparent = false;
 
   /**
-   * Renders a color swatch for the given color value. The special
-   * `transparent` value reuses the checkerboard treatment so it reads as
-   * "no color".
+   * Renders a color swatch for the given color value. The special `__blank__`
+   * value (the "Transparent" option) reuses the checkerboard treatment so it
+   * reads as "no color".
    *
    * Structural styling is applied inline (rather than via the component's
    * scoped stylesheet) so the rendered node stays self-contained when Lion's
