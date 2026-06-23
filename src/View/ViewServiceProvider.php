@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use CraftCms\Cms\View\BladeDirectives\AuthDirective;
-use CraftCms\Cms\View\BladeDirectives\CacheDirective;
-use CraftCms\Cms\View\BladeDirectives\HookDirective;
-use CraftCms\Cms\View\BladeDirectives\NamespaceDirective;
-use CraftCms\Cms\View\BladeDirectives\PageLifecycleDirective;
-use CraftCms\Cms\View\BladeDirectives\PaginationDirective;
-use CraftCms\Cms\View\BladeDirectives\ResourceDirective;
-use CraftCms\Cms\View\BladeDirectives\ResponseDirective;
+use CraftCms\Cms\Blade\Directives\AuthDirective;
+use CraftCms\Cms\Blade\Directives\CacheDirective;
+use CraftCms\Cms\Blade\Directives\HookDirective;
+use CraftCms\Cms\Blade\Directives\NamespaceDirective;
+use CraftCms\Cms\Blade\Directives\PageLifecycleDirective;
+use CraftCms\Cms\Blade\Directives\PaginationDirective;
+use CraftCms\Cms\Blade\Directives\ResourceDirective;
+use CraftCms\Cms\Blade\Directives\ResponseDirective;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\Factory as ViewFactory;
@@ -19,10 +19,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
-use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Factory;
 use Override;
-use RuntimeException;
 
 class ViewServiceProvider extends ServiceProvider
 {
@@ -87,34 +85,14 @@ class ViewServiceProvider extends ServiceProvider
     private function registerBladeDirectives(): void
     {
         $this->app->afterResolving('blade.compiler', function (BladeCompiler $blade): void {
-            $this->registerBladeDirectivesWith($blade);
+            PageLifecycleDirective::register($blade);
+            ResourceDirective::register($blade);
+            CacheDirective::register($blade);
+            HookDirective::register($blade);
+            NamespaceDirective::register($blade);
+            PaginationDirective::register($blade);
+            AuthDirective::register($blade);
+            ResponseDirective::register($blade);
         });
-
-        if ($this->app->resolved('blade.compiler')) {
-            $this->registerBladeDirectivesWith($this->bladeCompiler());
-        }
-    }
-
-    private function bladeCompiler(): BladeCompiler
-    {
-        $blade = $this->app->make(CompilerInterface::class);
-
-        if (! $blade instanceof BladeCompiler) {
-            throw new RuntimeException('The blade.compiler container binding must resolve to a BladeCompiler instance.');
-        }
-
-        return $blade;
-    }
-
-    private function registerBladeDirectivesWith(BladeCompiler $blade): void
-    {
-        PageLifecycleDirective::register($blade);
-        ResourceDirective::register($blade);
-        CacheDirective::register($blade);
-        HookDirective::register($blade);
-        NamespaceDirective::register($blade);
-        PaginationDirective::register($blade);
-        AuthDirective::register($blade);
-        ResponseDirective::register($blade);
     }
 }

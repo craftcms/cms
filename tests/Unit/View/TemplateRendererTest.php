@@ -3,62 +3,122 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Twig\TemplateRenderer as TwigTemplateRenderer;
-use CraftCms\Cms\View\BladeRenderer;
+use CraftCms\Cms\View\Contracts\TemplateRendererInterface;
+use CraftCms\Cms\View\Events\TemplateRenderersResolving;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRenderer;
 use CraftCms\Cms\View\TemplateResolver;
+use Illuminate\Support\Facades\Event;
+
+class TemplateRendererTestRenderer implements TemplateRendererInterface
+{
+    public static array $supportedFiles = [];
+
+    public static array $renderedTemplate = [];
+
+    public static array $renderedPageTemplate = [];
+
+    public static string $renderTemplateOutput = '';
+
+    public static string $renderPageTemplateOutput = '';
+
+    public bool $isRenderingTemplate {
+        get => false;
+    }
+
+    public bool $isRenderingPageTemplate {
+        get => false;
+    }
+
+    public function isRenderingTemplate(): bool
+    {
+        return false;
+    }
+
+    public function isRenderingPageTemplate(): bool
+    {
+        return false;
+    }
+
+    public function supports(string $file): bool
+    {
+        return in_array($file, self::$supportedFiles, true);
+    }
+
+    public function renderTemplate(string $template, array $variables, ?TemplateMode $templateMode = null): string
+    {
+        self::$renderedTemplate = [$template, $variables, $templateMode];
+
+        return self::$renderTemplateOutput;
+    }
+
+    public function renderPageTemplate(string $template, array $variables, ?TemplateMode $templateMode = null): string
+    {
+        self::$renderedPageTemplate = [$template, $variables, $templateMode];
+
+        return self::$renderPageTemplateOutput;
+    }
+
+    public function renderString(string $template, array $variables, TemplateMode $templateMode = TemplateMode::Site): string
+    {
+        return $template;
+    }
+}
+
+beforeEach(function () {
+    TemplateRendererTestRenderer::$supportedFiles = [];
+    TemplateRendererTestRenderer::$renderedTemplate = [];
+    TemplateRendererTestRenderer::$renderedPageTemplate = [];
+    TemplateRendererTestRenderer::$renderTemplateOutput = '';
+    TemplateRendererTestRenderer::$renderPageTemplateOutput = '';
+
+    Event::listen(TemplateRenderersResolving::class, function (TemplateRenderersResolving $event) {
+        $event->renderers = [TemplateRendererTestRenderer::class];
+    });
+});
 
 it('resolves templates using the requested template mode', function () {
-    $blade = Mockery::mock(BladeRenderer::class);
     $resolver = Mockery::mock(TemplateResolver::class);
-    $twig = Mockery::mock(TwigTemplateRenderer::class);
+
+    TemplateRendererTestRenderer::$supportedFiles = ['/tmp/settings/example.blade.php'];
+    TemplateRendererTestRenderer::$renderTemplateOutput = 'rendered-template';
 
     $resolver
         ->shouldReceive('resolve')
         ->once()
         ->with('settings/example', TemplateMode::Cp, false)
-        ->andReturn('/tmp/settings/example.twig');
+        ->andReturn('/tmp/settings/example.blade.php');
 
-    $twig
-        ->shouldReceive('renderTemplate')
-        ->once()
-        ->with('settings/example', ['value' => 'test'], TemplateMode::Cp)
-        ->andReturn('rendered-template');
-
-    $renderer = new TemplateRenderer($blade, $resolver, $twig);
+    $renderer = new TemplateRenderer($resolver);
 
     expect($renderer->renderTemplate('settings/example', ['value' => 'test'], TemplateMode::Cp))
         ->toBe('rendered-template');
+    expect(TemplateRendererTestRenderer::$renderedTemplate)
+        ->toBe(['settings/example', ['value' => 'test'], TemplateMode::Cp]);
 });
 
 it('resolves page templates using the requested template mode and visibility', function () {
-    $blade = Mockery::mock(BladeRenderer::class);
     $resolver = Mockery::mock(TemplateResolver::class);
-    $twig = Mockery::mock(TwigTemplateRenderer::class);
+
+    TemplateRendererTestRenderer::$supportedFiles = ['/tmp/articles/show.blade.php'];
+    TemplateRendererTestRenderer::$renderPageTemplateOutput = 'rendered-page-template';
 
     $resolver
         ->shouldReceive('resolve')
         ->once()
         ->with('articles/show', TemplateMode::Site, true)
-        ->andReturn('/tmp/articles/show.twig');
+        ->andReturn('/tmp/articles/show.blade.php');
 
-    $twig
-        ->shouldReceive('renderPageTemplate')
-        ->once()
-        ->with('articles/show', ['entry' => 'test'], TemplateMode::Site)
-        ->andReturn('rendered-page-template');
-
-    $renderer = new TemplateRenderer($blade, $resolver, $twig);
+    $renderer = new TemplateRenderer($resolver);
 
     expect($renderer->renderPageTemplate('articles/show', ['entry' => 'test'], TemplateMode::Site, publicOnly: true))
         ->toBe('rendered-page-template');
+    expect(TemplateRendererTestRenderer::$renderedPageTemplate)
+        ->toBe(['articles/show', ['entry' => 'test'], TemplateMode::Site]);
 });
 
 it('throws a template loader exception for missing templates', function () {
-    $blade = Mockery::mock(BladeRenderer::class);
     $resolver = Mockery::mock(TemplateResolver::class);
-    $twig = Mockery::mock(TwigTemplateRenderer::class);
 
     $resolver
         ->shouldReceive('resolve')
@@ -66,7 +126,7 @@ it('throws a template loader exception for missing templates', function () {
         ->with('missing/template', TemplateMode::Cp, false)
         ->andReturnFalse();
 
-    $renderer = new TemplateRenderer($blade, $resolver, $twig);
+    $renderer = new TemplateRenderer($resolver);
 
     expect(fn () => $renderer->renderTemplate('missing/template', templateMode: TemplateMode::Cp))
         ->toThrow(TemplateLoaderException::class, 'Unable to find the template');

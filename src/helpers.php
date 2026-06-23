@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Twig\TemplateRenderer as TwigTemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer as TwigTemplateRenderer;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\View\TemplateMode;

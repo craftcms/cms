@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TemplateRenderer as TwigTemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer as TwigTemplateRenderer;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\File;
 

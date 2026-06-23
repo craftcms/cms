@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\View\BladeRenderer;
+use CraftCms\Cms\Blade\BladeRenderer;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\ViewException;

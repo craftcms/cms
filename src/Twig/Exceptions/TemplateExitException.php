@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Exceptions;
 
-use CraftCms\Cms\Twig\PageLifecycle;
+use CraftCms\Cms\View\PageLifecycle;
+use RuntimeException;
 
 /**
  * Thrown by the `{% exit %}` Twig tag (without a status code) to gracefully
@@ -13,4 +14,4 @@ use CraftCms\Cms\Twig\PageLifecycle;
  *
  * Caught by {@see PageLifecycle} to capture buffered output.
  */
-class TemplateExitException extends \RuntimeException {}
+class TemplateExitException extends RuntimeException {}

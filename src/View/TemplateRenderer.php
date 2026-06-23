@@ -4,21 +4,51 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Blade\BladeRenderer;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Twig\TemplateRenderer as TwigTemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\Contracts\TemplateRendererInterface;
+use CraftCms\Cms\View\Events\TemplateRenderersResolving;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
 #[Scoped]
-readonly class TemplateRenderer
+class TemplateRenderer
 {
+    /** @var ?Collection<TemplateRendererInterface> */
+    private ?Collection $renderers = null;
+
     public function __construct(
-        private BladeRenderer $blade,
-        private TemplateResolver $templateResolver,
-        private TwigTemplateRenderer $twig,
+        private readonly TemplateResolver $templateResolver,
     ) {}
+
+    /**
+     * @return Collection<TemplateRendererInterface>
+     */
+    private function renderers(): Collection
+    {
+        if (isset($this->renderers)) {
+            return $this->renderers;
+        }
+
+        $renderers = [
+            TwigRenderer::class,
+            BladeRenderer::class,
+        ];
+
+        event($event = new TemplateRenderersResolving($renderers));
+
+        return $this->renderers = collect($event->renderers)
+            ->map(fn (string $renderer) => app($renderer));
+    }
+
+    private function rendererForFile(string $file): TemplateRendererInterface
+    {
+        return $this->renderers()->first(fn (TemplateRendererInterface $renderer) => $renderer->supports($file))
+            ?? $this->renderers()->first();
+    }
 
     public function renderTemplate(
         string $template,
@@ -32,7 +62,7 @@ readonly class TemplateRenderer
             throw new TemplateLoaderException($template, t('Unable to find the template “{template}”.', ['template' => $template]));
         }
 
-        return $this->renderResolvedTemplate($template, $resolvedTemplate, $variables, $templateMode);
+        return $this->rendererForFile($resolvedTemplate)->renderTemplate($template, $variables, $templateMode);
     }
 
     public function renderPageTemplate(
@@ -47,37 +77,6 @@ readonly class TemplateRenderer
             throw new TemplateLoaderException($template, t('Unable to find the template “{template}”.', ['template' => $template]));
         }
 
-        return $this->renderResolvedPageTemplate($template, $resolvedTemplate, $variables, $templateMode);
-    }
-
-    public function renderResolvedTemplate(
-        string $template,
-        string $resolvedTemplate,
-        array $variables = [],
-        ?TemplateMode $templateMode = null,
-    ): string {
-        if ($this->isBlade($resolvedTemplate)) {
-            return $this->blade->renderFile($resolvedTemplate, $variables, $templateMode, $template);
-        }
-
-        return $this->twig->renderTemplate($template, $variables, $templateMode);
-    }
-
-    public function renderResolvedPageTemplate(
-        string $template,
-        string $resolvedTemplate,
-        array $variables = [],
-        ?TemplateMode $templateMode = null,
-    ): string {
-        if ($this->isBlade($resolvedTemplate)) {
-            return $this->blade->renderPageFile($resolvedTemplate, $variables, $templateMode, $template);
-        }
-
-        return $this->twig->renderPageTemplate($template, $variables, $templateMode);
-    }
-
-    private function isBlade(string $path): bool
-    {
-        return Str::endsWith($path, '.blade.php');
+        return $this->rendererForFile($resolvedTemplate)->renderPageTemplate($template, $variables, $templateMode);
     }
 }

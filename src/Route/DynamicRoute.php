@@ -8,10 +8,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRenderer;
-use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,16 +50,6 @@ class DynamicRoute
 
         abort_if(Cms::config()->headlessMode && $request->isSiteRequest(), 404);
 
-        $resolvedTemplate = app(TemplateResolver::class)->resolve($template, publicOnly: $publicOnly);
-
-        if ($resolvedTemplate === false) {
-            if (app()->hasDebugModeEnabled()) {
-                throw new TemplateLoaderException($template, "Template {$template} not found.");
-            }
-
-            abort(404);
-        }
-
-        return app(TemplateRenderer::class)->renderResolvedPageTemplate($template, $resolvedTemplate, $variables);
+        return app(TemplateRenderer::class)->renderPageTemplate($template, $variables, publicOnly: $publicOnly);
     }
 }

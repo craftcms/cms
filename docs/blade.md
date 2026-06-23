@@ -62,15 +62,15 @@ If you already have a Laravel view name or a file path, use `BladeRenderer` dire
 ```php
 <?php
 
-use CraftCms\Cms\View\BladeRenderer;
+use CraftCms\Cms\Blade\BladeRenderer;
 
 $renderer = app(BladeRenderer::class);
 
-$partial = $renderer->renderView('my-plugin::tokens.index', [
+$partial = $renderer->renderTemplate('my-plugin::tokens.index', [
     'token' => $token,
 ]);
 
-$page = $renderer->renderPageView('my-plugin::screens.edit', [
+$page = $renderer->renderPageTemplate('my-plugin::screens.edit', [
     'entry' => $entry,
 ]);
 

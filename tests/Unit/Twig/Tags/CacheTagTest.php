@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 it('renders body content', function () {

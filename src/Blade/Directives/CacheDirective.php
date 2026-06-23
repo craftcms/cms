@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\View\BladeDirectives;
+namespace CraftCms\Cms\Blade\Directives;
 
 use CraftCms\Cms\View\TemplateCaches;
 use Illuminate\Support\Facades\Context;

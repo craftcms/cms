@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\View\BladeDirectives;
+namespace CraftCms\Cms\Blade\Directives;
 
-use CraftCms\Cms\Twig\PageLifecycle;
+use CraftCms\Cms\View\PageLifecycle;
 use Illuminate\View\Compilers\BladeCompiler;
 
 class PageLifecycleDirective

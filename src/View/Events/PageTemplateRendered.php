@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\Events;
 
-use CraftCms\Cms\View\TemplateEngine;
+use CraftCms\Cms\View\Contracts\TemplateRendererInterface;
 use CraftCms\Cms\View\TemplateMode;
 
 /**
@@ -13,7 +13,8 @@ use CraftCms\Cms\View\TemplateMode;
 class PageTemplateRendered
 {
     public function __construct(
-        public readonly TemplateEngine $engine,
+        /** @var class-string<TemplateRendererInterface> */
+        public string $templateRenderer,
         public readonly string $template,
         public readonly array $variables,
         public readonly TemplateMode $templateMode,

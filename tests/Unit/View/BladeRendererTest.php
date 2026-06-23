@@ -3,12 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\View\BladeRenderer;
-use CraftCms\Cms\View\Events\PageTemplateRendered;
-use CraftCms\Cms\View\Events\PageTemplateRendering;
-use CraftCms\Cms\View\Events\TemplateRendered;
+use CraftCms\Cms\Blade\BladeRenderer;
 use CraftCms\Cms\View\Events\TemplateRendering;
-use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
@@ -48,7 +44,7 @@ afterEach(function () {
 });
 
 it('renders Blade files through the Craft page lifecycle', function () {
-    $output = $this->renderer->renderPageFile($this->tempDir.'/page.blade.php', ['name' => 'Craft'], template: 'page');
+    $output = $this->renderer->renderPageTemplate('page', ['name' => 'Craft']);
 
     expect($output)
         ->toContain('Hello, Craft!')
@@ -56,51 +52,24 @@ it('renders Blade files through the Craft page lifecycle', function () {
         ->not->toContain('CRAFT-BLOCK-BODY-END');
 });
 
-it('dispatches neutral Blade events', function () {
-    Event::fake([
-        TemplateRendering::class,
-        TemplateRendered::class,
-        PageTemplateRendering::class,
-        PageTemplateRendered::class,
-    ]);
-
-    $this->renderer->renderPageFile($this->tempDir.'/page.blade.php', ['name' => 'Craft'], template: 'page');
-
-    Event::assertDispatched(fn (TemplateRendering $event) => $event->engine === TemplateEngine::Blade && $event->template === 'page');
-    Event::assertDispatched(fn (TemplateRendered $event) => $event->engine === TemplateEngine::Blade && $event->template === 'page');
-    Event::assertDispatched(fn (PageTemplateRendering $event) => $event->engine === TemplateEngine::Blade && $event->template === 'page');
-    Event::assertDispatched(fn (PageTemplateRendered $event) => $event->engine === TemplateEngine::Blade && $event->template === 'page');
-});
-
-it('allows neutral events to mutate Blade variables and output', function () {
+it('renders with variables mutated by template events', function () {
     Event::listen(TemplateRendering::class, function (TemplateRendering $event) {
         $event->variables['name'] = 'Mutated';
     });
-    Event::listen(TemplateRendered::class, function (TemplateRendered $event) {
-        $event->output = str_replace('Mutated', 'Rendered', $event->output);
-    });
 
-    $output = $this->renderer->renderFile($this->tempDir.'/page.blade.php', ['name' => 'Original'], template: 'page');
+    $output = $this->renderer->renderTemplate('page', ['name' => 'Original']);
 
-    expect($output)->toContain('Hello, Rendered!');
-});
-
-it('restores the template mode after rendering', function () {
-    TemplateMode::set(TemplateMode::Cp);
-
-    $this->renderer->renderFile($this->tempDir.'/page.blade.php', ['name' => 'Craft'], TemplateMode::Site, 'page');
-
-    expect(TemplateMode::get())->toBe(TemplateMode::Cp);
+    expect($output)->toContain('Hello, Mutated!');
 });
 
 it('renders named Laravel views', function () {
-    $output = $this->renderer->renderView('blade-test::partial', ['name' => 'Blade']);
+    $output = $this->renderer->renderTemplate('blade-test::partial', ['name' => 'Blade']);
 
     expect($output)->toBe('Named Blade');
 });
 
 it('renders slash-style Laravel view names', function () {
-    $output = $this->renderer->renderView('nested/partial', ['name' => 'Blade']);
+    $output = $this->renderer->renderTemplate('nested/partial', ['name' => 'Blade']);
 
     expect($output)->toBe('Nested Blade');
 });
