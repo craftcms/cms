@@ -85,18 +85,16 @@
             @endif
 
             <div class="fld-field-library">
-                <div class="texticon search icon clearable">
-                    {!! \CraftCms\Cms\Cp\FormFields::textHtml([
-                        'class' => 'w-full',
-                        'inputmode' => 'search',
-                        'placeholder' => \CraftCms\Cms\t('Search'),
-                        'disabled' => $disabled,
-                    ]) !!}
-                    <div
-                        class="clear-btn hidden"
-                        title="{{ \CraftCms\Cms\t('Clear') }}"
-                        aria-label="{{ \CraftCms\Cms\t('Clear') }}"
-                    ></div>
+                <div class="search">
+                    <craft-input
+                        label="{{ \CraftCms\Cms\t('Search') }}"
+                        placeholder="{{ \CraftCms\Cms\t('Search') }}"
+                        label-sr-only
+                        type="search"
+                        inputmode="search"
+                        @disabled($disabled)
+                    >
+                    </craft-input>
                 </div>
 
                 {!! $designer->fldFieldSelectorsHtml(\CraftCms\Cms\t('Native Fields'), $availableNativeFields, $fieldLayout) !!}

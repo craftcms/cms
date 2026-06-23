@@ -5,14 +5,14 @@ import {
   RETURN_KEY,
   hasAttr,
   requestAnimationFrame,
+  type GarnishEvent,
 } from '@craftcms/garnish';
 import {Tab} from './Tab';
 import {CardViewDesigner} from './CardViewDesigner';
 import {ElementDrag, TabDrag} from './drags';
 import {fldTabData, fldElementData, hudData, htmlToElement} from './support';
 import type {FieldLayoutDesignerSettings, FieldLayoutConfig} from './types';
-import {t} from '@craftcms/cp';
-import {Appearance} from '../../../../packages/craftcms-cp/src';
+import {t, Appearance} from '@craftcms/cp';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/Listbox/Slideout return or
@@ -96,12 +96,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     this.$fieldLibrary = this.$selectedLibrary =
       this.$libraryContainer.querySelector(':scope > .fld-field-library');
-    const $fieldSearchContainer =
-      this.$fieldLibrary.querySelector(':scope > .search');
-    this.$fieldSearch = $fieldSearchContainer.querySelector(':scope > input');
-    this.$clearFieldSearchBtn = $fieldSearchContainer.querySelector(
-      ':scope > .clear-btn'
-    );
+    this.$fieldSearch = this.$fieldLibrary.querySelector('[type="search"]');
     this.$fieldGroups = Array.from(
       this.$libraryContainer.querySelectorAll('.fld-field-group')
     );
@@ -167,9 +162,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       }
     }
 
-    this.addListener(this.$fieldSearch, 'input', () => {
-      this.updateFieldSearchResults();
-    });
+    this.addListener(this.$fieldSearch, 'input', (event) =>
+      this.updateFieldSearchResults(event as GarnishEvent<HTMLInputElement>)
+    );
 
     this.addListener(this.$fieldSearch, 'keydown', (ev: any) => {
       switch (ev.keyCode) {
@@ -231,17 +226,14 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     return fields;
   }
 
-  updateFieldSearchResults(): void {
-    const val = this.$fieldSearch.value.toLowerCase().replace(/['"]/g, '');
+  updateFieldSearchResults(event?: GarnishEvent<HTMLInputElement>): void {
+    const val = event?.target?.value.toLowerCase().replace(/['"]/g, '');
     if (!val) {
       this.$fieldLibrary
         .querySelectorAll('.filtered')
         .forEach((el: HTMLElement) => el.classList.remove('filtered'));
-      this.$clearFieldSearchBtn.classList.add('hidden');
       return;
     }
-
-    this.$clearFieldSearchBtn.classList.remove('hidden');
 
     const matches = new Set<HTMLElement>();
     for (const el of this.$fields) {

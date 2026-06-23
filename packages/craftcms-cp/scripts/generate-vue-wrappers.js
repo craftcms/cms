@@ -285,7 +285,7 @@ function generateValueWrapper(component) {
   <${component.tagName}
     v-bind="$attrs"
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
+    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -363,7 +363,7 @@ function generateGroupWrapper(component) {
   <${component.tagName}
     v-bind="$attrs"
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
+    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>

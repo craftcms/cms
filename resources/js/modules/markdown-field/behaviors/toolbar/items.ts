@@ -5,6 +5,7 @@ import {customIcons} from './icons';
 type CraftToolbarButton = ToolbarButton & {
   actionId?: string;
   optionName?: string;
+  isActive?: ToolbarActiveState;
 };
 
 type ToolbarOptions = {
@@ -20,7 +21,14 @@ type ToolbarCallbacks = {
 };
 
 type ToolbarAction = NonNullable<ToolbarButton['action']>;
-type ToolbarActiveState = NonNullable<ToolbarButton['isActive']>;
+
+// OverType's bundled types don't declare `isActive` on `ToolbarButton`, though
+// its runtime supports it. Define the callback shape ourselves to match the
+// context the runtime passes (`editor` + computed `activeFormats`).
+type ToolbarActiveState = (context: {
+  editor: Parameters<ToolbarAction>[0]['editor'];
+  activeFormats: string[];
+}) => boolean;
 
 const strikethroughFormat = {
   prefix: '~~',
@@ -172,7 +180,7 @@ function customizeToolbarButton(
   title: string,
   icon: string,
   optionName = button.name,
-  isActive = button.isActive
+  isActive?: ToolbarActiveState
 ): CraftToolbarButton {
   return {
     ...button,
