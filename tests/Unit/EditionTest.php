@@ -122,6 +122,7 @@ it('determines if the edition can be upgraded', function () {
     expect(Edition::canUpgrade())->toBefalse();
 
     actingAs(new User(['admin' => true]));
+    Cms::setIsInstalled();
 
     expect(Edition::canUpgrade())->toBeTrue();
 
@@ -131,8 +132,10 @@ it('determines if the edition can be upgraded', function () {
     expect(Edition::canUpgrade())->toBeFalse();
 
     Cms::config()->allowAdminChanges = true;
+    Cms::setIsInstalled(false);
 
     Edition::set(Edition::Pro);
+    Cms::setIsInstalled();
 
     // Pro is already the "max"
     expect(Edition::canUpgrade())->toBeFalse();

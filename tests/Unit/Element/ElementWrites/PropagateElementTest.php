@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
@@ -288,7 +289,9 @@ it('adds a plain validation error when a propagated save fails', function () {
 });
 
 it('adds a linked validation error when the current user can fix the propagated site', function () {
-    Auth::setUser(new AuthorizedAuthUser);
+    Cms::config()->baseCpUrl('https://example.test/admin');
+
+    Auth::shouldReceive('user')->andReturn(new AuthorizedAuthUser);
     swapUrlRequest('/admin/entries/100?foo=bar&site=primary');
 
     $this->executor->returnValue = false;
@@ -304,6 +307,8 @@ it('adds a linked validation error when the current user can fix the propagated 
     $siteElement->cpEditUrl = '/admin/entries/108';
     $siteElement->errors()->add('title', 'Title is invalid');
     $siteElement->canSave = true;
+
+    Cms::setIsInstalled();
 
     $result = $this->executor->propagate($element, supportedSites(), 2, $siteElement);
     $message = $element->errors()->first('global');
@@ -615,10 +620,15 @@ class AuthorizedUser extends User
 
 class AuthorizedAuthUser extends UserModel
 {
+    public function __construct(private readonly User $user = new AuthorizedUser)
+    {
+        parent::__construct();
+    }
+
     #[Override]
     public function asElement(): User
     {
-        return new AuthorizedUser;
+        return $this->user;
     }
 
     #[Override]
