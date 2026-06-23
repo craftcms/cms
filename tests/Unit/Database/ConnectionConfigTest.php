@@ -81,6 +81,20 @@ it('leaves in-memory sqlite connections without file-backed pragmas', function (
     ])->not->toHaveKeys(['busy_timeout', 'journal_mode', 'pragmas', 'synchronous']);
 });
 
+it('normalizes relative sqlite database paths from the project base path', function () {
+    expect(ConnectionConfig::normalizeSqliteDatabasePath('database.sqlite'))
+        ->toBe(base_path('database.sqlite'));
+});
+
+it('preserves absolute sqlite database paths', function (string $path, string $expected) {
+    expect(ConnectionConfig::normalizeSqliteDatabasePath($path))->toBe($expected);
+})->with([
+    'unix path' => ['/foo/database.sqlite', '/foo/database.sqlite'],
+    'windows drive path' => ['C:\foo\database.sqlite', 'C:/foo/database.sqlite'],
+    'lowercase windows drive path' => ['c:\foo\database.sqlite', 'c:/foo/database.sqlite'],
+    'windows unc path' => ['\\\\server\\share\\database.sqlite', '//server/share/database.sqlite'],
+]);
+
 it('builds sqlite requirement checker dsn values from the connection config', function () {
     config()->set('database.connections.sqlite_dsn_test', [
         'driver' => 'sqlite',
