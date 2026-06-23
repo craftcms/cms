@@ -6,14 +6,15 @@ import {
   htmlToElement,
 } from './support';
 import type {Tab} from './Tab';
+import type {ActionMenuItem} from '@craftcms/cp';
 
 declare const Craft: any;
-declare const $: any;
 
 /**
  * A single layout element (field or UI element) within a {@link Tab}. Native DOM
  * port of the legacy `Craft.FieldLayoutDesigner.Element`. jQuery survives only at
- * Craft seams (`Craft.ui.*`, the `.disclosureMenu()` plugin, `Craft.*Slideout`).
+ * Craft seams (`Craft.ui.*`, `Craft.*Slideout`). The action menu uses the
+ * `craft-action-menu` web component.
  */
 export class Element extends Base {
   tab: Tab;
@@ -116,135 +117,113 @@ export class Element extends Base {
     }
 
     // create the action menu
-    const menuId = `actionmenu${Math.floor(Math.random() * 1000000)}`;
-    this.$actionBtn = document.createElement('button');
-    this.$actionBtn.setAttribute('type', 'button');
-    this.$actionBtn.className = 'btn action-btn';
-    this.$actionBtn.setAttribute('data-disclosure-trigger', 'true');
-    this.$actionBtn.setAttribute('aria-controls', menuId);
-    this.$actionBtn.setAttribute('aria-haspopup', 'true');
-    this.$actionBtn.setAttribute('aria-label', Craft.t('app', 'Actions'));
-    this.$actionBtn.setAttribute('title', Craft.t('app', 'Actions'));
-    if (this.tab.designer.settings!.readOnly) {
-      this.$actionBtn.disabled = true;
-    }
-    this.$container.appendChild(this.$actionBtn);
-
-    const $menu = document.createElement('div');
-    $menu.id = menuId;
-    $menu.className = 'menu menu--disclosure';
-    $menu.setAttribute('data-disclosure-menu', 'true');
-    this.$container.appendChild($menu);
-
-    // The `.disclosureMenu()` jQuery plugin is a Craft seam.
-    const disclosureMenu = $(this.$actionBtn)
-      .disclosureMenu()
-      .data('disclosureMenu');
-
-    let makeRequiredBtn: any, dropRequiredBtn: any;
-
+    const readOnly = !!this.tab.designer.settings!.readOnly;
     this.hasSettings = hasAttr(this.$container, 'data-has-settings');
 
-    if (this.hasSettings && !this.tab.designer.settings!.readOnly) {
-      disclosureMenu.addItem({
-        label: Craft.t('app', 'Settings'),
-        icon: async () => await Craft.ui.icon('gear'),
-        onActivate: () => {
-          this.createSettings();
-        },
-      });
+    const menu = document.createElement('craft-action-menu');
+    menu.label = Craft.t('app', 'Actions');
+    // Disable the generated (default ellipsis) invoker when read-only.
+    menu.disabled = readOnly;
+    // Anchor the settings slideout (focus return) to the menu element, since the
+    // default invoker lives inside the web component's light DOM.
+    this.$actionBtn = menu;
 
+    if (this.hasSettings && !readOnly) {
       this.addListener(this.$container, 'dblclick', () => {
         this.createSettings();
       });
     }
 
-    if (
-      this.requirable ||
-      (!this.tab.designer.settings!.withCardViewDesigner && this.thumbable)
-    ) {
-      const actionUl = disclosureMenu.addGroup();
+    // Provider function — re-evaluated each time the menu opens, so items
+    // reflect the element's current state (required/optional, sibling
+    // presence). Replaces the legacy `on('show')` + `toggleItem` logic.
+    menu.actions = (): ActionMenuItem[] => {
+      const items: ActionMenuItem[] = [];
 
+      if (this.hasSettings && !readOnly) {
+        items.push({
+          label: Craft.t('app', 'Settings'),
+          icon: 'gear',
+          onClick: () => {
+            this.createSettings();
+          },
+        });
+      }
+
+      // Required / optional toggle (provider recomputes on each open, so we
+      // simply branch on the current `config.required`).
       if (this.requirable) {
-        makeRequiredBtn = disclosureMenu.addItem(
-          {
+        if (items.length) {
+          items.push({type: 'hr'});
+        }
+        if (!this.config.required) {
+          items.push({
             label: Craft.t('app', 'Make required'),
-            icon: async () => await Craft.ui.icon('asterisk'),
+            icon: 'asterisk',
             iconColor: 'rose',
-            onActivate: () => {
+            onClick: () => {
               this.makeRequired();
             },
-          },
-          actionUl
-        );
-
-        dropRequiredBtn = disclosureMenu.addItem(
-          {
+          });
+        } else {
+          items.push({
             label: Craft.t('app', 'Make optional'),
-            icon: async () => await Craft.ui.icon('asterisk-slash'),
+            icon: 'custom-icons/asterisk-slash',
             iconColor: 'gray',
-            onActivate: () => {
+            onClick: () => {
               this.dropRequired();
             },
-          },
-          actionUl
-        );
-      }
-    }
-
-    const moveGroup = disclosureMenu.addGroup();
-    const moveUpBtn = disclosureMenu.addItem(
-      {
-        label: Craft.t('app', 'Move up'),
-        icon: async () => await Craft.ui.icon('arrow-up'),
-        onActivate: () => {
-          this.moveUp();
-        },
-      },
-      moveGroup
-    );
-    const moveDownBtn = disclosureMenu.addItem(
-      {
-        label: Craft.t('app', 'Move down'),
-        icon: async () => await Craft.ui.icon('arrow-down'),
-        onActivate: () => {
-          this.moveDown();
-        },
-      },
-      moveGroup
-    );
-
-    if (!this.isMandatory) {
-      disclosureMenu.addItem(
-        {
-          label: Craft.t('app', 'Remove'),
-          icon: async () => await Craft.ui.icon('xmark'),
-          destructive: true,
-          onActivate: () => {
-            this.destroy();
-          },
-        },
-        disclosureMenu.addGroup()
-      );
-    }
-
-    disclosureMenu.on('show', () => {
-      if (this.requirable) {
-        disclosureMenu.toggleItem(makeRequiredBtn, !this.config.required);
-        disclosureMenu.toggleItem(dropRequiredBtn, this.config.required);
+          });
+        }
       }
 
       const prev = this.$container.previousElementSibling;
       const next = this.$container.nextElementSibling;
-      disclosureMenu.toggleItem(
-        moveUpBtn,
-        !!(prev && prev.matches('.fld-element'))
-      );
-      disclosureMenu.toggleItem(
-        moveDownBtn,
-        !!(next && next.matches('.fld-element'))
-      );
-    });
+      const hasPrev = !!(prev && prev.matches('.fld-element'));
+      const hasNext = !!(next && next.matches('.fld-element'));
+
+      if (hasPrev || hasNext) {
+        if (items.length) {
+          items.push({type: 'hr'});
+        }
+        if (hasPrev) {
+          items.push({
+            label: Craft.t('app', 'Move up'),
+            icon: 'arrow-up',
+            onClick: () => {
+              this.moveUp();
+            },
+          });
+        }
+        if (hasNext) {
+          items.push({
+            label: Craft.t('app', 'Move down'),
+            icon: 'arrow-down',
+            onClick: () => {
+              this.moveDown();
+            },
+          });
+        }
+      }
+
+      if (!this.isMandatory) {
+        if (items.length) {
+          items.push({type: 'hr'});
+        }
+        items.push({
+          label: Craft.t('app', 'Remove'),
+          icon: 'xmark',
+          variant: 'danger',
+          onClick: () => {
+            this.destroy();
+          },
+        });
+      }
+
+      return items;
+    };
+
+    this.$container.appendChild(menu);
   }
 
   onSelect(): void {

@@ -1,6 +1,14 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import {type Component, computed} from 'vue';
+  import type {ActionMenuItem} from '@craftcms/cp';
+  import {
+    type Component,
+    computed,
+    createVNode,
+    getCurrentInstance,
+    onBeforeUnmount,
+    render as vueRender,
+  } from 'vue';
   import type {ActionItem} from '@/common/types';
 
   interface ActionItemDisplay {
@@ -22,96 +30,72 @@
     }
   );
 
-  const normalizedActions = computed((): Array<ActionItem> => {
-    return props.actions.map((action): ActionItem => {
-      if (action.type === 'hr' || action.type === 'display') {
-        return action as ActionItem;
-      }
+  // Containers that host Vue-rendered `display` components. We keep references
+  // so we can tear down the Vue render trees on unmount / re-compute.
+  let displayContainers: HTMLElement[] = [];
+  const appContext = getCurrentInstance()?.appContext;
 
-      if ('href' in action) {
+  function clearDisplayContainers() {
+    for (const container of displayContainers) {
+      // Unmount the Vue subtree to avoid leaks.
+      vueRender(null, container);
+    }
+    displayContainers = [];
+  }
+
+  /**
+   * Convert a Vue `display` component into a DOM node the web component can
+   * consume via its `{type: 'display', node}` contract. The normalize / sort /
+   * item-rendering logic itself lives ONLY in the web component — this adapter
+   * just bridges Vue components into DOM nodes.
+   */
+  function displayToNode(component: Component): Node {
+    const container = document.createElement('div');
+    container.style.display = 'contents';
+    const vnode = createVNode(component);
+    if (appContext) {
+      vnode.appContext = appContext;
+    }
+    vueRender(vnode, container);
+    displayContainers.push(container);
+    return container;
+  }
+
+  // Map the Vue-flavored action list onto the web component's `ActionMenuItem`
+  // descriptors. `display` items are the only ones needing conversion; every
+  // other shape passes straight through.
+  const wcActions = computed<ActionMenuItem[]>(() => {
+    clearDisplayContainers();
+
+    return props.actions.map((action): ActionMenuItem => {
+      if (action.type === 'display') {
         return {
-          ...action,
-          label: action.label ?? '',
-          type: action.type ?? 'link',
-        } as ActionItem;
+          type: 'display',
+          node: displayToNode((action as ActionItemDisplay).is),
+        };
       }
 
-      return {
-        ...action,
-        label: action.label ?? '',
-        type:
-          action.type ?? ('href' in action && action.href ? 'link' : 'button'),
-      } as ActionItem;
+      return action as unknown as ActionMenuItem;
     });
   });
 
-  const sortedActions = computed(() => {
-    return [...normalizedActions.value].sort((a, b) => {
-      const aDanger = 'variant' in a && a.variant === 'danger' ? 1 : 0;
-      const bDanger = 'variant' in b && b.variant === 'danger' ? 1 : 0;
-      return aDanger - bDanger;
-    });
+  onBeforeUnmount(() => {
+    clearDisplayContainers();
   });
-
-  function actionProps(action: ActionItem): Record<string, unknown> {
-    if (action.type === 'hr' || action.type === 'display') {
-      return {};
-    }
-
-    const attrs = {...action};
-
-    delete (attrs as {onClick?: unknown}).onClick;
-
-    return attrs;
-  }
-
-  function runAction(action: ActionItem, event: Event) {
-    if ('onClick' in action) {
-      action.onClick?.(event);
-    }
-  }
 </script>
 
 <template>
-  <craft-action-menu>
-    <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">
-      <craft-button
-        type="button"
-        slot="invoker"
-        icon
-        size="small"
-        variant="inherit"
-        appearance="plain"
-      >
-        <craft-icon :name="icon" :label="label"></craft-icon>
-      </craft-button>
-    </slot>
-
-    <div slot="content" class="m-sm">
-      <template v-for="(action, idx) in sortedActions" :key="idx">
-        <hr class="m-0" v-if="action.type === 'hr'" />
-        <component v-else-if="action.type === 'display'" :is="action.is" />
-        <craft-action-item
-          v-else-if="action.type === 'link'"
-          v-bind="actionProps(action)"
-          :href="action.href"
-        >
-          {{ action.label }}
-        </craft-action-item>
-        <craft-action-item
-          v-else
-          @click="runAction(action, $event)"
-          v-bind="actionProps(action)"
-        >
-          {{ action.label }}
-        </craft-action-item>
-      </template>
-    </div>
+  <craft-action-menu
+    :actions="wcActions"
+    :icon="icon"
+    :label="label ?? undefined"
+  >
+    <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}"></slot>
   </craft-action-menu>
 </template>
 
 <style scoped lang="scss">
-  craft-action-item {
+  craft-action-menu :deep(craft-action-item) {
     min-width: 200px;
   }
 </style>

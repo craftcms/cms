@@ -7,6 +7,7 @@ import {
   hudData,
   firstFocusableInSiblings,
 } from './support';
+import type {ActionMenuItem} from '@craftcms/cp';
 
 declare const Craft: any;
 declare const $: any;
@@ -14,7 +15,8 @@ declare const $: any;
 /**
  * A single tab within the {@link FieldLayoutDesigner}. Native DOM port of the
  * legacy `Craft.FieldLayoutDesigner.Tab`. jQuery survives only at the Craft
- * seams (`Craft.Grid`, the `.disclosureMenu()` plugin, `Craft.Slideout`).
+ * seams (`Craft.Grid`, `Craft.Slideout`). The action menu uses the
+ * `craft-action-menu` web component.
  */
 export class Tab extends Base {
   designer: FieldLayoutDesigner;
@@ -95,99 +97,77 @@ export class Tab extends Base {
 
   createMenu(): void {
     const $tab = this.$container.querySelector('.tabs .tab');
-    const menuId = `actionmenu${Math.floor(Math.random() * 1000000)}`;
-    const $btn = document.createElement('button');
-    $btn.setAttribute('type', 'button');
-    $btn.className = 'btn action-btn';
-    $btn.setAttribute('data-disclosure-trigger', 'true');
-    $btn.setAttribute('aria-controls', menuId);
-    $btn.setAttribute('aria-haspopup', 'true');
-    $btn.setAttribute('aria-label', Craft.t('app', 'Actions'));
-    $btn.setAttribute('title', Craft.t('app', 'Actions'));
-    if (this.designer.settings!.readOnly) {
-      $btn.disabled = true;
-    }
-    $tab.appendChild($btn);
 
-    const $menu = document.createElement('div');
-    $menu.id = menuId;
-    $menu.className = 'menu menu--disclosure';
-    $menu.setAttribute('data-disclosure-menu', 'true');
-    $tab.appendChild($menu);
+    const menu = document.createElement('craft-action-menu');
+    menu.label = Craft.t('app', 'Actions');
+    // Disable the generated (default ellipsis) invoker when read-only.
+    menu.disabled = !!this.designer.settings!.readOnly;
+    // Anchor the settings slideout (focus return) to the menu element, since the
+    // default invoker lives inside the web component's light DOM.
+    this.$actionBtn = menu;
 
-    // The `.disclosureMenu()` jQuery plugin is a Craft seam.
-    const disclosureMenu = $($btn).disclosureMenu().data('disclosureMenu');
-
-    disclosureMenu.addItem(
-      {
-        label: Craft.t('app', 'Settings'),
-        icon: async () => await Craft.ui.icon('gear'),
-        onActivate: () => {
-          this.createSettings();
+    // Provider function — re-evaluated each time the menu opens, so move items
+    // reflect the tab's current sibling state (replacing the legacy
+    // `on('show')` + `toggleItem` logic).
+    menu.actions = (): ActionMenuItem[] => {
+      const items: ActionMenuItem[] = [
+        {
+          label: Craft.t('app', 'Settings'),
+          icon: 'gear',
+          onClick: () => {
+            this.createSettings();
+          },
         },
-      },
-      disclosureMenu.addGroup()
-    );
+        {type: 'hr'},
+      ];
 
-    const moveUl = disclosureMenu.addGroup();
-    const moveLeftBtn = disclosureMenu.addItem(
-      {
-        label:
-          Craft.orientation === 'ltr'
-            ? Craft.t('app', 'Move to the left')
-            : Craft.t('app', 'Move to the right'),
-        icon: async () =>
-          await Craft.ui.icon(
-            Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right'
-          ),
-        onActivate: () => {
-          this.moveLeft();
-        },
-      },
-      moveUl
-    );
-
-    const moveRightBtn = disclosureMenu.addItem(
-      {
-        label:
-          Craft.orientation === 'ltr'
-            ? Craft.t('app', 'Move to the right')
-            : Craft.t('app', 'Move to the left'),
-        icon: async () =>
-          await Craft.ui.icon(
-            Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left'
-          ),
-        onActivate: () => {
-          this.moveRight();
-        },
-      },
-      moveUl
-    );
-
-    disclosureMenu.addItem(
-      {
-        label: Craft.t('app', 'Remove'),
-        icon: async () => await Craft.ui.icon('xmark'),
-        destructive: true,
-        onActivate: () => {
-          this.destroy();
-        },
-      },
-      disclosureMenu.addGroup()
-    );
-
-    disclosureMenu.on('show', () => {
       const prev = this.$container.previousElementSibling;
       const next = this.$container.nextElementSibling;
-      disclosureMenu.toggleItem(
-        moveLeftBtn,
-        !!(prev && prev.matches('.fld-tab'))
+      const hasPrev = !!(prev && prev.matches('.fld-tab'));
+      const hasNext = !!(next && next.matches('.fld-tab'));
+
+      if (hasPrev) {
+        items.push({
+          label:
+            Craft.orientation === 'ltr'
+              ? Craft.t('app', 'Move to the left')
+              : Craft.t('app', 'Move to the right'),
+          icon: Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right',
+          onClick: () => {
+            this.moveLeft();
+          },
+        });
+      }
+
+      if (hasNext) {
+        items.push({
+          label:
+            Craft.orientation === 'ltr'
+              ? Craft.t('app', 'Move to the right')
+              : Craft.t('app', 'Move to the left'),
+          icon: Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left',
+          onClick: () => {
+            this.moveRight();
+          },
+        });
+      }
+
+      items.push(
+        {type: 'hr'},
+        {
+          label: Craft.t('app', 'Remove'),
+          icon: 'xmark',
+          variant: 'danger',
+          onClick: () => {
+            this.destroy();
+          },
+        }
       );
-      disclosureMenu.toggleItem(
-        moveRightBtn,
-        !!(next && next.matches('.fld-tab'))
-      );
-    });
+
+      return items;
+    };
+
+    $tab.appendChild(menu);
   }
 
   async createSettings(): Promise<void> {
@@ -256,12 +236,13 @@ export class Tab extends Base {
         this.updateConfig((config) =>
           Object.assign(response.data.config, {elements: config.elements})
         );
+        // Preserve the action menu across the label re-render.
         const $label = this.$container.querySelector('.tabs .tab');
-        const $actionBtn = $label.querySelector(':scope > button');
-        $actionBtn?.remove();
+        const $menu = $label.querySelector(':scope > craft-action-menu');
+        $menu?.remove();
         $label.innerHTML = response.data.labelHtml;
-        if ($actionBtn) {
-          $label.appendChild($actionBtn);
+        if ($menu) {
+          $label.appendChild($menu);
         }
         this.slideout.close();
       })
