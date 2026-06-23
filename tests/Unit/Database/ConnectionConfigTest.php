@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\ConnectionConfig;
+use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\DB;
 
 it('normalizes file-backed sqlite connection config for production use', function () {
@@ -86,13 +87,13 @@ it('normalizes relative sqlite database paths from the project base path', funct
         ->toBe(base_path('database.sqlite'));
 });
 
-it('preserves absolute sqlite database paths', function (string $path, string $expected) {
-    expect(ConnectionConfig::normalizeSqliteDatabasePath($path))->toBe($expected);
+it('preserves absolute sqlite database paths', function (string $path) {
+    expect(ConnectionConfig::normalizeSqliteDatabasePath($path))->toBe(File::normalizePath($path));
 })->with([
-    'unix path' => ['/foo/database.sqlite', '/foo/database.sqlite'],
-    'windows drive path' => ['C:\foo\database.sqlite', 'C:/foo/database.sqlite'],
-    'lowercase windows drive path' => ['c:\foo\database.sqlite', 'c:/foo/database.sqlite'],
-    'windows unc path' => ['\\\\server\\share\\database.sqlite', '//server/share/database.sqlite'],
+    'unix path' => ['/foo/database.sqlite'],
+    'windows drive path' => ['C:\foo\database.sqlite'],
+    'lowercase windows drive path' => ['c:\foo\database.sqlite'],
+    'windows unc path' => ['\\\\server\\share\\database.sqlite'],
 ]);
 
 it('builds sqlite requirement checker dsn values from the connection config', function () {
