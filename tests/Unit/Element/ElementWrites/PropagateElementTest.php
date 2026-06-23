@@ -20,6 +20,7 @@ use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -289,10 +290,15 @@ it('adds a plain validation error when a propagated save fails', function () {
 });
 
 it('adds a linked validation error when the current user can fix the propagated site', function () {
-    Cms::config()->baseCpUrl('https://example.test/admin');
-
-    Auth::shouldReceive('user')->andReturn(new AuthorizedAuthUser);
+    Cms::setIsInstalled();
+    Cms::config()
+        ->cpTrigger('admin')
+        ->baseCpUrl('https://example.test/admin');
     swapUrlRequest('/admin/entries/100?foo=bar&site=primary');
+    request()->attributes->set('isCpRequest', true);
+    Auth::shouldReceive('user')->andReturn(new AuthorizedAuthUser);
+    SitesFacade::shouldReceive('isMultiSite')->andReturnFalse();
+    SitesFacade::shouldReceive('getPrimarySite')->andReturn($this->primarySite);
 
     $this->executor->returnValue = false;
     $this->sites->isMultiSiteValue = true;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Translation;
 
 use Carbon\CarbonInterface;
+use Carbon\CarbonInterval;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
@@ -375,6 +376,41 @@ class Formatter
         }
 
         return $this->asDecimalFallback($multipliedValue, $decimals).'%';
+    }
+
+    public function asRelativeTime(DateInterval|string|int|DateTimeInterface|null $value, string|int|DateTimeInterface|null $referenceTime = null): string
+    {
+        if (is_null($value)) {
+            return '';
+        }
+
+        if ($value instanceof DateInterval) {
+            return CarbonInterval::instance($value)
+                ->locale($this->locale)
+                ->forHumans(CarbonInterface::DIFF_RELATIVE_TO_NOW, false, 1);
+        }
+
+        $dateThen = DateTimeHelper::toDateTime(
+            value: $value,
+            assumeSystemTimeZone: false,
+            setToSystemTimeZone: false,
+        ) ?: throw new InvalidArgumentException("'$value' is not a valid date time value.");
+
+        $dateThen = Date::instance($dateThen)->setTimezone($this->timeZone);
+
+        $dateNow = $referenceTime === null
+            ? Date::now($this->timeZone)
+            : (DateTimeHelper::toDateTime(
+                value: $referenceTime,
+                assumeSystemTimeZone: false,
+                setToSystemTimeZone: false,
+            ) ?: throw new InvalidArgumentException("'$referenceTime' is not a valid date time value."));
+
+        $dateNow = Date::instance($dateNow)->setTimezone($this->timeZone);
+
+        return $dateThen
+            ->locale($this->locale)
+            ->diffForHumans($dateNow, CarbonInterface::DIFF_RELATIVE_TO_NOW);
     }
 
     public function asSize(string|int|float|null $bytes, ?int $decimals = null): string

@@ -125,6 +125,13 @@ it('denies anonymous matched element template routes when the system is offline'
         ->assertServiceUnavailable();
 });
 
+it('denies anonymous homepage requests when the system is offline', function () {
+    Cms::config()->isSystemLive = false;
+
+    $this->get('/')
+        ->assertServiceUnavailable();
+});
+
 it('allows matched element template routes with a site token when the system is offline', function () {
     Cms::config()->isSystemLive = false;
 
