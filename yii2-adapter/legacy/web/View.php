@@ -29,7 +29,6 @@ use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TemplateRenderer;
-use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
@@ -42,6 +41,7 @@ use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -589,9 +589,10 @@ class View extends \yii\web\View
      * @param  string  $name  The name of the template.
      * @param  string|null  $templateMode  The template mode to use.
      * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     *
      * @return bool Whether the template exists.
      *
-     * @deprecated 6.0.0 use {@see TemplateResolver::exists()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateResolver::exists()} instead.
      */
     public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
     {
@@ -668,11 +669,12 @@ class View extends \yii\web\View
      * @param  string  $name  The name of the template.
      * @param  string|null  $templateMode  The template mode to use.
      * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     *
      * @return string|false The path to the template if it exists, or `false`.
      *
      * @throws TwigLoaderError
      *
-     * @deprecated 6.0.0 use {@see TemplateResolver::resolve()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateResolver::resolve()} instead.
      */
     public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
     {

@@ -7,7 +7,6 @@ namespace CraftCms\Cms\View;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateRenderer as TwigTemplateRenderer;
-use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Container\Attributes\Scoped;
 
 use function CraftCms\Cms\t;

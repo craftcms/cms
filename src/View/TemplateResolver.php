@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Twig;
+namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Log;
 use Twig\Error\LoaderError;
@@ -207,7 +206,11 @@ class TemplateResolver
 
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name !== '') {
-            if ($publicOnly && preg_match(sprintf('/(^|\/)%s/', preg_quote($templateMode->privateTemplateTrigger(), '/')), $name)) {
+            if ($publicOnly
+                && preg_quote($templateMode->privateTemplateTrigger(), '/')
+                    |> (fn ($x) => sprintf('/(^|\/)%s/', $x))
+                    |> (fn ($x) => preg_match($x, $name))
+            ) {
                 return null;
             }
 

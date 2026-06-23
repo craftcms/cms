@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateRenderer as TwigTemplateRenderer;
-use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\BladeRenderer;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRenderer;
+use CraftCms\Cms\View\TemplateResolver;
 
 it('resolves templates using the requested template mode', function () {
     $blade = Mockery::mock(BladeRenderer::class);
