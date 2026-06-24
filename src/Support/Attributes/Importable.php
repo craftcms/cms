@@ -12,5 +12,6 @@ final readonly class Importable
     public function __construct(
         public string $name,
         public string $label,
+        public bool $excludeFromUiMapping = false,
     ) {}
 }

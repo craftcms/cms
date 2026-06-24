@@ -242,7 +242,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @see getType()
      */
-    #[Importable('typeId')]
+    #[Importable('typeId', 'Type ID', true)]
     private ?int $_typeId = null;
 
     private ?int $_oldTypeId = null;

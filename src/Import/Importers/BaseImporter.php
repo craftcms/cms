@@ -46,10 +46,8 @@ abstract class BaseImporter
      *  the value should be the name/key/property from the incoming data - it should not be adjusted for mapping at this stage;
      *
      *  null => don't match against existing elements; import all incoming data as new
-     *
-     * Closure =>
      */
-    public protected(set) Closure|array|null $matchCriteria = null;
+    public protected(set) ?array $matchCriteria = null;
 
     public ?string $uid = null;
 
@@ -442,7 +440,6 @@ abstract class BaseImporter
             return $this->transformer::class;
         }
 
-        // todo: maybe show some custom copy if it's a closure??
         return null;
     }
 

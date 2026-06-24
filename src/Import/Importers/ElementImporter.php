@@ -13,8 +13,10 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Validation\Validator;
@@ -267,17 +269,20 @@ class ElementImporter extends BaseImporter
     {
         $propertyCols = [];
 
-        // todo: allow for attribute mapping
+        // attribute mapping - get all properties marked as importable
         $props = ImportHelper::getImportableProperties($this);
+
+        // exclude all those that are not supposed to be available for UI mapping
+        $props = array_filter($props, fn ($prop) => ! isset($prop['excludeFromUiMapping']) || $prop['excludeFromUiMapping'] === false);
 
         if (! empty($props)) {
             $propertyCols = array_map(fn ($prop) => [
                 'handle' => $prop['name'],
                 'label' => $prop['label'],
-                'prefixedHandleForMap' => $prop['name'],
-                'prefixedHandleForMatchCriteria' => $prop['name'],
+                'prefixedHandleForMap' => Html::namespaceInputName($prop['name'], 'map'),
+                'prefixedHandleForMatchCriteria' => Html::namespaceInputName($prop['name'], 'matchCriteria'),
                 'prefixedHandle' => $prop['name'],
-                'prefixedHandleAsArray' => [$prop['name']],
+                'prefixedHandleAsArray' => Arr::bracketsToArray($prop['name']),
                 'isContainer' => false,
                 'canBeMatchCriteria' => true,
             ], $props);

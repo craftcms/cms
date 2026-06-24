@@ -27,6 +27,7 @@ class ImportHelper
             return [
                 'name' => $arguments[0],
                 'label' => $arguments[1] ?? $arguments[0],
+                'excludeFromUiMapping' => $arguments[2] ?? false,
                 'defaultValue' => $property->getDefaultValue(),
             ];
         }, $properties);
@@ -76,7 +77,7 @@ class ImportHelper
         string $attribute,
         ?FieldInterface $ownerField,
         mixed $field,
-        FieldLayout $fieldLayout,
+        ?FieldLayout $fieldLayout,
         mixed $provider,
         ?string $prefix = null,
     ): array {
