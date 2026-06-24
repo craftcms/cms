@@ -1815,33 +1815,20 @@ JS,
             // try to match existing matrix entries,
             // but only if owner already has an ID; no point trying to match nested entry for a new owner element
             if (($rootOwner?->id)) {
-                // try to find an existing entry
-                $query = Entry::find()
-                    ->type($entry['type'])
-                    ->fieldId($this->id)
-                    ->ownerId($rootOwner->id);
-
                 $criteria = [];
 
-                $matchCriteria = [];
-                // TODO: do we want to keep the option of defining matchCriteria in the incoming data?
-                //                // if the matchCriteria are coming from the data file
-                //                if (isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
-                //                    $matchCriteria = $entry['matchCriteria'];
-                //
-                //                    foreach ($matchCriteria as $dbKey => $dataKey) {
-                //                        if (array_key_exists((string)$dataKey, $entry)) {
-                //                            $criteria[$dbKey] = $entry[$dataKey];
-                //                        } elseif (array_key_exists((string)$dbKey, $entry['fields'])) {
-                //                            $criteria[$dbKey] = $entry['fields'][$dbKey];
-                //                        }
-                //                    }
-                //                }
-
-                // if the matchCriteria are coming from the
-                // $this->processMatchCriteria($config->matchCriteria, $data, $originalData, $criteria);
+                if (! empty($entry['matchCriteria'])) {
+                    $criteria = $entry['matchCriteria'];
+                }
 
                 if (! empty($criteria)) {
+                    // try to find an existing entry
+                    $query = Entry::find()
+                        ->type($entry['type'])
+                        ->fieldId($this->id)
+                        ->ownerId($rootOwner->id)
+                        ->siteId($rootOwner->siteId);
+
                     Typecast::configure($query, $criteria);
                     $entryElement = $query->one();
                 }
@@ -1861,7 +1848,7 @@ JS,
             Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
 
             $normalizedValue['sortOrder'][] = $newKey;
-            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $entryType->getFieldLayout(), $entryElement);
+            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $config, $entryType->getFieldLayout(), $entryElement);
         }
 
         // if we have a predefined sort order and entries were not a list - use that prefefined sortOrder
@@ -1875,7 +1862,7 @@ JS,
         return $normalizedValue;
     }
 
-    public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
+    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $config, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
     {
         // ensure each entry has the custom fields wrapped in 'fields' key?
         if (! isset($dataItem['fields'])) {
@@ -1897,7 +1884,7 @@ JS,
             $dataItem['fields'] = $customFields;
         }
 
-        return self::traitNormalizeNestedEntryForImport($dataItem, $fieldLayout, $owner);
+        return self::traitNormalizeNestedEntryForImport($dataItem, $config, $fieldLayout, $owner);
     }
 
     /**

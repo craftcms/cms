@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use Illuminate\Validation\Validator;
 
 /**
@@ -18,7 +19,7 @@ trait ImportableElementContainerField
     /**
      * @see ImportableElementContainerFieldInterface::normalizeNestedEntryForImport()
      */
-    public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
+    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $config, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
     {
         $fields = $dataItem['fields'] ?? [];
 
@@ -34,7 +35,7 @@ trait ImportableElementContainerField
                 continue;
             }
 
-            $dataItem['fields'][$handle] = $field->normalizeValueForImport($value, $owner);
+            $dataItem['fields'][$handle] = $field->normalizeValueForImport($value, $config, $owner);
         }
 
         return $dataItem;

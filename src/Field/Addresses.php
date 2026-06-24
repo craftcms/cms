@@ -927,22 +927,18 @@ JS, [
 
             // try to match existing address entries,
             // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
-            if (($rootOwner?->id) && isset($address['matchCriteria']) && is_array($address['matchCriteria'])) {
-                // try to find an existing entry
-                $query = Address::find()
-                    ->fieldId($this->id)
-                    ->ownerId($rootOwner->id);
+            if (($rootOwner?->id)) {
                 $criteria = [];
 
-                foreach ($address['matchCriteria'] as $dbKey => $dataKey) {
-                    if (array_key_exists((string) $dataKey, $address)) {
-                        $criteria[$dbKey] = $address[$dataKey];
-                    } elseif (array_key_exists((string) $dbKey, $address['fields'])) {
-                        $criteria[$dbKey] = $address['fields'][$dbKey];
-                    }
+                if (! empty($entry['matchCriteria'])) {
+                    $criteria = $entry['matchCriteria'];
                 }
 
                 if (! empty($criteria)) {
+                    $query = Address::find()
+                        ->fieldId($this->id)
+                        ->ownerId($rootOwner->id);
+
                     Typecast::configure($query, $criteria);
                     $addressElement = $query->one();
                 }
@@ -961,7 +957,7 @@ JS, [
 
             Arr::forget($address, ['matchCriteria']);
 
-            $normalizedValue[$newKey] = $this->normalizeNestedEntryForImport($address, $fieldLayout, $addressElement);
+            $normalizedValue[$newKey] = $this->normalizeNestedEntryForImport($address, $config, $fieldLayout, $addressElement);
         }
 
         return $normalizedValue;

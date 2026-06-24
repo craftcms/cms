@@ -289,7 +289,7 @@ class ElementImporter extends BaseImporter
     public function importItem(array $data): void
     {
         // figure out if we're adding or updating
-        $element = $this->getRootElement();
+        $element = $this->getRootElement($data);
 
         $item = app(Import::class)->processData($this, $data, $element);
 
@@ -309,21 +309,21 @@ class ElementImporter extends BaseImporter
         Elements::saveElement($element);
     }
 
-    private function getRootElement(): ElementInterface
+    private function getRootElement(array $data): ElementInterface
     {
         // figure out if we're adding or editing
         $element = new $this->className;
         // if null then return a brand new ElementInterface object with just the siteId set to the selected value
-        if ($this->matchCriteria === null) {
+        if (empty($data['matchCriteria'])) {
             $element->siteId = $this->site->id;
 
             return $element;
         }
-        if (is_array($this->matchCriteria)) {
+        if (is_array($data['matchCriteria'])) {
             $query = $element::find();
             // by now the match criteria from various sources (ui, config, transformer) should have been merged,
             // and the values from incoming data should have been applied to it
-            $criteria = $this->matchCriteria;
+            $criteria = $data['matchCriteria'];
 
             if (empty($criteria)) {
                 $element->siteId = $this->site?->id;

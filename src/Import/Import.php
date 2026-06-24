@@ -27,6 +27,7 @@ use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
@@ -428,7 +429,6 @@ class Import
         }
 
         $data = $event->data;
-        $originalData = $data;
 
         // if we have a map here, hook it up; if we have both the map and the transformer,
         // then the map is used first and then transformer can do further manipulation;
@@ -437,35 +437,87 @@ class Import
             $data = ImportHelper::remapData($config->map, $data);
         }
 
-        $criteria = [];
+        // TODO: if we decide to include the transformer matchCriteria later on (e.g. because we want it to be able to match directly to a value
+        // and not necessarily just the data key), then we might want to do this once per config and not for each root item that is being imported
+        $matchCriteria = $this->normalizeMatchCriteria($config);
 
-        // get the matchCriteria that are coming from the UI or from a file-based config
-        // and assign the right value coming from the $data
-        // this only works for the top-level data (e.g. root element, not nested ones)
-        $this->processMatchCriteria($config->matchCriteria, $data, $originalData, $criteria);
-
-        $transformer = $config->transformer;
-        if (is_object($transformer) && method_exists($transformer, 'additionalMatchCriteria')) {
-            // and now add any that can be coming from the transformer
-            $this->processMatchCriteria($transformer->additionalMatchCriteria($config, $data), $data, $originalData, $criteria);
-
-            $config->matchCriteria($criteria);
-        }
+        // this should continue to be executed on per item basis
+        $this->resolveMatchCriteria($data, $matchCriteria);
 
         $config->importItem($data);
 
         event(new DataImported($config, $data));
     }
 
-    private function processMatchCriteria($matchCriteria, $data, $originalData, &$criteria): void
+    /**
+     * Normalizes match criteria into an array where keys are the fields/attributes/properties to update,
+     * and values containing the incoming data keys.
+     */
+    private function normalizeMatchCriteria(BaseImporter $config): array
     {
-        if (! empty($matchCriteria) && is_array($matchCriteria)) {
-            foreach ($matchCriteria as $handle => $value) {
-                if ($value == 1 || (is_string($value) && array_key_exists($value, $originalData))) {
-                    if (array_key_exists($handle, $data)) {
-                        $criteria[$handle] = $data[$handle];
+        // the order of importance is:
+        // matchCriteria coming from the incoming data are overwritten by
+        // matchCriteria coming from the UI or file-based config (those two never exist together), are overwritten by
+
+        $map = $config->map;
+
+        // the matchCriteria that are coming from the UI or from a file-based config
+        $matchCriteria = $config->matchCriteria;
+
+        // ones coming from the UI will have a value of 1
+        // ones coming from the file-based config should be strings that point to the original data keys
+
+        // for the ones coming from the UI - we need to resolve those to the mapped column names
+        $dottedMap = Arr::dot($map);
+        $dottedMatchCriteria = Arr::dot($matchCriteria);
+
+        foreach ($dottedMatchCriteria as $key => $value) {
+            if (is_numeric($value) && $value == 1) {
+                $dottedMatchCriteria[$key] = $dottedMap[$key];
+            }
+        }
+
+        return Arr::undot($dottedMatchCriteria);
+    }
+
+    /**
+     * Resolves the match criteria so that the returned array contains keys that represent the fields/attributes/properties to update
+     * and values containing the incoming data values (not keys).
+     */
+    private function resolveMatchCriteria(array &$data, array $criteria): void
+    {
+        $levelCriteria = [];
+        foreach ($criteria as $key => $value) {
+            if ($value !== null && ! is_array($value) && array_key_exists($key, $data)) {
+                $levelCriteria[$key] = $data[$key];
+            }
+        }
+
+        if (! empty($levelCriteria)) {
+            $existingMatchCriteria = $data['matchCriteria'] ?? [];
+            $matchCriteria = array_merge($existingMatchCriteria, $levelCriteria);
+            $data = ['matchCriteria' => $matchCriteria] + $data;
+        }
+
+        foreach ($criteria as $key => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+            if (! isset($data[$key])) {
+                continue;
+            }
+            if (! is_array($data[$key])) {
+                continue;
+            }
+            if (array_is_list($data[$key]) && ! array_is_list($value)) {
+                foreach ($data[$key] as &$item) {
+                    if (is_array($item) && isset($item['type'], $value[$item['type']])) {
+                        $this->resolveMatchCriteria($item, $value[$item['type']]);
                     }
                 }
+                unset($item);
+            } else {
+                $this->resolveMatchCriteria($data[$key], $value);
             }
         }
     }

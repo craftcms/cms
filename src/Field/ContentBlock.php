@@ -853,6 +853,6 @@ JS, [
             return [];
         }
 
-        return $this->normalizeNestedEntryForImport($value, $this->getFieldLayout(), $rootOwner);
+        return $this->normalizeNestedEntryForImport($value, $config, $this->getFieldLayout(), $rootOwner);
     }
 }
