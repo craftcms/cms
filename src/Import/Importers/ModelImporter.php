@@ -101,7 +101,8 @@ class ModelImporter extends BaseImporter
             'handle' => $col,
             'prefixedHandleForMap' => $col,
             'prefixedHandleForMatchCriteria' => $col,
-            'prefixedHandle' => [$col],
+            'prefixedHandle' => $col,
+            'prefixedHandleAsArray' => [$col],
             'isContainer' => false,
         ], $columns);
     }
@@ -132,25 +133,19 @@ class ModelImporter extends BaseImporter
         $model = new $this->className;
 
         // if null then return a brand new model
-        if ($this->matchCriteria === null) {
+        if ($data['matchCriteria'] === null) {
             return $model;
         }
 
-        if (is_array($this->matchCriteria)) {
-            $query = $model::query();
-            $criteria = [];
-
-            foreach ($this->matchCriteria as $key => $value) {
-                if (array_key_exists((string) $value, $data)) {
-                    $criteria[$key] = $data[$value];
-                }
-            }
+        if (is_array($data['matchCriteria'])) {
+            $criteria = $data['matchCriteria'];
 
             if (empty($criteria)) {
                 return $model;
             }
 
-            $query->where($criteria);
+            $query = $model::query()
+                ->where($criteria);
 
             return $query->first() ?? $model;
         }
