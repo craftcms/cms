@@ -30,6 +30,9 @@
   --c-color-mix-hover: currentColor 10%;
   --c-color-mix-active: currentColor 20%;
 
+  /* Focus outline */
+  --c-color-focus-outline: var(--color-blue-500);
+
   --c-font-body:
     system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',

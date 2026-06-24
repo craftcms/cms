@@ -38,6 +38,13 @@ export default css`
     );
   }
 
+  // Override for Lion styles
+  :host(:focus:not([disabled])),
+  :host(:focus-visible) {
+    outline: 2px solid var(--c-color-focus-outline);
+    outline-offset: 2px;
+  }
+
   @media (hover: hover) {
     :host(:hover) {
       background-color: hsl(
