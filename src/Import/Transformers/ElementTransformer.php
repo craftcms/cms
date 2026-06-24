@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Import\Transformers;
 
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\ImportHelper;
 
 class ElementTransformer extends BaseTransformer
 {
@@ -36,13 +37,7 @@ class ElementTransformer extends BaseTransformer
         // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
         if ($this->props === null) {
             $config = $this->getCurrentScope()->getResource()->getMeta()['config'];
-            $class = new \ReflectionClass($config->className);
-            $properties = $class->getProperties();
-            $properties = array_values(array_filter($properties, fn ($property) => ! empty($property->getAttributes(Importable::class))));
-            $this->props = array_map(fn ($property) => [
-                'name' => $property->getAttributes(Importable::class)[0]->getArguments()[0],
-                'defaultValue' => $property->getDefaultValue(),
-            ], $properties);
+            $this->props = ImportHelper::getImportableProperties($config);
         }
 
         $array = [];

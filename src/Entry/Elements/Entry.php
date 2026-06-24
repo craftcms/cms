@@ -138,7 +138,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               ```
      */
     #[AllowedInSandbox]
-    #[Importable('sectionId')]
+    #[Importable('sectionId', 'Section ID')]
     public ?int $sectionId = null;
 
     /**
@@ -157,7 +157,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ```
      */
     #[AllowedInSandbox]
-    #[Importable('postDate')]
+    #[Importable('postDate', 'Post Date')]
     public ?DateTimeInterface $postDate = null;
 
     /**
@@ -175,7 +175,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ```
      */
     #[AllowedInSandbox]
-    #[Importable('expiryDate')]
+    #[Importable('expiryDate', 'Expiry Date')]
     public ?DateTimeInterface $expiryDate = null;
 
     /**
@@ -186,7 +186,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /**
      * @var self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
      */
-    #[Importable('status')]
+    #[Importable('status', 'Status')]
     private string $status;
 
     /**
@@ -210,7 +210,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /**
      * @var bool Whether to force-place the entry within its structure.
      */
-    #[Importable('placeInStructure')]
     public bool $placeInStructure = false;
 
     /**
@@ -219,7 +218,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @see getAuthorIds()
      * @see setAuthorIds()
      */
-    #[Importable('authorIds')]
+    #[Importable('authorIds', 'Author IDs')]
     private array $_authorIds;
 
     /**

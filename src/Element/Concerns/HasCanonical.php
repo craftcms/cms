@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
-use CraftCms\Cms\Support\Attributes\Importable;
 use DateTimeInterface;
 
 /**
@@ -51,7 +50,6 @@ trait HasCanonical
      * @see getIsCanonical()
      * @see getIsDerivative()
      */
-    #[Importable('canonicalId')]
     private ?int $_canonicalId = null;
 
     /**
@@ -67,7 +65,6 @@ trait HasCanonical
     /**
      * @see getCanonicalUid()
      */
-    #[Importable('canonicalUid')]
     private ?string $_canonicalUid = null;
 
     public function getId(): ?int

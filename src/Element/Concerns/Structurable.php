@@ -52,7 +52,7 @@ trait Structurable
 
     private ElementInterface|false|null $_prevElement = null;
 
-    #[Importable('parentId')]
+    #[Importable('parentId', 'Parent ID')]
     private int|false|null $_parentId = null;
 
     private ElementInterface|false|null $_parent = null;

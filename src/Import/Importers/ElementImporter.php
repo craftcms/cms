@@ -265,8 +265,26 @@ class ElementImporter extends BaseImporter
     #[Override]
     public function getDestinationCols(): array
     {
+        $propertyCols = [];
+
+        // todo: allow for attribute mapping
+        $props = ImportHelper::getImportableProperties($this);
+
+        if (! empty($props)) {
+            $propertyCols = array_map(fn ($prop) => [
+                'handle' => $prop['name'],
+                'label' => $prop['label'],
+                'prefixedHandleForMap' => $prop['name'],
+                'prefixedHandleForMatchCriteria' => $prop['name'],
+                'prefixedHandle' => $prop['name'],
+                'prefixedHandleAsArray' => [$prop['name']],
+                'isContainer' => false,
+                'canBeMatchCriteria' => true,
+            ], $props);
+        }
+
         if ($this->fieldLayoutUid === null) {
-            return [];
+            return $propertyCols;
         }
 
         // get all the field layout elements and create an array that contains their handles;
@@ -274,7 +292,9 @@ class ElementImporter extends BaseImporter
         // and so on
         $fieldLayout = app(Fields::class)->getLayoutByUid($this->fieldLayoutUid);
 
-        return ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
+        $fieldLayoutCols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
+
+        return array_merge($propertyCols, $fieldLayoutCols);
     }
 
     #[Override]

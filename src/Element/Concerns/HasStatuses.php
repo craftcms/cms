@@ -48,7 +48,7 @@ trait HasStatuses
      * @see getEnabledForSite()
      * @see setEnabledForSite()
      */
-    #[Importable('enabledForSite')]
+    #[Importable('enabledForSite', 'Enabled For Site')]
     private array|bool $_enabledForSite = true;
 
     /**

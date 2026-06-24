@@ -8,9 +8,30 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Support\Attributes\Importable;
 
 class ImportHelper
 {
+    public static function getImportableProperties(BaseImporter $config): array
+    {
+        // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
+        $class = new \ReflectionClass($config->className);
+        $properties = $class->getProperties();
+        $properties = array_values(array_filter($properties, fn ($property) => ! empty($property->getAttributes(Importable::class))));
+
+        return array_map(function ($property) {
+            $attribute = $property->getAttributes(Importable::class)[0];
+            $arguments = $attribute->getArguments();
+
+            return [
+                'name' => $arguments[0],
+                'label' => $arguments[1] ?? $arguments[0],
+                'defaultValue' => $property->getDefaultValue(),
+            ];
+        }, $properties);
+    }
+
     public static function getDestinationColsForFieldLayout(
         ?FieldLayout $fieldLayout,
         ?FieldInterface $ownerField = null,
@@ -51,8 +72,14 @@ class ImportHelper
         return $value;
     }
 
-    public static function getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix): array
-    {
+    public static function getPrefixedHandlesForMapping(
+        string $attribute,
+        ?FieldInterface $ownerField,
+        mixed $field,
+        FieldLayout $fieldLayout,
+        mixed $provider,
+        ?string $prefix = null,
+    ): array {
         if ($ownerField instanceof ImportableElementContainerFieldInterface) {
             $namePrefix = $ownerField->getMappingUiPrefix($fieldLayout, $provider, $prefix);
             if ($field instanceof FieldInterface) {
