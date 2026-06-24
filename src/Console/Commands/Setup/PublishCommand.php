@@ -40,9 +40,7 @@ class PublishCommand extends Command
             return;
         }
 
-        File::deleteDirectory($path);
-
-        if (File::isDirectory($path)) {
+        if (! File::deleteDirectory($path)) {
             throw new RuntimeException("Unable to delete old Craft public asset directory: {$path}");
         }
     }
