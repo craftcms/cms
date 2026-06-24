@@ -1,0 +1,76 @@
+/* -------------------------------------------------------------------------
+   Card view designer styles.
+
+   Consolidated out of resources/css/fld.css. Mirrors the card view designer
+   markup produced by CardDesigner::html():
+   root → container → library → preview → thumbnail → placeholder →
+   thumb management.
+   ------------------------------------------------------------------------- */
+
+/* Card view designer */
+.card-view-designer {
+  container: cvd / inline-size;
+}
+
+.cvd-container {
+  display: grid;
+  position: relative;
+  overflow: hidden;
+  box-shadow: none;
+  gap: var(--c-spacing-xl);
+}
+
+@container cvd (width > 37.5rem) {
+  .cvd-container {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+.cvd-library .draggable {
+  display: flex;
+}
+
+.cvd-preview-container {
+  display: grid;
+  height: 100%;
+  align-items: center;
+}
+
+.cvd-preview:not(.loading) .spinner {
+  display: none;
+}
+
+.cvd-thumbnail {
+  --icon-size: 2rem;
+  --icon-color: currentcolor;
+  width: 100%;
+  aspect-ratio: 4/3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: var(--c-surface-overlay);
+  border-radius: var(--c-radius-md);
+}
+
+.card-placeholder {
+  display: inline-block;
+  border: 1px dashed hsl(211deg 13% 65%);
+  border-radius: var(--c-radius-sm);
+  padding-block: 0.1em;
+  padding-inline: 0.5em;
+}
+
+.field.cvd-field {
+  margin-block-start: 0.2em;
+  margin-inline-start: 0.5em;
+}
+
+/* Thumbnail management */
+.thumb-management {
+  margin-block: var(--c-spacing-xl);
+}
+
+.thumb-management .field:first-child {
+  margin-inline-end: var(--c-spacing-xl);
+}

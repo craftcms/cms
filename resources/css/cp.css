@@ -8,12 +8,46 @@ CP Styles
 @import '@craftcms/cp/tailwind.css' layer(theme);
 
 @import './fld.css';
+@import './cvd.css';
 @import './global-sidebar.css';
 
 :root {
   --global-sidebar-width: calc(226rem / 16);
   --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
+
+  /* Workspace */
+  --workspace-bg-color: var(--c-color-neutral-fill-quiet);
+  --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
+  --workspace-bg-image:
+    linear-gradient(
+      to right,
+      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      transparent 0
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      transparent 1px
+    );
+  --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
+    var(--workspace-bg-image);
+}
+
+/**
+Temporary holding for cp-pane styles until craft-pane is a thing
+ */
+.cp-workspace {
+  padding: var(--c-spacing-xl);
+  border-radius: var(--c-radius-sm);
+  background-color: var(--workspace-bg-color);
+  background-image: var(--workspace-bg-image);
+  background-size: var(--workspace-bg-size);
+  background-position: -1px -1px;
+  box-shadow: var(--c-shadow-sunken);
+  background-clip: padding-box;
+  border: 1px solid var(--c-color-border-quiet);
+  overflow: clip;
 }
 
 .markdown-field > .markdown-field-editor {

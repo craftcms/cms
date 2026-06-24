@@ -11,16 +11,12 @@
   import CraftSelectColor from '@craftcms/cp/vue/CraftSelectColor.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import {
-    type FieldLayoutDesignerData,
-    useFieldLayoutDesigner,
-  } from '@/common/composables/useFieldLayoutDesigner';
+  import {useFieldLayoutDesigner} from '@/common/composables/useFieldLayoutDesigner';
   import useCraftData from '@/common/composables/useCraftData';
   import Pane from '@/common/components/Pane.vue';
   import {store} from '@actions/Settings/EntryTypesController';
   import type {SelectOption} from '@/common/types';
   import IconPicker from '@/common/form/IconPicker.vue';
-  import VarDump from '@/common/components/VarDump.vue';
 
   interface EntryTypeData {
     id: number | null;
@@ -45,7 +41,7 @@
     crumbs: Array<any>;
     entryType: EntryTypeData;
     brandNew: boolean;
-    fieldLayoutDesigner: FieldLayoutDesignerData;
+    fieldLayoutDesigner: {html: string};
     translationMethodOptions: Array<SelectOption>;
     typeName: string;
     lowerTypeName: string;
@@ -78,7 +74,7 @@
 
   // Boot the (legacy) field layout designer and read its value back at submit.
   const fldHost = ref<HTMLElement>();
-  const fld = useFieldLayoutDesigner(fldHost, props.fieldLayoutDesigner);
+  const fld = useFieldLayoutDesigner(fldHost);
 
   // Auto-generate the handle from the name for new entry types.
   const handleGenerator = useInputGenerator(
@@ -308,18 +304,7 @@
 
       <!-- Field Layout -->
       <div class="grid gap-3">
-        <div>
-          <h3 class="font-bold text-sm">{{ t('Field Layout') }}</h3>
-          <p class="text-sm text-neutral-500 mb-2">
-            {{
-              t('Define the field layout for {type} of this type.', {
-                type: lowerTypeName,
-              })
-            }}
-          </p>
-
-          <div ref="fldHost"></div>
-        </div>
+        <div ref="fldHost" v-html="fieldLayoutDesigner.html"></div>
       </div>
     </Pane>
   </AppLayout>

@@ -1,28 +1,18 @@
 import {onMounted, type Ref} from 'vue';
 import {FieldLayoutDesigner} from '@/modules/field-layout-designer';
 
-export interface FieldLayoutDesignerData {
-  /** Server-rendered field layout designer markup (rendered with `autoBoot: false`). */
-  html: string;
-}
-
 /**
  * Boots the legacy `Craft.FieldLayoutDesigner` inside an Inertia page.
  *
  * The designer keeps its own hidden `fieldLayout` input in sync, so `serialize()`
  * reads the value back out at submit — the same thing a Garnish form would post.
  */
-export function useFieldLayoutDesigner(
-  hostRef: Ref<HTMLElement | undefined>,
-  data: FieldLayoutDesignerData
-) {
+export function useFieldLayoutDesigner(hostRef: Ref<HTMLElement | undefined>) {
   onMounted(async () => {
     const host = hostRef.value;
     if (!host) {
       return;
     }
-
-    host.innerHTML = data.html;
 
     const designerEl = host.querySelector<HTMLElement>('.layoutdesigner');
     if (designerEl) {

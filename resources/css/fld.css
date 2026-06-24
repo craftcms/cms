@@ -8,23 +8,10 @@
 
    Organized to mirror the designer markup (see
    resources/views/_includes/forms/fld/designer.blade.php):
-   root → workspace → tabs → elements → dividers → library → settings → card view.
-   ------------------------------------------------------------------------- */
+   root → workspace → tabs → elements → dividers → library → settings.
 
-:root {
-  --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
-  --workspace-bg-image:
-    linear-gradient(
-      to right,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
-      transparent 0
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
-      transparent 1px
-    );
-}
+   Card view designer styles live in cvd.css.
+   ------------------------------------------------------------------------- */
 
 /* Designer root + container */
 .layoutdesigner {
@@ -36,10 +23,6 @@
   align-items: stretch;
   position: relative;
   border-radius: var(--c-radius-md);
-  border: 1px solid var(--c-color-border-quiet);
-  background: var(--c-color-fill-quiet);
-  background-clip: padding-box;
-  overflow: hidden;
   box-shadow: none;
   min-height: 500px;
 }
@@ -58,9 +41,7 @@
   border-end-start-radius: calc(var(--c-radius-sm) - 1px);
   padding-inline: 24px 0;
   padding-block: 24px;
-  background-color: var(--c-color-neutral-fill-quiet);
-  background-image: var(--workspace-bg-image);
-  background-size: var(--workspace-bg-size);
+  background: var(--workspace-bg);
   background-position: -1px -1px;
   box-shadow: var(--c-shadow-sunken);
 }
@@ -438,72 +419,4 @@ body:not(.dragging) .fld-element {
   margin-block: 0;
 }
 
-/* Thumbnail management */
-.thumb-management {
-  margin-block: var(--c-spacing-xl);
-}
-
-.thumb-management .field:first-child {
-  margin-inline-end: var(--c-spacing-xl);
-}
-
-/* Card view designer */
-.card-view-designer {
-  container: cvd / inline-size;
-}
-
-.cvd-container {
-  display: grid;
-  position: relative;
-  overflow: hidden;
-  box-shadow: none;
-  gap: var(--c-spacing-xl);
-}
-@container cvd (width > 37.5rem) {
-  .cvd-container {
-    grid-template-columns: 1fr 2fr;
-  }
-}
-
-.cvd-library .draggable {
-  display: flex;
-}
-
-.cvd-preview-container {
-  padding: var(--c-spacing-xl);
-  border: 1px solid hsl(212deg 25% 50% / 25%);
-  border-radius: var(--c-radius-sm);
-  display: grid;
-  height: 100%;
-  align-items: center;
-}
-
-.cvd-preview:not(.loading) .spinner {
-  display: none;
-}
-
-.cvd-thumbnail {
-  --icon-size: 2rem;
-  --icon-color: currentcolor;
-  width: 100%;
-  aspect-ratio: 4/3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  background-color: var(--c-surface-overlay);
-  border-radius: var(--c-radius-md);
-}
-
-.card-placeholder {
-  display: inline-block;
-  border: 1px dashed hsl(211deg 13% 65%);
-  border-radius: var(--c-radius-sm);
-  padding-block: 0.1em;
-  padding-inline: 0.5em;
-}
-
-.field.cvd-field {
-  margin-block-start: 0.2em;
-  margin-inline-start: 0.5em;
-}
+/* Card view designer styles now live in cvd.css */

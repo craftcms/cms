@@ -21,34 +21,36 @@
      */
 @endphp
 <div class="fld-cvd">
-    <h2 class="visually-hidden">{{ \CraftCms\Cms\t('Field Layout') }}</h2>
+    <h2 class="sr-only">{{ \CraftCms\Cms\t('Field Layout') }}</h2>
 
-    {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
-        fn (array $c) => $designer->html($fieldLayout, $c),
-        [
-            'label' => \CraftCms\Cms\t('Field Layout'),
-            'fieldset' => true,
-            'errors' => $fieldLayout->errors->get('customFields'),
-            'data' => ['error-key' => 'fieldLayout.customFields'],
-            ...$config,
-        ],
-    ) !!}
-
-    @if ($withGeneratedFields)
+    <div class="grid gap-3">
         {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
-            fn (array $c) => $designer->generatedFieldsTableHtml($fieldLayout, $c),
+            fn (array $c) => $designer->html($fieldLayout, $c),
             [
-                'label' => \CraftCms\Cms\t('Generated Fields'),
-                'instructions' => \CraftCms\Cms\t('Define any additional values that should be saved on your elements.'),
-                'errors' => $fieldLayout->errors->get('generatedFields'),
-                'data' => ['error-key' => 'fieldLayout.generatedFields'],
-                'fieldLayout' => $fieldLayout,
-                'disabled' => $disabled,
+                'label' => \CraftCms\Cms\t('Field Layout'),
+                'fieldset' => true,
+                'errors' => $fieldLayout->errors->get('customFields'),
+                'data' => ['error-key' => 'fieldLayout.customFields'],
+                ...$config,
             ],
         ) !!}
-    @endif
 
-    @if ($withCardViewDesigner)
-        {!! $cardDesigner->html($fieldLayout, ['disabled' => $disabled]) !!}
-    @endif
+        @if ($withGeneratedFields)
+            {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
+                fn (array $c) => $designer->generatedFieldsTableHtml($fieldLayout, $c),
+                [
+                    'label' => \CraftCms\Cms\t('Generated Fields'),
+                    'instructions' => \CraftCms\Cms\t('Define any additional values that should be saved on your elements.'),
+                    'errors' => $fieldLayout->errors->get('generatedFields'),
+                    'data' => ['error-key' => 'fieldLayout.generatedFields'],
+                    'fieldLayout' => $fieldLayout,
+                    'disabled' => $disabled,
+                ],
+            ) !!}
+        @endif
+
+        @if ($withCardViewDesigner)
+            {!! $cardDesigner->html($fieldLayout, ['disabled' => $disabled]) !!}
+        @endif
+    </div>
 </div>

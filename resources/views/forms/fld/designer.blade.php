@@ -38,7 +38,7 @@
     >
 
     <div class="fld-container">
-        <div class="fld-workspace">
+        <div class="fld-workspace cp-workspace">
             <div class="fld-tabs">
                 @foreach ($tabs as $tab)
                     {!! $designer->fldTabHtml($tab, $customizableTabs, $disabled) !!}

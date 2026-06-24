@@ -43,43 +43,17 @@ class CardDesigner
         // sort the remaining attributes alphabetically, by label
         usort($remainingOptions, fn (array $a, array $b) => $a['label'] <=> $b['label']);
 
-        $checkboxSelect = FormFields::checkboxSelectFieldHtml([
-            'label' => t('Card Attributes'),
-            'id' => $config['id'],
-            'options' => [...$selectedOptions, ...$remainingOptions],
-            'values' => array_keys($selectedOptions),
-            'sortable' => true,
-            'disabled' => $config['disabled'],
-        ]);
-
         // js is initiated via Craft.FieldLayoutDesigner
         $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
-        $previewHtml = $this->previewHtml($fieldLayout, showThumb: $showThumb);
 
-        return
-            Html::beginTag('div', [
-                'id' => $config['id'].'-container',
-                'class' => 'card-view-designer',
-            ]).
-            Html::tag('h2', t('Card Layout Editor'), ['class' => 'visually-hidden']).
-            Html::beginTag('div', ['class' => 'cvd-container']).
-            Html::beginTag('div', ['class' => 'cvd-library']).
-            $checkboxSelect.
-            Html::endTag('div'). // .cvd-library
-            Html::beginTag('div', ['class' => 'cvd-preview-container']).
-            Html::beginTag('div', ['class' => 'cvd-preview']).
-            Html::tag('h3', t('Card Layout Preview'), [
-                'class' => 'visually-hidden',
-            ]).
-            Html::tag('p', t('The following content is for preview only.'), [
-                'class' => 'visually-hidden',
-            ]).
-            $previewHtml.
-            Html::endTag('div'). // .cvd-preview-container
-            Html::endTag('div'). // .cvd-preview
-            Html::endTag('div'). // .cvd-container
-            $this->thumbManagementHtml($fieldLayout, $config).
-            Html::endTag('div'); // .card-view-designer
+        return view('c::forms.fld.card-view-designer', [
+            'id' => $config['id'],
+            'disabled' => $config['disabled'],
+            'attributeOptions' => [...$selectedOptions, ...$remainingOptions],
+            'attributeValues' => array_keys($selectedOptions),
+            'previewHtml' => $this->previewHtml($fieldLayout, showThumb: $showThumb),
+            'thumbManagement' => $this->thumbManagementHtml($fieldLayout, $config),
+        ])->render();
     }
 
     /**
@@ -294,7 +268,7 @@ class CardDesigner
         $thumbnailAlignment = $fieldLayout->getCardThumbAlignment();
 
         $thumbHtml = Html::beginTag('div', ['class' => 'thumb-management']).
-            Html::tag('h2', t('Manage element thumbnails'), ['class' => 'visually-hidden']).
+            Html::tag('h2', t('Manage element thumbnails'), ['class' => 'sr-only']).
             Html::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'items-start']]);
 
         // dropdown field that contains all thumbable fields + 'None' option
