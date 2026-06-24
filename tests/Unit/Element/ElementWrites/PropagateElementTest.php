@@ -293,6 +293,7 @@ it('adds a linked validation error when the current user can fix the propagated 
     Cms::config()
         ->cpTrigger('admin')
         ->baseCpUrl('https://example.test/admin');
+
     swapUrlRequest('/admin/entries/100?foo=bar&site=primary');
     request()->attributes->set('isCpRequest', true);
     Auth::shouldReceive('user')->andReturn(new AuthorizedAuthUser);

@@ -139,6 +139,7 @@ it('determines if the edition can be upgraded', function () {
     Cms::config()->allowAdminChanges = true;
     Cms::setIsInstalled(false);
 
+    Cms::setIsInstalled(false);
     Edition::set(Edition::Pro);
     Cms::setIsInstalled();
 

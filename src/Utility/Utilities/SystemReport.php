@@ -7,17 +7,16 @@ namespace CraftCms\Cms\Utility\Utilities;
 use Composer\InstalledVersions;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
 use Override;
-use RequirementsChecker;
 
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
@@ -146,20 +145,7 @@ class SystemReport extends Utility
      */
     private static function requirementResults(): array
     {
-        $checker = new RequirementsChecker;
-
-        $prefix = 'database.connections.'.DB::getDriverName();
-        $checker->dsn = implode('', [
-            DB::getDriverName(),
-            ':host='.Config::get("$prefix.host"),
-            ';port='.Config::get("$prefix.port"),
-            ';dbname='.Config::get("$prefix.database"),
-            ';user='.Config::get("$prefix.username"),
-            ';password='.Config::get("$prefix.password"),
-        ]);
-        $checker->dbDriver = DB::getDriverName();
-        $checker->dbUser = Config::get("$prefix.username");
-        $checker->dbPassword = Config::get("$prefix.password");
+        $checker = ConnectionConfig::requirementsChecker();
         $checker->checkCraft();
 
         return $checker->getResult()['requirements'];

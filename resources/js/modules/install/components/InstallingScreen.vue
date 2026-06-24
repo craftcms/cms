@@ -1,11 +1,13 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {onMounted} from 'vue';
-  import {useActionClient} from '@/common/composables/useFetch';
-  import {usePage} from '@inertiajs/vue3';
+  import {usePost} from '@/common/composables/useFetch';
+  import {install as installAction} from '@actions/InstallController';
   import Pane from '@/common/components/Pane.vue';
 
-  const {props: pageProps} = usePage();
+  type InstallResponse = {
+    redirect: string;
+  };
 
   const props = defineProps<{
     data: any;
@@ -17,10 +19,10 @@
     isSuccess,
     isLoading,
     isError,
-  } = useActionClient('install/install', {
-    onSuccess: () => {
+  } = usePost<InstallResponse>(installAction().url, {
+    onSuccess: ({redirect}) => {
       setTimeout(() => {
-        window.location.href = pageProps.postCpLoginRedirect as string;
+        window.location.href = redirect;
       }, 1000);
     },
   });

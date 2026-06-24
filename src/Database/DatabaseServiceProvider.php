@@ -31,13 +31,14 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Override;
-use ReflectionProperty;
 
 class DatabaseServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void
     {
+        ConnectionConfig::normalizeConfiguredConnections($this->app->make(Repository::class));
+
         $this->app
             ->when(Migrator::class)
             ->needs(MigrationRepositoryInterface::class)
@@ -118,24 +119,18 @@ class DatabaseServiceProvider extends ServiceProvider
         ]);
 
         if ($db->getDriverName() === 'sqlite') {
-            $this->bootSqlite($config, $db, $cache);
+            $this->bootSqlite($db, $cache);
         } else {
             $this->bootDefault($config, $db, $cache);
         }
     }
 
-    private function bootSqlite(Repository $config, Connection $db, \Illuminate\Cache\Repository $cache): void
+    private function bootSqlite(Connection $db, \Illuminate\Cache\Repository $cache): void
     {
         /**
          * For SQLite db2 must be the same connection as the default.
          */
-        $config->set('database.connections.db2', $db->getConfig());
-        $appDb = app(ConnectionResolverInterface::class);
-
-        $connections = new ReflectionProperty($appDb, 'connections');
-        $current = $connections->getValue($appDb);
-        $current['db2'] = $db;
-        $connections->setValue($appDb, $current);
+        ConnectionConfig::useDefaultConnectionForBulkOps($db);
 
         if ($cache->getStore() instanceof DatabaseStore) {
             $cache->getStore()->setConnection($db);

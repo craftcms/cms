@@ -130,7 +130,7 @@ class File extends \Illuminate\Support\Facades\File
         // Already absolute?
         if (
             str_starts_with($to, $ds) ||
-            preg_match(sprintf('/^[A-Z]:%s/', preg_quote($ds, '/')), $to)
+            preg_match(sprintf('/^[A-Za-z]:%s/', preg_quote($ds, '/')), $to)
         ) {
             return $to;
         }
