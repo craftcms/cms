@@ -12,11 +12,7 @@ readonly class RequireEdition
 {
     public function handle(Request $request, Closure $next, string $edition): mixed
     {
-        try {
-            Edition::require(Edition::from((int) $edition));
-        } catch (Edition\Exceptions\WrongEditionException) {
-            abort(404);
-        }
+        Edition::require(Edition::from((int) $edition));
 
         return $next($request);
     }

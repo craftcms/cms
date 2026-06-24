@@ -127,6 +127,8 @@ it('determines if the edition can be upgraded', function () {
     // Not an admin
     expect(Edition::canUpgrade())->toBefalse();
 
+    Cms::setIsInstalled();
+
     expect(Edition::canUpgrade())->toBeTrue();
 
     Cms::config()->allowAdminChanges = false;
@@ -135,6 +137,7 @@ it('determines if the edition can be upgraded', function () {
     expect(Edition::canUpgrade())->toBeFalse();
 
     Cms::config()->allowAdminChanges = true;
+    Cms::setIsInstalled(false);
 
     Cms::setIsInstalled(false);
     Edition::set(Edition::Pro);

@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\PageTemplateRendering;
-use CraftCms\Cms\Twig\Events\TemplateRendered;
-use CraftCms\Cms\Twig\Events\TemplateRendering;
+use CraftCms\Cms\View\BaseTemplateRenderer;
+use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Facades\Log;
 use Twig\Extension\SandboxExtension;
 use Twig\Template;
 use Twig\TemplateWrapper;
@@ -22,30 +19,21 @@ use Yiisoft\Arrays\ArrayableInterface;
  * @mixin Twig
  */
 #[Scoped]
-class TemplateRenderer
+class TwigRenderer extends BaseTemplateRenderer
 {
     /** @var TemplateWrapper[] Object template cache */
     private array $objectTemplates = [];
 
-    private ?string $renderingTemplate = null;
-
-    public bool $isRenderingTemplate {
-        get => $this->isRenderingTemplate();
-    }
-
-    public private(set) bool $isRenderingPageTemplate = false;
-
     public function __construct(
         private readonly Twig $twig,
-        private readonly PageLifecycle $pageLifecycle,
-    ) {}
+        protected PageLifecycle $pageLifecycle,
+    ) {
+        parent::__construct($this->pageLifecycle);
+    }
 
-    /**
-     * Returns whether a template is currently being rendered.
-     */
-    public function isRenderingTemplate(): bool
+    public function supports(string $file): bool
     {
-        return isset($this->renderingTemplate);
+        return str_ends_with($file, '.twig') || str_ends_with($file, '.html');
     }
 
     /**
@@ -59,40 +47,15 @@ class TemplateRenderer
     public function renderTemplate(
         string $template,
         array $variables = [],
-        ?TemplateMode $templateMode = null
+        ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
     ): string {
-        $templateMode ??= TemplateMode::get();
-
-        event($event = new TemplateRendering($template, $variables, $templateMode));
-
-        if (! $event->isValid) {
-            return '';
-        }
-
-        $template = $event->template;
-        $variables = $event->variables;
-        $templateMode = $event->templateMode;
-
-        Log::debug("Rendering template: $template", [__METHOD__]);
-
-        $oldTemplateMode = TemplateMode::get();
-        TemplateMode::set($templateMode);
-
-        // Render and return
-        $renderingTemplate = $this->renderingTemplate;
-        $this->renderingTemplate = $template;
-
-        try {
-            $output = $this->twig->get()->render($template, $variables);
-        } finally {
-            $this->renderingTemplate = $renderingTemplate;
-
-            TemplateMode::set($oldTemplateMode);
-        }
-
-        event($event = new TemplateRendered($template, $variables, $templateMode, $output));
-
-        return $event->output;
+        return $this->renderInternal(
+            template: $template,
+            variables: $variables,
+            templateMode: $templateMode,
+            render: fn (string $template, array $variables) => $this->twig->get()->render($template, $variables),
+        );
     }
 
     /**
@@ -104,51 +67,6 @@ class TemplateRenderer
         ?TemplateMode $templateMode = null,
     ): string {
         return $this->sandbox(fn () => $this->renderTemplate($template, $variables, $templateMode), $templateMode);
-    }
-
-    /**
-     * Renders a page template (with beginPage/endPage lifecycle).
-     *
-     * Delegates output buffering, BeginPage/EndPage events, and placeholder
-     * replacement to {@see PageLifecycle}, keeping template rendering concerns
-     * separate from page structure and asset injection.
-     */
-    public function renderPageTemplate(
-        string $template,
-        array $variables = [],
-        ?TemplateMode $templateMode = null,
-    ): string {
-        $templateMode ??= TemplateMode::get();
-
-        event($event = new PageTemplateRendering($template, $variables, $templateMode));
-
-        if (! $event->isValid) {
-            return '';
-        }
-
-        $template = $event->template;
-        $variables = $event->variables;
-        $templateMode = $event->templateMode;
-
-        $isRenderingPageTemplate = $this->isRenderingPageTemplate;
-        $this->isRenderingPageTemplate = true;
-
-        try {
-            $output = $this->pageLifecycle->wrap(
-                fn () => $this->renderTemplate($template, $variables, $templateMode),
-            );
-        } finally {
-            $this->isRenderingPageTemplate = $isRenderingPageTemplate;
-        }
-
-        event($event = new PageTemplateRendered($template, $variables, $templateMode, $output));
-
-        return $event->output;
-    }
-
-    public function isRenderingPageTemplate(): bool
-    {
-        return $this->isRenderingPageTemplate;
     }
 
     /**

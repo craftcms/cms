@@ -16,10 +16,10 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use crafttests\fixtures\SitesFixture;
 use Illuminate\Support\Facades\Event as LaravelEvent;
 use Illuminate\Support\Once;
@@ -210,7 +210,7 @@ class ViewTest extends TestCase
         );
 
         self::assertSame(
-            ['twig', 'html'],
+            ['twig', 'html', 'blade.php'],
             TemplateMode::get()->defaultTemplateExtensions()
         );
 
