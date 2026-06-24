@@ -165,6 +165,25 @@ JS;
         ])->render();
     }
 
+    public function fieldHtml(FieldLayout $fieldLayout, array $config = []): string
+    {
+        $config += [
+            'withGeneratedFields' => false,
+            'withCardViewDesigner' => false,
+            'disabled' => false,
+        ];
+
+        return view('c::forms.fld.field', [
+            'designer' => $this,
+            'cardDesigner' => app(CardDesigner::class),
+            'fieldLayout' => $fieldLayout,
+            'config' => $config,
+            'withGeneratedFields' => $config['withGeneratedFields'],
+            'withCardViewDesigner' => $config['withCardViewDesigner'],
+            'disabled' => $config['disabled'],
+        ])->render();
+    }
+
     public function layoutElementSelectorHtml(
         FieldLayoutElement $element,
         bool $forLibrary = false,

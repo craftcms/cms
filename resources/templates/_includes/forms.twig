@@ -500,33 +500,8 @@
 
 
 {% macro fieldLayoutDesignerField(config) %}
-    <div class="fld-cvd">
-    <h2 class="visually-hidden">{{ 'Field Layout'|t('app') }}</h2>
-        {{ _self.field({
-            label: 'Field Layout'|t('app'),
-            fieldset: true,
-            errors: config.fieldLayout.errors.get('customFields') ?? [],
-            data: {'error-key': 'fieldLayout.customFields'},
-        }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
-
-        {% if config.withGeneratedFields ?? false %}
-            {{ _self.field({
-                label: 'Generated Fields'|t('app'),
-                instructions: 'Define any additional values that should be saved on your elements.'|t('app'),
-                errors: config.fieldLayout.errors.get('generatedFields') ?? [],
-                data: {'error-key': 'fieldLayout.generatedFields'},
-                fieldLayout: config.fieldLayout ?? null,
-                disabled: config.disabled ?? false,
-            }, 'template:_includes/forms/generatedFieldsTable') }}
-        {% endif %}
-
-        {% if config.withCardViewDesigner ?? false %}
-            {% include '_includes/forms/cardViewDesigner' with {
-                fieldLayout: config.fieldLayout,
-                disabled: config.disabled ?? false,
-            } only %}
-        {% endif %}
-    </div>
+    {% set fieldLayout = (config.fieldLayout ?? false) ?: create('CraftCms\\Cms\\FieldLayout\\FieldLayout') %}
+    {{ fieldLayoutDesignerField(fieldLayout, config) }}
 {% endmacro %}
 
 

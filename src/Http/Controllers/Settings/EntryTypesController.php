@@ -139,7 +139,7 @@ class EntryTypesController
         // Render just the designer markup (with `autoBoot: false`, so it doesn't queue its
         // own boot JS).
         $fieldLayoutDesigner = [
-            'html' => $this->fieldLayoutDesigner->html($fieldLayout, [
+            'html' => $this->fieldLayoutDesigner->fieldHtml($fieldLayout, [
                 'disabled' => $this->readOnly,
                 'withGeneratedFields' => true,
                 'withCardViewDesigner' => true,
