@@ -255,6 +255,11 @@ class Arr extends \Illuminate\Support\Arr
         return false;
     }
 
+    /**
+     * Normalizes the key from bracket notation into dot notation.
+     * `foo[bar][baz]` => `foo.bar.baz`
+     * The opposite of `undotifyKey`.
+     */
     public static function dotifyKey(int|string $key): string|int
     {
         // Normalize the key into dot notation
@@ -266,7 +271,8 @@ class Arr extends \Illuminate\Support\Arr
     }
 
     /**
-     * Normalizes the key from dot notation into brackets notation.
+     * Normalizes the key from dot notation into bracket notation.
+     * `foo.bar.baz` => `foo[bar][baz]`
      * The opposite of `dotifyKey`.
      */
     public static function undotifyKey(int|string $key): string|int
@@ -282,7 +288,8 @@ class Arr extends \Illuminate\Support\Arr
     }
 
     /**
-     * Normalizes the string from brackets notation into an array.
+     * Normalizes the string from bracket notation into an array.
+     * `foo[bar][baz]` => `['foo', 'bar', 'baz']`
      */
     public static function bracketsToArray(string $string): array
     {
@@ -309,7 +316,7 @@ class Arr extends \Illuminate\Support\Arr
             }
 
             if (is_array($value)) {
-                $keys = array_merge($keys, self::flattenKeys($value, $path));
+                $keys = array_merge($keys, self::uniqueDotifiedKeys($value, $path));
             }
         }
 
