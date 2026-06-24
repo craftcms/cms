@@ -8,6 +8,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
@@ -30,6 +31,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use PDOException;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -43,6 +45,10 @@ use Throwable;
 readonly class InstallController
 {
     use SiteDefaults;
+
+    private const array DbDrivers = ['mysql', 'mariadb', 'pgsql', 'sqlite'];
+
+    private const string DefaultSqliteDatabase = 'database.sqlite';
 
     public function __construct()
     {
@@ -61,7 +67,7 @@ readonly class InstallController
         try {
             DB::reconnect()->getPdo();
             $showDbScreen = false;
-        } catch (PDOException $e) {
+        } catch (PDOException|SQLiteDatabaseDoesNotExistException $e) {
             if ($this->canControlDbConfig()) {
                 $showDbScreen = true;
             } else {
@@ -101,7 +107,10 @@ readonly class InstallController
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
-            'dbConfig' => $dbConfig,
+            'dbConfig' => [
+                'driver' => $this->dbDriver($dbConfig['driver'] ?? null),
+            ],
+            'dbDefaults' => $this->dbDefaults(),
         ]);
     }
 
@@ -112,6 +121,10 @@ readonly class InstallController
         $errors = [];
 
         try {
+            if ($data['driver'] === 'sqlite') {
+                ConnectionConfig::ensureSqliteDatabaseFile($data['database']);
+            }
+
             DB::build($data)->select('SELECT 1');
         } catch (PDOException $e) {
             $attr = match ($e->getCode()) {
@@ -124,6 +137,8 @@ readonly class InstallController
             $errors[$attr][] = 'PDO exception: '.$e->getMessage();
         } catch (SQLiteDatabaseDoesNotExistException $e) {
             $errors['database'][] = 'PDO exception: '.$e->getMessage();
+        } catch (RuntimeException $e) {
+            $errors['database'][] = $e->getMessage();
         }
 
         if (empty($errors)) {
@@ -167,31 +182,39 @@ readonly class InstallController
         if ($request->has('db.driver')) {
             $data = $this->validateDbData($request->input('db'));
 
-            // Set and save the new DB config values
-            // If there's a DB_DSN environment variable, go with that
-            Env::writeVariable('DB_CONNECTION', $data['driver'], $path, overwrite: true);
-            Env::writeVariable('DB_HOST', $data['host'], $path, overwrite: true);
-            Env::writeVariable('DB_PORT', (string) $data['port'], $path, overwrite: true);
-            Env::writeVariable('DB_DATABASE', $data['database'], $path, overwrite: true);
+            if ($data['driver'] === 'sqlite') {
+                try {
+                    ConnectionConfig::ensureSqliteDatabaseFile($data['database']);
+                } catch (RuntimeException $e) {
+                    return new JsonResponse([
+                        'message' => $e->getMessage(),
+                    ], 400);
+                }
+            }
 
-            Env::writeVariable('DB_USERNAME', $data['username'], $path, overwrite: true);
-            Env::writeVariable('DB_PASSWORD', $data['password'], $path, overwrite: true);
-            isset($data['schema']) && Env::writeVariable('DB_SCHEMA', $data['schema'], $path, overwrite: true);
-            isset($data['prefix']) && Env::writeVariable('DB_TABLE_PREFIX', $data['prefix'], $path, overwrite: true);
+            // Set and save the new DB config values
+            $this->writeDbEnv($data, $path);
 
             // Update the db component based on new values
             Config::set('database.default', $data['driver']);
             Config::set("database.connections.{$data['driver']}", array_merge(
-                Config::get("database.connections.{$data['driver']}"),
+                Config::get("database.connections.{$data['driver']}") ?? [],
                 $data,
             ));
 
+            DB::purge($data['driver']);
             DB::setDefaultConnection($data['driver']);
-            Config::set('database.connections.db2', array_merge(DB::connection()->getConfig(), [
-                'name' => 'db2',
-            ]));
             DB::reconnect($data['driver']);
-            DB::reconnect('db2');
+
+            if ($data['driver'] === 'sqlite') {
+                ConnectionConfig::useDefaultConnectionForBulkOps(DB::connection());
+            } else {
+                Config::set('database.connections.db2', array_merge(DB::connection()->getConfig(), [
+                    'name' => 'db2',
+                ]));
+                DB::purge('db2');
+                DB::reconnect('db2');
+            }
         }
 
         $email = $request->input('account.email');
@@ -267,9 +290,9 @@ readonly class InstallController
     public function validateDbData($data): array
     {
         $data = Validator::validate($data, [
-            'driver' => ['required', 'string', Rule::in('mysql', 'pgsql', 'sqlite')],
+            'driver' => ['required', 'string', Rule::in('mysql', 'mariadb', 'pgsql', 'sqlite')],
             'host' => ['nullable', 'string'],
-            'database' => ['required', 'string'],
+            'database' => ['nullable', 'string'],
             'port' => ['nullable', 'integer'],
             'username' => ['nullable', 'string'],
             'password' => ['nullable', 'string'],
@@ -277,14 +300,77 @@ readonly class InstallController
             'schema' => ['nullable', 'string'],
         ]);
 
-        $defaultPort = in_array($data['driver'], ['mysql', 'mariadb']) ? 3306 : 5432;
+        $defaults = $this->dbDefaultsForDriver($data['driver']);
+        $data['database'] = ($data['database'] ?? null) ?: $defaults['database'];
 
-        $data['host'] ??= Config::get("database.connections.{$data['driver']}.host") ?: '127.0.0.1';
-        $data['port'] ??= Config::get("database.connections.{$data['driver']}.port") ?: $defaultPort;
-        $data['username'] ??= Config::get("database.connections.{$data['driver']}.username") ?: 'root';
-        $data['password'] ??= Config::get("database.connections.{$data['driver']}.password");
-        $data['prefix'] ??= Config::get("database.connections.{$data['driver']}.prefix");
+        if ($data['driver'] === 'sqlite') {
+            return ConnectionConfig::normalize($data);
+        }
+
+        $data['host'] ??= $defaults['host'];
+        $data['port'] ??= (int) $defaults['port'];
+        $data['username'] ??= $defaults['username'];
+        $data['password'] ??= '';
+        $data['prefix'] ??= $defaults['prefix'];
 
         return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [$key => $value])->all();
+    }
+
+    private function dbDriver(mixed $driver): string
+    {
+        if (is_string($driver) && in_array($driver, self::DbDrivers, true)) {
+            return $driver;
+        }
+
+        return 'sqlite';
+    }
+
+    private function dbDefaults(): array
+    {
+        return collect(self::DbDrivers)
+            ->mapWithKeys(fn (string $driver) => [$driver => $this->dbDefaultsForDriver($driver)])
+            ->all();
+    }
+
+    private function dbDefaultsForDriver(string $driver): array
+    {
+        if ($driver === 'sqlite') {
+            return [
+                'database' => self::DefaultSqliteDatabase,
+                'prefix' => '',
+            ];
+        }
+
+        $defaultPort = in_array($driver, ['mysql', 'mariadb'], true) ? 3306 : 5432;
+
+        return [
+            'host' => '127.0.0.1',
+            'port' => (string) $defaultPort,
+            'database' => 'laravel',
+            'username' => 'root',
+            'prefix' => '',
+        ];
+    }
+
+    private function writeDbEnv(array $data, string $path): void
+    {
+        Env::writeVariable('DB_CONNECTION', $data['driver'], $path, overwrite: true);
+        Env::writeVariable('DB_DATABASE', $data['database'], $path, overwrite: true);
+
+        if ($data['driver'] === 'sqlite') {
+            Env::writeVariable('DB_FOREIGN_KEYS', 'true', $path, overwrite: true);
+
+            foreach (['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_SCHEMA'] as $variable) {
+                Env::removeVariable($variable, $path);
+            }
+        } else {
+            Env::writeVariable('DB_HOST', $data['host'], $path, overwrite: true);
+            Env::writeVariable('DB_PORT', (string) $data['port'], $path, overwrite: true);
+            Env::writeVariable('DB_USERNAME', $data['username'], $path, overwrite: true);
+            Env::writeVariable('DB_PASSWORD', $data['password'], $path, overwrite: true);
+            isset($data['schema']) && Env::writeVariable('DB_SCHEMA', $data['schema'], $path, overwrite: true);
+        }
+
+        isset($data['prefix']) && Env::writeVariable('DB_TABLE_PREFIX', $data['prefix'], $path, overwrite: true);
     }
 }

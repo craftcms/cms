@@ -59,10 +59,12 @@ test('nested element query', function () {
 
 test('nested element query supports array filters', function () {
     $field1 = Field::factory()->create([
+        'handle' => 'nestedBlocksOne',
         'type' => ContentBlock::class,
     ]);
 
     $field2 = Field::factory()->create([
+        'handle' => 'nestedBlocksTwo',
         'type' => ContentBlock::class,
     ]);
 

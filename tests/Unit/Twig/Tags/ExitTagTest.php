@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Twig\Error\RuntimeError;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 it('throws a NotFoundHttpException for 404', function () {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Twig;
+namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
-use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Container\Attributes\Scoped;
+use Throwable;
 
 /**
  * Owns the page rendering lifecycle: output buffering, PageStarting/PageEnded
@@ -75,7 +75,7 @@ readonly class PageLifecycle
             // {% exit %} without a status code: return whatever has been
             // rendered so far as a normal 200 response.
             return (string) ob_get_clean();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             ob_end_clean();
 
             throw $exception;
