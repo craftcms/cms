@@ -91,7 +91,7 @@ it('renders inertia pages', function (string $url, string $component, string $ti
     [
         'url' => '/settings/assets/transforms',
         'title' => 'Image Transforms',
-        'component' => 'settings/assets/transforms/ImageTransformsIndexPage',
+        'component' => 'settings/assets/transforms/Index',
     ],
     [
         'url' => '/settings/routes',

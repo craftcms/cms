@@ -5,6 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
+use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Image\Enums\ImageTransformPosition;
+use CraftCms\Cms\Image\Enums\ImageTransformQuality;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\Support\Url;
@@ -84,7 +88,7 @@ it('requires admin changes', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/assets/transforms/EditImageTransformPage')
+            ->component('settings/assets/transforms/Edit')
             ->where('readOnly', true));
 
     get(action([ImageTransformsController::class, 'create']))->assertForbidden();
@@ -94,24 +98,19 @@ it('requires admin changes', function () {
 
 it('renders index', function () {
     get(action([ImageTransformsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/assets/transforms/ImageTransformsIndexPage'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/assets/transforms/Index'));
 });
 
 it('renders create', function () {
     get(action([ImageTransformsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/assets/transforms/EditImageTransformPage')
+            ->component('settings/assets/transforms/Edit')
             ->where('title', t('Create a new image transform'))
             ->where('transform.id', null)
-            ->has('modeOptions', 4)
-            ->where('modeOptions.0.value', 'crop')
-            ->where('modeOptions.1.value', 'fit')
-            ->where('modeOptions.2.value', 'letterbox')
-            ->where('modeOptions.3.value', 'stretch')
-            ->has('positionOptions', 9)
-            ->has('interlaceOptions', 4)
-            ->has('formatOptions')
-            ->has('qualityOptions', 5));
+            ->has('modeOptions', count(ImageTransformMode::cases()))
+            ->has('positionOptions', count(ImageTransformPosition::cases()))
+            ->has('interlaceOptions', count(ImageTransformInterlace::cases()))
+            ->has('qualityOptions', count(ImageTransformQuality::cases())));
 });
 
 it('renders edit for an existing transform', function () {
@@ -119,7 +118,7 @@ it('renders edit for an existing transform', function () {
 
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/assets/transforms/EditImageTransformPage')
+            ->component('settings/assets/transforms/Edit')
             ->where('title', $transform->name)
             ->where('transform.id', $transform->id)
             ->where('transform.name', $transform->name)
