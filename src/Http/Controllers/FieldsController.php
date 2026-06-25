@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
@@ -28,6 +28,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
@@ -40,6 +41,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -59,45 +61,32 @@ class FieldsController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private HtmlStack $HtmlStack,
+        private readonly HtmlStack $HtmlStack,
         private readonly Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request)
+    public function index(TableRequest $request)
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
+        [$pagination, $tableData] = $this->fieldsService->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
+        );
 
-        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
-            ['field' => 'name', 'direction' => 'asc'],
-        ];
-
-        $orderBy = match (Arr::get($sort, '0.field')) {
-            'handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-
-        $sortDir = match (Arr::get($sort, '0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        [$pagination, $tableData] = $this->fieldsService->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
-
-        return Inertia::render('SettingsFieldsIndexPage', [
+        return Inertia::render('settings/Fields', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Fields')],
             ],
             'title' => t('Fields'),
-            'sort' => $sort,
+            'sort' => $request->sort(),
             'data' => fn () => $tableData,
             'pagination' => fn () => $pagination,
-            'searchTerm' => $searchTerm,
+            'searchTerm' => $request->search(),
         ]);
     }
 
@@ -327,23 +316,16 @@ class FieldsController
         ]);
     }
 
-    #[\Deprecated(message: 'in 6.0. Use `settings/fields` instead.')]
-    public function tableData(Request $request): Response
+    #[Deprecated(message: 'in 6.0. Use `settings/fields` instead.')]
+    public function tableData(TableRequest $request): Response
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
-        $orderBy = match ($request->input('sort.0.field')) {
-            '__slot:handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-        $sortDir = match ($request->input('sort.0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        [$pagination, $tableData] = $this->fieldsService->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
+        [$pagination, $tableData] = $this->fieldsService->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
+        );
 
         return $this->asSuccess(data: [
             'pagination' => $pagination,
@@ -355,7 +337,7 @@ class FieldsController
     {
         $request->validate([
             'uid' => ['required', 'string'],
-            'elementType' => ['required', 'string'],
+            'elementType' => ['required', 'string', new ElementTypeRule],
             'layoutConfig' => ['required', 'array'],
             'config' => ['nullable', 'array'],
             'settings' => ['nullable', 'string'],

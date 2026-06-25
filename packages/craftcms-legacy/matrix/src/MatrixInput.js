@@ -273,6 +273,10 @@
           Craft.initUiElements($newEntries);
 
           $newEntries.each((i, entry) => {
+            if (entry.nodeType !== 1) {
+              return;
+            }
+
             const $entry = $(entry);
             new Craft.MatrixInput.Entry(this, $entry);
             this.trigger('entryAdded', {
@@ -1269,6 +1273,7 @@
           [param('visibleLayoutElements')]: this.visibleLayoutElements,
           [param('staticLayoutElements')]: this.staticLayoutElements,
           [param('elementType')]: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          [param('siteId')]: this.matrix.settings.siteId,
           [param('ownerId')]: this.matrix.settings.ownerId,
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,

@@ -8,7 +8,7 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Support\Arr;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Validation\Rule;
 use Override;
 use Stringable;
@@ -27,11 +27,11 @@ class GqlToken extends Component implements Stringable
 
     public bool $enabled = true;
 
-    public ?DateTime $expiryDate = null;
+    public ?DateTimeInterface $expiryDate = null;
 
-    public ?DateTime $lastUsed = null;
+    public ?DateTimeInterface $lastUsed = null;
 
-    public ?DateTime $dateCreated = null;
+    public ?DateTimeInterface $dateCreated = null;
 
     public ?string $uid = null;
 

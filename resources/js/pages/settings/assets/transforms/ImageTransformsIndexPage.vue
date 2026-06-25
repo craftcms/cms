@@ -1,19 +1,19 @@
 <script setup lang="ts">
   import {capitalize, t} from '@craftcms/cp';
-  import IndexLayout from '@/layout/IndexLayout.vue';
+  import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {computed, h, ref} from 'vue';
-  import CpLink from '@/components/CpLink.vue';
+  import CpLink from '@/common/components/CpLink.vue';
   import {
     create,
     destroy,
     edit,
     index as imageTransformsIndex,
   } from '@actions/Settings/ImageTransformsController';
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
-  import Empty from '@/components/Empty.vue';
+  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
+  import Empty from '@/common/components/Empty.vue';
   import {router} from '@inertiajs/vue3';
   import {index} from '@actions/Settings/VolumesController';
   import type {ExistingImageTransform} from '@/pages/settings/assets/transforms/types';
@@ -30,7 +30,7 @@
         .optimistic<{transforms: Array<ExistingImageTransform>}>((props) => ({
           transforms: props.transforms.filter(({id}) => id !== transform.id),
         }))
-        .delete(destroy(transform.id), {
+        .delete(destroy({transformId: transform.id}), {
           preserveScroll: true,
         });
     }
@@ -49,7 +49,7 @@
     columnHelper.link('name', {
       header: t('Name'),
       props: ({row}) => ({
-        href: edit(row.original.handle).url,
+        href: edit({transformHandle: row.original.handle}).url,
         inertia: true,
       }),
     }),
@@ -97,7 +97,13 @@
     },
   });
 
-  const navItems = computed(() => {
+  type NavItem = {
+    label: string;
+    url: string;
+    active?: boolean;
+    inertia?: boolean;
+  };
+  const navItems = computed((): Record<string, NavItem> => {
     return {
       volumes: {label: t('Volumes'), url: index().url, active: false},
       transforms: {
@@ -115,7 +121,7 @@
       <CpLink
         appearance="button"
         :href="create().url"
-        variant="primary"
+        variant="accent"
         icon="plus"
         >{{ t('New image transform') }}</CpLink
       >
@@ -143,7 +149,7 @@
           <CpLink
             appearance="button"
             :href="create().url"
-            variant="default"
+            variant="neutral"
             icon="plus"
             >{{ t('New image transform') }}</CpLink
           >

@@ -52,7 +52,7 @@ class VolumesController
             default => SORT_ASC,
         };
 
-        return Inertia::render('SettingsVolumesIndexPage', [
+        return Inertia::render('settings/Volumes', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets')],

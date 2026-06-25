@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Pagination\Paginator;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
     Cms::config()->pageTrigger = 'p';
 });
 

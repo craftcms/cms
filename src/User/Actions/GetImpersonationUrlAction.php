@@ -7,9 +7,9 @@ namespace CraftCms\Cms\User\Actions;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\action_url;
+use function CraftCms\Cms\currentUser;
 
 readonly class GetImpersonationUrlAction
 {
@@ -22,7 +22,7 @@ readonly class GetImpersonationUrlAction
         $token = $this->tokens->createToken([
             action_url('/users/impersonate-with-token'), [
                 'userId' => $user->id,
-                'prevUserId' => Auth::user()->id ?? $user->id,
+                'prevUserId' => currentUser()?->getCraftUserId() ?? $user->id,
             ],
         ], 1, now()->addHour());
 

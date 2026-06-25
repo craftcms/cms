@@ -14,10 +14,10 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\UserPhotoAsset;
-use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -99,7 +99,7 @@ JS, [
     {
         $items = [];
 
-        if (Auth::user()?->isAdmin()) {
+        if (currentUser()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

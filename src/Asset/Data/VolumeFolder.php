@@ -125,10 +125,10 @@ class VolumeFolder extends Component implements Stringable
         }
 
         $volume = $this->getVolume();
-        $canView = Gate::check("viewAssets:$volume->uid");
-        $canCreate = Gate::check("createFolders:$volume->uid");
-        $canDelete = Gate::check("deletePeerAssets:$volume->uid");
-        $canMove = $canDelete && Gate::check("savePeerAssets:$volume->uid");
+        $canView = Gate::check('viewContents', $this);
+        $canCreate = Gate::check('createFolder', $this);
+        $canDelete = Gate::check('deleteFolder', $this);
+        $canMove = Gate::check('moveFolderFrom', $this);
         $path = $this->path ? sprintf('/%s', trim($this->path, '/')) : '';
 
         $info = [
@@ -150,7 +150,7 @@ class VolumeFolder extends Component implements Stringable
                 'handle' => $volume->handle,
             ];
         } else {
-            $canRename = $canCreate && Gate::check("deleteAssets:$volume->uid");
+            $canRename = Gate::check('renameFolder', $this);
 
             $info += [
                 'key' => "folder:$this->uid",

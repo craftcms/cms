@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Requests;
 
-use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpFoundation\Response;
@@ -117,7 +116,7 @@ class ElementRequest extends FormRequest
             return null;
         }
 
-        abort_unless($this->user()->can('view', $element), 403, 'User not authorized to view this element.');
+        abort_unless($this->craftUser()->can('view', $element), 403, 'User not authorized to view this element.');
 
         if (
             ! $this->strictSite &&
@@ -170,11 +169,11 @@ class ElementRequest extends FormRequest
         abort(400, 'Request missing required param.');
     }
 
-    private function elementQuery(): ElementQueryInterface
+    private function elementQuery(bool $withNestedContext = true): ElementQueryInterface
     {
         $query = $this->elementType::find();
 
-        if ($query instanceof NestedElementQueryInterface) {
+        if ($withNestedContext && $query instanceof NestedElementQueryInterface) {
             $fieldId = Arr::get($this->overrides, 'fieldId', $this->input('fieldId'));
             $ownerId = Arr::get($this->overrides, 'ownerId', $this->input('ownerId'));
 
@@ -188,11 +187,11 @@ class ElementRequest extends FormRequest
 
     public function validateElementType(string $elementType): void
     {
-        if (ComponentHelper::validateComponentClass($elementType, ElementInterface::class)) {
+        if (ElementTypeRule::isValid($elementType)) {
             return;
         }
 
-        abort(400, new InvalidTypeException($elementType, ElementInterface::class)->getMessage());
+        abort(400, ElementTypeRule::message($elementType));
     }
 
     /**
@@ -211,7 +210,7 @@ class ElementRequest extends FormRequest
 
             abort_if(is_null($site), 400, "Invalid site ID: $siteId");
 
-            if (Sites::isMultiSite() && ! $this->user()->can("editSite:$site->uid")) {
+            if (Sites::isMultiSite() && ! $this->craftUser()->can("editSite:$site->uid")) {
                 abort(403, 'User not authorized to edit content for this site.');
             }
         } else {
@@ -236,26 +235,30 @@ class ElementRequest extends FormRequest
         $provisional = Arr::get($this->overrides, 'isProvisionalDraft', $this->input('provisional'));
         [$siteId, $preferSites] = $this->site();
 
-        $query = $this->elementQuery()
-            ->draftId($draftId ? (int) $draftId : null)
-            ->revisionId($revisionId ? (int) $revisionId : null)
-            ->provisionalDrafts($hasExplicitProvisional ? (bool) $provisional : null)
-            ->siteId($siteId)
-            ->preferSites($preferSites)
-            ->unique()
-            ->status(null);
+        $createQuery = function (bool $withNestedContext = true) use ($draftId, $revisionId, $hasExplicitProvisional, $provisional, $siteId, $preferSites) {
+            $elementQuery = $this->elementQuery($withNestedContext)
+                ->draftId($draftId ? (int) $draftId : null)
+                ->revisionId($revisionId ? (int) $revisionId : null)
+                ->provisionalDrafts($hasExplicitProvisional ? (bool) $provisional : null)
+                ->siteId($siteId)
+                ->preferSites($preferSites)
+                ->unique()
+                ->status(null);
 
-        if ($revisionId) {
-            $query->trashed(null);
-        }
+            if ($revisionId) {
+                $elementQuery->trashed(null);
+            }
 
-        $element = $query->first();
+            return $elementQuery;
+        };
+
+        $element = $createQuery()->first() ?? $createQuery(false)->first();
 
         if (! $element) {
             // check for the canonical element as a fallback
             $element = $this->elementById() ?? $this->elementByUid();
 
-            if ($element && $this->user()->can('view', $element)) {
+            if ($element && $this->craftUser()->can('view', $element)) {
                 if (! $this->wantsJson()) {
                     return redirect($element->getCpEditUrl());
                 }
@@ -286,14 +289,14 @@ class ElementRequest extends FormRequest
             $element = $this->elementQuery()
                 ->provisionalDrafts()
                 ->draftOf($elementId)
-                ->draftCreator($this->user())
+                ->draftCreator($this->craftUser()?->getCraftUserId())
                 ->siteId($siteId)
                 ->preferSites($preferSites)
                 ->unique()
                 ->status(null)
                 ->one();
 
-            if ($element && $this->canSave($element, $this->user())) {
+            if ($element && $this->canSave($element, $this->craftUser())) {
                 return $element;
             }
         }
@@ -360,7 +363,7 @@ class ElementRequest extends FormRequest
             ->one();
     }
 
-    private function canSave(ElementInterface $element, User $user): bool
+    private function canSave(ElementInterface $element, CraftUser $user): bool
     {
         if ($element->getIsRevision()) {
             return false;

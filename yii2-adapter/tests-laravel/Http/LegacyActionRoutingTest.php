@@ -1,8 +1,14 @@
 <?php
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
+use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use Illuminate\Http\Request as IlluminateRequest;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Once;
 use yii\base\Module;
 use yii\web\Controller;
 
@@ -65,6 +71,32 @@ it('does not override the URI for direct legacy action route requests', function
         expect($request->getRequestUri())->toBe('/actions/test-plugin/fail')
             ->and($request->attributes->has(CaptureOriginalActionRequestUri::ORIGINAL_ACTION_REQUEST_URI))->toBeFalse();
     });
+});
+
+it('renders template routes from legacy url rules', function() {
+    $templateRoot = sys_get_temp_dir() . '/craft-legacy-template-route-test-' . uniqid();
+
+    File::ensureDirectoryExists($templateRoot);
+    File::put($templateRoot . '/_index.twig', 'Example template route');
+
+    Once::flush();
+
+    Event::listen(CpTemplateRootsResolving::class, function(CpTemplateRootsResolving $event) use ($templateRoot) {
+        $event->roots['example-plugin'] = $templateRoot;
+    });
+
+    TemplateMode::set(TemplateMode::Cp);
+    app()->instance('request', IlluminateRequest::create('/' . Cms::config()->cpTrigger . '/example-plugin'));
+
+    try {
+        $response = Craft::$app->runAction('templates/render', [
+            'template' => 'example-plugin/_index',
+        ]);
+
+        expect($response->getIlluminateResponse()->getContent())->toBe('Example template route');
+    } finally {
+        File::deleteDirectory($templateRoot);
+    }
 });
 
 class TestPluginDefaultController extends Controller

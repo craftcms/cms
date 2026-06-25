@@ -14,4 +14,5 @@ it('can query users in groups', function () {
     expect(userQuery()->group($userGroup->handle)->count())->toBe(1);
     expect(userQuery()->group([$userGroup->handle])->count())->toBe(1);
     expect(userQuery()->group(['not', $userGroup->handle])->count())->toBe(1);
+    expect(userQuery()->group('notavalidhandle')->count())->toBe(0);
 });

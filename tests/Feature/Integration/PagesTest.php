@@ -55,14 +55,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
 
     ['url' => '/settings/plugins', 'title' => 'Plugins'],
     ['url' => '/settings/sites', 'title' => 'Sites'],
-    [
-        'url' => '/settings/routes',
-        'title' => 'Routes',
-        'extraContent' => [
-            ['rendered' => 'No routes exist yet.'],
-        ],
-    ],
-
 ]);
 
 it('renders inertia pages', function (string $url, string $component, string $title) {
@@ -78,28 +70,33 @@ it('renders inertia pages', function (string $url, string $component, string $ti
 })->with([
     [
         'url' => '/settings/sections',
-        'component' => 'SettingsSectionsIndexPage',
+        'component' => 'settings/Sections',
         'title' => 'Sections',
     ],
     [
         'url' => '/settings/users',
         'title' => 'User Settings',
-        'component' => 'SettingsUserGroupsIndexPage',
+        'component' => 'settings/UserGroups',
     ],
     [
         'url' => '/settings/fields',
         'title' => 'Fields',
-        'component' => 'SettingsFieldsIndexPage',
+        'component' => 'settings/Fields',
     ],
     [
         'url' => '/settings/assets',
-        'title' => 'Asset Settings',
-        'component' => 'SettingsVolumesIndexPage',
+        'title' => 'Volume Settings',
+        'component' => 'settings/Volumes',
     ],
     [
         'url' => '/settings/assets/transforms',
         'title' => 'Image Transforms',
         'component' => 'settings/assets/transforms/ImageTransformsIndexPage',
+    ],
+    [
+        'url' => '/settings/routes',
+        'title' => 'Routes',
+        'component' => 'settings/routes/Index',
     ],
 ]);
 

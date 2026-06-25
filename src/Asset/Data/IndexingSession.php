@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Component\Component;
-use DateTime;
+use DateTimeInterface;
 
 class IndexingSession extends Component
 {
@@ -29,9 +29,9 @@ class IndexingSession extends Component
 
     public bool $processIfRootEmpty = false;
 
-    public ?DateTime $dateCreated = null;
+    public ?DateTimeInterface $dateCreated = null;
 
-    public ?DateTime $dateUpdated = null;
+    public ?DateTimeInterface $dateUpdated = null;
 
     /** @var string[] */
     public array $skippedEntries = [];

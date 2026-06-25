@@ -19,12 +19,18 @@ class SessionMixin
                 return;
             }
 
+            $message = Json::encode($message);
+
             /**
              * @var SessionManager $this
              *
              * @phpstan-ignore-next-line
              */
-            $this->flashJs(Json::encode($message));
+            $this->flashJs(<<<JS
+if (Craft?.broadcaster) {
+    Craft.broadcaster.postMessage($message);
+}
+JS, Position::Ready);
         };
     }
 

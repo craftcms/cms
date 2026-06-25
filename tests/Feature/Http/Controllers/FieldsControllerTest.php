@@ -75,7 +75,7 @@ it('needs authentication and admin changes to delete', function () {
 
 it('can render the index', function () {
     $this->get(action([FieldsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsFieldsIndexPage'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/Fields'));
 });
 
 it('can create a new field', function () {

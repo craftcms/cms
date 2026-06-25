@@ -48,6 +48,10 @@ class JobProgress extends BaseModel
 
         $attributes['description'] = t($this->description);
 
+        if ($this->progressLabel) {
+            $attributes['progressLabel'] = t($this->progressLabel);
+        }
+
         if ($this->status instanceof JobStatus) {
             $attributes['status'] = $this->status->jsonSerialize();
         }

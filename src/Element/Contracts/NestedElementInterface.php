@@ -32,6 +32,7 @@ interface NestedElementInterface extends ElementInterface
      *
      * @throws RuntimeException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getPrimaryOwner(): ?ElementInterface;
 
     /**
@@ -57,6 +58,7 @@ interface NestedElementInterface extends ElementInterface
      *
      * @throws RuntimeException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getOwner(): ?ElementInterface;
 
     /**
@@ -71,6 +73,7 @@ interface NestedElementInterface extends ElementInterface
      *
      * @throws RuntimeException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getOwners(array $criteria = []): array;
 
     /**
@@ -78,11 +81,13 @@ interface NestedElementInterface extends ElementInterface
      *
      * @throws RuntimeException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getField(): ?ElementContainerFieldInterface;
 
     /**
      * Returns the element’s sort order, if it has one.
      */
+    #[AllowedInSandbox]
     public function getSortOrder(): ?int;
 
     /**

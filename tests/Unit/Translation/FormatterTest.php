@@ -6,9 +6,14 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Translation\Locale;
+use Illuminate\Support\Facades\Date;
 
 beforeEach(function () {
     $this->formatter = app(Formatter::class);
+});
+
+afterEach(function () {
+    Date::setTestNow();
 });
 
 test('asInteger', function (mixed $value, string $output, ?string $locale = null) {
@@ -67,7 +72,7 @@ test('asTime', function (int|string|DateTime $input, string $output, ?string $fo
 
     expect($this->formatter->asTime($input, $format))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, '12:00:00 AM'],
@@ -92,7 +97,7 @@ test('asTime with Locale', function (int|string|DateTime $input, string $output,
 
     expect($formatter->asTime($input))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, '4:00:00 PM'],
@@ -106,7 +111,7 @@ test('asDate', function (int|string|DateTime $input, string $output, ?string $fo
 
     expect($this->formatter->asDate($input, $format))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, 'Jan 1, 2021'],
@@ -135,7 +140,7 @@ test('asDate with Locale', function (int|string|DateTime $input, string $output,
 
     expect($formatter->asDate($input))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, 'Dec 31, 2020'],
@@ -149,7 +154,7 @@ test('asDateTime', function (int|string|DateTime $input, string $output, ?string
 
     expect($this->formatter->asDateTime($input, $format))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, 'Jan 1, 2021, 12:00:00 AM'],
@@ -174,7 +179,7 @@ test('asDateTime with Locale', function (int|string|DateTime $input, string $out
 
     expect($formatter->asDateTime($input))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, 'Dec 31, 2020, 4:00:00 PM'],
@@ -271,6 +276,38 @@ test('asDuration', function () {
 
     // null display
     $this->assertSame('', $this->formatter->asDuration(null));
+});
+
+test('asRelativeTime', function (mixed $input, string $output, mixed $referenceTime = null, ?string $locale = null) {
+    $this->formatter->locale = $locale;
+    $this->formatter->timeZone = 'UTC';
+
+    Date::setTestNow(new DateTimeImmutable('2021-01-01 12:00:00', new DateTimeZone('UTC')));
+
+    expect($this->formatter->asRelativeTime($input, $referenceTime))->toBe($output);
+})->with(function () {
+    $referenceTime = new DateTimeImmutable('2021-01-01 12:00:00', new DateTimeZone('UTC'));
+    $futureInterval = new DateInterval('PT2H');
+    $futureInterval->invert = true;
+
+    return [
+        'null display' => [null, ''],
+        'past date' => [new DateTimeImmutable('2021-01-01 10:00:00', new DateTimeZone('UTC')), '2 hours ago', $referenceTime],
+        'future date' => [new DateTimeImmutable('2021-01-01 14:00:00', new DateTimeZone('UTC')), '2 hours from now', $referenceTime],
+        'same date' => [new DateTimeImmutable('2021-01-01 12:00:00', new DateTimeZone('UTC')), '0 seconds ago', $referenceTime],
+        'past date interval' => [new DateInterval('PT2H'), '2 hours ago'],
+        'future date interval' => [$futureInterval, '2 hours from now'],
+        'default reference time' => [new DateTimeImmutable('2021-01-01 11:58:00', new DateTimeZone('UTC')), '2 minutes ago'],
+        'integer date value' => [3600, '1578 years from now', $referenceTime],
+        'localized output' => [new DateTimeImmutable('2021-01-01 10:00:00', new DateTimeZone('UTC')), '2 uur geleden', $referenceTime, 'nl-BE'],
+    ];
+});
+
+test('asRelativeTime rejects invalid date time values', function () {
+    $this->formatter->timeZone = 'UTC';
+
+    expect(fn () => $this->formatter->asRelativeTime(0))
+        ->toThrow(InvalidArgumentException::class, "'0' is not a valid date time value.");
 });
 
 test('asTimestamp', function (mixed $input, string $output, ?string $locale = null) {

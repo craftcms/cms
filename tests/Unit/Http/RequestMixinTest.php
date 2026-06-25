@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Routing\ActionRoute;
+use CraftCms\Cms\User\Models\User;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
@@ -21,6 +25,63 @@ afterEach(function () {
     Context::forgetHidden(HandleTokenRequest::HAD_TOKEN_KEY);
 });
 
+describe('craftUser', function () {
+    it('returns the current Craft user', function () {
+        $user = new User(['id' => 123]);
+        $request = Request::create('/admin');
+        $request->setUserResolver(fn () => $user);
+
+        expect($request->craftUser())->toBe($user);
+    });
+
+    it('throws when the current user is not a Craft user', function () {
+        $request = Request::create('/admin');
+        $request->setUserResolver(fn () => new class implements Authenticatable
+        {
+            public function getAuthIdentifierName()
+            {
+                return 'id';
+            }
+
+            public function getAuthIdentifier()
+            {
+                return 123;
+            }
+
+            public function getAuthPasswordName()
+            {
+                return 'password';
+            }
+
+            public function getAuthPassword()
+            {
+                return '';
+            }
+
+            public function getRememberToken()
+            {
+                return null;
+            }
+
+            public function setRememberToken($value) {}
+
+            public function getRememberTokenName()
+            {
+                return 'remember_token';
+            }
+        });
+
+        expect(fn () => $request->craftUser())
+            ->toThrow(AuthenticationException::class, 'The request user must implement');
+    });
+
+    it('returns null when there is no current user', function () {
+        $request = Request::create('/admin');
+
+        expect($request->craftUser())->toBeNull();
+    });
+});
+
 describe('isCpRequest', function () {
     it('returns true for control panel requests', function () {
         expect(Request::create('/admin/settings')->isCpRequest())->toBeTrue();
@@ -29,6 +90,15 @@ describe('isCpRequest', function () {
     it('returns false for site requests', function () {
         expect(Request::create('/news')->isCpRequest())->toBeFalse();
     });
+
+    it('returns true for root control panel requests', function (?string $cpTrigger) {
+        Cms::config()->cpTrigger = $cpTrigger;
+
+        expect(Request::create('/dashboard')->isCpRequest())->toBeTrue();
+    })->with([
+        'null' => [null],
+        'slash' => ['/'],
+    ]);
 });
 
 describe('getToken', function () {
@@ -145,9 +215,27 @@ describe('actionSegmentsToRoute', function () {
             ->toBe('/admin/actions/users/login');
     });
 
-    it('builds a route from explicit action segments', function () {
-        expect(Request::create('/news')->actionSegmentsToRoute(['users', 'login']))
-            ->toBe('/actions/users/login');
+    it('returns an empty string when the current request is not an action request', function () {
+        expect(Request::create('/news')->actionSegmentsToRoute())
+            ->toBe('');
+    });
+});
+
+describe('previewParam', function () {
+    it('returns null when no preview param was provided', function () {
+        expect(Request::create('/news')->previewParam())->toBeNull();
+    });
+
+    it('returns a preview param via the x-craft-preview query string param', function () {
+        expect(Request::create('/news', parameters: ['x-craft-preview' => 'foobar'])->previewParam())->toBe('foobar');
+    });
+
+    it('returns a preview param via the x-craft-live-preview query string param', function () {
+        expect(Request::create('/news', parameters: ['x-craft-live-preview' => 'foobar'])->previewParam())->toBe('foobar');
+    });
+
+    it('returns a preview param via the X-Craft-Preview-Token header', function () {
+        expect(Request::create('/news', server: ['HTTP_X_CRAFT_PREVIEW_TOKEN' => ['foobar']])->previewParam())->toBe('foobar');
     });
 });
 
@@ -200,6 +288,15 @@ describe('duplicateWithUri', function () {
 
         expect($duplicate->hasSession())->toBeTrue()
             ->and($duplicate->session())->toBe($request->session());
+    });
+
+    it('does not preserve resolved action routes on the duplicated request', function () {
+        $request = Request::create('/actions/users/login');
+        $request->attributes->set(ActionRoute::class, ActionRoute::fromSegments(['users', 'login'], false));
+
+        $duplicate = $request->duplicateWithUri('/entries');
+
+        expect($duplicate->attributes->has(ActionRoute::class))->toBeFalse();
     });
 });
 

@@ -45,7 +45,7 @@ readonly class UserGroupsController
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);
         }
 
-        return Inertia::render('SettingsUserGroupsIndexPage', [
+        return Inertia::render('settings/UserGroups', [
             'crumbs' => [
                 ['label' => t('Settings'), 'url' => 'settings'],
                 ['label' => t('User Groups')],
@@ -72,8 +72,9 @@ readonly class UserGroupsController
             ->title(t('Create a new user group'))
             ->crumbs($crumbs)
             ->redirectUrl('settings/users')
-            ->inertiaPage('SettingsUserGroupsEditPage', [
+            ->inertiaPage('settings/UserGroupsEdit', [
                 'group' => new UserGroup,
+                'brandNew' => true,
                 'permissions' => $userPermissions->getAllPermissions(),
             ]);
     }
@@ -102,11 +103,12 @@ readonly class UserGroupsController
             ->title(trim($group->name) ?: t('Edit User Group'))
             ->crumbs($crumbs)
             ->redirectUrl('settings/users')
-            ->inertiaPage('SettingsUserGroupsEditPage', [
+            ->inertiaPage('settings/UserGroupsEdit', [
                 'group' => [
                     'id' => $group->id,
                     ...$group->getConfig(true),
                 ],
+                'brandNew' => false,
                 'permissions' => $userPermissions->getAllPermissions(),
             ])
             ->prepareScreen(function (CpScreenResponse $response, string $containerId) {

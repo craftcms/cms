@@ -7,36 +7,42 @@ namespace CraftCms\Cms\Entry\Policies;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\User\Contracts\CraftUser;
 
 class EntryPolicy extends ElementPolicy
 {
-    public function view(User $user, Entry $entry): bool
+    public function view(CraftUser $user, Entry $entry): bool
     {
         if (! $section = $entry->getSection()) {
             return false;
         }
+
+        $userId = $user->getCraftUserId();
 
         if (! $user->can("viewEntries:$section->uid")) {
             return false;
         }
 
         if ($entry->getIsDraft()) {
-            return $entry->draftCreatorId === $user->id
+            return $entry->draftCreatorId === $userId
                 || $user->can("viewPeerEntryDrafts:$section->uid");
         }
 
         return $section->type === SectionType::Single
-            || in_array($user->id, $entry->getAuthorIds(), true)
+            || in_array($userId, $entry->getAuthorIds(), true)
             || $user->can("viewPeerEntries:$section->uid");
     }
 
-    public function save(User $user, Entry $entry): bool
+    public function save(CraftUser $user, Entry $entry): bool
     {
         if (! $section = $entry->getSection()) {
             return false;
         }
+
+        $userId = $user->getCraftUserId();
 
         if (! $entry->id) {
             return $section->type !== SectionType::Single
@@ -44,7 +50,7 @@ class EntryPolicy extends ElementPolicy
         }
 
         if ($entry->getIsDraft()) {
-            return $entry->draftCreatorId === $user->id
+            return $entry->draftCreatorId === $userId
                 || $user->can("savePeerEntryDrafts:$section->uid");
         }
 
@@ -53,22 +59,24 @@ class EntryPolicy extends ElementPolicy
         }
 
         return $section->type === SectionType::Single
-            || in_array($user->id, $entry->getAuthorIds(), true)
+            || in_array($userId, $entry->getAuthorIds(), true)
             || $user->can("savePeerEntries:$section->uid");
     }
 
-    public function delete(User $user, Entry $entry): bool
+    public function delete(CraftUser $user, Entry $entry): bool
     {
         if (! $section = $entry->getSection()) {
             return false;
         }
+
+        $userId = $user->getCraftUserId();
 
         if ($section->type === SectionType::Single && ! $entry->getIsDraft()) {
             return false;
         }
 
         if ($entry->getIsDraft()) {
-            return $entry->draftCreatorId === $user->id
+            return $entry->draftCreatorId === $userId
                 || $user->can("deletePeerEntryDrafts:$section->uid");
         }
 
@@ -76,11 +84,11 @@ class EntryPolicy extends ElementPolicy
             return false;
         }
 
-        return in_array($user->id, $entry->getAuthorIds(), true)
+        return in_array($userId, $entry->getAuthorIds(), true)
             || $user->can("deletePeerEntries:$section->uid");
     }
 
-    public function duplicate(User $user, Entry $entry): bool
+    public function duplicate(CraftUser $user, Entry $entry): bool
     {
         if (! $section = $entry->getSection()) {
             return false;
@@ -91,7 +99,7 @@ class EntryPolicy extends ElementPolicy
             && $user->can("saveEntries:$section->uid");
     }
 
-    public function duplicateAsDraft(User $user, Entry $entry): bool
+    public function duplicateAsDraft(CraftUser $user, Entry $entry): bool
     {
         if (! $section = $entry->getSection()) {
             return false;
@@ -101,28 +109,30 @@ class EntryPolicy extends ElementPolicy
             && $user->can("createEntries:$section->uid");
     }
 
-    public function copy(User $user, Entry $entry): bool
+    public function copy(CraftUser $user, Entry $entry): bool
     {
         return $this->view($user, $entry);
     }
 
-    public function createDrafts(User $user, Entry $entry): bool
+    public function createDrafts(CraftUser $user, Entry $entry): bool
     {
         return true;
     }
 
-    public function deleteForSite(User $user, Entry $entry): bool
+    public function deleteForSite(CraftUser $user, Entry $entry): bool
     {
         if (! $section = $entry->getSection()) {
             return false;
         }
+
+        $userId = $user->getCraftUserId();
 
         if ($section->propagationMethod !== PropagationMethod::Custom) {
             return false;
         }
 
         if ($entry->getIsDraft()) {
-            return $entry->draftCreatorId === $user->id
+            return $entry->draftCreatorId === $userId
                 || $user->can("deletePeerEntryDrafts:$section->uid");
         }
 
@@ -130,7 +140,81 @@ class EntryPolicy extends ElementPolicy
             return false;
         }
 
-        return in_array($user->id, $entry->getAuthorIds(), true)
+        return in_array($userId, $entry->getAuthorIds(), true)
             || $user->can("deletePeerEntriesForSite:$section->uid");
+    }
+
+    public function changeAuthor(CraftUser $user, Entry $entry): bool
+    {
+        $section = $entry->getSection();
+
+        if (! $section) {
+            return false;
+        }
+
+        $authorIds = $entry->getAuthorIds();
+        $userId = $user->getCraftUserId();
+
+        return
+            empty($authorIds) ||
+            ($userId !== null && in_array($userId, $authorIds, true)) ||
+            $user->can("changeAuthorForPeerEntries:$section->uid");
+    }
+
+    public function author(CraftUser $user, Entry $entry): bool
+    {
+        $section = $entry->getSection();
+
+        if (! $section) {
+            return false;
+        }
+
+        return $user->can("viewEntries:$section->uid");
+    }
+
+    public function move(CraftUser $user, Entry $entry): bool
+    {
+        if (! $section = $entry->getSection()) {
+            return false;
+        }
+
+        $userId = $user->getCraftUserId();
+
+        if ($section->type === SectionType::Single || $entry->trashed) {
+            return false;
+        }
+
+        if (! $this->compatibleSectionsCount($entry)) {
+            return false;
+        }
+
+        if ($entry->getIsDraft()) {
+            return ($userId !== null && $entry->draftCreatorId === $userId) ||
+                $user->can("savePeerEntryDrafts:$section->uid");
+        }
+
+        if (! $user->can("saveEntries:$section->uid")) {
+            return false;
+        }
+
+        return ($userId !== null && in_array($userId, $entry->getAuthorIds(), true)) ||
+            $user->can("savePeerEntries:$section->uid");
+    }
+
+    public function moveToSection(CraftUser $user, Entry $entry, Section $section): bool
+    {
+        return $this->move($user, $entry) &&
+            $user->can("saveEntries:$section->uid");
+    }
+
+    private function compatibleSectionsCount(Entry $entry): int
+    {
+        $entryTypeId = $entry->getType()->id;
+
+        return Sections::getEditableSections()
+            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $section->id !== $entry->sectionId)
+            ->map(fn (Section $section) => ['entryTypes' => $section->getEntryTypes()])
+            ->filter(fn (array $section) => collect($section['entryTypes'])->contains('id', $entryTypeId))
+            ->count();
     }
 }

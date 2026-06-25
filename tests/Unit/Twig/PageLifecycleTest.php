@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
-use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\PageLifecycle;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {

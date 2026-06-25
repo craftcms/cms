@@ -7,21 +7,18 @@ namespace CraftCms\Cms\View;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use Illuminate\Contracts\View\Engine;
 
-readonly class TwigEngine implements Engine
+class TwigEngine implements Engine
 {
-    public function __construct(
-        private TemplateRenderer $renderer,
-    ) {}
-
     public function get($path, array $data = []): string
     {
-        $template = $this->stripBasePath($path, TemplateMode::get()->templatesPath());
+        $template = $this->templateFromPath($path);
+        $renderer = app(TwigRenderer::class);
 
         try {
-            return $this->renderer->renderPageTemplate($template, $data);
+            return $renderer->renderPageTemplate($template, $data);
         } catch (TemplateLoaderException $e) {
             /**
              * If a custom error page is set up on the frontend, Laravel will
@@ -29,34 +26,70 @@ readonly class TwigEngine implements Engine
              * we render the Control Panel error templates instead.
              */
             if (TemplateMode::is(TemplateMode::Cp) && Str::contains($template, 'errors/')) {
-                $template = $this->stripBasePath($path, TemplateMode::Site->templatesPath());
+                $template = $this->templateFromPath($path, TemplateMode::Site);
 
-                return $this->renderer->renderPageTemplate($template, $data);
+                return $renderer->renderPageTemplate($template, $data);
             }
 
             throw $e;
         }
     }
 
+    private function templateFromPath(string $path, ?TemplateMode $templateMode = null): string
+    {
+        $templateMode ??= TemplateMode::get();
+
+        $template = $this->stripBasePath($path, $templateMode->templatesPath());
+
+        if ($template !== null) {
+            return "/{$template}";
+        }
+
+        foreach ($templateMode->templateRoots() as $templateRoot => $basePaths) {
+            foreach ($basePaths as $basePath) {
+                $template = $this->stripBasePath($path, $basePath);
+
+                if ($template !== null) {
+                    return trim("{$templateRoot}/{$template}", '/');
+                }
+            }
+        }
+
+        return File::normalizePath($path, '/');
+    }
+
     /**
      * Strips the templates base path from the given absolute path.
      *
-     * Both paths are normalized first so that mixed directory separators
-     * (e.g. `/` vs `\` on Windows) and inconsistent drive-letter casing
-     * (e.g. `C:` vs `c:`) don’t cause the lookup to fall through.
+     * Both paths are normalized to Twig-style separators first so that mixed
+     * directory separators (e.g. `/` vs `\` on Windows) and inconsistent
+     * drive-letter casing (e.g. `C:` vs `c:`) don’t cause the lookup to fall
+     * through.
      */
-    private function stripBasePath(string $path, string $basePath): string
+    private function stripBasePath(string $path, string $basePath): ?string
     {
-        $path = File::normalizePath($path);
-        $basePath = File::normalizePath($basePath);
+        $path = File::normalizePath($path, '/');
+        $basePath = rtrim(File::normalizePath($basePath, '/'), '/');
 
-        $template = Str::after($path, $basePath);
-
-        // Fallback for case-insensitive filesystems (e.g. Windows drive letters).
-        if ($template === $path) {
-            return Str::after(strtolower($path), strtolower($basePath));
+        if ($path === $basePath) {
+            return '';
         }
 
-        return $template;
+        if (str_starts_with($path, "{$basePath}/")) {
+            return substr($path, strlen($basePath) + 1);
+        }
+
+        $lowerPath = strtolower($path);
+        $lowerBasePath = strtolower($basePath);
+
+        if ($lowerPath === $lowerBasePath) {
+            return '';
+        }
+
+        if (str_starts_with($lowerPath, "{$lowerBasePath}/")) {
+            return substr($path, strlen($basePath) + 1);
+        }
+
+        return null;
     }
 }

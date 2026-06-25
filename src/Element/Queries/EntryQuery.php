@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesEntryTypes;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesRef;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesSections;
 use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -21,17 +22,18 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Override;
+
+use function CraftCms\Cms\currentUser;
 
 /**
  * @template T of Entry
  *
  * @extends ElementQuery<T>
  */
-class EntryQuery extends ElementQuery
+class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 {
     use QueriesAuthors;
     use QueriesEntryDates;
@@ -42,6 +44,17 @@ class EntryQuery extends ElementQuery
     }
     use QueriesRef;
     use QueriesSections;
+
+    #[Override]
+    public bool $withStructure {
+        get {
+            if (! isset($this->withStructure)) {
+                $this->withStructure = true;
+            }
+
+            return $this->withStructure;
+        }
+    }
 
     #[Override]
     protected string $table = Table::ENTRIES;
@@ -122,7 +135,7 @@ class EntryQuery extends ElementQuery
         // Always consider “now” to be the current time @ 59 seconds into the minute.
         // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
-        $currentTime = Date::now()->endOfMinute()->setTimezone('UTC');
+        $currentTime = now()->endOfMinute()->setTimezone('UTC');
 
         return match ($status) {
             Entry::STATUS_LIVE => fn (Builder $query) => $query
@@ -226,7 +239,7 @@ class EntryQuery extends ElementQuery
             return;
         }
 
-        $user = Auth::user();
+        $user = currentUser();
 
         if (! $user) {
             throw new QueryAbortedException;
@@ -252,21 +265,23 @@ class EntryQuery extends ElementQuery
                 if ($excludePeerEntries || $excludePeerDrafts) {
                     $partialAccessSections[] = $section->id;
 
-                    $query->orWhere(function (Builder $query) use ($excludePeerDrafts, $user, $excludePeerEntries, $section) {
+                    $userId = $user->getCraftUserId();
+
+                    $query->orWhere(function (Builder $query) use ($excludePeerDrafts, $userId, $excludePeerEntries, $section) {
                         $query->where('entries.sectionId', $section->id);
 
                         if ($excludePeerEntries) {
                             $query->whereExists(
                                 DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
                                     ->whereColumn('entries_authors.entryId', 'entries.id')
-                                    ->where('entries_authors.authorId', $user->id)
+                                    ->where('entries_authors.authorId', $userId)
                             );
                         }
 
                         if ($excludePeerDrafts) {
-                            $query->where(function (Builder $query) use ($user) {
+                            $query->where(function (Builder $query) use ($userId) {
                                 $query->whereNull('elements.draftId')
-                                    ->orWhere('drafts.creatorId', $user->id);
+                                    ->orWhere('drafts.creatorId', $userId);
                             });
                         }
                     });

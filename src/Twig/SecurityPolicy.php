@@ -180,12 +180,16 @@ class SecurityPolicy implements SecurityPolicyInterface
 
     public function checkMethodAllowed($obj, $method): void
     {
+        if ($obj instanceof AllowableInSandbox && $obj->methodAllowedInSandbox($method)) {
+            return;
+        }
+
         if ($obj instanceof Template || $obj instanceof Markup) {
             return;
         }
 
         if (
-            ($this->isClassAllowed($obj) && ! $this->isDynamicMacroMethod($obj, $method)) ||
+            ($this->isClassAllowed($obj) && ! str_starts_with($method, '__') && ! $this->isDynamicMacroMethod($obj, $method)) ||
             $this->checkForAllowedAttributeInMethod($obj, $method)
         ) {
             return;
@@ -245,6 +249,10 @@ class SecurityPolicy implements SecurityPolicyInterface
 
     public function checkPropertyAllowed($obj, $property): void
     {
+        if ($obj instanceof AllowableInSandbox && $obj->propertyAllowedInSandbox($property)) {
+            return;
+        }
+
         if (
             $this->isClassAllowed($obj) ||
             $this->checkForAllowedAttributeInProperty($obj, $property)

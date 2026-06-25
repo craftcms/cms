@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
@@ -32,6 +32,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
+use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -62,42 +63,24 @@ class EntryTypesController
         }
     }
 
-    public function index(Request $request)
+    public function index(TableRequest $request)
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
-
-        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
-            ['field' => 'name', 'direction' => 'asc'],
-        ];
-
-        $orderBy = match (Arr::get($sort, '0.field')) {
-            'handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-
-        $sortDir = match (Arr::get($sort, '0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        [$pagination, $tableData] = $this->entryTypes->getTableData(page: $page,
-            limit: $limit,
-            searchTerm: $searchTerm,
-            orderBy: $orderBy,
-            sortDir: $sortDir,
+        [$pagination, $tableData] = $this->entryTypes->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
         );
 
-        return Inertia::render('SettingsEntryTypesIndexPage', [
+        return Inertia::render('settings/EntryTypes', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Entry Types')],
             ],
             'title' => t('Entry Types'),
-            'searchTerm' => $searchTerm,
-            'sort' => $sort,
+            'searchTerm' => $request->search(),
+            'sort' => $request->sort(),
             'data' => fn () => $tableData,
             'pagination' => fn () => $pagination,
             'readOnly' => $this->readOnly,
@@ -234,26 +217,15 @@ class EntryTypesController
             );
     }
 
-    #[\Deprecated(message: 'in 6.0. Use `settings/entry-types` instead.')]
-    public function tableData(Request $request): JsonResponse
+    #[Deprecated(message: 'in 6.0. Use `settings/entry-types` instead.')]
+    public function tableData(TableRequest $request): JsonResponse
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
-        $orderBy = match ($request->input('sort.0.field')) {
-            '__slot:handle' => 'handle',
-            default => 'name',
-        };
-        $sortDir = match ($request->input('sort.0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        [$pagination, $tableData] = $this->entryTypes->getTableData(page: $page,
-            limit: $limit,
-            searchTerm: $searchTerm,
-            orderBy: $orderBy,
-            sortDir: $sortDir,
+        [$pagination, $tableData] = $this->entryTypes->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
         );
 
         return new JsonResponse([

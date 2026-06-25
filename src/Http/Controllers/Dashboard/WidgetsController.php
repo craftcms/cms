@@ -59,7 +59,7 @@ readonly class WidgetsController
             'widgetId' => [
                 'required',
                 'integer',
-                Rule::exists('widgets', 'id')->where('userId', $request->user()->id),
+                Rule::exists('widgets', 'id')->where('userId', $request->craftUser()?->getCraftUserId()),
             ],
         ]);
 
@@ -86,7 +86,7 @@ readonly class WidgetsController
             'id' => [
                 'required',
                 'integer',
-                Rule::exists('widgets', 'id')->where('userId', $request->user()->id),
+                Rule::exists('widgets', 'id')->where('userId', $request->craftUser()?->getCraftUserId()),
             ],
             'colspan' => ['required', 'integer', 'min:1', 'max:4'],
         ]);
@@ -105,7 +105,7 @@ readonly class WidgetsController
             'ids.*' => [
                 'required',
                 'integer',
-                Rule::exists('widgets', 'id')->where('userId', $request->user()->id),
+                Rule::exists('widgets', 'id')->where('userId', $request->craftUser()?->getCraftUserId()),
             ],
         ]);
 
@@ -120,7 +120,7 @@ readonly class WidgetsController
             'id' => [
                 'required',
                 'integer',
-                Rule::exists('widgets', 'id')->where('userId', $request->user()->id),
+                Rule::exists('widgets', 'id')->where('userId', $request->craftUser()?->getCraftUserId()),
             ],
         ]);
 

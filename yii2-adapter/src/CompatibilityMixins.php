@@ -13,14 +13,15 @@ use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Element\Actions\ElementAction;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Filesystem\Data\FsListing as FilesystemFsListing;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
-use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
@@ -31,7 +32,6 @@ use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
-use Illuminate\Support\Facades\Event;
 
 readonly class CompatibilityMixins
 {
@@ -50,6 +50,11 @@ readonly class CompatibilityMixins
 
             YiiEvent::trigger($this, $name, $event);
         });
+
+        foreach ([BaseRelationField::class, Matrix::class] as $fieldClass) {
+            $fieldClass::macro('setShowCardsInGrid', function(mixed $value): void {
+            });
+        }
 
         foreach (LegacyBehaviorCatalog::mixinTargets() as $class) {
             $class::mixin(new LegacyBehaviorMixin());
@@ -74,9 +79,8 @@ readonly class CompatibilityMixins
         ImageTransform::mixin(new ValidateMixin());
         ImageTransformIndex::mixin(new ValidateMixin());
 
-        Event::listen(
-            PluginsLoaded::class,
-            fn() => LegacyBehaviorCompatibility::registerDefinedBehaviorMethodsFromRegisteredEvents(),
-        );
+        app()->booted(function() {
+            LegacyBehaviorCompatibility::registerDefinedBehaviorMethodsFromRegisteredEvents();
+        });
     }
 }

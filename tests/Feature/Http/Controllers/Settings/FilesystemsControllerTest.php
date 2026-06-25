@@ -86,7 +86,7 @@ test('edit shows create form for new filesystem', function () {
 
 test('edit returns 200 for non-existent filesystem handle and shows create form', function () {
     // Non-existent handles are treated as new filesystem creation
-    $response = get(action([FilesystemsController::class, 'edit'], ['non-existent-handle']));
+    $response = get(action([FilesystemsController::class, 'edit'], ['handle' => 'non-existent-handle']));
 
     $response
         ->assertOk()
@@ -106,7 +106,7 @@ test('edit loads existing filesystem by handle', function () {
 
     Filesystems::saveFilesystem($fs);
 
-    $response = get(action([FilesystemsController::class, 'edit'], ['testFilesystem']));
+    $response = get(action([FilesystemsController::class, 'edit'], ['handle' => 'testFilesystem']));
 
     $response->assertOk();
 
@@ -129,7 +129,7 @@ test('edit loads filesystem and shows actions when not in read-only mode', funct
 
     Filesystems::saveFilesystem($fs);
 
-    $response = get(action([FilesystemsController::class, 'edit'], ['testFilesystemActions']));
+    $response = get(action([FilesystemsController::class, 'edit'], ['handle' => 'testFilesystemActions']));
 
     $response->assertOk();
 });

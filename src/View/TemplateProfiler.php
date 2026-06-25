@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\View;
 
 use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\debugbar;
 
 #[Scoped]
@@ -96,13 +96,13 @@ class TemplateProfiler
             return $this->shouldProfile = true;
         }
 
-        $user = Auth::user();
+        $user = currentUser();
 
         if (! $user) {
             return $this->shouldProfile = false;
         }
 
-        return $this->shouldProfile = ($user->admin && $user->getPreference('profileTemplates'));
+        return $this->shouldProfile = ($user->isAdmin() && $user->getPreference('profileTemplates'));
     }
 
     private function profileToken(string $type, string $name, int $count): string

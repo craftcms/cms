@@ -22,7 +22,8 @@ use CraftCms\Cms\Utility\Utilities\SystemReport;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
+
+use function CraftCms\Cms\currentUser;
 
 #[Singleton]
 readonly class Utilities
@@ -94,7 +95,7 @@ readonly class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
-        $user = Auth::user();
+        $user = currentUser();
 
         // The Project Config utility is for admins only!
         if ($class === ProjectConfigUtility::class && ! $user?->isAdmin()) {

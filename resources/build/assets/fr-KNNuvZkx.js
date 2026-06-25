@@ -1,0 +1,1 @@
+import{t as e}from"./fr-6RiqQl_g.js";export{e as default};

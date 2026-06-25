@@ -220,6 +220,29 @@ test('untyped setters can use private backing property types', function () {
     expect($model->count)->toBe(42);
 });
 
+test('setters are used for private backing properties with the same name', function () {
+    class SameNamePrivateBackingModel extends Component
+    {
+        private ?int $count = null;
+
+        public function getCount(): ?int
+        {
+            return $this->count;
+        }
+
+        public function setCount(?int $value): void
+        {
+            $this->count = $value;
+        }
+    }
+
+    $model = Typecast::configure(new SameNamePrivateBackingModel, [
+        'count' => '42',
+    ]);
+
+    expect($model->count)->toBe(42);
+});
+
 test('isIntOrFloat', function (bool $expected, mixed $value) {
     expect(Typecast::isIntOrFloat($value))->toBe($expected);
 })->with([

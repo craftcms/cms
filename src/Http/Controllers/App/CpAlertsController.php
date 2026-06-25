@@ -38,7 +38,7 @@ class CpAlertsController
             'message' => ['required', 'string'],
         ])['message'];
 
-        $users->shunMessageForUser($request->user()->id, $message, now()->addDay()->toDateTime());
+        $users->shunMessageForUser($request->craftUser()?->getCraftUserId(), $message, now()->addDay()->toDateTime());
 
         return $this->asSuccess();
     }

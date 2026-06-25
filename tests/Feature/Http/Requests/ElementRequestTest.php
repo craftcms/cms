@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
@@ -29,7 +30,7 @@ it('prefers the current users provisional draft when resolving by canonical elem
     Elements::saveElement($draft);
 
     $request = ElementRequest::create('/', 'POST');
-    $request->setUserResolver(fn () => auth()->user());
+    $request->setUserResolver(fn () => currentUser());
 
     app()->instance('request', $request);
     app(RequestedSite::class)->reset();
@@ -57,7 +58,7 @@ it('resolves unpublished drafts by id when no canonical element exists', functio
     app(Drafts::class)->saveElementAsDraft($draft, auth()->id(), markAsSaved: false);
 
     $request = ElementRequest::create('/', 'POST');
-    $request->setUserResolver(fn () => auth()->user());
+    $request->setUserResolver(fn () => currentUser());
 
     app()->instance('request', $request);
     app(RequestedSite::class)->reset();
@@ -87,7 +88,7 @@ it('resolves unpublished drafts by uid when no canonical element exists', functi
     $request = ElementRequest::create('/', 'POST', [
         'elementUid' => $draft->uid,
     ]);
-    $request->setUserResolver(fn () => auth()->user());
+    $request->setUserResolver(fn () => currentUser());
 
     app()->instance('request', $request);
     app(RequestedSite::class)->reset();

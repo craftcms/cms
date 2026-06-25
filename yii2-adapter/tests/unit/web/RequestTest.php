@@ -371,6 +371,30 @@ class RequestTest extends TestCase
         self::assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
     }
 
+    public function testGetPreviewParam(): void
+    {
+        self::assertNull($this->request->getPreviewParam());
+        self::assertFalse($this->request->getHeaders()->has('X-Craft-Preview-Token'));
+
+        $this->request->setQueryParams(['x-craft-preview' => 'foobar']);
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->setQueryParams([]);
+        self::assertNull($this->request->getPreviewParam());
+
+        $this->request->setQueryParams(['x-craft-live-preview' => 'foobar']);
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->setQueryParams([]);
+        self::assertNull($this->request->getPreviewParam());
+
+        $this->request->getHeaders()->add('X-Craft-Preview-Token', 'foobar');
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->getHeaders()->remove('X-Craft-Preview-Token');
+        self::assertNull($this->request->getPreviewParam());
+    }
+
     /**
      * @dataProvider acceptsDataProvider
      */

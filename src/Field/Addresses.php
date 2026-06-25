@@ -40,7 +40,6 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -49,6 +48,7 @@ use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -421,7 +421,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
                 if ($element->getIsDerivative() && $address->getPrimaryOwnerId() === $element->getCanonicalId()) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $address = app(Drafts::class)->createDraft($address, Auth::user()->id, null, null, [
+                    $address = app(Drafts::class)->createDraft($address, currentUser()?->getCraftUserId(), null, null, [
                         'canonicalId' => $address->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,
@@ -492,7 +492,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
             $query->beforeQuery(function (AddressQuery $query) use ($owner) {
                 // Clear out id=false if this query was populated previously
@@ -637,7 +639,7 @@ JS, [
             'id' => $id,
             'icon' => 'clone-dashed',
             'color' => Color::Fuchsia,
-            'label' => Str::ucfirst(t('Copy all {type}', [
+            'label' => mb_ucfirst(t('Copy all {type}', [
                 'type' => Address::pluralLowerDisplayName(),
             ])),
         ];
@@ -807,7 +809,7 @@ JS, [
                 'addresses.id as target',
             ])
             ->join(new Alias(DbTable::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
-                $join->where('elements_owners.elementId', 'addresses.id')
+                $join->whereColumn('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })
             ->where('addresses.fieldId', $this->id)
@@ -824,6 +826,9 @@ JS, [
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
             ],
+            'createElement' => fn (AddressQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 

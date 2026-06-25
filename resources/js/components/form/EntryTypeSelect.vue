@@ -1,28 +1,20 @@
 <script setup lang="ts">
-  import type {EntryType} from '@/types';
+  import type {EntryType} from '@/common/types/index.js';
   import {computed, ref} from 'vue';
-  import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/cp';
+  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import ReorderButton from '@/components/ReorderButton.vue';
+  import ActionMenu from '@/components/ActionMenu.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
-  import {
-    applyOverrideSettings,
-    renderOverrideSettings,
-  } from '@actions/Settings/EntryTypesController';
-  import type {SlideoutInstance} from '@/types/globals';
-  import EntryTypeChip from '@/components/EntryType/EntryTypeChip.vue';
-  import CreateEntryTypeButton from '@/components/EntryType/CreateEntryTypeButton.vue';
-  import {router} from '@inertiajs/vue3';
-  import DragShadow from '@/components/DragShadow.vue';
-  import {useReorderableItems} from '@/composables/useReorderableItems';
-  import ReorderButton from '@/components/ReorderButton.vue';
-  import useCraftData from '@/composables/useCraftData';
+  import {create} from '@actions/Settings/EntryTypesController';
+  import useCraftData from '@/common/composables/useCraftData.js';
 
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: Array<EntryType>): void;
+    (e: 'update:modelValue', value: Array<number>): void;
   }>();
   const props = defineProps<{
-    modelValue: Array<EntryType>;
-    entryTypes: Array<EntryType>;
+    modelValue: Array<number>;
+    types: Array<EntryType>;
     actions?: Array<any>;
   }>();
 
@@ -33,283 +25,91 @@
       .map((id) => {
         return props.types?.find((type) => type.id === id) ?? null;
       })
-      .filter(Boolean);
+      .filter((type): type is EntryType => type !== null);
   });
+
+  function colorValue(color: EntryType['color']): string {
+    if (!color) {
+      return 'white';
+    }
+
+    return typeof color === 'string' ? color : color.value;
+  }
 
   const entryTypeQuery = ref('');
 
   const selectableTypes = computed(() => {
-    return props.entryTypes?.filter(
-      (entryType) =>
-        entryType.name.includes(entryTypeQuery.value) ||
-        entryType.handle.includes(entryTypeQuery.value)
+    return props.types?.filter(
+      (type) =>
+        type.name.includes(entryTypeQuery.value) ||
+        type.handle.includes(entryTypeQuery.value)
     );
   });
 
-  function reorder(startIndex: number, finishIndex: number) {
-    const items = [...props.modelValue];
-    const [removed] = items.splice(startIndex, 1);
-    items.splice(finishIndex, 0, removed);
-    emit('update:modelValue', items);
-  }
-
-  function getRowPosition(index: number) {
-    if (index === 0) {
-      return 'first';
-    }
-
-    if (index === props.modelValue.length - 1) {
-      return 'last';
-    }
-
-    return 'middle';
-  }
-
-  const {setItemRef, setHandleRef, getDragState, getDropState} =
-    useReorderableItems({
-      getItemIds: () => props.modelValue.map((et) => et.id),
-      onReorder: reorder,
-      enabled: () => props.modelValue.length > 1,
-    });
-
   function handleTypeSelect(type: EntryType) {
-    if (props.modelValue.find((item) => item.id === type.id)) {
-      removeItem(type.id);
+    let newValue = [...props.modelValue];
+    if (newValue.includes(type.id)) {
+      newValue.splice(newValue.indexOf(type.id), 1);
     } else {
-      emit('update:modelValue', [...props.modelValue, type]);
+      newValue.push(type.id);
     }
+
+    emit('update:modelValue', newValue);
   }
 
   function removeItem(itemId: number) {
-    emit('update:modelValue', [
-      ...props.modelValue.filter((item) => item.id !== itemId),
-    ]);
-  }
-
-  const slideout = ref<SlideoutInstance | undefined>(undefined);
-  const overrides = ref({});
-
-  function createSlideout(
-    innerHtml: string,
-    {namespace = '', id = null}: {namespace: string; id: null | number}
-  ) {
-    const template = `
-      <div class="entry-type-override-settings-body">
-        <div class="fields">
-          ${namespace ? `<input type="hidden" name="settingsNamespace" value="${namespace}" />` : ''}
-          ${id ? `<input type="hidden" name="id" value="${id}" />` : ''}
-          ${innerHtml}
-        </div>
-      </div>
-      <div class="entry-type-override-settings-footer justify-end gap-2">
-        <craft-button type="button" data-action="close">
-          ${t('Close')}
-        </craft-button>
-        <craft-button type="submit">${t('Apply')}</craft-button>
-      </div>
-    `;
-
-    const slideout = new Craft.Slideout(template, {
-      containerElement: 'form',
-      containerAttributes: {
-        action: applyOverrideSettings().url,
-        method: 'post',
-        novalidate: '',
-        class: 'entry-type-override-settings',
-      },
-    });
-
-    const form = slideout.$container[0];
-    if (!form) {
-      return;
+    let newValue = [...props.modelValue];
+    if (newValue.includes(itemId)) {
+      newValue.splice(newValue.indexOf(itemId), 1);
     }
-
-    form.addEventListener('submit', async (event: SubmitEvent) => {
-      event.preventDefault();
-      const target = event.target as HTMLFormElement;
-      const body = new FormData(target);
-
-      // We need to massage our form data into the format the server is expecting
-      const postData = {
-        id: body.get('id'),
-        settingsNamespace: body.get('settingsNamespace'),
-        settings: new URLSearchParams(body as any).toString(),
-      };
-
-      try {
-        const {data} = await Craft.sendActionRequest(
-          'POST',
-          applyOverrideSettings().url,
-          {
-            data: postData,
-          }
-        );
-
-        // set the data to some state
-        // The data comes back with `chipHtml` and `config`
-        overrides.value = {
-          ...overrides.value,
-          [data.config.id]: data.config,
-        };
-
-        // Update the modelValue
-        emit(
-          'update:modelValue',
-          props.modelValue.map((entryType) => {
-            if (entryType.id === data.entryType.id) {
-              return {
-                ...entryType,
-                ...data.entryType,
-              };
-            }
-
-            return entryType;
-          })
-        );
-        slideout.close();
-      } catch (e) {
-        console.error(e);
-      }
-    });
-
-    // Bind up the buttons
-    form.querySelectorAll('[data-action]').forEach((el: HTMLElement) => {
-      el.addEventListener('click', (e: Event) => {
-        const target = e.target as HTMLElement;
-        if (!target) {
-          return;
-        }
-
-        const action = target.dataset.action;
-        switch (action) {
-          case 'close':
-            slideout.close();
-            break;
-        }
-      });
-    });
-
-    slideout.on('close', () => {
-      slideout.destroy();
-    });
-
-    return slideout;
-  }
-
-  async function openSlideout(id: number) {
-    try {
-      const entryType = props.modelValue.find((item) => item.id === id);
-      const {data} = await Craft.sendActionRequest(
-        'POST',
-        renderOverrideSettings().url,
-        {
-          data: {
-            id,
-            name: entryType?.name,
-            handle: entryType?.handle,
-            description: entryType?.description,
-          },
-        }
-      );
-
-      const {settingsHtml, headHtml, bodyHtml, namespace} = data;
-      slideout.value = createSlideout(settingsHtml, {namespace, id});
-
-      if (headHtml) {
-        await appendHeadHtml(headHtml);
-      }
-
-      if (bodyHtml) {
-        await appendBodyHtml(bodyHtml);
-      }
-
-      Craft?.initUiElements(slideout.value?.$container);
-    } catch (e: any) {
-      Craft.cp?.displayError?.(e?.response?.data?.message);
-      throw e;
-    }
+    emit('update:modelValue', newValue);
   }
 </script>
 
 <template>
-  <div class="entry-type-list">
-    <template v-for="(entryType, index) in modelValue" :key="entryType.id">
-      <div
-        :ref="(el) => setItemRef(el as HTMLElement, entryType.id)"
-        class="entry-type-item"
-        :class="{
-          'entry-type-item--dragging':
-            getDragState(entryType.id).type === 'is-dragging',
-          'entry-type-item--hidden':
-            getDragState(entryType.id).type === 'is-dragging-and-left-self',
-        }"
+  <div>
+    <template v-for="type in selectedTypes" :key="type.id">
+      <craft-chip
+        v-if="type"
+        :icon="type.icon"
+        :data-color="colorValue(type.color)"
       >
-        <!-- Shadow before item when dragged over top edge -->
-        <DragShadow
-          v-if="
-            getDropState(entryType.id).type === 'is-over' &&
-            getDropState(entryType.id).closestEdge === 'top'
-          "
-          :height="getDropState(entryType.id).draggingRect?.height"
-        />
+        <div :data-id="type.id">
+          <div class="font-bold">{{ type.name }}</div>
+          <code>{{ type.handle }}</code>
+        </div>
 
-        <EntryTypeChip
-          :name="entryType.name"
-          :id="entryType.id"
-          :handle="entryType.handle"
-          :color="entryType.color"
-          :icon="entryType.icon"
-          :description="entryType.description"
-          :draggable="modelValue.length > 1"
-          :indicators="entryType.indicators"
-          :actions="[
-            {
-              label: t('Settings'),
-              icon: 'gear',
-              onClick: () => openSlideout(entryType.id),
-            },
-            ...[
-              readOnly
-                ? null
-                : {
-                    label: t('Remove'),
-                    variant: 'danger',
-                    icon: 'x',
-                    onClick: () => removeItem(entryType.id),
-                  },
-            ],
-          ]"
-          @handle-ref="(el) => setHandleRef(el, entryType.id)"
-        >
-          <template #drag-handle>
-            <ReorderButton
-              v-if="!readOnly"
-              variant="inherit"
-              :position="getRowPosition(index)"
-              @click:up="reorder(index, index - 1)"
-              @click:down="reorder(index, index + 1)"
-            />
-          </template>
-        </EntryTypeChip>
-
-        <!-- Shadow after item when dragged over bottom edge -->
-        <DragShadow
-          v-if="
-            getDropState(entryType.id).type === 'is-over' &&
-            getDropState(entryType.id).closestEdge === 'bottom'
-          "
-          :height="getDropState(entryType.id).draggingRect?.height"
-        />
-      </div>
+        <div slot="suffix" class="flex gap-1 items-center">
+          <ActionMenu
+            :actions="[
+              {
+                label: t('Settings'),
+                icon: 'gear',
+              },
+              ...[
+                readOnly
+                  ? null
+                  : {
+                      label: t('Remove'),
+                      variant: 'danger',
+                      icon: 'x',
+                      onClick: () => removeItem(type.id),
+                    },
+              ],
+            ]"
+          />
+          <ReorderButton v-if="!readOnly" variant="inherit"></ReorderButton>
+        </div>
+      </craft-chip>
     </template>
   </div>
 
   <div class="flex gap-2 mt-3 items-center">
-    <craft-action-menu v-if="entryTypes?.length">
+    <craft-action-menu v-if="types?.length">
       <craft-button
         type="button"
         slot="invoker"
-        appearance="filled"
+        appearance="solid"
         v-if="!readOnly"
       >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
@@ -336,57 +136,44 @@
           </div>
         </template>
         <template v-else>
-          <template v-for="entryType in selectableTypes" :key="entryType.id">
+          <template v-for="type in selectableTypes" :key="type.id">
             <craft-action-item
-              @click="handleTypeSelect(entryType)"
+              @click="handleTypeSelect(type)"
               type="checkbox"
-              :icon="entryType.icon ?? 'empty'"
-              :checked="
-                modelValue.find((valueType) => valueType.id === entryType.id)
-              "
-              :data-color="entryType.color?.value ?? 'white'"
+              :icon="type.icon ?? 'empty'"
+              :checked="modelValue.includes(type.id)"
+              :data-color="colorValue(type.color)"
             >
               <div>
-                {{ entryType.name }}
-                <pre>{{ entryType.handle }}</pre>
+                {{ type.name }}
+                <pre>{{ type.handle }}</pre>
               </div>
             </craft-action-item>
           </template>
         </template>
       </div>
     </craft-action-menu>
-    <CreateEntryTypeButton
+    <a
+      :href="create['/{cpTrigger?}/settings/entry-types/new']().url"
+      class=""
       v-if="!readOnly"
-      @success="router.reload({only: ['entryTypes']})"
-    />
+    >
+      <craft-icon name="plus" slot="prefix"></craft-icon>
+      {{ t('Create') }}
+    </a>
   </div>
 </template>
 
 <style scoped lang="scss">
-  .entry-type-list {
-    display: inline-flex;
-    flex-direction: column;
-    gap: var(--c-spacing-sm);
+  craft-chip::part(chip) {
+    min-width: 200px;
   }
 
-  .entry-type-item {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  // Item is being dragged but still over itself - show with reduced opacity
-  .entry-type-item--dragging {
-    opacity: 0.4;
-  }
-
-  // Item has been dragged away from itself - collapse vertically but maintain width
-  // This ensures the container doesn't shrink when the widest item is dragged
-  .entry-type-item--hidden {
-    visibility: hidden;
-    height: 0;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
+  // Some special styles for nice icon alignment. We might want to move this
+  // into chips, but for right now this is the only spot
+  craft-chip::part(prefix) {
+    align-self: start;
+    height: 1lh;
+    justify-content: center;
   }
 </style>

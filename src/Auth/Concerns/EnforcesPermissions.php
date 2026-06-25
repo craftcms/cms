@@ -8,8 +8,9 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+
+use function CraftCms\Cms\currentUser;
 
 trait EnforcesPermissions
 {
@@ -41,7 +42,7 @@ trait EnforcesPermissions
 
     protected function requirePermission(string $permission): void
     {
-        if (! $user = Auth::user()) {
+        if (! $user = currentUser()) {
             abort(403, 'User is not authenticated.');
         }
 
@@ -52,6 +53,6 @@ trait EnforcesPermissions
 
     protected function requireAdmin(): void
     {
-        abort_unless(Auth::user()->isAdmin(), 403, 'User is not permitted to perform this action.');
+        abort_unless(currentUser()->isAdmin(), 403, 'User is not permitted to perform this action.');
     }
 }

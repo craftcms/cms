@@ -13,6 +13,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
+use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -28,12 +29,14 @@ use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -73,6 +76,7 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         $this->setLaravelDefaults();
+        $this->registerLegacySiteTemplateRoot();
         $this->registerExceptionHandling();
     }
 
@@ -95,12 +99,14 @@ class Yii2ServiceProvider extends ServiceProvider
         defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
         defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', app()->environmentPath());
         defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));
+    }
 
-        if (is_dir(resource_path('views'))) {
-            defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', resource_path('views'));
-        } else {
-            defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', base_path('templates'));
-        }
+    private function registerLegacySiteTemplateRoot(): void
+    {
+        Event::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event): void {
+            $event->roots[''] ??= [];
+            $event->roots[''] = array_merge((array)$event->roots[''], [base_path('templates')]);
+        });
     }
 
     /**
@@ -182,6 +188,7 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->make(HttpKernel::class)->prependMiddleware(CaptureOriginalActionRequestUri::class);
+        $this->app->make(Router::class)->pushMiddlewareToGroup('craft', PrepareLegacyCraftApp::class);
 
         $this->commands([
             AddCategoriesSupportCommand::class,

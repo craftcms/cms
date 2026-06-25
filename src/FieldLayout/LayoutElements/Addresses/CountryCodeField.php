@@ -12,10 +12,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
-use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class CountryCodeField extends BaseNativeField
@@ -110,7 +110,7 @@ class CountryCodeField extends BaseNativeField
     {
         $items = [];
 
-        if (Auth::user()?->isAdmin()) {
+        if (currentUser()?->isAdmin()) {
             $items[] = $this->copyAttributeAction();
         }
 

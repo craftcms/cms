@@ -10,8 +10,8 @@ use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
-use Illuminate\Support\Facades\Auth;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\template;
 
 /** @phpstan-require-implements MissingComponentInterface */
@@ -64,7 +64,7 @@ trait MissingComponentTrait
         $iconSvg = null;
 
         if (
-            Auth::user()?->isAdmin() &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $pluginsService = app(Plugins::class);

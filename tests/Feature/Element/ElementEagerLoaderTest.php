@@ -313,7 +313,7 @@ it('applies explicit query ids before where in constraints', function () {
         ->and(TestElementEagerLoaderQuery::$whereInCalls[TestElementEagerLoaderTargetElement::class][0])->toBe([501, 502, 503]);
 });
 
-it('lets eager loading map criteria override the eager load plan criteria', function () {
+it('lets mapping criteria take precedence except for siteId criteria', function () {
     $loader = app(ElementEagerLoader::class);
     $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
 
@@ -335,8 +335,34 @@ it('lets eager loading map criteria override the eager load plan criteria', func
         ['path' => 'mapped', 'criteria' => ['siteId' => 2]],
     ]);
 
+    expect($source->getEagerLoadedElements('mapped')?->pluck('id')->all())->toBe([802])
+        ->and(TestElementEagerLoaderQuery::$querySiteIds[TestElementEagerLoaderTargetElement::class][0])->toBe(2);
+});
+
+it('lets non-site mapping criteria take precedence', function () {
+    $loader = app(ElementEagerLoader::class);
+    $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mapped', [
+        'elementType' => TestElementEagerLoaderTargetElement::class,
+        'criteria' => ['id' => 801],
+        'map' => [
+            ['source' => 1, 'target' => 801],
+            ['source' => 1, 'target' => 802],
+        ],
+    ]);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 801, 'siteId' => 1, 'title' => 'Alpha'],
+        ['id' => 802, 'siteId' => 1, 'title' => 'Beta'],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$source], [
+        ['path' => 'mapped', 'criteria' => ['id' => 802]],
+    ]);
+
     expect($source->getEagerLoadedElements('mapped')?->pluck('id')->all())->toBe([801])
-        ->and(TestElementEagerLoaderQuery::$querySiteIds[TestElementEagerLoaderTargetElement::class][0])->toBe(1);
+        ->and(TestElementEagerLoaderQuery::$whereInCalls[TestElementEagerLoaderTargetElement::class][0])->toBe([801, 802]);
 });
 
 it('uses custom element factories and provisional drafts when requested', function () {

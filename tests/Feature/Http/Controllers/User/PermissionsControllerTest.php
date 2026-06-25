@@ -7,10 +7,12 @@ use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
@@ -43,7 +45,7 @@ it('can store permissions and groups', function () {
     $this->withoutExceptionHandling();
     Edition::set(Edition::Pro);
 
-    $user = Auth::user();
+    $user = currentUser();
     $group = UserGroup::factory()->create();
 
     expect(UserPermissions::doesUserHavePermission($user->id, 'accessCp'))->toBeFalse();
@@ -83,7 +85,7 @@ test('store can assign multiple groups', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::user();
+    $user = currentUser();
     $group1 = UserGroup::factory()->create();
     $group2 = UserGroup::factory()->create();
 
@@ -102,7 +104,7 @@ test('store can remove all permissions', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::user();
+    $user = currentUser();
 
     // First assign some permissions
     postJson(action([PermissionsController::class, 'store']), [
@@ -123,7 +125,7 @@ test('store can remove all groups', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::user();
+    $user = currentUser();
     $group = UserGroup::factory()->create();
 
     // First assign a group
@@ -163,7 +165,7 @@ test('store returns success message', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::user();
+    $user = currentUser();
 
     postJson(action([PermissionsController::class, 'store']), [
         'userId' => $user->id,
@@ -189,4 +191,29 @@ test('store sends activation email and marks inactive user as pending', function
     ])->assertOk();
 
     expect($inactiveUser->fresh()->pending)->toBeTrue();
+});
+
+test('store can send activation email through moderateUsers permission', function () {
+    Notification::fake();
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $user = UserModel::factory()
+        ->withPermissions(['accessCp', 'viewUsers', 'editUsers', 'assignUserPermissions', 'moderateUsers'])
+        ->create();
+    $inactiveUser = UserModel::factory()->create([
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    actingAs($user->asElement());
+
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $inactiveUser->id,
+        'sendActivationEmail' => true,
+    ])->assertOk();
+
+    expect($inactiveUser->fresh()->pending)->toBeTrue();
+
+    Notification::assertSentTimes(ActivationNotification::class, 1);
 });

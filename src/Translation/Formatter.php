@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Translation;
 
 use Carbon\CarbonInterface;
+use Carbon\CarbonInterval;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
-use DateTime;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Date;
@@ -273,7 +273,7 @@ class Formatter
                 $value->invert,
             ],
             is_numeric($value) => [
-                new DateTime()->setTimestamp(abs((int) $value))->diff(new DateTime()->setTimestamp(0)),
+                Date::createFromTimestampUTC(abs((int) $value))->diff(Date::createFromTimestampUTC(0)),
                 $value < 0,
             ],
             str_starts_with($value, 'P-') => [
@@ -376,6 +376,41 @@ class Formatter
         }
 
         return $this->asDecimalFallback($multipliedValue, $decimals).'%';
+    }
+
+    public function asRelativeTime(DateInterval|string|int|DateTimeInterface|null $value, string|int|DateTimeInterface|null $referenceTime = null): string
+    {
+        if (is_null($value)) {
+            return '';
+        }
+
+        if ($value instanceof DateInterval) {
+            return CarbonInterval::instance($value)
+                ->locale($this->locale)
+                ->forHumans(CarbonInterface::DIFF_RELATIVE_TO_NOW, false, 1);
+        }
+
+        $dateThen = DateTimeHelper::toDateTime(
+            value: $value,
+            assumeSystemTimeZone: false,
+            setToSystemTimeZone: false,
+        ) ?: throw new InvalidArgumentException("'$value' is not a valid date time value.");
+
+        $dateThen = Date::instance($dateThen)->setTimezone($this->timeZone);
+
+        $dateNow = $referenceTime === null
+            ? Date::now($this->timeZone)
+            : (DateTimeHelper::toDateTime(
+                value: $referenceTime,
+                assumeSystemTimeZone: false,
+                setToSystemTimeZone: false,
+            ) ?: throw new InvalidArgumentException("'$referenceTime' is not a valid date time value."));
+
+        $dateNow = Date::instance($dateNow)->setTimezone($this->timeZone);
+
+        return $dateThen
+            ->locale($this->locale)
+            ->diffForHumans($dateNow, CarbonInterface::DIFF_RELATIVE_TO_NOW);
     }
 
     public function asSize(string|int|float|null $bytes, ?int $decimals = null): string
@@ -598,7 +633,7 @@ class Formatter
     private function parseDate(int|string|DateTimeInterface $value, string $format, bool $withTimeZone): array
     {
         if ($value instanceof CarbonInterface) {
-            return [$value, true];
+            return [$this->formatParsedDate($value, $format, $withTimeZone), true];
         }
 
         /** Int is always a timestamp */
@@ -635,15 +670,20 @@ class Formatter
             $dateTime = $dateTime->addHours($offset / 3600);
         }
 
+        return [$this->formatParsedDate($dateTime, $format, $withTimeZone), $hasTimeInfo];
+    }
+
+    private function formatParsedDate(CarbonInterface $dateTime, string $format, bool $withTimeZone): CarbonInterface|string
+    {
         $result = str_starts_with($format, 'php:')
             ? $dateTime->format(Str::after($format, 'php:'))
             : $dateTime;
 
-        if ($withTimeZone && $result) {
-            $result .= ' '.DateTimeHelper::timeZoneAbbreviation($value->getTimezone());
+        if (is_string($result) && $withTimeZone && $result !== '') {
+            $result .= ' '.DateTimeHelper::timeZoneAbbreviation($dateTime->getTimezone());
         }
 
-        return [$result, $hasTimeInfo];
+        return $result;
     }
 
     private function normalizeNumericValue(mixed $value): float|int

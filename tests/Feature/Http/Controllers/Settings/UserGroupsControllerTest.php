@@ -39,7 +39,7 @@ it('requires admin changes', function () {
     // Read only
     get(action([UserGroupsController::class, 'edit'], [UserGroup::factory()->create()->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('SettingsUserGroupsEditPage')
+            ->component('settings/UserGroupsEdit')
             ->where('readOnly', true));
 
     // Not allowed
@@ -50,6 +50,8 @@ it('requires admin changes', function () {
 
 test('create requires pro edition', function () {
     Edition::set(Edition::Team);
+
+    config()->set('app.debug', false);
 
     get(action([UserGroupsController::class, 'create']))->assertNotFound();
 

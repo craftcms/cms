@@ -277,12 +277,12 @@ class Users extends Component
      * @param string $code The verification code to check for.
      *
      * @return bool Whether the code is still valid.
-     * @deprecated 6.0.0. Use `Password::broker('craft')->tokenExists($user, $code)`
+     * @deprecated 6.0.0. Use `Password::tokenExists($user, $code)`
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
     {
         /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
-        $broker = Password::broker('craft');
+        $broker = Password::broker();
 
         if ($broker->tokenExists($user, $code)) {
             return true;
@@ -292,14 +292,11 @@ class Users extends Component
             return false;
         }
 
-        /** @phpstan-ignore-next-line */
         if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
             // Fetch from the DB
             $userModel = UserModel::findOrFail($user->id);
 
-            /** @phpstan-ignore-next-line */
             $user->verificationCode = $userModel->verificationCode;
-            /** @phpstan-ignore-next-line */
             $user->verificationCodeIssuedDate = $userModel->verificationCodeIssuedDate?->setTimezone('UTC')->toDateTime();
 
             if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
@@ -313,9 +310,7 @@ class Users extends Component
         // Make sure it’s not expired
         if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
             $userModel ??= UserModel::findOrFail($user->id);
-            /** @phpstan-ignore-next-line */
             $userModel->verificationCode = $user->verificationCode = null;
-            /** @phpstan-ignore-next-line */
             $userModel->verificationCodeIssuedDate = $user->verificationCodeIssuedDate = null;
             $userModel->save();
 

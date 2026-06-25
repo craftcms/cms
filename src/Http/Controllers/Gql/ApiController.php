@@ -13,18 +13,17 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Responses\GqlResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SiteSites;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use DateTimeZone;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use ValueError;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 readonly class ApiController extends GqlController
@@ -180,7 +179,7 @@ readonly class ApiController extends GqlController
         $requestHeaders = $request->headers;
 
         if ($requestHeaders->has('X-Craft-Gql-Schema')) {
-            $user = $request->user('craft');
+            $user = $request->craftUser();
 
             abort_if(! $user, 401, 'Unauthenticated.');
             abort_unless($user->isAdmin(), 403, 'User is not permitted to perform this action.');
@@ -208,11 +207,11 @@ readonly class ApiController extends GqlController
             }
         }
 
-        $now = DateTimeHelper::currentUTCDateTime();
+        $now = now('UTC');
 
         if (
             ! $token->lastUsed ||
-            $token->lastUsed->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i') !== $now->format('Y-m-d H:i')
+            Date::instance($token->lastUsed)->setTimezone('UTC')->format('Y-m-d H:i') !== $now->format('Y-m-d H:i')
         ) {
             $token->lastUsed = $now;
             $this->gql->saveToken($token);
@@ -325,7 +324,7 @@ readonly class ApiController extends GqlController
             return true;
         }
 
-        $user = Auth::user();
+        $user = currentUser();
 
         return $user && $user->isAdmin() && $user->getPreference('showExceptionView');
     }

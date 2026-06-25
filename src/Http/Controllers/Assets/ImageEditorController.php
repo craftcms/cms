@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Image\Events\ImageEditorSaving;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -24,7 +25,6 @@ use function CraftCms\Cms\template;
 
 readonly class ImageEditorController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -42,8 +42,7 @@ readonly class ImageEditorController
 
         abort_if(! $asset, 400, t('The asset you’re trying to edit does not exist.'));
 
-        $this->requireVolumePermissionByAsset('editImages', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+        Gate::authorize('editImage', $asset);
 
         abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
 
@@ -69,8 +68,7 @@ readonly class ImageEditorController
 
         abort_if(! $asset, 400, "Invalid asset ID: $asset");
 
-        $this->requireVolumePermissionByAsset('editImages', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+        Gate::authorize('editImage', $asset);
 
         abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
 
@@ -120,9 +118,8 @@ readonly class ImageEditorController
         $folder = $asset->getFolder();
 
         // Do what you want with your own photo.
-        if ($asset->id !== $request->user()->photoId) {
-            $this->requireVolumePermissionByAsset('editImages', $asset);
-            $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+        if ($asset->id !== $request->craftUser()?->asElement()->photoId) {
+            Gate::authorize('editImage', $asset);
         }
 
         // Verify parameter adequacy
@@ -137,6 +134,24 @@ readonly class ImageEditorController
             array_diff(['offsetX', 'offsetY', 'height', 'width'], array_keys($cropData))
         ) {
             abort(400, t('Invalid cropping parameters passed'));
+        }
+
+        event($event = new ImageEditorSaving(
+            asset: $asset,
+            replace: $replace,
+            viewportRotation: $viewportRotation,
+            imageRotation: $imageRotation,
+            cropData: $cropData,
+            focalPoint: $focalPoint,
+            imageDimensions: $imageDimensions,
+            flipData: $flipData,
+            zoom: $zoom,
+        ));
+
+        if ($event->handled) {
+            return $this->asSuccess(data: array_filter([
+                'newAssetId' => $event->newAssetId,
+            ]));
         }
 
         $transformer = new ImageTransformer;
@@ -259,8 +274,7 @@ readonly class ImageEditorController
 
         abort_if(! $asset, 400, "Invalid asset UID: $assetUid");
 
-        $this->requireVolumePermissionByAsset('editImages', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+        Gate::authorize('editImage', $asset);
 
         $asset->setFocalPoint($focalData);
         $elements->saveElement($asset);

@@ -8,7 +8,8 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\ImageTransformer;
-use DateTime;
+use CraftCms\Cms\Validation\Rules\HandleRule;
+use DateTimeInterface;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -67,7 +68,7 @@ class ImageTransform extends Component
 
     public ?string $uid = null;
 
-    public ?DateTime $parameterChangeTime = null;
+    public ?DateTimeInterface $parameterChangeTime = null;
 
     /** @var class-string<ImageTransformerInterface> */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
@@ -142,7 +143,7 @@ class ImageTransform extends Component
     {
         return [
             'name' => ['required', 'string'],
-            'handle' => ['required', 'string', Rule::unique(Table::IMAGETRANSFORMS, 'handle')->ignore($this->id)],
+            'handle' => ['required', 'string', new HandleRule, Rule::unique(Table::IMAGETRANSFORMS, 'handle')->ignore($this->id)],
             'width' => ['nullable', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],
             'mode' => ['required', Rule::in(self::MODES)],

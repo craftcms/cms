@@ -28,7 +28,7 @@ readonly class CreateElementController
         $element = $this->createElement();
         $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
-        if (! $drafts->saveElementAsDraft($element, $request->user()->id, markAsSaved: false)) {
+        if (! $drafts->saveElementAsDraft($element, $request->craftUser()?->getCraftUserId(), markAsSaved: false)) {
             return new ElementResponse()->failure($element, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
             ])));

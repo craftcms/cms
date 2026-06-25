@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Twig\Error\RuntimeError;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 
-    // Ensure request()->user() delegates to the Auth guard,
+    // Ensure request()->craftUser() delegates to the Auth guard,
     // which is needed by the yii2-adapter's Controller::requireLogin().
-    request()->setUserResolver(fn () => Auth::user());
+    request()->setUserResolver(fn () => currentUser());
 });
 
 describe('requireLogin', function () {

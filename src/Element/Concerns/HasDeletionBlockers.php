@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\DeletionBlockers\FieldReferencesDeletionBlocker;
 use CraftCms\Cms\Element\DeletionBlockers\RelationDeletionBlocker;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Events\DefineDeletionBlockers;
@@ -22,6 +23,7 @@ trait HasDeletionBlockers
                     'defaultSort' => ['section', 'asc'],
                 ],
             ]),
+            new FieldReferencesDeletionBlocker($elements, $hardDelete),
         ];
 
         event($event = new DefineDeletionBlockers(

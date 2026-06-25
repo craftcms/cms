@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use Closure;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Route\Routes;
 
 /**
  * @mixin Plugin
@@ -41,25 +41,39 @@ trait HasRoutes
 
     protected function registerCpRoutes(string|Closure $routes): void
     {
+        $craftRoutes = $this->app->get(Routes::class);
+
         $this->app['router']
             ->middleware(['web', 'craft', 'craft.cp'])
-            ->prefix(Cms::config()->cpTrigger)
+            ->prefix($craftRoutes->cpTriggerRoutePrefix())
             ->group($routes);
     }
 
     protected function registerActionRoutes(string|Closure $routes): void
     {
+        $handle = self::getInstance()->handle;
+        $craftRoutes = $this->app->get(Routes::class);
+        $cpActionPrefix = $craftRoutes->joinRoutePrefix([
+            $craftRoutes->cpActionTriggerRoutePrefix(),
+            $handle,
+        ]);
+        $siteActionPrefix = $craftRoutes->joinRoutePrefix([
+            $craftRoutes->actionTriggerRoutePrefix(),
+            $handle,
+        ]);
+
         $this->app['router']
             ->middleware(['web', 'craft', 'craft.cp'])
-            ->prefix(implode('/', [
-                Cms::config()->cpTrigger,
-                Cms::config()->actionTrigger,
-            ]))
+            ->prefix($cpActionPrefix)
             ->group($routes);
+
+        if ($siteActionPrefix === $cpActionPrefix) {
+            return;
+        }
 
         $this->app['router']
             ->middleware(['craft', 'craft.web'])
-            ->prefix(Cms::config()->actionTrigger)
+            ->prefix($siteActionPrefix)
             ->group($routes);
     }
 }

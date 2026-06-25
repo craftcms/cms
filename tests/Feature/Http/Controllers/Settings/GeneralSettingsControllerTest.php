@@ -36,7 +36,7 @@ it('requires authentication', function () {
 
 it('can show the settings screen', function () {
     get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsGeneralPage'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/General'))
         ->assertOk();
 });
 
@@ -57,6 +57,9 @@ it('exposes timezone options on the settings screen', function () {
 });
 
 it('can save settings', function () {
+    Cms::config()->timezone = null;
+    date_default_timezone_set('UTC');
+
     post(action([GeneralSettingsController::class, 'store']), [
         'name' => 'A new app name',
         'live' => true,
@@ -68,7 +71,8 @@ it('can save settings', function () {
     expect(ProjectConfig::get('system.name'))->toBe('A new app name')
         ->and(ProjectConfig::get('system.live'))->toBe(true)
         ->and(ProjectConfig::get('system.retryDuration'))->toBe(60)
-        ->and(ProjectConfig::get('system.timeZone'))->toBe('America/New_York');
+        ->and(ProjectConfig::get('system.timeZone'))->toBe('America/New_York')
+        ->and(date_default_timezone_get())->toBe('America/New_York');
 });
 
 it('clears retryDuration when not provided', function () {
@@ -121,6 +125,8 @@ it('can save settings with environment variables', function () {
     putenv('GENERAL_SETTINGS_NAME=Env App');
     putenv('GENERAL_SETTINGS_LIVE=true');
     putenv('GENERAL_SETTINGS_TIMEZONE=America/New_York');
+    Cms::config()->timezone = null;
+    date_default_timezone_set('UTC');
 
     post(action([GeneralSettingsController::class, 'store']), [
         'name' => '$GENERAL_SETTINGS_NAME',
@@ -131,7 +137,8 @@ it('can save settings with environment variables', function () {
 
     expect(ProjectConfig::get('system.name'))->toBe('$GENERAL_SETTINGS_NAME')
         ->and(ProjectConfig::get('system.live'))->toBe('$GENERAL_SETTINGS_LIVE')
-        ->and(ProjectConfig::get('system.timeZone'))->toBe('$GENERAL_SETTINGS_TIMEZONE');
+        ->and(ProjectConfig::get('system.timeZone'))->toBe('$GENERAL_SETTINGS_TIMEZONE')
+        ->and(date_default_timezone_get())->toBe('America/New_York');
 });
 
 it('validates resolved environment variable live values', function () {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-  import Pane from '@/components/Pane.vue';
-  import {useInputGenerator} from '@/composables/useInputGenerator';
-  import useCraftData from '@/composables/useCraftData';
-  import {useSettingsSave} from '@/composables/useSettingsSave';
-  import AppLayout from '@/layout/AppLayout.vue';
+  import Pane from '@/common/components/Pane.vue';
+  import {useInputGenerator} from '@/common/composables/useInputGenerator';
+  import useCraftData from '@/common/composables/useCraftData';
+  import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import AppLayout from '@/common/layouts/AppLayout.vue';
   import {store as saveTransform} from '@actions/Settings/ImageTransformsController';
   import {t, toHandle} from '@craftcms/cp';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
@@ -12,7 +12,7 @@
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import {useForm} from '@inertiajs/vue3';
-  import type {BaseOption} from '@/types';
+  import type {BaseOption} from '@/common/types';
   import {computed, ref, watch} from 'vue';
   import cropImageUrl from '/images/transforms/crop.svg';
   import fitImageUrl from '/images/transforms/fit.svg';

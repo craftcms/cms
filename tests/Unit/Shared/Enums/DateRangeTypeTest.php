@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Support\DateTimeHelper;
+use Illuminate\Support\Facades\Date;
 
 beforeEach(function () {
-    DateTimeHelper::pause();
+    Date::setTestNow(now());
 });
 
 afterEach(function () {
-    DateTimeHelper::resume();
+    Date::setTestNow();
 });
 
 test('range returns expected start and end dates', function (DateRangeType $rangeType, Closure $expectedStartDate, Closure $expectedEndDate) {
@@ -21,43 +22,43 @@ test('range returns expected start and end dates', function (DateRangeType $rang
 })->with([
     'today' => [
         DateRangeType::Today,
-        DateTimeHelper::today(...),
-        DateTimeHelper::tomorrow(...),
+        today(...),
+        fn () => today()->addDay(),
     ],
     'thisWeek' => [
         DateRangeType::ThisWeek,
-        DateTimeHelper::thisWeek(...),
-        DateTimeHelper::nextWeek(...),
+        fn () => now()->startOfWeek(DateTimeHelper::firstWeekDay()),
+        fn () => now()->startOfWeek(DateTimeHelper::firstWeekDay())->addWeek(),
     ],
     'thisMonth' => [
         DateRangeType::ThisMonth,
-        DateTimeHelper::thisMonth(...),
-        DateTimeHelper::nextMonth(...),
+        fn () => today()->startOfMonth(),
+        fn () => today()->startOfMonth()->addMonth(),
     ],
     'thisYear' => [
         DateRangeType::ThisYear,
-        DateTimeHelper::thisYear(...),
-        DateTimeHelper::nextYear(...),
+        fn () => today()->startOfYear(),
+        fn () => today()->startOfYear()->addYear(),
     ],
     'past7Days' => [
         DateRangeType::Past7Days,
-        fn () => DateTimeHelper::today()->modify('-7 days'),
-        DateTimeHelper::now(...),
+        fn () => today()->subDays(7),
+        now(...),
     ],
     'past30Days' => [
         DateRangeType::Past30Days,
-        fn () => DateTimeHelper::today()->modify('-30 days'),
-        DateTimeHelper::now(...),
+        fn () => today()->subDays(30),
+        now(...),
     ],
     'past90Days' => [
         DateRangeType::Past90Days,
-        fn () => DateTimeHelper::today()->modify('-90 days'),
-        DateTimeHelper::now(...),
+        fn () => today()->subDays(90),
+        now(...),
     ],
     'pastYear' => [
         DateRangeType::PastYear,
-        fn () => DateTimeHelper::today()->modify('-1 year'),
-        DateTimeHelper::now(...),
+        fn () => today()->subYear(),
+        now(...),
     ],
 ]);
 

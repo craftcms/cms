@@ -57,7 +57,7 @@ class TextTwigExtension extends AbstractExtension
 
     public function lcfirstFilter(mixed $string): string
     {
-        return Str::lcfirst((string) $string);
+        return mb_lcfirst((string) $string);
     }
 
     public function kebabFilter(mixed $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string

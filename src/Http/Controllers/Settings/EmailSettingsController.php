@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 readonly class EmailSettingsController
@@ -48,13 +49,13 @@ readonly class EmailSettingsController
                 ['label' => t('Email')],
             ])
             ->redirectUrl('settings')
-            ->inertiaPage('SettingsEmailPage', [
+            ->inertiaPage('settings/Email', [
                 'emailConfig' => $this->projectConfig->get('email') ?? [],
                 'mailerOptions' => $this->getMailerOptions(),
                 'envSuggestions' => SelectOptions::getEnvSuggestions(),
                 'templateSuggestions' => SelectOptions::getTemplateSuggestions(),
                 'sites' => $sites,
-                'defaultToEmail' => auth()->user()->email,
+                'defaultToEmail' => currentUser()?->asElement()->email,
             ]);
     }
 

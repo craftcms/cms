@@ -35,7 +35,7 @@ class FilesystemsController
 
     public function index(): \Inertia\Response
     {
-        return Inertia::render('SettingsFilesystemsIndexPage', [
+        return Inertia::render('settings/Filesystems', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Filesystems')],

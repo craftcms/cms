@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -78,6 +79,18 @@ it('uses the logged-in CP user timezone preference first', function () {
     expect(Cms::timezone())->toBe('Europe/Brussels');
 });
 
+it('resolves the system timezone without CP user preferences', function () {
+    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->timezone = null;
+    Config::set('app.timezone', 'UTC');
+    app()->instance('request', Request::create('/admin'));
+
+    Users::shouldReceive('getUserPreference')->never();
+    ProjectConfig::shouldReceive('get')->once()->with('system.timeZone')->andReturn('Europe/Brussels');
+
+    expect(Cms::systemTimezone())->toBe('Europe/Brussels');
+});
+
 it('falls back through configured timezone sources', function (?string $configTimezone, ?string $projectConfigTimezone, string $appTimezone, string $expected) {
     Cms::config()->cpTrigger = 'admin';
     Cms::config()->timezone = $configTimezone;
@@ -87,6 +100,22 @@ it('falls back through configured timezone sources', function (?string $configTi
     ProjectConfig::shouldReceive('get')->with('system.timeZone')->andReturn($projectConfigTimezone);
 
     expect(Cms::timezone())->toBe($expected);
+})->with([
+    'general config' => ['Europe/Amsterdam', 'Europe/Brussels', 'UTC', 'Europe/Amsterdam'],
+    'project config' => [null, 'Europe/Brussels', 'UTC', 'Europe/Brussels'],
+    'app config' => [null, null, 'America/New_York', 'America/New_York'],
+]);
+
+it('sets the PHP default timezone from system timezone sources', function (?string $configTimezone, ?string $projectConfigTimezone, string $appTimezone, string $expected) {
+    Cms::config()->timezone = $configTimezone;
+    Config::set('app.timezone', $appTimezone);
+    ProjectConfig::shouldReceive('get')->with('system.timeZone')->andReturn($projectConfigTimezone);
+
+    date_default_timezone_set('UTC');
+
+    Cms::setDefaultTimezone();
+
+    expect(date_default_timezone_get())->toBe($expected);
 })->with([
     'general config' => ['Europe/Amsterdam', 'Europe/Brussels', 'UTC', 'Europe/Amsterdam'],
     'project config' => [null, 'Europe/Brussels', 'UTC', 'Europe/Brussels'],
@@ -113,6 +142,7 @@ it('falls back to UTC when ICU rejects the timezone', function () {
 it('uses the accepted language while Craft is not installed', function () {
     Cms::setIsInstalled(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['fr', 'en']));
+    I18N::shouldReceive('normalizeLanguage')->once()->with('fr')->andReturn('fr');
 
     $request = Request::create('/admin', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr-CA,fr;q=0.8,en;q=0.6']);
 
@@ -123,6 +153,7 @@ it('uses the accepted language while a Craft update is pending', function () {
     Cms::setIsInstalled();
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(true);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['de', 'en']));
+    I18N::shouldReceive('normalizeLanguage')->once()->with('de')->andReturn('de');
 
     $request = Request::create('/admin', server: ['HTTP_ACCEPT_LANGUAGE' => 'de-CH,de;q=0.8,en;q=0.6']);
 
@@ -141,19 +172,9 @@ it('uses a valid CP user language preference', function () {
     Cms::setIsInstalled();
     Cms::config()->cpTrigger = 'admin';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    Auth::shouldReceive('guard')->once()->with('craft')->andReturn(new class
-    {
-        public function user(): object
-        {
-            return new class
-            {
-                public function getAuthIdentifier(): int
-                {
-                    return 42;
-                }
-            };
-        }
-    });
+    $user = Mockery::mock(CraftUser::class);
+    $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
+    Auth::shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('pt-BR');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('pt-BR')->andReturn(true);
 
@@ -165,13 +186,7 @@ it('falls back to the configured default CP language', function () {
     Cms::config()->cpTrigger = 'admin';
     Cms::config()->defaultCpLanguage = 'es';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    Auth::shouldReceive('guard')->once()->with('craft')->andReturn(new class
-    {
-        public function user(): null
-        {
-            return null;
-        }
-    });
+    Auth::shouldReceive('user')->once()->andReturnNull();
 
     expect(Cms::targetLanguage(Request::create('/admin')))->toBe('es');
 });
@@ -181,22 +196,13 @@ it('falls back to the accepted language when the CP user preference is invalid a
     Cms::config()->cpTrigger = 'admin';
     Cms::config()->defaultCpLanguage = null;
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    Auth::shouldReceive('guard')->once()->with('craft')->andReturn(new class
-    {
-        public function user(): object
-        {
-            return new class
-            {
-                public function getAuthIdentifier(): int
-                {
-                    return 42;
-                }
-            };
-        }
-    });
+    $user = Mockery::mock(CraftUser::class);
+    $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
+    Auth::shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('not-real');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('not-real')->andReturn(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['it', 'en']));
+    I18N::shouldReceive('normalizeLanguage')->once()->with('it')->andReturn('it');
 
     $request = Request::create('/admin', server: ['HTTP_ACCEPT_LANGUAGE' => 'it-IT,it;q=0.8,en;q=0.6']);
 

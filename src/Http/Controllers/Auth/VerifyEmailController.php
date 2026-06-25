@@ -51,7 +51,7 @@ readonly class VerifyEmailController extends AuthenticationController
         abort_if(! $user, 400, 'Invalid user UUID: '.$request->input('uid'));
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
+        $broker = Password::broker();
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }
@@ -72,7 +72,7 @@ readonly class VerifyEmailController extends AuthenticationController
             $users->activateUser($user);
         }
 
-        if ($request->user()) {
+        if ($request->craftUser()) {
             Flash::success(t('Email verified'));
         }
 

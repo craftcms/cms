@@ -8,6 +8,7 @@ use Composer\Semver\Comparator;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -20,7 +21,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Override;
-use RequirementsChecker;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Process\Process;
@@ -54,7 +54,7 @@ class UpdaterController extends BaseUpdaterController
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
 
         if ($request->has('install') && $this->request->fullUrlIs(action([self::class, 'index']))) {
-            abort_unless($request->user()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
+            abort_unless($request->craftUser()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
         }
     }
 
@@ -68,7 +68,7 @@ class UpdaterController extends BaseUpdaterController
         $state = $this->realInitialState();
         $state['data'] = Crypt::encrypt(Json::encode($this->data));
 
-        return Inertia::render('Updater', [
+        return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
             'initialState' => $state,
             'actionPrefix' => 'updater',
@@ -138,7 +138,7 @@ class UpdaterController extends BaseUpdaterController
 
     public function serverCheck(): Response
     {
-        $reqCheck = new RequirementsChecker;
+        $reqCheck = ConnectionConfig::requirementsChecker();
         $reqCheck->checkCraft();
 
         $errors = [];
@@ -191,7 +191,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function pageTitle(): string
     {
-        return t('Updater');
+        return t('updater/Index');
     }
 
     #[Override]

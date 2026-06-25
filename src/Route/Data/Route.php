@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route\Data;
 
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Collection;
+use Inertia\PropertyContext;
+use Inertia\ProvidesInertiaProperty;
 
-class Route
+use function CraftCms\Cms\t;
+
+class Route implements ProvidesInertiaProperty
 {
     public function __construct(
         /**
@@ -82,5 +89,23 @@ class Route
         }
 
         return $uriDisplayHtml;
+    }
+
+    public function toInertiaProperty(PropertyContext $prop): array
+    {
+        /** @var Collection<string, Site> $sitesByUid */
+        $sitesByUid = Sites::getAllSites()->keyBy('uid');
+
+        return [
+            'uid' => $this->uid,
+            'siteUid' => $this->siteUid,
+            'siteName' => $this->siteUid
+                ? t($sitesByUid->get($this->siteUid)?->getName() ?? $this->siteUid, category: 'site')
+                : t('Global'),
+            'uriParts' => array_values($this->uriParts) ?: [''],
+            'uriDisplayHtml' => $this->uriDisplayHtml(),
+            'template' => $this->template,
+            'sortOrder' => $this->sortOrder,
+        ];
     }
 }

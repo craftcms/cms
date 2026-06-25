@@ -1,20 +1,22 @@
 import {QueueService, ConfigService} from '@craftcms/cp';
 import {createInertiaApp, router} from '@inertiajs/vue3';
-import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
-import {Axios, Config, Queue} from '@/types/keys';
+import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
+import {Axios, Config, Queue} from '@/common/types/keys';
 import axios from 'axios';
-import QueueManagerToolbar from '@/components/utilities/QueueManager/QueueManagerToolbar.vue';
-import DeprecationErrors from '@/components/utilities/DeprecationErrors/DeprecationErrors.vue';
-import ClearCaches from '@/components/utilities/ClearCaches/ClearCaches.vue';
-import FindReplace from '@/components/utilities/FindReplace/FindReplace.vue';
-import DatabaseBackup from '@/components/utilities/DatabaseBackup.vue';
-import Migrations from '@/components/utilities/Migrations.vue';
-import Updates from '@/components/utilities/Updates/Updates.vue';
-import ProjectConfig from '@/components/utilities/ProjectConfig/ProjectConfig.vue';
-import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
-import SystemMessages from '@/components/utilities/SystemMessages/SystemMessages.vue';
-import DeprecationErrorsToolbar from '@/components/utilities/DeprecationErrors/DeprecationErrorsToolbar.vue';
+import QueueManagerToolbar from '@/modules/utilities/components/queue-manager/QueueManagerToolbar.vue';
+import DeprecationErrors from '@/modules/utilities/components/deprecation-errors/DeprecationErrors.vue';
+import ClearCaches from '@/modules/utilities/components/clear-caches/ClearCaches.vue';
+import FindReplace from '@/modules/utilities/components/find-replace/FindReplace.vue';
+import DatabaseBackup from '@/modules/utilities/components/DatabaseBackup.vue';
+import Migrations from '@/modules/utilities/components/Migrations.vue';
+import Updates from '@/modules/updater/components/Updates.vue';
+import ProjectConfig from '@/modules/utilities/components/project-config/ProjectConfig.vue';
+import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
+import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
+import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import {setUrlDefaults} from '@/wayfinder';
+import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -22,6 +24,14 @@ let bootingCallbacks: Array<(instance: any) => void> = [];
 // Instantiate services
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
+
+function routeSegment(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return value.toString().replace(/^\/+|\/+$/g, '');
+}
 
 // Create our object
 const Cp = {
@@ -39,6 +49,10 @@ const Cp = {
     return axios;
   },
 
+  get $inertia() {
+    return inertiaPageRegistry;
+  },
+
   booted(callback: (instance: any) => void) {
     bootedCallbacks.push(callback);
   },
@@ -53,6 +67,12 @@ const Cp = {
 
   init() {
     config.initialize(this.initialConfig);
+
+    setUrlDefaults(() => ({
+      cpTrigger: routeSegment(config.get('cpTrigger')),
+      actionTrigger: routeSegment(config.get('actionTrigger')),
+    }));
+
     queue.initialize({
       runAutomatically: config.get('runQueueAutomatically', true),
       enabled: true,
@@ -79,7 +99,8 @@ const Cp = {
     bootingCallbacks = [];
 
     await createInertiaApp({
-      pages: '../pages',
+      resolve: (name) => resolveInertiaPage(name),
+      title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         app.provide(Queue, queue);
         app.provide(Axios, axios);

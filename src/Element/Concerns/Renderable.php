@@ -8,8 +8,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Events\ElementRendering;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Support\HtmlString;
 
 use function CraftCms\Cms\template;

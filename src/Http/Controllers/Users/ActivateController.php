@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
@@ -19,7 +18,6 @@ use function CraftCms\Cms\t;
 readonly class ActivateController
 {
     use AuthorizesRequests;
-    use EnforcesPermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -28,8 +26,6 @@ readonly class ActivateController
 
     public function activate(Request $request): Response
     {
-        $this->authorize('administrateUsers');
-
         $request->validate([
             'userId' => ['required', 'int'],
         ]);
@@ -38,6 +34,8 @@ readonly class ActivateController
         $user = $this->users->getUserById($request->integer('userId'));
 
         abort_if(! $user, 400, 'User not found');
+
+        $this->authorize('activate', $user);
 
         try {
             $this->users->activateUser($user);
@@ -68,12 +66,7 @@ readonly class ActivateController
 
         abort_if(! $user, 400, 'User not found');
 
-        if ($user->id !== $request->user()->id) {
-            $this->authorize('administrateUsers');
-
-            // Even if you have administrateUsers permissions, only and admin should be able to deactivate another admin.
-            abort_if($user->admin && ! $request->user()->isAdmin(), 403, 'User is not authorized to perform this action.');
-        }
+        $this->authorize('deactivate', $user);
 
         // Deactivate the user
         try {
@@ -105,9 +98,7 @@ readonly class ActivateController
             'Activation emails can only be sent to inactive or pending users',
         );
 
-        if (! $user->pending) {
-            $this->requirePermission('moderateUsers');
-        }
+        $this->authorize('sendActivationEmail', $user);
 
         $userVariable = $request->getSigned('userVariable') ?? 'user';
 

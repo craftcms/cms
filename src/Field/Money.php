@@ -345,7 +345,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     #[Override]
     public function prepareForElementValidation(mixed $value): mixed
     {
-        if (! $value instanceof MoneyLibrary) {
+        if ($value && ! $value instanceof MoneyLibrary) {
             $currency = ! $value['currency'] instanceof Currency ? new Currency($value['currency']) : $value['currency'];
             $value = new MoneyLibrary($value['value'], $currency);
         }

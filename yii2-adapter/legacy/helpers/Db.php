@@ -626,7 +626,17 @@ class Db
         }
 
         if (!empty($notInVals)) {
-            $condition[] = ['not', self::_inCondition($caseColumn, $notInVals)];
+            $c = ['not', self::_inCondition($caseColumn, $notInVals)];
+
+            if ($columnType === Schema::TYPE_JSON) {
+                $c = [
+                    'or',
+                    [$column => null],
+                    $c,
+                ];
+            }
+
+            $condition[] = $c;
         }
 
         // Skip the glue if there's only one condition

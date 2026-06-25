@@ -86,8 +86,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use DateInterval;
-use DateTime;
+use DateTimeInterface;
 use DOMDocument;
 use DOMXPath;
 use Exception;
@@ -96,6 +95,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -108,6 +108,8 @@ use Stringable;
 use Throwable;
 use Twig\Markup;
 
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -161,6 +163,7 @@ class Asset extends Element
      *
      * @internal
      */
+    #[AllowedInSandbox]
     public bool $isFolder = false;
 
     /**
@@ -168,21 +171,25 @@ class Asset extends Element
      *
      * @internal
      */
+    #[AllowedInSandbox]
     public ?array $sourcePath = null;
 
     /**
      * @var int|null Folder ID
      */
+    #[AllowedInSandbox]
     public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
+    #[AllowedInSandbox]
     public ?int $uploaderId = null;
 
     /**
      * @var string|null Folder path
      */
+    #[AllowedInSandbox]
     public ?string $folderPath = null;
 
     /**
@@ -206,16 +213,19 @@ class Asset extends Element
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
+    #[AllowedInSandbox]
     public ?bool $keptFile = null;
 
     /**
-     * @var DateTime|null Date modified
+     * @var DateTimeInterface|null Date modified
      */
-    public ?DateTime $dateModified = null;
+    #[AllowedInSandbox]
+    public ?DateTimeInterface $dateModified = null;
 
     /**
      * @var string|null New file location
      */
+    #[AllowedInSandbox]
     public ?string $newLocation = null;
 
     /**
@@ -223,6 +233,7 @@ class Asset extends Element
      *
      * @see AssetLocationRule
      */
+    #[AllowedInSandbox]
     public ?string $locationError = null;
 
     /**
@@ -457,7 +468,7 @@ class Asset extends Element
     protected static function defineSources(string $context): array
     {
         $sources = [];
-        $user = Auth::user();
+        $user = currentUserElement();
         $volumeIds = $context === ElementSources::CONTEXT_INDEX
             ? Volumes::getViewableVolumeIds()
             : Volumes::getAllVolumeIds();
@@ -499,7 +510,7 @@ class Asset extends Element
         if (preg_match('/^volume:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
             $folder = Folders::getFolderByUid($match[1]);
             if ($folder) {
-                $source = self::_assembleSourceInfoForFolder($folder, Auth::user());
+                $source = self::_assembleSourceInfoForFolder($folder, currentUserElement());
                 $source['keyPath'] = $sourceKey;
 
                 return $source;
@@ -766,11 +777,11 @@ class Asset extends Element
             ],
             'dateModified' => [
                 'label' => t('File Modified Date'),
-                'placeholder' => fn () => (new DateTime)->sub(new DateInterval('P14D')),
+                'placeholder' => fn () => now()->subDays(14),
             ],
             'uploader' => [
                 'label' => t('Uploaded By'),
-                'placeholder' => fn () => ($uploader = Auth::user()) ? app(ElementHtml::class)->elementChipHtml($uploader) : '',
+                'placeholder' => fn () => ($uploader = currentUserElement()) ? app(ElementHtml::class)->elementChipHtml($uploader) : '',
             ],
         ]);
 
@@ -1046,13 +1057,8 @@ class Asset extends Element
             $volumeHandle = false;
         }
 
-        $canUpload = Gate::check("saveAssets:$volume->uid");
-        $canMoveTo = (
-            $canUpload &&
-            Gate::check("deleteAssets:$volume->uid") &&
-            Gate::check("savePeerAssets:$volume->uid") &&
-            Gate::check("deletePeerAssets:$volume->uid")
-        );
+        $canUpload = $user && Gate::check('uploadAsset', $folder);
+        $canMoveTo = $user && Gate::check('moveIntoFolder', $folder);
 
         $sourcePathInfo = $folder->getSourcePathInfo();
 
@@ -1163,6 +1169,7 @@ class Asset extends Element
     /**
      * Returns the volume’s ID.
      */
+    #[AllowedInSandbox]
     public function getVolumeId(): ?int
     {
         return (int) $this->_volumeId ?: null;
@@ -1292,8 +1299,7 @@ class Asset extends Element
     {
         $items = parent::safeActionMenuItems();
 
-        $volume = $this->getVolume();
-        $user = Auth::user();
+        $user = currentUserElement();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
         $viewItems = [];
@@ -1347,7 +1353,7 @@ JS, [
         ]);
 
         // Show in Folder
-        if ($this->volumeId && $this->canView($user)) {
+        if ($user && $this->volumeId && $this->canView($user)) {
             $viewItems[] = [
                 'type' => MenuItemType::Link,
                 'icon' => 'magnifying-glass',
@@ -1365,8 +1371,8 @@ JS, [
 
         // Replace file
         if (
-            $user->can("replaceFiles:$volume->uid") &&
-            ($user->id === $this->uploaderId || $user->can("replacePeerFiles:$volume->uid"))
+            $user &&
+            $user->can('replaceFile', $this)
         ) {
             $replaceId = sprintf('action-replace-%s', mt_rand());
             $items[] = [
@@ -1509,8 +1515,8 @@ JS, [
         // Image editor
         if (
             $this->getSupportsImageEditor() &&
-            Gate::check("editImages:$volume->uid") &&
-            (Auth::id() === $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
+            $user &&
+            $user->can('editImage', $this)
         ) {
             $editImageId = sprintf('action-image-edit-%s', mt_rand());
             $items[] = [
@@ -1539,7 +1545,7 @@ JS, [
 
         if (
             app(ElementRequest::class)->element() === $this &&
-            Auth::user()->isAdmin() &&
+            currentUser()->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $items[] = ['type' => MenuItemType::HR];
@@ -1806,6 +1812,7 @@ JS, [
      *
      * @throws RuntimeException if [[folderId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getFolder(): VolumeFolder
     {
         if (! isset($this->folderId)) {
@@ -1824,6 +1831,7 @@ JS, [
      *
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getVolume(): Volume
     {
         if (isset($this->_volume)) {
@@ -1844,6 +1852,7 @@ JS, [
     /**
      * Returns the user that uploaded the asset, if known.
      */
+    #[AllowedInSandbox]
     public function getUploader(): ?User
     {
         if (isset($this->_uploader)) {
@@ -2283,6 +2292,7 @@ JS, [
      *
      * @param  string|null  $filename  Filename to use. If not specified, the asset's filename will be used.
      */
+    #[AllowedInSandbox]
     public function getPath(?string $filename = null): string
     {
         return $this->folderPath.($filename ?: $this->_filename);
@@ -2325,6 +2335,7 @@ JS, [
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws FilesystemException if a stream cannot be created
      */
+    #[AllowedInSandbox]
     public function getStream()
     {
         $stream = $this->getVolume()->sourceDisk()->readStream($this->getPath());
@@ -2342,6 +2353,7 @@ JS, [
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws AssetException if a stream could not be created
      */
+    #[AllowedInSandbox]
     public function getContents(): string
     {
         return stream_get_contents($this->getStream());
@@ -2372,6 +2384,7 @@ JS, [
     /**
      * Returns whether a user-defined focal point is set on the asset.
      */
+    #[AllowedInSandbox]
     public function getHasFocalPoint(): bool
     {
         return isset($this->_focalPoint);
@@ -2382,6 +2395,7 @@ JS, [
      *
      * @param  bool  $asCss  whether the value should be returned in CSS syntax ("50% 25%") instead
      */
+    #[AllowedInSandbox]
     public function getFocalPoint(bool $asCss = false): array|string|null
     {
         if (! in_array($this->kind, [FileKind::Image->value, FileKind::Video->value], true)) {
@@ -2524,12 +2538,11 @@ JS, [
         // See if we can show a thumbnail
         try {
             // Is the image editable, and is the user allowed to edit?
-            $volume = $this->getVolume();
+            $user = currentUser();
             $previewable = AssetsService::getAssetPreviewHandler($this) !== null;
             $editable = (
                 $this->getSupportsImageEditor() &&
-                Gate::check("editImages:$volume->uid") &&
-                (Auth::id() === $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
+                $user?->can('editImage', $this)
             );
 
             $previewInner = match ($this->kind) {
@@ -2897,43 +2910,46 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (! $this->propagating) {
-            // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
-            if (
-                ($this->alt === null || $this->alt === '') &&
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
-            ) {
-                $this->alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
-            }
+            $isImage = isset($this->tempFilePath) && AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value;
 
-            // Are we uploading an image that needs to be sanitized?
-            if (
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
-                ($this->sanitizeOnUpload ?? (
-                    ! request()->isCpRequest() ||
-                    Cms::config()->sanitizeCpImageUploads
-                ))
-            ) {
-                ImageHelper::cleanImageByPath($this->tempFilePath);
-            }
-
-            // if we're creating or replacing and image, get the width or height via getimagesize
-            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
             $fallbackWidth = null;
             $fallbackHeight = null;
-            if (
-                isset($this->tempFilePath) &&
-                $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
-            ) {
-                $imageSize = getimagesize($this->tempFilePath);
-                if (isset($imageSize[0])) {
-                    $fallbackWidth = $imageSize[0];
+
+            if ($isImage) {
+                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+                if (
+                    ($this->alt === null || $this->alt === '') &&
+                    $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
+                ) {
+                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                    if ($alt !== null) {
+                        // ensure it's UTF-8
+                        // (see https://github.com/craftcms/cms/issues/19069)
+                        $this->alt = Str::convertToUtf8($alt);
+                    }
                 }
-                if (isset($imageSize[1])) {
-                    $fallbackHeight = $imageSize[1];
+
+                // Are we uploading an image that needs to be sanitized?
+                if (
+                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
+                    ($this->sanitizeOnUpload ?? (
+                        ! request()->isCpRequest() ||
+                        Cms::config()->sanitizeCpImageUploads
+                    ))
+                ) {
+                    ImageHelper::cleanImageByPath($this->tempFilePath);
+                }
+
+                // if we're creating or replacing and image, get the width or height via getimagesize
+                // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+                if ($this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE)) {
+                    $imageSize = getimagesize($this->tempFilePath);
+                    if (isset($imageSize[0])) {
+                        $fallbackWidth = $imageSize[0];
+                    }
+                    if (isset($imageSize[1])) {
+                        $fallbackHeight = $imageSize[1];
+                    }
                 }
             }
 
@@ -3058,12 +3074,9 @@ JS;
                 ],
             ];
 
-            $volume = $this->getVolume();
+            $user = currentUser();
 
-            if (
-                Gate::check("savePeerAssets:$volume->uid") &&
-                Gate::check("deletePeerAssets:$volume->uid")
-            ) {
+            if ($user && Gate::check('moveFolderFrom', $this->getFolder())) {
                 $attributes['data']['movable'] = true;
             }
 
@@ -3279,7 +3292,7 @@ JS;
 
             $this->size = filesize($tempPath);
             $mtime = filemtime($tempPath);
-            $this->dateModified = $mtime ? new DateTime('@'.$mtime) : null;
+            $this->dateModified = $mtime ? Date::createFromTimestampUTC($mtime) : null;
 
             // Delete the temp file
             File::delete($tempPath);
