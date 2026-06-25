@@ -24,7 +24,7 @@ class UserSettingsRequest extends FormRequest
             'validateOnPublicRegistration' => ['nullable', 'boolean'],
             'allowPublicRegistration' => ['nullable', 'boolean'],
             'deactivateByDefault' => ['nullable', 'boolean'],
-            'defaultGroup' => ['nullable', 'string'],
+            'defaultGroup' => ['nullable', 'uuid', Rule::in(UserGroups::getAllGroups()->pluck('uid'))],
         ];
     }
 
