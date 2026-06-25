@@ -86,8 +86,8 @@ class UserSettingsController extends BaseUserSettingsController
                 'label' => $volume->name,
                 'value' => (string) $volume->uid,
             ])
-            ->sortBy('label');
-    }
+            ->sortBy('label')
+            ->values();
 
     private function userGroupOptions(): Collection
     {
