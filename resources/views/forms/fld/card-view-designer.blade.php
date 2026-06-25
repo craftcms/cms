@@ -38,9 +38,9 @@
             <h3 class="sr-only">{{ \CraftCms\Cms\t('Card Layout Preview') }}</h3>
             <p class="sr-only">{{ \CraftCms\Cms\t('The following content is for preview only.') }}</p>
             <div class="cvd-preview-container cp-workspace">
-                <craft-card class="cvd-preview">
+                <div class="cvd-preview" data-color="white">
                     {!! $previewHtml !!}
-                </craft-card>
+                </div>
             </div>
         </div>
     </div>

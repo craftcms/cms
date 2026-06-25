@@ -1,5 +1,7 @@
 import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
+import {SortableCheckboxSelect} from '@/modules/sortable-checkbox-select/SortableCheckboxSelect';
+import {sortableCheckboxSelectData} from '@/modules/sortable-checkbox-select/support';
 import type {FieldLayoutDesigner} from './FieldLayoutDesigner';
 import type {Element as FldElement} from './Element';
 
@@ -10,7 +12,8 @@ declare const axios: any;
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
  * port of the legacy `Craft.FieldLayoutDesigner.CardViewDesigner`. jQuery
- * survives only at the `Craft.SortableCheckboxSelect` / `Craft.ui` seams.
+ * survives only at the `Craft.ui` seam; the sortable checkbox library is the
+ * modern `SortableCheckboxSelect` module (looked up via its WeakMap).
  */
 export class CardViewDesigner extends Base {
   designer: FieldLayoutDesigner;
@@ -34,15 +37,15 @@ export class CardViewDesigner extends Base {
       '.cvd-library .checkbox-select'
     );
 
-    // Craft.SortableCheckboxSelect stores itself via jQuery `.data()` — seam.
-    this.sortableCheckboxSelect = $(this.$libraryContainer).data(
-      'sortableCheckboxSelect'
+    // SortableCheckboxSelect registers itself in its WeakMap, keyed by the
+    // native container element.
+    this.sortableCheckboxSelect = sortableCheckboxSelectData.get(
+      this.$libraryContainer
     );
 
     // If the checkboxes haven't been initialized yet, do that.
     if (!this.sortableCheckboxSelect) {
-      console.trace('Not initialized');
-      this.sortableCheckboxSelect = new Craft.SortableCheckboxSelect(
+      this.sortableCheckboxSelect = new SortableCheckboxSelect(
         $(this.$libraryContainer)
       );
     }
@@ -77,7 +80,7 @@ export class CardViewDesigner extends Base {
 
   initDrag($draggable: any): void {
     this.sortableCheckboxSelect.initDrag();
-    // Craft.SortableCheckboxSelect.initItem expects a jQuery element — seam.
+    // SortableCheckboxSelect.initItem expects a jQuery element — seam.
     this.sortableCheckboxSelect.initItem($($draggable));
 
     // trigger preview update when items are dragged into new position

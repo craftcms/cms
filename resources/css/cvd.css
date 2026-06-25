@@ -41,15 +41,14 @@
 }
 
 .cvd-thumbnail {
-  --icon-size: 2rem;
-  --icon-color: currentcolor;
   width: 100%;
   aspect-ratio: 4/3;
   display: flex;
   justify-content: center;
   align-items: center;
 
-  background-color: var(--c-surface-overlay);
+  border: 1px solid var(--c-color-border-quiet);
+  background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-md);
 }
 

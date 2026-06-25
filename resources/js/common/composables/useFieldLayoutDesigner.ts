@@ -24,8 +24,15 @@ export function useFieldLayoutDesigner(hostRef: Ref<HTMLElement | undefined>) {
   });
 
   /**
-   * Serializes the designer's inputs into a nested object (fieldLayout, …),
-   * exactly like a Garnish form's jQuery serialization.
+   * The designer's field layout config as the JSON string from its hidden
+   * `fieldLayout` input, passed through verbatim.
+   *
+   * It must stay a string (not parsed): the server reads it via
+   * `JsonHelper::decode(Request::input('fieldLayout'))`, which requires a JSON
+   * string and throws "Invalid JSON data" on a non-string. The FLD already
+   * encodes the config correctly (arrays as arrays), so the raw value is sent
+   * as-is. `generatedFields` is sent as a separate top-level value (see
+   * useGeneratedFieldsTable), not merged into this object.
    */
   function serialize(): string {
     const host = hostRef.value;

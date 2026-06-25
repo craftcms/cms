@@ -23,7 +23,7 @@
 <div class="fld-cvd">
     <h2 class="sr-only">{{ \CraftCms\Cms\t('Field Layout') }}</h2>
 
-    <div class="grid gap-3">
+    <craft-field-group style="--gap: var(--c-spacing-xl)">
         {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
             fn (array $c) => $designer->html($fieldLayout, $c),
             [
@@ -52,5 +52,5 @@
         @if ($withCardViewDesigner)
             {!! $cardDesigner->html($fieldLayout, ['disabled' => $disabled]) !!}
         @endif
-    </div>
+    </craft-field-group>
 </div>

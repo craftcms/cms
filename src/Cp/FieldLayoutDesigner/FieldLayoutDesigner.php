@@ -276,18 +276,7 @@ JS;
             'static' => $config['disabled'],
         ];
 
-        HtmlStack::jsWithVars(fn ($id, $name, $cols, $settings) => <<<JS
-(() => {
-  new Craft.GeneratedFieldsTable($id, $name, $cols, $settings)
-})();
-JS, [
-            InputNamespace::namespaceId($config['id']),
-            InputNamespace::namespaceInputName($name),
-            $cols,
-            $settings,
-        ]);
-
-        return FormFields::editableTableHtml([
+        $table = FormFields::editableTableHtml([
             'id' => $config['id'],
             'name' => $name,
             'cols' => $cols,
@@ -296,6 +285,16 @@ JS, [
             'static' => $config['disabled'],
             'initJs' => false,
             ...$settings,
+        ]);
+
+        // No `id` on the wrapper: the element reads its child <table>'s id (the
+        // one `EditableTable` resolves via `$('#'+id)`), and a matching id here
+        // would shadow that table for `getElementById` when no input namespace
+        // is active.
+        return Html::tag('craft-generated-fields-table', $table, [
+            'name' => InputNamespace::namespaceInputName($name),
+            'cols' => JsonHelper::encode($cols),
+            'settings' => JsonHelper::encode($settings),
         ]);
     }
 

@@ -12,6 +12,7 @@
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {useFieldLayoutDesigner} from '@/common/composables/useFieldLayoutDesigner';
+  import {useGeneratedFieldsTable} from '@/common/composables/useGeneratedFieldsTable';
   import useCraftData from '@/common/composables/useCraftData';
   import Pane from '@/common/components/Pane.vue';
   import {store} from '@actions/Settings/EntryTypesController';
@@ -75,6 +76,9 @@
   // Boot the (legacy) field layout designer and read its value back at submit.
   const fldHost = ref<HTMLElement>();
   const fld = useFieldLayoutDesigner(fldHost);
+  // The generated-fields table lives inside the designer markup; read its value
+  // back at submit too (Inertia doesn't post its distributed inputs).
+  const generatedFieldsTable = useGeneratedFieldsTable(fldHost);
 
   // Auto-generate the handle from the name for new entry types.
   const handleGenerator = useInputGenerator(
@@ -98,14 +102,18 @@
   );
 
   const {save} = useSettingsSave(form, store, {
-    transform: (data) => ({...data, fieldLayout: fld.serialize()}),
+    transform: (data) => ({
+      ...data,
+      fieldLayout: fld.serialize(),
+      generatedFields: generatedFieldsTable.serialize(),
+    }),
   });
 </script>
 
 <template>
   <AppLayout :title="title" :form="form" @save="save">
     <Pane appearance="raised">
-      <div class="grid gap-3">
+      <craft-field-group>
         <input
           v-if="entryType.id"
           type="hidden"
@@ -183,11 +191,7 @@
           :error="errors?.uiLabelFormat"
           monospaced
         />
-      </div>
 
-      <hr class="my-6" />
-
-      <div class="grid gap-3">
         <!-- Title Translation Method -->
         <CraftSelect
           v-if="showTitleTranslation"
@@ -298,14 +302,9 @@
           v-model="form.showStatusField"
           :disabled="readOnly"
         />
-      </div>
 
-      <hr class="my-6" />
-
-      <!-- Field Layout -->
-      <div class="grid gap-3">
-        <div ref="fldHost" v-html="fieldLayoutDesigner.html"></div>
-      </div>
+          <div ref="fldHost" v-html="fieldLayoutDesigner.html"></div>
+      </craft-field-group>
     </Pane>
   </AppLayout>
 </template>
