@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Update\Data\Updates;
+use CraftCms\Cms\User\Data\UserSettings;
 use DateTimeInterface;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
 use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
@@ -24,8 +26,10 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->replaceType(DateTimeInterface::class, 'string')
             ->provider(new ClassListTransformedProvider(
                 [
+                    NavItem::class,
                     Updates::class,
                     Route::class,
+                    UserSettings::class,
                 ],
                 [
                     new EnumTransformer,

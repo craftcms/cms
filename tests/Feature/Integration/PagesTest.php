@@ -37,15 +37,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     ['url' => '/users', 'title' => 'Users'],
 
     [
-        'url' => '/settings/users/settings',
-        'title' => 'User Settings',
-        'extraContent' => [
-            ['rendered' => 'User Photo Volume'],
-            ['rendered' => 'Verify email addresses'],
-            ['rendered' => 'Allow public registration'],
-        ],
-    ],
-    [
         'url' => '/settings/users/fields',
         'title' => 'User Settings',
         'extraContent' => [
@@ -77,6 +68,11 @@ it('renders inertia pages', function (string $url, string $component, string $ti
         'url' => '/settings/users',
         'title' => 'User Settings',
         'component' => 'settings/UserGroups',
+    ],
+    [
+        'url' => '/settings/users/settings',
+        'title' => 'User Settings',
+        'component' => 'settings/UserSettings',
     ],
     [
         'url' => '/settings/fields',

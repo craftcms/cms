@@ -12,7 +12,7 @@
     hasNested,
     type PermissionItem,
   } from '@/modules/permissions/helpers/permissions';
-  import {destroy, store} from '@actions/Settings/UserGroupsController';
+  import {destroy, store} from '@actions/Settings/Users/UserGroupsController';
   import {computed} from 'vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';

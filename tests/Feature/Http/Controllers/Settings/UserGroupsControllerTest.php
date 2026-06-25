@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
 use CraftCms\Cms\User\Elements\User;
@@ -12,7 +12,6 @@ use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
 
-use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
@@ -39,7 +38,7 @@ it('requires admin changes', function () {
     // Read only
     get(action([UserGroupsController::class, 'edit'], [UserGroup::factory()->create()->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/UserGroupsEdit')
+            ->component('settings/users/groups/Edit')
             ->where('readOnly', true));
 
     // Not allowed

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http\Controllers\Settings;
+namespace CraftCms\Cms\Http\Controllers\Settings\Users;
 
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
-readonly class UserGroupsController
+class UserGroupsController extends BaseUserSettingsController
 {
     use ConfirmsPasswords;
     use EnforcesPermissions;
@@ -33,9 +33,11 @@ readonly class UserGroupsController
     private bool $readOnly;
 
     public function __construct(
-        private GeneralConfig $generalConfig,
-        private UserGroups $userGroups,
+        private readonly GeneralConfig $generalConfig,
+        private readonly UserGroups $userGroups,
     ) {
+        parent::__construct();
+
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
 
@@ -45,16 +47,8 @@ readonly class UserGroupsController
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);
         }
 
-        return Inertia::render('settings/UserGroups', [
-            'crumbs' => [
-                ['label' => t('Settings'), 'url' => 'settings'],
-                ['label' => t('User Groups')],
-            ],
-            'subnav' => [
-                ['label' => t('User Groups'), 'url' => cp_url('settings/users'), 'active' => true, 'inertia' => true],
-                ['label' => t('User Profile Fields'), 'url' => cp_url('settings/users/fields')],
-                ['label' => t('Settings'), 'url' => cp_url('settings/users/settings')],
-            ],
+        return Inertia::render('settings/users/groups/Index', [
+            'crumbs' => $this->crumbs(t('User Groups')),
             'title' => t('User Settings'),
             'groups' => $this->userGroups->getAllGroups(),
         ]);
@@ -62,17 +56,11 @@ readonly class UserGroupsController
 
     public function create(UserPermissions $userPermissions): CpScreenResponse
     {
-        $crumbs = [
-            ['label' => t('Settings'), 'url' => 'settings'],
-            ['label' => t('Users'), 'url' => 'settings/users'],
-            ['label' => t('User Groups')],
-        ];
-
         return new CpScreenResponse()
             ->title(t('Create a new user group'))
-            ->crumbs($crumbs)
+            ->crumbs($this->crumbs(t('User Groups')))
             ->redirectUrl('settings/users')
-            ->inertiaPage('settings/UserGroupsEdit', [
+            ->inertiaPage('settings/users/groups/Edit', [
                 'group' => new UserGroup,
                 'brandNew' => true,
                 'permissions' => $userPermissions->getAllPermissions(),
@@ -92,18 +80,14 @@ readonly class UserGroupsController
 
         $group = $this->userGroups->getGroupById($userGroup->id);
 
-        $crumbs = [
-            ['label' => t('Settings'), 'url' => 'settings'],
-            ['label' => t('Users'), 'url' => 'settings/users'],
-            ['label' => t('User Groups'), 'url' => 'settings/users'],
-        ];
-
         return new CpScreenResponse()
             ->editUrl($group->getCpEditUrl())
             ->title(trim($group->name) ?: t('Edit User Group'))
-            ->crumbs($crumbs)
+            ->crumbs(array_merge($this->crumbs(t('User Groups'), cp_url('settings/users')), [
+                ['label' => $group->name],
+            ]))
             ->redirectUrl('settings/users')
-            ->inertiaPage('settings/UserGroupsEdit', [
+            ->inertiaPage('settings/users/groups/Edit', [
                 'group' => [
                     'id' => $group->id,
                     ...$group->getConfig(true),
@@ -130,7 +114,6 @@ readonly class UserGroupsController
     {
         $userGroupData = new UserGroup;
         $userGroupData->id = $request->integer('id', $request->input('groupId'));
-        ;
         $userGroupData->name = $request->input('name');
         $userGroupData->handle = $request->input('handle');
         $userGroupData->description = $request->input('description');

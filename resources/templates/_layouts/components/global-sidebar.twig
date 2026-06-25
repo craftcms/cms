@@ -1,6 +1,6 @@
 {% macro action(item, isSubnav, isSelected, showIcon) %}
   {% set showIcon = showIcon ?? true %}
-  {% set selected = item.sel ?? isSelected ?? false %}
+  {% set selected = item.selected ?? isSelected ?? false %}
   {% set badgeCount = item.badgeCount ?? false %}
   {% set external = item.external ?? false %}
   {% set subnav = item.subnav ?? false %}

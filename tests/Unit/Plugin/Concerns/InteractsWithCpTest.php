@@ -10,8 +10,8 @@ it('returns the default cp nav item', function () {
         'name' => 'Test Plugin',
     ]);
 
-    expect($plugin->getCpNavItem())->toBe([
-        'label' => 'Test Plugin',
-        'url' => 'test-plugin',
-    ]);
+    expect($plugin->getCpNavItem())
+        ->label->toBe('Test Plugin')
+        ->url->toBe('test-plugin')
+        ->icon->toBeNull();
 });

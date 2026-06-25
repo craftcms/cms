@@ -5,7 +5,11 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Empty from '@/common/components/Empty.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import {create, destroy, edit} from '@actions/Settings/UserGroupsController';
+  import {
+    create,
+    destroy,
+    edit,
+  } from '@actions/Settings/Users/UserGroupsController';
   import CpLink from '@/common/components/CpLink.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -14,12 +18,6 @@
 
   const props = defineProps<{
     groups: Array<UserGroup>;
-    subnav: Array<{
-      url: string;
-      label: string;
-      active?: boolean;
-      inertia?: boolean;
-    }>;
     readOnly: boolean;
   }>();
 
@@ -41,6 +39,7 @@
           header: t('Name'),
           props: ({row}) => ({
             href: edit({userGroup: row.original.id}).url,
+            inertia: true,
           }),
         }),
         columnHelper.handle('handle'),
@@ -75,23 +74,6 @@
         variant="accent"
         >{{ t('New user group') }}</CpLink
       >
-    </template>
-
-    <template #interior-nav>
-      <craft-nav-list>
-        <template v-for="(item, index) in subnav" :key="index">
-          <CpLink
-            as="craft-nav-item"
-            :active="item.active ?? false"
-            :href="item.url"
-            :inertia="item.inertia ?? true"
-            block
-            flush
-          >
-            {{ item.label }}
-          </CpLink>
-        </template>
-      </craft-nav-list>
     </template>
 
     <AdminTable :table="table">
