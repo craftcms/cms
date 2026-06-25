@@ -162,6 +162,10 @@ it('rejects invalid require2fa values', function () {
 });
 
 test('user settings only get saved when above pro edition', function (string $property, mixed $value) {
+    if ($property === 'defaultGroup') {
+        $value = UserGroup::factory()->create()->uid;
+    }
+
     Edition::set(Edition::Team);
 
     $initialValue = ProjectConfig::get("users.$property");
@@ -184,5 +188,5 @@ test('user settings only get saved when above pro edition', function (string $pr
     'validate public registration' => ['validateOnPublicRegistration', true],
     'allow public registration' => ['allowPublicRegistration', true],
     'deactivate by default' => ['deactivateByDefault', true],
-    'default group' => ['defaultGroup', Str::uuid()->toString()],
+    'default group' => ['defaultGroup', null],
 ]);
