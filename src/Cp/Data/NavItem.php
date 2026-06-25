@@ -34,7 +34,10 @@ class NavItem extends Component
     public function __construct(object|array $config = [])
     {
         if (isset($config['subnav']) && is_array($config['subnav'])) {
-            $config['subnav'] = array_map(fn ($item) => new NavItem($item), $config['subnav']);
+            $config['subnav'] = array_map(
+                fn ($item) => $item instanceof self ? $item : new self($item),
+                $config['subnav'],
+            );
         }
 
         parent::__construct($config);
