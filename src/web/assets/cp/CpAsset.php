@@ -198,6 +198,8 @@ JS;
             'Delete selected {type}',
             'Delete them',
             'Delete',
+            'Delete {type}',
+            'Delete {types}',
             'Descending',
             'Desktop',
             'Device type',

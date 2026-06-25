@@ -104,6 +104,7 @@ class AppHelperTest extends TestCase
             'TEST_2' => 'foo${TEST_1}bar',
             'TEST_3' => 'true',
             'TEST_4' => 'false',
+            'TEST_ALIAS' => '@vendor/foo/bar',
             'TEST_DEFAULT_SITE_API_KEY' => 'abcdef',
             'TEST_EMPTY' => '',
         ];
@@ -121,6 +122,7 @@ class AppHelperTest extends TestCase
         self::assertSame('foo/footesting1bar/bar', App::parseEnv('foo/$TEST_2/bar'));
         self::assertSame(true, App::parseEnv('$TEST_3'));
         self::assertSame(false, App::parseEnv('$TEST_4'));
+        self::assertSame(Craft::getAlias('@vendor/foo/bar'), App::parseEnv('$TEST_ALIAS'));
         self::assertSame('defaultSite', App::parseEnv('$CRAFT_SITE'));
         self::assertSame('DEFAULT_SITE', App::parseEnv('$CRAFT_SITE_UPPER'));
         self::assertSame('abcdef', App::parseEnv('$TEST_${CRAFT_SITE_UPPER}_API_KEY'));

@@ -1040,6 +1040,7 @@ class Asset extends Element
      * @since 4.4.0
      * @internal
      */
+    #[AllowedInSandbox]
     public bool $isFolder = false;
 
     /**
@@ -1047,21 +1048,25 @@ class Asset extends Element
      * @since 4.4.0
      * @internal
      */
+    #[AllowedInSandbox]
     public ?array $sourcePath = null;
 
     /**
      * @var int|null Folder ID
      */
+    #[AllowedInSandbox]
     public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
+    #[AllowedInSandbox]
     public ?int $uploaderId = null;
 
     /**
      * @var string|null Folder path
      */
+    #[AllowedInSandbox]
     public ?string $folderPath = null;
 
     /**
@@ -1086,22 +1091,26 @@ class Asset extends Element
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
+    #[AllowedInSandbox]
     public ?bool $keptFile = null;
 
     /**
      * @var DateTime|null Date modified
      */
+    #[AllowedInSandbox]
     public ?DateTime $dateModified = null;
 
     /**
      * @var string|null New file location
      */
+    #[AllowedInSandbox]
     public ?string $newLocation = null;
 
     /**
      * @var string|null Location error code
      * @see AssetLocationValidator::validateAttribute()
      */
+    #[AllowedInSandbox]
     public ?string $locationError = null;
 
     /**
@@ -1317,6 +1326,7 @@ class Asset extends Element
      *
      * @return int|null
      */
+    #[AllowedInSandbox]
     public function getVolumeId(): ?int
     {
         return (int)$this->_volumeId ?: null;
@@ -2113,6 +2123,7 @@ JS, [
      * @return VolumeFolder
      * @throws InvalidConfigException if [[folderId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getFolder(): VolumeFolder
     {
         if (!isset($this->folderId)) {
@@ -2132,6 +2143,7 @@ JS, [
      * @return Volume
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getVolume(): Volume
     {
         if (isset($this->_volume)) {
@@ -2157,6 +2169,7 @@ JS, [
      * @return User|null
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getUploader(): ?User
     {
         if (isset($this->_uploader)) {
@@ -2658,6 +2671,7 @@ JS, [
      * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
      * @return string
      */
+    #[AllowedInSandbox]
     public function getPath(?string $filename = null): string
     {
         return $this->folderPath . ($filename ?: $this->_filename);
@@ -2703,6 +2717,7 @@ JS, [
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      * @throws FsException if a stream cannot be created
      */
+    #[AllowedInSandbox]
     public function getStream()
     {
         return $this->getVolume()->getFileStream($this->getPath());
@@ -2716,6 +2731,7 @@ JS, [
      * @throws AssetException if a stream could not be created
      * @since 3.0.6
      */
+    #[AllowedInSandbox]
     public function getContents(): string
     {
         return stream_get_contents($this->getStream());
@@ -2751,6 +2767,7 @@ JS, [
      *
      * @return bool
      */
+    #[AllowedInSandbox]
     public function getHasFocalPoint(): bool
     {
         return isset($this->_focalPoint);
@@ -2762,6 +2779,7 @@ JS, [
      * @param bool $asCss whether the value should be returned in CSS syntax ("50% 25%") instead
      * @return array|string|null
      */
+    #[AllowedInSandbox]
     public function getFocalPoint(bool $asCss = false): array|string|null
     {
         if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
@@ -3314,48 +3332,46 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
-            // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
-            if (
-                ($this->alt === null || $this->alt === '') &&
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
-            ) {
-                $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
-                if ($alt !== null) {
-                    // ensure it's UTF-8
-                    // (see https://github.com/craftcms/cms/issues/19069)
-                    $this->alt = StringHelper::convertToUtf8($alt);
-                }
-            }
+            $isImage = isset($this->tempFilePath) && Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE;
 
-            // Are we uploading an image that needs to be sanitized?
-            if (
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
-                ($this->sanitizeOnUpload ?? (
-                    !Craft::$app->getRequest()->getIsCpRequest() ||
-                    Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
-                ))
-            ) {
-                Image::cleanImageByPath($this->tempFilePath);
-            }
-
-            // if we're creating or replacing and image, get the width or height via getimagesize
-            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
             $fallbackWidth = null;
             $fallbackHeight = null;
-            if (
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
-            ) {
-                $imageSize = getimagesize($this->tempFilePath);
-                if (isset($imageSize[0])) {
-                    $fallbackWidth = (int)$imageSize[0];
+
+            if ($isImage) {
+                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+                if (
+                    ($this->alt === null || $this->alt === '') &&
+                    in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
+                ) {
+                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                    if ($alt !== null) {
+                        // ensure it's UTF-8
+                        // (see https://github.com/craftcms/cms/issues/19069)
+                        $this->alt = StringHelper::convertToUtf8($alt);
+                    }
                 }
-                if (isset($imageSize[1])) {
-                    $fallbackHeight = (int)$imageSize[1];
+
+                // Are we uploading an image that needs to be sanitized?
+                if (
+                    in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                    ($this->sanitizeOnUpload ?? (
+                        !Craft::$app->getRequest()->getIsCpRequest() ||
+                        Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
+                    ))
+                ) {
+                    Image::cleanImageByPath($this->tempFilePath);
+                }
+
+                // if we're creating or replacing and image, get the width or height via getimagesize
+                // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+                if (in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true)) {
+                    $imageSize = getimagesize($this->tempFilePath);
+                    if (isset($imageSize[0])) {
+                        $fallbackWidth = (int)$imageSize[0];
+                    }
+                    if (isset($imageSize[1])) {
+                        $fallbackHeight = (int)$imageSize[1];
+                    }
                 }
             }
 

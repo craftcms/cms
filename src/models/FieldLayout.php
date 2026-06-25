@@ -1556,11 +1556,11 @@ class FieldLayout extends Model
                             }
 
                             $html = Html::modifyTagAttributes($html, [
-                                'data' => [
+                                'data' => array_filter([
                                     'layout-element' => $isConditional ? $layoutElement->uid : true,
                                     'error-key' => $errorKey,
                                     'static' => $isStatic,
-                                ],
+                                ]),
                             ]);
 
                             $layoutElements[] = [$layoutElement, $isConditional, $html, $isStatic];

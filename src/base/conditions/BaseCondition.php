@@ -369,7 +369,6 @@ JS, [$view->namespaceInputId($this->id)]);
                     continue;
                 }
 
-
                 $ruleNum++;
             }
 

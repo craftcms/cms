@@ -94,6 +94,7 @@ use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
+use craft\web\twig\AllowableInSandbox;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
@@ -162,7 +163,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Element extends Component implements ElementInterface
+abstract class Element extends Component implements ElementInterface, AllowableInSandbox
 {
     use ElementTrait;
     use ArrayableTrait {
@@ -2746,6 +2747,30 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return parent::__call($name, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        // Allow field handles
+        if (
+            $this->hasEagerLoadedElements($property) ||
+            $this->fieldByHandle($property) !== null
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
