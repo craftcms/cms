@@ -54,7 +54,7 @@ readonly class Navigation
             if ($entryPages->isNotEmpty()) {
                 $entryPageSettings = $this->elementSources->getPageSettings(Entry::class);
 
-                $navItems->merge(
+                $navItems = $navItems->merge(
                     $entryPages->map(fn (string $page) => new NavItem()
                         ->when(
                             $page === 'Entries',
