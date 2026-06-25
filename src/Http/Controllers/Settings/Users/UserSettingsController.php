@@ -88,6 +88,7 @@ class UserSettingsController extends BaseUserSettingsController
             ])
             ->sortBy('label')
             ->values();
+    }
 
     private function userGroupOptions(): Collection
     {
