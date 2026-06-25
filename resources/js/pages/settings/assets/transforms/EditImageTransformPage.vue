@@ -18,14 +18,13 @@
   import fitImageUrl from '/images/transforms/fit.svg';
   import letterboxImageUrl from '/images/transforms/letterbox.svg';
   import stretchImageUrl from '/images/transforms/stretch.svg';
-  import type {ImageTransform} from '@/pages/settings/assets/transforms/types';
 
   interface QualityOption extends Omit<BaseOption, 'value'> {
     value: number;
   }
 
   const props = defineProps<{
-    transform: ImageTransform;
+    transform: CraftCms.Cms.Image.Data.ImageTransform;
     modeOptions: Array<BaseOption>;
     positionOptions: Array<BaseOption>;
     interlaceOptions: Array<BaseOption>;

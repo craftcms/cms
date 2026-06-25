@@ -16,7 +16,16 @@
   import Empty from '@/common/components/Empty.vue';
   import {router} from '@inertiajs/vue3';
   import {index} from '@actions/Settings/VolumesController';
-  import type {ExistingImageTransform} from '@/pages/settings/assets/transforms/types';
+
+  type ExistingImageTransform = Omit<
+    CraftCms.Cms.Image.Data.ImageTransform,
+    'id'
+  > & {
+    id: number;
+    uid: string;
+    handle: string;
+    name: string;
+  };
 
   function deleteTransform(transform: ExistingImageTransform) {
     if (
