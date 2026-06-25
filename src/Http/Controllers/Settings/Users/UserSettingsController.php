@@ -50,7 +50,7 @@ class UserSettingsController extends BaseUserSettingsController
     public function store(UserSettingsRequest $request): Response
     {
         $projectConfigSettings = $this->projectConfig->get(ProjectConfig::PATH_USERS) ?? [];
-        $settings = array_merge($projectConfigSettings, $this->settingsFromRequest($request->validated()));
+        $settings = array_merge($projectConfigSettings, $request->projectConfigSettings());
 
         $this->projectConfig->set(
             path: ProjectConfig::PATH_USERS,
@@ -59,24 +59,6 @@ class UserSettingsController extends BaseUserSettingsController
         );
 
         return $this->asSuccess(t('User settings saved.'));
-    }
-
-    private function settingsFromRequest(array $data): array
-    {
-        return [
-            'photoVolumeUid' => $data['photoVolumeUid'] ?? null,
-            'photoSubpath' => $data['photoSubpath'] ?? null,
-            ...(Edition::get()->supportsRequiring2FA() ? [
-                'require2fa' => $data['require2fa'] ?? false,
-            ] : []),
-            ...(Edition::get()->supportsPublicRegistration() ? [
-                'requireEmailVerification' => (bool) ($data['requireEmailVerification'] ?? false),
-                'validateOnPublicRegistration' => (bool) ($data['validateOnPublicRegistration'] ?? false),
-                'allowPublicRegistration' => (bool) ($data['allowPublicRegistration'] ?? false),
-                'deactivateByDefault' => (bool) ($data['deactivateByDefault'] ?? false),
-                'defaultGroup' => $data['defaultGroup'] ?? null,
-            ] : []),
-        ];
     }
 
     private function photoVolumeOptions(): Collection

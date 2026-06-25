@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Requests;
 
 use Closure;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,6 +26,26 @@ class UserSettingsRequest extends FormRequest
             'allowPublicRegistration' => ['nullable', 'boolean'],
             'deactivateByDefault' => ['nullable', 'boolean'],
             'defaultGroup' => ['nullable', 'uuid', Rule::in(UserGroups::getAllGroups()->pluck('uid'))],
+        ];
+    }
+
+    public function projectConfigSettings(): array
+    {
+        $data = $this->safe();
+
+        return [
+            'photoVolumeUid' => $data->input('photoVolumeUid'),
+            'photoSubpath' => $data->input('photoSubpath'),
+            ...(Edition::get()->supportsRequiring2FA() ? [
+                'require2fa' => $data->input('require2fa', false),
+            ] : []),
+            ...(Edition::get()->supportsPublicRegistration() ? [
+                'requireEmailVerification' => $data->boolean('requireEmailVerification'),
+                'validateOnPublicRegistration' => $data->boolean('validateOnPublicRegistration'),
+                'allowPublicRegistration' => $data->boolean('allowPublicRegistration'),
+                'deactivateByDefault' => $data->boolean('deactivateByDefault'),
+                'defaultGroup' => $data->input('defaultGroup'),
+            ] : []),
         ];
     }
 

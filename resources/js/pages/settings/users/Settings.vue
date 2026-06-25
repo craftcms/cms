@@ -317,15 +317,13 @@
                 :label="t('Default User Group')"
                 name="defaultGroup"
                 :options="defaultGroupOptions"
-                :disabled="readOnly"
-              />
-              <p class="mt-1 text-sm text-neutral-text-quiet">
-                {{
+                :help-text="
                   t(
                     'Choose a user group that publicly-registered members will be added to by default.'
                   )
-                }}
-              </p>
+                "
+                :disabled="readOnly"
+              />
             </div>
           </div>
         </section>
