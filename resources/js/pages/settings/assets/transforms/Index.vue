@@ -8,6 +8,7 @@
   import {
     create,
     destroy,
+    edit,
     index as imageTransformsIndex,
   } from '@actions/Settings/ImageTransformsController';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -16,24 +17,17 @@
   import {router} from '@inertiajs/vue3';
   import {index} from '@actions/Settings/VolumesController';
 
-  export interface ImageTransform {
+  type ExistingImageTransform = Omit<
+    CraftCms.Cms.Image.Data.ImageTransform,
+    'id'
+  > & {
     id: number;
-    name: string;
-    handle: string;
-    width: number;
-    height: number;
-    format: any;
-    quality: number;
-    mode: string;
-    position: string;
-    interlace: string;
-    fill: any;
-    upscale: boolean;
     uid: string;
-    parameterChangeTime: any[];
-  }
+    handle: string;
+    name: string;
+  };
 
-  function deleteTransform(transform: ImageTransform) {
+  function deleteTransform(transform: ExistingImageTransform) {
     if (
       confirm(
         t('Are you sure you want to delete the “{name}” transform?', {
@@ -41,22 +35,32 @@
         })
       )
     ) {
-      router.delete(destroy({transformId: transform.id}));
+      router
+        .optimistic<{transforms: Array<ExistingImageTransform>}>((props) => ({
+          transforms: props.transforms.filter(({id}) => id !== transform.id),
+        }))
+        .delete(destroy({transformId: transform.id}), {
+          preserveScroll: true,
+        });
     }
   }
 
   const props = defineProps<{
-    transforms: Array<any>;
+    transforms: Array<ExistingImageTransform>;
   }>();
 
   const columnVisibility = ref({
     name: true,
     handle: true,
   });
-  const columnHelper = createCraftColumnHelper<ImageTransform>();
+  const columnHelper = createCraftColumnHelper<ExistingImageTransform>();
   const columns = ref([
     columnHelper.link('name', {
       header: t('Name'),
+      props: ({row}) => ({
+        href: edit({transformHandle: row.original.handle}).url,
+        inertia: true,
+      }),
     }),
     columnHelper.handle('handle'),
     columnHelper.accessor('mode', {
@@ -94,7 +98,7 @@
       return columns.value;
     },
     enableSorting: false,
-    getCoreRowModel: getCoreRowModel<ImageTransform>(),
+    getCoreRowModel: getCoreRowModel<ExistingImageTransform>(),
     state: {
       get columnVisibility() {
         return columnVisibility.value;
@@ -110,7 +114,7 @@
   };
   const navItems = computed((): Record<string, NavItem> => {
     return {
-      volumes: {label: t('Volumes'), url: index().url},
+      volumes: {label: t('Volumes'), url: index().url, active: false},
       transforms: {
         label: t('Image Transforms'),
         url: imageTransformsIndex().url,
@@ -125,7 +129,6 @@
     <template #actions>
       <CpLink
         appearance="button"
-        :inertia="false"
         :href="create().url"
         variant="accent"
         icon="plus"
@@ -142,7 +145,7 @@
             :href="item.url"
             block
             flush
-            :inertia="item.inertia ?? true"
+            :inertia="true"
           >
             {{ item.label }}
           </CpLink>
@@ -154,7 +157,6 @@
         <Empty :label="t('No image transforms exist yet.')" icon="image">
           <CpLink
             appearance="button"
-            :inertia="false"
             :href="create().url"
             variant="neutral"
             icon="plus"
