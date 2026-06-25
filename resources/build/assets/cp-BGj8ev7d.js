@@ -842,7 +842,7 @@ import{a as e,i as t,l as n,n as r,o as i,r as a,s as o}from"./nav-item-DFZbQ-Jw
   }
 
   /*
-  Appearances
+  Appearances 
    */
   :host([appearance~='inline']) {
     display: inline;
@@ -967,7 +967,7 @@ import{a as e,i as t,l as n,n as r,o as i,r as a,s as o}from"./nav-item-DFZbQ-Jw
   }
 
   /*
-  Variants (aka fill colors)
+  Variants (aka fill colors) 
    */
   :host([variant~='accent']) {
     --c-color-fill-loud: var(--c-color-accent-fill-loud);
@@ -4837,8 +4837,8 @@ import{a as e,i as t,l as n,n as r,o as i,r as a,s as o}from"./nav-item-DFZbQ-Jw
     padding: 0px;
   }
 
-  /**
-   * We don't want to use pseudo el ::backdrop.
+  /** 
+   * We don't want to use pseudo el ::backdrop.  
    * We have our own, that creates more flexibility wrt scrolling etc.
    */
   dialog[data-overlay-outer-wrapper]::backdrop {

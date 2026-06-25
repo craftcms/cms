@@ -16,35 +16,35 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
     }
   `:``,c=a&&a.colors?C(a.colors,a.previewColors):``;return`
     /* OverType Editor Styles */
-
+    
     /* Middle-ground CSS Reset - Prevent parent styles from leaking in */
     .overtype-container * {
       /* Box model - these commonly leak */
       margin: 0 !important;
       padding: 0 !important;
       border: 0 !important;
-
+      
       /* Layout - these can break our layout */
       /* Don't reset position - it breaks dropdowns */
       float: none !important;
       clear: none !important;
-
+      
       /* Typography - only reset decorative aspects */
       text-decoration: none !important;
       text-transform: none !important;
       letter-spacing: normal !important;
-
+      
       /* Visual effects that can interfere */
       box-shadow: none !important;
       text-shadow: none !important;
-
+      
       /* Ensure box-sizing is consistent */
       box-sizing: border-box !important;
-
+      
       /* Keep inheritance for these */
       /* font-family, color, line-height, font-size - inherit */
     }
-
+    
     /* Container base styles after reset */
     .overtype-container {
       display: flex !important;
@@ -59,12 +59,12 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       /* Theme Variables */
       ${c}`:``}
     }
-
+    
     /* Force left alignment for all elements in the editor */
     .overtype-container .overtype-wrapper * {
       text-align: left !important;
     }
-
+    
     /* Auto-resize mode styles */
     .overtype-container.overtype-auto-resize {
       height: auto !important;
@@ -76,7 +76,7 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       min-height: 60px !important;
       overflow: visible !important;
     }
-
+    
     .overtype-wrapper {
       position: relative !important; /* Override reset - needed for absolute children */
       width: 100% !important;
@@ -108,14 +108,14 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       font-stretch: normal !important;
       font-kerning: none !important;
       font-feature-settings: normal !important;
-
+      
       /* Box model - must match exactly */
       padding: var(--instance-padding, ${i}) !important;
       margin: 0 !important;
       border: none !important;
       outline: none !important;
       box-sizing: border-box !important;
-
+      
       /* Text layout - critical for character positioning */
       white-space: pre-wrap !important;
       word-wrap: break-word !important;
@@ -127,41 +127,41 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       text-indent: 0 !important;
       letter-spacing: normal !important;
       word-spacing: normal !important;
-
+      
       /* Text rendering */
       text-transform: none !important;
       text-rendering: auto !important;
       -webkit-font-smoothing: auto !important;
       -webkit-text-size-adjust: 100% !important;
-
+      
       /* Direction and writing */
       direction: ltr !important;
       writing-mode: horizontal-tb !important;
       unicode-bidi: normal !important;
       text-orientation: mixed !important;
-
+      
       /* Visual effects that could shift perception */
       text-shadow: none !important;
       filter: none !important;
       transform: none !important;
       zoom: 1 !important;
-
+      
       /* Vertical alignment */
       vertical-align: baseline !important;
-
+      
       /* Size constraints */
       min-width: 0 !important;
       min-height: 0 !important;
       max-width: none !important;
       max-height: none !important;
-
+      
       /* Overflow */
       overflow-y: auto !important;
       overflow-x: auto !important;
       /* overscroll-behavior removed to allow scroll-through to parent */
       scrollbar-width: auto !important;
       scrollbar-gutter: auto !important;
-
+      
       /* Animation/transition - disabled to prevent movement */
       animation: none !important;
       transition: none !important;
@@ -171,21 +171,21 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
     .overtype-wrapper .overtype-input {
       /* Layer positioning */
       z-index: 1 !important;
-
+      
       /* Text visibility */
       color: transparent !important;
       caret-color: var(--cursor, #f95738) !important;
       background-color: transparent !important;
-
+      
       /* Textarea-specific */
       resize: none !important;
       appearance: none !important;
       -webkit-appearance: none !important;
       -moz-appearance: none !important;
-
+      
       /* Prevent mobile zoom on focus */
       touch-action: manipulation !important;
-
+      
       /* Disable autofill */
       autocomplete: off !important;
       autocorrect: off !important;
@@ -220,7 +220,7 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       pointer-events: none !important;
       color: var(--text, #0d3b66) !important;
       background-color: transparent !important;
-
+      
       /* Prevent text selection */
       user-select: none !important;
       -webkit-user-select: none !important;
@@ -262,14 +262,14 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
     }
 
     /* Header colors */
-    .overtype-wrapper .overtype-preview .h1 {
-      color: var(--h1, #f95738) !important;
+    .overtype-wrapper .overtype-preview .h1 { 
+      color: var(--h1, #f95738) !important; 
     }
-    .overtype-wrapper .overtype-preview .h2 {
-      color: var(--h2, #ee964b) !important;
+    .overtype-wrapper .overtype-preview .h2 { 
+      color: var(--h2, #ee964b) !important; 
     }
-    .overtype-wrapper .overtype-preview .h3 {
-      color: var(--h3, #3d8a51) !important;
+    .overtype-wrapper .overtype-preview .h3 { 
+      color: var(--h3, #3d8a51) !important; 
     }
 
     /* Semantic headers - flatten in edit mode */
@@ -285,14 +285,14 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
     }
 
     /* Header colors for semantic headers */
-    .overtype-wrapper .overtype-preview h1 {
-      color: var(--h1, #f95738) !important;
+    .overtype-wrapper .overtype-preview h1 { 
+      color: var(--h1, #f95738) !important; 
     }
-    .overtype-wrapper .overtype-preview h2 {
-      color: var(--h2, #ee964b) !important;
+    .overtype-wrapper .overtype-preview h2 { 
+      color: var(--h2, #ee964b) !important; 
     }
-    .overtype-wrapper .overtype-preview h3 {
-      color: var(--h3, #3d8a51) !important;
+    .overtype-wrapper .overtype-preview h3 { 
+      color: var(--h3, #3d8a51) !important; 
     }
 
     /* Lists - remove styling in edit mode */
@@ -352,7 +352,7 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       border-radius: 4px !important;
       overflow-x: auto !important;
     }
-
+    
     /* Code block styling in normal mode - yellow background */
     .overtype-wrapper .overtype-preview pre.code-block {
       background: var(--code-bg, rgba(244, 211, 94, 0.4)) !important;
@@ -413,12 +413,12 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       color: var(--code, #0d3b66) !important;
       background: var(--code-bg, rgba(244, 211, 94, 0.4)) !important;
     }
-
+    
     /* Code block lines - background for entire code block */
     .overtype-wrapper .overtype-preview .code-block-line {
       background: var(--code-bg, rgba(244, 211, 94, 0.4)) !important;
     }
-
+    
     /* Remove background from code fence when inside code block line */
     .overtype-wrapper .overtype-preview .code-block-line .code-fence {
       background: transparent !important;
@@ -443,7 +443,7 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
     }
 
     /* Stats bar */
-
+    
     /* Stats bar - positioned by flexbox */
     .overtype-stats {
       height: 40px !important;
@@ -468,7 +468,7 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       gap: 5px !important;
       white-space: nowrap !important;
     }
-
+    
     .overtype-stats .live-dot {
       width: 8px !important;
       height: 8px !important;
@@ -476,12 +476,12 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       border-radius: 50% !important;
       animation: overtype-pulse 2s infinite !important;
     }
-
+    
     @keyframes overtype-pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(1.2); }
     }
-
+    
 
     /* Toolbar Styles */
     .overtype-toolbar.overtype-toolbar-hidden {
@@ -504,16 +504,16 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       z-index: 100 !important; /* Ensure toolbar is above wrapper */
       scrollbar-width: thin; /* Thin scrollbar on Firefox */
     }
-
+    
     /* Thin scrollbar styling */
     .overtype-toolbar::-webkit-scrollbar {
       height: 4px;
     }
-
+    
     .overtype-toolbar::-webkit-scrollbar-track {
       background: transparent;
     }
-
+    
     .overtype-toolbar::-webkit-scrollbar-thumb {
       background: rgba(0, 0, 0, 0.2);
       border-radius: 2px;
@@ -585,19 +585,19 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
         margin: 0 2px;
       }
     }
-
+    
     /* Plain mode - hide preview and show textarea text */
     .overtype-container[data-mode="plain"] .overtype-preview {
       display: none !important;
     }
-
+    
     .overtype-container[data-mode="plain"] .overtype-input {
       color: var(--text, #0d3b66) !important;
       /* Use system font stack for better plain text readability */
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
                    "Helvetica Neue", Arial, sans-serif !important;
     }
-
+    
     /* Ensure textarea remains transparent in overlay mode */
     .overtype-container:not([data-mode="plain"]) .overtype-input {
       color: transparent !important;
@@ -678,13 +678,13 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
     .overtype-container[data-mode="preview"] .syntax-marker {
       display: none !important;
     }
-
+    
     /* Hide URL part of links in preview mode - extra specificity */
     .overtype-container[data-mode="preview"] .syntax-marker.url-part,
     .overtype-container[data-mode="preview"] .url-part {
       display: none !important;
     }
-
+    
     /* Hide all syntax markers inside links too */
     .overtype-container[data-mode="preview"] a .syntax-marker {
       display: none !important;
@@ -730,7 +730,7 @@ import"./cp-BGj8ev7d.js";import{l as e}from"./nav-item-DFZbQ-Jw-CtSAdykQ.js";imp
       padding-left: 2em !important;
       margin: 1em 0 !important;
     }
-
+    
     .overtype-container[data-mode="preview"] .overtype-wrapper .overtype-preview li {
       display: list-item !important;
       margin: 0 !important;

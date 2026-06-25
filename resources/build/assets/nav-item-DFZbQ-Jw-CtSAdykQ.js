@@ -98,7 +98,7 @@ import{c as e,f as t,i as n,r,t as i}from"./lit-BpPOIUnZ.js";import{a,i as o}fro
     border-radius: var(--c-radius-md);
     position: relative;
   }
-
+  
   craft-badge-indicator {
       position: absolute;
       inset-inline-end: 0;
