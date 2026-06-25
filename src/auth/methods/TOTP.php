@@ -87,6 +87,7 @@ class TOTP extends BaseAuthMethod
      */
     public function getSetupHtml(string $containerId): string
     {
+        $secret = $this->secret();
         $totpFormId = sprintf('totp-form-%s', mt_rand());
         $view = Craft::$app->getView();
 
@@ -107,8 +108,6 @@ JS, [
             'qrCode' => $this->generateQrCode($secret),
             'totpFormId' => $totpFormId,
         ]);
-
-        return $view->renderTemplate('_components/auth/methods/TOTP/setup.twig', $templateData, View::TEMPLATE_MODE_CP);
     }
 
     /**
