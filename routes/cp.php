@@ -262,10 +262,19 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
         Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
         Route::middleware(RequireAdminChanges::class)->delete('settings/assets/volumes/{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
-        Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
-        Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/transforms/{transformId}', [ImageTransformsController::class, 'destroy']);
+
+        // Transforms
+        Route::prefix('settings/assets/transforms')->name('settings.assets.transforms.')->group(function () {
+            Route::get('/', [ImageTransformsController::class, 'index'])->name('index');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [ImageTransformsController::class, 'create'])->name('create');
+                Route::post('/', [ImageTransformsController::class, 'store']);
+                Route::delete('{transformId}', [ImageTransformsController::class, 'destroy'])->name('destroy');
+            });
+
+            Route::get('{transformHandle}', [ImageTransformsController::class, 'edit'])->name('edit');
+        });
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])
