@@ -68,7 +68,7 @@ interface SlideoutInstance {
   open(): void;
   close(): void;
   destroy(): void;
-  on(event: string, callback: () => void): void;
+  on<T = unknown>(event: string, callback: (event: T) => void): void;
 }
 
 interface ElementSelectorModalInstance {

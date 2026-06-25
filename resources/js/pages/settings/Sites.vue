@@ -12,7 +12,6 @@
   import DeleteSiteButton from '@/modules/sites/components/DeleteSiteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import Badge from '@/common/components/Badge.vue';
-  import {index} from '@routes/cp/settings/sites';
   import InputCombobox from '@/common/form/InputCombobox.vue';
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import useCraftData from '@/common/composables/useCraftData';
@@ -255,23 +254,7 @@
       </CpLink>
     </template>
 
-    <template #interior-nav>
-      <craft-nav-list class="-mx-2">
-        <craft-nav-item :href="index.url()" :active="!group">
-          {{ t('All Sites') }}
-        </craft-nav-item>
-        <CpLink
-          as="craft-nav-item"
-          v-for="g in groups"
-          :key="g.id"
-          :href="index.url({}, {query: {groupId: g.id}})"
-          :active="group && g.id === group.id"
-          block
-        >
-          {{ g.name }}
-        </CpLink>
-      </craft-nav-list>
-
+    <template #subnav-actions>
       <div class="mt-4 flex gap-2" v-if="!readOnly">
         <craft-button type="button" @click="openModal('create')" size="small">
           <craft-icon name="plus" slot="prefix"></craft-icon>

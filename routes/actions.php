@@ -72,7 +72,6 @@ use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
-use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
@@ -514,13 +513,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
         Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
-
-        // User settings
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('user-settings/save-user-settings', [UserSettingsController::class, 'store']);
-        });
 
         // Pluginstore
         Route::middleware([

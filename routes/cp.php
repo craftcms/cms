@@ -34,8 +34,8 @@ use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
-use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
-use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
@@ -320,6 +320,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // User settings
         Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
+        Route::middleware(RequireAdminChanges::class)
+            ->post('settings/users/settings', [UserSettingsController::class, 'store']);
     });
 
     Route::prefix('settings/filesystems')->group(function () {
