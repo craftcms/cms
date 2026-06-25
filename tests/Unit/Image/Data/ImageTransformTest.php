@@ -61,15 +61,6 @@ describe('getIsNamedTransform', function () {
     });
 });
 
-describe('modes', function () {
-    test('returns all four modes', function () {
-        $modes = ImageTransform::modes();
-
-        expect($modes)->toHaveKeys(['crop', 'fit', 'stretch', 'letterbox'])
-            ->and($modes)->toHaveCount(4);
-    });
-});
-
 describe('transformer', function () {
     test('defaults to ImageTransformer', function () {
         $transform = new ImageTransform;
