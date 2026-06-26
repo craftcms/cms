@@ -121,4 +121,39 @@ describe('Base DOM listeners + disabled gate', () => {
     const obj = new TestBase();
     expect(() => obj.addListener(null, 'click', () => {})).not.toThrow();
   });
+
+  // A native `InputEvent` carries its own read-only `data` property (the inserted
+  // text, or `null`). A programmatic `new InputEvent('input', {inputType: 'insertText'})`
+  // — exactly what `BaseInputGenerator.updateTarget` dispatches — has `data === null`,
+  // which used to slip past the `=== undefined` guard, leaving the bound registration
+  // data unset so a handler reading `ev.data.type` crashed.
+  it('surfaces bound `data` when the native event has its own null `data` (InputEvent)', () => {
+    const obj = new TestBase();
+    let received: any;
+    obj.addListener(el, 'input', {type: 'singleline'}, (ev: any) => {
+      received = ev;
+    });
+    el.dispatchEvent(new InputEvent('input', {inputType: 'insertText'}));
+    expect(received.data).toEqual({type: 'singleline'});
+  });
+
+  it('bound `data` wins over a non-null native InputEvent `data`', () => {
+    const obj = new TestBase();
+    let received: any;
+    obj.addListener(el, 'input', {type: 'singleline'}, (ev: any) => {
+      received = ev;
+    });
+    el.dispatchEvent(new InputEvent('input', {data: 'a', inputType: 'insertText'}));
+    expect(received.data).toEqual({type: 'singleline'});
+  });
+
+  it('defaults `data` to {} when none is bound and the event has none', () => {
+    const obj = new TestBase();
+    let received: any;
+    obj.addListener(el, 'click', (ev: any) => {
+      received = ev;
+    });
+    el.dispatchEvent(new MouseEvent('click'));
+    expect(received.data).toEqual({});
+  });
 });

@@ -146,9 +146,23 @@ export class DomListenerRegistry {
     // never write to read-only native getters (`type`/`target` already exist).
     const ev = nativeEvent as unknown as GarnishEvent;
 
-    if (!('data' in ev) || ev.data === undefined) {
+    // jQuery semantics: a handler bound with `data` always sees it as `ev.data`.
+    // It must win even when the native event has its OWN `data` property —
+    // `InputEvent`/`CompositionEvent` expose `data` (the inserted text, which is
+    // `null` in browsers / `''` in happy-dom for a programmatic
+    // `new InputEvent('input')`), which would otherwise shadow the bound
+    // registration data and crash handlers that read `ev.data.<key>`. When nothing
+    // was bound, default to `{}` only if the event has no `data` of its own.
+    if (options.data !== undefined) {
       Object.defineProperty(ev, 'data', {
-        value: options.data ?? {},
+        value: options.data,
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      });
+    } else if (!('data' in ev) || ev.data === undefined) {
+      Object.defineProperty(ev, 'data', {
+        value: {},
         configurable: true,
         enumerable: true,
         writable: true,

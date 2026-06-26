@@ -25,7 +25,7 @@ export interface ParsedEvent {
  * these fields, so native props (`stopPropagation`, `currentTarget`, …) are also
  * available at runtime.
  */
-export interface GarnishEvent<T = unknown, Target = unknown> {
+export interface GarnishEvent<Target = unknown> {
   type: string;
   /** The emitting object (legacy: the Base instance). */
   target: Target;

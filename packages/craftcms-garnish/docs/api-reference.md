@@ -1,9 +1,8 @@
-# 06 — Public API Reference
+# API Reference
 
-A concise "what can I call" cheat sheet for the current public surface of
+A concise "what can I call" cheat sheet for the public surface of
 `@craftcms/garnish`. Signatures are simplified for readability; the source TSDoc
-(and your editor's IntelliSense) is authoritative. Members marked **PoC** are not
-yet implemented and throw, or behave as noted.
+(and your editor's IntelliSense) is authoritative.
 
 Two entry points:
 
@@ -235,6 +234,59 @@ const menu = new DisclosureMenu(trigger); // trigger has aria-controls="#panel"
 menu.addItem({label: 'Rename', onActivate: (el) => rename(el)});
 menu.addItem({label: 'Delete', destructive: true, onActivate: () => remove()});
 menu.on('show', () => console.log('opened'));
+```
+
+---
+
+## `Listbox`
+
+`class Listbox extends Base<ListboxSettings>` — a single-select toggle group.
+Discovers its options from a container (`button` / `[type="button"]` /
+`craft-button`), keeps exactly one option "pressed" at a time (`aria-pressed="true"`
++ the `selectedClass`), and notifies on change via the `onChange` setting and a
+`change` event.
+
+**Constructor:** `new Listbox(container?, settings?)` — also `new Listbox(settings)`
+(param shift when the first arg is a plain object). Re-instantiating on a container
+that already has a `Listbox` tears the old one down first.
+
+### Statics
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `Listbox.defaults` | `ListboxSettings` | Default settings (below). |
+
+### Settings (`ListboxSettings`)
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `selectedClass` | `'active'` | Class applied to the selected option. |
+| `focusClass` | `'focus'` | Class used for the focused option. |
+| `onChange` | no-op | Called with `(option, index)` on selection change. |
+| `readOnly` | `false` | Non-interactive: options aren't click-bound and leave the tab order. |
+
+### Methods & properties
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `select` | `(index) => void` | Select the option at `index`; no-op if out of range or already selected. |
+| `enable` / `disable` | `() => void` | Toggle `aria-disabled` on the container + the base DOM-listener gate. |
+| `destroy` | `() => void` | Drop the container→instance mapping, then base teardown. |
+| `$container` / `$selectedOption` | `HTMLElement \| null` | Container / selected-option refs. |
+| `$options` | `HTMLElement[]` | The discovered option elements. |
+| `selectedOptionIndex` | `number \| null` | Index of the selected option in `$options`. |
+
+**Events:** `change` (with `{$selectedOption, selectedOptionIndex}`), plus inherited
+`destroy`.
+
+```ts
+import {Listbox} from '@craftcms/garnish';
+
+const listbox = new Listbox(document.querySelector('.listbox')!, {
+  onChange: (option, index) => console.log('selected', index, option),
+});
+listbox.on('change', (ev) => console.log(ev.selectedOptionIndex));
+// listbox.select(2);  listbox.destroy();
 ```
 
 ---
@@ -513,9 +565,9 @@ object carrying every class, constant, utility, and flag — the legacy-shaped
 singleton, for incremental migration. **Prefer the tree-shakeable named exports in
 new code.**
 
-- **Classes:** `Base`, `Modal`, `BaseDrag`, `Drag`, `DragDrop`, `DragSort`,
-  `DragMove`, `UiLayerManager`, `EscManager`, `ShortcutManager` (_deprecated_ alias
-  of `UiLayerManager`).
+- **Classes:** `Base`, `Modal`, `HUD`, `DisclosureMenu`, `Listbox`, `BaseDrag`,
+  `Drag`, `DragDrop`, `DragSort`, `DragMove`, `UiLayerManager`, `EscManager`,
+  `ShortcutManager` (_deprecated_ alias of `UiLayerManager`).
 - **Globals/flags:** `win`, `doc`, `bod`, `scrollContainer` (get/set), `rtl`, `ltr`,
   `activateEventsMuted` (get/set), `resizeEventsMuted` (get/set).
 - **Class-level events:** `on(Class, …)`, `off(Class, …)`, `once(Class, …)`.
@@ -686,9 +738,10 @@ gracefully.
 
 ---
 
-## Everything ported
+## See also
 
-The full drag cluster (`BaseDrag`, `DragMove`, `Drag`, `DragDrop`, `DragSort`),
-`Modal` (incl. `draggable`/`resizable`), and `HUD` (Phase 3 — anchored popover with
-4-way positioning + scroll-follow) are implemented and supported — no drag modules
-are pending, and the last `FieldLayoutDesigner` overlay blocker (`HUD`) is done.
+- [`architecture.md`](architecture.md) — how the class/event/utility/settings systems
+  fit together, and the behaviors worth knowing before you subclass.
+- [`compat-and-migration.md`](compat-and-migration.md) — the `compat` entry, its
+  legacy affordances, and how to migrate a plugin onto the modern surface.
+- The package [`README`](../README.md) — install + per-component usage examples.

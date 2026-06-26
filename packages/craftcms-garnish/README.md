@@ -299,15 +299,16 @@ import. Migrate one class at a time:
 
 ## Documentation
 
-- [`docs/06-api-reference.md`](docs/06-api-reference.md) — the public API cheat sheet
-  (signatures + one-liners) for `Base`, `Modal`, the drag classes (`BaseDrag`,
-  `DragMove`, `Drag`, `DragDrop`), the `Garnish` namespace utilities, and the compat
-  exports.
-- [`docs/00-migration-plan.md`](docs/00-migration-plan.md) §2 — the compat design and
-  upgrade-path rationale.
-- [`docs/01-core-design.md`](docs/01-core-design.md) — core architecture and the
-  utility-by-utility port plan.
-- [`docs/03-modal-slice.md`](docs/03-modal-slice.md) — the Modal PoC contract.
+In-depth docs live in [`docs/`](docs/):
+
+- [`docs/api-reference.md`](docs/api-reference.md) — the full public surface: every
+  class, its settings, methods, properties, and events, plus the `Garnish` namespace,
+  utilities, and constants.
+- [`docs/architecture.md`](docs/architecture.md) — how the class system, dual event
+  system, utility surface, and settings system fit together.
+- [`docs/compat-and-migration.md`](docs/compat-and-migration.md) — the opt-in compat
+  entry and how to migrate a plugin onto the modern surface.
+- [`docs/contributing.md`](docs/contributing.md) — working on the package itself.
 
 Public API symbols carry TSDoc — your editor's IntelliSense is the fastest reference.
 
@@ -327,41 +328,33 @@ npm run format       # Prettier (writes ./src ./tests ./stories ./.storybook)
 Interactive component demos live in **Storybook** (`npm run dev` or
 `npm run storybook` → http://localhost:6006), with one story file per component
 under `stories/`. Stories import the real source from `../src`, so edits
-hot-reload instantly. See [`docs/17-storybook-notes.md`](docs/17-storybook-notes.md)
-for how stories are organized, the Actions-panel event logger, and how to add a story
-when porting a new component.
+hot-reload instantly. See [`docs/contributing.md`](docs/contributing.md) for the
+toolchain, the verification gates, how stories are organized, the Actions-panel event
+logger, and how to add a story when building a new component.
 
-## Status
+## Components
 
-This is the vertical-slice proof of concept. The modern core, `Base`, `Modal`, the
-drag foundation, and the compat layer are complete and tested.
+All of the following are implemented, tested, and available as named exports. See the
+[API reference](docs/api-reference.md) for each one's full surface.
 
-- **`BaseDrag` / `DragMove`** are implemented (Pointer Events, native auto-scroll)
-  and available as named exports.
-- **`Drag` / `DragDrop` / `DragSort`** are **supported** and available as named
-  exports. `Drag` adds helper clones + return-to-source / fade-out (Web Animations
-  API, reduced-motion aware); `DragDrop` adds drop targets + hit detection; `DragSort`
-  adds sortable lists with live insertion feedback (the `_getClosestItem` spatial
-  hit-test + midpoint caching, the `insertion` placeholder, and `sortChange` /
-  `insertionPointChange` events).
-- **`Modal` `draggable` / `resizable`** are **supported** (still `false` by default).
-  A draggable modal uses `DragMove` on its container — or on the element matched by
-  `dragHandleSelector` for a header-only handle — and a resizable modal uses
-  `BaseDrag` on a generated corner handle. (They previously threw; that limitation
-  is gone.)
-- **`HUD`** is **supported** (Phase 3): the anchored popover with smart 4-way
-  positioning, a tip/arrow, scroll-follow, focus trapping, and `UiLayerManager`
-  layer + Escape integration. This was the last `FieldLayoutDesigner` overlay
-  blocker.
-- **`DisclosureMenu`** is **supported** (Phase 3): the disclosure dropdown/menu
-  with above/below + left/center/right positioning, full keyboard navigation +
-  type-ahead search, focus management, `UiLayerManager` layer + Escape, an
-  optional search input, and the item/group builder surface (~19 CP sites depend
-  on it). It was the largest remaining component (~1,008 LOC).
+- **`Modal`** — accessible, animated dialog with focus trapping and ARIA
+  backgrounding. Optional `draggable` (via `DragMove`) and `resizable` (via `BaseDrag`
+  on a generated corner handle); both default to `false`.
+- **`HUD`** — anchored popover/bubble with smart 4-way positioning, a tip/arrow,
+  scroll-follow, focus trapping, and `UiLayerManager` layer + Escape integration.
+- **`DisclosureMenu`** — disclosure dropdown/menu with above/below + left/center/right
+  positioning, full keyboard navigation + type-ahead search, focus management, an
+  optional search input, and an item/group builder surface.
+- **`Listbox`** — single-select toggle group built on `aria-pressed`.
+- **Drag cluster** — `BaseDrag` / `DragMove` (Pointer Events + native auto-scroll),
+  `Drag` (helper clones + return-to-source / fade-out, Web Animations API,
+  reduced-motion aware), `DragDrop` (drop targets + hit detection), and `DragSort`
+  (sortable lists with live insertion feedback).
+- **Utilities** — a broad named-export surface for DOM, focus, ARIA, forms, animation,
+  and environment helpers.
 
-The **drag cluster is COMPLETE** — `BaseDrag`, `DragMove`, `Drag`, `DragDrop`, and
-`DragSort` are all ported, with no drag modules pending. The overlay/menu set
-(`Modal` + `HUD` + `DisclosureMenu`) is ported too.
+The opt-in [`compat`](docs/compat-and-migration.md) layer wraps every class to restore
+the legacy `Garnish.Base.extend()` / `this.base()` / jQuery authoring contract.
 
 ## License
 

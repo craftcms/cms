@@ -1,14 +1,57 @@
-# 17 — Storybook notes
+# Contributing
 
-The interactive demos for `@craftcms/garnish` live in **Storybook**, replacing the
-old single-page Vite `playground/`. This doc covers the setup, how to add a story
-when you port a new component, and the shared event-log helper.
+This guide is for working **on** `@craftcms/garnish` (rather than consuming it). It
+covers the toolchain, the scripts you'll run, the verification gates, and how the
+interactive demos are organized.
 
-## Why Storybook, and why `html-vite`
+## Toolchain
 
-The playground had grown to 12 demo sections in one ~900-line `main.ts`. Splitting
-it into one story file per component keeps each component's demos isolated,
-navigable, and documented (autodocs).
+The package is TypeScript, ESM-only, and jQuery-free at its core. The build is
+[tsdown](https://tsdown.dev) (producing the dual `.` + `/compat` entries), tests run
+on [Vitest](https://vitest.dev) against [happy-dom](https://github.com/capricorn86/happy-dom),
+and interactive demos run in [Storybook](https://storybook.js.org).
+
+## Scripts
+
+```bash
+npm run dev          # Storybook dev server at http://localhost:6006
+npm run storybook    # alias of `npm run dev`
+npm run build:storybook  # static Storybook build (compiles every story — the CI proof)
+npm run build        # production build (dual `.` + `/compat` entries)
+npm run build:watch  # tsdown watch build
+npm run test         # Vitest suite (one run)
+npm run test:dev     # Vitest watch mode
+npm run test:coverage  # Vitest with V8 coverage
+npm run check:types  # tsc --noEmit (includes stories + .storybook)
+npm run check:format # Prettier check
+npm run format       # Prettier write (./src ./tests ./stories ./.storybook)
+npm run lint         # check:types + check:format
+```
+
+## Verification gates
+
+Before opening a PR, confirm the gates are green:
+
+```bash
+npm run check:types && npm run test && npm run build
+```
+
+Run `npm run format` to apply Prettier; CI uses `check:format`. New behavior needs
+test coverage — the suite favors **real code paths** over heavy mocking, and uses the
+happy-dom environment. Note that happy-dom has no layout engine, so
+`offsetWidth`/`offsetHeight` are always `0`; tests that depend on element visibility
+(e.g. the focusable matcher) stub `getClientRects`. Real browsers need no such stub.
+
+## Storybook (interactive demos)
+
+The interactive demos for `@craftcms/garnish` live in **Storybook**, with one story
+file per component. Stories import the **real source** (`../src`), so edits
+hot-reload.
+
+### Why Storybook, and why `html-vite`
+
+Splitting demos into one story file per component keeps each component's demos
+isolated, navigable, and documented (autodocs).
 
 Garnish widgets are **imperative** — `new Modal(container)`,
 `new DisclosureMenu(trigger)`, `new HUD(trigger, body)` — operating on plain DOM,
@@ -51,17 +94,8 @@ hot-reload.
 `tsconfig.json` includes `stories` and `.storybook` so `npm run check:types`
 type-checks them; Prettier's globs include them too.
 
-## Scripts
-
-```bash
-npm run dev          # storybook dev -p 6006  (the dev harness)
-npm run storybook    # alias of dev
-npm run build:storybook  # static build (compiles every story — the CI proof)
-```
-
-`vite`/`vitest`/`tsdown` are unchanged; Storybook's `html-vite` builder uses Vite
-under the hood and supplies its own pipeline (there is no package-root
-`vite.config.ts` anymore — it only ever served the playground).
+Storybook's `html-vite` builder uses Vite under the hood and supplies its own
+pipeline, so there is no package-root `vite.config.ts`.
 
 ## The event logger (Storybook Actions)
 
@@ -122,8 +156,7 @@ so resolution works and re-renders don't collide with panels already moved to
 
 ## Adding a story for a new component
 
-When you port a new component, **add `stories/<name>.stories.ts`** instead of a
-playground section:
+When you add a new component, **add `stories/<name>.stories.ts`** alongside it:
 
 1. Create `stories/<component>.stories.ts` with a default `Meta` (`title`) and one
    or more `StoryObj` exports.

@@ -1,14 +1,14 @@
-# Garnish Core — Architecture
+# Architecture
 
 The Garnish core (`@craftcms/garnish`) is a jQuery-free, ESM/TypeScript foundation that every other Garnish module builds on: a class system, a dual event system, a utility surface, a settings system, and the module layout that ties them together. It ships as two layers from one package — a clean **modern core** built on native `class extends`, native DOM APIs, and the Web Animations API, and a separate, opt-in **compatibility layer** (`@craftcms/garnish/compat`) that mechanically wraps the modern classes to restore the legacy authoring contract (`Garnish.Base.extend(...)`, `this.base()`, jQuery-collection arguments, `window.Garnish`). New Craft features target the modern surface directly; legacy modules keep working through compat until they migrate at their own pace.
 
-This document covers the modern core and explains how the compat layer bridges back to legacy. For exact signatures of every exported symbol, see the API reference.
+This document covers the modern core and explains how the compat layer bridges back to legacy. For exact signatures of every exported symbol, see the [API reference](api-reference.md); for adopting the package in an existing plugin, see [compat &amp; migration](compat-and-migration.md).
 
 ---
 
 ## Class system
 
-The core uses native ES classes. `Base<S>` is an abstract base that no code instantiates directly; subclasses extend it and call `super()` from a real `constructor`. There is no `init()` trampoline and no `this.base()` — subclasses do their own setup after `super()` and call `super.method()` to reach an overridden ancestor.
+The core uses native ES classes. `Base<S>` is an abstract base that no code instantiates directly; subclasses extend it and call `super()` from the `constructor`. There is no `init()` trampoline and no `this.base()` — subclasses do their own setup after `super()` and call `super.method()` to reach an overridden ancestor.
 
 This is a deliberate departure from the legacy core, which used Dean Edwards `Base.js` (the `.extend(instance, static)` prototype system). In the legacy world, `Garnish.Base`'s constructor initialized `_eventHandlers`, `_namespace`, and `_listeners`, then called `this.init.apply(this, arguments)`, so subclasses overrode `init`, never `constructor`. The modern core drops that indirection entirely; the legacy contract is reconstructed only in the compat layer (see *Compatibility layer*).
 
