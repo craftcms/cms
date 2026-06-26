@@ -2051,11 +2051,12 @@ SQL)->execute();
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle'];
+        $isPgsql = Craft::$app->getDb()->getIsPgsql();
         $searchQueries = [];
 
         if ($term !== '') {
             foreach ($searchParams as $param) {
-                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+                $searchQueries[] = [$isPgsql ? 'ilike' : 'like', $param, "%$term%", false];
             }
         }
 
