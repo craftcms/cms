@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 6.x
+      - feature/cms-assets-package
     tags:
       - '*'
 
