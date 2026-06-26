@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Transformers;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\ImportHelper;
@@ -42,18 +43,8 @@ class ElementTransformer extends BaseTransformer
 
         $array = [];
         foreach ($this->props as $prop) {
-            $array[$prop['name']] = $this->normalizePropertyValue($item, $prop);
+            $array[$prop['name']] = $this->normalizePropertyValue($item, $prop, $element);
         }
-
-        //        // Get the serialized custom field values
-        //        $fields = $element->getSerializedFieldValues();
-        //
-        //        // Get the element attributes that aren't custom fields
-        //        /** @var Element $element */
-        //        $attributes = array_diff($element->attributes(), array_keys($fields));
-        //
-        //        // Return the element as an array merged with its serialized custom field values
-        //        return array_merge($element->toArray($attributes), $fields);
 
         // include all custom fields
         $fieldLayout = $element->getFieldLayout();
@@ -85,13 +76,13 @@ class ElementTransformer extends BaseTransformer
         return $array;
     }
 
-    private function normalizePropertyValue(mixed $item, array $prop): mixed
+    private function normalizePropertyValue(mixed $item, array $prop, ElementInterface $element): mixed
     {
         $rawValue = $item[$prop['name']] ?? null;
 
         if ($rawValue !== null) {
             if (method_exists($this, 'normalize'.ucfirst((string) $prop['name']))) {
-                return $this::{'normalize'.ucfirst((string) $prop['name'])}($rawValue);
+                return $this::{'normalize'.ucfirst((string) $prop['name'])}($rawValue, $element);
             }
 
             return $rawValue;

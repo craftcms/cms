@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Transformers\ElementTransformer;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -739,5 +740,12 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     public static function getDefaultTransformer(): ?string
     {
         return ElementTransformer::class;
+    }
+
+    #[Override]
+    public function prepareNewElementForImport(BaseImporter $config, array &$data): self
+    {
+        // by default, this does nothing
+        return $this;
     }
 }

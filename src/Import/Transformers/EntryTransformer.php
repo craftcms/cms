@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Transformers;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 
 class EntryTransformer extends ElementTransformer
 {
-    protected function normalizeSectionId($value): ?int
+    protected function normalizeSectionId(mixed $value, ElementInterface $element): ?int
     {
         if ($value === null) {
             return null;
@@ -30,10 +31,10 @@ class EntryTransformer extends ElementTransformer
         return null;
     }
 
-    protected function normalizeTypeId($value): ?int
+    protected function normalizeTypeId(mixed $value, ElementInterface $element): ?int
     {
         if ($value === null) {
-            return null;
+            return $element->typeId;
         }
 
         if (is_int($value)) {
@@ -48,6 +49,6 @@ class EntryTransformer extends ElementTransformer
             }
         }
 
-        return null;
+        return $element->getTypeId();
     }
 }

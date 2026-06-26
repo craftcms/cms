@@ -56,6 +56,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Transformers\EntryTransformer;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
@@ -2767,5 +2768,29 @@ JS;
     public static function getDefaultTransformer(): ?string
     {
         return EntryTransformer::class;
+    }
+
+    #[Override]
+    public function prepareNewElementForImport(BaseImporter $config, array &$data): self
+    {
+        // if it's UI-driven element import where the fieldLayoutUid was chosen in the editable config,
+        // we need to ensure the typeId is set
+        if ($config->fieldLayoutUid) {
+            $allEntryTypes = app(\CraftCms\Cms\Entry\EntryTypes::class)->getAllEntryTypes();
+            $allFieldLayouts = $allEntryTypes->mapWithKeys(function ($entryType) {
+                $fieldLayout = $entryType->getFieldLayout();
+
+                return [$fieldLayout->id => $fieldLayout];
+            });
+            $entryType = $allFieldLayouts->firstWhere('uid', $config->fieldLayoutUid)?->provider;
+            if ($entryType) {
+                $this->setTypeId($entryType->id);
+                if (isset($data['matchCriteria']['typeId'])) {
+                    unset($data['matchCriteria']['typeId']);
+                }
+            }
+        }
+
+        return $this;
     }
 }

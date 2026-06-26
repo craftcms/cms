@@ -292,9 +292,6 @@ class ElementImporter extends BaseImporter
             return $propertyCols;
         }
 
-        // get all the field layout elements and create an array that contains their handles;
-        // if FLE is nestable (element container type), then its content is an array of its FLE handles
-        // and so on
         $fieldLayout = app(Fields::class)->getLayoutByUid($this->fieldLayoutUid);
 
         $fieldLayoutCols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
@@ -338,6 +335,9 @@ class ElementImporter extends BaseImporter
     {
         // figure out if we're adding or editing
         $element = new $this->className;
+
+        $element = $element->prepareNewElementForImport($this, $data);
+
         // if null then return a brand new ElementInterface object with just the siteId set to the selected value
         if (empty($data['matchCriteria'])) {
             $element->siteId = $this->site->id;
@@ -346,6 +346,7 @@ class ElementImporter extends BaseImporter
         }
         if (is_array($data['matchCriteria'])) {
             $query = $element::find();
+
             // by now the match criteria from various sources (ui, config, transformer) should have been merged,
             // and the values from incoming data should have been applied to it
             $criteria = $data['matchCriteria'];
