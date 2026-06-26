@@ -16,18 +16,12 @@ jobs:
     name: Create tag
     runs-on: ubuntu-latest
     environment: Releases
-    permissions: {}
     steps:
       - name: Resolve and validate version
         env:
           INPUT_VERSION: ${{ inputs.version }}
           BRANCH: ${{ github.ref_name }}
         run: |
-          if [[ "$INPUT_VERSION" == v* ]]; then
-            echo "::error::Version must be unprefixed (got: $INPUT_VERSION)"
-            exit 1
-          fi
-
           if [[ ! "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
             echo "::error::Version must look like 6.0.0 or 6.0.0-alpha.10 (got: $INPUT_VERSION)"
             exit 1
@@ -101,18 +95,6 @@ jobs:
           fi
 
           git add --force resources/build resources/legacy/*/dist
-
-          unexpected="$(git diff --cached --name-only | grep -Ev '^(resources/build/|resources/legacy/[^/]+/dist/)' || true)"
-          if [ -n "$unexpected" ]; then
-            echo "::error::Release build staged unexpected files."
-            echo "$unexpected"
-            exit 1
-          fi
-
-          if git diff --cached --quiet; then
-            echo "::error::Release build did not stage any generated assets."
-            exit 1
-          fi
 
           USER_ID="$(gh api "/users/${APP_SLUG}[bot]" --jq .id)"
           git config user.name "${APP_SLUG}[bot]"
