@@ -228,7 +228,7 @@ class ElementImporter extends BaseImporter
     public function usesDefaultTransformer(): bool
     {
         $currentTransformer = $this->transformer;
-        $defaultTransformer = $this->className::getDefaultTransformer();
+        $defaultTransformer = $this->className ? $this->className::getDefaultTransformer() : null;
 
         // if they're simply the same - they're the same
         if ($currentTransformer === $defaultTransformer) {
@@ -245,18 +245,29 @@ class ElementImporter extends BaseImporter
 
     public function getAvailableFieldLayoutProviders(): array
     {
+        $element = (new $this->className);
+        $fieldLayouts = $element::fieldLayouts(null);
+
+        // if we only have one field layout and we don't have a provider, lets assume there can only be one for the element;
+        // like there's only one for Address or User element
+        if (count($fieldLayouts) == 1 && $fieldLayouts[0]->provider === null) {
+            return [
+                [
+                    'label' => $element::displayName(),
+                    'value' => $fieldLayouts[0]->uid,
+                ],
+            ];
+        }
+
         $providers = [
             [
                 'label' => 'Please select',
                 'value' => '',
             ],
         ];
-
-        $fieldLayouts = (new $this->className)::fieldLayouts(null);
-
         foreach ($fieldLayouts as $fieldLayout) {
             $providers[] = [
-                'label' => $fieldLayout->provider->name,
+                'label' => $fieldLayout->provider?->name ?? $fieldLayout->type,
                 'value' => $fieldLayout->uid,
             ];
         }
