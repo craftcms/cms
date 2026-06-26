@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
+use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -111,6 +112,7 @@ class EntryTypesController
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->redirectUrl('settings/entry-types')
+            ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml($entryTypeData->getMetadata()))
             ->inertiaPage('settings/EntryTypesEdit', $this->entryTypeProps($entryTypeData, brandNew: false));
     }
 
@@ -166,6 +168,7 @@ class EntryTypesController
                 'slugTranslationKeyFormat' => $entryType->slugTranslationKeyFormat,
                 'showStatusField' => (bool) $entryType->showStatusField,
             ],
+            'metadataHtml' => app(ContentHtml::class)->metadataHtml($entryType->getMetadata()),
             'fieldLayoutDesigner' => $fieldLayoutDesigner,
             'translationMethodOptions' => TranslationMethod::asOptions(),
             'typeName' => Entry::displayName(),

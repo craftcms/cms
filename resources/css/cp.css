@@ -85,3 +85,20 @@ Temporary holding for cp-pane styles until craft-pane is a thing
   line-height: 1.5;
   white-space: pre-wrap;
 }
+
+/**
+Sidebar metadata
+ */
+.cp-metadata-list {
+  display: grid;
+  gap: var(--c-spacing-md);
+  grid-template-columns: minmax(max-content, 25%) 1fr;
+  margin: 0;
+  padding: 0;
+}
+
+.cp-metadata-list__item {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: subgrid;
+}

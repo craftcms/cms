@@ -40,6 +40,10 @@ ul {
   list-style: none;
 }
 
+dd {
+  margin: 0;
+}
+
 fieldset {
   margin: 0;
   padding: 0;

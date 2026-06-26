@@ -2,7 +2,7 @@
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {useForm} from '@inertiajs/vue3';
   import {t, toHandle} from '@craftcms/cp';
-  import {computed, ref} from 'vue';
+  import {computed, ref, watch} from 'vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
@@ -18,6 +18,7 @@
   import {store} from '@actions/Settings/EntryTypesController';
   import type {SelectOption} from '@/common/types';
   import IconPicker from '@/common/form/IconPicker.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   interface EntryTypeData {
     id: number | null;
@@ -49,6 +50,8 @@
     isMultiSite: boolean;
     flash?: Record<any, any>;
     errors: Record<any, any> | null;
+    metadataHtml: string | null;
+    sidebarDetails: any;
   }>();
 
   const {readOnly} = useCraftData();
@@ -122,200 +125,207 @@
 
 <template>
   <AppLayout :title="title" :form="form" @save="save">
-    <Pane appearance="raised">
-      <craft-field-group>
-        <input
-          v-if="entryType.id"
-          type="hidden"
-          name="entryTypeId"
-          :value="entryType.id"
-        />
+    <div class="grid gap-6 grid-cols-4">
+      <Pane appearance="raised" class="col-span-3">
+        <craft-field-group>
+          <input
+            v-if="entryType.id"
+            type="hidden"
+            name="entryTypeId"
+            :value="entryType.id"
+          />
 
-        <!-- Name -->
-        <CraftInput
-          :label="t('Name')"
-          :help-text="
-            t('What this {type} will be called in the control panel.', {
-              type: lowerTypeName,
-            })
-          "
-          id="name"
-          name="name"
-          v-model="form.name"
-          :disabled="readOnly"
-          :error="errors?.name"
-          required
-          autofocus
-        />
-
-        <!-- Handle -->
-        <CraftInputHandle
-          :label="t('Handle')"
-          :help-text="
-            t('How you’ll refer to this {type} in the templates.', {
-              type: lowerTypeName,
-            })
-          "
-          id="handle"
-          name="handle"
-          v-model="form.handle"
-          :disabled="readOnly"
-          :error="errors?.handle"
-          required
-          @change="handleGenerator.markDirty()"
-        />
-
-        <!-- Description -->
-        <CraftTextarea
-          :label="t('Description')"
-          id="description"
-          name="description"
-          v-model="form.description"
-          :disabled="readOnly"
-          :error="errors?.description"
-        />
-
-        <IconPicker :label="t('Icon')" name="icon" v-model="form.icon" />
-
-        <CraftSelectColor
-          :label="t('Color')"
-          allow-transparent
-          v-model="form.color"
-        />
-
-        <!-- UI Label Format -->
-        <CraftInput
-          :label="t('Title Format')"
-          :help-text="
-            t(
-              'How {type} of this type should be labeled in the control panel.',
-              {
+          <!-- Name -->
+          <CraftInput
+            :label="t('Name')"
+            :help-text="
+              t('What this {type} will be called in the control panel.', {
                 type: lowerTypeName,
-              }
-            )
-          "
-          id="uiLabelFormat"
-          name="uiLabelFormat"
-          v-model="form.uiLabelFormat"
-          :disabled="readOnly"
-          :error="errors?.uiLabelFormat"
-          monospaced
-        />
+              })
+            "
+            id="name"
+            name="name"
+            v-model="form.name"
+            :disabled="readOnly"
+            :error="errors?.name"
+            required
+            autofocus
+          />
 
-        <!-- Title Translation Method -->
-        <CraftSelect
-          v-if="showTitleTranslation"
-          :label="t('Title Translation Method')"
-          :help-text="t('How should the title be translated?')"
-          id="titleTranslationMethod"
-          name="titleTranslationMethod"
-          v-model="form.titleTranslationMethod"
-          :disabled="readOnly"
-          :error="errors?.titleTranslationMethod"
-        >
-          <select slot="input">
-            <option
-              v-for="option in translationMethodOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </CraftSelect>
+          <!-- Handle -->
+          <CraftInputHandle
+            :label="t('Handle')"
+            :help-text="
+              t('How you’ll refer to this {type} in the templates.', {
+                type: lowerTypeName,
+              })
+            "
+            id="handle"
+            name="handle"
+            v-model="form.handle"
+            :disabled="readOnly"
+            :error="errors?.handle"
+            required
+            @change="handleGenerator.markDirty()"
+          />
 
-        <!-- Title Translation Key Format -->
-        <CraftInput
-          v-if="showTitleTranslationKeyFormat"
-          :label="t('Title Translation Key Format')"
-          id="titleTranslationKeyFormat"
-          name="titleTranslationKeyFormat"
-          v-model="form.titleTranslationKeyFormat"
-          :disabled="readOnly"
-          :error="errors?.titleTranslationKeyFormat"
-          class="font-mono"
-        />
+          <!-- Description -->
+          <CraftTextarea
+            :label="t('Description')"
+            id="description"
+            name="description"
+            v-model="form.description"
+            :disabled="readOnly"
+            :error="errors?.description"
+          />
 
-        <!-- Default Title Format -->
-        <CraftInput
-          :label="t('Default Title Format')"
-          :help-text="
-            t('The format that {type} titles should take when generated.', {
-              type: lowerTypeName,
-            })
-          "
-          id="titleFormat"
-          name="titleFormat"
-          v-model="form.titleFormat"
-          :disabled="readOnly"
-          :error="errors?.titleFormat"
-          monospace
-        />
+          <IconPicker :label="t('Icon')" name="icon" v-model="form.icon" />
 
-        <!-- Allow line breaks in titles -->
-        <CraftSwitch
-          :label="t('Allow line breaks in titles')"
-          id="allowLineBreaksInTitles"
-          name="allowLineBreaksInTitles"
-          v-model="form.allowLineBreaksInTitles"
-          :disabled="readOnly"
-        />
+          <CraftSelectColor
+            :label="t('Color')"
+            allow-transparent
+            v-model="form.color"
+          />
 
-        <!-- Show the Slug field -->
-        <CraftSwitch
-          :label="t('Show the Slug field')"
-          id="showSlugField"
-          name="showSlugField"
-          v-model="form.showSlugField"
-          :disabled="readOnly"
-        />
+          <!-- UI Label Format -->
+          <CraftInput
+            :label="t('Title Format')"
+            :help-text="
+              t(
+                'How {type} of this type should be labeled in the control panel.',
+                {
+                  type: lowerTypeName,
+                }
+              )
+            "
+            id="uiLabelFormat"
+            name="uiLabelFormat"
+            v-model="form.uiLabelFormat"
+            :disabled="readOnly"
+            :error="errors?.uiLabelFormat"
+            monospaced
+          />
 
-        <!-- Slug Translation Method -->
-        <CraftSelect
-          v-if="showSlugTranslation"
-          :label="t('Slug Translation Method')"
-          :help-text="t('How should slugs be translated?')"
-          id="slugTranslationMethod"
-          name="slugTranslationMethod"
-          v-model="form.slugTranslationMethod"
-          :disabled="readOnly"
-          :error="errors?.slugTranslationMethod"
-        >
-          <select slot="input">
-            <option
-              v-for="option in translationMethodOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </CraftSelect>
+          <!-- Title Translation Method -->
+          <CraftSelect
+            v-if="showTitleTranslation"
+            :label="t('Title Translation Method')"
+            :help-text="t('How should the title be translated?')"
+            id="titleTranslationMethod"
+            name="titleTranslationMethod"
+            v-model="form.titleTranslationMethod"
+            :disabled="readOnly"
+            :error="errors?.titleTranslationMethod"
+          >
+            <select slot="input">
+              <option
+                v-for="option in translationMethodOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </CraftSelect>
 
-        <!-- Slug Translation Key Format -->
-        <CraftInput
-          v-if="showSlugTranslationKeyFormat"
-          :label="t('Slug Translation Key Format')"
-          id="slugTranslationKeyFormat"
-          name="slugTranslationKeyFormat"
-          v-model="form.slugTranslationKeyFormat"
-          :disabled="readOnly"
-          :error="errors?.slugTranslationKeyFormat"
-          class="font-mono"
-        />
+          <!-- Title Translation Key Format -->
+          <CraftInput
+            v-if="showTitleTranslationKeyFormat"
+            :label="t('Title Translation Key Format')"
+            id="titleTranslationKeyFormat"
+            name="titleTranslationKeyFormat"
+            v-model="form.titleTranslationKeyFormat"
+            :disabled="readOnly"
+            :error="errors?.titleTranslationKeyFormat"
+            class="font-mono"
+          />
 
-        <!-- Show the Status field -->
-        <CraftSwitch
-          :label="t('Show the Status field')"
-          id="showStatusField"
-          name="showStatusField"
-          v-model="form.showStatusField"
-          :disabled="readOnly"
-        />
+          <!-- Default Title Format -->
+          <CraftInput
+            :label="t('Default Title Format')"
+            :help-text="
+              t('The format that {type} titles should take when generated.', {
+                type: lowerTypeName,
+              })
+            "
+            id="titleFormat"
+            name="titleFormat"
+            v-model="form.titleFormat"
+            :disabled="readOnly"
+            :error="errors?.titleFormat"
+            monospace
+          />
+
+          <!-- Allow line breaks in titles -->
+          <CraftSwitch
+            :label="t('Allow line breaks in titles')"
+            id="allowLineBreaksInTitles"
+            name="allowLineBreaksInTitles"
+            v-model="form.allowLineBreaksInTitles"
+            :disabled="readOnly"
+          />
+
+          <!-- Show the Slug field -->
+          <CraftSwitch
+            :label="t('Show the Slug field')"
+            id="showSlugField"
+            name="showSlugField"
+            v-model="form.showSlugField"
+            :disabled="readOnly"
+          />
+
+          <!-- Slug Translation Method -->
+          <CraftSelect
+            v-if="showSlugTranslation"
+            :label="t('Slug Translation Method')"
+            :help-text="t('How should slugs be translated?')"
+            id="slugTranslationMethod"
+            name="slugTranslationMethod"
+            v-model="form.slugTranslationMethod"
+            :disabled="readOnly"
+            :error="errors?.slugTranslationMethod"
+          >
+            <select slot="input">
+              <option
+                v-for="option in translationMethodOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </CraftSelect>
+
+          <!-- Slug Translation Key Format -->
+          <CraftInput
+            v-if="showSlugTranslationKeyFormat"
+            :label="t('Slug Translation Key Format')"
+            id="slugTranslationKeyFormat"
+            name="slugTranslationKeyFormat"
+            v-model="form.slugTranslationKeyFormat"
+            :disabled="readOnly"
+            :error="errors?.slugTranslationKeyFormat"
+            class="font-mono"
+          />
+
+          <!-- Show the Status field -->
+          <CraftSwitch
+            :label="t('Show the Status field')"
+            id="showStatusField"
+            name="showStatusField"
+            v-model="form.showStatusField"
+            :disabled="readOnly"
+          />
 
           <div ref="fldHost" v-html="fieldLayoutDesigner.html"></div>
-      </craft-field-group>
-    </Pane>
+        </craft-field-group>
+      </Pane>
+      <div class="col-span-1">
+        <div class="sticky top-4">
+          <DynamicHtmlRenderer :html="metadataHtml" v-if="metadataHtml" />
+        </div>
+      </div>
+    </div>
   </AppLayout>
 </template>
 
