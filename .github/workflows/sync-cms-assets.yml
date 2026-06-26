@@ -24,15 +24,16 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
-
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --no-progress
+          tools: composer:v2
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
 
       - name: Install npm dependencies
         run: npm ci
