@@ -1,0 +1,125 @@
+name: Create Tag
+run-name: Create tag for ${{ inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version, without a v prefix (e.g. 6.0.0-alpha.10)'
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  tag:
+    name: Create tag
+    runs-on: ubuntu-latest
+    environment: Releases
+    permissions: {}
+    steps:
+      - name: Resolve and validate version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if [[ "$INPUT_VERSION" == v* ]]; then
+            echo "::error::Version must be unprefixed (got: $INPUT_VERSION)"
+            exit 1
+          fi
+
+          if [[ ! "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Version must look like 6.0.0 or 6.0.0-alpha.10 (got: $INPUT_VERSION)"
+            exit 1
+          fi
+
+          if [ "${INPUT_VERSION%%.*}" != "${BRANCH%%.*}" ]; then
+            echo "::error::Version $INPUT_VERSION does not belong on the $BRANCH branch"
+            exit 1
+          fi
+
+          echo "TAG=$INPUT_VERSION" >> "$GITHUB_ENV"
+
+      - name: Get release bot token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: true
+
+      - name: Assert tag does not already exist
+        run: |
+          existing="$(git ls-remote --tags origin "refs/tags/$TAG" "refs/tags/$TAG^{}")"
+          if [ -n "$existing" ]; then
+            echo "::error::Tag $TAG already exists on remote. Aborting."
+            exit 1
+          fi
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build release assets
+        run: |
+          rm -rf resources/build resources/legacy/*/dist
+          npm run build:all
+
+          test -f resources/build/manifest.json || { echo "::error::Missing resources/build/manifest.json"; exit 1; }
+          test -f resources/legacy/cp/dist/cp.js || { echo "::error::Missing resources/legacy/cp/dist/cp.js"; exit 1; }
+          test -f resources/legacy/cp/dist/css/cp.css || { echo "::error::Missing resources/legacy/cp/dist/css/cp.css"; exit 1; }
+
+      - name: Create the build commit
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          changed="$(git status --porcelain --untracked-files=no | grep -Ev '^[ MADRCU?!]{2} (resources/build/|resources/legacy/[^/]+/dist/)' || true)"
+          if [ -n "$changed" ]; then
+            echo "::error::Release build changed tracked files outside generated asset directories."
+            echo "$changed"
+            exit 1
+          fi
+
+          git add --force resources/build resources/legacy/*/dist
+
+          unexpected="$(git diff --cached --name-only | grep -Ev '^(resources/build/|resources/legacy/[^/]+/dist/)' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "::error::Release build staged unexpected files."
+            echo "$unexpected"
+            exit 1
+          fi
+
+          if git diff --cached --quiet; then
+            echo "::error::Release build did not stage any generated assets."
+            exit 1
+          fi
+
+          USER_ID="$(gh api "/users/${APP_SLUG}[bot]" --jq .id)"
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+          git commit -m "Build assets for $TAG"
+
+      - name: Tag and push the build commit
+        run: |
+          git tag "$TAG"
+          git push origin "refs/tags/$TAG"

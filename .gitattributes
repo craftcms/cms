@@ -27,6 +27,8 @@
 /package.json export-ignore
 /packages/ export-ignore
 /phpstan.neon export-ignore
+/resources/css/** export-ignore
+/resources/js/** export-ignore
 /scripts/ export-ignore
 /src/web/assets/**/src/ export-ignore
 /stubs/ export-ignore
@@ -62,6 +64,7 @@
 
 # resources/build generated files
 /resources/build/**/* linguist-generated=true
+/resources/legacy/**/dist/**/* linguist-generated=true
 
 # Auto detect text files and perform LF normalization
 * text=auto
