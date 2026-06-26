@@ -385,7 +385,7 @@
           {{ t('Items per page:') }}
           <Select
             small
-            :options="pageSizeOptions"
+            :options="pageSizeOptions!"
             v-model="pageSizeProxy"
             class="w-auto"
           />

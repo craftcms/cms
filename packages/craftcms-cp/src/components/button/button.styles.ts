@@ -175,7 +175,7 @@ export default css`
     );
     --_active-color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
   }
-  
+
   :host([appearance~='plain'][active]),
   :host([appearance~='outline'][active]) {
     background-color: var(--c-color-fill-loud);

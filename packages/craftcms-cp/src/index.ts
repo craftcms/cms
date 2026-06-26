@@ -46,7 +46,11 @@ export {default as CraftProgressBar} from './components/progress-bar/progress-ba
 export {default as CraftProgress} from './components/progress/progress.js';
 export {default as CraftRadioGroup} from './components/radio-group/radio-group.js';
 export {default as CraftRadio} from './components/radio/radio.js';
-export {default as CraftReorderButton, type ReorderPosition, type ReorderDirection} from './components/reorder-button/reorder-button.js';
+export {
+  default as CraftReorderButton,
+  type ReorderPosition,
+  type ReorderDirection,
+} from './components/reorder-button/reorder-button.js';
 export {default as CraftSelectColor} from './components/select-color/select-color.js';
 export {default as CraftSelectRich} from './components/select-rich/select-rich.js';
 export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';
