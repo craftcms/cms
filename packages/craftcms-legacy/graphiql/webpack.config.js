@@ -8,7 +8,7 @@ const config = getConfig({
   config: {
     entry: {graphiql: './graphiql.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/graphiql/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/graphiql/dist',
     },
     module: {
       rules: [

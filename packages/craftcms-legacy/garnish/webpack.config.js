@@ -11,7 +11,7 @@ module.exports = getConfig({
       garnish: './index.js',
     },
     output: {
-      path: __dirname + '/../../../resources/legacy/garnish/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/garnish/dist',
     },
     module: {
       rules: [

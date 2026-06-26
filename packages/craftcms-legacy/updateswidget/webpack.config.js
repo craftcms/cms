@@ -7,7 +7,8 @@ module.exports = getConfig({
   config: {
     entry: {UpdatesWidget: './UpdatesWidget.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/updateswidget/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/updateswidget/dist',
     },
   },
 });

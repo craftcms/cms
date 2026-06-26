@@ -7,7 +7,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/timepicker/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/timepicker/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

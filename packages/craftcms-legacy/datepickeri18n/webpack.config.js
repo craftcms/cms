@@ -9,7 +9,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/datepickeri18n/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/datepickeri18n/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

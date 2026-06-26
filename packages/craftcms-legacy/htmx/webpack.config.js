@@ -8,7 +8,7 @@ module.exports = getConfig({
   config: {
     entry: {},
     output: {
-      path: __dirname + '/../../../resources/legacy/htmx/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/htmx/dist',
     },
     plugins: [
       new MergeIntoSingleFilePlugin({

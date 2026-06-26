@@ -7,7 +7,8 @@ module.exports = getConfig({
   config: {
     entry: {RecentEntriesWidget: './RecentEntriesWidget.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/recententries/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/recententries/dist',
     },
   },
 });

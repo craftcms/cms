@@ -9,7 +9,9 @@ module.exports = getConfig({
       ConditionBuilder: './ConditionBuilder.js',
     },
     output: {
-      path: __dirname + '/../../../resources/legacy/conditionbuilder/dist',
+      path:
+        __dirname +
+        '/../../../cms-assets/resources/legacy/conditionbuilder/dist',
     },
   },
 });
