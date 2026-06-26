@@ -1,14 +1,30 @@
-import {onMounted, type Ref} from 'vue';
+import {nextTick, onBeforeUnmount, onMounted, type Ref} from 'vue';
 import {FieldLayoutDesigner} from '@/modules/field-layout-designer';
 
 /**
- * Boots the legacy `Craft.FieldLayoutDesigner` inside an Inertia page.
+ * Boots the (legacy) `Craft.FieldLayoutDesigner` inside an Inertia page and
+ * keeps it alive across saves.
  *
- * The designer keeps its own hidden `fieldLayout` input in sync, so `serialize()`
- * reads the value back out at submit — the same thing a Garnish form would post.
+ * Inertia re-renders the designer markup and swaps it into `hostRef` via
+ * `v-html`; that `innerHTML` replace orphans the imperatively-booted designer
+ * (its drag handles / JS go dead). So this owns a {@link reboot} that the page
+ * calls when the designer's `html` prop changes — tearing the old instance down
+ * (cascading to the card view designer + its sortable checkbox library) before
+ * booting a fresh one on the new DOM.
+ *
+ * The designer keeps its own hidden `fieldLayout` input in sync, so
+ * {@link serialize} reads the value back out at submit — the same thing a
+ * Garnish form would post.
  */
 export function useFieldLayoutDesigner(hostRef: Ref<HTMLElement | undefined>) {
-  onMounted(async () => {
+  let designer: FieldLayoutDesigner | null = null;
+
+  /** Boot the designer on the current host DOM. Idempotent (no-op if booted). */
+  function boot(): void {
+    if (designer) {
+      return;
+    }
+
     const host = hostRef.value;
     if (!host) {
       return;
@@ -17,11 +33,44 @@ export function useFieldLayoutDesigner(hostRef: Ref<HTMLElement | undefined>) {
     const designerEl = host.querySelector<HTMLElement>('.layoutdesigner');
     if (designerEl) {
       const settings = JSON.parse(designerEl.dataset.settings ?? '{}');
-      new FieldLayoutDesigner(designerEl, settings);
+      designer = new FieldLayoutDesigner(designerEl, settings);
     }
 
     window.Craft?.initUiElements?.(host);
-  });
+  }
+
+  /**
+   * Tear the designer down. `FieldLayoutDesigner.destroy()` cascades to the card
+   * view designer and its `SortableCheckboxSelect` and releases the global
+   * footprint (Craft.Grid's window listener, the tabs' HUDs).
+   */
+  function destroy(): void {
+    designer?.destroy();
+    designer = null;
+  }
+
+  /**
+   * Re-boot the designer after the host's `v-html` is swapped. Destroys BEFORE
+   * re-booting (never partial — a half teardown leaves duplicate listeners and
+   * orphaned Garnish instances), and waits a tick so the new DOM is in place
+   * before booting.
+   *
+   * Ordering: the `<craft-generated-fields-table>` custom element re-boots
+   * itself via its own connected/disconnected callbacks when the markup swaps —
+   * no involvement here. Its only dependency on the card view designer (the
+   * `cvd` getter) is lazy (read on a field-name edit, not at boot), so this
+   * same-tick reboot re-populates `cvdData` for the new designer before any
+   * interaction; the stale table's teardown reads `cvd` through optional
+   * chaining, so it's safe even if the old CVD is already gone.
+   */
+  async function reboot(): Promise<void> {
+    destroy();
+    await nextTick();
+    boot();
+  }
+
+  onMounted(boot);
+  onBeforeUnmount(destroy);
 
   /**
    * The designer's field layout config as the JSON string from its hidden
@@ -46,5 +95,5 @@ export function useFieldLayoutDesigner(hostRef: Ref<HTMLElement | undefined>) {
     return configInput?.value || '{}';
   }
 
-  return {serialize};
+  return {serialize, reboot};
 }

@@ -1,18 +1,18 @@
 import {
   Base,
   ESC_KEY,
-  Listbox,
-  RETURN_KEY,
-  hasAttr,
-  requestAnimationFrame,
   type GarnishEvent,
+  hasAttr,
+  Listbox,
+  requestAnimationFrame,
+  RETURN_KEY,
 } from '@craftcms/garnish';
 import {Tab} from './Tab';
 import {CardViewDesigner} from './CardViewDesigner';
 import {ElementDrag, TabDrag} from './drags';
-import {fldTabData, fldElementData, hudData, htmlToElement} from './support';
-import type {FieldLayoutDesignerSettings, FieldLayoutConfig} from './types';
-import {t, Appearance} from '@craftcms/cp';
+import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
+import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
+import {Appearance, t} from '@craftcms/cp';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/Listbox/Slideout return or
@@ -291,6 +291,40 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
   initTab($tab: any): Tab {
     return new Tab(this, $tab);
+  }
+
+  /**
+   * Tear the designer down so it can be re-booted when Inertia replaces the
+   * host's innerHTML after a save. Cascades to the card view designer (→ its
+   * SortableCheckboxSelect → DragSort) and disposes the resources that outlive
+   * the detached FLD subtree: the drag controllers + library picker, Craft.Grid
+   * (which binds a window `resize` listener), and every tab's HUD (appended to
+   * `<body>` and held in HUD's live registry). Listeners bound to the now
+   * detached FLD DOM — and the WeakMaps keyed on those nodes — are released by
+   * `super.destroy()` / GC.
+   */
+  override destroy(): void {
+    this.cvd?.destroy();
+    this.cvd = null;
+
+    this.elementDrag?.destroy();
+    this.elementDrag = null;
+    this.tabDrag?.destroy();
+    this.tabDrag = null;
+    this.libraryPicker?.destroy();
+    this.libraryPicker = null;
+
+    // Craft.Grid binds a window `resize` listener — dispose it explicitly.
+    this.tabGrid?.destroy?.();
+    this.tabGrid = null;
+
+    // Each tab owns a HUD in <body> (held in HUD's live registry), so it won't
+    // be GC'd with the detached subtree — dispose every tab.
+    this.$tabContainer
+      ?.querySelectorAll(':scope > .fld-tab')
+      .forEach((tabEl: HTMLElement) => fldTabData.get(tabEl)?.dispose());
+
+    super.destroy();
   }
 
   removeFieldByHandle(attribute: string): void {

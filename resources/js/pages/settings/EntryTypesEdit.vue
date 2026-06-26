@@ -77,8 +77,18 @@
   const fldHost = ref<HTMLElement>();
   const fld = useFieldLayoutDesigner(fldHost);
   // The generated-fields table lives inside the designer markup; read its value
-  // back at submit too (Inertia doesn't post its distributed inputs).
+  // back at submit too (Inertia doesn't post its distributed inputs). It's a
+  // custom element, so it re-boots itself when the markup is swapped.
   const generatedFieldsTable = useGeneratedFieldsTable(fldHost);
+
+  // After a save, Inertia replaces the designer markup via `v-html`, which
+  // orphans the imperatively-booted FLD/CVD (drag handles go dead). Re-boot it
+  // whenever its html changes (destroying the old instance first). The
+  // non-immediate watch doesn't fire on first render, so it never double-boots.
+  watch(
+    () => props.fieldLayoutDesigner.html,
+    () => fld.reboot()
+  );
 
   // Auto-generate the handle from the name for new entry types.
   const handleGenerator = useInputGenerator(

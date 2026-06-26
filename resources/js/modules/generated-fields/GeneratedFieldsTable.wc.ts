@@ -51,38 +51,56 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
   }
 
   /**
-   * The table's value as the nested object the server expects under the
-   * `generatedFields` request param — i.e. `{ <rowId>: { name, handle,
-   * template, uid } }`, exactly what a native `generatedFields[rowId][col]`
-   * bracket POST produces (see `Fields::assembleLayoutFromPost`, which reads it
-   * raw via `Request::input('generatedFields')` — not JSON-decoded).
+   * The table's value as an **ordered list** of row payloads in DOM (drag-sort)
+   * order — `[{ name, handle, template, uid }, …]` — which is what the server
+   * stores as the generated-fields sort order: `Fields::assembleLayoutFromPost`
+   * reads it raw via `Request::input('generatedFields')`, and
+   * `FieldLayout::setGeneratedFields` runs `array_values()` over it (preserving
+   * order; each item carries its `uid`, so identity is kept).
+   *
+   * Why a list and not the expanded `{ rowId: {…} }` object: each row's input
+   * names bake in its original numeric index (`generatedFields[0][…]`,
+   * `generatedFields[1][…]`), which does NOT change when the row is dragged.
+   * Returning the keyed object lets JS re-sort those integer-like keys
+   * ascending, discarding the dragged order — so the saved sort order never
+   * actually changed. Reading the order off the DOM (`<tr data-id>`) and
+   * emitting a list fixes that.
    *
    * Inertia forms don't post the table's distributed inputs (they collect only
-   * the single hidden `fieldLayout` input), so this lets the submit transform
-   * merge the value in. Native/Twig forms still post the inputs directly — they
-   * are left intact — so this is additive.
-   *
-   * Scoped to the inner `<table>` so the sibling base hidden
-   * (`<input name="generatedFields" value="">`) is excluded, which would
-   * otherwise collide with the bracketed row keys when expanded.
+   * the single hidden `fieldLayout` input), so the submit transform merges this
+   * in. Native/Twig forms still post the inputs directly — left intact — so
+   * this is additive.
    */
-  serialize(): Record<string, any> {
+  serialize(): any[] {
     const table = this.querySelector<HTMLTableElement>('table');
     if (!table) {
-      return {};
+      return [];
     }
 
-    // Flat `name → value` map (e.g. `generatedFields[row0][handle]`), then
-    // expand the bracket names into a nested object via the legacy Craft helper
-    // (the same `getPostData` + `expandPostArray` pairing the Table field uses).
+    // Flat `name → value` map (e.g. `generatedFields[0][handle]`) expanded into
+    // a nested `{ rowId: { name, handle, template, uid } }` object via the
+    // legacy Craft helper (the `getPostData` + `expandPostArray` pairing the
+    // Table field uses) — the per-row payloads, keyed by their (stable) row id.
+    // Scoped to the inner `<table>` so the sibling base hidden
+    // (`<input name="generatedFields" value="">`) is excluded.
     const flat = getPostData(table);
     const expand = (window as any).Craft?.expandPostArray;
-    const expanded: Record<string, any> = expand ? expand(flat) : {};
-
+    const expandedAll: Record<string, any> = expand ? expand(flat) : {};
     const baseName = this.getAttribute('name') ?? 'generatedFields';
     // The table only holds `generatedFields` inputs, so there's a single
     // top-level key; prefer the base name, falling back to that lone key.
-    return expanded[baseName] ?? Object.values(expanded)[0] ?? {};
+    const rowsById: Record<string, any> =
+      expandedAll[baseName] ?? Object.values(expandedAll)[0] ?? {};
+
+    // Read the row order from the DOM — drag-sort reorders the `<tr>`s but not
+    // their baked-in input-name indices — and return the payloads in that order.
+    const domOrderIds = Array.from(table.querySelectorAll('tbody tr')).map(
+      (tr) => (tr as HTMLElement).dataset.id
+    );
+
+    return domOrderIds
+      .map((id) => (id != null ? rowsById[id] : undefined))
+      .filter(Boolean);
   }
 
   #jsonAttr(name: string): Record<string, any> {

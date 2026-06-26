@@ -105,6 +105,26 @@ export class SortableCheckboxSelect extends Base {
   }
 
   /**
+   * Tear down the sorter and release the back-references so the controller can be
+   * re-booted (e.g. when the field layout designer's host innerHTML is swapped).
+   * The item-level listeners live on the (now detached) checkbox DOM and are
+   * cleaned up by GC; this disposes the DragSort (which would otherwise keep its
+   * pointer bindings) and clears the WeakMap + jQuery `.data` entries.
+   */
+  override destroy(): void {
+    this.dragSort?.destroy?.();
+    this.dragSort = null;
+
+    const containerEl: Element | undefined = this.$container?.[0];
+    if (containerEl) {
+      sortableCheckboxSelectData.delete(containerEl);
+    }
+    this.$container?.removeData?.('sortableCheckboxSelect');
+
+    super.destroy();
+  }
+
+  /**
    * Recompute every item's reorder state. A button is enabled only when its item
    * is checked and 2+ items are checked overall; otherwise it's disabled.
    * Enabled ⇒ in the sorter (draggable); disabled ⇒ removed from the sorter

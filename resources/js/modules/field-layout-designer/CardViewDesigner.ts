@@ -350,4 +350,22 @@ export class CardViewDesigner extends Base {
       .querySelectorAll('[data-attribute="thumb-alignment"]')
       .forEach((el: HTMLElement) => el.classList.add('hidden'));
   }
+
+  /**
+   * Tear down the card view designer so the FLD can be re-booted (host innerHTML
+   * swap). Cancels any in-flight preview request, disposes the sortable checkbox
+   * library, clears the `cvdData` back-reference, then runs the base teardown.
+   * Listeners bound to the (now detached) CVD DOM are cleaned up by GC.
+   */
+  override destroy(): void {
+    this.cancelToken?.cancel();
+    this.sortableCheckboxSelect?.destroy();
+    this.sortableCheckboxSelect = null;
+
+    if (this.$container) {
+      cvdData.delete(this.$container);
+    }
+
+    super.destroy();
+  }
 }

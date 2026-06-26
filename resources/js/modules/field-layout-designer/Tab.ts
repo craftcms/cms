@@ -2,10 +2,10 @@ import {Base, HUD} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './FieldLayoutDesigner';
 import {Element as FldElement} from './Element';
 import {
-  fldTabData,
-  fldElementData,
-  hudData,
   firstFocusableInSiblings,
+  fldElementData,
+  fldTabData,
+  hudData,
 } from './support';
 import type {ActionMenuItem} from '@craftcms/cp';
 
@@ -26,6 +26,7 @@ export class Tab extends Base {
   $actionBtn: any = null;
   slideout: any = null;
   settingsNamespace: any = null;
+  hud: any = null;
   destroyed = false;
 
   constructor(designer: FieldLayoutDesigner, $container: any) {
@@ -62,12 +63,12 @@ export class Tab extends Base {
 
     this.$addBtn = $tabContent.querySelector('[command="--add-field"]');
 
-    const hud = new HUD(this.$addBtn, {
+    const hud = (this.hud = new HUD(this.$addBtn, {
       hudClass: 'hud fld-library-hud',
       listenToMainResize: false,
       showOnInit: false,
       orientations: ['right', 'bottom', 'left'],
-    });
+    }));
     // The legacy HUD stored itself via jQuery `.data('hud', this)`; mirror that
     // with the FLD WeakMap so `designer.getActiveHud()` can find it.
     hudData.set(hud.$hud!, hud);
@@ -351,6 +352,25 @@ export class Tab extends Base {
       config.tabs.splice(newIndex, 0, tabConfig);
       return config;
     });
+  }
+
+  /**
+   * Release this tab's controller resources for a designer reboot (host
+   * innerHTML swap). Unlike {@link destroy}, this does NOT mutate the layout
+   * config, move focus, or remove DOM — it only disposes resources that outlive
+   * the detached tab subtree: the HUD (appended to `<body>` and held in HUD's
+   * live registry) and any open settings slideout. Listeners on the tab's own
+   * (now detached) nodes are released by `super.destroy()` / GC.
+   */
+  dispose(): void {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.destroyed = true;
+    this.hud?.destroy();
+    this.slideout?.destroy?.();
+    super.destroy();
   }
 
   override destroy(): void {

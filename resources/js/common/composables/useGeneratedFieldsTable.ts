@@ -17,14 +17,16 @@ import {type Ref} from 'vue';
  */
 export function useGeneratedFieldsTable(hostRef: Ref<HTMLElement | undefined>) {
   /**
-   * Serializes the table's inputs into the nested `generatedFields` object
-   * (`{ <rowId>: { name, handle, template, uid } }`), or `{}` when the table
-   * isn't present. The server's `Request::input('generatedFields')` reads this
-   * shape directly.
+   * Serializes the table's inputs into an ordered list of row payloads in DOM
+   * (drag-sort) order — `[{ name, handle, template, uid }, …]` — or `[]` when
+   * the table isn't present. The server reads it via
+   * `Request::input('generatedFields')` and `array_values()`-es it, so the list
+   * order becomes the saved sort order (a keyed object would lose the order; see
+   * the element's `serialize()`).
    */
-  function serialize(): Record<string, any> {
+  function serialize(): any[] {
     const el = hostRef.value?.querySelector('craft-generated-fields-table');
-    return el?.serialize() ?? {};
+    return el?.serialize() ?? [];
   }
 
   return {serialize};
