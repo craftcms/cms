@@ -31,3 +31,7 @@ resources/js/wayfinder
 # TypeScript transformer generated files
 resources/js/generated/*
 !resources/js/generated/.gitkeep
+
+# Built release assets
+resources/build/
+resources/legacy/**/dist/
