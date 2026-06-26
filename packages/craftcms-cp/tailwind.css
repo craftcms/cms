@@ -26,7 +26,7 @@
 
   /* ——— Text ——— */
   --color-text-default: var(--c-text-default);
-  --color-text-muted: var(--c-text-quiet);
+  --color-text-quiet: var(--c-text-quiet);
   --color-text-link: var(--c-text-link);
   --color-text-white: var(--c-text-white);
 
