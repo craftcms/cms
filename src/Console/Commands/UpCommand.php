@@ -7,12 +7,14 @@ namespace CraftCms\Cms\Console\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
+use Override;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
@@ -21,10 +23,10 @@ class UpCommand extends Command implements Isolatable
 {
     use CraftCommand;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:up {--noBackup : Skip backing up the database.}';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Runs pending migrations and applies pending project config changes.';
 
     public function handle(Updates $updates, License $license, ProjectConfig $projectConfig): int
@@ -37,6 +39,7 @@ class UpCommand extends Command implements Isolatable
 
             // Craft + plugin migrations
             $res = $this->call(MigrateCommand::class, [
+                '--force' => true,
                 '--noContent' => true,
                 '--noBackup' => $this->option('noBackup'),
             ]);
@@ -53,8 +56,7 @@ class UpCommand extends Command implements Isolatable
 
             // Project Config
             if ($pendingChanges) {
-                /** @todo Laravel command */
-                $res = $this->call('craft:project-config/apply');
+                $res = $this->call(ApplyCommand::class);
                 if ($res !== self::SUCCESS) {
                     return $res;
                 }
@@ -65,6 +67,7 @@ class UpCommand extends Command implements Isolatable
 
             // Content migration
             $res = $this->call(MigrateCommand::class, [
+                '--force' => true,
                 '--track' => 'content',
             ]);
 

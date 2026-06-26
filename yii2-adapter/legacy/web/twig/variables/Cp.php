@@ -14,6 +14,7 @@ use craft\base\Event as YiiEvent;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
@@ -172,11 +173,13 @@ class Cp extends Component
 
         Event::listen(function(CpNavItemsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, 'registerCpNavItems')) {
-                $yiiEvent = new RegisterCpNavItemsEvent(['navItems' => $event->navItems]);
+                $items = array_map(fn(NavItem $navItem) => $navItem->toArray(), $event->navItems);
+
+                $yiiEvent = new RegisterCpNavItemsEvent(['navItems' => $items]);
 
                 YiiEvent::trigger(self::class, 'registerCpNavItems', $yiiEvent);
 
-                $event->navItems = $yiiEvent->navItems;
+                $event->navItems = array_map(fn(array $item) => new NavItem($item), $yiiEvent->navItems);
             }
         });
 

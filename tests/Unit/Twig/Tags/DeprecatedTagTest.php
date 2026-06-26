@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Deprecator\Deprecator;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 it('logs a deprecation warning and continues rendering', function () {

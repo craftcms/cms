@@ -7,9 +7,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File as Path;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateLoader;
-use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Support\Facades\File;
 use Twig\Source;
 

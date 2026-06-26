@@ -6,11 +6,9 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\ConnectionConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use RequirementsChecker;
 use RuntimeException;
 
 use function CraftCms\Cms\t;
@@ -39,20 +37,7 @@ readonly class CheckRequirements
             return $next($request);
         }
 
-        $reqCheck = new RequirementsChecker;
-        $reqCheck->dbDriver = DB::connection()->getDriverName();
-
-        $prefix = "database.connections.{$reqCheck->dbDriver}";
-        $reqCheck->dsn = implode('', [
-            $reqCheck->dbDriver,
-            ':host='.Config::get("{$prefix}.host"),
-            ';port='.Config::get("{$prefix}.port"),
-            ';dbname='.Config::get("{$prefix}.database"),
-            ';user='.Config::get("{$prefix}.username"),
-            ';password='.Config::get("{$prefix}.password"),
-        ]);
-        $reqCheck->dbUser = Config::get("{$prefix}.username");
-        $reqCheck->dbPassword = Config::get("{$prefix}.password");
+        $reqCheck = ConnectionConfig::requirementsChecker();
 
         $reqCheck->checkCraft();
 

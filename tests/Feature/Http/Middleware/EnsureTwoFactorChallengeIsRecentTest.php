@@ -6,6 +6,7 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
@@ -16,6 +17,10 @@ beforeEach(function () {
     // CP route (with admin prefix)
     Route::get('/admin/test-2fa-recent', fn () => 'ok')->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::post('/admin/test-2fa-recent', fn () => 'ok')->middleware(EnsureTwoFactorChallengeIsRecent::class);
+});
+
+afterEach(function () {
+    Date::setTestNow();
 });
 
 test('allows request through when pending session is fresh', function () {
@@ -37,6 +42,8 @@ test('CP request redirects to CP login when pending_2fa_at is older than 5 minut
 });
 
 test('allows request through when pending session is exactly at the boundary', function () {
+    Date::setTestNow(now());
+
     $this->withSession(['user.pending_2fa_at' => now()->subSeconds(300)->timestamp])
         ->get('/admin/test-2fa-recent')
         ->assertOk();

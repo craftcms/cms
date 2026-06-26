@@ -12,6 +12,16 @@
           "parameters": [1]
         }
       ]
+    },
+    {
+      "complete": "inertiaPage",
+      "condition": [
+        {
+          "methodNames": ["inertiaPage"],
+          "classFqn": ["\\CraftCms\\Cms\\Http\\Responses\\CpScreenResponse"],
+          "parameters": [1]
+        }
+      ]
     }
   ]
 }

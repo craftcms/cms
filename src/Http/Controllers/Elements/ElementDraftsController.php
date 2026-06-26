@@ -289,7 +289,7 @@ class ElementDraftsController
             $errors = $element->errors();
             $invalidNestedElementIds = $element->getInvalidNestedElementIds();
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-            $this->elements->saveElement(element: $element, saveContent: $saveContent);
+            $this->elements->saveElement(element: $element, runValidation: false, saveContent: $saveContent);
             $element->clearErrors();
             $element->errors()->merge($errors);
             $element->addInvalidNestedElementIds($invalidNestedElementIds);

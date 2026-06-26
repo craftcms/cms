@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Once;
 

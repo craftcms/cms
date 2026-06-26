@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\TemplateResolver;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
 

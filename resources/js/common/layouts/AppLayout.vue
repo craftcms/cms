@@ -23,11 +23,14 @@
     redirect?: boolean;
   }
 
+  type DefaultFormAction = 'saveAndContinueEditing';
+
   export interface AppLayoutProps {
     title?: string;
     debug?: any;
     fullWidth?: boolean;
     form?: InertiaForm<any> | null;
+    defaultFormActions?: Array<DefaultFormAction>;
     formActions?: Array<ActionItem>;
     formAdditionalActions?: Array<any>;
     additionalSkipLinks?: Array<{label: string; url: string}>;
@@ -40,6 +43,7 @@
     fullWidth: false,
     crumbs: () => [],
     form: null,
+    defaultFormActions: () => ['saveAndContinueEditing'],
   });
 
   const page = usePage<{
@@ -53,6 +57,10 @@
 
   const {errorFlash, successFlash} = useFlash();
   const crumbs = computed(() => page.props.crumbs ?? null);
+  const formActionItems = computed(() => [
+    ...props.defaultFormActions.map(defaultFormActionItem),
+    ...(props.formActions ?? []),
+  ]);
   const skipLinks = computed(() => [
     {label: t('Skip to main section'), url: '#main'},
     ...(props.additionalSkipLinks ?? []),
@@ -112,6 +120,18 @@
   const sidebarIcon = computed(() => {
     return state.sidebar.visibility === 'visible' ? 'x' : 'bars';
   });
+
+  function defaultFormActionItem(action: DefaultFormAction): ActionItem {
+    if (action === 'saveAndContinueEditing') {
+      return {
+        label: t('Save and continue editing'),
+        onClick: () => emit('save', {redirect: false}),
+        shortcut: 'S',
+      };
+    }
+
+    throw new Error(`Unknown default form action: ${action}`);
+  }
 
   const sidebarWidth = computed(() => {
     if (state.sidebar.mode === 'docked') {
@@ -203,7 +223,7 @@
                           v-if="!readOnly"
                           class="flex items-center justify-end gap-2"
                         >
-                          <craft-button-group>
+                          <craft-button-group v-if="formActionItems.length">
                             <craft-button
                               type="submit"
                               variant="accent"
@@ -213,17 +233,7 @@
                             </craft-button>
                             <ActionMenu
                               icon="chevron-down"
-                              :actions="
-                                [
-                                  {
-                                    label: t('Save and continue editing'),
-                                    onClick: () =>
-                                      emit('save', {redirect: false}),
-                                    shortcut: 'S',
-                                  },
-                                  ...(formActions ?? []),
-                                ] as ActionItem[]
-                              "
+                              :actions="formActionItems"
                             >
                               <template #invoker="{label}">
                                 <craft-button
@@ -240,6 +250,15 @@
                               </template>
                             </ActionMenu>
                           </craft-button-group>
+
+                          <craft-button
+                            v-else
+                            type="submit"
+                            variant="accent"
+                            :loading="form.processing"
+                          >
+                            {{ t('Save') }}
+                          </craft-button>
 
                           <ActionMenu
                             v-if="formAdditionalActions?.length"

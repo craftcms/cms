@@ -12,9 +12,10 @@ use craft\errors\ExitException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use Throwable;
 use yii\base\Component;
 use yii\base\ExitException as YiiExitException;
@@ -52,7 +53,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             Craft::$app->getRequest()->getQueryParam('x-craft-live-preview') !== null &&
             $generalConfig->useIframeResizer
         ) {
-            app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\ContentWindowAsset::class);
+            app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
         }
 
         // Render and return the template

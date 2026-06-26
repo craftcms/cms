@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Plugin\Plugin;
 
 /**
@@ -16,18 +17,12 @@ trait InteractsWithCp
     /** @var bool Whether the plugin has its own section in the control panel */
     public bool $hasCpSection = false;
 
-    public function getCpNavItem(): ?array
+    public function getCpNavItem(): NavItem|array|null
     {
-        $ret = [
-            'label' => $this->name,
-            'url' => $this->handle,
-        ];
-
-        if (($iconPath = $this->cpNavIconPath()) !== null) {
-            $ret['icon'] = $iconPath;
-        }
-
-        return $ret;
+        return new NavItem()
+            ->label($this->name)
+            ->url($this->handle)
+            ->icon($this->cpNavIconPath());
     }
 
     /**

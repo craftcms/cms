@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Twig\Error\RuntimeError;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 it('renders a redirect response for the default status', function () {

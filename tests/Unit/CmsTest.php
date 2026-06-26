@@ -142,6 +142,7 @@ it('falls back to UTC when ICU rejects the timezone', function () {
 it('uses the accepted language while Craft is not installed', function () {
     Cms::setIsInstalled(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['fr', 'en']));
+    I18N::shouldReceive('normalizeLanguage')->once()->with('fr')->andReturn('fr');
 
     $request = Request::create('/admin', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr-CA,fr;q=0.8,en;q=0.6']);
 
@@ -152,6 +153,7 @@ it('uses the accepted language while a Craft update is pending', function () {
     Cms::setIsInstalled();
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(true);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['de', 'en']));
+    I18N::shouldReceive('normalizeLanguage')->once()->with('de')->andReturn('de');
 
     $request = Request::create('/admin', server: ['HTTP_ACCEPT_LANGUAGE' => 'de-CH,de;q=0.8,en;q=0.6']);
 
@@ -200,6 +202,7 @@ it('falls back to the accepted language when the CP user preference is invalid a
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('not-real');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('not-real')->andReturn(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['it', 'en']));
+    I18N::shouldReceive('normalizeLanguage')->once()->with('it')->andReturn('it');
 
     $request = Request::create('/admin', server: ['HTTP_ACCEPT_LANGUAGE' => 'it-IT,it;q=0.8,en;q=0.6']);
 

@@ -8,7 +8,7 @@ trait CanSelect
 {
     abstract public function label(): string;
 
-    /** @return list<array{value: string, label: string}> */
+    /** @return list<array{value: string|int, label: string}> */
     public static function asOptions(): array
     {
         return array_map(

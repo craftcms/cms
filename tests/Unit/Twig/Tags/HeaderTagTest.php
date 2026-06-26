@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\SetHeaders;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 function renderAndApplyHeaderHeaders(string $template, array $variables = []): Response
 {
-    app(TemplateRenderer::class)->renderString($template, $variables);
+    app(TwigRenderer::class)->renderString($template, $variables);
 
     return app(SetHeaders::class)->handle(Request::create('foo'), fn () => new Response);
 }
