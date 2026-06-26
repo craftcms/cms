@@ -1974,6 +1974,9 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
 
     this.cancelToken = axios.CancelToken.source();
 
+    const $form = $('#main-form');
+    const postData = Craft.expandPostArray(Garnish.getPostData($form));
+
     let response;
     try {
       response = await Craft.sendActionRequest(
@@ -1982,7 +1985,10 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
         {
           cancelToken: this.cancelToken.token,
           data: {
-            fieldLayoutConfig: this.designer.config,
+            fieldLayoutConfig: {
+              ...JSON.parse(this.designer.$configInput.val()),
+              generatedFields: postData.generatedFields,
+            },
           },
         }
       );
