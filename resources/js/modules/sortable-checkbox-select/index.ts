@@ -1,4 +1,6 @@
 import {Item, SortableCheckboxSelect} from './SortableCheckboxSelect';
+import CraftSortableCheckboxSelect from '@/modules/sortable-checkbox-select/SortableCheckboxSelect.wc';
+import {defineElement} from '@/common/web-components';
 
 // Re-expose the Item sub-class on the constructor, as the legacy bundle did
 // (`Craft.SortableCheckboxSelect.Item`).
@@ -12,4 +14,6 @@ import {Item, SortableCheckboxSelect} from './SortableCheckboxSelect';
 const craft = (window as any).Craft ?? ((window as any).Craft = {});
 craft.SortableCheckboxSelect = SortableCheckboxSelect;
 
-export {SortableCheckboxSelect, Item};
+defineElement('craft-sortable-checkbox-select', CraftSortableCheckboxSelect);
+
+export {SortableCheckboxSelect, Item, CraftSortableCheckboxSelect};

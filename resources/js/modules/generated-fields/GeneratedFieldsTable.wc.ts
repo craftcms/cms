@@ -1,5 +1,6 @@
 import {getPostData} from '@craftcms/garnish';
 import {GeneratedFieldsTable} from '@/modules/generated-fields/GeneratedFieldsTable';
+import {ControllerElement} from '@/common/web-components';
 
 /**
  * `<craft-generated-fields-table>` — boots a {@link GeneratedFieldsTable} around
@@ -13,34 +14,15 @@ import {GeneratedFieldsTable} from '@/modules/generated-fields/GeneratedFieldsTa
  * collide with this wrapper's own id. `name` is the namespaced base input name;
  * `cols`/`settings` are JSON attributes.
  */
-export default class CraftGeneratedFieldsTable extends HTMLElement {
-  #instance: GeneratedFieldsTable | null = null;
+export default class CraftGeneratedFieldsTable extends ControllerElement<GeneratedFieldsTable> {
+  protected readonly rootSelector = 'table';
 
-  connectedCallback(): void {
-    this.#boot();
-  }
-
-  /**
-   * Construct the table once its child `<table>` is present. AJAX-injected markup
-   * may not have children yet when the element upgrades, so retry on the next frame
-   * until they exist (bailing if disconnected meanwhile).
-   */
-  #boot(): void {
-    if (this.#instance || !this.isConnected) {
-      return;
-    }
-
-    const table = this.querySelector<HTMLTableElement>('table');
-    if (!table) {
-      requestAnimationFrame(() => this.#boot());
-      return;
-    }
-
-    this.#instance = new GeneratedFieldsTable(
+  protected create(table: HTMLElement): GeneratedFieldsTable {
+    return new GeneratedFieldsTable(
       table.id,
       this.getAttribute('name') ?? '',
-      this.#jsonAttr('cols'),
-      this.#jsonAttr('settings')
+      this.jsonAttr('cols'),
+      this.jsonAttr('settings')
     );
   }
 
@@ -86,25 +68,6 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
     return domOrderIds
       .map((id) => (id != null ? rowsById[id] : undefined))
       .filter(Boolean);
-  }
-
-  #jsonAttr(name: string): Record<string, any> {
-    const raw = this.getAttribute(name);
-    if (!raw) {
-      return {};
-    }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return {};
-    }
-  }
-
-  disconnectedCallback(): void {
-    if (this.#instance) {
-      this.#instance.destroy();
-      this.#instance = null;
-    }
   }
 }
 

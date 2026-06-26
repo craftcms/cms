@@ -1,4 +1,5 @@
 import {FieldLayoutDesigner} from '@/modules/field-layout-designer/FieldLayoutDesigner';
+import {ControllerElement} from '@/common/web-components';
 
 /**
  * `<craft-field-layout-designer>` — boots a {@link FieldLayoutDesigner} around the
@@ -6,42 +7,23 @@ import {FieldLayoutDesigner} from '@/modules/field-layout-designer/FieldLayoutDe
  * element instead of a manual boot.
  *
  * The designer renders as **light-DOM children** — it treats `.layoutdesigner` as
- * its container and queries descendants, so shadow DOM would hide them. Boot: find
- * that child, parse the `settings` attribute on this element, construct, then run
- * `Craft.initUiElements` over this host.
+ * its container and queries descendants, so shadow DOM would hide them. Settings
+ * come from the `settings` attribute on this element; after construction it runs
+ * `Craft.initUiElements` over this host to upgrade nested Craft UI elements.
  *
  * Self-boot/teardown via the connected/disconnected callbacks is the durable fix
  * for the after-save re-bind problem: when Inertia swaps the host's innerHTML, the
- * old element disconnects (→ `destroy()`) and the new one connects (→ `#boot()`).
+ * old element disconnects (→ `destroy()`) and the new one connects (→ boot).
  */
-export default class CraftFieldLayoutDesigner extends HTMLElement {
-  #instance: FieldLayoutDesigner | null = null;
+export default class CraftFieldLayoutDesigner extends ControllerElement<FieldLayoutDesigner> {
+  protected readonly rootSelector = '.layoutdesigner';
 
-  connectedCallback(): void {
-    this.#boot();
+  protected create(root: HTMLElement): FieldLayoutDesigner {
+    return new FieldLayoutDesigner(root, this.jsonAttr('settings'));
   }
 
-  /**
-   * Construct the designer once its `.layoutdesigner` child is present.
-   * Inertia/AJAX-injected markup may not have children yet when the element
-   * upgrades, so retry on the next frame until they do (bailing if disconnected).
-   */
-  #boot(): void {
-    if (this.#instance || !this.isConnected) {
-      return;
-    }
-
-    const designerEl = this.querySelector<HTMLElement>('.layoutdesigner');
-    if (!designerEl) {
-      requestAnimationFrame(() => this.#boot());
-      return;
-    }
-
-    const settings = this.#jsonAttr('settings');
-    this.#instance = new FieldLayoutDesigner(designerEl, settings);
-
-    // Upgrade any nested Craft UI elements, scoped to this host — mirrors the
-    // composable's `Craft.initUiElements(host)`.
+  protected override booted(): void {
+    // Upgrade any nested Craft UI elements, scoped to this host.
     (window as any).Craft?.initUiElements?.(this);
   }
 
@@ -59,25 +41,6 @@ export default class CraftFieldLayoutDesigner extends HTMLElement {
   serialize(): string {
     const input = this.querySelector<HTMLInputElement>('[name="fieldLayout"]');
     return input?.value || '{}';
-  }
-
-  #jsonAttr(name: string): Record<string, any> {
-    const raw = this.getAttribute(name);
-    if (!raw) {
-      return {};
-    }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return {};
-    }
-  }
-
-  disconnectedCallback(): void {
-    if (this.#instance) {
-      this.#instance.destroy();
-      this.#instance = null;
-    }
   }
 }
 

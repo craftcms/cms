@@ -3,6 +3,7 @@ import {
   GeneratedFieldsTableRow,
 } from './GeneratedFieldsTable';
 import CraftGeneratedFieldsTable from '@/modules/generated-fields/GeneratedFieldsTable.wc';
+import {defineElement} from '@/common/web-components';
 
 // Re-expose the Row sub-class on the constructor, as the legacy bundle did
 // (`Craft.GeneratedFieldsTable.Row`).
@@ -15,12 +16,7 @@ import CraftGeneratedFieldsTable from '@/modules/generated-fields/GeneratedField
 const craft = (window as any).Craft ?? ((window as any).Craft = {});
 craft.GeneratedFieldsTable = GeneratedFieldsTable;
 
-if (!customElements.get('craft-generated-fields-table')) {
-  customElements.define(
-    'craft-generated-fields-table',
-    CraftGeneratedFieldsTable
-  );
-}
+defineElement('craft-generated-fields-table', CraftGeneratedFieldsTable);
 
 export {
   GeneratedFieldsTable,
