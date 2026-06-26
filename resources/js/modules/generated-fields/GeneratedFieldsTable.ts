@@ -54,8 +54,7 @@ export class GeneratedFieldsTableRow extends Row {
             value,
             labelHtml: name,
             data: {
-              // `fieldId` was never set on the legacy Row either — preserved for
-              // parity (it resolves to `undefined`).
+              // `fieldId` was never set on the legacy Row either; resolves to undefined.
               'field-id': (this as any).fieldId,
               'field-label': name,
             },
@@ -97,12 +96,9 @@ export class GeneratedFieldsTable extends EditableTable {
   }
 
   /**
-   * The Card View Designer associated with this table, or `undefined`.
-   *
-   * The legacy getter read `…next('.card-view-designer').data('cvd')`. The
-   * modern FLD/CVD stores itself in the `cvdData` WeakMap (not jQuery `.data`),
-   * so we resolve the `.card-view-designer` sibling element and look it up
-   * there.
+   * The Card View Designer associated with this table, or `undefined`. The modern
+   * FLD/CVD stores itself in the `cvdData` WeakMap (not jQuery `.data`), so we
+   * resolve the `.card-view-designer` sibling element and look it up there.
    */
   get cvd(): any {
     const tableEl: HTMLElement | undefined = this.$table?.[0];

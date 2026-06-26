@@ -1,7 +1,7 @@
 import {property, state} from 'lit/decorators.js';
+import type {CSSResultGroup} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import styles from './card.styles.js';
-import type {CSSResultGroup} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
 
 /**
@@ -28,13 +28,10 @@ export default class CraftCard extends LitElement {
     'start';
 
   /**
-   * Whether the thumbnail slot currently has assigned content.
-   *
-   * Tracked as reactive state and updated from the slot's `slotchange` event,
-   * so the card re-renders when thumbnail content is added/removed/replaced in
-   * the light DOM (e.g. the Card View Designer swapping the thumbnail). Lit does
-   * not re-render on slotted light-DOM changes on its own, so without this the
-   * card's presence-derived rendering would go stale.
+   * Whether the thumbnail slot currently has assigned content. Tracked as reactive
+   * state and updated from the slot's `slotchange` event, since Lit doesn't
+   * re-render on slotted light-DOM changes on its own — without this the card's
+   * presence-derived rendering would go stale (e.g. when the CVD swaps the thumb).
    */
   @state() private _hasThumbnail = false;
 

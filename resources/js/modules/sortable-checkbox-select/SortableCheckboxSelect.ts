@@ -2,32 +2,24 @@ import {Base, DragSort, Y_AXIS} from '@craftcms/garnish';
 import {sortableCheckboxSelectData} from './support';
 import type {ReorderDirection} from '@craftcms/cp';
 
-// `Craft` and jQuery (`$`) are still globals on the page. SortableCheckboxSelect
-// extends the modern `@craftcms/garnish` `Base` but orchestrates still-jQuery
-// Craft widgets and DOM, and exposes the jQuery `.data()` back-reference the
-// still-legacy `BaseElementIndex` reads — so jQuery (`$`) and the public
-// `$container`/`$item` survive at those seams. The modernization is the class
-// system, the `.data()` → WeakMap mirror (see `support.ts`), and ESM/bundle
-// wiring.
+// `Craft` and `$` (jQuery) remain page globals. This class extends the modern
+// `@craftcms/garnish` `Base` but orchestrates jQuery Craft widgets/DOM and exposes
+// the jQuery `.data()` back-reference the still-legacy `BaseElementIndex` reads, so
+// jQuery and the public `$container`/`$item` survive at those seams.
 declare const Craft: any;
 declare const $: any;
 
 /**
- * Sortable checkbox select — a port of the legacy jQuery
- * `Craft.SortableCheckboxSelect` onto the modern `@craftcms/garnish` `Base`.
+ * Sortable checkbox select — a port of `Craft.SortableCheckboxSelect` onto
+ * `@craftcms/garnish` `Base`. Setup lives in {@link init}, invoked from the
+ * constructor only for the leaf class (`new.target` guard) — the same contract as
+ * the other ports.
  *
- * Setup lives in {@link init}, invoked from the constructor only for the leaf
- * class (`new.target` guard) — the same construction contract as the other ports,
- * so the class slots cleanly under the legacy `new Craft.…` callers and could be
- * compat-wrapped later if anything ever subclassed it (nothing does today, so
- * it's assigned to the global as the plain ES class).
- *
- * Each item has an always-present `<craft-reorder-button>` (prepended before the
- * checkbox) that is BOTH the drag handle and the Move up/down action menu. A
- * button is enabled — draggable + menu active — only while its item is checked
- * AND at least two items are checked overall (so there's a selected set to
- * reorder); otherwise it's disabled. See {@link updateReorderButtons}. Emits a
- * `sortChange` pub/sub event when items are reordered (drag or menu).
+ * Each item has an always-present `<craft-reorder-button>` (before the checkbox)
+ * that is both the drag handle and the Move up/down menu. It's enabled only while
+ * its item is checked AND 2+ items are checked overall (so there's a set to
+ * reorder); see {@link updateReorderButtons}. Emits a `sortChange` event on
+ * reorder (drag or menu).
  */
 export class SortableCheckboxSelect extends Base {
   $container: any = null;
@@ -43,9 +35,8 @@ export class SortableCheckboxSelect extends Base {
   init(container: any): void {
     this.$container = $(container);
 
-    // Object back-reference. Kept as jQuery `.data()` for the still-legacy
-    // `BaseElementIndex` reader, and mirrored in a WeakMap for modern consumers
-    // (the Card View Designer).
+    // Object back-reference: jQuery `.data()` for the legacy `BaseElementIndex`
+    // reader, mirrored in a WeakMap for modern consumers (the Card View Designer).
     if (this.$container.data('sortableCheckboxSelect')) {
       this.$container.data('sortableCheckboxSelect', null);
     }
@@ -68,20 +59,15 @@ export class SortableCheckboxSelect extends Base {
       });
     }
 
-    // Now that every item has its reorder button, set the initial
-    // enabled/disabled + sorter-membership state in one pass.
+    // Every item now has its button; set initial enabled/membership state.
     this.updateReorderButtons();
   }
 
   initDrag(): void {
-    // The drag handle is each item's <craft-reorder-button>. DragSort resolves
-    // an item's handle at addItems time and does NOT honor the button's
-    // `disabled` attribute, so dragging is gated purely by sorter membership:
-    // updateReorderButtons() adds an item only while its button is enabled and
-    // removes it otherwise. The sorter is created once and reused; repeat calls
-    // (e.g. the Card View Designer when a checkbox is added) are no-ops. On
-    // touch (no mouse pointer events) there's no sorter — the action menu still
-    // handles reordering.
+    // DragSort doesn't honor the button's `disabled` attribute, so dragging is
+    // gated by sorter membership instead: updateReorderButtons() adds/removes items
+    // as their buttons enable/disable. Created once and reused (repeat calls are
+    // no-ops). On touch there's no sorter — the action menu handles reordering.
     if (this.dragSort || !Craft.hasMousePointerEvents()) {
       return;
     }
@@ -91,10 +77,8 @@ export class SortableCheckboxSelect extends Base {
       handle: 'craft-reorder-button',
     });
     this.dragSort.on('sortChange', () => {
-      // A drag reorder changes only the order; refresh positions (the checked
-      // set — and thus disabled/membership — is unchanged) alongside the
-      // existing sortChange pub/sub (consumed by the CVD + legacy
-      // BaseElementIndex), not replacing it.
+      // A drag changes only the order (not the checked set), so refresh positions
+      // and re-emit sortChange (consumed by the CVD + legacy BaseElementIndex).
       this.updateReorderPositions();
       this.trigger('sortChange');
     });
@@ -106,10 +90,9 @@ export class SortableCheckboxSelect extends Base {
 
   /**
    * Tear down the sorter and release the back-references so the controller can be
-   * re-booted (e.g. when the field layout designer's host innerHTML is swapped).
-   * The item-level listeners live on the (now detached) checkbox DOM and are
-   * cleaned up by GC; this disposes the DragSort (which would otherwise keep its
-   * pointer bindings) and clears the WeakMap + jQuery `.data` entries.
+   * re-booted (e.g. when the FLD host innerHTML is swapped). Item listeners on the
+   * detached DOM are GC'd; this disposes the DragSort (which would otherwise keep
+   * its pointer bindings) and clears the WeakMap + jQuery `.data` entries.
    */
   override destroy(): void {
     this.dragSort?.destroy?.();
@@ -125,12 +108,10 @@ export class SortableCheckboxSelect extends Base {
   }
 
   /**
-   * Recompute every item's reorder state. A button is enabled only when its item
-   * is checked and 2+ items are checked overall; otherwise it's disabled.
-   * Enabled ⇒ in the sorter (draggable); disabled ⇒ removed from the sorter
-   * (DragSort ignores the `disabled` attribute, so membership is what actually
-   * gates dragging). Called whenever the checked set changes — a single check
-   * can flip a sibling near the 1↔2-checked boundary.
+   * Recompute every item's reorder state: a button is enabled only when its item is
+   * checked and 2+ items are checked overall. Enabled ⇒ in the sorter (draggable);
+   * disabled ⇒ removed (membership is what gates dragging). Called whenever the
+   * checked set changes, since one check can flip a sibling at the 1↔2 boundary.
    */
   updateReorderButtons(): void {
     const containerEl: Element | undefined = this.$container?.[0];
@@ -169,16 +150,13 @@ export class SortableCheckboxSelect extends Base {
   }
 
   /**
-   * Recompute each button's `position` (first / last / middle within the CHECKED
-   * subset, mirroring getPrev/NextCheckedItem): the first checked item gets
-   * 'first' (disables Move up), the last checked gets 'last' (disables Move
-   * down), the rest 'middle'. Unchecked items fall through to 'middle' (their
-   * button is disabled anyway).
+   * Recompute each button's `position` within the CHECKED subset: first checked ⇒
+   * 'first' (disables Move up), last checked ⇒ 'last' (disables Move down), rest ⇒
+   * 'middle' (unchecked items fall through to 'middle', but are disabled anyway).
    *
-   * A reorder changes only the order — not which items are checked — so the
-   * reorder paths (drag sort-change, moveUp/moveDown) call this rather than the
-   * full {@link updateReorderButtons}, leaving the disabled state and DragSort
-   * sorter membership untouched (and avoiding redundant addItems/removeItems).
+   * Reorders don't change which items are checked, so the reorder paths call this
+   * instead of the full {@link updateReorderButtons}, leaving disabled state and
+   * sorter membership untouched.
    */
   updateReorderPositions(): void {
     const containerEl: Element | undefined = this.$container?.[0];
@@ -220,9 +198,9 @@ export class SortableCheckboxSelect extends Base {
 
 /**
  * A single checkbox row within a {@link SortableCheckboxSelect}. Owns the
- * always-present `<craft-reorder-button>` (prepended before the checkbox) plus
- * the Move up/down handlers; the enabled/disabled + sorter-membership state is
- * driven by the parent's {@link SortableCheckboxSelect.updateReorderButtons}.
+ * always-present `<craft-reorder-button>` and the Move up/down handlers; the
+ * enabled/membership state is driven by the parent's
+ * {@link SortableCheckboxSelect.updateReorderButtons}.
  */
 export class Item extends Base {
   select: SortableCheckboxSelect;
@@ -232,8 +210,7 @@ export class Item extends Base {
 
   constructor(select?: SortableCheckboxSelect, item?: any) {
     super();
-    // Assigned here (not just in init) so TS sees it as definitely assigned;
-    // init re-assigns it for the leaf-construction path.
+    // Assigned here (not just in init) so TS sees it as definitely assigned.
     this.select = select!;
     if (new.target === Item) {
       this.init(select!, item);
@@ -262,8 +239,8 @@ export class Item extends Base {
       this.handleCheckboxChange();
     });
 
-    // Reflect the initial checked/unchecked state for the legacy event contract;
-    // the parent sets the disabled/sorter state once all items exist.
+    // Emit the initial checked/unchecked state for the legacy event contract;
+    // the parent sets disabled/sorter state once all items exist.
     this.$item.trigger(
       this.$checkbox.prop('checked') ? 'checked' : 'unchecked'
     );

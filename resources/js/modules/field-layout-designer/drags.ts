@@ -1,7 +1,7 @@
 import {
+  bod,
   Drag,
   FX_DURATION,
-  bod,
   getDist,
   getOffset,
   getOuterHeight,
@@ -11,7 +11,7 @@ import {
   hitTest,
   prefersReducedMotion,
 } from '@craftcms/garnish';
-import {fldTabData, fldElementData} from './support';
+import {fldElementData, fldTabData} from './support';
 import type {FieldLayoutDesigner} from './FieldLayoutDesigner';
 
 // jQuery (`$`) survives only at the Craft.Grid seam (`tabGrid.addItems/removeItems`
@@ -138,9 +138,7 @@ export class BaseDrag extends Drag {
     this.showingInsertion = false;
   }
 
-  /**
-   * Sets the item midpoints up front so we don't have to keep checking on every mouse move
-   */
+  /** Sets item midpoints up front so we don't recompute them on every mouse move. */
   setMidpoints(): void {
     for (const item of this.$items as HTMLElement[]) {
       // Skip library elements

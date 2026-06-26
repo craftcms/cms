@@ -3,20 +3,15 @@ import {GeneratedFieldsTable} from '@/modules/generated-fields/GeneratedFieldsTa
 
 /**
  * `<craft-generated-fields-table>` — boots a {@link GeneratedFieldsTable} around
- * the server-rendered `<table>` it wraps, so PHP/Twig can emit the element
- * instead of a manual `new Craft.GeneratedFieldsTable(...)` `{% js %}` block.
+ * the server-rendered `<table>` it wraps, so PHP/Twig can emit the element instead
+ * of a manual `new Craft.GeneratedFieldsTable(...)` `{% js %}` block.
  *
- * The element renders the table (and its rows) as **light-DOM children** — the
- * jQuery-based table code queries the document for the table by id, so a
- * shadow-DOM (Lit) component would hide it. The constructor args mirror the
- * legacy `new Craft.GeneratedFieldsTable(id, name, cols, settings)` emit:
- *
- *   - **id** — read from the child `<table>`'s live `id`, not an attribute. This
- *     is exactly the element `EditableTable#init` resolves via `$('#'+id)`, so
- *     it's correct regardless of input namespacing and can never collide with
- *     this wrapper element's own id.
- *   - **name** — the namespaced base input name (`name` attribute).
- *   - **cols** / **settings** — JSON (`cols` / `settings` attributes).
+ * The table renders as **light-DOM children** — the jQuery table code queries the
+ * document for the table by id, so shadow DOM would hide it. Constructor args
+ * mirror the legacy emit; `id` is read from the child `<table>`'s live `id` (what
+ * `EditableTable#init` resolves via `$('#'+id)`), not an attribute, so it can't
+ * collide with this wrapper's own id. `name` is the namespaced base input name;
+ * `cols`/`settings` are JSON attributes.
  */
 export default class CraftGeneratedFieldsTable extends HTMLElement {
   #instance: GeneratedFieldsTable | null = null;
@@ -26,10 +21,9 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
   }
 
   /**
-   * Construct the table once its child `<table>` is present. Depending on how
-   * the markup lands (initial HTML parse vs. an AJAX-injected fragment) the
-   * children may not exist yet when the element upgrades, so retry on the next
-   * frame until they do (bailing if the element is disconnected meanwhile).
+   * Construct the table once its child `<table>` is present. AJAX-injected markup
+   * may not have children yet when the element upgrades, so retry on the next frame
+   * until they exist (bailing if disconnected meanwhile).
    */
   #boot(): void {
     if (this.#instance || !this.isConnected) {
@@ -52,23 +46,18 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
 
   /**
    * The table's value as an **ordered list** of row payloads in DOM (drag-sort)
-   * order — `[{ name, handle, template, uid }, …]` — which is what the server
-   * stores as the generated-fields sort order: `Fields::assembleLayoutFromPost`
-   * reads it raw via `Request::input('generatedFields')`, and
-   * `FieldLayout::setGeneratedFields` runs `array_values()` over it (preserving
-   * order; each item carries its `uid`, so identity is kept).
+   * order — `[{ name, handle, template, uid }, …]`. The server stores this as the
+   * generated-fields sort order (`Fields::assembleLayoutFromPost` reads it raw,
+   * `FieldLayout::setGeneratedFields` runs `array_values()`; each item keeps its
+   * `uid`).
    *
-   * Why a list and not the expanded `{ rowId: {…} }` object: each row's input
-   * names bake in its original numeric index (`generatedFields[0][…]`,
-   * `generatedFields[1][…]`), which does NOT change when the row is dragged.
-   * Returning the keyed object lets JS re-sort those integer-like keys
-   * ascending, discarding the dragged order — so the saved sort order never
-   * actually changed. Reading the order off the DOM (`<tr data-id>`) and
-   * emitting a list fixes that.
+   * A list, not the keyed `{ rowId: {…} }` object: row input names bake in the
+   * original numeric index, which doesn't change on drag, so a keyed object lets JS
+   * re-sort those integer-like keys ascending and discard the dragged order.
+   * Reading order off the DOM (`<tr data-id>`) and emitting a list fixes that.
    *
-   * Inertia forms don't post the table's distributed inputs (they collect only
-   * the single hidden `fieldLayout` input), so the submit transform merges this
-   * in. Native/Twig forms still post the inputs directly — left intact — so
+   * Inertia forms post only the single hidden `fieldLayout` input, so the submit
+   * transform merges this in; native/Twig forms still post the inputs directly, so
    * this is additive.
    */
   serialize(): any[] {
@@ -77,18 +66,14 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
       return [];
     }
 
-    // Flat `name → value` map (e.g. `generatedFields[0][handle]`) expanded into
-    // a nested `{ rowId: { name, handle, template, uid } }` object via the
-    // legacy Craft helper (the `getPostData` + `expandPostArray` pairing the
-    // Table field uses) — the per-row payloads, keyed by their (stable) row id.
-    // Scoped to the inner `<table>` so the sibling base hidden
-    // (`<input name="generatedFields" value="">`) is excluded.
+    // Flat `name → value` map expanded into nested `{ rowId: {…} }` payloads via
+    // the legacy `getPostData` + `expandPostArray` pairing. Scoped to the inner
+    // `<table>` so the sibling base hidden input is excluded.
     const flat = getPostData(table);
     const expand = (window as any).Craft?.expandPostArray;
     const expandedAll: Record<string, any> = expand ? expand(flat) : {};
     const baseName = this.getAttribute('name') ?? 'generatedFields';
-    // The table only holds `generatedFields` inputs, so there's a single
-    // top-level key; prefer the base name, falling back to that lone key.
+    // Single top-level key; prefer the base name, fall back to that lone key.
     const rowsById: Record<string, any> =
       expandedAll[baseName] ?? Object.values(expandedAll)[0] ?? {};
 

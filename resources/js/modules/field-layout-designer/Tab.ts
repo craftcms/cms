@@ -355,12 +355,11 @@ export class Tab extends Base {
   }
 
   /**
-   * Release this tab's controller resources for a designer reboot (host
-   * innerHTML swap). Unlike {@link destroy}, this does NOT mutate the layout
-   * config, move focus, or remove DOM — it only disposes resources that outlive
-   * the detached tab subtree: the HUD (appended to `<body>` and held in HUD's
-   * live registry) and any open settings slideout. Listeners on the tab's own
-   * (now detached) nodes are released by `super.destroy()` / GC.
+   * Release this tab's controller resources for a designer reboot (host innerHTML
+   * swap). Unlike {@link destroy}, this does NOT mutate the config, move focus, or
+   * remove DOM — it only disposes what outlives the detached tab subtree: the HUD
+   * (lives in `<body>`) and any open settings slideout. Detached-node listeners are
+   * released by `super.destroy()` / GC.
    */
   dispose(): void {
     if (this.destroyed) {

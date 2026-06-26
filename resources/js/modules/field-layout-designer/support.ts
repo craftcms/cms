@@ -3,13 +3,10 @@ import type {Tab} from './Tab';
 import type {Element as FldElement} from './Element';
 
 /**
- * Native replacements for the legacy jQuery `$.data()` back-references the FLD
- * used to stash object instances on DOM nodes. Each key the legacy code stored
- * (`fld-tab`, `fld-element`, `hud`, `cvd`) becomes a module-level WeakMap keyed
- * by the element, exactly mirroring how `@craftcms/garnish` replaced `$.data`.
- *
- * Simple string/JSON values that lived in `data-*` attributes are NOT here —
- * those are read straight off `element.dataset` (JSON-parsed where needed).
+ * WeakMaps replacing the legacy jQuery `$.data()` back-references the FLD used to
+ * stash instances on DOM nodes (`fld-tab`, `fld-element`, `hud`, `cvd`), matching
+ * how `@craftcms/garnish` replaced `$.data`. Plain `data-*` string/JSON values
+ * stay on `element.dataset`.
  */
 
 /** Legacy `$container.data('fld-tab', tab)` / `.data('fld-tab')`. */

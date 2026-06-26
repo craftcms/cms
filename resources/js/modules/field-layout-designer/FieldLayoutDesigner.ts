@@ -294,14 +294,11 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   }
 
   /**
-   * Tear the designer down so it can be re-booted when Inertia replaces the
-   * host's innerHTML after a save. Cascades to the card view designer (→ its
-   * SortableCheckboxSelect → DragSort) and disposes the resources that outlive
-   * the detached FLD subtree: the drag controllers + library picker, Craft.Grid
-   * (which binds a window `resize` listener), and every tab's HUD (appended to
-   * `<body>` and held in HUD's live registry). Listeners bound to the now
-   * detached FLD DOM — and the WeakMaps keyed on those nodes — are released by
-   * `super.destroy()` / GC.
+   * Tear the designer down so it can be re-booted when Inertia replaces the host's
+   * innerHTML after a save. Cascades to the CVD and disposes resources that outlive
+   * the detached FLD subtree: drag controllers, library picker, Craft.Grid (binds a
+   * window `resize`), and every tab's HUD (lives in `<body>`). Detached-DOM
+   * listeners and their WeakMaps are released by `super.destroy()` / GC.
    */
   override destroy(): void {
     this.cvd?.destroy();
@@ -318,8 +315,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     this.tabGrid?.destroy?.();
     this.tabGrid = null;
 
-    // Each tab owns a HUD in <body> (held in HUD's live registry), so it won't
-    // be GC'd with the detached subtree — dispose every tab.
+    // Each tab's HUD lives in <body>, so it won't be GC'd with the detached
+    // subtree — dispose every tab.
     this.$tabContainer
       ?.querySelectorAll(':scope > .fld-tab')
       .forEach((tabEl: HTMLElement) => fldTabData.get(tabEl)?.dispose());

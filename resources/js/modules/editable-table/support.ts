@@ -1,16 +1,9 @@
-import type {EditableTable} from './EditableTable';
-import type {Row} from './EditableTable';
+import type {EditableTable, Row} from './EditableTable';
 
 /**
- * Native replacements for the legacy jQuery `$.data()` back-references the
- * editable table used to stash object instances on DOM nodes, mirroring how
- * `@craftcms/garnish` (and the FLD port) replaced `$.data` with module-level
- * WeakMaps keyed by the element.
- *
- * The legacy code stored `$table.data('editable-table', this)` and
- * `$tr.data('editable-table-row', this)`; those become these two maps. Plain
- * `data-*` attribute reads (e.g. `data-id`) are NOT here — they stay on
- * `element.dataset` / `getAttribute`.
+ * WeakMaps replacing the legacy jQuery `$.data()` back-references that stashed
+ * instances on DOM nodes (matching the `@craftcms/garnish`/FLD pattern). Only the
+ * object back-references move here; plain `data-*` reads stay on `element.dataset`.
  */
 
 /** Legacy `$table.data('editable-table', table)` / `.data('editable-table')`. */

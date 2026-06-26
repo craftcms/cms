@@ -40,9 +40,9 @@ export default class CraftReorderButton extends LitElement {
   @property({reflect: true}) variant: string = 'neutral';
 
   /**
-   * Disables the button: blocks pointer interaction (so it can't open the action
-   * menu or act as a drag handle), prevents reorder actions, and visually dims
-   * it (see the host styles + `aria-disabled`). Defaults to `false`.
+   * Disables the button: blocks pointer interaction (so it can't open the menu or
+   * act as a drag handle), prevents reorder actions, and visually dims it. Defaults
+   * to `false`.
    */
   @property({reflect: true, type: Boolean}) disabled = false;
 

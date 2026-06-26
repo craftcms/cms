@@ -9,11 +9,9 @@ import CraftGeneratedFieldsTable from '@/modules/generated-fields/GeneratedField
 (GeneratedFieldsTable as any).Row = GeneratedFieldsTableRow;
 
 // Assign onto the legacy `Craft` global so the PHP-emitted
-// `new Craft.GeneratedFieldsTable(id, name, cols, settings)`
-// (`src/Cp/FieldLayoutDesigner/FieldLayoutDesigner.php`) keeps working
-// unchanged. Nothing subclasses `GeneratedFieldsTable` via the legacy
-// `.extend()`, so — unlike `EditableTable` — it does not need the compat shim
-// and is assigned as the modern ES class directly.
+// `new Craft.GeneratedFieldsTable(...)` keeps working. Nothing subclasses it via
+// legacy `.extend()`, so — unlike `EditableTable` — it needs no compat shim and is
+// assigned as the modern ES class directly.
 const craft = (window as any).Craft ?? ((window as any).Craft = {});
 craft.GeneratedFieldsTable = GeneratedFieldsTable;
 

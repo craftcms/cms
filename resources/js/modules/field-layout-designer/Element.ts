@@ -1,8 +1,8 @@
 import {Base, hasAttr} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './FieldLayoutDesigner';
 import {
-  fldElementData,
   firstFocusableInSiblings,
+  fldElementData,
   htmlToElement,
 } from './support';
 import type {Tab} from './Tab';
@@ -595,7 +595,7 @@ export class Element extends Base {
         );
       }
     } else {
-      // if it's not a field (so a ui element) and it's not multi instance, make it visible for selection again
+      // Non-field, non-multi-instance UI element — make it selectable again.
       if (!this.isMultiInstance) {
         const uiLibraryElement = this.tab.designer.$uiLibraryElements.find(
           (el: HTMLElement) =>

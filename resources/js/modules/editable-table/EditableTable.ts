@@ -1,31 +1,23 @@
 import {Base} from '@craftcms/garnish';
 import {editableTableData, editableTableRowData} from './support';
 import type {
-  EditableTableSettings,
-  EditableTableColumns,
   EditableTableColumn,
+  EditableTableColumns,
+  EditableTableSettings,
 } from './types';
 import {type ReorderDirection} from '@craftcms/cp';
 
-// `Craft`, jQuery (`$`), and the legacy `Garnish` global are all still globals on
-// the page. EditableTable extends the modern `@craftcms/garnish` `Base`, but it
-// is overwhelmingly an orchestrator of still-jQuery Craft/Garnish widgets
-// (`Craft.ui.*`, `Craft.DataTableSorter`, `Craft.HandleGenerator`,
-// `Garnish.NiceText`, `Garnish.DisclosureMenu`), so jQuery (`$`) survives at
-// those seams and the public `$`-prefixed properties stay jQuery — external
-// legacy code (e.g. the Table field's `TableFieldSettings` bundle) consumes them
-// as jQuery. The modernization is the class system, TypeScript types, the
-// `.data()` → WeakMap move (see `support.ts`), and ESM/bundle wiring.
+// `Craft`, `$` (jQuery), and `Garnish` remain page globals. This class extends the
+// modern `@craftcms/garnish` `Base` but still orchestrates jQuery Craft/Garnish
+// widgets, so jQuery survives at those seams and the public `$`-prefixed properties
+// stay jQuery for external legacy consumers (e.g. `TableFieldSettings`).
 declare const Craft: any;
 declare const Garnish: any;
 declare const $: any;
 
 const noop = (): void => {};
 
-/**
- * The textual column types — rendered as `<textarea>`/text inputs and given the
- * row-navigation, paste-import, and validation behaviors.
- */
+/** Column types rendered as text inputs, with row-nav, paste-import, and validation. */
 const TEXTUAL_COL_TYPES = [
   'autosuggest',
   'color',
@@ -40,21 +32,14 @@ const TEXTUAL_COL_TYPES = [
 ] as const;
 
 /**
- * Editable table — a port of the legacy jQuery `Craft.EditableTable` onto the
- * modern `@craftcms/garnish` `Base`. See the file header for what stays jQuery
- * and why.
+ * Editable table — a port of the legacy jQuery `Craft.EditableTable` onto
+ * `@craftcms/garnish` `Base`.
  *
- * ## Construction contract
- *
- * Setup lives in {@link init}, not the constructor, and the constructor only
- * runs it for the **leaf** class (`new.target` guard). This is what lets the
- * compat layer (`@craftcms/garnish/compat`) wrap this class so legacy
- * `Craft.EditableTable.extend({ init() { … this.base(…) } })` subclasses keep
- * working: their `init` reshapes the constructor args before calling
- * `this.base(id, baseName, columns, settings)`, and the compat trampoline — not
- * our constructor — is what invokes `init`. Modern ES subclasses
- * (`class extends EditableTable`) call `this.init(...)` from their own leaf
- * constructor instead.
+ * Setup lives in {@link init}, and the constructor only runs it for the **leaf**
+ * class (`new.target` guard). This lets the compat layer wrap the class so legacy
+ * `.extend({ init() { … this.base(…) } })` subclasses keep working — their `init`
+ * reshapes the args, and the compat trampoline (not our constructor) invokes it.
+ * Modern ES subclasses call `this.init(...)` from their own leaf constructor.
  */
 export class EditableTable extends Base<EditableTableSettings> {
   static readonly textualColTypes = TEXTUAL_COL_TYPES;
@@ -529,8 +514,7 @@ export class EditableTable extends Base<EditableTableSettings> {
           .eq(tdIndex + j)
           .find('textarea,input[type!=hidden]');
         $inputs.val(value);
-        // Listeners are now bound natively (modern Base), so a jQuery
-        // `.trigger('input')` would not reach them — dispatch a native event.
+        // Base binds listeners natively, so a jQuery `.trigger` won't reach them.
         $inputs.each((_: number, el: HTMLElement) => {
           el.dispatchEvent(new Event('input', {bubbles: true}));
         });
@@ -559,10 +543,8 @@ export class EditableTable extends Base<EditableTableSettings> {
   }
 
   /**
-   * Build a row `<tr>`. Kept as jQuery / `Craft.ui.*` widget assembly — this is a
-   * pure Craft-UI seam — and returns a jQuery `<tr>` (the legacy contract that
-   * external callers such as `TableFieldSettings` rely on, e.g.
-   * `Craft.EditableTable.createRow(...).appendTo($tbody)`).
+   * Build a row `<tr>`. Kept as jQuery / `Craft.ui.*` assembly and returns a jQuery
+   * `<tr>` — the legacy contract external callers like `TableFieldSettings` rely on.
    */
   static createRow(
     rowId: string,
@@ -787,11 +769,9 @@ export class EditableTable extends Base<EditableTableSettings> {
 }
 
 /**
- * A single row within an {@link EditableTable}. Port of the legacy
- * `Craft.EditableTable.Row`. Uses the same `new.target` construction contract as
- * {@link EditableTable} so the compat layer can wrap it for legacy
- * `Craft.EditableTable.Row.extend({ init() { … this.base(table, tr) } })`
- * subclasses.
+ * A single row within an {@link EditableTable}; port of `Craft.EditableTable.Row`.
+ * Uses the same `new.target` construction contract as {@link EditableTable} so the
+ * compat layer can wrap it for legacy `.extend()` subclasses.
  */
 export class Row extends Base {
   table: EditableTable;
@@ -818,8 +798,7 @@ export class Row extends Base {
 
   constructor(table?: EditableTable, tr?: any) {
     super();
-    // `table` is assigned here (not just in init) so TS sees it as definitely
-    // assigned; init re-assigns it for the leaf-construction path.
+    // Assigned here (not just in init) so TS sees it as definitely assigned.
     this.table = table!;
     if (new.target === Row) {
       this.init(table!, tr);
@@ -1167,8 +1146,7 @@ export class Row extends Base {
   }
 
   handlePaste(ev: any): void {
-    // Modern Base binds listeners natively, so the event is the native one —
-    // read `clipboardData` directly (no jQuery `originalEvent` wrapper).
+    // Native listener, so the event is native — read `clipboardData` directly.
     const data = Craft.trim(ev.clipboardData.getData('Text'), ' \n\r');
     if (!data.match(/[\t\r\n]/)) {
       return;
