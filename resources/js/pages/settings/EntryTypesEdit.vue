@@ -2,7 +2,7 @@
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import {useForm} from '@inertiajs/vue3';
   import {t, toHandle} from '@craftcms/cp';
-  import {computed, ref, watch} from 'vue';
+  import {computed, ref} from 'vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
@@ -11,8 +11,6 @@
   import CraftSelectColor from '@craftcms/cp/vue/CraftSelectColor.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import {useFieldLayoutDesigner} from '@/common/composables/useFieldLayoutDesigner';
-  import {useGeneratedFieldsTable} from '@/common/composables/useGeneratedFieldsTable';
   import useCraftData from '@/common/composables/useCraftData';
   import Pane from '@/common/components/Pane.vue';
   import {store} from '@actions/Settings/EntryTypesController';
@@ -76,22 +74,13 @@
     // the designer's own inputs — see the transform passed to useSettingsSave.
   });
 
-  // Boot the (legacy) field layout designer and read its value back at submit.
+  // The field layout designer and generated-fields table render inside
+  // `fieldLayoutDesigner.html` as self-booting custom elements (they boot,
+  // teardown, and reboot across the after-save DOM swap via their own
+  // connected/disconnected callbacks). Nothing to wire up here — `fldHost` just
+  // scopes the submit-time `serialize()` queries below, since the elements live
+  // in the compiled markup and can't be reffed directly.
   const fldHost = ref<HTMLElement>();
-  const fld = useFieldLayoutDesigner(fldHost);
-  // The generated-fields table lives inside the designer markup; read its value
-  // back at submit too (Inertia doesn't post its distributed inputs). It's a
-  // custom element, so it re-boots itself when the markup is swapped.
-  const generatedFieldsTable = useGeneratedFieldsTable(fldHost);
-
-  // After a save, Inertia replaces the designer markup via `v-html`, which
-  // orphans the imperatively-booted FLD/CVD (drag handles go dead). Re-boot it
-  // whenever its html changes (destroying the old instance first). The
-  // non-immediate watch doesn't fire on first render, so it never double-boots.
-  watch(
-    () => props.fieldLayoutDesigner.html,
-    () => fld.reboot()
-  );
 
   // Auto-generate the handle from the name for new entry types.
   const handleGenerator = useInputGenerator(
@@ -114,11 +103,20 @@
     () => form.showSlugField && form.slugTranslationMethod === 'custom'
   );
 
+  // Inertia posts the form object, not the designer's own inputs, so read the
+  // values back out of the self-booting custom elements at submit. `fieldLayout`
+  // must stay a string (the server `JsonHelper::decode()`s it); `generatedFields`
+  // is the ordered row list the server `array_values()`-es.
   const {save} = useSettingsSave(form, store, {
     transform: (data) => ({
       ...data,
-      fieldLayout: fld.serialize(),
-      generatedFields: generatedFieldsTable.serialize(),
+      fieldLayout:
+        fldHost.value?.querySelector('craft-field-layout-designer')?.serialize() ??
+        '{}',
+      generatedFields:
+        fldHost.value
+          ?.querySelector('craft-generated-fields-table')
+          ?.serialize() ?? [],
     }),
   });
 </script>
@@ -317,7 +315,9 @@
             :disabled="readOnly"
           />
 
-          <div ref="fldHost" v-html="fieldLayoutDesigner.html"></div>
+          <div ref="fldHost">
+            <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
+          </div>
         </craft-field-group>
       </Pane>
       <div class="col-span-1">

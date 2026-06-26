@@ -12,7 +12,6 @@
      *
      * @var \CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner $designer
      * @var string $id
-     * @var bool $autoBoot
      * @var array $settings
      * @var array $fieldLayoutConfig
      * @var \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
@@ -25,10 +24,10 @@
      * @var \CraftCms\Cms\FieldLayout\FieldLayoutElement[] $availableUiElements
      */
 @endphp
+<craft-field-layout-designer settings="{{ \CraftCms\Cms\Support\Json::encode($settings) }}">
 <div
     id="{{ $id }}"
     class="layoutdesigner"
-    @unless ($autoBoot) data-settings="{{ \CraftCms\Cms\Support\Json::encode($settings) }}" @endunless
 >
     <input
         type="hidden"
@@ -118,3 +117,4 @@
         </div>
     </div>
 </div>
+</craft-field-layout-designer>

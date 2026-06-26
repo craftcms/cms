@@ -14,7 +14,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -96,21 +95,6 @@ class FieldLayoutDesigner
             'readOnly' => $config['disabled'],
         ];
 
-        // When `autoBoot` is disabled (e.g. inside an Inertia page), we don't queue the
-        // `new Craft.FieldLayoutDesigner()` call — the host boots it from JS once the
-        // legacy Craft global is ready, reading the settings off `data-settings`.
-        $autoBoot = $config['autoBoot'] ?? true;
-
-        if ($autoBoot) {
-            $jsSettings = JsonHelper::encode($settings);
-            $namespacedId = InputNamespace::namespaceId($config['id']);
-
-            $js = <<<JS
-new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings)
-JS;
-            HtmlStack::js($js);
-        }
-
         $availableCustomFields = $fieldLayout->getAvailableCustomFields();
         $availableNativeFields = $fieldLayout->getAvailableNativeFields();
         $availableUiElements = $fieldLayout->getAvailableUiElements();
@@ -151,7 +135,6 @@ JS;
         return view('c::forms.fld.designer', [
             'designer' => $this,
             'id' => $config['id'],
-            'autoBoot' => $autoBoot,
             'settings' => $settings,
             'fieldLayoutConfig' => $fieldLayoutConfig,
             'fieldLayout' => $fieldLayout,
