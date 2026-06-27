@@ -31,7 +31,9 @@
   }
 
   const props = defineProps<{
-    tokens: Array<TokenData>;
+    tokens: {
+      data: Array<TokenData>;
+    };
     dates: any;
     readOnly: boolean;
   }>();
@@ -56,7 +58,6 @@
           header: t('Name'),
           props: ({row}) => ({
             href: edit({tokenId: row.original.id}).url,
-            inertia: false,
           }),
         }),
         columnHelper.date('lastUsed', {
@@ -71,7 +72,7 @@
       ];
     },
     get data() {
-      return props.tokens;
+      return props.tokens.data;
     },
     state: {
       get columnVisibility() {
@@ -94,7 +95,6 @@
       <CpLink
         :href="create().url"
         icon="plus"
-        :inertia="false"
         appearance="button"
         variant="accent"
         >{{ t('New token') }}</CpLink
@@ -104,13 +104,9 @@
       <AdminTable :table="table">
         <template #empty-row>
           <Empty :label="t('No GraphQL tokens exist yet.')">
-            <CpLink
-              :href="create().url"
-              icon="plus"
-              :inertia="false"
-              appearance="button"
-              >{{ t('New token') }}</CpLink
-            >
+            <CpLink :href="create().url" icon="plus" appearance="button">{{
+              t('New token')
+            }}</CpLink>
           </Empty>
         </template>
       </AdminTable>

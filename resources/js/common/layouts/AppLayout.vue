@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed, reactive, ref, useTemplateRef, watch} from 'vue';
+  import {computed, reactive, ref, useSlots, useTemplateRef, watch} from 'vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head, type InertiaForm, usePage} from '@inertiajs/vue3';
@@ -18,6 +18,7 @@
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import UserMenu from '@/common/components/UserMenu.vue';
   import FlashMessages from '@/common/components/FlashMessages.vue';
+  import Pane from '@/common/components/Pane.vue';
 
   interface SaveOptions {
     redirect?: boolean;
@@ -56,6 +57,7 @@
   }>();
 
   const {errorFlash, successFlash} = useFlash();
+  const slots = useSlots();
   const crumbs = computed(() => page.props.crumbs ?? null);
   const formActionItems = computed(() => [
     ...props.defaultFormActions.map(defaultFormActionItem),
@@ -66,6 +68,7 @@
     ...(props.additionalSkipLinks ?? []),
   ]);
   const readOnly = computed(() => page.props.readOnly);
+  const hasDetails = computed(() => Boolean(slots.details));
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement, announce} = useAnnouncer();
 
@@ -279,7 +282,21 @@
               <template v-if="readOnly">
                 <CalloutReadOnly />
               </template>
-              <slot></slot>
+              <template v-if="hasDetails">
+                <div class="content-with-details">
+                  <div>
+                    <slot></slot>
+                  </div>
+                  <aside>
+                    <Pane appearance="raised">
+                      <div class="details">
+                        <slot name="details"></slot>
+                      </div>
+                    </Pane>
+                  </aside>
+                </div>
+              </template>
+              <slot v-else></slot>
             </div>
           </component>
         </main>
@@ -347,6 +364,21 @@
 
   .container--full {
     max-width: none;
+  }
+
+  .content-with-details {
+    display: grid;
+    gap: var(--c-spacing-md);
+
+    @container (width >= 768px) {
+      grid-template-columns: minmax(0, 1fr) clamp(12rem, 20%, 16rem);
+      align-items: start;
+    }
+  }
+
+  .details {
+    display: grid;
+    gap: var(--c-spacing-md);
   }
 
   @media screen and (min-width: 1024px) {

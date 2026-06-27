@@ -55,8 +55,6 @@ use CraftCms\Cms\Http\Controllers\Entries\ReassignEntriesModalController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
-use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
-use CraftCms\Cms\Http\Controllers\Gql\TokensController as GqlTokensController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MatrixController;
@@ -337,24 +335,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // FindAndReplace
         Route::post('utilities/find-and-replace-perform-action', FindAndReplaceController::class);
-
-        // GraphQL
-        Route::middleware([RequireAdmin::class])->group(function () {
-            Route::post('graphql/generate-token', [GqlTokensController::class, 'generate']);
-
-            Route::middleware('password.confirm')->group(function () {
-                Route::post('graphql/save-token', [GqlTokensController::class, 'store']);
-                Route::post('graphql/fetch-token', [GqlTokensController::class, 'fetch']);
-            });
-        });
-
-        Route::middleware([RequireAdminChanges::class])->group(function () {
-
-            Route::middleware('password.confirm')->group(function () {
-                Route::post('graphql/save-schema', [GqlSchemasController::class, 'save']);
-                Route::post('graphql/save-public-schema', [GqlSchemasController::class, 'savePublic']);
-            });
-        });
 
         // Matrix
         Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
