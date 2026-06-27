@@ -25,13 +25,14 @@ export function useSettingsSave<T extends Record<string, any>>(
   });
 
   function save({redirect = true} = {}) {
-    let submitOptions = {};
-    if (redirect) {
-      submitOptions = {
-        preserveScroll: true,
-        preserveState: true,
-      };
-    }
+    const submitOptions = redirect
+      ? {
+          preserveScroll: true,
+          preserveState: true,
+        }
+      : {
+          replace: true,
+        };
 
     form
       .clearErrors()

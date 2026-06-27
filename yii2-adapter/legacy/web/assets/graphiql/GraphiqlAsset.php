@@ -8,7 +8,7 @@
 namespace craft\web\assets\graphiql;
 
 use craft\web\AssetBundle;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use craft\web\assets\cp\CpAsset;
 
 /**
  * GraphiQL asset bundle.
@@ -19,8 +19,22 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
  */
 class GraphiqlAsset extends AssetBundle
 {
-    public function registerAssetFiles($view)
-    {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\GraphiqlAsset::class);
-    }
+    /**
+     * @inheritdoc
+     */
+    public $sourcePath = __DIR__ . '/dist';
+
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'graphiql.js',
+    ];
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Data;
 
 use CraftCms\Cms\Component\Component;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 class NavItem extends Component
 {
@@ -25,6 +26,7 @@ class NavItem extends Component
     public bool $external = false;
 
     /** @var NavItem[]|false */
+    #[LiteralTypeScriptType('CraftCms.Cms.Cp.Data.NavItem[] | false')]
     public array|false $subnav = false;
 
     public bool $selected = false;
