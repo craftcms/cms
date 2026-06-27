@@ -12,7 +12,7 @@ class PermissionGroup implements Arrayable
 {
     public function __construct(
         public string $heading,
-        /** @var Collection<string, Permission> */
+        /** @var Collection<int, Permission> */
         public Collection $permissions = new Collection,
     ) {}
 
@@ -35,6 +35,7 @@ class PermissionGroup implements Arrayable
         ];
     }
 
+    /** @param Collection<int, Permission> $permissions */
     private function permissionKeys(Collection $permissions): array
     {
         return $permissions

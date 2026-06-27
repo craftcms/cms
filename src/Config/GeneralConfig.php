@@ -1030,6 +1030,22 @@ class GeneralConfig extends BaseConfig
     public bool $enableGql = true;
 
     /**
+     * @var bool Whether the GraphQL `@transform` directive should be disabled.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->disableGraphqlTransformDirective()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DISABLE_GRAPHQL_TRANSFORM_DIRECTIVE=true
+     * ```
+     * :::
+     *
+     * @group GraphQL
+     */
+    public bool $disableGraphqlTransformDirective = false;
+
+    /**
      * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
      * Set to `0` to disable elevated session support.
@@ -4214,6 +4230,24 @@ class GeneralConfig extends BaseConfig
     public function enableGql(bool $value = true): self
     {
         $this->enableGql = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether the GraphQL `@transform` directive should be disabled.
+     *
+     * ```php
+     * ->disableGraphqlTransformDirective()
+     * ```
+     *
+     * @group GraphQL
+     *
+     * @see $disableGraphqlTransformDirective
+     */
+    public function disableGraphqlTransformDirective(bool $value = true): self
+    {
+        $this->disableGraphqlTransformDirective = $value;
 
         return $this;
     }

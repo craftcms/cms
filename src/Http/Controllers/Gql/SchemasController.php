@@ -167,6 +167,7 @@ readonly class SchemasController extends GqlController
             });
     }
 
+    /** @return Collection<int, PermissionGroup> */
     private function schemaPermissionGroups(): Collection
     {
         $schemaComponents = $this->gql->getAllSchemaComponents();
@@ -196,6 +197,7 @@ readonly class SchemasController extends GqlController
             ));
     }
 
+    /** @return Collection<int, PermissionGroup> */
     private function permissionGroups(array $categories): Collection
     {
         return collect($categories)
@@ -207,6 +209,7 @@ readonly class SchemasController extends GqlController
             ->values();
     }
 
+    /** @return Collection<int, Permission> */
     private function permissionList(array $permissions): Collection
     {
         return collect($permissions)
@@ -218,6 +221,7 @@ readonly class SchemasController extends GqlController
                 nested: isset($props['nested'])
                     ? $this->permissionList($props['nested'])
                     : new Collection,
-            ));
+            ))
+            ->values();
     }
 }
