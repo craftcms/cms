@@ -51,7 +51,10 @@
         columnHelper.display({
           id: 'scope',
           header: t('Scope'),
-          cell: ({row}) => row.original.scope.join(', '),
+          cell: ({row}) =>
+            row.original.scope.length > 2
+              ? `${row.original.scope.slice(0, 2).join(', ')} ${t('and {count} more', {count: row.original.scope.length - 2})}`
+              : row.original.scope.join(', '),
         }),
         columnHelper.display({
           id: 'public',

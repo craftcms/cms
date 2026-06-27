@@ -9,6 +9,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,7 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\patchJson;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -201,6 +203,23 @@ it('saves, updates, reveals, generates, and deletes tokens', function () {
     deleteJson(action([TokensController::class, 'destroy'], ['tokenId' => $token->id]))->assertOk();
 
     expect(Gql::getTokenById($token->id))->toBeNull();
+});
+
+it('redirects to the saved token edit page when saving and continuing', function () {
+    $schema = createSchemaForTokensControllerTest();
+
+    $response = post(action([TokensController::class, 'store']), [
+        'name' => 'Continued Token',
+        'accessToken' => 'continued-token',
+        'enabled' => true,
+        'schema' => $schema->id,
+    ]);
+
+    $token = Gql::getTokenByName('Continued Token');
+
+    expect($token)->not->toBeNull();
+
+    $response->assertRedirect(Url::cpUrl("graphql/tokens/$token->id"));
 });
 
 it('returns model errors for json validation failures', function () {

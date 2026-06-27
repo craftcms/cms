@@ -8,9 +8,11 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Session;
 use Inertia\Testing\AssertableInertia;
 
@@ -18,7 +20,9 @@ use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
+use function Pest\Laravel\patch;
 use function Pest\Laravel\patchJson;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -127,6 +131,29 @@ it('creates and updates schemas', function () {
 
     expect($updatedSchema?->name)->toBe('Renamed Schema')
         ->and($updatedSchema?->scope)->toBe($updatedScope);
+});
+
+it('redirects to the saved schema edit page when saving and continuing', function () {
+    $response = post(action([SchemasController::class, 'store']), [
+        'name' => 'Continued Schema',
+        'permissions' => schemaControllerScope(),
+    ]);
+
+    $schema = collect(Gql::getSchemas())->first(fn (GqlSchema $schema) => $schema->name === 'Continued Schema');
+
+    expect($schema)->not->toBeNull();
+
+    $response->assertRedirect(Url::cpUrl("graphql/schemas/$schema->id"));
+});
+
+it('redirects to the schema index when saving normally', function () {
+    $schema = createSchemaForSchemasControllerTest();
+
+    patch(action([SchemasController::class, 'update'], ['schemaId' => $schema->id]), [
+        'name' => 'Normally Saved Schema',
+        'permissions' => schemaControllerScope(),
+        'redirect' => Crypt::encrypt('graphql/schemas'),
+    ])->assertRedirect(Url::cpUrl('graphql/schemas'));
 });
 
 it('returns not found when updating an unknown schema id', function () {

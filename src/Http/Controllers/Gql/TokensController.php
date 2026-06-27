@@ -117,7 +117,13 @@ readonly class TokensController extends GqlController
             return $this->asModelFailure($token, t('Couldn’t save token.'), 'token');
         }
 
-        return $this->asModelSuccess($token, t('Token saved.'), 'token');
+        return $this->asModelSuccess(
+            $token,
+            t('Token saved.'),
+            'token',
+            redirect: $this->getPostedRedirectUrl($token)
+                ?? Url::cpUrl("graphql/tokens/$token->id"),
+        );
     }
 
     private function editScreen(GqlToken $token, ?string $accessToken = null): CpScreenResponse

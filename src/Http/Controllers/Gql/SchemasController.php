@@ -93,7 +93,13 @@ readonly class SchemasController extends GqlController
         }
 
         if (! $token) {
-            return $this->asModelSuccess($schema, t('Schema saved.'), 'schema');
+            return $this->asModelSuccess(
+                $schema,
+                t('Schema saved.'),
+                'schema',
+                redirect: $this->getPostedRedirectUrl($schema)
+                    ?? Url::cpUrl("graphql/schemas/$schema->id"),
+            );
         }
 
         $token->enabled = (bool) $request->input('enabled');
@@ -144,7 +150,7 @@ readonly class SchemasController extends GqlController
                 ['label' => t('GraphQL Schemas'), 'url' => 'graphql/schemas'],
                 ['label' => $title],
             ])
-            ->redirectUrl($schema->isPublic ? 'graphql/schemas/public' : 'graphql/schemas/{id}')
+            ->redirectUrl('graphql/schemas')
             ->inertiaPage('graphql/schemas/Edit', [
                 'schema' => $schema->toArray(),
                 'token' => $token ? [

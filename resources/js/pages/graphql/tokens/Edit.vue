@@ -85,7 +85,7 @@
 </script>
 
 <template>
-  <AppLayout :form="form" :default-form-actions="[]" @save="save">
+  <AppLayout :form="form" @save="save">
     <Pane appearance="raised">
       <div class="grid gap-3">
         <CraftInput
@@ -121,23 +121,23 @@
 
         <hr />
 
-        <CraftInput
-          :label="t('Authorization Header')"
-          :help-text="
-            t(
-              'The `Authorization` header that should be sent with GraphQL API requests to use this token.'
-            )
-          "
-          id="auth-header"
-          class="code ltr"
-          :model-value="authorizationHeader"
-          readonly
-          :disabled="!visibleAccessToken"
-          :error="form.errors.accessToken"
-        >
-          <div slot="suffix" class="flex items-center gap-1">
+        <div class="flex items-end gap-1">
+          <CraftInput
+            :label="t('Authorization Header')"
+            :help-text="
+              t(
+                'The `Authorization` header that should be sent with GraphQL API requests to use this token.'
+              )
+            "
+            id="auth-header"
+            class="code ltr flex-1"
+            :model-value="authorizationHeader"
+            readonly
+            :error="form.errors.accessToken"
+          >
             <craft-button
               v-if="!visibleAccessToken"
+              slot="suffix"
               type="button"
               size="small"
               appearance="plain"
@@ -150,48 +150,56 @@
 
             <craft-copy-button
               v-else
+              slot="suffix"
               ref="copyButton"
               :value="authorizationHeader"
               :disabled="loadingToken"
             />
+          </CraftInput>
 
-            <craft-button
-              type="button"
-              size="small"
-              appearance="plain"
-              :disabled="readOnly || loadingToken"
-              @click="regenerateToken"
-            >
-              {{ t('Regenerate') }}
-            </craft-button>
-
-            <craft-spinner v-if="loadingToken" size="small"></craft-spinner>
-          </div>
-        </CraftInput>
+          <craft-button
+            type="button"
+            variant="neutral"
+            :loading="loadingToken"
+            :disabled="readOnly || loadingToken"
+            @click="regenerateToken"
+          >
+            {{ t('Regenerate') }}
+          </craft-button>
+        </div>
       </div>
     </Pane>
 
-    <template #footer>
-      <div class="meta">
-        <CraftSwitch
-          :label="t('Enabled')"
-          id="enabled"
-          name="enabled"
-          v-model="form.enabled"
-          :disabled="readOnly"
-          :error="form.errors.enabled"
-        />
+    <template #details>
+      <Pane appearance="raised">
+        <div class="meta">
+          <CraftSwitch
+            :label="t('Enabled')"
+            id="enabled"
+            name="enabled"
+            v-model="form.enabled"
+            :disabled="readOnly"
+            :error="form.errors.enabled"
+          />
 
-        <CraftInput
-          :label="t('Expiry Date')"
-          id="expiryDate"
-          name="expiryDate"
-          type="datetime-local"
-          v-model="form.expiryDate"
-          :disabled="readOnly"
-          :error="form.errors.expiryDate"
-        />
-      </div>
+          <CraftInput
+            :label="t('Expiry Date')"
+            id="expiryDate"
+            name="expiryDate"
+            type="datetime-local"
+            v-model="form.expiryDate"
+            :disabled="readOnly"
+            :error="form.errors.expiryDate"
+          />
+        </div>
+      </Pane>
     </template>
   </AppLayout>
 </template>
+
+<style scoped lang="scss">
+  .meta {
+    display: grid;
+    gap: var(--c-spacing-md);
+  }
+</style>
