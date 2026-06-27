@@ -21,10 +21,17 @@
     expiryDate: string;
   }
 
+  type PermissionGroup = Omit<
+    CraftCms.Cms.User.Data.PermissionGroup,
+    'permissions'
+  > & {
+    permissions: Record<string, CraftCms.Cms.User.Data.Permission>;
+  };
+
   const props = defineProps<{
     schema: CraftCms.Cms.Gql.Data.GqlSchema;
     token: TokenData | null;
-    permissions: Array<CraftCms.Cms.User.Data.PermissionGroup>;
+    permissions: Array<PermissionGroup>;
     readOnly?: boolean;
   }>();
 

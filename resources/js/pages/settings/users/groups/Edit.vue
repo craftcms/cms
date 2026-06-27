@@ -13,10 +13,17 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
 
+  type PermissionGroup = Omit<
+    CraftCms.Cms.User.Data.PermissionGroup,
+    'permissions'
+  > & {
+    permissions: Record<string, CraftCms.Cms.User.Data.Permission>;
+  };
+
   const props = defineProps<{
     group: UserGroup;
     brandNew: boolean;
-    permissions: Array<CraftCms.Cms.User.Data.PermissionGroup>;
+    permissions: Array<PermissionGroup>;
     formActions?: Array<ActionItem>;
     redirect?: string;
     toolbar?: string;
