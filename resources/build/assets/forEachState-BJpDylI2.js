@@ -1,0 +1,1 @@
+function e(e,t){let n=[],r=e;for(;r?.kind;)n.push(r),r=r.prevState;for(let e=n.length-1;e>=0;e--)t(n[e])}export{e as t};

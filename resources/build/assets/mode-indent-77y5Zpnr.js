@@ -1,0 +1,1 @@
+function e(e,t){let{levels:n,indentLevel:r}=e;return((!n||n.length===0?r:n.at(-1)-+!!this.electricInput?.test(t))||0)*(this.config?.indentUnit||0)}export{e as t};
