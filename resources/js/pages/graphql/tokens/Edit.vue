@@ -171,35 +171,24 @@
     </Pane>
 
     <template #details>
-      <Pane appearance="raised">
-        <div class="meta">
-          <CraftSwitch
-            :label="t('Enabled')"
-            id="enabled"
-            name="enabled"
-            v-model="form.enabled"
-            :disabled="readOnly"
-            :error="form.errors.enabled"
-          />
+      <CraftSwitch
+        :label="t('Enabled')"
+        id="enabled"
+        name="enabled"
+        v-model="form.enabled"
+        :disabled="readOnly"
+        :error="form.errors.enabled"
+      />
 
-          <CraftInput
-            :label="t('Expiry Date')"
-            id="expiryDate"
-            name="expiryDate"
-            type="datetime-local"
-            v-model="form.expiryDate"
-            :disabled="readOnly"
-            :error="form.errors.expiryDate"
-          />
-        </div>
-      </Pane>
+      <CraftInput
+        :label="t('Expiry Date')"
+        id="expiryDate"
+        name="expiryDate"
+        type="datetime-local"
+        v-model="form.expiryDate"
+        :disabled="readOnly"
+        :error="form.errors.expiryDate"
+      />
     </template>
   </AppLayout>
 </template>
-
-<style scoped lang="scss">
-  .meta {
-    display: grid;
-    gap: var(--c-spacing-md);
-  }
-</style>

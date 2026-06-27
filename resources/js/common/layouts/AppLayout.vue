@@ -18,6 +18,7 @@
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import UserMenu from '@/common/components/UserMenu.vue';
   import FlashMessages from '@/common/components/FlashMessages.vue';
+  import Pane from '@/common/components/Pane.vue';
 
   interface SaveOptions {
     redirect?: boolean;
@@ -287,7 +288,11 @@
                     <slot></slot>
                   </div>
                   <aside>
-                    <slot name="details"></slot>
+                    <Pane appearance="raised">
+                      <div class="details">
+                        <slot name="details"></slot>
+                      </div>
+                    </Pane>
                   </aside>
                 </div>
               </template>
@@ -369,6 +374,11 @@
       grid-template-columns: minmax(0, 1fr) clamp(12rem, 20%, 16rem);
       align-items: start;
     }
+  }
+
+  .details {
+    display: grid;
+    gap: var(--c-spacing-md);
   }
 
   @media screen and (min-width: 1024px) {
