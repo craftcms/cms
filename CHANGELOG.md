@@ -9,6 +9,7 @@
 - Renamed `CraftCms\Cms\Twig\PageLifecycle` to `CraftCms\Cms\View\PageLifecycle`. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Renamed `CraftCms\Cms\Twig\TemplateResolver` to `CraftCms\Cms\View\TemplateResolver`. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Fixed a bug where anonymous homepage and fallback site-template requests could bypass offline-site access enforcement. ([#19151](https://github.com/craftcms/cms/pull/19151))
+- Fixed an error that could occur during Craft 6 upgrades when the `migrations` table was missing its `track` column. ([#19168](https://github.com/craftcms/cms/pull/19168))
 
 ## 6.0.0-alpha.9 - 2026-06-23
 
