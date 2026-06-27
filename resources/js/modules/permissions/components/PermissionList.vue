@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {t} from '@craftcms/cp';
   import {
     getNestedKeys,
     hasNested,
@@ -13,20 +14,52 @@
     defineProps<{
       modelValue: Array<string>;
       permissions?: Record<string, PermissionItem>;
+      heading?: string;
+      permissionKeys?: Array<string>;
       disabled?: boolean;
       level?: number;
     }>(),
-    {permissions: () => ({}), modelValue: () => [], disabled: false, level: 0}
+    {
+      permissions: () => ({}),
+      modelValue: () => [],
+      permissionKeys: () => [],
+      disabled: false,
+      level: 0,
+    }
   );
 
+  function allSelected() {
+    if (!props.permissionKeys.length) {
+      return false;
+    }
+
+    const selected = new Set(props.modelValue);
+
+    return props.permissionKeys.every((key) => selected.has(key));
+  }
+
+  function toggleAll() {
+    if (allSelected()) {
+      const keysToRemove = new Set(props.permissionKeys);
+      emit(
+        'update:modelValue',
+        props.modelValue.filter((key) => !keysToRemove.has(key))
+      );
+      return;
+    }
+
+    emit('update:modelValue', [
+      ...new Set([...props.modelValue, ...props.permissionKeys]),
+    ]);
+  }
+
   function toggleItem(key: string) {
-    const lowerKey = key.toLowerCase();
-    const index = props.modelValue.indexOf(lowerKey);
+    const index = props.modelValue.indexOf(key);
     if (index === -1) {
-      emit('update:modelValue', [...props.modelValue, lowerKey]);
+      emit('update:modelValue', [...props.modelValue, key]);
     } else {
       const keysToRemove = new Set([
-        lowerKey,
+        key,
         ...getNestedKeys(props.permissions[key]),
       ]);
       emit(
@@ -38,6 +71,27 @@
 </script>
 
 <template>
+  <div v-if="heading" class="flex gap-2 items-center">
+    <h3 class="mb-1 text-base">
+      {{ heading }}
+    </h3>
+
+    <craft-button
+      type="button"
+      size="small"
+      appearance="plain"
+      :disabled="disabled"
+      @click="toggleAll"
+    >
+      <template v-if="allSelected()">
+        {{ t('Deselect all') }}
+      </template>
+      <template v-else>
+        {{ t('Select all') }}
+      </template>
+    </craft-button>
+  </div>
+
   <ul
     class="group"
     v-for="(item, key) in permissions"
@@ -49,7 +103,7 @@
     <li>
       <CraftCheckbox
         :label="item.label"
-        :model-value="modelValue.includes(key.toLowerCase())"
+        :model-value="modelValue.includes(key)"
         :value="key"
         :disabled="disabled"
         @update:model-value="toggleItem(key)"
@@ -75,7 +129,7 @@
         v-if="hasNested(item)"
         :permissions="item.nested"
         :model-value="modelValue"
-        :disabled="disabled || !modelValue.includes(item.key.toLowerCase())"
+        :disabled="disabled || !modelValue.includes(item.key)"
         @update:model-value="emit('update:modelValue', $event)"
         :level="level! + 1"
       />

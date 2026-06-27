@@ -1,0 +1,197 @@
+<script setup lang="ts">
+  import {computed, nextTick, ref} from 'vue';
+  import {t} from '@craftcms/cp';
+  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import Pane from '@/common/components/Pane.vue';
+  import Select from '@/common/form/Select.vue';
+  import type {BaseOption} from '@/common/types';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+  import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import {
+    accessToken as revealAccessToken,
+    generate,
+    store,
+    update,
+  } from '@actions/Gql/TokensController';
+  import {useForm, useHttp} from '@inertiajs/vue3';
+
+  type TokenData = Pick<
+    CraftCms.Cms.Gql.Data.GqlToken,
+    'id' | 'uid' | 'name' | 'schemaId' | 'enabled' | 'expiryDate'
+  >;
+
+  type CopyButtonElement = HTMLElement & {copyValue: () => Promise<void>};
+
+  type TokenResponse = {
+    accessToken: string;
+  };
+
+  const maskedToken = '••••••••••••••••••••••••••••••••';
+
+  const props = defineProps<{
+    token: TokenData;
+    accessToken: string | null;
+    schemaOptions: Array<BaseOption>;
+    readOnly?: boolean;
+  }>();
+
+  const copyButton = ref<CopyButtonElement | null>(null);
+  const visibleAccessToken = ref(props.accessToken);
+  const tokenRequest = useHttp<Record<string, never>, TokenResponse>({});
+  const loadingToken = computed(() => tokenRequest.processing);
+
+  const form = useForm({
+    name: props.token.name ?? '',
+    schema: props.token.schemaId?.toString() ?? '',
+    enabled: props.token.enabled,
+    expiryDate: props.token.expiryDate ?? '',
+    accessToken: props.accessToken ?? '',
+  });
+
+  const authorizationHeader = computed(
+    () => `Authorization: Bearer ${visibleAccessToken.value ?? maskedToken}`
+  );
+
+  const routeAction = () =>
+    props.token.id ? update({tokenId: props.token.id}) : store();
+
+  const {save} = useSettingsSave(form, routeAction);
+
+  async function revealToken(tokenId: number) {
+    const data = await tokenRequest.post(revealAccessToken({tokenId}).url);
+    visibleAccessToken.value = data.accessToken;
+
+    return data.accessToken;
+  }
+
+  async function copyHeader() {
+    const tokenId = props.token.id;
+
+    if (!visibleAccessToken.value && tokenId) {
+      (Craft as any).elevatedSessionManager.requireElevatedSession(async () => {
+        await revealToken(tokenId);
+        await nextTick();
+        await copyButton.value?.copyValue();
+      });
+    }
+  }
+
+  async function regenerateToken() {
+    const data = await tokenRequest.post(generate().url);
+    visibleAccessToken.value = data.accessToken;
+    form.accessToken = data.accessToken;
+  }
+</script>
+
+<template>
+  <AppLayout :form="form" :default-form-actions="[]" @save="save">
+    <Pane appearance="raised">
+      <div class="grid gap-3">
+        <CraftInput
+          :label="t('Name')"
+          :help-text="t('What this token will be called in the control panel.')"
+          id="name"
+          name="name"
+          v-model="form.name"
+          :error="form.errors.name"
+          :disabled="readOnly"
+          required
+          autofocus
+        />
+
+        <template v-if="schemaOptions.length">
+          <Select
+            :label="t('GraphQL Schema')"
+            :help-text="
+              t('Choose which GraphQL schema this token has access to.')
+            "
+            id="schema"
+            name="schema"
+            v-model="form.schema"
+            :options="schemaOptions"
+            :error="form.errors.schema"
+            :disabled="readOnly"
+          />
+        </template>
+
+        <craft-callout v-else data-color="warning">
+          {{ t('No schemas exist yet to assign to this token.') }}
+        </craft-callout>
+
+        <hr />
+
+        <CraftInput
+          :label="t('Authorization Header')"
+          :help-text="
+            t(
+              'The `Authorization` header that should be sent with GraphQL API requests to use this token.'
+            )
+          "
+          id="auth-header"
+          class="code ltr"
+          :model-value="authorizationHeader"
+          readonly
+          :disabled="!visibleAccessToken"
+          :error="form.errors.accessToken"
+        >
+          <div slot="suffix" class="flex items-center gap-1">
+            <craft-button
+              v-if="!visibleAccessToken"
+              type="button"
+              size="small"
+              appearance="plain"
+              :disabled="loadingToken"
+              @click="copyHeader"
+            >
+              <craft-icon name="copy" slot="prefix"></craft-icon>
+              {{ t('Copy') }}
+            </craft-button>
+
+            <craft-copy-button
+              v-else
+              ref="copyButton"
+              :value="authorizationHeader"
+              :disabled="loadingToken"
+            />
+
+            <craft-button
+              type="button"
+              size="small"
+              appearance="plain"
+              :disabled="readOnly || loadingToken"
+              @click="regenerateToken"
+            >
+              {{ t('Regenerate') }}
+            </craft-button>
+
+            <craft-spinner v-if="loadingToken" size="small"></craft-spinner>
+          </div>
+        </CraftInput>
+      </div>
+    </Pane>
+
+    <template #footer>
+      <div class="meta">
+        <CraftSwitch
+          :label="t('Enabled')"
+          id="enabled"
+          name="enabled"
+          v-model="form.enabled"
+          :disabled="readOnly"
+          :error="form.errors.enabled"
+        />
+
+        <CraftInput
+          :label="t('Expiry Date')"
+          id="expiryDate"
+          name="expiryDate"
+          type="datetime-local"
+          v-model="form.expiryDate"
+          :disabled="readOnly"
+          :error="form.errors.expiryDate"
+        />
+      </div>
+    </template>
+  </AppLayout>
+</template>

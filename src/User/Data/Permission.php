@@ -14,7 +14,7 @@ class Permission implements Arrayable
         public string $label,
         public ?string $info = null,
         public ?string $warning = null,
-        /** @var Collection<Permission> */
+        /** @var Collection<string, Permission> */
         public Collection $nested = new Collection,
     ) {}
 

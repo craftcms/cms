@@ -8,10 +8,6 @@
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
   import Pane from '@/common/components/Pane.vue';
   import PermissionList from '@/modules/permissions/components/PermissionList.vue';
-  import {
-    hasNested,
-    type PermissionItem,
-  } from '@/modules/permissions/helpers/permissions';
   import {destroy, store} from '@actions/Settings/Users/UserGroupsController';
   import {computed} from 'vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -20,11 +16,7 @@
   const props = defineProps<{
     group: UserGroup;
     brandNew: boolean;
-    permissions: Array<{
-      heading: string;
-      handle: string;
-      permissions: Record<string, PermissionItem>;
-    }>;
+    permissions: Array<CraftCms.Cms.User.Data.PermissionGroup>;
     formActions?: Array<ActionItem>;
     redirect?: string;
     toolbar?: string;
@@ -47,52 +39,6 @@
     () => form.name,
     (v) => (form.handle = toHandle(v))
   );
-
-  function getAllKeys(
-    permissions: Record<string, PermissionItem>
-  ): Array<string> {
-    return Object.values(permissions).flatMap((item) => [
-      item.key,
-      ...(hasNested(item) ? getAllKeys(item.nested) : []),
-    ]);
-  }
-
-  const permissionSets = computed(() => {
-    return props.permissions.reduce<Record<string, Array<string>>>(
-      (acc, set) => {
-        acc[set.handle] = getAllKeys(set.permissions).map((v) =>
-          v.toLowerCase()
-        );
-        return acc;
-      },
-      {}
-    );
-  });
-
-  function allSelected(set?: Array<string>) {
-    if (!set) {
-      return false;
-    }
-
-    const selected = new Set(form.permissions);
-    return set.every((key) => selected.has(key));
-  }
-
-  function toggleSet(handle: string) {
-    const setKeys = permissionSets.value[handle];
-    if (!setKeys) {
-      return;
-    }
-
-    if (allSelected(setKeys)) {
-      const keysToRemove = new Set(setKeys);
-      form.permissions = form.permissions.filter(
-        (key) => !keysToRemove.has(key)
-      );
-    } else {
-      form.permissions = [...new Set([...form.permissions, ...setKeys])];
-    }
-  }
 
   // For existing groups, mark handle as already dirty
   if (!props.brandNew) {
@@ -173,28 +119,10 @@
 
       <div class="grid gap-3">
         <div v-for="set in permissions" :key="set.handle">
-          <div class="flex gap-2 items-center">
-            <h3 class="mb-1 text-base" :id="`content-heading-${set.handle}`">
-              {{ set.heading }}
-            </h3>
-
-            <craft-button
-              type="button"
-              size="small"
-              appearance="plain"
-              @click="toggleSet(set.handle)"
-            >
-              <template v-if="allSelected(permissionSets[set.handle])">
-                {{ t('Deselect all') }}
-              </template>
-              <template v-else>
-                {{ t('Select all') }}
-              </template>
-            </craft-button>
-          </div>
-
           <PermissionList
+            :heading="set.heading"
             :permissions="set.permissions"
+            :permission-keys="set.keys"
             v-model="form.permissions"
           />
         </div>

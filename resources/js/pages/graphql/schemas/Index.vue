@@ -6,12 +6,7 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import {
-    create,
-    destroy,
-    edit,
-    editPublic,
-  } from '@actions/Gql/SchemasController';
+  import {create, destroy, edit} from '@actions/Gql/SchemasController';
   import CpLink from '@/common/components/CpLink.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
@@ -48,9 +43,8 @@
         columnHelper.link('name', {
           props: ({row}) => ({
             href: row.original.isPublic
-              ? editPublic().url
+              ? edit({schemaId: 'public'}).url
               : edit({schemaId: row.original.id}).url,
-            inertia: false,
           }),
           header: t('Name'),
         }),
@@ -94,7 +88,6 @@
       <CpLink
         :href="create.url()"
         icon="plus"
-        :inertia="false"
         appearance="button"
         variant="accent"
         >{{ t('New schema') }}</CpLink
