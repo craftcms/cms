@@ -81,6 +81,28 @@ describe('EventEmitter', () => {
     expect(received!.data).toEqual({a: 1});
   });
 
+  it("a '*' handler receives every triggered event with its real type + payload", () => {
+    const received: GarnishEvent[] = [];
+    emitter.on('*', (ev) => received.push(ev));
+    emitter.trigger('foo', {a: 1});
+    emitter.trigger('bar');
+    expect(received.map((ev) => ev.type)).toEqual(['foo', 'bar']);
+    // trigger-time payload is spread onto the event (garnish convention).
+    expect(received[0]!.a).toBe(1);
+    expect(received[0]!.target).toBe(target);
+  });
+
+  it("'*' fires alongside exact-type handlers", () => {
+    const wild = vi.fn();
+    const exact = vi.fn();
+    emitter.on('*', wild);
+    emitter.on('foo', exact);
+    emitter.trigger('foo');
+    emitter.trigger('bar');
+    expect(exact).toHaveBeenCalledTimes(1);
+    expect(wild).toHaveBeenCalledTimes(2);
+  });
+
   it('off by type removes all handlers of that type', () => {
     const fn = vi.fn();
     emitter.on('foo', fn);

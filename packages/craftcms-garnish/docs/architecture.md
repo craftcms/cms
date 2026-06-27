@@ -49,6 +49,8 @@ Semantics that match the legacy behavior exactly:
 - **`off` matching:** a registration matches when the type matches **and** (the parsed namespace is empty **or** namespaces match) **and** (no handler was passed **or** the handler is `===`). Matches are removed by iterating backwards and splicing, as the legacy code did.
 - **`once`:** implemented as a self-removing wrapper closure, not a boolean flag. This guarantees identical `off` behavior — see the *as-built decisions* below for the consequence.
 
+Beyond the legacy behavior, the emitter also supports a **wildcard** registration: `on('*', handler)` matches every `trigger`, with the handler still receiving the event's real `type` (built via `buildEvent`). This lets a wrapper forward all of a controller's events generically — e.g. the control panel's `ControllerElement` custom-element base re-emits them as native, bubbling DOM `CustomEvent`s, so consumers can `addEventListener` without referencing the controller class.
+
 ### Class-level pub/sub — `ClassEventBus`
 
 `ClassEventBus` backs `Garnish.on/off/once`. A single shared instance, `garnishClassBus`, lives in the core's globals module; the `Garnish` namespace object proxies `on/off/once` to it.

@@ -159,6 +159,11 @@ export class EventEmitter<Target = unknown> {
 
   constructor(private readonly target: Target) {}
 
+  /**
+   * Subscribe to instance event(s). Supports multiple space-separated events and
+   * `.namespace`s; the special type `'*'` subscribes to **every** event (the
+   * handler still receives the real `type`).
+   */
   on(events: string, handler: GarnishEventHandler): void;
   on(
     events: string,
@@ -243,10 +248,14 @@ export class EventEmitter<Target = unknown> {
     }
   }
 
-  /** Dispatch to instance handlers matching `type`. */
+  /** Dispatch to instance handlers matching `type` (plus any `'*'` listeners). */
   trigger(type: string, data?: Record<string, unknown>): void {
     // Snapshot the matching handlers first; a `once` handler mutates the array.
-    const matching = this.registrations.filter((reg) => reg.type === type);
+    // A `'*'` registration matches every type (used to forward all events); its
+    // handler still receives the real `type` via `buildEvent`.
+    const matching = this.registrations.filter(
+      (reg) => reg.type === type || reg.type === '*'
+    );
 
     for (const reg of matching) {
       const event = buildEvent(reg.data, data, type, this.target);

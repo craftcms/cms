@@ -58,7 +58,30 @@ export abstract class ControllerElement<
     }
 
     this.#instance = this.create(root);
+    this.#bridgeEvents(this.#instance);
     this.booted();
+  }
+
+  /**
+   * Re-emit every pub/sub (garnish) event the controller triggers as a native,
+   * bubbling DOM `CustomEvent` on this element — the event name carries through and
+   * the garnish event (its `data` plus any trigger-time payload, which garnish
+   * spreads top-level) is exposed on `detail` — so consumers can
+   * `addEventListener(name, …)` without referencing the controller class.
+   *
+   * Uses garnish's `'*'` wildcard listener; a controller without an `on` method
+   * (non-garnish) simply gets no bridge. The subscription is released when the
+   * instance is destroyed on disconnect.
+   */
+  #bridgeEvents(instance: T): void {
+    const emitter = instance as unknown as {
+      on?(events: string, handler: (event: {type: string}) => void): void;
+    };
+    emitter.on?.('*', (event) => {
+      this.dispatchEvent(
+        new CustomEvent(event.type, {bubbles: true, detail: event})
+      );
+    });
   }
 
   disconnectedCallback(): void {

@@ -24,7 +24,7 @@ base class every component extends. Native `class` + `super`; no `init`/`this.ba
 | `settings` | `S \| null` | Resolved settings; `null` until `setSettings` runs. |
 | `disabled` | `get => boolean` | Whether the instance is disabled. |
 | `setSettings` | `(settings?, defaults?) => void` | Shallow-merge defaults ← overrides into `settings`. |
-| `on` | `(events, [data,] handler) => void` | Subscribe to instance event(s); supports `.namespace`s. |
+| `on` | `(events, [data,] handler) => void` | Subscribe to instance event(s); supports `.namespace`s. `'*'` subscribes to **every** event. |
 | `once` | `(events, [data,] handler) => void` | Like `on`, auto-removed after first fire. |
 | `off` | `(events, handler?) => void` | Unsubscribe (namespaced, by type, and/or by handler ref). |
 | `trigger` | `(type, data?) => void` | Emit an event to instance + class-level handlers. |
@@ -684,7 +684,7 @@ Reached transparently via `addListener(el, 'activate' | 'textchange' | 'resize',
 
 Mostly used through `Base`, but exported for advanced use:
 
-- `EventEmitter` — per-instance object pub/sub (backs `Base.on/off/once/trigger`).
+- `EventEmitter` — per-instance object pub/sub (backs `Base.on/off/once/trigger`). An `on('*', …)` registration receives every triggered event (with its real `type`).
 - `ClassEventBus` — class-level pub/sub (backs `Garnish.on/off/once`).
 - `DomListenerRegistry` — namespaced DOM-listener registry (backs `addListener`).
 - `parseEvents(events, splitOn?)`, `formatDomEvents(events, namespace)` — event-string helpers.
