@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
@@ -180,7 +179,7 @@ readonly class SchemasController extends GqlController
             ],
         ];
 
-        if (! Cms::config()->disableGraphqlTransformDirective) {
+        if (! config('craft.general.disableGraphqlTransformDirective')) {
             $optionalPermissions['directive:transform'] = [
                 'label' => t('{name} directive', [
                     'name' => '@transform',
