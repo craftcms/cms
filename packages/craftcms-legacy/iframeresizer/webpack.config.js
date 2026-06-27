@@ -7,7 +7,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/iframeresizer/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/iframeresizer/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

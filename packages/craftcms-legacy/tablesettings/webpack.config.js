@@ -7,7 +7,8 @@ module.exports = getConfig({
   config: {
     entry: {TableFieldSettings: './TableFieldSettings.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/tablesettings/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/tablesettings/dist',
     },
   },
 });
