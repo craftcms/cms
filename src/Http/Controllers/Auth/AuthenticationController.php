@@ -101,14 +101,14 @@ abstract readonly class AuthenticationController
         return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
-    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = []): View|InertiaResponse|Response
+    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = null): View|InertiaResponse|Response
     {
-        if (view()->exists(request()->craftPath())) {
-            return view(request()->craftPath(), $data);
-        }
-
         if ($inertiaComponent !== null && request()->isCpRequest()) {
             return Inertia::render($inertiaComponent, $inertiaProps ?? $data);
+        }
+
+        if (view()->exists(request()->craftPath())) {
+            return view(request()->craftPath(), $data);
         }
 
         TemplateMode::set(TemplateMode::Cp);
@@ -123,13 +123,13 @@ abstract readonly class AuthenticationController
     protected function processTokenRequest(Request $request): Response|array
     {
         $request->validate([
-            'id' => ['required'],
+            'uid' => ['required'],
             'code' => ['required'],
         ]);
 
         /** @var User|null $user */
         $user = User::find()
-            ->uid($request->input('id'))
+            ->uid($request->input('uid'))
             ->status(null)
             ->addSelect(['users.password'])
             ->one();
@@ -153,7 +153,7 @@ abstract readonly class AuthenticationController
 
         event(new EmailVerified($user));
 
-        return [$user, $request->input('id'), $request->input('code')];
+        return [$user, $request->input('uid'), $request->input('code')];
     }
 
     protected function processInvalidToken(Request $request, ?User $user = null): Response

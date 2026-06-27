@@ -5,7 +5,7 @@
 
 {% block message %}
   <form method="post" accept-charset="UTF-8">
-    {{ hiddenInput('uid', id) }}
+    {{ hiddenInput('uid', uid) }}
     {{ hiddenInput('code', code) }}
     {{ csrfInput() }}
 
