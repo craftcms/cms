@@ -964,7 +964,6 @@ export class Row extends Base {
     const $deleteBtn = this.$tr
       .children('td.action')
       .find('[command="--delete-row"]');
-    console.log($deleteBtn);
     this.addListener($deleteBtn, 'click', 'deleteRow');
 
     const $inputs = this.$tr.find('input,textarea,select,.lightswitch');

@@ -137,7 +137,10 @@ export class CardViewDesigner extends Base {
         {
           cancelToken: this.cancelToken.token,
           data: {
-            fieldLayoutConfig: this.designer.config,
+            fieldLayoutConfig: {
+              ...this.designer.config,
+              generatedFields: document.querySelector('craft-generated-fields-table')?.serialize() ?? []
+            },
           },
         }
       );
@@ -180,22 +183,10 @@ export class CardViewDesigner extends Base {
 
     const $draggable = document.createElement('div');
     $draggable.className = 'checkbox-select-item';
-    if (Craft.hasMousePointerEvents()) {
-      const $handle = document.createElement('a');
-      $handle.className = 'move icon draggable-handle disabled';
-      $draggable.appendChild($handle);
-    }
-    // Craft.ui returns jQuery — unwrap to native at the seam.
-    $draggable.appendChild(
-      Craft.ui.createCheckbox(
-        Object.assign(
-          {
-            checked: false,
-          },
-          config
-        )
-      )[0]
-    );
+
+    Craft.ui
+      .createCheckbox({checked: false, ...config})
+      .appendTo($draggable);
 
     this.$libraryContainer.appendChild($draggable);
 
@@ -205,8 +196,10 @@ export class CardViewDesigner extends Base {
 
   updateCheckboxLabel(value: string, label: string): void {
     const $draggable = this.findCheckboxByValue(value);
+    console.log({$draggable, value, label});
     if ($draggable) {
       const $label = $draggable.querySelector('label');
+      console.log({$label, label});
       if ($label) {
         $label.textContent = label;
       }

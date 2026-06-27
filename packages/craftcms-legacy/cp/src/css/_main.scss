@@ -1685,25 +1685,6 @@ td.right {
   }
 }
 
-.checkbox-select-item {
-  display: flex;
-  gap: var(--xs);
-  align-items: flex-start;
-  align-content: stretch;
-  padding-block: 4px;
-
-  .move {
-    margin-block-start: -4px;
-    margin-inline-end: var(--xs);
-    position: relative;
-    z-index: 1;
-  }
-
-  .action-btn {
-    margin-block: -4px;
-  }
-}
-
 ul.path {
   display: flex;
   flex-flow: row wrap;

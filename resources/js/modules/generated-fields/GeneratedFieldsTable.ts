@@ -29,8 +29,8 @@ export class GeneratedFieldsTableRow extends Row {
 
     this.uid = this.$tr.find('> input[name$="[uid]"]').val();
 
-    const $nameInput = this.$tr.find('> td:first-child > textarea');
-    const $handleInput = this.$tr.find('> td:nth-child(2) > textarea');
+    const $nameInput = this.$tr.find('[name$="[name]"]');
+    const $handleInput = this.$tr.find('[name$="[handle]"]');
 
     if (!$nameInput.val()) {
       new Craft.HandleGenerator($nameInput, $handleInput);
