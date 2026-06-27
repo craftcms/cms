@@ -169,12 +169,10 @@ export class CardViewDesigner extends Base {
       .createCheckbox({checked: false, ...config})
       .appendTo($draggable);
 
+    // The <craft-sortable-checkbox-select> observes its items, so appending here
+    // is enough — it gives this item its drag handle and sorter membership
+    // automatically (see SortableCheckboxSelect.observeItems).
     this.$libraryContainer.appendChild($draggable);
-
-    // NOTE: the item is appended but not yet registered with the sortable list,
-    // so it has no drag handle / can't be reordered until reload. Decoupling
-    // removed the old `initItem` seam — see the audit note about giving
-    // <craft-sortable-checkbox-select> an `addItem`/`removeItem` DOM API.
   }
 
   updateCheckboxLabel(value: string, label: string): void {

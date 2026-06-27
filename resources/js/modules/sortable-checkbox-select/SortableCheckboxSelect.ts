@@ -24,6 +24,7 @@ declare const $: any;
 export class SortableCheckboxSelect extends Base {
   $container: any = null;
   dragSort: any = null;
+  itemObserver: MutationObserver | null = null;
 
   constructor(container?: any) {
     super();
@@ -61,6 +62,9 @@ export class SortableCheckboxSelect extends Base {
 
     // Every item now has its button; set initial enabled/membership state.
     this.updateReorderButtons();
+
+    // Keep the sorter in sync with items added/removed after boot.
+    this.observeItems();
   }
 
 
@@ -90,12 +94,67 @@ export class SortableCheckboxSelect extends Base {
   }
 
   /**
+   * Watch the container for `.cp-checkbox-select__item`s added or removed after
+   * boot — e.g. the Card View Designer appends a checkbox when a generated field
+   * is named — and keep the sorter in sync: a new item gets {@link initItem} (its
+   * `<craft-reorder-button>` drag handle), a removed one is dropped from the
+   * sorter. Existing items are wired synchronously in {@link init}, so the
+   * observer only ever sees later mutations. It watches **direct children only**
+   * (`childList`, no `subtree`), so prepending the reorder button inside an item
+   * can't re-trigger it.
+   */
+  observeItems(): void {
+    const containerEl: Element | undefined = this.$container?.[0];
+    if (!containerEl) {
+      return;
+    }
+
+    this.itemObserver = new MutationObserver((mutations) => {
+      let changed = false;
+
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (
+            node instanceof HTMLElement &&
+            node.matches('.cp-checkbox-select__item:not(.all)') &&
+            !node.querySelector(':scope > craft-reorder-button')
+          ) {
+            this.initItem(node);
+            changed = true;
+          }
+        }
+
+        for (const node of mutation.removedNodes) {
+          if (
+            node instanceof HTMLElement &&
+            node.matches('.cp-checkbox-select__item:not(.all)')
+          ) {
+            this.dragSort?.removeItems(node);
+            changed = true;
+          }
+        }
+      }
+
+      // Refresh button enabled/disabled state, sorter membership, and positions
+      // for the new item set.
+      if (changed) {
+        this.updateReorderButtons();
+      }
+    });
+
+    this.itemObserver.observe(containerEl, {childList: true});
+  }
+
+  /**
    * Tear down the sorter and release the back-references so the controller can be
    * re-booted (e.g. when the FLD host innerHTML is swapped). Item listeners on the
    * detached DOM are GC'd; this disposes the DragSort (which would otherwise keep
    * its pointer bindings) and clears the WeakMap + jQuery `.data` entries.
    */
   override destroy(): void {
+    this.itemObserver?.disconnect();
+    this.itemObserver = null;
+
     this.dragSort?.destroy?.();
     this.dragSort = null;
 
