@@ -1,19 +1,17 @@
 import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
-import {SortableCheckboxSelect} from '@/modules/sortable-checkbox-select/SortableCheckboxSelect';
-import {sortableCheckboxSelectData} from '@/modules/sortable-checkbox-select/support';
 import type {FieldLayoutDesigner} from './FieldLayoutDesigner';
 import type {Element as FldElement} from './Element';
 
 declare const Craft: any;
-declare const $: any;
 declare const axios: any;
 
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
  * port of the legacy `Craft.FieldLayoutDesigner.CardViewDesigner`. jQuery
- * survives only at the `Craft.ui` seam; the sortable checkbox library is the
- * modern `SortableCheckboxSelect` module (looked up via its WeakMap).
+ * survives only at the `Craft.ui` seam; the sortable checkbox library is owned by
+ * the `<craft-sortable-checkbox-select>` element, whose DOM events the CVD
+ * consumes — it no longer references the `SortableCheckboxSelect` class.
  */
 export class CardViewDesigner extends Base {
   designer: FieldLayoutDesigner;
@@ -34,21 +32,16 @@ export class CardViewDesigner extends Base {
 
     this.$previewContainer = this.$container.querySelector('.cvd-preview');
     this.$libraryContainer = this.$container.querySelector(
-      '.cvd-library .checkbox-select'
+      '.cvd-library .cp-checkbox-select'
     );
 
-    // SortableCheckboxSelect registers itself in its WeakMap, keyed by the
-    // native container element.
-    this.sortableCheckboxSelect = sortableCheckboxSelectData.get(
-      this.$libraryContainer
+    // The <craft-sortable-checkbox-select> custom element boots the sortable list
+    // itself; the CVD only consumes the DOM events it emits (see
+    // listenToCheckboxEvents) and no longer references the SortableCheckboxSelect
+    // class or its WeakMap.
+    this.sortableCheckboxSelect = this.$container.querySelector(
+      'craft-sortable-checkbox-select'
     );
-
-    // If the checkboxes haven't been initialized yet, do that.
-    if (!this.sortableCheckboxSelect) {
-      this.sortableCheckboxSelect = new SortableCheckboxSelect(
-        $(this.$libraryContainer)
-      );
-    }
 
     this.$thumbManagementContainer =
       this.$container.querySelector('.thumb-management');
@@ -78,19 +71,6 @@ export class CardViewDesigner extends Base {
     this.disablePreviewLinks();
   }
 
-  initDrag($draggable: any): void {
-    this.sortableCheckboxSelect.initDrag();
-    // SortableCheckboxSelect.initItem expects a jQuery element — seam.
-    this.sortableCheckboxSelect.initItem($($draggable));
-
-    // trigger preview update when items are dragged into new position
-    this.sortableCheckboxSelect.dragSort?.on('dragStop', () => {
-      this.updatePreview();
-    });
-
-    this.listenToCheckboxEvents();
-  }
-
   listenToCheckboxEvents(): void {
     // trigger preview update when items are checked/unchecked
     this.addListener(this.$libraryContainer, 'change', (ev: any) => {
@@ -99,7 +79,9 @@ export class CardViewDesigner extends Base {
         this.updatePreview();
       }
     });
-    this.sortableCheckboxSelect.on('sortChange', () => {
+    // `sortChange` is the native DOM event the <craft-sortable-checkbox-select>
+    // element re-emits from its garnish sorter when items are reordered.
+    this.sortableCheckboxSelect.addEventListener('sortChange', () => {
       this.updateCardViewConfig();
       this.updatePreview();
     });
@@ -148,9 +130,8 @@ export class CardViewDesigner extends Base {
       if (!axios.isCancel(e)) {
         Craft.cp.displayError(e?.response?.data?.message);
         throw e;
-      } else {
-        console.log('cancelled');
       }
+      // otherwise the request was cancelled by a newer preview — ignore.
     } finally {
       this.$previewContainer.classList.remove('loading');
       Craft.cp.announce(Craft.t('app', 'Loading complete'));
@@ -182,7 +163,7 @@ export class CardViewDesigner extends Base {
     }
 
     const $draggable = document.createElement('div');
-    $draggable.className = 'checkbox-select-item';
+    $draggable.className = 'cp-checkbox-select__item';
 
     Craft.ui
       .createCheckbox({checked: false, ...config})
@@ -190,16 +171,16 @@ export class CardViewDesigner extends Base {
 
     this.$libraryContainer.appendChild($draggable);
 
-    // re-init dragging
-    this.initDrag($draggable);
+    // NOTE: the item is appended but not yet registered with the sortable list,
+    // so it has no drag handle / can't be reordered until reload. Decoupling
+    // removed the old `initItem` seam — see the audit note about giving
+    // <craft-sortable-checkbox-select> an `addItem`/`removeItem` DOM API.
   }
 
   updateCheckboxLabel(value: string, label: string): void {
     const $draggable = this.findCheckboxByValue(value);
-    console.log({$draggable, value, label});
     if ($draggable) {
       const $label = $draggable.querySelector('label');
-      console.log({$label, label});
       if ($label) {
         $label.textContent = label;
       }
@@ -231,7 +212,7 @@ export class CardViewDesigner extends Base {
     return (
       this.$libraryContainer
         .querySelector(`input[value="${value}"]`)
-        ?.closest('.checkbox-select-item') ?? null
+        ?.closest('.cp-checkbox-select__item') ?? null
     );
   }
 

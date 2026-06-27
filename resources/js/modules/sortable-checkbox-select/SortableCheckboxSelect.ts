@@ -48,7 +48,7 @@ export class SortableCheckboxSelect extends Base {
     }
 
     const $sortItems = this.$container.children(
-      '.checkbox-select-item:not(.all)'
+      '.cp-checkbox-select__item:not(.all)'
     );
 
     this.initDrag();
@@ -62,6 +62,7 @@ export class SortableCheckboxSelect extends Base {
     // Every item now has its button; set initial enabled/membership state.
     this.updateReorderButtons();
   }
+
 
   initDrag(): void {
     // DragSort doesn't honor the button's `disabled` attribute, so dragging is
@@ -121,7 +122,7 @@ export class SortableCheckboxSelect extends Base {
 
     const items = Array.from(
       containerEl.querySelectorAll<HTMLElement>(
-        ':scope > .checkbox-select-item:not(.all)'
+        ':scope > .cp-checkbox-select__item:not(.all)'
       )
     );
 
@@ -166,7 +167,7 @@ export class SortableCheckboxSelect extends Base {
 
     const items = Array.from(
       containerEl.querySelectorAll<HTMLElement>(
-        ':scope > .checkbox-select-item:not(.all)'
+        ':scope > .cp-checkbox-select__item:not(.all)'
       )
     );
 
@@ -255,14 +256,14 @@ export class Item extends Base {
 
   getPrevCheckedItem(): any {
     const $item = this.$item.prevAll(
-      '.checkbox-select-item:not(.all):has(input[type=checkbox]:checked):first'
+      '.cp-checkbox-select__item:not(.all):has(input[type=checkbox]:checked):first'
     );
     return $item.length ? $item : null;
   }
 
   getNextCheckedItem(): any {
     const $item = this.$item.nextAll(
-      '.checkbox-select-item:not(.all):has(input[type=checkbox]:checked):first'
+      '.cp-checkbox-select__item:not(.all):has(input[type=checkbox]:checked):first'
     );
     return $item.length ? $item : null;
   }

@@ -103,12 +103,15 @@ Sidebar metadata
   grid-template-columns: subgrid;
 }
 
-.checkbox-select {
+/**
+CP Checkbox Select (minimal legacy styling)
+ */
+.cp-checkbox-select {
   display: grid;
   gap: var(--c-spacing-sm);
 }
 
-.checkbox-select-item {
+.cp-checkbox-select__item {
   display: flex;
   align-items: center;
   gap: var(--c-spacing-md);
@@ -120,7 +123,7 @@ the drag handler and the hidden checkbox with legacy markup.
 
 Remove once we have a stable way to create a `<craft-checkbox/>` via twig
  */
-.checkbox-select-item craft-reorder-button {
+.cp-checkbox-select__item craft-reorder-button {
   position: relative;
   z-index: 1;
 }

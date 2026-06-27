@@ -7,7 +7,7 @@ import {ControllerElement} from '@/common/web-components';
  * element instead of a manual `new Craft.SortableCheckboxSelect(...)` boot.
  *
  * The control renders as **light-DOM children**: the class queries the
- * `.checkbox-select` container for its `.checkbox-select-item` rows and exposes a
+ * `.checkbox-select` container for its `.cp-checkbox-select__item` rows and exposes a
  * jQuery `.data()` back-reference off it (read by the legacy `BaseElementIndex`),
  * so a shadow-DOM component would hide both. The constructor takes only the
  * container — there are no settings to wire as an attribute.
@@ -17,7 +17,7 @@ import {ControllerElement} from '@/common/web-components';
  * the Card View Designer — would reuse this instance rather than create its own.
  */
 export default class CraftSortableCheckboxSelect extends ControllerElement<SortableCheckboxSelect> {
-  protected readonly rootSelector = '.checkbox-select';
+  protected readonly rootSelector = '.cp-checkbox-select';
 
   protected create(root: HTMLElement): SortableCheckboxSelect {
     return new SortableCheckboxSelect(root);

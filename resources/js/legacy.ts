@@ -7,6 +7,7 @@ import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 
 import './modules/field-layout-designer/index';
+import './modules/sortable-checkbox-select/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
