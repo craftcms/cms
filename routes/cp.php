@@ -204,7 +204,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // GraphQL
         Route::get('graphql', GqlIndexController::class);
-        Route::get('graphiql', GraphiqlController::class);
+        Route::get('graphql/explore', GraphiqlController::class);
 
         Route::prefix('graphql/tokens')->name('graphql.tokens.')->group(function () {
             Route::get('/', [TokensController::class, 'index'])->name('index');

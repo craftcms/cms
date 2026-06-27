@@ -36,7 +36,6 @@
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
     "@craftcms/cp": "file:../craftcms-cp",
-    "@craftcms/graphiql": "file:../craftcms-graphiql",
     "@craftcms/sass": "file:../craftcms-sass",
     "@craftcms/vue": "file:../craftcms-vue",
     "@floating-ui/dom": "^1.7.6",
