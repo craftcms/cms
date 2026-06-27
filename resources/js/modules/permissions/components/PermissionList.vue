@@ -16,6 +16,7 @@
       permissions?: Record<string, PermissionItem>;
       heading?: string;
       permissionKeys?: Array<string>;
+      preserveCase?: boolean;
       disabled?: boolean;
       level?: number;
     }>(),
@@ -23,10 +24,19 @@
       permissions: () => ({}),
       modelValue: () => [],
       permissionKeys: () => [],
+      preserveCase: false,
       disabled: false,
       level: 0,
     }
   );
+
+  function permissionKey(key: string) {
+    return props.preserveCase ? key : key.toLowerCase();
+  }
+
+  function normalizePermissionKeys(keys: Array<string>) {
+    return keys.map(permissionKey);
+  }
 
   function allSelected() {
     if (!props.permissionKeys.length) {
@@ -35,12 +45,16 @@
 
     const selected = new Set(props.modelValue);
 
-    return props.permissionKeys.every((key) => selected.has(key));
+    return normalizePermissionKeys(props.permissionKeys).every((key) =>
+      selected.has(key)
+    );
   }
 
   function toggleAll() {
+    const keys = normalizePermissionKeys(props.permissionKeys);
+
     if (allSelected()) {
-      const keysToRemove = new Set(props.permissionKeys);
+      const keysToRemove = new Set(keys);
       emit(
         'update:modelValue',
         props.modelValue.filter((key) => !keysToRemove.has(key))
@@ -48,20 +62,19 @@
       return;
     }
 
-    emit('update:modelValue', [
-      ...new Set([...props.modelValue, ...props.permissionKeys]),
-    ]);
+    emit('update:modelValue', [...new Set([...props.modelValue, ...keys])]);
   }
 
   function toggleItem(key: string) {
-    const index = props.modelValue.indexOf(key);
+    const normalizedKey = permissionKey(key);
+    const index = props.modelValue.indexOf(normalizedKey);
+
     if (index === -1) {
-      emit('update:modelValue', [...props.modelValue, key]);
+      emit('update:modelValue', [...props.modelValue, normalizedKey]);
     } else {
-      const keysToRemove = new Set([
-        key,
-        ...getNestedKeys(props.permissions[key]),
-      ]);
+      const keysToRemove = new Set(
+        normalizePermissionKeys([key, ...getNestedKeys(props.permissions[key])])
+      );
       emit(
         'update:modelValue',
         props.modelValue.filter((v) => !keysToRemove.has(v))
@@ -103,8 +116,8 @@
     <li>
       <CraftCheckbox
         :label="item.label"
-        :model-value="modelValue.includes(key)"
-        :value="key"
+        :model-value="modelValue.includes(permissionKey(key))"
+        :value="permissionKey(key)"
         :disabled="disabled"
         @update:model-value="toggleItem(key)"
         :class="{
@@ -129,7 +142,8 @@
         v-if="hasNested(item)"
         :permissions="item.nested"
         :model-value="modelValue"
-        :disabled="disabled || !modelValue.includes(item.key)"
+        :disabled="disabled || !modelValue.includes(permissionKey(item.key))"
+        :preserve-case="preserveCase"
         @update:model-value="emit('update:modelValue', $event)"
         :level="level! + 1"
       />

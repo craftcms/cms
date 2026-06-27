@@ -92,6 +92,7 @@
               :heading="group.heading"
               :permissions="group.permissions"
               :permission-keys="group.keys"
+              :preserve-case="true"
               v-model="form.permissions"
               :disabled="readOnly"
             />
