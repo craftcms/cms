@@ -122,7 +122,7 @@ readonly class Navigation
                     )
                 )
                 ->add(new NavItem()->label(t('Tokens'))->url(cp_url('graphql/tokens')))
-                ->add(new NavItem()->label('GraphiQL')->url('graphiql')->external(true));
+                ->add(new NavItem()->label('GraphiQL')->url(cp_url('graphql/explore')));
 
             $navItems->add(new NavItem()
                 ->label('GraphQL')
