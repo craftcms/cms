@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {FeedWidget: './FeedWidget.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/feed/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/feed/dist',
     },
   },
 });

@@ -7,7 +7,8 @@ module.exports = getConfig({
   config: {
     entry: {tailwind_reset: './tailwind_reset.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/tailwindreset/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/tailwindreset/dist',
     },
   },
 });

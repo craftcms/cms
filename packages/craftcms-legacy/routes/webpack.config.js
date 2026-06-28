@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {routes: './routes.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/routes/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/routes/dist',
     },
   },
 });

@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {UpgradeUtility: './UpgradeUtility.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/upgrade/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/upgrade/dist',
     },
   },
 });

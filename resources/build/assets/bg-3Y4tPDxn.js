@@ -1,1 +1,0 @@
-var e={optionsPopup:`Изскачащ прозорец за опции за комбинирано поле`};export{e as default};
