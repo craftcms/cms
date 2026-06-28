@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Config;
 
 use Closure;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -2658,7 +2659,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Routing
      */
-    public mixed $setPasswordPath = 'setpassword';
+    public mixed $setPasswordPath = CpAuthPath::SetPassword->value;
 
     /**
      * @var mixed The URI to the page where users can request to change their password.
