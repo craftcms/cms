@@ -2,6 +2,8 @@
 // elevated session modal can be called from pretty much anywhere
 await Promise.all([
   import('./modules/auth/components/login/login-form.js'),
+  import('./modules/auth/components/set-password/set-password-form.js'),
+  import('./modules/auth/components/verify-email/verify-email-form.js'),
   import('./modules/auth/components/totp/totp-form.js'),
   import('./modules/auth/components/recovery-codes/recovery-code-form.js'),
 ]);

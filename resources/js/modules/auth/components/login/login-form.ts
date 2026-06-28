@@ -248,7 +248,7 @@ export default class CraftLoginForm extends LitElement {
     return html`
       <craft-pane>
         <form
-          class="login-form"
+          class="auth-form"
           method="post"
           accept-charset="UTF-8"
           @submit="${this.#onSubmit}"
@@ -316,7 +316,7 @@ export default class CraftLoginForm extends LitElement {
               : nothing}
           </craft-field-group>
 
-          <div class="login-form__actions">
+          <div class="auth-form__actions">
             <craft-button
               type="submit"
               variant="accent"
@@ -329,7 +329,7 @@ export default class CraftLoginForm extends LitElement {
         </form>
 
         ${this._error
-          ? html`<craft-callout class="login-form__error" variant="danger"
+          ? html`<craft-callout class="auth-form__error" variant="danger"
               >${this._error}</craft-callout
             >`
           : nothing}

@@ -7,6 +7,8 @@ use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\MessageBag;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -41,6 +43,17 @@ test('show renders verify-email view for valid token', function () {
             ->component('auth/VerifyEmail')
             ->where('uid', $user->uid)
             ->where('code', $code));
+});
+
+test('fallback template renders verify-email web component', function () {
+    $html = TemplateMode::with(TemplateMode::Cp, fn () => view('craftcms::verify-email', [
+        'uid' => 'user-uid',
+        'code' => 'token-code',
+        'errors' => new MessageBag(['code' => ['Invalid verification code.']]),
+    ])->render());
+
+    expect($html)->toContain('craft-verify-email-form');
+    expect($html)->toContain('initial-error');
 });
 
 test('store validates required fields', function () {

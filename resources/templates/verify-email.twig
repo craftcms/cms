@@ -1,18 +1,13 @@
 {% extends "_layouts/message" %}
-{% import "_includes/forms" as forms %}
 
 {% set title = 'Verify your email address'|t('app') %}
 
 {% block message %}
-  <form method="post" accept-charset="UTF-8">
-    {{ hiddenInput('uid', uid) }}
-    {{ hiddenInput('code', code) }}
-    {{ csrfInput() }}
+  {% set verificationErrors = errors.get('code') ?: errors.get('uid') %}
 
-    <h2 class="first">{{ 'Verify your email address'|t('app') }}</h2>
-
-    <div class="buttons">
-      <button class="btn submit" type="submit">{{ 'Verify'|t('app') }}</button>
-    </div>
-  </form>
+  <craft-verify-email-form {{ attr({
+    uid: uid,
+    code: code,
+    'initial-error': verificationErrors ? verificationErrors|first : null,
+  }) }}></craft-verify-email-form>
 {% endblock %}

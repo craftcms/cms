@@ -5,6 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\MessageBag;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -45,6 +47,17 @@ test('show renders set-password view for valid token', function () {
         ->where('uid', $user->uid)
         ->where('code', $code)
         ->where('newUser', false));
+});
+
+test('fallback template renders set-password web component', function () {
+    $html = TemplateMode::with(TemplateMode::Cp, fn () => view('craftcms::set-password', [
+        'uid' => 'user-uid',
+        'code' => 'token-code',
+        'newUser' => false,
+        'errors' => new MessageBag,
+    ])->render());
+
+    expect($html)->toContain('craft-set-password-form');
 });
 
 test('store validates required fields', function () {
