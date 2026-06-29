@@ -67,7 +67,7 @@ jobs:
 
       - name: Install npm dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --omit=optional
 
       - name: Build @craftcms/cp
         if: steps.cache.outputs.cache-hit != 'true'
