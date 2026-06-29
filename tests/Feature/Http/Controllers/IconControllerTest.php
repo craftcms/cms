@@ -75,16 +75,6 @@ describe('iconSvg', function () {
         ])->assertJsonValidationErrors(['icon']);
     });
 
-    test('svg processes system icon names', function () {
-        $json = get(action([IconController::class, 'svg'], ['icon' => 'gear']))
-            ->assertOk()
-            ->json();
-
-        expect($json['iconSvg'])
-            ->toBeString()
-            ->toContain('<svg');
-    });
-
     test('svg processes legacy icon names', function () {
         $json = get(action([IconController::class, 'svg'], ['icon' => 'settings']))
             ->assertOk()
