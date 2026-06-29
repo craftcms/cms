@@ -9,7 +9,8 @@ import {router} from '@inertiajs/vue3';
  * action and otherwise falls back to a full-page `window.location` navigation.
  * Calling this composable intercepts that event, prevents the fallback, and does
  * an Inertia `router.visit()` instead — so it should be invoked once from the
- * app shell (e.g. the layout).
+ * app shell (e.g. the layout) when you're on an inertia page that renders
+ * action items with redirects.
  */
 export function useActionRedirect(): void {
   function handleActionRedirect(event: Event): void {
