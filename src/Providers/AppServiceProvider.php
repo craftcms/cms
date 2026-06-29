@@ -120,6 +120,7 @@ class AppServiceProvider extends ServiceProvider
         $this->publishes([
             CmsAssets::resourcesPath('build') => public_path('vendor/craft/build'),
             CmsAssets::resourcesPath('legacy') => public_path('vendor/craft/legacy'),
+            CmsAssets::resourcesPath('icons') => public_path('vendor/craft/icons'),
         ], ['craftcms', 'craftcms-assets']);
     }
 

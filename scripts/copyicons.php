@@ -35,7 +35,7 @@ $styles = [
 
 $kitDir = dirname(__DIR__).'/node_modules/@awesome.me/kit-ddaed3f5c5';
 $kitSvgsDir = "$kitDir/icons/svgs";
-$iconsDir = dirname(__DIR__).'/resources/icons';
+$iconsDir = dirname(__DIR__).'/cms-assets/resources/icons';
 $metaPath = "$kitDir/icons/metadata/icons.json";
 $meta = json_decode(file_get_contents($metaPath), true);
 $index = [];

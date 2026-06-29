@@ -4,8 +4,6 @@ composer.lock
 **/dist/*
 vendor/*
 .ddev/*
-resources/icons/*
-resources/build/*
 resources/public/*
 resources/js/actions/*
 resources/js/routes/*

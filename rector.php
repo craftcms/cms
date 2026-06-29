@@ -26,8 +26,6 @@ return RectorConfig::configure()
         cacheClass: FileCacheStorage::class
     )
     ->withSkip([
-        __DIR__.'/resources/icons/index.php',
-        __DIR__.'/resources/icons/aliases.php',
         AnonymousMigrationsRector::class => [
             __DIR__.'/src/Database/Migrations/BaseContentRefactorMigration.php',
             __DIR__.'/src/Database/Migrations/BaseEntryTypeMergeMigration.php',
