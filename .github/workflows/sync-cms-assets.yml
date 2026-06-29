@@ -34,9 +34,8 @@ jobs:
 
       - name: Install npm dependencies
         run: npm ci
-        
-      - name: Install FontAwesome kit
-        run: npm install @awesome.me/kit-ddaed3f5c5
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
