@@ -49,7 +49,7 @@
     flash?: Record<any, any>;
     errors: Record<any, any> | null;
     metadataHtml: string | null;
-    sidebarDetails: any;
+    formActions?: Array<any>;
   }>();
 
   const {readOnly} = useCraftData();
@@ -94,13 +94,18 @@
 
   const showTitleTranslation = computed(() => props.isMultiSite);
   const showTitleTranslationKeyFormat = computed(
-    () => props.isMultiSite && form.titleTranslationMethod === 'custom'
+    () =>
+      props.isMultiSite &&
+      form.titleTranslationMethod === 'custom'
   );
   const showSlugTranslation = computed(
     () => form.showSlugField && props.isMultiSite
   );
   const showSlugTranslationKeyFormat = computed(
-    () => form.showSlugField && form.slugTranslationMethod === 'custom'
+    () =>
+      form.showSlugField &&
+      form.slugTranslationMethod === 'custom' &&
+      props.isMultiSite
   );
 
   // Inertia posts the form object, not the designer's own inputs, so read the
@@ -111,18 +116,43 @@
     transform: (data) => ({
       ...data,
       fieldLayout:
-        fldHost.value?.querySelector('craft-field-layout-designer')?.serialize() ??
-        '{}',
+        fldHost.value
+          ?.querySelector('craft-field-layout-designer')
+          ?.serialize() ?? '{}',
       generatedFields:
         fldHost.value
           ?.querySelector('craft-generated-fields-table')
           ?.serialize() ?? [],
     }),
   });
+
+  // "Save as a new {type}" submits the current form (including the field layout)
+  // with a `saveAsNew` flag, so on-screen edits are carried into the duplicate —
+  // rather than a standalone request that would clone the last-saved version.
+  // Delete (and any other server-defined actions) come from `props.formActions`.
+  const formActionItems = computed(() => {
+    const actions = [...(props.formActions ?? [])];
+
+    if (!props.brandNew) {
+      actions.unshift({
+        label: t('Save as a new {type}', {type: props.lowerTypeName}),
+        // Don't preserve state — we navigate to the *new* type's edit screen, so
+        // the form must re-initialize from the new props (not keep this record's).
+        onClick: () => save({data: {saveAsNew: true}, preserveState: false}),
+      });
+    }
+
+    return actions;
+  });
 </script>
 
 <template>
-  <AppLayout :title="title" :form="form" @save="save">
+  <AppLayout
+    :title="title"
+    :form="form"
+    @save="save"
+    :form-actions="formActionItems"
+  >
     <div class="grid gap-6 grid-cols-4">
       <Pane appearance="raised" class="col-span-3">
         <craft-field-group>
@@ -177,17 +207,25 @@
             :error="errors?.description"
           />
 
-          <IconPicker :label="t('Icon')" name="icon" v-model="form.icon" />
+          <IconPicker
+            :label="t('Icon')"
+            name="icon"
+            v-model="form.icon"
+            :disabled="readOnly"
+            :error="errors?.icon"
+          />
 
           <CraftSelectColor
             :label="t('Color')"
             allow-transparent
             v-model="form.color"
+            :disabled="readOnly"
+            :error="errors?.color"
           />
 
           <!-- UI Label Format -->
           <CraftInput
-            :label="t('Title Format')"
+            :label="t('UI Label Format')"
             :help-text="
               t(
                 'How {type} of this type should be labeled in the control panel.',
@@ -201,7 +239,7 @@
             v-model="form.uiLabelFormat"
             :disabled="readOnly"
             :error="errors?.uiLabelFormat"
-            monospaced
+            monospace
           />
 
           <!-- Title Translation Method -->

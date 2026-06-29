@@ -31,6 +31,7 @@ use CraftCms\Cms\View\HtmlStack;
 use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -106,7 +107,7 @@ class EntryTypesController
 
         abort_if(is_null($entryTypeData), 404, 'Entry type not found');
 
-        return new CpScreenResponse()
+        $response = new CpScreenResponse()
             ->editUrl($entryTypeData->getCpEditUrl())
             ->title(trim($entryTypeData->name) ?: t('Edit Entry Type'))
             ->addCrumb(t('Settings'), 'settings')
@@ -114,6 +115,24 @@ class EntryTypesController
             ->redirectUrl('settings/entry-types')
             ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml($entryTypeData->getMetadata()))
             ->inertiaPage('settings/EntryTypesEdit', $this->entryTypeProps($entryTypeData, brandNew: false));
+
+        if (! $this->readOnly) {
+            if ($entryTypeData->id) {
+                $response->addAltAction(t('Delete'), [
+                    'variant' => 'danger',
+                    'action' => [
+                        'type' => 'http',
+                        'method' => 'DELETE',
+                        'url' => action([EntryTypesController::class, 'destroy'], [$entryTypeData->id]),
+                        'body' => [
+                            'redirect' => Crypt::encrypt(action([EntryTypesController::class, 'index'])),
+                        ],
+                    ],
+                ]);
+            }
+        }
+
+        return $response;
     }
 
     /**
@@ -263,7 +282,14 @@ class EntryTypesController
 
         $this->entryTypes->saveEntryType($entryType);
 
-        return $this->asModelSuccess($entryType, t('Entry type saved.'), 'entryType');
+        return $this->asModelSuccess(
+            $entryType,
+            t('Entry type saved.'),
+            'entryType',
+            // A "save as new" submit should land on the newly-created entry type
+            // rather than the posted (original) redirect.
+            redirect: $saveAsNew ? Url::cpUrl("settings/entry-types/{$entryType->id}") : null,
+        );
     }
 
     public function destroy(Request $request, ?EntryTypeModel $entryType = null): Response
@@ -284,7 +310,7 @@ class EntryTypesController
 
         return $this->asSuccess(t('“{name}” deleted.', [
             'name' => $entryTypeData->getUiLabel(),
-        ]));
+        ]), redirect: action([EntryTypesController::class, 'index']));
     }
 
     public function renderOverrideSettings(Request $request, HtmlStack $HtmlStack): JsonResponse

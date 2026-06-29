@@ -26,6 +26,7 @@
       name?: string;
       error?: string;
       freeOnly?: boolean;
+      disabled?: boolean;
     }>(),
     {freeOnly: false}
   );
@@ -140,6 +141,7 @@
     :has-feedback-for="error ? 'error' : ''"
     hidden-input
     .modelValue="model"
+    :disabled="disabled"
   >
     <div class="flex gap-2 items-center" slot="before">
       <div class="icon-preview" :lang="contentLang">
@@ -156,6 +158,7 @@
           size="small"
           ref="chooseButton"
           @click.prevent="openModal"
+
           >{{ buttonLabel }}</craft-button
         >
         <craft-button

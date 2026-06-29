@@ -10,6 +10,7 @@
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import LiveRegion from '@/common/components/LiveRegion.vue';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
+  import {useActionRedirect} from '@/common/composables/useActionRedirect';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {useFlash} from '@/common/composables/useFlash';
@@ -32,7 +33,7 @@
     form?: InertiaForm<any> | null;
     defaultFormActions?: Array<DefaultFormAction>;
     formActions?: Array<ActionItem>;
-    formAdditionalActions?: Array<any>;
+    formAdditionalActions?: Array<ActionItem>;
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }
 
@@ -73,6 +74,9 @@
   watch(errorFlash, (newMessage) => announce(newMessage));
 
   useAppendHtml();
+
+  // Bridge `@craftcms/cp` action redirects into Inertia SPA visits.
+  useActionRedirect();
 
   const state = reactive<{
     sidebar: {

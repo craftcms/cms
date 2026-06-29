@@ -68,7 +68,6 @@ export class CardViewDesigner extends Base {
     const $thumbAlignmentListbox = this.$thumbManagementContainer
       .querySelector('craft-button-group[id$="thumb-alignment"]')
       ?.closest('craft-listbox');
-    console.log({$thumbAlignmentListbox});
     if ($thumbAlignmentListbox) {
       this.addListener($thumbAlignmentListbox, 'change', (ev: any) => {
         this.manageThumbnailAlignment(ev.detail.$selectedOption);
