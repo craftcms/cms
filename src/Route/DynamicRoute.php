@@ -64,7 +64,7 @@ class DynamicRoute
         }
 
         if (Str::endsWith($resolvedTemplate, '.blade.php')) {
-            return view()->file($resolvedTemplate, $variables)->render();
+            return view()->make($template, $variables)->render();
         }
 
         return pageTemplate($template, $variables);
