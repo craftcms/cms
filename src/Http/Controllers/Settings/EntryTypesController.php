@@ -73,7 +73,7 @@ class EntryTypesController
             sortDir: $request->sortDir(),
         );
 
-        return Inertia::render('settings/EntryTypes', [
+        return Inertia::render('settings/entry-types/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Entry Types')],
