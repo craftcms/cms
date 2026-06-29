@@ -94,7 +94,7 @@ class EntryTypesController
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->redirectUrl('settings/entry-types')
-            ->inertiaPage('settings/EntryTypesEdit', $this->entryTypeProps($entryType, brandNew: true));
+            ->inertiaPage('settings/entry-types/Edit', $this->entryTypeProps($entryType, brandNew: true));
     }
 
     public function edit(Request $request, ?EntryTypeModel $entryType = null): CpScreenResponse
@@ -114,7 +114,7 @@ class EntryTypesController
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->redirectUrl('settings/entry-types')
             ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml($entryTypeData->getMetadata()))
-            ->inertiaPage('settings/EntryTypesEdit', $this->entryTypeProps($entryTypeData, brandNew: false));
+            ->inertiaPage('settings/entry-types/Edit', $this->entryTypeProps($entryTypeData, brandNew: false));
 
         if (! $this->readOnly) {
             if ($entryTypeData->id) {
