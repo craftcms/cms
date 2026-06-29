@@ -13,10 +13,8 @@
     create,
     destroy,
     edit,
-    index,
     reorder,
   } from '@actions/Settings/VolumesController';
-  import {index as imageTransformsIndex} from '@actions/Settings/ImageTransformsController';
   import type {SortItem} from '@/common/types';
 
   interface VolumeData {
@@ -133,22 +131,6 @@
     enableSorting: false,
     getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
-
-  type NavItem = {
-    label: string;
-    url: string;
-    active?: boolean;
-    inertia?: boolean;
-  };
-  const navItems = computed((): Record<string, NavItem> => {
-    return {
-      volumes: {label: t('Volumes'), url: index().url, active: true},
-      transforms: {
-        label: t('Image Transforms'),
-        url: imageTransformsIndex().url,
-      },
-    };
-  });
 </script>
 
 <template>
@@ -165,22 +147,6 @@
       </CpLink>
     </template>
 
-    <template #interior-nav>
-      <craft-nav-list>
-        <template v-for="(item, id) in navItems" :key="id">
-          <CpLink
-            as="craft-nav-item"
-            :active="item.active ?? false"
-            :href="item.url"
-            block
-            flush
-            :inertia="item.inertia ?? true"
-          >
-            {{ item.label }}
-          </CpLink>
-        </template>
-      </craft-nav-list>
-    </template>
     <AdminTable
       :table="table"
       :reorderable="true"
