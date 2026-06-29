@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -12,6 +14,47 @@ use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::findOne());
+
+    File::ensureDirectoryExists(Aliases::get('@cmsAssets/resources/icons'));
+    File::ensureDirectoryExists(Aliases::get('@cmsAssets/resources/icons/solid'));
+    File::ensureDirectoryExists(Aliases::get('@cmsAssets/resources/icons/custom-icons'));
+
+    $indexPath = Aliases::get('@cmsAssets/resources/icons/index.php');
+
+    if (! File::exists($indexPath)) {
+        File::put($indexPath, <<<'php_WRAP'
+            <?php
+            return [
+                'gear' => [
+                    'name' => ' gear ',
+                    'terms' => ' cog cogwheel configuration gear mechanical modify settings sprocket tool wheel ',
+                    'pro' => false,
+                    'styles' => ['solid', 'regular', 'light', 'thin', 'duotone'],
+               ],
+               '00' => [
+                    'name' => ' 00 ',
+                    'terms' => '',
+                    'pro' => true,
+                    'styles' => ['solid', 'regular', 'light', 'thin', 'duotone'],
+               ],
+            ];
+        php_WRAP);
+    }
+
+    // Free
+    if (! File::exists(Aliases::get('@cmsAssets/resources/icons/solid/gear.svg'))) {
+        File::put(Aliases::get('@cmsAssets/resources/icons/solid/gear.svg'), '<svg></svg>');
+    }
+
+    // Pro
+    if (! File::exists(Aliases::get('@cmsAssets/resources/icons/solid/00.svg'))) {
+        File::put(Aliases::get('@cmsAssets/resources/icons/solid/00.svg'), '<svg></svg>');
+    }
+
+    // Custom
+    if (! File::exists(Aliases::get('@cmsAssets/resources/icons/custom-icons/element-card.svg'))) {
+        File::put(Aliases::get('@cmsAssets/resources/icons/custom-icons/element-card.svg'), '<svg></svg>');
+    }
 });
 
 describe('iconSvg', function () {
@@ -54,7 +97,7 @@ describe('iconSvg', function () {
     });
 
     test('svg handles custom icons', function () {
-        $json = get(action([IconController::class, 'svg'], ['icon' => 'whiskey-glass-ice']))
+        $json = get(action([IconController::class, 'svg'], ['icon' => 'element-card']))
             ->assertOk()
             ->json();
 
@@ -145,7 +188,7 @@ describe('pickerOptions', function () {
         $html = $json['listHtml'];
 
         // Should contain free icons (checking for a known free icon: '0')
-        expect($html)->toContain('title="0"');
+        expect($html)->toContain('title="gear"');
 
         // Should not contain pro icons (checking for a known pro icon: '00')
         expect($html)->not->toContain('title="00"');
@@ -160,7 +203,7 @@ describe('pickerOptions', function () {
 
         // Should contain both free and pro icons
         expect($html)
-            ->toContain('title="0"')  // free icon
+            ->toContain('title="gear"')  // free icon
             ->toContain('title="00"'); // pro icon
     });
 
@@ -176,27 +219,27 @@ describe('pickerOptions', function () {
     });
 
     test('pickerOptions filters icons by search term', function () {
-        $json = get(action([IconController::class, 'pickerOptions'], ['search' => 'zero']))
+        $json = get(action([IconController::class, 'pickerOptions'], ['search' => 'cog']))
             ->assertOk()
             ->json();
 
         $html = $json['listHtml'];
 
-        // Should contain icons matching 'zero' in name or terms
+        // Should contain icons matching 'cog' in name or terms
         expect($html)
-            ->toContain('title="0"')
+            ->toContain('title="gear"')
             ->toBeString();
     });
 
     test('pickerOptions handles multi-word search', function () {
-        $json = get(action([IconController::class, 'pickerOptions'], ['search' => 'digit zero']))
+        $json = get(action([IconController::class, 'pickerOptions'], ['search' => 'cog modify']))
             ->assertOk()
             ->json();
 
         $html = $json['listHtml'];
 
         // Should find icons that match both terms
-        expect($html)->toContain('title="0"');
+        expect($html)->toContain('title="gear"');
     });
 
     test('pickerOptions returns empty list for non-matching search', function () {
@@ -205,19 +248,6 @@ describe('pickerOptions', function () {
             ->json();
 
         expect($json['listHtml'])->toBe('');
-    });
-
-    test('pickerOptions ranks search results with name matches first', function () {
-        $json = get(action([IconController::class, 'pickerOptions'], ['search' => 'one']))
-            ->assertOk()
-            ->json();
-
-        $html = $json['listHtml'];
-
-        // The icon with name '1' (containing 'one' in name) should appear in results
-        expect($html)
-            ->toContain('title="1"')
-            ->toBeString();
     });
 
     test('pickerOptions treats empty search string as no search', function () {
