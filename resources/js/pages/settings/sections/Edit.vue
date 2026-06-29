@@ -116,7 +116,7 @@
 </script>
 
 <template>
-  <AppLayout :title="title" :debug="{form, $props}" :form="form" @save="save">
+  <AppLayout :title="title" :form="form" @save="save">
     <Pane appearance="raised">
       <div class="grid gap-3">
         <input
@@ -388,5 +388,3 @@
     </Pane>
   </AppLayout>
 </template>
-
-<style scoped lang="scss"></style>

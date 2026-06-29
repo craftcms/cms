@@ -211,7 +211,7 @@
 </script>
 
 <template>
-  <IndexLayout :debug="{form, $props}" :full-width="true" :title="pageTitle">
+  <IndexLayout :full-width="true" :title="pageTitle">
     <template #title>
       <div class="flex gap-2 items-center">
         <h1 class="title text-xl">
@@ -370,22 +370,9 @@
 </template>
 
 <style scoped lang="scss">
-  .interior {
-    display: grid;
-    grid-template-columns: minmax(calc(120rem / 16), 16%) 1fr;
-    gap: var(--c-spacing-md);
-    align-items: start;
-  }
-
   .title {
     display: flex;
     align-items: center;
     gap: var(--c-spacing-md);
-  }
-
-  .separator {
-    font-size: 0.8em;
-    font-weight: 400;
-    opacity: 0.5;
   }
 </style>

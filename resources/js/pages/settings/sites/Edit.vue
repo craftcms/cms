@@ -72,5 +72,3 @@
     v-if="!site.primary"
   />
 </template>
-
-<style scoped lang="scss"></style>
