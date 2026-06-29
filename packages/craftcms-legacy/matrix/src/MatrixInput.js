@@ -417,7 +417,7 @@
               // get instantiated before field toggles
               await Craft.appendHeadHtml(data.headHtml);
               await Craft.appendBodyHtml(data.bodyHtml);
-              Craft.initUiElements($entry.children('.fields'));
+              Craft.initUiElements($entry);
               new Craft.MatrixInput.Entry(this, $entry);
               this.entrySort?.addItems($entry);
               this.entrySelect.addItems($entry);

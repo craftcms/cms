@@ -3,10 +3,11 @@ import {
   ESC_KEY,
   type GarnishEvent,
   hasAttr,
-  Listbox,
   requestAnimationFrame,
   RETURN_KEY,
 } from '@craftcms/garnish';
+// Listbox was migrated out of `@craftcms/garnish` into the app.
+import {Listbox} from '@/modules/listbox/listbox';
 import {Tab} from './tab';
 import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';

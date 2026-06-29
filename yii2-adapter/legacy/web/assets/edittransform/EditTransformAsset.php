@@ -16,7 +16,7 @@ use craft\web\assets\cp\CpAsset;
  */
 class EditTransformAsset extends AssetBundle
 {
-    public $sourcePath = '@craftcms/resources/legacy/edittransform/dist';
+    public $sourcePath = '@cmsAssets/resources/legacy/edittransform/dist';
 
     public $depends = [
         CpAsset::class,

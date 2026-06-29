@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {Updater: './Updater.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/updater/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/updater/dist',
     },
   },
 });

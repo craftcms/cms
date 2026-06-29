@@ -75,7 +75,7 @@ export default class CraftLoginResetPassword extends LitElement {
     return html`
       <craft-pane>
         <form
-          class="login-form login-form--reset"
+          class="auth-form auth-form--reset"
           method="post"
           accept-charset="UTF-8"
           @submit="${this.#onSubmit}"
@@ -95,7 +95,7 @@ export default class CraftLoginResetPassword extends LitElement {
             </craft-input>
           </craft-field-group>
 
-          <div class="login-form__actions">
+          <div class="auth-form__actions">
             <craft-button
               type="submit"
               variant="accent"
@@ -106,7 +106,7 @@ export default class CraftLoginResetPassword extends LitElement {
           </div>
 
           ${this._error
-            ? html`<craft-callout variant="danger" class="login-form__error"
+            ? html`<craft-callout variant="danger" class="auth-form__error"
                 >${this._error}</craft-callout
               >`
             : nothing}

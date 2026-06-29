@@ -1,0 +1,6 @@
+{
+  "name": "craftcms/cms-assets",
+  "description": "Built assets for Craft CMS.",
+  "license": "proprietary",
+  "type": "library"
+}

@@ -204,19 +204,35 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // GraphQL
         Route::get('graphql', GqlIndexController::class);
-        Route::get('graphiql', GraphiqlController::class);
-        Route::get('graphql/tokens', [TokensController::class, 'index']);
-        Route::get('graphql/tokens/new', [TokensController::class, 'create']);
-        Route::get('graphql/tokens/{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId');
+        Route::get('graphql/explore', GraphiqlController::class);
+
+        Route::prefix('graphql/tokens')->name('graphql.tokens.')->group(function () {
+            Route::get('/', [TokensController::class, 'index'])->name('index');
+            Route::get('new', [TokensController::class, 'create'])->name('create');
+            Route::get('{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId')->name('edit');
+            Route::post('generate', [TokensController::class, 'generate'])->name('generate');
+
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('/', [TokensController::class, 'store'])->name('store');
+                Route::patch('{tokenId}', [TokensController::class, 'update'])->whereNumber('tokenId')->name('update');
+                Route::post('{tokenId}/access-token', [TokensController::class, 'accessToken'])->whereNumber('tokenId')->name('accessToken');
+            });
+        });
 
         Route::middleware(RequireAdminChanges::class)->group(function () {
-            Route::get('graphql/schemas', [SchemasController::class, 'index']);
-            Route::get('graphql/schemas/new', [SchemasController::class, 'create']);
-            Route::get('graphql/schemas/public', [SchemasController::class, 'editPublic']);
-            Route::get('graphql/schemas/{schemaId}', [SchemasController::class, 'edit'])->whereNumber('schemaId');
-            Route::delete('graphql/schemas/{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId');
+            Route::prefix('graphql/schemas')->name('graphql.schemas.')->group(function () {
+                Route::get('/', [SchemasController::class, 'index'])->name('index');
+                Route::get('new', [SchemasController::class, 'create'])->name('create');
+                Route::get('{schemaId}', [SchemasController::class, 'edit'])->where('schemaId', 'public|\d+')->name('edit');
+                Route::delete('{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId')->name('destroy');
 
-            Route::delete('graphql/tokens/{tokenId}', [TokensController::class, 'destroy'])->whereNumber('tokenId');
+                Route::middleware('password.confirm')->group(function () {
+                    Route::post('/', [SchemasController::class, 'store'])->name('store');
+                    Route::patch('{schemaId}', [SchemasController::class, 'update'])->where('schemaId', 'public|\d+')->name('update');
+                });
+            });
+
+            Route::delete('graphql/tokens/{tokenId}', [TokensController::class, 'destroy'])->whereNumber('tokenId')->name('graphql.tokens.destroy');
         });
 
         // Plugins

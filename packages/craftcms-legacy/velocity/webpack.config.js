@@ -7,7 +7,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/velocity/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/velocity/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

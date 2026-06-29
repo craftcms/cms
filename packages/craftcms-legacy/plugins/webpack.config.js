@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {PluginManager: './PluginManager.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/plugins/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/plugins/dist',
     },
   },
 });

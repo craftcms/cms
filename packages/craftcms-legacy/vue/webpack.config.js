@@ -6,13 +6,14 @@ const path = require('path');
 
 // Vue 2 is in legacy node_modules (root has Vue 3)
 const legacyNodeModules = path.resolve(__dirname, '../node_modules');
-const resolveLegacyPackage = (pkg, file) => path.join(legacyNodeModules, pkg, file);
+const resolveLegacyPackage = (pkg, file) =>
+  path.join(legacyNodeModules, pkg, file);
 
 module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/vue/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/vue/dist',
     },
     plugins: [
       new MergeIntoSingleFilePlugin({

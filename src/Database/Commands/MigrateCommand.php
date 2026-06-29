@@ -8,6 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
 use CraftCms\Cms\Database\Events\MigratorsResolving;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
@@ -237,6 +238,8 @@ class MigrateCommand extends Command implements Isolatable
      */
     private function prepareDatabase(): void
     {
+        app(LaravelMigrations::class)->ensureMigrationTableTrackColumn();
+
         if ($this->getMigrator('craft')->repositoryExists()) {
             return;
         }

@@ -8,7 +8,7 @@ module.exports = getConfig({
   config: {
     entry: {},
     output: {
-      path: __dirname + '/../../../resources/legacy/selectize/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/selectize/dist',
     },
     plugins: [
       new MergeIntoSingleFilePlugin({

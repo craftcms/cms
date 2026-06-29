@@ -31,3 +31,6 @@ resources/js/wayfinder
 # TypeScript transformer generated files
 resources/js/generated/*
 !resources/js/generated/.gitkeep
+
+# Built CMS assets
+cms-assets/resources/

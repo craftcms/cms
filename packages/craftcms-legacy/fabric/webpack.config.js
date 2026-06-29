@@ -7,7 +7,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/fabric/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/fabric/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

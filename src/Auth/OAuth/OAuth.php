@@ -24,6 +24,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -51,6 +52,16 @@ use function CraftCms\Cms\t;
 class OAuth
 {
     private const string CP_CONTEXT_VALUE = 'cp';
+
+    private const array DEFAULT_TRUSTED_EMAIL_PROVIDERS = [
+        'google',
+        'github',
+        'apple',
+        'bitbucket',
+        'slack',
+        'slack-openid',
+        'twitter-oauth-2',
+    ];
 
     /** @var Collection<string, ProviderDefinition>|null */
     private ?Collection $providerDefinitions = null;
@@ -236,6 +247,24 @@ class OAuth
         return $userId ? User::findOne($userId) : null;
     }
 
+    public function findUserByEmail(string $email): ?User
+    {
+        $email = trim($email);
+
+        if ($email === '') {
+            return null;
+        }
+
+        return User::find()
+            ->addSelect([
+                'users.password as password',
+                'users.passwordResetRequired as passwordResetRequired',
+            ])
+            ->email(Query::escapeParam($email))
+            ->status(null)
+            ->first();
+    }
+
     public function hasIdentity(int $userId): bool
     {
         return SsoIdentity::query()->where('userId', $userId)->exists();
@@ -337,6 +366,9 @@ class OAuth
                 ? ($config['createsUsers'] === null ? null : (bool) $config['createsUsers'])
                 : null,
             activatesUsers: (bool) ($config['activatesUsers'] ?? false),
+            trustsEmail: array_key_exists('trustsEmail', $config)
+                ? (bool) $config['trustsEmail']
+                : $this->trustsProviderEmail($handle, $driver),
             scopes: array_values($config['scopes'] ?? []),
             with: $config['with'] ?? [],
             groupIds: $this->resolveConfiguredGroups($handle, $config['groups'] ?? []),
@@ -356,6 +388,12 @@ class OAuth
         return $definition;
     }
 
+    private function trustsProviderEmail(string $handle, string $driver): bool
+    {
+        return in_array($driver, self::DEFAULT_TRUSTED_EMAIL_PROVIDERS, true) ||
+            in_array($handle, self::DEFAULT_TRUSTED_EMAIL_PROVIDERS, true);
+    }
+
     private function validateProviderConfig(string $handle, array $config): array
     {
         try {
@@ -373,6 +411,7 @@ class OAuth
                 'groups' => ['sometimes'],
                 'createsUsers' => ['sometimes', 'nullable', 'boolean'],
                 'activatesUsers' => ['sometimes', 'boolean'],
+                'trustsEmail' => ['sometimes', 'boolean'],
                 'identityResolver' => ['sometimes', 'string'],
                 'userResolver' => ['sometimes', 'string'],
                 'userPopulator' => ['sometimes', 'string'],

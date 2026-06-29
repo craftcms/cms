@@ -35,7 +35,7 @@ abstract class BaseUserSettingsController
     protected function crumbs(string $title, ?string $url = null): array
     {
         return [
-            ['label' => t('Settings'), 'url' => 'settings'],
+            ['label' => t('Settings'), 'url' => cp_url('settings')],
             array_filter(['label' => $title, 'url' => $url]),
         ];
     }

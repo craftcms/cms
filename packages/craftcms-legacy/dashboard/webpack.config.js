@@ -9,7 +9,7 @@ module.exports = getConfig({
       Dashboard: './Dashboard.js',
     },
     output: {
-      path: __dirname + '/../../../resources/legacy/dashboard/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/dashboard/dist',
     },
   },
 });
