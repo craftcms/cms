@@ -32,14 +32,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
-
       - name: Install npm dependencies
         run: npm ci
 
       - name: Copy icons
         run: php ./scripts/copyicons.php
+      
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
 
       - name: Build assets
         run: |
