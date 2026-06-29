@@ -24,7 +24,9 @@ class IconServiceProvider extends ServiceProvider
         $aliases->set('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
         $aliases->set('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
 
-        require $aliases->get('@icons/aliases.php');
+        if (file_exists($aliasesFile = $aliases->get('@icons/aliases.php'))) {
+            require $aliasesFile;
+        }
 
         $solidIconsPath = '@icons/solid';
 
