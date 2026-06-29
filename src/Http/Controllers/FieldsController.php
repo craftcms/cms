@@ -77,7 +77,7 @@ class FieldsController
             sortDir: $request->sortDir(),
         );
 
-        return Inertia::render('settings/Fields', [
+        return Inertia::render('settings/fields/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Fields')],

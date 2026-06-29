@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -34,6 +35,10 @@ class ImageTransformsController
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets/transforms')],
                 ['label' => t('Image Transforms')],
+            ],
+            'subnav' => [
+                new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets')),
+                new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms'))->selected(true),
             ],
             'title' => t('Image Transforms'),
             'transforms' => $imageTransforms

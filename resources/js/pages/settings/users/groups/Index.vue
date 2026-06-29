@@ -51,13 +51,6 @@
     get data() {
       return props.groups;
     },
-    state: {
-      get columnVisibility() {
-        return {};
-      },
-    },
-    manualPagination: true,
-    pageCount: 1,
     getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
 </script>
@@ -92,5 +85,3 @@
     </AdminTable>
   </IndexLayout>
 </template>
-
-<style scoped lang="scss"></style>

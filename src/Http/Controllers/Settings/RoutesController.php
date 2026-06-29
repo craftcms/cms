@@ -37,6 +37,7 @@ readonly class RoutesController
                 ['label' => t('Routes')],
             ])
             ->inertiaPage('settings/routes/Index', [
+                'readOnly' => ! Cms::config()->allowAdminChanges,
                 'routes' => $this->routes->getProjectConfigRoutes()->values(),
             ]);
     }
@@ -94,36 +95,21 @@ readonly class RoutesController
             ? t('Create a new route')
             : t('Edit Route');
 
-        $response = new CpScreenResponse()
+        return new CpScreenResponse()
             ->title($title)
             ->crumbs([
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Routes'), 'url' => Url::cpUrl('settings/routes')],
                 ['label' => $title],
             ])
-            ->redirectUrl('settings/routes');
-
-        if (! $isNew && Cms::config()->allowAdminChanges) {
-            $response->actionMenuItems(fn () => [[
-                'label' => t('Delete'),
-                'icon' => 'trash',
-                'destructive' => true,
-                'attributes' => [
-                    'type' => 'button',
-                    'data' => [
-                        'route-delete-action' => true,
-                        'route-delete-url' => Url::cpUrl("settings/routes/{$route->uid}"),
-                    ],
-                ],
-            ]]);
-        }
-
-        return $response->inertiaPage('settings/routes/Edit', [
-            'route' => $route,
-            'tokens' => $this->tokenProps(),
-            'sites' => $this->siteProps(),
-            'templateOptions' => SelectOptions::getTemplateSuggestions(),
-        ]);
+            ->redirectUrl('settings/routes')
+            ->inertiaPage('settings/routes/Edit', [
+                'route' => $route,
+                'readOnly' => ! Cms::config()->allowAdminChanges,
+                'tokens' => $this->tokenProps(),
+                'sites' => $this->siteProps(),
+                'templateOptions' => SelectOptions::getTemplateSuggestions(),
+            ]);
     }
 
     private function tokenProps(): array

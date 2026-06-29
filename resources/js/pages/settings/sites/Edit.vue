@@ -10,7 +10,6 @@
   import Badge from '@/common/components/Badge.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import Pane from '@/common/components/Pane.vue';
-  import {useEventListener} from '@vueuse/core';
 
   const props = defineProps<{
     title: string;
@@ -32,14 +31,6 @@
     hasUrls: props.site.hasUrls,
     primary: props.site.primary,
     baseUrl: props.site.baseUrlRaw ?? '',
-  });
-
-  // Handle cmd + s events
-  useEventListener('keydown', (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-      event.preventDefault();
-      save();
-    }
   });
 
   const {save} = useSettingsSave(form, store);
@@ -72,5 +63,3 @@
     v-if="!site.primary"
   />
 </template>
-
-<style scoped lang="scss"></style>

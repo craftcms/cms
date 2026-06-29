@@ -13,7 +13,7 @@
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import {useForm} from '@inertiajs/vue3';
   import type {BaseOption} from '@/common/types';
-  import {computed, ref, watch} from 'vue';
+  import {computed} from 'vue';
   import cropImageUrl from '/images/transforms/crop.svg';
   import fitImageUrl from '/images/transforms/fit.svg';
   import letterboxImageUrl from '/images/transforms/letterbox.svg';
@@ -89,20 +89,14 @@
     return String(matchedValue);
   }
 
-  const qualityPickerValue = ref(matchingQualityOptionValue(form.quality));
+  const qualityPickerValue = computed({
+    get: () => matchingQualityOptionValue(form.quality),
+    set(value: string) {
+      const numericValue = Number(value);
 
-  watch(
-    () => form.quality,
-    (quality) => {
-      qualityPickerValue.value = matchingQualityOptionValue(quality);
-    }
-  );
-
-  function updateQualityFromPicker(value: string | number | undefined) {
-    const numericValue = Number(value);
-    qualityPickerValue.value = String(value);
-    form.quality = numericValue ? String(numericValue) : '';
-  }
+      form.quality = numericValue ? String(numericValue) : '';
+    },
+  });
 
   const handleGenerator = useInputGenerator(
     () => form.name,
@@ -265,10 +259,9 @@
           <CraftSelect
             :label="t('Quality')"
             id="quality-picker"
-            :model-value="qualityPickerValue"
+            v-model="qualityPickerValue"
             :error="form.errors.quality"
             :disabled="readOnly"
-            @update:model-value="updateQualityFromPicker"
           >
             <select slot="input">
               <option value="0">{{ t('Auto') }}</option>

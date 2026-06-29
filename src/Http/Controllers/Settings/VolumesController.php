@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -52,13 +53,17 @@ class VolumesController
             default => SORT_ASC,
         };
 
-        return Inertia::render('settings/Volumes', [
+        return Inertia::render('settings/assets/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets')],
                 ['label' => t('Volumes')],
             ],
             'sort' => $sort,
+            'subnav' => [
+                new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets'))->selected(true),
+                new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms')),
+            ],
             'title' => t('Volume Settings'),
             'volumes' => $volumes->getAllVolumes(...),
         ]);

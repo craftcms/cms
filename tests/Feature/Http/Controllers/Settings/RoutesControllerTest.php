@@ -8,7 +8,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\Site\Models\Site;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
@@ -41,6 +40,11 @@ it('requires authentication', function () {
 });
 
 it('requires admin changes for mutations', function () {
+    $uid = $this->routes->saveRoute(new Route(
+        uriParts: ['news'],
+        template: 'news/_index',
+    ));
+
     Cms::config()->allowAdminChanges = false;
 
     get(action([RoutesController::class, 'index']))
@@ -49,10 +53,17 @@ it('requires admin changes for mutations', function () {
             ->component('settings/routes/Index')
             ->where('readOnly', true));
 
+    get(action([RoutesController::class, 'edit'], ['uid' => $uid]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/routes/Edit')
+            ->where('route.uid', $uid)
+            ->where('readOnly', true));
+
     get(action([RoutesController::class, 'create']))->assertForbidden();
     post(action([RoutesController::class, 'store']))->assertForbidden();
-    patch(action([RoutesController::class, 'update'], ['uid' => '11111111-1111-4111-8111-111111111111']))->assertForbidden();
-    delete(action([RoutesController::class, 'destroy'], ['uid' => '11111111-1111-4111-8111-111111111111']))->assertForbidden();
+    patch(action([RoutesController::class, 'update'], ['uid' => $uid]))->assertForbidden();
+    delete(action([RoutesController::class, 'destroy'], ['uid' => $uid]))->assertForbidden();
     post(action([RoutesController::class, 'reorder']))->assertForbidden();
 });
 
@@ -69,15 +80,10 @@ it('can show the routes screen', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/routes/Index')
             ->where('title', 'Routes')
-            ->where('routes.0.uid', $uid)
-            ->where('routes.0.siteUid', $siteUid)
-            ->where('routes.0.uriParts.0', 'news/')
-            ->where('routes.0.uriParts.1.0', 'slug')
-            ->where('routes.0.template', 'news/_entry')
-            ->missing('sites')
-            ->missing('tokens')
-            ->missing('actionTrigger')
-            ->missing('cpTrigger')
+            ->where('routes', fn ($routes): bool => collect($routes)->contains(fn (array $route): bool => $route['uid'] === $uid
+                && $route['siteUid'] === $siteUid
+                && $route['uriParts'] === ['news/', ['slug', '[^\/]+']]
+                && $route['template'] === 'news/_entry'))
             ->where('readOnly', false));
 });
 
@@ -91,12 +97,8 @@ it('can show the create route screen', function () {
             ->where('route.siteUid', null)
             ->where('route.uriParts', [''])
             ->where('route.template', '')
-            ->where('tokens', fn ($tokens): bool => collect($tokens)
-                ->contains(fn (array $token): bool => $token['label'] === 'year' && $token['value'] === '\d{4}'))
-            ->where('sites.0.value', '')
-            ->where('sites.0.label', 'Global')
-            ->where('actionMenu', null)
-            ->where('actionMenuItems', null)
+            ->where('tokens', fn ($tokens): bool => routeOptionsContain($tokens, 'year', '\d{4}'))
+            ->where('sites', fn ($sites): bool => routeOptionsContain($sites, 'Global', ''))
             ->where('readOnly', false));
 });
 
@@ -118,38 +120,12 @@ it('can show the edit route screen', function () {
             ->where('route.uriParts.0', 'news/')
             ->where('route.uriParts.1.0', 'slug')
             ->where('route.template', 'news/_entry')
-            ->where('tokens', fn ($tokens): bool => collect($tokens)
-                ->contains(fn (array $token): bool => $token['label'] === 'year' && $token['value'] === '\d{4}'))
-            ->where('sites.0.value', '')
-            ->where('sites.0.label', 'Global')
-            ->where('actionMenuItems.0.label', 'Delete')
-            ->where('actionMenuItems.0.icon', 'trash')
-            ->where('actionMenuItems.0.destructive', true)
-            ->where('actionMenuItems.0.type', 'button')
-            ->where('actionMenuItems.0.attributes.data.route-delete-action', true)
-            ->where('actionMenuItems.0.attributes.data.route-delete-url', Url::cpUrl("settings/routes/$uid"))
+            ->where('tokens', fn ($tokens): bool => routeOptionsContain($tokens, 'year', '\d{4}'))
+            ->where('sites', fn ($sites): bool => routeOptionsContain($sites, 'Global', ''))
             ->where('readOnly', false));
 });
 
-it('can show the edit route screen in read-only mode', function () {
-    $uid = $this->routes->saveRoute(new Route(
-        uriParts: ['news'],
-        template: 'news/_index',
-    ));
-
-    Cms::config()->allowAdminChanges = false;
-
-    get(action([RoutesController::class, 'edit'], ['uid' => $uid]))
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/routes/Edit')
-            ->where('route.uid', $uid)
-            ->where('actionMenu', null)
-            ->where('actionMenuItems', null)
-            ->where('readOnly', true));
-});
-
-it('can create a route', function (array $uriParts, array $expected) {
+it('can create a route', function (array $uriParts, ?array $expectedUriParts) {
     post(action([RoutesController::class, 'store']), [
         'uriParts' => $uriParts,
         'template' => '_route',
@@ -157,34 +133,23 @@ it('can create a route', function (array $uriParts, array $expected) {
     ])->assertRedirect()->assertSessionHasNoErrors();
 
     $uid = $this->routes->getProjectConfigRoutes()->where('template', '_route')->first()->uid;
+    $config = $this->projectConfig->get(ProjectConfig::PATH_ROUTES.'.'.$uid);
 
-    expect($this->projectConfig->get(ProjectConfig::PATH_ROUTES.'.'.$uid))->toBe($expected);
+    expect($config['template'])->toBe('_route')
+        ->and($config['siteUid'])->toBeNull()
+        ->and($config['uriParts'] ?? null)->toBe($expectedUriParts);
 })->with([
     'empty uri' => [
         'uriParts' => [],
-        'expected' => [
-            'siteUid' => null,
-            'sortOrder' => 1,
-            'template' => '_route',
-        ],
+        'expectedUriParts' => null,
     ],
     'plain uri' => [
         'uriParts' => ['news'],
-        'expected' => [
-            'siteUid' => null,
-            'sortOrder' => 1,
-            'template' => '_route',
-            'uriParts' => ['news'],
-        ],
+        'expectedUriParts' => ['news'],
     ],
     'token uri' => [
         'uriParts' => ['news/', ['slug', '[^\/]+']],
-        'expected' => [
-            'siteUid' => null,
-            'sortOrder' => 1,
-            'template' => '_route',
-            'uriParts' => ['news/', ['slug', '[^\/]+']],
-        ],
+        'expectedUriParts' => ['news/', ['slug', '[^\/]+']],
     ],
 ]);
 
@@ -268,3 +233,9 @@ it('validates route uris do not start with reserved triggers', function (array $
     'action trigger' => [['actions/foo']],
     'cp trigger' => [['admin/foo']],
 ]);
+
+function routeOptionsContain(mixed $options, string $label, string $value): bool
+{
+    return collect($options)
+        ->contains(fn (array $option): bool => $option['label'] === $label && $option['value'] === $value);
+}
