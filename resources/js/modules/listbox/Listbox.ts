@@ -2,10 +2,10 @@
  * Listbox — modern, jQuery-free TypeScript port of Craft's `Craft.Listbox`.
  *
  * A Listbox turns a container of `button` / `[type=button]` / `craft-button`
- * options into a
- * single-select toggle group: exactly one option is "pressed" at a time
- * (`aria-pressed="true"` + the `selectedClass`), clicking an option selects it,
- * and selection changes notify via the `onChange` setting and a `change` event.
+ * options into a single-select toggle group: exactly one option is "pressed" at
+ * a time (`aria-pressed="true"` + the `selectedClass`), clicking an option
+ * selects it, and selection changes notify via the `onChange` setting and a
+ * `change` event.
  *
  * This is the jQuery-free port of the legacy `Listbox.js`. It replaces every
  * jQuery call with native DOM:
@@ -20,11 +20,24 @@
  * standardized on `button` / `[type=button]` / `craft-button` + `aria-pressed`.
  * (A `craft-button` renders its native `<button>` in shadow DOM, so it's matched
  * as the host element; its clicks still bubble/compose out to the listener.)
+ *
+ * This class was moved out of the `@craftcms/garnish` package into the app at
+ * `resources/js/modules/listbox/`, following the controller-class +
+ * self-booting custom element pattern. The `Base` primitive is still imported
+ * from `@craftcms/garnish`.
  */
 
-import {Base} from './base';
-import {noop} from './constants';
-import type {Callback, GarnishBaseSettings} from './types';
+import {Base, type GarnishBaseSettings} from '@craftcms/garnish';
+import {containerListboxes} from './support';
+
+/** No-op default for the `onChange` setting (native replacement for `$.noop`). */
+const noop = (): void => {};
+
+/**
+ * Callback invoked when the selection changes, with the newly-selected RAW
+ * option element and its index.
+ */
+type ListboxOnChange = (option: HTMLElement, index: number) => void;
 
 /**
  * Settings accepted by {@link Listbox}. Pass a `Partial<ListboxSettings>` to the
@@ -39,7 +52,7 @@ export interface ListboxSettings extends GarnishBaseSettings {
    * Callback invoked when the selection changes, with the newly-selected option
    * element and its index. Default no-op.
    */
-  onChange: Callback;
+  onChange: ListboxOnChange;
   /**
    * When `true`, the listbox is non-interactive: options aren't click-bound and
    * are removed from the tab order. Default `false`. (Named `readOnly` for
@@ -49,25 +62,21 @@ export interface ListboxSettings extends GarnishBaseSettings {
 }
 
 /**
- * Maps a listbox container element back to its `Listbox` instance — the native
- * replacement for the legacy `$container.data('listbox', this)`.
- */
-const containerListboxes = new WeakMap<Element, Listbox>();
-
-/**
  * A single-select toggle group — the jQuery-free TypeScript port of Craft's
  * `Listbox`. Discovers its options from a container, tracks the pressed option,
  * and emits a `change` event (and calls the `onChange` setting) on selection.
  *
  * The constructor accepts a container element and/or a settings object, with a
  * legacy-compatible param shift: `new Listbox(settings)` is treated as
- * `new Listbox(null, settings)` when the first argument is a plain object.
+ * `new Listbox(null, settings)` when the first argument is a plain object. It
+ * also tolerates a jQuery-collection container (legacy callers pass one),
+ * unwrapping it to its first native element.
  *
  * @example Modern usage
  * ```ts
- * import {Listbox} from '@craftcms/garnish';
+ * import {Listbox} from '@/modules/listbox';
  *
- * const el = document.querySelector('.listbox')!;
+ * const el = document.querySelector('.btngroup')!;
  * const listbox = new Listbox(el, {
  *   onChange: (option, index) => console.log('selected', index, option),
  * });
@@ -97,9 +106,10 @@ export class Listbox extends Base<ListboxSettings> {
   selectedOptionIndex: number | null = null;
 
   /**
-   * @param container - The listbox container element, or a
-   *   `Partial<ListboxSettings>` object (param shift: when the first arg is a
-   *   plain object and no second arg is given, it is treated as the settings).
+   * @param container - The listbox container element (or a jQuery collection
+   *   wrapping it), or a `Partial<ListboxSettings>` object (param shift: when
+   *   the first arg is a plain object and no second arg is given, it is treated
+   *   as the settings).
    * @param settings - Optional settings overrides (see {@link ListboxSettings}).
    */
   constructor(
@@ -108,18 +118,24 @@ export class Listbox extends Base<ListboxSettings> {
   ) {
     super();
 
-    // Param mapping: `new Listbox(settings)` when the first arg is a plain object.
-    let containerEl: Element | null = null;
+    // Param mapping: `new Listbox(settings)` when the first arg is a plain
+    // object. A jQuery collection is NOT a plain object, so it falls through to
+    // the container branch below and gets unwrapped there.
+    let containerArg: unknown = null;
     if (settings === undefined && isPlainObject(container)) {
       settings = container as Partial<ListboxSettings>;
     } else {
-      containerEl = (container as Element | null) ?? null;
+      containerArg = container ?? null;
     }
 
     this.setSettings(settings, Listbox.defaults);
 
+    // Unwrap a jQuery-collection container to its first native element. Legacy
+    // callers pass `$container`; this class also accepts a raw Element.
+    const containerEl = unwrapJq(containerArg);
+
     if (containerEl) {
-      this.$container = containerEl as HTMLElement;
+      this.$container = containerEl;
 
       // Already a listbox? Tear the old one down (double-instantiation guard).
       const existing = containerListboxes.get(containerEl);
@@ -180,7 +196,7 @@ export class Listbox extends Base<ListboxSettings> {
     if (this.$selectedOption) {
       this.$selectedOption.classList.remove(this.settings!.selectedClass);
       this.$selectedOption.setAttribute('aria-pressed', 'false');
-      this.$selectedOption.removeAttribute('active')
+      this.$selectedOption.removeAttribute('active');
     }
 
     const option = this.$options[index]!;
@@ -227,6 +243,17 @@ export class Listbox extends Base<ListboxSettings> {
     }
     super.destroy();
   }
+}
+
+/**
+ * Unwrap a jQuery collection (truthy `.jquery`) to its first native element,
+ * pass a native `Element` through, and return `null` for anything else.
+ */
+function unwrapJq(value: unknown): HTMLElement | null {
+  if (value && typeof value === 'object' && (value as any).jquery) {
+    return ((value as any)[0] as HTMLElement | undefined) ?? null;
+  }
+  return value instanceof Element ? (value as HTMLElement) : null;
 }
 
 function isPlainObject(val: unknown): val is Record<string, unknown> {

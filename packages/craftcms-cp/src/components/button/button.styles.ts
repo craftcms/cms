@@ -1,7 +1,7 @@
 import {css} from 'lit';
 export default css`
   :host {
-    // Necessary to use variables here to override the default active style specificity
+    /* Necessary to use variables here to override the default active style specificity */
     --_active-background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)) h s
         calc(l - 10)

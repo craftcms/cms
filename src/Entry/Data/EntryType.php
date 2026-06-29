@@ -219,7 +219,7 @@ JS, [
                     $labelHtml = Html::beginTag('span', [
                         'class' => ['flex', 'flex-nowrap', 'items-center', 'gap-1'],
                     ]).
-                        Html::tag('craft-icon', '', ['name' => Icons::resolveIconName($icon)]).
+                        Html::tag('craft-icon', '', Icons::resolveIconData($icon)).
                         Html::tag('span', Html::encode($label)).
                         Html::endTag('span');
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
 use CraftCms\Cms\Cp\Html\StatusHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -262,20 +263,18 @@ class CardDesigner
             'disabled' => $config['disabled'],
             'alignmentOptions' => [
                 [
-                    'icon' => $orientation == 'ltr' ? 'slideout-left' : 'slideout-right',
                     'value' => 'start',
+                    'icon' => $orientation === 'ltr' ? Icons::resolveIconName('slideout-left') : Icons::resolveIconName('slideout-right'),
                     'attributes' => [
-                        'title' => $orientation == 'ltr' ? t('Left') : t('Right'),
                         'aria' => [
                             'label' => $orientation == 'ltr' ? t('Left') : t('Right'),
                         ],
                     ],
                 ],
                 [
-                    'icon' => $orientation == 'ltr' ? 'slideout-right' : 'slideout-left',
                     'value' => 'end',
+                    'icon' => $orientation === 'ltr' ? Icons::resolveIconName('slideout-right') : Icons::resolveIconName('slideout-left'),
                     'attributes' => [
-                        'title' => $orientation == 'ltr' ? t('Right') : t('Left'),
                         'aria' => [
                             'label' => $orientation == 'ltr' ? t('Right') : t('Left'),
                         ],

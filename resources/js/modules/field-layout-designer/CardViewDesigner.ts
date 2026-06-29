@@ -60,12 +60,20 @@ export class CardViewDesigner extends Base {
       this.showThumbAlignment();
     }
 
-    const $thumbAlignmentBtns = this.$thumbManagementContainer.querySelectorAll(
-      'div.btngroup[id$="thumb-alignment"] .btn'
-    );
-    this.addListener($thumbAlignmentBtns, 'activate', (ev: any) => {
-      this.manageThumbnailAlignment(ev.target);
-    });
+    // The thumb-alignment button group is now a <craft-listbox> (wrapping a
+    // <craft-button-group>) that re-emits its garnish selection change as a
+    // native, bubbling `change` CustomEvent; `detail.$selectedOption` is the
+    // selected <craft-button>. Listen for that instead of the old per-button
+    // `activate` event on `.btn` elements.
+    const $thumbAlignmentListbox = this.$thumbManagementContainer
+      .querySelector('craft-button-group[id$="thumb-alignment"]')
+      ?.closest('craft-listbox');
+    console.log({$thumbAlignmentListbox});
+    if ($thumbAlignmentListbox) {
+      this.addListener($thumbAlignmentListbox, 'change', (ev: any) => {
+        this.manageThumbnailAlignment(ev.detail.$selectedOption);
+      });
+    }
 
     this.listenToCheckboxEvents();
     this.disablePreviewLinks();

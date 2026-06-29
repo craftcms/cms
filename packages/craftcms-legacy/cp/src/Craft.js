@@ -82,7 +82,6 @@ import './js/IntervalManager.js';
 import './js/LightSwitch.js';
 import './js/LinkField.js';
 import './js/LinkInput.js';
-import './js/Listbox.js';
 import './js/LivePreview.js';
 import './js/NestedElementManager.js';
 import './js/PasswordInput.js';

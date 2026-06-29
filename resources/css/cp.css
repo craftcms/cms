@@ -128,6 +128,9 @@ Remove once we have a stable way to create a `<craft-checkbox/>` via twig
   z-index: 1;
 }
 
+/**
+Form controls
+ */
 .cp-form-control {
   --_border-width: var(
     --c-input-border-width,
