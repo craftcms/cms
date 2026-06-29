@@ -3,19 +3,17 @@
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import {computed, h, ref} from 'vue';
+  import {h, ref} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
   import {
     create,
     destroy,
     edit,
-    index as imageTransformsIndex,
   } from '@actions/Settings/ImageTransformsController';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import Empty from '@/common/components/Empty.vue';
   import {router} from '@inertiajs/vue3';
-  import {index} from '@actions/Settings/VolumesController';
 
   type ExistingImageTransform = Omit<
     CraftCms.Cms.Image.Data.ImageTransform,
@@ -105,23 +103,6 @@
       },
     },
   });
-
-  type NavItem = {
-    label: string;
-    url: string;
-    active?: boolean;
-    inertia?: boolean;
-  };
-  const navItems = computed((): Record<string, NavItem> => {
-    return {
-      volumes: {label: t('Volumes'), url: index().url, active: false},
-      transforms: {
-        label: t('Image Transforms'),
-        url: imageTransformsIndex().url,
-        active: true,
-      },
-    };
-  });
 </script>
 
 <template>
@@ -136,22 +117,6 @@
       >
     </template>
 
-    <template #interior-nav>
-      <craft-nav-list>
-        <template v-for="(item, id) in navItems" :key="id">
-          <CpLink
-            as="craft-nav-item"
-            :active="item.active ?? false"
-            :href="item.url"
-            block
-            flush
-            :inertia="true"
-          >
-            {{ item.label }}
-          </CpLink>
-        </template>
-      </craft-nav-list>
-    </template>
     <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No image transforms exist yet.')" icon="image">
@@ -167,5 +132,3 @@
     </AdminTable>
   </IndexLayout>
 </template>
-
-<style scoped lang="scss"></style>
