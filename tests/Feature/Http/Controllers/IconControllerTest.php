@@ -15,7 +15,6 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::findOne());
 
-    File::ensureDirectoryExists(Aliases::get('@cmsAssets/resources/icons'));
     File::ensureDirectoryExists(Aliases::get('@cmsAssets/resources/icons/solid'));
     File::ensureDirectoryExists(Aliases::get('@cmsAssets/resources/icons/custom-icons'));
 
