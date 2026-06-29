@@ -12,7 +12,7 @@ import {
   prefersReducedMotion,
 } from '@craftcms/garnish';
 import {fldElementData, fldTabData} from './support';
-import type {FieldLayoutDesigner} from './FieldLayoutDesigner';
+import type {FieldLayoutDesigner} from './field-layout-designer';
 
 // jQuery (`$`) survives only at the Craft.Grid seam (`tabGrid.addItems/removeItems`
 // require jQuery). All other DOM work here is native.

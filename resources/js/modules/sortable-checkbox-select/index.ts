@@ -1,5 +1,5 @@
-import {Item, SortableCheckboxSelect} from './SortableCheckboxSelect';
-import CraftSortableCheckboxSelect from '@/modules/sortable-checkbox-select/SortableCheckboxSelect.wc';
+import {Item, SortableCheckboxSelect} from './sortable-checkbox-select';
+import CraftSortableCheckboxSelect from '@/modules/sortable-checkbox-select/sortable-checkbox-select.ce';
 import {defineElement} from '@/common/web-components';
 
 // Re-expose the Item sub-class on the constructor, as the legacy bundle did

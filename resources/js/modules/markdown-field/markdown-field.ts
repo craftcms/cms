@@ -20,7 +20,7 @@ import {themeOptions} from './behaviors/theme';
 import {replaceMarkdownGuideButton, toolbarItems} from './behaviors/toolbar';
 import {fileUploadOptions} from './behaviors/uploads';
 import markdownIcon from '@icons/brands/markdown.svg?raw';
-import './MarkdownField.css';
+import './markdown-field.css';
 
 type RenderOptions = Options & {
   onRender?: (

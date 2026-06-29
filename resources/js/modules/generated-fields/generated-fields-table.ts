@@ -1,4 +1,4 @@
-import {EditableTable, Row} from '@/modules/editable-table/EditableTable';
+import {EditableTable, Row} from '@/modules/editable-table/editable-table';
 import {cvdData} from '@/modules/field-layout-designer/support';
 import type {EditableTableColumns} from '@/modules/editable-table/types';
 
@@ -79,7 +79,7 @@ export class GeneratedFieldsTableRow extends Row {
  * `uid` input to every row and uses {@link GeneratedFieldsTableRow} so rows stay
  * synced with the Field Layout Designer's Card View Designer.
  *
- * Rendered by `src/Cp/FieldLayoutDesigner/FieldLayoutDesigner.php`, which emits
+ * Rendered by `src/Cp/field-layout-designer/field-layout-designer.php`, which emits
  * `new Craft.GeneratedFieldsTable(id, name, cols, settings)`.
  */
 export class GeneratedFieldsTable extends EditableTable {

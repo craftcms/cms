@@ -1,4 +1,4 @@
-import {Listbox} from '@/modules/listbox/Listbox';
+import {Listbox} from '@/modules/listbox/listbox';
 import {ControllerElement} from '@/common/web-components';
 
 /**

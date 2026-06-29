@@ -1,4 +1,4 @@
-import {FieldLayoutDesigner} from '@/modules/field-layout-designer/FieldLayoutDesigner';
+import {FieldLayoutDesigner} from '@/modules/field-layout-designer/field-layout-designer';
 import {ControllerElement} from '@/common/web-components';
 
 /**

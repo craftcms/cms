@@ -7,39 +7,17 @@ jQuery (`$`) survives **only** at the boundary with Craft's still-jQuery widgets
 
 ## What changed
 
-- **Class system.** `Garnish.Base.extend({...})` → `class extends Base`,
-  `Garnish.Drag.extend({...})` → `class extends Drag`, `init()` →
-  `constructor()`, `this.base(...)` → `super.method(...)`, `new Garnish.HUD(...)`
-  → `new HUD(...)`. Garnish utilities/constants
-  (`hasAttr`, `getDist`, `hitTest`, `getOffset`, `getOuterWidth/Height`,
-  `firstFocusableElement`, `prefersReducedMotion`,
-  `getUserPreferredAnimationDuration`, `requestAnimationFrame`, `FX_DURATION`,
-  `ESC_KEY`, `RETURN_KEY`, `bod`) are named imports.
-- **All of FLD's own jQuery is now native DOM:**
-  - `$('<div>')` / `$(html)` → `document.createElement` / a `<template>`-based
-    `htmlToElement()` helper.
-  - `.addClass/.removeClass/.hasClass` → `classList`; `.is('.x')`/`.not()` →
-    `matches()`/`filter`.
-  - `.text()` → `textContent`; `.html()` → `innerHTML`; `.val()` → `.value`.
-  - tree ops (`.append/.before/.after/.detach/.remove`,
-    `.children/.find/.closest/.parent/.siblings/.next/.prev`) → native `append`/
-    `before`/`after`/`remove`/`children`/`querySelector(All)`/`closest`/
-    `parentElement`/`*ElementSibling`. jQuery `.children(sel)` becomes
-    `querySelectorAll(':scope > sel')`; `.find(sel)` becomes the bare
-    `querySelectorAll(sel)`.
-  - `.attr/.removeAttr` → `get/set/removeAttribute`; `.prop` → property;
-    `.css()` → `.style`; `.offset()`/`.outerHeight()` → `getOffset`/
-    `getOuterHeight` (and `clientHeight`-based content height where the legacy
-    used `.height()`).
-  - `.each` → `for...of`; `.toArray()` → the native array directly.
-  - `.animate()` / Velocity → the **Web Animations API** (`el.animate(...)`),
-    gated on `prefers-reduced-motion`.
-- **`.data()` is gone** (see below).
-- **Garnish `Drag` interop:** the parent-owned `$items`, `$draggee`, and
-  `helpers` are already native `Element[]`/`HTMLElement[]`, so the `$(...)`
-  wrappers the first port put around them were removed — they're used as native
-  arrays/elements directly. FLD's own `$insertion`/`$caboose` are native too
-  (`HTMLElement | null` / `HTMLElement[]`).
+- **Class system.** `Garnish.Base.extend({...})` / `Garnish.Drag.extend({...})` →
+  `class extends Base` / `extends Drag`, `init()` → `constructor()`,
+  `this.base(...)` → `super.method(...)`, `new Garnish.HUD(...)` → `new HUD(...)`.
+  Garnish utilities/constants are named imports.
+- **All of FLD's own jQuery DOM work is now native** — `document.createElement` /
+  a `<template>`-based `htmlToElement()`, `classList`, `matches`,
+  `querySelector(All)`/`closest`, `dataset`, and `el.animate()` (Web Animations
+  API, reduced-motion gated) in place of Velocity. `.data()` is gone (see below).
+- **Garnish `Drag` interop.** The parent-owned `$items`/`$draggee`/`helpers` are
+  already native `Element[]`, so the first port's `$(...)` wrappers were dropped;
+  FLD's own `$insertion`/`$caboose` are native (`HTMLElement | null` / `[]`).
 
 ## How `.data()` was replaced
 
@@ -58,27 +36,26 @@ jQuery (`$`) survives **only** at the boundary with Craft's still-jQuery widgets
 Craft itself is still jQuery, so at these boundaries we call the Craft API and
 immediately unwrap to native (`Craft.ui.x(...)[0]`, `slideout.$container[0]`) or
 pass a `$(nativeEl)` wrapper in where Craft requires one. jQuery is confined to
-the single call:
+these seams:
 
-- **`Craft.Grid`** on `.fld-tabs` — instantiated and fed via `$(...)`
-  (`tabGrid.addItems/removeItems`). _TODO:_ a later pass can replace it with CSS
-  Grid (out of scope here).
-- **`Craft.Listbox`**, **`Craft.SlidePicker`**, **`Craft.SortableCheckboxSelect`**,
-  **`Craft.Slideout` / `Craft.CpScreenSlideout`** — instantiated at the seam;
-  their jQuery `$container` is unwrapped with `[0]` for native DOM work.
-- The **`.disclosureMenu()` jQuery plugin** + `.data('disclosureMenu')`, and
-  `.data('sortableCheckboxSelect')` — Craft stores/reads these via jQuery.
+- **`Craft.Grid`** on `.fld-tabs` — instantiated and fed via `$(...)`. _TODO:_ a
+  later pass can replace it with CSS Grid (out of scope here).
+- **`Craft.SlidePicker`** and **`Craft.Slideout` / `Craft.CpScreenSlideout`** —
+  instantiated at the seam; their jQuery `$container` is unwrapped with `[0]`.
 - **`slideout.$container.serialize()`** (jQuery-only form serialize) and the
-  `Craft.ui.addErrorsToField`/`clearErrorsFromField` error path, which require
-  jQuery fields.
+  `Craft.ui.addErrorsToField`/`clearErrorsFromField` error path require jQuery
+  fields.
 - Plain (non-jQuery) Craft calls — `Craft.t`, `Craft.sendActionRequest`,
   `Craft.cp.*`, `Craft.escapeHtml`, `Craft.uuid`, `Craft.appendHead/BodyHtml`,
   `Craft.initUiElements` — are left as-is.
 
-The module still assigns `window.Craft.FieldLayoutDesigner` (plus `.Tab`,
-`.Element`, `.CardViewDesigner`, `.BaseDrag`, `.TabDrag`, `.ElementDrag`) so the
-existing PHP `registerJs("new Craft.FieldLayoutDesigner('#id', settings)")` keeps
-working unchanged.
+The module assigns `window.Craft.FieldLayoutDesigner` (plus `.Tab`, `.Element`,
+`.CardViewDesigner`, `.BaseDrag`, `.TabDrag`, `.ElementDrag`) so the existing PHP
+`registerJs("new Craft.FieldLayoutDesigner('#id', settings)")` keeps working, and
+registers the self-booting `<craft-field-layout-designer>` element (the durable
+fix for re-binding after an Inertia DOM swap). The Card View Designer consumes the
+`<craft-listbox>` and `<craft-sortable-checkbox-select>` custom elements via their
+DOM events rather than instantiating those Craft classes.
 
 ## Porting note: the "fade in place" drag branch
 
@@ -90,16 +67,19 @@ to the `@craftcms/garnish` package.
 
 ## Files
 
-- `FieldLayoutDesigner.ts` — the main designer class (+ static `defaults` /
+- `field-layout-designer.ts` — the main designer class (+ static `defaults` /
   `createSlideout`).
-- `Tab.ts` — a tab.
-- `Element.ts` — a layout element (field / UI element).
-- `CardViewDesigner.ts` — the card view designer.
+- `tab.ts` — a tab.
+- `element.ts` — a layout element (field / UI element).
+- `card-view-designer.ts` — the card view designer.
+- `field-layout-designer.ce.ts` — `<craft-field-layout-designer>`, the
+  self-booting custom element wrapping `.layoutdesigner`.
 - `drags.ts` — `BaseDrag` / `TabDrag` / `ElementDrag`.
 - `support.ts` — the `.data()`-replacement WeakMaps and the `htmlToElement` /
   `firstFocusableInSiblings` DOM helpers.
-- `index.ts` — wires the sub-classes onto the constructor and assigns
-  `window.Craft.FieldLayoutDesigner`. Imported from `resources/js/cp.ts`.
+- `index.ts` — wires the sub-classes onto the constructor, assigns
+  `window.Craft.FieldLayoutDesigner`, and registers
+  `<craft-field-layout-designer>`. Imported from `resources/js/cp.ts`.
 - `types.ts` — settings + config types.
 
 ## Deferred

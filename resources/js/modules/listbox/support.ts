@@ -1,4 +1,4 @@
-import type {Listbox} from './Listbox';
+import type {Listbox} from './listbox';
 
 /**
  * Maps a listbox container element back to its {@link Listbox} instance — the

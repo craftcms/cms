@@ -7,15 +7,15 @@ import {
   requestAnimationFrame,
   RETURN_KEY,
 } from '@craftcms/garnish';
-import {Tab} from './Tab';
-import {CardViewDesigner} from './CardViewDesigner';
+import {Tab} from './tab';
+import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
 import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
 import {Appearance, t} from '@craftcms/cp';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
-// used ONLY at the Craft-interop seams (Craft.ui/Grid/Listbox/Slideout return or
+// used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
 // require jQuery). Everywhere else FLD uses native DOM.
 declare const Craft: any;
 declare const $: any;

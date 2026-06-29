@@ -1,6 +1,6 @@
 import {firstFocusableElement} from '@craftcms/garnish';
-import type {Tab} from './Tab';
-import type {Element as FldElement} from './Element';
+import type {Tab} from './tab';
+import type {Element as FldElement} from './element';
 
 /**
  * WeakMaps replacing the legacy jQuery `$.data()` back-references the FLD used to

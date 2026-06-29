@@ -1,4 +1,4 @@
-import type {SortableCheckboxSelect} from './SortableCheckboxSelect';
+import type {SortableCheckboxSelect} from './sortable-checkbox-select';
 
 /**
  * WeakMap replacing the legacy jQuery `$container.data('sortableCheckboxSelect')`

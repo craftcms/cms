@@ -1,5 +1,5 @@
-import {Listbox, type ListboxSettings} from './Listbox';
-import CraftListbox from '@/modules/listbox/Listbox.wc';
+import {Listbox, type ListboxSettings} from './listbox';
+import CraftListbox from '@/modules/listbox/listbox.ce';
 import {defineElement} from '@/common/web-components';
 
 /**

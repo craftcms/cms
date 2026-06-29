@@ -1,9 +1,9 @@
-import {FieldLayoutDesigner} from './FieldLayoutDesigner';
-import {Tab} from './Tab';
-import {Element} from './Element';
-import {CardViewDesigner} from './CardViewDesigner';
+import {FieldLayoutDesigner} from './field-layout-designer';
+import {Tab} from './tab';
+import {Element} from './element';
+import {CardViewDesigner} from './card-view-designer';
 import {BaseDrag, ElementDrag, TabDrag} from './drags';
-import CraftFieldLayoutDesigner from '@/modules/field-layout-designer/FieldLayoutDesigner.wc';
+import CraftFieldLayoutDesigner from '@/modules/field-layout-designer/field-layout-designer.ce';
 import {defineElement} from '@/common/web-components';
 
 // Re-expose the sub-classes on the constructor, as the legacy bundle did

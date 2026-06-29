@@ -1,4 +1,4 @@
-import type {EditableTable, Row} from './EditableTable';
+import type {EditableTable, Row} from './editable-table';
 
 /**
  * WeakMaps replacing the legacy jQuery `$.data()` back-references that stashed

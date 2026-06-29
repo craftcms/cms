@@ -25,11 +25,10 @@ constructed programmatically by several legacy CP screens.
   with a RAW element, but the legacy callers expect a jQuery collection. This
   replaces the old `wrapListboxOnChange` shim that lived in the garnish
   `compat.ts`.
-- **`<craft-listbox>` self-boots.** A new custom element boots the `Listbox`
-  around the `.btngroup` it wraps and syncs the optional hidden input on change,
-  so `buttonGroup.twig` no longer needs a `{% js %}` block. The WC uses the bare
-  `Listbox` (raw elements), not the jQuery-wrapping global.
-- **Removed the stray `console.log('garnish listbox')`.**
+- **`<craft-listbox>` self-boots.** A custom element boots the `Listbox` around
+  the `<craft-button-group>` it wraps and syncs the optional hidden input on
+  change, so `buttonGroup.twig` no longer needs a `{% js %}` block. It uses the
+  bare `Listbox` (raw elements), not the jQuery-wrapping global.
 - **`.data()` → WeakMap.** The container→instance back-reference is kept in a
   module-level `WeakMap` in `support.ts` (`containerListboxes`), used as the
   double-instantiation guard.
@@ -47,9 +46,9 @@ They are unchanged; they keep working via the `CraftListboxGlobal` global.
 
 ## Files
 
-- `Listbox.ts` — the `Listbox` class (+ `ListboxSettings`).
+- `listbox.ts` — the `Listbox` class (+ `ListboxSettings`).
 - `support.ts` — the `containerListboxes` WeakMap (back-ref + double-init guard).
-- `Listbox.wc.ts` — the `<craft-listbox>` custom element (uses the bare class,
+- `listbox.ce.ts` — the `<craft-listbox>` custom element (uses the bare class,
   syncs the hidden input).
 - `index.ts` — assigns `window.Craft.Listbox` (the jQuery-wrapping subclass) and
   `defineElement('craft-listbox', …)`. Imported for side effects from

@@ -81,7 +81,7 @@ from their own leaf constructor.
 
 ## Files
 
-- `EditableTable.ts` — the `EditableTable` class (+ static `createRow` /
+- `editable-table.ts` — the `EditableTable` class (+ static `createRow` /
   `textualColTypes` / `defaults`) and the `Row` class.
 - `types.ts` — settings + column types.
 - `support.ts` — the `.data()`-replacement WeakMaps.

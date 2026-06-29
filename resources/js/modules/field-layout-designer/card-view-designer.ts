@@ -1,7 +1,7 @@
 import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
-import type {FieldLayoutDesigner} from './FieldLayoutDesigner';
-import type {Element as FldElement} from './Element';
+import type {FieldLayoutDesigner} from './field-layout-designer';
+import type {Element as FldElement} from './element';
 
 declare const Craft: any;
 declare const axios: any;

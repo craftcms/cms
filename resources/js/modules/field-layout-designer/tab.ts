@@ -1,6 +1,6 @@
 import {Base, HUD} from '@craftcms/garnish';
-import {FieldLayoutDesigner} from './FieldLayoutDesigner';
-import {Element as FldElement} from './Element';
+import {FieldLayoutDesigner} from './field-layout-designer';
+import {Element as FldElement} from './element';
 import {
   firstFocusableInSiblings,
   fldElementData,

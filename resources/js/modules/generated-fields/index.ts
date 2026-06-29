@@ -1,8 +1,8 @@
 import {
   GeneratedFieldsTable,
   GeneratedFieldsTableRow,
-} from './GeneratedFieldsTable';
-import CraftGeneratedFieldsTable from '@/modules/generated-fields/GeneratedFieldsTable.wc';
+} from './generated-fields-table';
+import CraftGeneratedFieldsTable from '@/modules/generated-fields/generated-fields-table.ce';
 import {defineElement} from '@/common/web-components';
 
 // Re-expose the Row sub-class on the constructor, as the legacy bundle did

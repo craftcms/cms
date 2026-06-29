@@ -19,6 +19,6 @@ window.Cp = Cp;
  */
 import('@craftcms/cp/components/nav-list/nav-list.ts.mjs');
 import('@craftcms/cp/components/nav-item/nav-item.ts.mjs');
-import('./modules/navigation/components/CpGlobalSidebar.js');
-import('./modules/navigation/components/CpQueueIndicator.js');
-import('./modules/markdown-field/MarkdownField.js');
+import('./modules/navigation/components/cp-global-sidebar.js');
+import('./modules/navigation/components/cp-queue-indicator.js');
+import('./modules/markdown-field/markdown-field.js');

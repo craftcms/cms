@@ -1,11 +1,11 @@
 import {Base, hasAttr} from '@craftcms/garnish';
-import {FieldLayoutDesigner} from './FieldLayoutDesigner';
+import {FieldLayoutDesigner} from './field-layout-designer';
 import {
   firstFocusableInSiblings,
   fldElementData,
   htmlToElement,
 } from './support';
-import type {Tab} from './Tab';
+import type {Tab} from './tab';
 import type {ActionMenuItem} from '@craftcms/cp';
 
 declare const Craft: any;

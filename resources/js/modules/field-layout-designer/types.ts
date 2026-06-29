@@ -2,7 +2,7 @@ import type {GarnishBaseSettings} from '@craftcms/garnish';
 
 /**
  * Settings accepted by {@link FieldLayoutDesigner}. Mirrors the `$jsSettings`
- * JSON emitted by `src/Cp/FieldLayoutDesigner/FieldLayoutDesigner.php`.
+ * JSON emitted by `src/Cp/field-layout-designer/field-layout-designer.php`.
  */
 export interface FieldLayoutDesignerSettings extends GarnishBaseSettings {
   elementType: string | null;

@@ -1,5 +1,5 @@
 import {getPostData} from '@craftcms/garnish';
-import {GeneratedFieldsTable} from '@/modules/generated-fields/GeneratedFieldsTable';
+import {GeneratedFieldsTable} from '@/modules/generated-fields/generated-fields-table';
 import {ControllerElement} from '@/common/web-components';
 
 /**

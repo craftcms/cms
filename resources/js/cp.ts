@@ -1,7 +1,7 @@
 import '@craftcms/cp';
 import Cp from './bootstrap/cp.js';
-import './modules/navigation/components/CpGlobalSidebar.js';
-import './modules/navigation/components/CpQueueIndicator.js';
+import './modules/navigation/components/cp-global-sidebar.js';
+import './modules/navigation/components/cp-queue-indicator.js';
 
 /**
  * Legacy ports, assigns window.Craft.* so PHP-emitted code still works

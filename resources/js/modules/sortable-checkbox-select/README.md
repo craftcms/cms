@@ -5,7 +5,7 @@ A TypeScript port of the legacy jQuery `Craft.SortableCheckboxSelect`
 **`@craftcms/garnish`** `Base`. It powers the `forms.sortableCheckboxSelect`
 macro / `_includes/forms/checkboxSelect.twig` and the
 `Craft.ui.createSortableCheckboxSelect` factory, and is consumed by the modern
-[Card View Designer](../field-layout-designer/CardViewDesigner.ts).
+[Card View Designer](../field-layout-designer/card-view-designer.ts).
 
 ## What changed
 
@@ -46,6 +46,10 @@ those seams and the public `$container` / `$item` stay jQuery:
 `Craft.ui` factory, `checkboxSelect.twig`, `BaseElementIndex`) keeps working
 unchanged.
 
+The `<craft-sortable-checkbox-select>` custom element self-boots the class around
+the `.cp-checkbox-select` it wraps and re-emits its `sortChange` as a bubbling DOM
+event — how the Card View Designer consumes it without referencing the class.
+
 ## Removability of the legacy file
 
 The legacy `SortableCheckboxSelect.js` is **removed** from the legacy bundle; its
@@ -58,11 +62,13 @@ favor of the `support.ts` WeakMap alone.
 
 ## Files
 
-- `SortableCheckboxSelect.ts` — the `SortableCheckboxSelect` class and the `Item`
-  class.
+- `sortable-checkbox-select.ts` — the `SortableCheckboxSelect` class and the
+  `Item` class.
+- `sortable-checkbox-select.wc.ts` — `<craft-sortable-checkbox-select>`, the
+  self-booting custom element.
 - `support.ts` — the `.data()`-mirror WeakMap.
-- `index.ts` — assigns `window.Craft.SortableCheckboxSelect` (+ `.Item`).
-  Imported from `resources/js/cp.ts`.
+- `index.ts` — assigns `window.Craft.SortableCheckboxSelect` (+ `.Item`) and
+  registers `<craft-sortable-checkbox-select>`. Imported from `resources/js/cp.ts`.
 
 ## Deferred
 

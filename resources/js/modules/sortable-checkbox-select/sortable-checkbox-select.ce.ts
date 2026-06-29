@@ -1,4 +1,4 @@
-import {SortableCheckboxSelect} from '@/modules/sortable-checkbox-select/SortableCheckboxSelect';
+import {SortableCheckboxSelect} from '@/modules/sortable-checkbox-select/sortable-checkbox-select';
 import {ControllerElement} from '@/common/web-components';
 
 /**

@@ -1,4 +1,4 @@
-import {EditableTable, Row} from './EditableTable';
+import {EditableTable, Row} from './editable-table';
 import {compatify} from '@craftcms/garnish/compat';
 
 // Wrap the modern classes with the Garnish compat shim so the still-legacy
