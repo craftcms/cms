@@ -167,7 +167,7 @@ export default class CraftActionItem extends LitElement {
               ? html`<craft-icon
                   name="${this.icon}"
                   style="${this.iconColor
-                    ? `color: var(--c-color-${this.iconColor}-icon, var(--c-color-${this.iconColor}-on-normal, currentColor))`
+                    ? `color: var(--c-color-${this.iconColor}-on-normal, currentColor)`
                     : nothing}"
                 ></craft-icon>`
               : nothing}
