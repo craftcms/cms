@@ -85,7 +85,7 @@ readonly class Announcements
                 $icon = $this->plugins->getPluginIconSvg($plugin->handle);
                 $label = $plugin->name;
             } else {
-                $icon = file_get_contents(Aliases::get('@appicons/craft-cms.svg'));
+                $icon = @file_get_contents(Aliases::get('@appicons/craft-cms.svg'));
                 $label = 'Craft CMS';
             }
 

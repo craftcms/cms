@@ -69,6 +69,8 @@ jobs:
       - name: Install npm dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       # Build the garnish package so its `dist/*.d.ts` exist — `vue-tsc` resolves
       # `@craftcms/garnish` from `dist` (its `types`), and dist is gitignored.
