@@ -17,6 +17,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use craft\web\View;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\Response;
 
@@ -128,7 +129,11 @@ class AuthController extends Controller
         $this->requireElevatedSession();
 
         $class = $this->request->getRequiredBodyParam('method');
-        $method = Craft::$app->getAuth()->getMethod($class);
+        try {
+            $method = Craft::$app->getAuth()->getMethod($class);
+        } catch (InvalidArgumentException $e) {
+            return $this->asFailure($e->getMessage());
+        }
 
         return $this->asJson($method instanceof BaseAuthMethod ? $method->getSetupData() : []);
     }
@@ -143,12 +148,18 @@ class AuthController extends Controller
     public function actionRemoveMethod(): ?Response
     {
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requireElevatedSession();
 
         $methodClass = $this->request->getRequiredBodyParam('method');
 
         $auth = Craft::$app->getAuth();
-        $method = $auth->getMethod($methodClass);
+        try {
+            $method = $auth->getMethod($methodClass);
+        } catch (InvalidArgumentException $e) {
+            return $this->asFailure($e->getMessage());
+        }
+
         $method->remove();
 
         // if that was the last non-Recovery Codes method, remove Recovery Codes too
