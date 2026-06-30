@@ -25,7 +25,7 @@ use yii\base\InvalidArgumentException;
 class Image
 {
     // Bounds metadata scans for formats whose dimensions aren't in fixed header bytes.
-    private const MAX_IMAGE_SIZE_STREAM_BYTES = 1048576;
+    private const MAX_IMAGE_SIZE_STREAM_BYTES = 1024 * 1024;
 
     /** @since 4.14.0 */
     public const EXIF_IFD0_ROTATE_0 = 1;
