@@ -274,9 +274,9 @@ function generateValueWrapper(component) {
   defineOptions({
     name: '${component.className}',
   });
-  
+
   const model = defineModel<${component.modelType}>();
-  
+
   defineProps<{
     error?: null | string
   }>()
@@ -290,7 +290,7 @@ function generateValueWrapper(component) {
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
-    
+
     <div slot="feedback">
       <ul class="error-list" v-if="error">
         <li>{{ error }}</li>
@@ -332,7 +332,7 @@ function generateCheckedWrapper(component) {
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
-    
+
     <div slot="feedback">
       <ul class="error-list" v-if="error">
         <li>{{ error }}</li>
@@ -355,7 +355,7 @@ function generateGroupWrapper(component) {
   defineOptions({
     name: '${component.className}',
   });
-  
+
   defineProps<{
     error?: null | string
   }>()
@@ -371,7 +371,7 @@ function generateGroupWrapper(component) {
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
-    
+
     <div slot="feedback">
       <ul class="error-list" v-if="error">
         <li>{{ error }}</li>

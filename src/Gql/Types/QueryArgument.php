@@ -15,17 +15,11 @@ use Override;
 
 class QueryArgument extends ScalarType implements SingularTypeInterface
 {
-    /**
-     * @var string
-     */
     #[Override]
-    public $name = 'QueryArgument';
+    public string $name = 'QueryArgument';
 
-    /**
-     * @var string
-     */
     #[Override]
-    public $description = 'The `QueryArgument` scalar type represents a value to be using in Craft element queries. It can be an integer, a string, or a boolean value.';
+    public ?string $description = 'The `QueryArgument` scalar type represents a value to be using in Craft element queries. It can be an integer, a string, or a boolean value.';
 
     public static function getType(): QueryArgument
     {

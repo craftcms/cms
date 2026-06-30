@@ -21,7 +21,7 @@ function createResolveInfoForOptionField(string $fieldName): ResolveInfo
 {
     $parentType = new ObjectType(['name' => 'Test', 'fields' => []]);
 
-    $fieldDefinition = FieldDefinition::create([
+    $fieldDefinition = new FieldDefinition([
         'name' => $fieldName,
         'type' => Type::string(),
     ]);
@@ -33,7 +33,7 @@ function createResolveInfoForOptionField(string $fieldName): ResolveInfo
 
     return new ResolveInfo(
         $fieldDefinition,
-        [$fieldNode],
+        new ArrayObject($fieldNode),
         $parentType,
         ['test', $fieldName],
         new Schema([]),

@@ -19,7 +19,7 @@ function createResolveInfoForContentBlock(string $fieldName): ResolveInfo
 {
     $parentType = new ObjectType(['name' => 'Test', 'fields' => []]);
 
-    $fieldDefinition = FieldDefinition::create([
+    $fieldDefinition = new FieldDefinition([
         'name' => $fieldName,
         'type' => Type::string(),
     ]);
@@ -31,7 +31,7 @@ function createResolveInfoForContentBlock(string $fieldName): ResolveInfo
 
     return new ResolveInfo(
         $fieldDefinition,
-        [$fieldNode],
+        new ArrayObject($fieldNode),
         $parentType,
         ['test', $fieldName],
         new Schema([]),
