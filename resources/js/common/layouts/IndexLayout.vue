@@ -97,7 +97,29 @@
           <slot name="interior-nav" :state="navState">
             <craft-nav-list v-if="subnav.length">
               <template v-for="(item, index) in subnav" :key="index">
+                <li v-if="item.subnav" class="nav-heading">
+                  <span class="nav-heading-label">{{ item.label }}</span>
+
+                  <craft-nav-list>
+                    <template
+                      v-for="(subitem, subindex) in item.subnav"
+                      :key="subindex"
+                    >
+                      <CpLink
+                        as="craft-nav-item"
+                        :active="subitem.selected"
+                        :href="subitem.url"
+                        block
+                        flush
+                      >
+                        {{ subitem.label }}
+                      </CpLink>
+                    </template>
+                  </craft-nav-list>
+                </li>
+
                 <CpLink
+                  v-else
                   as="craft-nav-item"
                   :active="item.selected"
                   :href="item.url"
@@ -126,5 +148,18 @@
 <style scoped lang="scss">
   #nav-container {
     background-color: color-mix(var(--color-slate-900), trans);
+  }
+
+  .nav-heading {
+    display: grid;
+    gap: var(--c-spacing-sm);
+    margin: 0;
+  }
+
+  .nav-heading-label {
+    display: block;
+    padding-block: var(--c-spacing-sm);
+    color: var(--c-text-quiet);
+    font-weight: 600;
   }
 </style>
