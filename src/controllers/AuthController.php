@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\auth\methods\AuthMethodInterface;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\helpers\Html;
@@ -94,6 +95,40 @@ class AuthController extends Controller
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
         ]);
+    }
+
+    /**
+     * Returns the data for available authentication method listings.
+     *
+     * @return Response
+     */
+    public function actionMethodListingData(): Response
+    {
+        $this->requireAcceptsJson();
+
+        return $this->asJson([
+            'methods' => array_map(
+                fn(AuthMethodInterface $method) => $this->authMethodData($method),
+                Craft::$app->getAuth()->getAvailableMethods(),
+            ),
+        ]);
+    }
+
+    /**
+     * Returns the data needed to set up an authentication method.
+     *
+     * @return Response
+     */
+    public function actionMethodSetupData(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requireElevatedSession();
+
+        $class = $this->request->getRequiredBodyParam('method');
+        $method = Craft::$app->getAuth()->getMethod($class);
+
+        return $this->asJson($method->getSetupData());
     }
 
     /**
@@ -260,6 +295,17 @@ class AuthController extends Controller
         return $this->getView()->renderTemplate('users/_passkeys-table.twig', [
             'passkeys' => Craft::$app->getAuth()->getPasskeys(static::currentUser()),
         ]);
+    }
+
+    private function authMethodData(AuthMethodInterface $method): array
+    {
+        return [
+            'class' => $method::class,
+            'name' => $method::displayName(),
+            'description' => $method::description(),
+            'actionMenuItems' => $method->getActionMenuItems(),
+            'isActive' => $method->isActive(),
+        ];
     }
 
     /**
