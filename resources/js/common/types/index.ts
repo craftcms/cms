@@ -75,6 +75,7 @@ export interface ActionItemButton {
   label: string;
   variant?: VariantKey | string;
   icon?: string;
+  disabled?: boolean;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
   [key: string]: unknown;

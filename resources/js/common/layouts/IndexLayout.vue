@@ -63,6 +63,7 @@
     :default-form-actions="props.defaultFormActions"
     :form-actions="props.formActions"
     :form-additional-actions="props.formAdditionalActions"
+    :form-additional-buttons="props.formAdditionalButtons"
     :additional-skip-links="skipLinks"
     @save="(options) => emit('save', options)"
   >
