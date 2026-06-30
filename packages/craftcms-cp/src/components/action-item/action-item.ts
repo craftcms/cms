@@ -20,6 +20,12 @@ import {Variant, type VariantValue} from '@src/constants/variants';
 export default class CraftActionItem extends LitElement {
   static override styles = [variantsStyles, styles];
   @property() icon: string | null = null;
+  /**
+   * Optional Craft color name used to tint the item's icon. The icon renders
+   * with `currentColor`, so we set the icon element's `color` to a matching
+   * `--c-color-*` token.
+   */
+  @property() iconColor: string | null = null;
   @property() href: string | null = null;
   @property({type: Boolean}) disabled: boolean = false;
   @property({reflect: true}) variant: VariantValue = Variant.Neutral;
@@ -158,7 +164,12 @@ export default class CraftActionItem extends LitElement {
         return html`
           <slot name="icon">
             ${this.icon
-              ? html`<craft-icon name="${this.icon}"></craft-icon>`
+              ? html`<craft-icon
+                  name="${this.icon}"
+                  style="${this.iconColor
+                    ? `color: var(--c-color-${this.iconColor}-on-normal, currentColor)`
+                    : nothing}"
+                ></craft-icon>`
               : nothing}
           </slot>
         `;

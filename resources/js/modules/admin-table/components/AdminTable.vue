@@ -5,7 +5,6 @@
   import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import ColumnHeaderTitle from '@/modules/admin-table/components/ColumnHeaderTitle.vue';
-  import ReorderButton from '@/common/components/ReorderButton.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
   import Select from '@/common/form/Select.vue';
   import Text from '@/common/components/Text.vue';
@@ -364,12 +363,20 @@
               <template v-if="reorderable && !readOnly">
                 <td>
                   <div>
-                    <ReorderButton
-                      @click:up="emit('reorder', row.index, row.index - 1)"
-                      @click:down="emit('reorder', row.index, row.index + 1)"
+                    <craft-reorder-button
+                      @reorder="
+                        (e: CustomEvent<{direction: 'up' | 'down'}>) =>
+                          emit(
+                            'reorder',
+                            row.index,
+                            e.detail.direction === 'up'
+                              ? row.index - 1
+                              : row.index + 1
+                          )
+                      "
                       :position="getRowPosition(row.index)"
-                      :ref="(el: any) => setHandleRef(el?.$el, row.id)"
-                    />
+                      :ref="(el: any) => setHandleRef(el, row.id)"
+                    ></craft-reorder-button>
                   </div>
 
                   <!-- Drop indicator spans entire row, positioned from this cell -->

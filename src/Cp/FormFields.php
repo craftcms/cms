@@ -194,7 +194,7 @@ readonly class FormFields
                 : '').
             (($label || $showLabelExtra)
                 ? (
-                    Html::beginTag('div', ['class' => 'heading']).
+                    Html::beginTag('div', ['class' => 'heading font-bold mb-1']).
                     ($config['headingPrefix'] ?? '').
                     ($label
                         ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, Arr::merge([

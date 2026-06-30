@@ -1,13 +1,11 @@
 <script setup lang="ts">
   import {computed, ref, watch} from 'vue';
-  import {t} from '@craftcms/cp';
   import type {CheckboxOption} from '@/common/types';
   import DragShadow from '@/common/components/DragShadow.vue';
   import type {
     DragState,
     DropState,
   } from '@/common/composables/useReorderableItems';
-  import ReorderButton from '@/common/components/ReorderButton.vue';
 
   const emit = defineEmits<{
     (e: 'handle-ref', el: HTMLElement | null): void;
@@ -61,12 +59,18 @@
       ref="handleRef"
       class="checkbox-group-item__handle"
     >
-      <ReorderButton
-        :aria-label="t('Reorder')"
+      <craft-reorder-button
         :position="position"
-        @click:up="emit('reorder', index, index - 1)"
-        @click:down="emit('reorder', index, index + 1)"
-      />
+        @reorder="
+          (e: CustomEvent<{direction: 'up' | 'down'}>) =>
+            emit(
+              'reorder',
+              index,
+              e.detail.direction === 'up' ? index - 1 : index + 1
+            )
+        "
+      >
+      </craft-reorder-button>
     </span>
 
     <craft-checkbox

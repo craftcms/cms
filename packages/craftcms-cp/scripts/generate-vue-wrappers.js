@@ -130,6 +130,23 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
+    tagName: 'craft-select-rich',
+    className: 'CraftSelectRich',
+    fileName: 'CraftSelectRich',
+    modelType: 'string',
+    importPath: '../components/select-rich/select-rich',
+    slots: [
+      'label',
+      'help-text',
+      'input',
+      'feedback',
+      'prefix',
+      'suffix',
+      'before',
+      'after',
+    ],
+  },
+  {
     tagName: 'craft-combobox',
     className: 'CraftCombobox',
     fileName: 'CraftCombobox',
@@ -165,6 +182,18 @@ const VALUE_COMPONENTS = [
       'selected-file-list',
     ],
   },
+  {
+    // Plain LitElement wrapping <craft-select-rich>. Its own modelValue is now
+    // kept in sync with the inner select and it re-dispatches a composed
+    // `model-value-changed`, so the standard value-wrapper works. Options are
+    // supplied via the default slot; the label is an attribute (not a slot).
+    tagName: 'craft-select-color',
+    className: 'CraftSelectColor',
+    fileName: 'CraftSelectColor',
+    modelType: 'string',
+    importPath: '../components/select-color/select-color',
+    slots: ['feedback'],
+  },
 ];
 
 /**
@@ -176,6 +205,7 @@ const CHECKED_COMPONENTS = [
     tagName: 'craft-switch',
     className: 'CraftSwitch',
     fileName: 'CraftSwitch',
+    modelType: 'boolean | null',
     importPath: '../components/switch/switch',
     slots: ['label', 'help-text', 'input', 'feedback'],
   },
@@ -267,7 +297,7 @@ function generateValueWrapper(component) {
 <template>
   <${component.tagName}
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
+    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -295,17 +325,20 @@ function generateCheckedWrapper(component) {
     name: '${component.className}',
   });
   
-  defineProps<{
+  const props = defineProps<{
     error?: null | string
+    modelValue?: ${component.modelType ?? 'boolean'}
   }>()
 
-  const model = defineModel<boolean>();
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean]
+  }>();
 </script>
 
 <template>
   <${component.tagName}
-    .checked="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.checked"
+    .checked="props.modelValue ?? false"
+    @model-value-changed="emit('update:modelValue', ($event.target as ${component.className})?.checked ?? false)"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -343,7 +376,7 @@ function generateGroupWrapper(component) {
 <template>
   <${component.tagName}
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
+    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -440,7 +473,7 @@ function generateCheckedDeclaration(component) {
 import type {DefineComponent} from 'vue';
 declare const _default: DefineComponent<{
   error?: string | null;
-  modelValue?: boolean;
+  modelValue?: ${component.modelType ?? 'boolean'};
   'onUpdate:modelValue'?: (val: boolean) => void;
 }>;
 export default _default;

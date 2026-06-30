@@ -21,13 +21,7 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 
-  type EntryTypeRow = {
-    id: number;
-    title: string;
-    chip: string;
-    handle: string;
-    usages: string;
-  };
+  type EntryTypeRow = CraftCms.Cms.Entry.Data.EntryTypeIndexData;
 
   const props = defineProps<{
     title: string;

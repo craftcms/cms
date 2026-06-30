@@ -109,6 +109,8 @@ const Cp = {
       resolve: (name) => resolveInertiaPage(name),
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
+        app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+
         app.provide(Queue, queue);
         app.provide(Axios, axios);
         app.provide(Config, config);

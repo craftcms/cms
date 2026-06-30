@@ -78,6 +78,8 @@ interface ElementSelectorModalInstance {
   on(event: string, callback: () => void): void;
 }
 
+type FieldLayoutDesignerInstance = any;
+
 interface ElementSelectorModalSettings {
   closeOtherModals?: boolean;
   criteria?: Record<string, unknown>;
@@ -151,6 +153,9 @@ interface CraftStatic {
     elementIndex: unknown,
     settings?: object
   ) => {destroy(): void};
+  FieldLayoutDesigner: {
+    new (container: any, settings?: object): FieldLayoutDesignerInstance;
+  };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

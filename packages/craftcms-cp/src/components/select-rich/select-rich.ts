@@ -6,6 +6,23 @@ import CraftSelectInvoker from './select-invoker.js';
 import '../option/option.js';
 import '../icon/icon.js';
 
+/**
+ * @summary A rich `<select>` replacement built on Lion's select-rich. Unlike a
+ * native select, options are `craft-option` elements that may contain arbitrary
+ * markup (icons, indicators, hints), and the selected option is cloned into the
+ * invoker.
+ *
+ * Uses {@link CraftSelectInvoker} as its invoker (adding the chevron indicator)
+ * and sizes the invoker to its content via {@link _alignInvokerWidth}.
+ *
+ * @slot invoker - The element that opens the listbox (provided by default).
+ * @slot input - The hidden form-bound input.
+ * @slot label - Field label.
+ * @slot help-text - Supplementary help text.
+ * @slot feedback - Validation feedback.
+ *
+ * @since 1.0
+ */
 export default class CraftSelectRich extends LionSelectRich {
   static override get styles() {
     return [...super.styles, styles];
@@ -18,6 +35,7 @@ export default class CraftSelectRich extends LionSelectRich {
     };
   }
 
+  /** Renders the invoker at a smaller size. */
   @property({reflect: true, type: Boolean}) small = false;
 
   /**

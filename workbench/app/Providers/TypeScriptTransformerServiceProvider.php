@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Workbench\App\Providers;
 
 use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -34,6 +36,8 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     GqlSchema::class,
                     GqlToken::class,
                     ImageTransform::class,
+                    EntryType::class,
+                    EntryTypeIndexData::class,
                     NavItem::class,
                     Permission::class,
                     PermissionGroup::class,

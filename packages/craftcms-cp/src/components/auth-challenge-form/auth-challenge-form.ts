@@ -241,6 +241,8 @@ export abstract class CraftAuthChallengeForm extends LitElement {
     elementClass: T
   ): void {
     if (!customElements.get(tagName)) {
+      // Cast required: the base class is abstract, but concrete subclasses
+      // passed here are valid custom element constructors.
       customElements.define(
         tagName,
         elementClass as unknown as CustomElementConstructor

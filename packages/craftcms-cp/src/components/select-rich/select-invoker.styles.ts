@@ -12,6 +12,7 @@ export default css`
     padding-inline: var(--c-input-spacing-inline);
     min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
     font: inherit;
+    overflow: clip;
   }
 
   :host([disabled]) {
