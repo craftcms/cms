@@ -98,11 +98,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Returns the data for available authentication method listings.
+     * Returns the data for available authentication methods.
      *
      * @return Response
      */
-    public function actionMethodListingData(): Response
+    public function actionGetMethods(): Response
     {
         $this->requireAcceptsJson();
 
@@ -119,7 +119,7 @@ class AuthController extends Controller
      *
      * @return Response
      */
-    public function actionMethodSetupData(): Response
+    public function actionMethodData(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
