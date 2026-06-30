@@ -24,7 +24,9 @@ abstract class BaseAuthMethod extends Component implements AuthMethodInterface
     protected User $user;
 
     /**
-     * @inheritdoc
+     * Returns the data needed to render the authentication method’s setup form.
+     *
+     * @return array
      */
     public function getSetupData(): array
     {

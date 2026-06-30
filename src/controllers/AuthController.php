@@ -128,7 +128,9 @@ class AuthController extends Controller
         $class = $this->request->getRequiredBodyParam('method');
         $method = Craft::$app->getAuth()->getMethod($class);
 
-        return $this->asJson($method->getSetupData());
+        return $this->asJson(
+            is_callable([$method, 'getSetupData']) ? $method->getSetupData() : [],
+        );
     }
 
     /**

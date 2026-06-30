@@ -67,13 +67,6 @@ interface AuthMethodInterface extends ComponentInterface
     public function getSetupHtml(string $containerId): string;
 
     /**
-     * Returns the data needed to render the authentication method’s setup form.
-     *
-     * @return array
-     */
-    public function getSetupData(): array;
-
-    /**
      * Returns the HTML for the authentication method’s authentication form.
      *
      * Before returning the HTML, ensure an asset bundle is registered which defines a JavaScript class for
