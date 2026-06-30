@@ -105,6 +105,7 @@ class AuthController extends Controller
      */
     public function actionGetAvailableMethods(): Response
     {
+        $this->requirePostRequest();
         $this->requireAcceptsJson();
 
         return $this->asJson([
