@@ -1,4 +1,4 @@
-import '../legacy/cp/dist/css/cp.css';
+import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
 
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere
