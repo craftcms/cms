@@ -68,6 +68,8 @@ jobs:
       - name: Install npm dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Build @craftcms/cp
         if: steps.cache.outputs.cache-hit != 'true'

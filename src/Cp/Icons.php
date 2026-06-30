@@ -148,7 +148,7 @@ readonly class Icons
     public static function resolveIconPath(string $icon): string
     {
         return in_array($icon, self::CUSTOM_ICONS)
-            ? Aliases::get("@craftcms/resources/icons/custom-icons/$icon.svg")
+            ? Aliases::get("@cmsAssets/resources/icons/custom-icons/$icon.svg")
             : Aliases::get("@appicons/$icon.svg");
     }
 
