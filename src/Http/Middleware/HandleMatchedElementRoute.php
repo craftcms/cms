@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Route\ControllerRoute;
 use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Site\Sites;
@@ -50,6 +51,12 @@ readonly class HandleMatchedElementRoute
 
         if (! $route) {
             return $next($request);
+        }
+
+        if ($route instanceof ControllerRoute) {
+            MatchedElement::set($element, $route);
+
+            return $route->handle($request, $element);
         }
 
         if (is_string($route)) {

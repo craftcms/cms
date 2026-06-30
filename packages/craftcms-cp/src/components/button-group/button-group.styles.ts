@@ -3,7 +3,6 @@ import {css} from 'lit';
 export default css`
   :host {
     display: flex;
-    gap: var(--c-spacing-1px);
   }
 
   ::slotted(craft-button),

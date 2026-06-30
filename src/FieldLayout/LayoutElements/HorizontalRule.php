@@ -35,7 +35,7 @@ class HorizontalRule extends FieldLayoutElement
         return <<<HTML
 <div>
   <div class="fld-hr">
-    <div class="smalltext light flex flex-nowrap gap-xs">
+    <div class="fld-hr__label">
       <span>$label</span>
       $indicatorHtml
     </div>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import ReorderButton from '@/common/components/ReorderButton.vue';
   import type {EntryType, ActionItem} from '@/common/types';
   import Tooltip from '@/common/components/Tooltip.vue';
   import {ref, watch} from 'vue';
@@ -77,7 +76,7 @@
       <ActionMenu v-if="actions" :actions="actions as ActionItem[]" />
       <span v-if="draggable" ref="handleRef" class="drag-handle">
         <slot name="drag-handle">
-          <ReorderButton variant="inherit" />
+          <craft-reorder-button variant="inherit"></craft-reorder-button>
         </slot>
       </span>
     </div>

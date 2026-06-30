@@ -1938,7 +1938,7 @@ $.extend(Craft, {
    */
   initUiElements: function ($container) {
     $('.grid', $container).grid();
-    $('.checkbox-select', $container).checkboxselect();
+    $('.cp-checkbox-select', $container).checkboxselect();
     $('.fieldtoggle', $container).fieldtoggle();
     $('.lightswitch', $container).lightswitch();
     $('.nicetext', $container).nicetext();

@@ -7,7 +7,7 @@
       "@/*": ["./resources/js/*"],
       "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
       "@craftcms/cp/vue/*": ["./node_modules/@craftcms/cp/dist/vue/*"],
-      "@icons/*": ["./resources/icons/*"],
+      "@icons/*": ["./cms-assets/resources/icons/*"],
       "@public/*": ["./resources/public/*"],
       "@routes/*": ["./resources/js/routes/craft/*"],
     },

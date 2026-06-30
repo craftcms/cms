@@ -40,6 +40,16 @@ ul {
   list-style: none;
 }
 
+dd {
+  margin: 0;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
 .cp-code {
   font-size: 0.75em;
   font-family: var(--c-font-mono);
@@ -203,6 +213,64 @@ Modify with `cp-table--auto` to apply table-layout: auto
   textarea {
     resize: none;
     line-height: 1.2;
+  }
+}
+
+.cp-table--editable {
+  table-layout: auto;
+  border: 1px solid var(--c-color-border-quiet);
+  border-radius: var(--c-radius-sm);
+
+  thead,
+  th {
+    background-color: transparent;
+  }
+
+  th {
+    font-size: var(--c-text-sm);
+    padding: var(--c-spacing-sm);
+  }
+
+  td {
+    padding: 0;
+  }
+
+  td.thin {
+    padding: var(--c-spacing-sm);
+    white-space: nowrap;
+    width: 0.01%;
+  }
+
+  /* Compat */
+  .editable-table-preview {
+    text-align: start;
+    white-space: pre-wrap;
+  }
+
+  .editable-table-preview + textarea {
+    height: 0;
+    min-height: 0;
+    opacity: 0;
+    padding-block: 0;
+  }
+
+  textarea,
+  textarea.text,
+  input.text,
+  pre,
+  .editable-table-preview {
+    display: block;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding-block: 7px;
+    padding-inline: 10px;
+    line-height: 20px;
+    background-color: transparent;
+    overflow: hidden;
+    transition: none;
+    box-sizing: border-box;
   }
 }
 

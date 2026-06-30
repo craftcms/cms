@@ -68,7 +68,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     private static function iconStyles(string $name): array
     {
         if (! isset(self::$_icons)) {
-            $indexPath = '@craftcms/resources/icons/index.php';
+            $indexPath = '@cmsAssets/resources/icons/index.php';
             self::$_icons = require Aliases::get($indexPath);
         }
 
