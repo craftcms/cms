@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Requests;
 
-use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -188,11 +187,11 @@ class ElementRequest extends FormRequest
 
     public function validateElementType(string $elementType): void
     {
-        if (ComponentHelper::validateComponentClass($elementType, ElementInterface::class)) {
+        if (ElementTypeRule::isValid($elementType)) {
             return;
         }
 
-        abort(400, new InvalidTypeException($elementType, ElementInterface::class)->getMessage());
+        abort(400, ElementTypeRule::message($elementType));
     }
 
     /**

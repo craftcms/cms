@@ -17,6 +17,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Once;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
@@ -93,7 +94,7 @@ it('can get all widgets and adds default widgets', function () {
 });
 
 it('returns missing widgets for saved widget types that can no longer be resolved', function () {
-    $user = auth('craft')->craftUser();
+    $user = currentUser();
     UserModel::where('id', $user->id)->update(['hasDashboard' => true]);
     $user->hasDashboard = true;
 
@@ -113,7 +114,7 @@ it('returns missing widgets for saved widget types that can no longer be resolve
 });
 
 it('can test if a user has a widget', function () {
-    $user = auth('craft')->craftUser();
+    $user = currentUser();
     UserModel::where('id', $user->id)->update(['hasDashboard' => true]);
     $user->hasDashboard = true;
 

@@ -94,7 +94,11 @@ class RouteTokens
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        return $this->createToken($route, $usageLimit, null, $token);
+        $config = Cms::config();
+        $duration = $config->previewTokenDuration ?? $config->defaultTokenDuration;
+        $expiryDate = now()->addSeconds($duration);
+
+        return $this->createToken($route, $usageLimit, $expiryDate, $token);
     }
 
     /**

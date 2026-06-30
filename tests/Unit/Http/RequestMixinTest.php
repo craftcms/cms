@@ -90,6 +90,15 @@ describe('isCpRequest', function () {
     it('returns false for site requests', function () {
         expect(Request::create('/news')->isCpRequest())->toBeFalse();
     });
+
+    it('returns true for root control panel requests', function (?string $cpTrigger) {
+        Cms::config()->cpTrigger = $cpTrigger;
+
+        expect(Request::create('/dashboard')->isCpRequest())->toBeTrue();
+    })->with([
+        'null' => [null],
+        'slash' => ['/'],
+    ]);
 });
 
 describe('getToken', function () {

@@ -5,6 +5,7 @@ import {customIcons} from './icons';
 type CraftToolbarButton = ToolbarButton & {
   actionId?: string;
   optionName?: string;
+  isActive?: ToolbarActiveState;
 };
 
 type ToolbarOptions = {
@@ -20,6 +21,14 @@ type ToolbarCallbacks = {
 };
 
 type ToolbarAction = NonNullable<ToolbarButton['action']>;
+
+// OverType's bundled types don't declare `isActive` on `ToolbarButton`, though
+// its runtime supports it. Define the callback shape ourselves to match the
+// context the runtime passes (`editor` + computed `activeFormats`).
+type ToolbarActiveState = (context: {
+  editor: Parameters<ToolbarAction>[0]['editor'];
+  activeFormats: string[];
+}) => boolean;
 
 const strikethroughFormat = {
   prefix: '~~',
@@ -78,9 +87,17 @@ function toolbarButtonGroups(
             strikethroughFormat
           );
           editor.textarea.dispatchEvent(new Event('input', {bubbles: true}));
-        }
+        },
+        undefined,
+        ({editor}) => hasSurroundingMarker(editor.textarea, '~~')
       ),
-      customizeToolbarButton(toolbarButtons.code, t('Code'), 'code'),
+      customizeToolbarButton(
+        toolbarButtons.code,
+        t('Code'),
+        'code',
+        undefined,
+        ({activeFormats}) => activeFormats.includes('code')
+      ),
     ],
     [
       customizeToolbarButton(toolbarButtons.h1, t('Heading 1'), 'h1'),
@@ -145,21 +162,30 @@ function toolbarButtonGroups(
 }
 
 function headingButton(level: 4 | 5 | 6, title: string): CraftToolbarButton {
-  return customToolbarButton(`h${level}`, `h${level}`, title, ({editor}) => {
-    markdownActions.insertHeader(editor.textarea, level, true);
-    editor.textarea.dispatchEvent(new Event('input', {bubbles: true}));
-  });
+  return customToolbarButton(
+    `h${level}`,
+    `h${level}`,
+    title,
+    ({editor}) => {
+      markdownActions.insertHeader(editor.textarea, level, true);
+      editor.textarea.dispatchEvent(new Event('input', {bubbles: true}));
+    },
+    undefined,
+    ({editor}) => headingLevel(editor.textarea) === level
+  );
 }
 
 function customizeToolbarButton(
   button: ToolbarButton,
   title: string,
   icon: string,
-  optionName = button.name
+  optionName = button.name,
+  isActive?: ToolbarActiveState
 ): CraftToolbarButton {
   return {
     ...button,
     icon: customIcons[icon] ?? button.icon,
+    isActive,
     optionName,
     title,
   };
@@ -170,13 +196,39 @@ function customToolbarButton(
   icon: string,
   title: string,
   action: ToolbarAction,
-  actionId?: string
+  actionId?: string,
+  isActive?: ToolbarActiveState
 ): CraftToolbarButton {
   return {
     actionId,
     action,
     icon: customIcons[icon] ?? '',
+    isActive,
     name,
     title,
   };
+}
+
+function headingLevel(textarea: HTMLTextAreaElement): number {
+  const {selectionStart, value} = textarea;
+  const lineStart =
+    value.lastIndexOf('\n', Math.max(0, selectionStart - 1)) + 1;
+  const nextLineBreak = value.indexOf('\n', selectionStart);
+  const lineEnd = nextLineBreak === -1 ? value.length : nextLineBreak;
+
+  return value.slice(lineStart, lineEnd).match(/^(#{1,6})\s/)?.[1]?.length ?? 0;
+}
+
+function hasSurroundingMarker(
+  textarea: HTMLTextAreaElement,
+  marker: string
+): boolean {
+  const {selectionEnd, selectionStart, value} = textarea;
+  const beforeSelection = value.slice(0, selectionStart);
+  const afterSelection = value.slice(selectionEnd);
+
+  return (
+    (beforeSelection.split(marker).length - 1) % 2 === 1 &&
+    afterSelection.includes(marker)
+  );
 }

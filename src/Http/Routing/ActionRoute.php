@@ -32,12 +32,11 @@ readonly class ActionRoute
 
     public static function uriForSegments(array $segments, bool $isCp): string
     {
-        return implode('/', array_filter([
-            '',
-            $isCp ? Cms::config()->cpTrigger : null,
-            Cms::config()->actionTrigger,
+        return '/'.implode('/', array_filter([
+            $isCp ? trim((string) Cms::config()->cpTrigger, '/') : null,
+            trim(Cms::config()->actionTrigger, '/'),
             ...$segments,
-        ], fn ($value) => $value !== null));
+        ], fn (?string $value) => $value !== null && $value !== ''));
     }
 
     public function matches(Request $request): bool

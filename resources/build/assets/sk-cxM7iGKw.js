@@ -1,1 +1,0 @@
-var e={validationError:`Chyba,`,validationWarning:`Varovanie,`,validationSuccess:`Úspešné,`,validationInfo:`Info,`};export{e as t};

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\View;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use Illuminate\Contracts\View\Engine;
 
 class TwigEngine implements Engine
@@ -15,7 +15,7 @@ class TwigEngine implements Engine
     public function get($path, array $data = []): string
     {
         $template = $this->templateFromPath($path);
-        $renderer = app(TemplateRenderer::class);
+        $renderer = app(TwigRenderer::class);
 
         try {
             return $renderer->renderPageTemplate($template, $data);

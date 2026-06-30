@@ -11,17 +11,23 @@ export default css`
     place-items: center;
   }
 
-  .login-form__fields {
+  .auth-form__fields {
     display: flex;
     gap: var(--c-spacing-md);
     align-items: end;
   }
 
-  .login-form__actions {
+  .auth-form__actions {
     margin-block-start: var(--c-spacing-lg);
   }
 
-  .login-form__error {
+  .auth-form__heading {
+    margin: 0;
+    font-size: var(--c-font-size);
+    font-weight: var(--c-font-weight-bold);
+  }
+
+  .auth-form__error {
     margin-block-start: var(--c-spacing-md);
   }
 

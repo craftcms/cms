@@ -518,7 +518,7 @@ Craft.ui = {
   },
 
   createCheckboxSelect: function (config) {
-    const $container = $('<div class="checkbox-select"/>');
+    const $container = $('<div class="cp-checkbox-select"/>');
 
     if (config.class) {
       $container.addClass(config.class);
@@ -582,7 +582,7 @@ Craft.ui = {
       const option = config.options[i];
 
       const $option = $('<div/>', {
-        class: 'checkbox-select-item',
+        class: 'cp-checkbox-select__item',
       }).appendTo($container);
 
       if (config.sortable) {

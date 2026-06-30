@@ -7,7 +7,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/jqueryui/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/jqueryui/dist',
     },
     plugins: [
       new MergeIntoSingleFilePlugin({

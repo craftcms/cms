@@ -7,10 +7,8 @@ namespace CraftCms\Cms\Http\Controllers\Gql;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\View\LegacyAssets\GraphiqlAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 
@@ -24,10 +22,8 @@ readonly class GraphiqlController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request): CpScreenResponse
     {
-        app(InternalAssetRegistry::class)->register(GraphiqlAsset::class);
-
         // Ensure the public schema exists
         $this->gql->getPublicSchema();
 
@@ -37,10 +33,10 @@ readonly class GraphiqlController extends GqlController
             try {
                 $selectedSchema = $this->gql->getSchemaByUid($schemaUid);
             } catch (InvalidArgumentException) {
-                abort(400, 'Invalid token UID.');
+                abort(400, 'Invalid schema UID.');
             }
 
-            abort_if(is_null($selectedSchema), 400, 'Invalid token UID.');
+            abort_if(is_null($selectedSchema), 400, 'Invalid schema UID.');
 
             SessionAuth::authorize("graphql-schema:$schemaUid");
         } else {
@@ -59,10 +55,21 @@ readonly class GraphiqlController extends GqlController
             ];
         }
 
-        return view('graphql.graphiql', [
-            'url' => Url::actionUrl('graphql/api'),
-            'schemas' => $schemas,
-            'selectedSchema' => $selectedSchema,
-        ]);
+        return new CpScreenResponse()
+            ->title(t('Explore the GraphQL API'))
+            ->selectedSubnavItem('explore')
+            ->crumbs([
+                ['label' => 'GraphQL', 'url' => 'graphql/explore'],
+                ['label' => 'GraphiQL'],
+            ])
+            ->inertiaPage('graphql/Explore', [
+                'endpoint' => Url::actionUrl('graphql/api'),
+                'exploreUrl' => Url::cpUrl('graphql/explore'),
+                'schemaOptions' => $schemas,
+                'selectedSchema' => [
+                    'name' => $selectedSchema->name,
+                    'schema' => $selectedSchema->uid,
+                ],
+            ]);
     }
 }

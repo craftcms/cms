@@ -16,7 +16,7 @@ interface Iconic
      * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
      * the path to an SVG file, or raw SVG markup.
      *
-     * System icons can be found in `resources/icons/solid/`.
+     * System icons can be found in `cms-assets/resources/icons/solid/`.
      */
     public function getIcon(): ?string;
 }

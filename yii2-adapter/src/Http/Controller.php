@@ -4,7 +4,8 @@ namespace CraftCms\Yii2Adapter\Http;
 
 use CraftCms\Cms\Cms;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Support\Facades\Auth;
+
+use function CraftCms\Cms\currentUser;
 
 class Controller extends \craft\web\Controller
 {
@@ -19,7 +20,7 @@ class Controller extends \craft\web\Controller
 
     public function requireAdmin(bool $requireAdminChanges = true): void
     {
-        abort_unless(Auth::user()?->isAdmin(), 403, 'User is not permitted to perform this action.');
+        abort_unless(currentUser()?->isAdmin(), 403, 'User is not permitted to perform this action.');
 
         if ($requireAdminChanges && !Cms::config()->allowAdminChanges) {
             abort(403, 'Administrative changes are disallowed in this environment.');

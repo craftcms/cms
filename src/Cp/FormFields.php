@@ -17,13 +17,13 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -112,8 +112,8 @@ readonly class FormFields
 
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
-            Auth::craftUser()->isAdmin() &&
-            Auth::craftUser()->getPreference('showFieldHandles')
+            currentUser()->isAdmin() &&
+            currentUser()->getPreference('showFieldHandles')
         );
         $showActionMenu = (
             ! empty($config['actionMenuItems']) &&
@@ -194,7 +194,7 @@ readonly class FormFields
                 : '').
             (($label || $showLabelExtra)
                 ? (
-                    Html::beginTag('div', ['class' => 'heading']).
+                    Html::beginTag('div', ['class' => 'heading font-bold mb-1']).
                     ($config['headingPrefix'] ?? '').
                     ($label
                         ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, Arr::merge([

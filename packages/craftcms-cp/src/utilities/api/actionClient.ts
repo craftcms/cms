@@ -1,11 +1,13 @@
 import axios, {type RawAxiosRequestHeaders} from 'axios';
 import {Csrf} from '@src/services/Csrf';
+import {ConfigService} from '@src/services/Config';
 
 /**
- * @TODO
+ * Builds an action URL using the runtime-configured action base
+ * (`Url::actionUrl()`), so the CP trigger isn't hard-coded to `/admin`.
  */
 export function getActionUrl(action: string = '') {
-  return `/admin/actions/${action}`;
+  return ConfigService.getInstance().getActionUrl(action);
 }
 
 /**
@@ -27,13 +29,15 @@ export function actionHeaders(): RawAxiosRequestHeaders {
   return headers;
 }
 
-export const actionClient = axios.create({
-  baseURL: getActionUrl(),
-});
+export const actionClient = axios.create();
 
 const csrf = new Csrf();
 
 actionClient.interceptors.request.use(async (config) => {
+  // Resolve the base URL lazily so it reflects the runtime CP trigger. Config
+  // isn't guaranteed to be initialized when this module is first imported.
+  config.baseURL = getActionUrl();
+
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');
 

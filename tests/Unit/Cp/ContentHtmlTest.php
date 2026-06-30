@@ -12,10 +12,10 @@ describe('metadataHtml', function () {
             'Hidden' => fn () => false,
         ]);
 
-        expect($html)->toContain('<dl class="meta read-only">')
-            ->and($html)->toContain('<dt class="heading">One</dt>')
-            ->and($html)->toContain('<dd class="value">Value</dd>')
-            ->and($html)->toContain('<dd class="value">Computed</dd>')
+        expect($html)->toContain('<dl class="cp-metadata-list">')
+            ->and($html)->toContain('<dt>One</dt>')
+            ->and($html)->toContain('<dd>Value</dd>')
+            ->and($html)->toContain('<dd>Computed</dd>')
             ->and($html)->not->toContain('Hidden');
     });
 });

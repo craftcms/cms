@@ -304,13 +304,13 @@ class Application extends \yii\web\Application
             return null;
         }
 
-        $payload = $request->merge($params)->all();
+        $query = array_merge($request->query(), $params);
 
-        unset($payload['action'], $payload['p']);
+        unset($query['action'], $query['p']);
 
         $internalRequest = $request->duplicate(
-            query: [],
-            request: $payload,
+            query: $params,
+            request: $request->post(),
             server: array_merge($request->server->all(), [
                 'REQUEST_URI' => $actionUri,
                 'HTTP_X_CRAFT_LEGACY_ACTION_BRIDGE' => '1',

@@ -49,14 +49,14 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
         /** @var class-string<ElementInterface> $targetElementType */
         $targetElementType = $this->elements->first()::class;
 
-        return t('The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} related by {numRelations, number} other {numRelations, plural, =1{{sourceTypeSingular}} other{{sourceTypePlural}}}.', [
+        return mb_ucfirst(t('The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} related by {numRelations, number} other {numRelations, plural, =1{{sourceTypeSingular}} other{{sourceTypePlural}}}.', [
             'sourceTypeSingular' => $this->sourceElementType::lowerDisplayName(),
             'sourceTypePlural' => $this->sourceElementType::pluralLowerDisplayName(),
             'targetTypeSingular' => $targetElementType::lowerDisplayName(),
             'targetTypePlural' => $targetElementType::pluralLowerDisplayName(),
             'numRelations' => $this->relationCount,
             'numTargets' => $this->elements->count(),
-        ]);
+        ]));
     }
 
     public function getDetails(): ?string

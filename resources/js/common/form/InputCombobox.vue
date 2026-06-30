@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {
     computed,
+    type ComponentPublicInstance,
     type HTMLAttributes,
     type MaybeRef,
     ref,
@@ -17,6 +18,10 @@
   import type {SelectItem, SelectOption} from '@/common/types';
   import InputComboboxOption from '@/common/form/InputComboboxOption.vue';
 
+  type ClickableRef =
+    | HTMLElement
+    | (ComponentPublicInstance & {$el?: HTMLElement});
+
   const emit = defineEmits<{
     (e: 'update:modelValue', value: string | number): void;
   }>();
@@ -30,10 +35,14 @@
       class?: HTMLAttributes['class'];
       placeholder?: string;
       disabled?: boolean;
+      clearable?: boolean;
+      showAllOnEmpty?: boolean;
     }>(),
     {
       modelValue: '',
+      clearable: false,
       requireOptionMatch: false,
+      showAllOnEmpty: false,
       options: () => [],
       transformModelValue: (newValue: SelectOption | undefined | null) =>
         newValue ? newValue.value : '',
@@ -76,7 +85,24 @@
   });
 
   const reference = useTemplateRef<HTMLElement | null>('reference');
-  const query = ref(String(props.modelValue ?? ''));
+  const comboboxButton = useTemplateRef<ClickableRef | null>('comboboxButton');
+  const query = ref('');
+
+  const canClear = computed(() => {
+    return props.clearable && !props.disabled && props.modelValue !== '';
+  });
+
+  const shouldOpenOnFocus = computed(() => {
+    if (props.disabled) {
+      return false;
+    }
+
+    if (props.modelValue !== '') {
+      return false;
+    }
+
+    return props.showAllOnEmpty || props.requireOptionMatch;
+  });
 
   const referenceCoordinates = computed(() => {
     const coordinates = reference.value?.getBoundingClientRect();
@@ -140,18 +166,61 @@
       ? null
       : {value: query.value, label: query.value};
   });
+
+  function handleFocus(open: boolean) {
+    if (open || !shouldOpenOnFocus.value) {
+      return;
+    }
+
+    clickComboboxButton();
+  }
+
+  function clearValue() {
+    query.value = '';
+    emit('update:modelValue', '');
+  }
+
+  function clickComboboxButton() {
+    const button = comboboxButton.value;
+
+    if (button instanceof HTMLElement) {
+      button.click();
+
+      return;
+    }
+
+    button?.$el?.click();
+  }
 </script>
 
 <template>
   <div class="relative w-full" ref="reference">
-    <Combobox v-model="selectedOption" :disabled="props.disabled">
+    <Combobox
+      v-model="selectedOption"
+      :disabled="props.disabled"
+      v-slot="{open}"
+    >
       <ComboboxInput
         @change="query = $event.target.value"
+        @focus="handleFocus(open)"
         class="input"
         :class="props.class"
         :display-value="displayValue"
         :placeholder="placeholder"
       />
+      <craft-button
+        v-if="canClear"
+        class="absolute inset-y-1 right-7 flex items-center"
+        type="button"
+        appearance="plain"
+        size="small"
+        icon
+        :aria-label="`Clear ${label}`"
+        @mousedown.prevent
+        @click.stop="clearValue"
+      >
+        <craft-icon name="xmark" style="font-size: 0.8em"></craft-icon>
+      </craft-button>
       <ComboboxButton
         class="absolute inset-y-1 right-1 flex items-center"
         type="button"
@@ -160,6 +229,7 @@
         size="small"
         icon
         :aria-label="label"
+        ref="comboboxButton"
       >
         <craft-icon name="chevron-down" style="font-size: 0.8em"></craft-icon>
       </ComboboxButton>

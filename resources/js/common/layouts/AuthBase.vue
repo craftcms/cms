@@ -4,11 +4,20 @@
   import craftCmsLogoUrl from '@public/images/craftcms.svg';
   import {t} from '@craftcms/cp';
 
+  const props = withDefaults(
+    defineProps<{
+      title?: string;
+    }>(),
+    {
+      title: t('Sign In'),
+    }
+  );
+
   const {general, system} = useCraftData();
 </script>
 
 <template>
-  <Head :title="t('Sign In')"></Head>
+  <Head :title="props.title"></Head>
   <main class="cp-login">
     <div class="cp-login__wrapper grid gap-3 justify-items-center">
       <h1 class="flex justify-center">

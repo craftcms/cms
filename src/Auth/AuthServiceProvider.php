@@ -34,8 +34,8 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
@@ -48,7 +48,10 @@ class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        $this->registerGuard();
+        if (! class_exists($this->app->make(Repository::class)->get('auth.providers.users.model'))) {
+            $this->app->make(Repository::class)->set('auth.providers.users.model', User::class);
+        }
+
         $this->registerPermissions();
         $this->registerEvents();
     }
@@ -70,33 +73,6 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         RedirectIfAuthenticated::redirectUsing(fn (Request $request) => URL::defaultReturnUrl());
-    }
-
-    private function registerGuard(): void
-    {
-        if (! Config::has('auth.guards.craft')) {
-            Config::set('auth.guards.craft', [
-                'driver' => 'session',
-                'provider' => 'craft',
-                'remember' => floor(Cms::config()->rememberedUserSessionDuration / 60),
-            ]);
-        }
-
-        if (! Config::has('auth.providers.craft')) {
-            Config::set('auth.providers.craft', [
-                'driver' => 'eloquent',
-                'model' => User::class,
-            ]);
-        }
-
-        if (! Config::has('auth.passwords.craft')) {
-            Config::set('auth.passwords.craft', [
-                'provider' => 'craft',
-                'table' => 'password_reset_tokens',
-                'expire' => Cms::config()->verificationCodeDuration,
-                'throttle' => 60,
-            ]);
-        }
     }
 
     private function registerPermissions(): void

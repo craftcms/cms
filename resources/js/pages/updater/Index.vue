@@ -7,6 +7,7 @@
     type UpdaterState,
     useUpdater,
   } from '@/modules/updater/composables/useUpdater';
+  import {ConfigService} from '@craftcms/cp';
 
   const props = defineProps<{
     title: string;
@@ -41,7 +42,9 @@
   function handleFinish(): void {
     setTimeout(() => {
       window.location.href =
-        state.value.returnUrl || props.returnUrl || '/admin/dashboard';
+        state.value.returnUrl ||
+        props.returnUrl ||
+        ConfigService.getInstance().getCpUrl('dashboard');
     }, 750);
   }
 

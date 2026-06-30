@@ -14,7 +14,6 @@
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
   import Empty from '@/common/components/Empty.vue';
   import Pane from '@/common/components/Pane.vue';
-  import ReorderButton from '@/common/components/ReorderButton.vue';
 
   const props = defineProps<{
     title: string;
@@ -74,7 +73,7 @@
       return;
     }
 
-    router.delete(destroy(route.uid));
+    router.delete(destroy({uid: route.uid}));
   }
 </script>
 
@@ -113,7 +112,7 @@
           </div>
         </div>
 
-        <Link :href="edit(route.uid)" class="route__parts">
+        <Link :href="edit({uid: route.uid})" class="route__parts">
           <div>
             <span
               v-if="route.uriDisplayHtml"
@@ -137,16 +136,21 @@
             as="craft-button"
             size="small"
             appearance="plain"
-            :href="edit(route.uid)"
+            :href="edit({uid: route.uid})"
           >
             <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
           </Link>
-          <ReorderButton
-            :ref="(el) => setHandleRef(el, route.uid)"
+          <craft-reorder-button
+            :ref="(el: any) => setHandleRef(el, route.uid)"
             :position="getRowPosition(index)"
-            @click:up="handleReorder(index, index - 1)"
-            @click:down="handleReorder(index, index + 1)"
-          />
+            @reorder="
+              (e: CustomEvent<{direction: 'up' | 'down'}>) =>
+                handleReorder(
+                  index,
+                  e.detail.direction === 'up' ? index - 1 : index + 1
+                )
+            "
+          ></craft-reorder-button>
           <craft-button
             @click="deleteRoute(route)"
             variant="danger"

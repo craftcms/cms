@@ -1,4 +1,6 @@
 import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
+import type {CpComponentRegistry} from '@/bootstrap/components';
+import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 
 declare module '@tanstack/vue-table' {
   interface ColumnMeta {
@@ -52,8 +54,10 @@ type Site = {
   uid: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface CpStatic extends CpServices {}
+interface CpStatic extends CpServices {
+  $components: CpComponentRegistry;
+  $inertia: InertiaPageRegistry;
+}
 
 interface CpNotificationSettings {
   icon: string;
@@ -66,13 +70,15 @@ interface SlideoutInstance {
   open(): void;
   close(): void;
   destroy(): void;
-  on(event: string, callback: () => void): void;
+  on<T = unknown>(event: string, callback: (event: T) => void): void;
 }
 
 interface ElementSelectorModalInstance {
   show(): void;
   on(event: string, callback: () => void): void;
 }
+
+type FieldLayoutDesignerInstance = any;
 
 interface ElementSelectorModalSettings {
   closeOtherModals?: boolean;
@@ -140,6 +146,9 @@ interface CraftStatic {
   };
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
+  };
+  FieldLayoutDesigner: {
+    new (container: any, settings?: object): FieldLayoutDesignerInstance;
   };
 }
 

@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Session;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
@@ -128,7 +129,7 @@ describe('download', function () {
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
-        $user = auth('craft')->craftUser();
+        $user = currentUser();
         $content = postJson(action([RecoveryCodesController::class, 'download']))
             ->assertOk()
             ->getContent();

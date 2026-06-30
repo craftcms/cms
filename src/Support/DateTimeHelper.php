@@ -14,11 +14,11 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class DateTimeHelper
@@ -72,11 +72,11 @@ class DateTimeHelper
      * @param  bool  $assumeSystemTimeZone  Whether it should be assumed that the value was set in the system timezone if
      *                                      the timezone was not specified. If this is `false`, UTC will be assumed.
      * @param  bool  $setToSystemTimeZone  Whether to set the resulting DateTime object to the system timezone.
-     * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
+     * @return DateTimeInterface|false The DateTime object, or `false` if $object could not be converted to one
      *
      * @throws Exception
      */
-    public static function toDateTime(mixed $value, bool $assumeSystemTimeZone = false, bool $setToSystemTimeZone = true): DateTime|false
+    public static function toDateTime(mixed $value, bool $assumeSystemTimeZone = false, bool $setToSystemTimeZone = true): DateTimeInterface|false
     {
         if ($value instanceof DateTime) {
             return $value;
@@ -427,7 +427,7 @@ class DateTimeHelper
      */
     public static function firstWeekDay(): int
     {
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         return (int) ($user?->getPreference('weekStartDay') ?? Cms::config()->defaultWeekStartDay);
     }

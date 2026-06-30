@@ -79,6 +79,7 @@ use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -100,7 +101,9 @@ use function CraftCms\Cms\t;
 #[Ruleset(UserRules::class)]
 class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, MustVerifyEmailContract
 {
-    use Authenticatable;
+    use Authenticatable {
+        getAuthPassword as getAuthPasswordAuthenticatable;
+    }
     use Authorizable;
     use CanResetPassword, CraftUserTrait {
         CraftUserTrait::sendPasswordResetNotification insteadof CanResetPassword;
@@ -368,6 +371,29 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function getAuthIdentifierName(): string
     {
         return 'id';
+    }
+
+    public function getAuthPassword(): ?string
+    {
+        $password = $this->getAuthPasswordAuthenticatable();
+
+        if (is_null($password)) {
+            return null;
+        }
+
+        // Ensure the password starts with `$2y$` for BC with older passwords
+        // (h/t https://stackoverflow.com/a/79217475)
+        return Str::replaceStart('$2a$', '$2y$', $password);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        // Allow can() to be called from sandboxed templates
+        return strtolower($method) === 'can' || parent::methodAllowedInSandbox($method);
     }
 
     public function asElement(): self
@@ -854,7 +880,18 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     public function setAttributesFromRequest($values): void
     {
-        unset($values['unverifiedEmail']);
+        unset(
+            $values['invalidLoginCount'],
+            $values['lastInvalidLoginDate'],
+            $values['lastLoginAttemptIp'],
+            $values['lastLoginDate'],
+            $values['lastPasswordChangeDate'],
+            $values['lockoutDate'],
+            $values['newPassword'],
+            $values['password'],
+            $values['unverifiedEmail'],
+            $values['verificationCodeIssuedDate'],
+        );
 
         if (isset($values['email'])) {
             $values['email'] = trim($values['email']);
@@ -1233,7 +1270,7 @@ XML;
             return false;
         }
 
-        return Auth::craftUser()?->getCraftUserId() === $this->id;
+        return currentUser()?->getCraftUserId() === $this->id;
     }
 
     /**
@@ -1309,7 +1346,7 @@ XML;
             return parent::safeActionMenuItems();
         }
 
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser instanceof CraftUser) {
             return parent::safeActionMenuItems();
@@ -1509,7 +1546,7 @@ JS, [
             return parent::destructiveActionMenuItems();
         }
 
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser instanceof CraftUser) {
             return parent::destructiveActionMenuItems();
@@ -1754,7 +1791,7 @@ JS, [
     #[Override]
     protected function htmlAttributes(string $context): array
     {
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         return [
             'data' => [

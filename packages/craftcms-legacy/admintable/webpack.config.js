@@ -10,7 +10,7 @@ module.exports = getConfig({
     output: {
       filename: 'js/app.js',
       chunkFilename: 'js/[name].js',
-      path: __dirname + '/../../../resources/legacy/admintable/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/admintable/dist',
     },
   },
 });

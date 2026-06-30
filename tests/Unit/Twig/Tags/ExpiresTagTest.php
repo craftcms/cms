@@ -3,17 +3,17 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\SetHeaders;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 function renderAndApplyExpiresHeaders(string $template): Response
 {
-    app(TemplateRenderer::class)->renderString($template);
+    app(TwigRenderer::class)->renderString($template);
 
     return app(SetHeaders::class)->handle(Request::create('foo'), fn () => new Response);
 }

@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Requests;
 
 use Closure;
-use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,11 +26,7 @@ class ElementIndexRequest extends FormRequest
     public function elementType(): string
     {
         $this->validate([
-            'elementType' => ['required', 'string', function (string $attribute, mixed $value, Closure $fail): void {
-                if (! ComponentHelper::validateComponentClass($value, ElementInterface::class)) {
-                    $fail(new InvalidTypeException((string) $value, ElementInterface::class)->getMessage());
-                }
-            }],
+            'elementType' => ['required', 'string', new ElementTypeRule],
         ]);
 
         return $this->input('elementType');

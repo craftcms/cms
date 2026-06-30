@@ -64,7 +64,7 @@
 
 **Bug fix:**
 ```
-- Fixed a bug where something wasn't working properly. ([#12345](https://github.com/craftcms/cms/issues/12345))
+- Fixed a bug where something wasn't working properly. ([#12345](https://github.com/craftcms/cms/pull/12345))
 - Fixed a bug where Matrix fields in Blocks view could lose their existing values when they became editable.
 ```
 
@@ -76,8 +76,8 @@
 
 **JavaScript fix:**
 ```
-- Fixed a JavaScript error that occurred if a Matrix field's label was hidden. ([#18366](https://github.com/craftcms/cms/issues/18366))
-- Fixed potential JavaScript errors that could occur if a disclosure menu's trigger was missing. ([#18358](https://github.com/craftcms/cms/issues/18358))
+- Fixed a JavaScript error that occurred if a Matrix field's label was hidden. ([#18366](https://github.com/craftcms/cms/pull/18366))
+- Fixed potential JavaScript errors that could occur if a disclosure menu's trigger was missing. ([#18358](https://github.com/craftcms/cms/pull/18358))
 ```
 
 **Security fix:**
@@ -89,7 +89,7 @@
 
 **Styling fix:**
 ```
-- Fixed a styling issue with slideouts within Live Preview. ([#18383](https://github.com/craftcms/cms/issues/18383))
+- Fixed a styling issue with slideouts within Live Preview. ([#18383](https://github.com/craftcms/cms/pull/18383))
 ```
 
 ## Deprecated
@@ -210,8 +210,8 @@
 ```
 - `CraftCms\Cms\User\Elements\User` now implements `Illuminate\Contracts\Auth\Authenticatable`.
 - `craft\services\Elements::stopCollectingCacheInfo()` no longer sets the returned duration to the `cacheDuration` config setting if a duration wasn't explicitly declared. ([#16796](https://github.com/craftcms/cms/pull/16796))
-- Element indexes now show "Paste" buttons alongside bulk element action buttons. ([#18427](https://github.com/craftcms/cms/issues/18427))
-- `slug` columns referenced in element queries' `select`, `where`, or `orderBy` expressions now explicitly resolve to `elements_sites.slug`. ([#18416](https://github.com/craftcms/cms/issues/18416))
+- Element indexes now show "Paste" buttons alongside bulk element action buttons. ([#18427](https://github.com/craftcms/cms/pull/18427))
+- `slug` columns referenced in element queries' `select`, `where`, or `orderBy` expressions now explicitly resolve to `elements_sites.slug`. ([#18416](https://github.com/craftcms/cms/pull/18416))
 - The `maxCachedCloudImageSize` config setting is now set to `0` by default. ([#17997](https://github.com/craftcms/cms/pull/17997))
 ```
 

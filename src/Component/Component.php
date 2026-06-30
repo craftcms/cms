@@ -19,6 +19,7 @@ use CraftCms\Cms\Validation\ValidatableRules;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
@@ -29,6 +30,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     use ArrayableTrait {
         fields as private traitFields;
     }
+    use Conditionable;
     use LegacyEventConstants;
     use Macroable;
     use MacroableMagicMethods;

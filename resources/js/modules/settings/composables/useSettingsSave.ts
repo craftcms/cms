@@ -24,14 +24,25 @@ export function useSettingsSave<T extends Record<string, any>>(
     }
   });
 
-  function save({redirect = true} = {}) {
-    let submitOptions = {};
-    if (redirect) {
-      submitOptions = {
-        preserveScroll: true,
-        preserveState: true,
-      };
-    }
+  function save({
+    redirect = true,
+    data: extraData = {},
+    // Callers can opt out of state preservation — e.g. "save as new", which
+    // navigates to a different record and needs the form to re-initialize.
+    preserveState = true,
+  }: {
+    redirect?: boolean;
+    data?: Record<string, any>;
+    preserveState?: boolean;
+  } = {}) {
+    const submitOptions = redirect
+      ? {
+          preserveScroll: true,
+          preserveState,
+        }
+      : {
+          replace: true,
+        };
 
     form
       .clearErrors()
@@ -40,6 +51,7 @@ export function useSettingsSave<T extends Record<string, any>>(
 
         return {
           ...transformedData,
+          ...extraData,
           redirect:
             redirect && redirectUrl.value ? redirectUrl.value : undefined,
         };

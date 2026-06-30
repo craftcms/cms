@@ -15,6 +15,9 @@ import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetInde
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import {setUrlDefaults} from '@/wayfinder';
+import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
+import {createCpComponentRegistry} from './components.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -22,6 +25,15 @@ let bootingCallbacks: Array<(instance: any) => void> = [];
 // Instantiate services
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
+const components = createCpComponentRegistry();
+
+function routeSegment(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return value.toString().replace(/^\/+|\/+$/g, '');
+}
 
 // Create our object
 const Cp = {
@@ -39,6 +51,14 @@ const Cp = {
     return axios;
   },
 
+  get $inertia() {
+    return inertiaPageRegistry;
+  },
+
+  get $components() {
+    return components;
+  },
+
   booted(callback: (instance: any) => void) {
     bootedCallbacks.push(callback);
   },
@@ -53,6 +73,12 @@ const Cp = {
 
   init() {
     config.initialize(this.initialConfig);
+
+    setUrlDefaults(() => ({
+      cpTrigger: routeSegment(config.get('cpTrigger')),
+      actionTrigger: routeSegment(config.get('actionTrigger')),
+    }));
+
     queue.initialize({
       runAutomatically: config.get('runQueueAutomatically', true),
       enabled: true,
@@ -79,9 +105,11 @@ const Cp = {
     bootingCallbacks = [];
 
     await createInertiaApp({
-      pages: '../pages',
+      resolve: (name) => resolveInertiaPage(name),
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
+        app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+
         app.provide(Queue, queue);
         app.provide(Axios, axios);
         app.provide(Config, config);
@@ -99,6 +127,8 @@ const Cp = {
         app.component('ProjectConfig', ProjectConfig);
         app.component('AssetIndexes', AssetIndexes);
         app.component('SystemMessages', SystemMessages);
+
+        components.install(app);
       },
     });
 

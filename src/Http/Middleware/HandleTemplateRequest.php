@@ -9,7 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 

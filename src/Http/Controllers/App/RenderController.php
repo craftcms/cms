@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
@@ -37,7 +38,7 @@ readonly class RenderController
     {
         $criteria = $request->validate([
             'elements' => ['required', 'array'],
-            'elements.*.type' => ['required', 'string'],
+            'elements.*.type' => ['required', 'string', new ElementTypeRule],
             'elements.*.id' => ['required'],
             'elements.*.siteId' => ['required'],
             'elements.*.instances' => ['required', 'array'],

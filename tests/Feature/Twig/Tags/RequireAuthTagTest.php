@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\User\Elements\User;
 use Twig\Error\RuntimeError;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 describe('requireAdmin', function () {

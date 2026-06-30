@@ -1,6 +1,7 @@
 import {computed, type ComputedRef, type Ref, ref} from 'vue';
 import {t} from '@craftcms/cp';
 import axios from 'axios';
+import {useHelpers} from '@/common/composables/useCraftData';
 
 /**
  * State returned from updater API endpoints
@@ -47,6 +48,7 @@ export function useUpdater(
   actionPrefix: string,
   initialState: UpdaterState
 ): UseUpdaterReturn {
+  const {getActionUrl} = useHelpers();
   const state = ref<UpdaterState>({...initialState});
   const isLoading = ref(false);
 
@@ -62,7 +64,7 @@ export function useUpdater(
 
     try {
       response = await axios.post(
-        `/admin/actions/${actionPrefix}/${action}`,
+        getActionUrl(`${actionPrefix}/${action}`),
         {data: state.value.data},
         {
           headers: {
@@ -157,7 +159,7 @@ export function useUpdater(
     // Try to disable maintenance mode
     axios
       .post(
-        `/admin/actions/${actionPrefix}/finish`,
+        getActionUrl(`${actionPrefix}/finish`),
         {data: state.value.data},
         {
           headers: {

@@ -57,6 +57,7 @@
   --c-spacing-2xl: calc(var(--c-spacing) * 16);
 
   --c-size-touch-target: calc(34rem / 16);
+  --c-size-touch-target-sm: calc(24rem / 16);
 
   --c-size-icon-xs: calc(10rem / 16);
   --c-size-icon-sm: calc(12rem / 16);

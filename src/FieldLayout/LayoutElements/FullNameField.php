@@ -9,9 +9,9 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
-use Illuminate\Support\Facades\Auth;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class FullNameField extends TextField
@@ -62,7 +62,7 @@ class FullNameField extends TextField
         $statusClass = $this->statusClass($element);
         $status = $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null;
         $required = ! $static && $this->required;
-        $isAdmin = Auth::craftUser()?->isAdmin();
+        $isAdmin = currentUser()?->isAdmin();
 
         return HtmlHelper::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'fullwidth']]).
             FormFields::textFieldHtml([

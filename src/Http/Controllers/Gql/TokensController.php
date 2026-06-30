@@ -8,13 +8,13 @@ use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Resources\GqlTokenResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Flash;
-use Illuminate\Contracts\View\View;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -31,44 +31,76 @@ readonly class TokensController extends GqlController
 
     public function index()
     {
-        return Inertia::render('graphql/Tokens', [
+        return Inertia::render('graphql/tokens/Index', [
+            'crumbs' => fn () => [
+                ['label' => t('GraphQL'), 'url' => Url::cpUrl('graphql/tokens')],
+                ['label' => t('Tokens')],
+            ],
+            'title' => t('GraphQL Tokens'),
             'tokens' => GqlTokenResource::collection($this->gql->getTokens()),
         ]);
     }
 
-    public function create(): View
+    public function create(): CpScreenResponse
     {
-        return $this->renderEditToken(new GqlToken, accessToken: $this->gql->generateToken());
+        return $this->editScreen(new GqlToken, accessToken: $this->gql->generateToken());
     }
 
-    public function edit(int $tokenId): View
+    public function edit(int $tokenId): CpScreenResponse
     {
         $token = $this->gql->getTokenById($tokenId);
 
-        if (! $token || $token->getIsPublic()) {
-            abort(404, 'Token not found');
-        }
+        abort_if(! $token || $token->getIsPublic(), 404, 'Token not found');
 
-        return $this->renderEditToken($token);
+        return $this->editScreen($token);
     }
 
     public function store(Request $request): Response
     {
-        $tokenId = $request->input('tokenId');
+        return $this->saveToken($request, new GqlToken);
+    }
 
-        if ($tokenId) {
-            $token = $this->gql->getTokenById((int) $tokenId);
+    public function update(Request $request, int $tokenId): Response
+    {
+        $token = $this->gql->getTokenById($tokenId);
 
-            abort_if(! $token, 404, 'Token not found');
-        } else {
-            $token = new GqlToken;
-        }
+        abort_if(! $token || $token->getIsPublic(), 404, 'Token not found');
 
+        return $this->saveToken($request, $token);
+    }
+
+    public function destroy(Request $request, int $tokenId): Response
+    {
+        $this->gql->deleteTokenById($tokenId);
+
+        return $this->asSuccess(t('Token deleted.'));
+    }
+
+    public function accessToken(int $tokenId): JsonResponse
+    {
+        $token = $this->gql->getTokenById($tokenId);
+
+        abort_if(! $token || $token->getIsPublic(), 404, 'Token not found');
+
+        return new JsonResponse([
+            'accessToken' => $token->accessToken,
+        ]);
+    }
+
+    public function generate(): JsonResponse
+    {
+        return new JsonResponse([
+            'accessToken' => $this->gql->generateToken(),
+        ]);
+    }
+
+    private function saveToken(Request $request, GqlToken $token): Response
+    {
         if ($request->has('name')) {
             $token->name = $request->input('name');
         }
 
-        if ($request->has('accessToken')) {
+        if ($request->filled('accessToken')) {
             $token->accessToken = $request->input('accessToken');
         }
 
@@ -82,74 +114,75 @@ readonly class TokensController extends GqlController
         }
 
         if (! $this->gql->saveToken($token)) {
-            return $this->invalidTokenResponse($request, $token, t('Couldn’t save token.'));
+            return $this->asModelFailure($token, t('Couldn’t save token.'), 'token');
         }
 
-        return $this->asModelSuccess($token, t('Schema saved.'), 'token');
-    }
-
-    public function destroy(Request $request, int $tokenId): Response
-    {
-        $this->gql->deleteTokenById($tokenId);
-
-        return $this->asSuccess(t('Token deleted.'));
-    }
-
-    public function fetch(Request $request): JsonResponse
-    {
-        abort_unless($request->expectsJson(), 400, 'Request must accept JSON in response');
-
-        $tokenUid = $request->validate([
-            'tokenUid' => ['required', 'string'],
-        ])['tokenUid'];
-
-        try {
-            $token = $this->gql->getTokenByUid($tokenUid);
-        } catch (InvalidArgumentException) {
-            abort(400, 'Invalid schema UID.');
-        }
-
-        return new JsonResponse([
-            'accessToken' => $token->accessToken,
-        ]);
-    }
-
-    public function generate(Request $request): JsonResponse
-    {
-        abort_unless($request->expectsJson(), 400, 'Request must accept JSON in response');
-
-        return new JsonResponse([
-            'accessToken' => $this->gql->generateToken(),
-        ]);
-    }
-
-    private function invalidTokenResponse(Request $request, GqlToken $token, string $message): Response
-    {
-        if ($request->expectsJson()) {
-            return $this->asModelFailure($token, $message, 'token');
-        }
-
-        Flash::error($message);
-
-        return response($this->renderEditToken(
+        return $this->asModelSuccess(
             $token,
-            accessToken: $token->id ? null : ($token->accessToken ?: $this->gql->generateToken()),
-        ));
+            t('Token saved.'),
+            'token',
+            redirect: $this->getPostedRedirectUrl($token)
+                ?? Url::cpUrl("graphql/tokens/$token->id"),
+        );
     }
 
-    private function renderEditToken(GqlToken $token, ?string $accessToken = null): View
+    private function editScreen(GqlToken $token, ?string $accessToken = null): CpScreenResponse
     {
-        $schemas = $this->gql->getSchemas();
+        $name = trim((string) $token->name) ?: null;
+
+        $title = $token->id
+            ? $name ?? t('Edit GraphQL Token')
+            : $name ?? t('Create a new GraphQL token');
+
+        return new CpScreenResponse()
+            ->title($title)
+            ->selectedSubnavItem('tokens')
+            ->crumbs([
+                ['label' => t('GraphQL Tokens'), 'url' => 'graphql/tokens'],
+                ['label' => $title],
+            ])
+            ->redirectUrl('graphql/tokens')
+            ->inertiaPage('graphql/tokens/Edit', [
+                'token' => $this->tokenData($token),
+                'accessToken' => $accessToken,
+                'schemaOptions' => $this->schemaOptions($token),
+            ])
+            ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
+                HtmlStack::jsWithVars(
+                    fn ($containerId) => <<<JS
+                        new Craft.ElevatedSessionForm('#' + $containerId);
+                    JS,
+                    [$containerId],
+                );
+            });
+    }
+
+    private function tokenData(GqlToken $token): array
+    {
+        return [
+            'id' => $token->id,
+            'uid' => $token->uid,
+            'name' => $token->name,
+            'schemaId' => $token->schemaId,
+            'enabled' => $token->enabled,
+            'expiryDate' => $token->expiryDate?->format('Y-m-d\TH:i'),
+        ];
+    }
+
+    private function schemaOptions(GqlToken $token): array
+    {
         $publicSchema = $this->gql->getPublicSchema();
         $schemaOptions = [];
 
-        foreach ($schemas as $schema) {
-            if (! $publicSchema || $schema->id !== $publicSchema->id) {
-                $schemaOptions[] = [
-                    'label' => $schema->name,
-                    'value' => $schema->id,
-                ];
+        foreach ($this->gql->getSchemas() as $schema) {
+            if ($publicSchema && $schema->id === $publicSchema->id) {
+                continue;
             }
+
+            $schemaOptions[] = [
+                'label' => $schema->name,
+                'value' => (string) $schema->id,
+            ];
         }
 
         if ($token->id && ! $token->schemaId && $schemaOptions !== []) {
@@ -159,17 +192,6 @@ readonly class TokensController extends GqlController
             ]);
         }
 
-        $name = trim((string) $token->name) ?: null;
-
-        $title = $token->id
-            ? $name ?? t('Edit GraphQL Token')
-            : $name ?? t('Create a new GraphQL token');
-
-        return view('graphql.tokens._edit', compact(
-            'token',
-            'title',
-            'accessToken',
-            'schemaOptions',
-        ));
+        return $schemaOptions;
     }
 }

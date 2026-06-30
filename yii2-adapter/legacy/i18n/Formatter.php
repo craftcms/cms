@@ -7,7 +7,7 @@
 
 namespace craft\i18n;
 
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -74,7 +74,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * @inheritdoc
-     * @param int|string|DateTime $value
+     * @param int|string|DateTimeInterface $value
      * @param string|null $format
      * @return string
      * @throws InvalidArgumentException
@@ -87,7 +87,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * @inheritdoc
-     * @param int|string|DateTime $value
+     * @param int|string|DateTimeInterface $value
      * @param string|null $format
      * @return string
      * @throws InvalidArgumentException
@@ -100,7 +100,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * @inheritdoc
-     * @param int|string|DateTime $value
+     * @param int|string|DateTimeInterface $value
      * @param string|null $format
      * @return string
      * @throws InvalidArgumentException
@@ -118,7 +118,7 @@ class Formatter extends \yii\i18n\Formatter
      * - If $value is from yesterday, "Yesterday" will be returned
      * - If $value is within the past 7 days, the weekday will be returned
      *
-     * @param int|string|DateTime $value The value to be formatted. The following
+     * @param int|string|DateTimeInterface $value The value to be formatted. The following
      * types of value are supported:
      * - an int representing a UNIX timestamp
      * - a string that can be [parsed to create a DateTime object](https://php.net/manual/en/datetime.formats.php).

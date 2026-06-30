@@ -40,7 +40,6 @@ use CraftCms\Cms\Twig\NodeVisitors\EventTagAdder;
 use CraftCms\Cms\Twig\NodeVisitors\EventTagFinder;
 use CraftCms\Cms\Twig\NodeVisitors\GetAttrAdjuster;
 use CraftCms\Cms\Twig\NodeVisitors\Profiler;
-use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TokenParsers\CacheTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\DdTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\DeprecatedTokenParser;
@@ -63,12 +62,12 @@ use CraftCms\Cms\Twig\TokenParsers\SwitchTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\TagTokenParser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateGlobals;
 use DirectoryIterator;
 use GuzzleHttp\Psr7\FnStream;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Money\Money;
@@ -88,6 +87,7 @@ use Twig\TwigTest;
 use yii\behaviors\AttributeTypecastBehavior;
 
 use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -294,12 +294,12 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('entries', fn (array $config = []) => new EntryQuery($config)),
             new TwigFunction('users', fn (array $config = []) => new UserQuery($config)),
 
-            new TwigFunction('canCreateDrafts', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::craftUser())?->can('createDrafts', $element)),
-            new TwigFunction('canDelete', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::craftUser())?->can('delete', $element)),
-            new TwigFunction('canDeleteForSite', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::craftUser())?->can('deleteForSite', $element)),
-            new TwigFunction('canDuplicate', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::craftUser())?->can('duplicate', $element)),
-            new TwigFunction('canSave', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::craftUser())?->can('save', $element)),
-            new TwigFunction('canView', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::craftUser())?->can('view', $element)),
+            new TwigFunction('canCreateDrafts', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('createDrafts', $element)),
+            new TwigFunction('canDelete', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('delete', $element)),
+            new TwigFunction('canDeleteForSite', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('deleteForSite', $element)),
+            new TwigFunction('canDuplicate', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('duplicate', $element)),
+            new TwigFunction('canSave', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('save', $element)),
+            new TwigFunction('canView', fn (ElementInterface $element, ?User $user = null) => ($user ?? currentUser())?->can('view', $element)),
 
             new TwigFunction('head', $this->pageLifecycle->head(...)),
             new TwigFunction('beginBody', $this->pageLifecycle->beginBody(...)),
@@ -466,6 +466,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ([
+            /** @phpstan-ignore-next-line */
             AttributeTypecastBehavior::class,
             DirectoryIterator::class,
             Process::class,
