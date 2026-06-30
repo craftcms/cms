@@ -18,28 +18,10 @@
   import IconPicker from '@/common/form/IconPicker.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
-  interface EntryTypeData {
-    id: number | null;
-    name: string | null;
-    handle: string | null;
-    description: string | null;
-    uiLabelFormat: string;
-    titleTranslationMethod: string;
-    titleTranslationKeyFormat: string | null;
-    titleFormat: string | null;
-    allowLineBreaksInTitles: boolean;
-    showSlugField: boolean;
-    slugTranslationMethod: string;
-    slugTranslationKeyFormat: string | null;
-    showStatusField: boolean;
-    color: string | null;
-    icon: string | null;
-  }
-
   const props = defineProps<{
     title: string;
     crumbs: Array<any>;
-    entryType: EntryTypeData;
+    entryType: CraftCms.Cms.Entry.Data.EntryType;
     brandNew: boolean;
     fieldLayoutDesigner: {html: string};
     translationMethodOptions: Array<SelectOption>;
@@ -163,7 +145,6 @@
             :value="entryType.id"
           />
 
-          <!-- Name -->
           <CraftInput
             :label="t('Name')"
             :help-text="
@@ -180,7 +161,6 @@
             autofocus
           />
 
-          <!-- Handle -->
           <CraftInputHandle
             :label="t('Handle')"
             :help-text="
@@ -197,7 +177,6 @@
             @change="handleGenerator.markDirty()"
           />
 
-          <!-- Description -->
           <CraftTextarea
             :label="t('Description')"
             id="description"
@@ -223,7 +202,6 @@
             :error="errors?.color"
           />
 
-          <!-- UI Label Format -->
           <CraftInput
             :label="t('UI Label Format')"
             :help-text="
@@ -242,7 +220,6 @@
             monospace
           />
 
-          <!-- Title Translation Method -->
           <CraftSelect
             v-if="showTitleTranslation"
             :label="t('Title Translation Method')"
@@ -264,7 +241,6 @@
             </select>
           </CraftSelect>
 
-          <!-- Title Translation Key Format -->
           <CraftInput
             v-if="showTitleTranslationKeyFormat"
             :label="t('Title Translation Key Format')"
@@ -276,7 +252,6 @@
             class="font-mono"
           />
 
-          <!-- Default Title Format -->
           <CraftInput
             :label="t('Default Title Format')"
             :help-text="
@@ -292,7 +267,6 @@
             monospace
           />
 
-          <!-- Allow line breaks in titles -->
           <CraftSwitch
             :label="t('Allow line breaks in titles')"
             id="allowLineBreaksInTitles"
@@ -301,7 +275,6 @@
             :disabled="readOnly"
           />
 
-          <!-- Show the Slug field -->
           <CraftSwitch
             :label="t('Show the Slug field')"
             id="showSlugField"
@@ -310,7 +283,6 @@
             :disabled="readOnly"
           />
 
-          <!-- Slug Translation Method -->
           <CraftSelect
             v-if="showSlugTranslation"
             :label="t('Slug Translation Method')"
@@ -332,7 +304,6 @@
             </select>
           </CraftSelect>
 
-          <!-- Slug Translation Key Format -->
           <CraftInput
             v-if="showSlugTranslationKeyFormat"
             :label="t('Slug Translation Key Format')"
@@ -344,7 +315,6 @@
             class="font-mono"
           />
 
-          <!-- Show the Status field -->
           <CraftSwitch
             :label="t('Show the Status field')"
             id="showStatusField"
@@ -366,5 +336,3 @@
     </div>
   </AppLayout>
 </template>
-
-<style scoped lang="scss"></style>

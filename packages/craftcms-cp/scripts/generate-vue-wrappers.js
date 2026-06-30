@@ -205,6 +205,7 @@ const CHECKED_COMPONENTS = [
     tagName: 'craft-switch',
     className: 'CraftSwitch',
     fileName: 'CraftSwitch',
+    modelType: 'boolean | null',
     importPath: '../components/switch/switch',
     slots: ['label', 'help-text', 'input', 'feedback'],
   },
@@ -313,18 +314,21 @@ function generateCheckedWrapper(component) {
     name: '${component.className}',
   });
   
-  defineProps<{
+  const props = defineProps<{
     error?: null | string
+    modelValue?: ${component.modelType ?? 'boolean'}
   }>()
 
-  const model = defineModel<boolean>();
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean]
+  }>();
 </script>
 
 <template>
   <${component.tagName}
     v-bind="$attrs"
-    .checked="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.checked"
+    .checked="props.modelValue ?? false"
+    @model-value-changed="emit('update:modelValue', ($event.target as ${component.className})?.checked ?? false)"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -408,7 +412,7 @@ function generateCheckedDeclaration(component) {
 import type {DefineComponent} from 'vue';
 declare const _default: DefineComponent<{
   error?: string | null;
-  modelValue?: boolean;
+  modelValue?: ${component.modelType ?? 'boolean'};
   'onUpdate:modelValue'?: (val: boolean) => void;
 }>;
 export default _default;
