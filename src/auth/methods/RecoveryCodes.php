@@ -13,7 +13,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\records\RecoveryCodes as RecoveryCodesRecord;
 use craft\web\assets\recoverycodes\RecoveryCodesAsset;
-use craft\web\View;
 use DateTime;
 use PragmaRX\Recovery\Recovery;
 use yii\base\InvalidArgumentException;
@@ -63,7 +62,7 @@ class RecoveryCodes extends BaseAuthMethod
 new Craft.RecoveryCodesSetup($containerId);
 JS, [$containerId]);
 
-        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/setup.twig', $this->getSetupData(), View::TEMPLATE_MODE_CP);
+        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/setup.twig');
     }
 
     /**
@@ -73,7 +72,7 @@ JS, [$containerId]);
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(RecoveryCodesAsset::class);
-        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/form.twig', [], View::TEMPLATE_MODE_CP);
+        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/form.twig');
     }
 
     /**

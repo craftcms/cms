@@ -121,7 +121,7 @@ JS, [
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(TotpAsset::class);
-        return $view->renderTemplate('_components/auth/methods/TOTP/form.twig', [], View::TEMPLATE_MODE_CP);
+        return $view->renderTemplate('_components/auth/methods/TOTP/form.twig');
     }
 
     /**
