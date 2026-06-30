@@ -12,16 +12,37 @@ class PermissionGroup implements Arrayable
 {
     public function __construct(
         public string $heading,
-        /** @var Collection<Permission> */
+        /** @var Collection<int, Permission> */
         public Collection $permissions = new Collection,
     ) {}
+
+    public string $handle {
+        get => Str::toHandle($this->heading);
+    }
+
+    /** @var string[] */
+    public array $keys {
+        get => $this->permissionKeys($this->permissions);
+    }
 
     public function toArray(): array
     {
         return [
             'heading' => $this->heading,
-            'handle' => Str::toHandle($this->heading),
+            'handle' => $this->handle,
             'permissions' => $this->permissions->keyBy('key')->toArray(),
+            'keys' => $this->keys,
         ];
+    }
+
+    /** @param Collection<int, Permission> $permissions */
+    private function permissionKeys(Collection $permissions): array
+    {
+        return $permissions
+            ->flatMap(fn (Permission $permission) => [
+                $permission->key,
+                ...$this->permissionKeys($permission->nested),
+            ])
+            ->all();
     }
 }

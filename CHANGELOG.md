@@ -5,9 +5,11 @@
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Added SQLite database support. ([#19149](https://github.com/craftcms/cms/pull/19149))
+- Control panel resources are now provided by a `craftcms/cms-assets` package. ([#19162](https://github.com/craftcms/cms/pull/19162))
 - Renamed `CraftCms\Cms\Twig\PageLifecycle` to `CraftCms\Cms\View\PageLifecycle`. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Renamed `CraftCms\Cms\Twig\TemplateResolver` to `CraftCms\Cms\View\TemplateResolver`. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Fixed a bug where anonymous homepage and fallback site-template requests could bypass offline-site access enforcement. ([#19151](https://github.com/craftcms/cms/pull/19151))
+- Fixed an error that could occur during Craft 6 upgrades when the `migrations` table was missing its `track` column. ([#19168](https://github.com/craftcms/cms/pull/19168))
 
 ## 6.0.0-alpha.9 - 2026-06-23
 
@@ -1214,8 +1216,8 @@ Moved the following controllers:
   - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
   - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
 - Removed `\craft\controllers\UserSettingsController` in favor of:
-  - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
-  - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController`
 - Deprecated `UserGroupEvent` in favor of:
   - `CraftCms\Cms\User\Events\UserGroupSaving`
   - `CraftCms\Cms\User\Events\UserGroupSaved`

@@ -15,6 +15,7 @@ export {default as CraftCopyButton} from './components/copy-button/copy-button.j
 export {default as CraftButton} from './components/button/button.js';
 export {default as CraftAvatar} from './components/avatar/avatar.js';
 export {default as CraftInput} from './components/input/input.js';
+export {default as CraftInputColor} from './components/input-color/input-color.js';
 export {default as CraftInputFile} from './components/input-file/input-file.js';
 export {default as CraftInputHandle} from './components/input-handle/input-handle.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';

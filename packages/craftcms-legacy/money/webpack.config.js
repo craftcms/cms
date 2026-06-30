@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {Money: './Money.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/money/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/money/dist',
     },
   },
 });

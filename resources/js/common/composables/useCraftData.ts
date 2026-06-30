@@ -38,7 +38,7 @@ export interface CraftData {
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
   };
-  nav: any[];
+  nav: CraftCms.Cms.Cp.Data.NavItem[];
   [key: string]: any;
 }
 

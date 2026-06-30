@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Events;
 
+use CraftCms\Cms\Cp\Data\NavItem;
+
 /**
  * @event CpNavItemsResolving The event that is triggered when registering control panel nav items.
  *
@@ -13,11 +15,10 @@ namespace CraftCms\Cms\Cp\Events;
  *
  * Event::listen(
  *     function(CpNavItemsResolving $e) {
- *         $e->navItems[] = [
- *             'label' => 'Item Label',
- *             'url' => 'my-module',
- *             'icon' => '/path/to/icon.svg',
- *         ];
+ *         $e->navItems[] = new NavItem()
+ *             ->label('Item Label')
+ *             ->url('my-module')
+ *             ->icon('/path/to/icon.svg');
  *     }
  * );
  * ```
@@ -41,6 +42,7 @@ namespace CraftCms\Cms\Cp\Events;
 class CpNavItemsResolving
 {
     public function __construct(
+        /** @var NavItem[] */
         public array $navItems,
     ) {}
 }

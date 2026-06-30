@@ -1,2 +1,0 @@
-htmx.on("htmx:load",function(t){if(t.detail.elt===document.body)return;const e=t.detail.elt.querySelector(".condition");if(e&&e.classList.contains("sortable")){const t=e.querySelectorAll(".condition-rule");t.length&&new Garnish.DragSort(t,{axis:Garnish.Y_AXIS,handle:".draggable-handle"})}});
-//# sourceMappingURL=ConditionBuilder.js.map

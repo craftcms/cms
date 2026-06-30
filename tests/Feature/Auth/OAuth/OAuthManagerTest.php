@@ -97,6 +97,66 @@ describe('provider configuration', function () {
             ->and(app(OAuth::class)->getLoginButtons())->toBe([]);
     });
 
+    test('providers do not trust email fallback by default', function () {
+        configureOAuthManagerProvider();
+
+        expect(app(OAuth::class)->getProviderDefinition('test')->trustsEmail)->toBeFalse();
+    });
+
+    test('known provider handles trust email fallback by default', function (string $provider) {
+        app(GeneralConfig::class)->oauthProviders([
+            $provider => [
+                'driver' => FakeOAuthProvider::class,
+                'clientId' => 'client-id',
+                'clientSecret' => 'client-secret',
+            ],
+        ]);
+
+        expect(app(OAuth::class)->getProviderDefinition($provider)->trustsEmail)->toBeTrue();
+    })->with([
+        'google',
+        'github',
+        'apple',
+        'bitbucket',
+        'slack',
+        'slack-openid',
+        'twitter-oauth-2',
+    ]);
+
+    test('known provider drivers trust email fallback by default', function () {
+        Config::set('services.github', [
+            'client_id' => 'services-github-client',
+            'client_secret' => 'services-github-secret',
+        ]);
+
+        app(GeneralConfig::class)->oauthProviders([
+            'custom-github' => 'github',
+        ]);
+
+        expect(app(OAuth::class)->getProviderDefinition('custom-github')->trustsEmail)->toBeTrue();
+    });
+
+    test('known provider email trust can be disabled', function () {
+        app(GeneralConfig::class)->oauthProviders([
+            'github' => [
+                'driver' => FakeOAuthProvider::class,
+                'clientId' => 'client-id',
+                'clientSecret' => 'client-secret',
+                'trustsEmail' => false,
+            ],
+        ]);
+
+        expect(app(OAuth::class)->getProviderDefinition('github')->trustsEmail)->toBeFalse();
+    });
+
+    test('providers can trust email fallback when configured', function () {
+        configureOAuthManagerProvider([
+            'trustsEmail' => true,
+        ]);
+
+        expect(app(OAuth::class)->getProviderDefinition('test')->trustsEmail)->toBeTrue();
+    });
+
     test('named driver shorthands can inherit credentials from services config', function (array $providers) {
         Config::set('services.github', [
             'client_id' => 'services-github-client',

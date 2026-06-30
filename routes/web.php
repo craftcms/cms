@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\OAuthController;
+use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
@@ -24,6 +25,11 @@ if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::config()->verifyEmailPath !== false) {
         Route::get(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'show']);
         Route::post(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'store']);
+    }
+
+    if (Cms::config()->setPasswordPath !== false) {
+        Route::get(Cms::config()->setPasswordPath, [SetPasswordController::class, 'show']);
+        Route::post(Cms::config()->setPasswordPath, [SetPasswordController::class, 'store']);
     }
 
     Route::middleware('auth')->group(function () {

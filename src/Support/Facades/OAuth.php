@@ -21,6 +21,7 @@ use Override;
  * @method static int[] resolveGroupIds(\CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider, \Laravel\Socialite\Contracts\User $socialiteUser, \CraftCms\Cms\User\Elements\User $user, string $identity)
  * @method static \Illuminate\Support\HtmlString renderButton(\CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider, bool $isCpRequest)
  * @method static \CraftCms\Cms\User\Elements\User|null findLinkedUser(\CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider, string $identity)
+ * @method static \CraftCms\Cms\User\Elements\User|null findUserByEmail(string $email)
  * @method static bool hasIdentity(int $userId)
  * @method static bool canCreateUsers(\CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider)
  * @method static bool publicRegistrationIsAllowed()

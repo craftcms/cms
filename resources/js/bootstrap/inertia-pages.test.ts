@@ -58,13 +58,13 @@ describe('Inertia page registry', () => {
 
   it('resolves core pages with the pages shorthand naming convention', async () => {
     const corePages: InertiaPageGlob = {
-      '../pages/settings/Sites.vue': async () => ({
+      '../pages/settings/sites/Index.vue': async () => ({
         default: sitesPage,
       }),
     };
 
     await expect(
-      resolveCoreInertiaPage('settings/Sites', corePages)
+      resolveCoreInertiaPage('settings/sites/Index', corePages)
     ).resolves.toBe(sitesPage);
   });
 

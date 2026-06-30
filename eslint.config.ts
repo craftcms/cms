@@ -29,6 +29,9 @@ export default tseslint.config(
       },
     },
     rules: {
+      // TypeScript does this better
+      'no-undef': 'off',
+
       // Downgrade to warn — widespread in the codebase, address in follow-up
       '@typescript-eslint/no-explicit-any': 'off',
 

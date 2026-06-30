@@ -36,8 +36,8 @@ use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
-use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
-use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
@@ -222,19 +222,35 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // GraphQL
         Route::get('graphql', GqlIndexController::class);
-        Route::get('graphiql', GraphiqlController::class);
-        Route::get('graphql/tokens', [TokensController::class, 'index']);
-        Route::get('graphql/tokens/new', [TokensController::class, 'create']);
-        Route::get('graphql/tokens/{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId');
+        Route::get('graphql/explore', GraphiqlController::class);
+
+        Route::prefix('graphql/tokens')->name('graphql.tokens.')->group(function () {
+            Route::get('/', [TokensController::class, 'index'])->name('index');
+            Route::get('new', [TokensController::class, 'create'])->name('create');
+            Route::get('{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId')->name('edit');
+            Route::post('generate', [TokensController::class, 'generate'])->name('generate');
+
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('/', [TokensController::class, 'store'])->name('store');
+                Route::patch('{tokenId}', [TokensController::class, 'update'])->whereNumber('tokenId')->name('update');
+                Route::post('{tokenId}/access-token', [TokensController::class, 'accessToken'])->whereNumber('tokenId')->name('accessToken');
+            });
+        });
 
         Route::middleware(RequireAdminChanges::class)->group(function () {
-            Route::get('graphql/schemas', [SchemasController::class, 'index']);
-            Route::get('graphql/schemas/new', [SchemasController::class, 'create']);
-            Route::get('graphql/schemas/public', [SchemasController::class, 'editPublic']);
-            Route::get('graphql/schemas/{schemaId}', [SchemasController::class, 'edit'])->whereNumber('schemaId');
-            Route::delete('graphql/schemas/{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId');
+            Route::prefix('graphql/schemas')->name('graphql.schemas.')->group(function () {
+                Route::get('/', [SchemasController::class, 'index'])->name('index');
+                Route::get('new', [SchemasController::class, 'create'])->name('create');
+                Route::get('{schemaId}', [SchemasController::class, 'edit'])->where('schemaId', 'public|\d+')->name('edit');
+                Route::delete('{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId')->name('destroy');
 
-            Route::delete('graphql/tokens/{tokenId}', [TokensController::class, 'destroy'])->whereNumber('tokenId');
+                Route::middleware('password.confirm')->group(function () {
+                    Route::post('/', [SchemasController::class, 'store'])->name('store');
+                    Route::patch('{schemaId}', [SchemasController::class, 'update'])->where('schemaId', 'public|\d+')->name('update');
+                });
+            });
+
+            Route::delete('graphql/tokens/{tokenId}', [TokensController::class, 'destroy'])->whereNumber('tokenId')->name('graphql.tokens.destroy');
         });
 
         // Plugins
@@ -280,10 +296,19 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
         Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
         Route::middleware(RequireAdminChanges::class)->delete('settings/assets/volumes/{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
-        Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
-        Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/transforms/{transformId}', [ImageTransformsController::class, 'destroy']);
+
+        // Transforms
+        Route::prefix('settings/assets/transforms')->name('settings.assets.transforms.')->group(function () {
+            Route::get('/', [ImageTransformsController::class, 'index'])->name('index');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [ImageTransformsController::class, 'create'])->name('create');
+                Route::post('/', [ImageTransformsController::class, 'store']);
+                Route::delete('{transformId}', [ImageTransformsController::class, 'destroy'])->name('destroy');
+            });
+
+            Route::get('{transformHandle}', [ImageTransformsController::class, 'edit'])->name('edit');
+        });
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])
@@ -329,6 +354,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // User settings
         Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
+        Route::middleware(RequireAdminChanges::class)
+            ->post('settings/users/settings', [UserSettingsController::class, 'store']);
     });
 
     Route::prefix('settings/filesystems')->group(function () {

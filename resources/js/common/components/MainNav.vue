@@ -22,7 +22,7 @@
       :key="item.url"
       :icon="item.icon"
       :href="item.url"
-      :active="item.sel"
+      :active="item.selected"
       :indicator="!!item.badgeCount"
     >
       {{ item.label }}
@@ -32,7 +32,7 @@
           <craft-nav-item
             v-for="subnavItem in item.subnav"
             :key="subnavItem.url"
-            :active="subnavItem.sel"
+            :active="subnavItem.selected"
             :href="subnavItem.url"
             :indicator="!!subnavItem.badgeCount"
           >

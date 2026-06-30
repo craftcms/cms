@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {NewUsersWidget: './NewUsersWidget.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/newusers/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/newusers/dist',
     },
   },
 });

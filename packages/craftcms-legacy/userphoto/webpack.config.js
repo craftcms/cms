@@ -9,7 +9,7 @@ module.exports = getConfig({
       UserPhotoInput: './UserPhotoInput.js',
     },
     output: {
-      path: __dirname + '/../../../resources/legacy/userphoto/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/userphoto/dist',
     },
   },
 });

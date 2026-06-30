@@ -13,7 +13,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/vue/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/vue/dist',
     },
     plugins: [
       new MergeIntoSingleFilePlugin({

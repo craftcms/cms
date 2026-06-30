@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {install: './install.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/installer/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/installer/dist',
     },
   },
 });
