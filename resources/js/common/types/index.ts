@@ -98,6 +98,12 @@ export type ActionItem =
 
 export type ActionItems = Array<ActionItem>;
 
+export interface FormSaveOptions {
+  redirect?: boolean;
+  data?: Record<string, any>;
+  preserveState?: boolean;
+}
+
 export interface EntryType {
   id: number;
   name: string;

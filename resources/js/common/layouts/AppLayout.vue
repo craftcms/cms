@@ -12,7 +12,7 @@
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/types';
+  import type {ActionItem, FormSaveOptions} from '@/common/types';
   import {useFlash} from '@/common/composables/useFlash';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
@@ -20,10 +20,6 @@
   import UserMenu from '@/common/components/UserMenu.vue';
   import FlashMessages from '@/common/components/FlashMessages.vue';
   import Pane from '@/common/components/Pane.vue';
-
-  interface SaveOptions {
-    redirect?: boolean;
-  }
 
   type DefaultFormAction = 'saveAndContinueEditing';
 
@@ -39,7 +35,7 @@
   }
 
   const emit = defineEmits<{
-    (e: 'save', options?: Partial<SaveOptions>): void;
+    (e: 'save', options?: FormSaveOptions): void;
   }>();
   const props = withDefaults(defineProps<AppLayoutProps>(), {
     fullWidth: false,

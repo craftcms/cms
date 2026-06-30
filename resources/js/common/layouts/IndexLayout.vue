@@ -3,6 +3,7 @@
   import {usePage} from '@inertiajs/vue3';
   import AppLayout, {type AppLayoutProps} from '@/common/layouts/AppLayout.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import type {FormSaveOptions} from '@/common/types';
   import {computed, ref, useSlots, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
 
@@ -10,7 +11,7 @@
   const slots = useSlots();
 
   const emit = defineEmits<{
-    (e: 'save', options?: {redirect?: boolean}): void;
+    (e: 'save', options?: FormSaveOptions): void;
   }>();
 
   const page = usePage<{
