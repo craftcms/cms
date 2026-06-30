@@ -78,10 +78,10 @@ class TOTP extends BaseAuthMethod
      */
     public function getSetupData(): array
     {
-        $secret = $this->secret();
+        $secret = trim($this->secret());
 
         return [
-            'secret' => trim($secret),
+            'secret' => $secret,
             'qrCode' => $this->generateQrCode($secret),
         ];
     }
