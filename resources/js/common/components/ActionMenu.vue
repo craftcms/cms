@@ -104,7 +104,11 @@
       sized to the invoker so the overlay positions against a real box.
     -->
     <span slot="invoker" style="display: inline-flex" v-once>
-      <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}"></slot>
+      <slot
+        name="invoker"
+        :label="label"
+        :attributes="{slot: 'invoker'}"
+      ></slot>
     </span>
   </craft-action-menu>
 </template>

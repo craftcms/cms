@@ -192,7 +192,7 @@ export class Tab extends Base {
     }
 
     this.settingsNamespace = data.namespace;
-    this.slideout = await FieldLayoutDesigner.createSlideout(data, null, {
+    this.slideout = await FieldLayoutDesigner.createSlideout(data, {
       triggerElement: this.$actionBtn,
     });
 

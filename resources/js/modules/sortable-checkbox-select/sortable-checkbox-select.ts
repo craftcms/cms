@@ -67,7 +67,6 @@ export class SortableCheckboxSelect extends Base {
     this.observeItems();
   }
 
-
   initDrag(): void {
     // DragSort doesn't honor the button's `disabled` attribute, so dragging is
     // gated by sorter membership instead: updateReorderButtons() adds/removes items

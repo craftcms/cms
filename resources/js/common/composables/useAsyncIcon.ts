@@ -19,7 +19,9 @@ export type IconState = 'idle' | 'success' | 'error' | 'fetching';
  * const {html, state} = useIcon(() => model.value);
  * // In template: <div v-html="html" /> with a spinner while state === 'fetching'
  */
-export function useAsyncIcon(icon: MaybeRefOrGetter<string | null | undefined>): {
+export function useAsyncIcon(
+  icon: MaybeRefOrGetter<string | null | undefined>
+): {
   html: Ref<string | null>;
   state: Ref<IconState>;
 } {

@@ -128,7 +128,10 @@ export class CardViewDesigner extends Base {
           data: {
             fieldLayoutConfig: {
               ...this.designer.config,
-              generatedFields: document.querySelector('craft-generated-fields-table')?.serialize() ?? []
+              generatedFields:
+                document
+                  .querySelector('craft-generated-fields-table')
+                  ?.serialize() ?? [],
             },
           },
         }
@@ -172,9 +175,7 @@ export class CardViewDesigner extends Base {
     const $draggable = document.createElement('div');
     $draggable.className = 'cp-checkbox-select__item';
 
-    Craft.ui
-      .createCheckbox({checked: false, ...config})
-      .appendTo($draggable);
+    Craft.ui.createCheckbox({checked: false, ...config}).appendTo($draggable);
 
     // The <craft-sortable-checkbox-select> observes its items, so appending here
     // is enough — it gives this item its drag handle and sorter membership

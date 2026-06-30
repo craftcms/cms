@@ -158,7 +158,6 @@
           size="small"
           ref="chooseButton"
           @click.prevent="openModal"
-
           >{{ buttonLabel }}</craft-button
         >
         <craft-button

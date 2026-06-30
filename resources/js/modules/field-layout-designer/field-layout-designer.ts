@@ -529,11 +529,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     element.updatePositionInConfig();
   }
 
-  static async createSlideout(
-    data: any,
-    js: string | null,
-    settings: any = {}
-  ): Promise<any> {
+  static async createSlideout(data: any, settings: any = {}): Promise<any> {
     const $body = document.createElement('div');
     $body.className = 'fld-element-settings-body';
     const $fields = document.createElement('div');
@@ -596,9 +592,6 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     }
     if (data.bodyHtml) {
       await Craft.appendBodyHtml(data.bodyHtml);
-    }
-    if (js) {
-      eval(js);
     }
 
     Craft.initUiElements(slideout.$container);

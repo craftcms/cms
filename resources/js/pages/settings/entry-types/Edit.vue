@@ -76,9 +76,7 @@
 
   const showTitleTranslation = computed(() => props.isMultiSite);
   const showTitleTranslationKeyFormat = computed(
-    () =>
-      props.isMultiSite &&
-      form.titleTranslationMethod === 'custom'
+    () => props.isMultiSite && form.titleTranslationMethod === 'custom'
   );
   const showSlugTranslation = computed(
     () => form.showSlugField && props.isMultiSite
