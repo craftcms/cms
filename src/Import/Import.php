@@ -600,7 +600,7 @@ class Import
             return null;
         }
 
-        return [['label' => 'Please select', 'value' => '', 'children' => []]] + $headings;
+        return array_merge([['label' => 'Please select', 'value' => '']], $headings);
     }
 
     final public function processData(BaseImporter $config, array $data, mixed $element): array

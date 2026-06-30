@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
@@ -34,6 +35,7 @@ trait NestedElement
     /**
      * @var int|null Primary owner ID
      */
+    #[Importable('primaryOwnerId', 'Primary Owner ID')]
     private ?int $primaryOwnerId = null;
 
     /**
@@ -50,6 +52,7 @@ trait NestedElement
      * @var int|null Field ID
      */
     #[AllowedInSandbox]
+    #[Importable('fieldId', 'Field ID')]
     public ?int $fieldId = null;
 
     /**

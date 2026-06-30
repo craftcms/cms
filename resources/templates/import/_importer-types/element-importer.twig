@@ -39,7 +39,7 @@
     label: 'Element Type'|t('app'),
     instructions: 'The element type this import is for.'|t('app'),
     options: availableElementTypes,
-    value: old('settings.elementType') ?? defaultElementType,
+    value: old('settings.elementType', import.className) ?? defaultElementType,
     errors: errors.get('settings.className'),
     data: {'error-key': 'settings.elementType'},
     disabled: readOnly,
