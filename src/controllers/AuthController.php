@@ -119,7 +119,7 @@ class AuthController extends Controller
      *
      * @return Response
      */
-    public function actionMethodSetupData(): Response
+    public function actionSetup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
