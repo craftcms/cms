@@ -26,6 +26,9 @@ abstract class BaseAuthMethod extends Component implements AuthMethodInterface
     /**
      * Returns the data needed to render the authentication method’s setup form.
      *
+     * This should be part of AuthMethodInterface, but remains here for 5.x BC
+     * with auth methods that implement the interface directly.
+     *
      * @return array
      */
     public function getSetupData(): array

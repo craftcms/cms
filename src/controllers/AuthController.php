@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\auth\methods\AuthMethodInterface;
+use craft\auth\methods\BaseAuthMethod;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\helpers\Html;
@@ -128,9 +129,7 @@ class AuthController extends Controller
         $class = $this->request->getRequiredBodyParam('method');
         $method = Craft::$app->getAuth()->getMethod($class);
 
-        return $this->asJson(
-            is_callable([$method, 'getSetupData']) ? $method->getSetupData() : [],
-        );
+        return $this->asJson($method instanceof BaseAuthMethod ? $method->getSetupData() : []);
     }
 
     /**
