@@ -30,6 +30,8 @@
     ViewMode,
     ViewState,
   } from '@/modules/elements/types/view-state';
+  import type {BulkActionItem} from '@/modules/elements/types/actions';
+  import {router} from '@inertiajs/vue3';
 
   type Element = Record<any, any>;
 
@@ -58,6 +60,9 @@
       baseSortOptions: Array<SortOption>;
       pagination: PaginationData;
       sort: Array<SortItem>;
+      // The serialized bulk actions available for the active source (null when
+      // the source/context offers none).
+      actions?: Array<BulkActionItem> | null;
     }>(),
     {
       context: 'index',
@@ -92,6 +97,17 @@
   // and pagination. Read the current selection from `rowSelection` (a map of
   // element id → selected) or via `elementTable.getSelectedRowModel()`.
   const rowSelection = ref<RowSelectionState>({});
+
+  // After a bulk action succeeds, refresh the server-rendered list + counts the
+  // same way the view-mode/filter composables do (a partial Inertia reload that
+  // only re-pulls the index props), then clear any lingering selection. The
+  // table also clears its own selection optimistically when the action fires.
+  function onActionPerformed() {
+    rowSelection.value = {};
+    router.reload({
+      only: ['data', 'pagination', 'badgeCounts'],
+    });
+  }
 
   function createCustomizeSourcesModal() {
     // The modal was written for the legacy BaseElementIndex instance, but it
@@ -194,6 +210,11 @@
       :to="pagination.to"
       :total="pagination.total"
       :enable-adjust-page-size="true"
+      :actions="actions"
+      :element-type="elementType"
+      :source="source?.key"
+      :context="context"
+      @action-performed="onActionPerformed"
     >
       <template #table-header>
         <ElementIndexToolbar
@@ -223,6 +244,11 @@
       :total="pagination.total"
       :enable-adjust-page-size="true"
       :spacing="TableSpacing.Spacious"
+      :actions="actions"
+      :element-type="elementType"
+      :source="source?.key"
+      :context="context"
+      @action-performed="onActionPerformed"
     >
       <template #table-header>
         <ElementIndexToolbar

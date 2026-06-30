@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -35,6 +36,7 @@ class ContentIndexController
         private readonly ElementHtml $elementHtml,
         private readonly ElementSources $elementSources,
         private readonly ElementAttributeRenderer $attributeRenderer,
+        private readonly ElementActions $elementActions,
     ) {}
 
     /**
@@ -132,6 +134,20 @@ class ContentIndexController
             pageName: $pageParam,
             page: $request->integer($pageParam, 1),
         );
+
+        // Serialize the available bulk actions for the active source so the
+        // Inertia bulk-actions bar can offer them. This index always runs in the
+        // administrative `index` context (set above), so we mirror only the
+        // resolved-source condition ElementIndexResource also guards on, to
+        // avoid surfacing actions for an unmatched source.
+        $actions = null;
+
+        if (isset($sourceKey)) {
+            $availableActions = $this->elementActions->availableActions($elementType, $sourceKey, $elementQuery);
+            $actions = empty($availableActions)
+                ? null
+                : $this->elementActions->serializeActionItems($availableActions);
+        }
 
         $fieldLayouts = $this->resolveFieldLayouts();
         $sortOptions = $this->elementSources->getSourceSortOptions($elementType, $sourceKey)
@@ -269,6 +285,7 @@ class ContentIndexController
             'tableColumns' => array_merge($contextColumns, $tableColumns),
             'defaultTableColumns' => $defaultTableColumns,
             'data' => $elements,
+            'actions' => $actions,
             'sort' => $sort,
             'pagination' => [
                 'total' => $paginator->total(),
