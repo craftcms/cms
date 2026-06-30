@@ -310,8 +310,6 @@ class Image
         // PNG 8 byte signature 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
         // GIF 6 byte signature 0x47 0x49 0x46 0x38 0x39|0x37 0x61
         // JPG 2 byte signature 0xFF 0xD8
-        // WebP RIFF signature 0x52 0x49 .... WEBP
-        // HEIC/HEIF/AVIF ISO BMFF signature ....ftyp
 
         // It's much easier to work with a HEX string here, because of variable signature lengths
         $signature = mb_strtoupper(bin2hex(stream_get_contents($stream, 2)));

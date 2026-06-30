@@ -256,12 +256,12 @@ class ImageHelperTest extends TestCase
             [[400, 300], fopen($dirnameFile3 . '/_data/assets/files/example-gif.gif', 'rb')],
             [[960, 640], fopen($dirnameFile3 . '/_data/assets/files/background.jpg', 'rb')],
             [[200, 200], fopen($dirnameFile3 . '/_data/assets/files/google.png', 'rb')],
-            [[320, 240], self::_streamFromString(self::_webpVp8xImage(320, 240))],
-            [[640, 480], self::_streamFromString(self::_webpVp8lImage(640, 480))],
-            [[800, 600], self::_streamFromString(self::_webpVp8Image(800, 600))],
-            [[5712, 4284], self::_streamFromString(self::_isoBmffImage('heic', 5712, 4284))],
-            [[1280, 720], self::_streamFromString(self::_isoBmffImage('heif', 1280, 720))],
-            [[640, 480], self::_streamFromString(self::_isoBmffImage('avif', 640, 480))],
+            [[320, 240], fopen($dirnameFile3 . '/_data/assets/files/example-webp.webp', 'rb')],
+            [[640, 480], fopen($dirnameFile3 . '/_data/assets/files/example-webp-lossless.webp', 'rb')],
+            [[800, 600], fopen($dirnameFile3 . '/_data/assets/files/example-webp-alpha.webp', 'rb')],
+            [[572, 428], fopen($dirnameFile3 . '/_data/assets/files/example-heic.heic', 'rb')],
+            [[128, 72], fopen($dirnameFile3 . '/_data/assets/files/example-heif.heif', 'rb')],
+            [[640, 480], fopen($dirnameFile3 . '/_data/assets/files/example-avif.avif', 'rb')],
             [false, fopen($dirnameFile3 . '/_data/assets/files/craft-logo.svg', 'rb')],
         ];
     }
@@ -390,70 +390,5 @@ class ImageHelperTest extends TestCase
             [false, 'html'],
             [false, 'htm'],
         ];
-    }
-
-    private static function _streamFromString(string $contents)
-    {
-        $stream = fopen('php://temp', 'rb+');
-        fwrite($stream, $contents);
-        rewind($stream);
-
-        return $stream;
-    }
-
-    private static function _webpVp8xImage(int $width, int $height): string
-    {
-        return self::_webpImage(self::_webpChunk(
-            'VP8X',
-            "\0\0\0\0" . self::_littleEndian24($width - 1) . self::_littleEndian24($height - 1)
-        ));
-    }
-
-    private static function _webpVp8lImage(int $width, int $height): string
-    {
-        $width--;
-        $height--;
-
-        return self::_webpImage(self::_webpChunk('VP8L', "\x2F" . pack(
-            'C4',
-            $width & 0xFF,
-            (($width >> 8) & 0x3F) | (($height & 0x03) << 6),
-            ($height >> 2) & 0xFF,
-            ($height >> 10) & 0x0F
-        )));
-    }
-
-    private static function _webpVp8Image(int $width, int $height): string
-    {
-        return self::_webpImage(self::_webpChunk('VP8 ', "\0\0\0\x9D\x01\x2A" . pack('v2', $width, $height)));
-    }
-
-    private static function _webpImage(string $contents): string
-    {
-        return 'RIFF' . pack('V', strlen($contents) + 4) . 'WEBP' . $contents;
-    }
-
-    private static function _webpChunk(string $type, string $contents): string
-    {
-        return $type . pack('V', strlen($contents)) . $contents . (strlen($contents) % 2 ? "\0" : '');
-    }
-
-    private static function _isoBmffImage(string $brand, int $width, int $height): string
-    {
-        return self::_isoBmffBox('ftyp', $brand . pack('N', 0) . 'mif1') .
-            self::_isoBmffBox('meta', "\0\0\0\0" . self::_isoBmffBox(
-                'iprp',
-                self::_isoBmffBox('ipco', self::_isoBmffBox('ispe', "\0\0\0\0" . pack('N2', $width, $height)))
-            ));
-    }
-
-    private static function _isoBmffBox(string $type, string $contents): string
-    {
-        return pack('N', strlen($contents) + 8) . $type . $contents;
-    }
-
-    private static function _littleEndian24(int $value): string
-    {
-        return pack('C3', $value & 0xFF, ($value >> 8) & 0xFF, ($value >> 16) & 0xFF);
     }
 }
