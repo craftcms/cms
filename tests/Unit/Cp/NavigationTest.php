@@ -16,6 +16,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
+    Cms::setIsInstalled();
+
     Cms::config()
         ->cpTrigger('admin')
         ->enableGql(true)
@@ -28,7 +30,7 @@ beforeEach(function () {
     $user->shouldReceive('isAdmin')->andReturnTrue();
     $user->shouldReceive('can')->andReturnTrue();
 
-    Auth::shouldReceive('craftUser')->andReturn($user);
+    Auth::shouldReceive('user')->andReturn($user);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
 });
 
@@ -44,8 +46,8 @@ it('selects nav items from paths with the cp trigger', function () {
 
     $settingsItem = collect($navigation->getItems())->firstWhere('label', 'Settings');
 
-    expect($settingsItem['sel'])->toBeTrue()
-        ->and($settingsItem['linkAttributes']['aria']['current'])->toBe('true');
+    expect($settingsItem->selected)->toBeTrue()
+        ->and($settingsItem->linkAttributes['aria']['current'])->toBe('true');
 });
 
 it('selects parent nav items when a subnav item matches the cp path', function () {
@@ -59,12 +61,12 @@ it('selects parent nav items when a subnav item matches the cp path', function (
     );
 
     $graphqlItem = collect($navigation->getItems())->firstWhere('label', 'GraphQL');
-    $tokensItem = collect($graphqlItem['subnav'])->firstWhere('label', 'Tokens');
+    $tokensItem = collect($graphqlItem->subnav)->firstWhere('label', 'Tokens');
 
-    expect($graphqlItem['sel'])->toBeTrue()
-        ->and($graphqlItem['linkAttributes']['aria']['current'])->toBe('true')
-        ->and($tokensItem['sel'])->toBeTrue()
-        ->and($tokensItem['linkAttributes']['aria']['current'])->toBe('page');
+    expect($graphqlItem->selected)->toBeTrue()
+        ->and($graphqlItem->linkAttributes['aria']['current'])->toBe('true')
+        ->and($tokensItem->selected)->toBeTrue()
+        ->and($tokensItem->linkAttributes['aria']['current'])->toBe('page');
 });
 
 it('uses the cp navigation service for the twig variable', function () {

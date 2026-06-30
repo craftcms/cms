@@ -13,13 +13,14 @@ use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
 readonly class VerifyEmailController extends AuthenticationController
 {
-    public function show(Request $request): Response|View
+    public function show(Request $request): Response|View|InertiaResponse
     {
         if (! is_array($info = $this->processTokenRequest($request))) {
             return $info;
@@ -33,10 +34,14 @@ readonly class VerifyEmailController extends AuthenticationController
         app(AuthMethods::class)->setRememberedUsername($user);
 
         // Send them to the set verify-email template
-        return $this->renderViewWithFallback('verify-email', [
-            'id' => $uid,
-            'code' => $code,
-        ]);
+        return $this->renderViewWithFallback(
+            cpTemplate: 'verify-email',
+            data: [
+                'uid' => $uid,
+                'code' => $code,
+            ],
+            inertiaComponent: 'auth/VerifyEmail',
+        );
     }
 
     public function store(Request $request, Users $users): Response|View
@@ -51,7 +56,7 @@ readonly class VerifyEmailController extends AuthenticationController
         abort_if(! $user, 400, 'Invalid user UUID: '.$request->input('uid'));
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
+        $broker = Password::broker();
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }

@@ -1,8 +1,370 @@
-import{l as e}from"./nav-item-CyC1px5v-DZDpUldI.js";import{a as t,i as n,n as r,t as i}from"./cp-npqTfNqh.js";import{B as a,E as o,J as s,N as c,Q as l,R as u,T as d,V as f,X as p,_ as m,b as h,ct as g,et as _,gt as v,ht as y,k as b,l as x,m as S,q as C,s as w,t as T,tt as E,v as D,w as O,x as k,y as A}from"./_plugin-vue_export-helper-g2tzphu6.js";import{n as j,r as M,t as N}from"./AdminTable-32qWVDq-.js";import{r as P}from"./Empty-D0VMu5kQ.js";import{n as F}from"./Select-uUcGssK_.js";import{t as I}from"./Pane-CJi1MPPH.js";import{i as L}from"./wayfinder-V597ZF_3.js";import{t as R}from"./DeleteButton-BLk4eDvl.js";import{t as z}from"./CraftInput-B2G9EaE3.js";import{r as B,t as V}from"./AppLayout-BXGMFlSp.js";import{n as H,t as U}from"./useEditableTable-DGQ7vq0w.js";import{t as ee}from"./useSettingsSave-D5LL4sJi.js";import{a as te,n as ne,t as W}from"./EntryTypesController-BmQTZRaT.js";import{a as G}from"./SectionsController-BNRww-4W.js";import{t as K}from"./CraftInputHandle-ByI6zEIo.js";import{t as q}from"./useReorderableItems-CU0T2zos.js";import{t as J}from"./useInputGenerator-Cl1F0ZZS.js";var Y=[`id`],X=[`name`],Z=[`placement`,`for`],re=o({__name:`Tooltip`,props:{id:{default:()=>`tooltip-${Math.random().toString(36).substring(2,9)}`},icon:{default:`circle-info`},placement:{default:`top`}},setup(e){return(t,n)=>(u(),k(S,null,[D(`craft-button`,{type:`button`,id:e.id,appearance:`plain`,size:`zero`,icon:``,variant:`inherit`},[f(t.$slots,`icon`,{},()=>[D(`craft-icon`,{name:e.icon},null,8,X)])],8,Y),D(`c-tooltip`,{placement:e.placement,for:e.id},[f(t.$slots,`default`)],8,Z)],64))}}),ie=[`data-color`,`data-id`],ae={class:`grid gap-1 justify-items-start`},oe={class:`flex gap-1`},se={class:`font-bold`},ce={class:`cp-code`},le={key:0},ue=[`name`,`label`],de={slot:`suffix`,class:`flex gap-0.5 items-center`},fe=T(o({__name:`EntryTypeChip`,props:{name:{},id:{},handle:{},color:{},icon:{},description:{},indicators:{},actions:{},draggable:{type:Boolean,default:!1}},emits:[`handle-ref`],setup(e,{emit:t}){let n=t,r=g(null);return s(r,e=>{n(`handle-ref`,e)},{immediate:!0}),(t,n)=>(u(),k(`craft-chip`,{"data-color":(e.color&&typeof e.color!=`string`?e.color.value:e.color)??`white`,"data-id":e.id},[e.icon?(u(),k(`craft-icon`,c({key:0,slot:`icon`},e.icon),null,16)):h(``,!0),D(`div`,ae,[D(`div`,oe,[D(`div`,se,E(e.name),1),e.description?(u(),A(re,{key:0},{default:p(()=>[O(E(e.description),1)]),_:1})):h(``,!0)]),D(`div`,ce,E(e.handle),1),e.indicators?(u(),k(`div`,le,[(u(!0),k(S,null,a(e.indicators,e=>(u(),k(`craft-icon`,{key:e.icon,name:e.icon,label:e.label,style:_({color:e.iconColor})},null,12,ue))),128))])):h(``,!0)]),D(`div`,de,[e.actions?(u(),A(B,{key:0,actions:e.actions},null,8,[`actions`])):h(``,!0),e.draggable?(u(),k(`span`,{key:1,ref_key:`handleRef`,ref:r,class:`drag-handle`},[f(t.$slots,`drag-handle`,{},()=>[d(P,{variant:`inherit`})],!0)],512)):h(``,!0)])],8,ie))}}),[[`__scopeId`,`data-v-1ce6a7e9`]]),pe=o({__name:`CreateEntryTypeButton`,emits:[`success`],setup(t,{emit:n}){let r=n,i=C(`invoker`);function a(){let e=new Craft.CpScreenSlideout(ne[`/admin/settings/entry-types/new`]().url);e.on(`submit`,()=>{r(`success`)}),e.on(`close`,()=>{i.value?.focus()})}function o(){a()}return(t,n)=>(u(),k(`craft-button`,{type:`button`,appearance:`filled`,onClick:o,ref_key:`invoker`,ref:i},[n[0]||=D(`craft-icon`,{name:`plus`,slot:`prefix`},null,-1),O(` `+E(y(e)(`Create`)),1)],512))}}),Q=T(o({__name:`DragShadow`,props:{height:{},position:{}},setup(e){return(t,n)=>e.height?(u(),k(`div`,{key:0,class:l([`drag-shadow`,`drag-shadow--${e.position??`bottom`}`]),style:_({height:`${e.height}px`})},null,6)):h(``,!0)}}),[[`__scopeId`,`data-v-80709fe3`]]),me={class:`entry-type-list`},he={class:`flex gap-2 mt-3 items-center`},ge={key:0},_e={key:0,type:`button`,slot:`invoker`,appearance:`filled`},ve={slot:`content`},ye={class:`p-2`},be={key:0,class:`p-2`},xe=[`onClick`,`icon`,`checked`,`data-color`],Se=T(o({__name:`EntryTypeSelect`,props:{modelValue:{},entryTypes:{},actions:{}},emits:[`update:modelValue`],setup(t,{emit:n}){let o=n,s=t,{readOnly:c}=L(),f=g(``),_=m(()=>s.entryTypes?.filter(e=>e.name.includes(f.value)||e.handle.includes(f.value)));function b(e,t){let n=[...s.modelValue],[r]=n.splice(e,1);r!==void 0&&(n.splice(t,0,r),o(`update:modelValue`,n))}function x(e){return e===0?`first`:e===s.modelValue.length-1?`last`:`middle`}let{setItemRef:C,setHandleRef:w,getDragState:T,getDropState:M}=q({getItemIds:()=>s.modelValue.map(e=>e.id),onReorder:b,enabled:()=>s.modelValue.length>1});function N(e){let t=M(e);return t.type===`is-over`?t:null}function F(e){s.modelValue.find(t=>t.id===e.id)?I(e.id):o(`update:modelValue`,[...s.modelValue,e])}function I(e){o(`update:modelValue`,[...s.modelValue.filter(t=>t.id!==e)])}let R=g(void 0),B=g({});function V(t,{namespace:n=``,id:r=null}){let i=`
+import {l as e} from './nav-item-CyC1px5v-DZDpUldI.js';
+import {a as t, i as n, n as r, t as i} from './cp-npqTfNqh.js';
+import {
+  B as a,
+  E as o,
+  J as s,
+  N as c,
+  Q as l,
+  R as u,
+  T as d,
+  V as f,
+  X as p,
+  _ as m,
+  b as h,
+  ct as g,
+  et as _,
+  gt as v,
+  ht as y,
+  k as b,
+  l as x,
+  m as S,
+  q as C,
+  s as w,
+  t as T,
+  tt as E,
+  v as D,
+  w as O,
+  x as k,
+  y as A,
+} from './_plugin-vue_export-helper-g2tzphu6.js';
+import {n as j, r as M, t as N} from './AdminTable-32qWVDq-.js';
+import {r as P} from './Empty-D0VMu5kQ.js';
+import {n as F} from './Select-uUcGssK_.js';
+import {t as I} from './Pane-CJi1MPPH.js';
+import {i as L} from './wayfinder-V597ZF_3.js';
+import {t as R} from './DeleteButton-BLk4eDvl.js';
+import {t as z} from './CraftInput-B2G9EaE3.js';
+import {r as B, t as V} from './AppLayout-BXGMFlSp.js';
+import {n as H, t as U} from './useEditableTable-DGQ7vq0w.js';
+import {t as ee} from './useSettingsSave-D5LL4sJi.js';
+import {a as te, n as ne, t as W} from './EntryTypesController-BmQTZRaT.js';
+import {a as G} from './SectionsController-BNRww-4W.js';
+import {t as K} from './CraftInputHandle-ByI6zEIo.js';
+import {t as q} from './useReorderableItems-CU0T2zos.js';
+import {t as J} from './useInputGenerator-Cl1F0ZZS.js';
+var Y = [`id`],
+  X = [`name`],
+  Z = [`placement`, `for`],
+  re = o({
+    __name: `Tooltip`,
+    props: {
+      id: {
+        default: () => `tooltip-${Math.random().toString(36).substring(2, 9)}`,
+      },
+      icon: {default: `circle-info`},
+      placement: {default: `top`},
+    },
+    setup(e) {
+      return (t, n) => (
+        u(),
+        k(
+          S,
+          null,
+          [
+            D(
+              `craft-button`,
+              {
+                type: `button`,
+                id: e.id,
+                appearance: `plain`,
+                size: `zero`,
+                icon: ``,
+                variant: `inherit`,
+              },
+              [
+                f(t.$slots, `icon`, {}, () => [
+                  D(`craft-icon`, {name: e.icon}, null, 8, X),
+                ]),
+              ],
+              8,
+              Y
+            ),
+            D(
+              `c-tooltip`,
+              {placement: e.placement, for: e.id},
+              [f(t.$slots, `default`)],
+              8,
+              Z
+            ),
+          ],
+          64
+        )
+      );
+    },
+  }),
+  ie = [`data-color`, `data-id`],
+  ae = {class: `grid gap-1 justify-items-start`},
+  oe = {class: `flex gap-1`},
+  se = {class: `font-bold`},
+  ce = {class: `cp-code`},
+  le = {key: 0},
+  ue = [`name`, `label`],
+  de = {slot: `suffix`, class: `flex gap-0.5 items-center`},
+  fe = T(
+    o({
+      __name: `EntryTypeChip`,
+      props: {
+        name: {},
+        id: {},
+        handle: {},
+        color: {},
+        icon: {},
+        description: {},
+        indicators: {},
+        actions: {},
+        draggable: {type: Boolean, default: !1},
+      },
+      emits: [`handle-ref`],
+      setup(e, {emit: t}) {
+        let n = t,
+          r = g(null);
+        return (
+          s(
+            r,
+            (e) => {
+              n(`handle-ref`, e);
+            },
+            {immediate: !0}
+          ),
+          (t, n) => (
+            u(),
+            k(
+              `craft-chip`,
+              {
+                'data-color':
+                  (e.color && typeof e.color != `string`
+                    ? e.color.value
+                    : e.color) ?? `white`,
+                'data-id': e.id,
+              },
+              [
+                e.icon
+                  ? (u(),
+                    k(
+                      `craft-icon`,
+                      c({key: 0, slot: `icon`}, e.icon),
+                      null,
+                      16
+                    ))
+                  : h(``, !0),
+                D(`div`, ae, [
+                  D(`div`, oe, [
+                    D(`div`, se, E(e.name), 1),
+                    e.description
+                      ? (u(),
+                        A(
+                          re,
+                          {key: 0},
+                          {default: p(() => [O(E(e.description), 1)]), _: 1}
+                        ))
+                      : h(``, !0),
+                  ]),
+                  D(`div`, ce, E(e.handle), 1),
+                  e.indicators
+                    ? (u(),
+                      k(`div`, le, [
+                        (u(!0),
+                        k(
+                          S,
+                          null,
+                          a(
+                            e.indicators,
+                            (e) => (
+                              u(),
+                              k(
+                                `craft-icon`,
+                                {
+                                  key: e.icon,
+                                  name: e.icon,
+                                  label: e.label,
+                                  style: _({color: e.iconColor}),
+                                },
+                                null,
+                                12,
+                                ue
+                              )
+                            )
+                          ),
+                          128
+                        )),
+                      ]))
+                    : h(``, !0),
+                ]),
+                D(`div`, de, [
+                  e.actions
+                    ? (u(),
+                      A(B, {key: 0, actions: e.actions}, null, 8, [`actions`]))
+                    : h(``, !0),
+                  e.draggable
+                    ? (u(),
+                      k(
+                        `span`,
+                        {
+                          key: 1,
+                          ref_key: `handleRef`,
+                          ref: r,
+                          class: `drag-handle`,
+                        },
+                        [
+                          f(
+                            t.$slots,
+                            `drag-handle`,
+                            {},
+                            () => [d(P, {variant: `inherit`})],
+                            !0
+                          ),
+                        ],
+                        512
+                      ))
+                    : h(``, !0),
+                ]),
+              ],
+              8,
+              ie
+            )
+          )
+        );
+      },
+    }),
+    [[`__scopeId`, `data-v-1ce6a7e9`]]
+  ),
+  pe = o({
+    __name: `CreateEntryTypeButton`,
+    emits: [`success`],
+    setup(t, {emit: n}) {
+      let r = n,
+        i = C(`invoker`);
+      function a() {
+        let e = new Craft.CpScreenSlideout(
+          ne[`/admin/settings/entry-types/new`]().url
+        );
+        (e.on(`submit`, () => {
+          r(`success`);
+        }),
+          e.on(`close`, () => {
+            i.value?.focus();
+          }));
+      }
+      function o() {
+        a();
+      }
+      return (t, n) => (
+        u(),
+        k(
+          `craft-button`,
+          {
+            type: `button`,
+            appearance: `filled`,
+            onClick: o,
+            ref_key: `invoker`,
+            ref: i,
+          },
+          [
+            (n[0] ||= D(
+              `craft-icon`,
+              {name: `plus`, slot: `prefix`},
+              null,
+              -1
+            )),
+            O(` ` + E(y(e)(`Create`)), 1),
+          ],
+          512
+        )
+      );
+    },
+  }),
+  Q = T(
+    o({
+      __name: `DragShadow`,
+      props: {height: {}, position: {}},
+      setup(e) {
+        return (t, n) =>
+          e.height
+            ? (u(),
+              k(
+                `div`,
+                {
+                  key: 0,
+                  class: l([
+                    `drag-shadow`,
+                    `drag-shadow--${e.position ?? `bottom`}`,
+                  ]),
+                  style: _({height: `${e.height}px`}),
+                },
+                null,
+                6
+              ))
+            : h(``, !0);
+      },
+    }),
+    [[`__scopeId`, `data-v-80709fe3`]]
+  ),
+  me = {class: `entry-type-list`},
+  he = {class: `flex gap-2 mt-3 items-center`},
+  ge = {key: 0},
+  _e = {key: 0, type: `button`, slot: `invoker`, appearance: `filled`},
+  ve = {slot: `content`},
+  ye = {class: `p-2`},
+  be = {key: 0, class: `p-2`},
+  xe = [`onClick`, `icon`, `checked`, `data-color`],
+  Se = T(
+    o({
+      __name: `EntryTypeSelect`,
+      props: {modelValue: {}, entryTypes: {}, actions: {}},
+      emits: [`update:modelValue`],
+      setup(t, {emit: n}) {
+        let o = n,
+          s = t,
+          {readOnly: c} = L(),
+          f = g(``),
+          _ = m(() =>
+            s.entryTypes?.filter(
+              (e) => e.name.includes(f.value) || e.handle.includes(f.value)
+            )
+          );
+        function b(e, t) {
+          let n = [...s.modelValue],
+            [r] = n.splice(e, 1);
+          r !== void 0 && (n.splice(t, 0, r), o(`update:modelValue`, n));
+        }
+        function x(e) {
+          return e === 0
+            ? `first`
+            : e === s.modelValue.length - 1
+              ? `last`
+              : `middle`;
+        }
+        let {
+          setItemRef: C,
+          setHandleRef: w,
+          getDragState: T,
+          getDropState: M,
+        } = q({
+          getItemIds: () => s.modelValue.map((e) => e.id),
+          onReorder: b,
+          enabled: () => s.modelValue.length > 1,
+        });
+        function N(e) {
+          let t = M(e);
+          return t.type === `is-over` ? t : null;
+        }
+        function F(e) {
+          s.modelValue.find((t) => t.id === e.id)
+            ? I(e.id)
+            : o(`update:modelValue`, [...s.modelValue, e]);
+        }
+        function I(e) {
+          o(`update:modelValue`, [...s.modelValue.filter((t) => t.id !== e)]);
+        }
+        let R = g(void 0),
+          B = g({});
+        function V(t, {namespace: n = ``, id: r = null}) {
+          let i = `
       <div class="entry-type-override-settings-body">
         <div class="fields">
-          ${n?`<input type="hidden" name="settingsNamespace" value="${n}" />`:``}
-          ${r?`<input type="hidden" name="id" value="${r}" />`:``}
+          ${n ? `<input type="hidden" name="settingsNamespace" value="${n}" />` : ``}
+          ${r ? `<input type="hidden" name="id" value="${r}" />` : ``}
           ${t}
         </div>
       </div>
@@ -12,4 +374,1137 @@ import{l as e}from"./nav-item-CyC1px5v-DZDpUldI.js";import{a as t,i as n,n as r,
         </craft-button>
         <craft-button type="submit">${e(`Apply`)}</craft-button>
       </div>
-    `,a=new Craft.Slideout(i,{containerElement:`form`,containerAttributes:{action:W().url,method:`post`,novalidate:``,class:`entry-type-override-settings`}}),c=a.$container[0];if(c)return c.addEventListener(`submit`,async e=>{e.preventDefault();let t=e.target,n=new FormData(t),r={id:n.get(`id`),settingsNamespace:n.get(`settingsNamespace`),settings:new URLSearchParams(n).toString()};try{let{data:e}=await Craft.sendActionRequest(`POST`,W().url,{data:r});B.value={...B.value,[e.config.id]:e.config},o(`update:modelValue`,s.modelValue.map(t=>t.id===e.entryType.id?{...t,...e.entryType}:t)),a.close()}catch(e){console.error(e)}}),c.querySelectorAll(`[data-action]`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.target;if(t)switch(t.dataset.action){case`close`:a.close();break}})}),a.on(`close`,()=>{a.destroy()}),a}async function H(e){try{let t=s.modelValue.find(t=>t.id===e),{data:n}=await Craft.sendActionRequest(`POST`,te().url,{data:{id:e,name:t?.name,handle:t?.handle,description:t?.description}}),{settingsHtml:a,headHtml:o,bodyHtml:c,namespace:l}=n;R.value=V(a,{namespace:l,id:e}),o&&await r(o),c&&await i(c),Craft?.initUiElements(R.value?.$container)}catch(e){throw Craft.cp?.displayError?.(e?.response?.data?.message),e}}return(n,r)=>(u(),k(S,null,[D(`div`,me,[(u(!0),k(S,null,a(t.modelValue,(n,r)=>(u(),k(`div`,{key:n.id,ref_for:!0,ref:e=>y(C)(e,n.id),class:l([`entry-type-item`,{"entry-type-item--dragging":y(T)(n.id).type===`is-dragging`,"entry-type-item--hidden":y(T)(n.id).type===`is-dragging-and-left-self`}])},[N(n.id)?.closestEdge===`top`?(u(),A(Q,{key:0,height:N(n.id)?.draggingRect?.height},null,8,[`height`])):h(``,!0),d(fe,{name:n.name,id:n.id,handle:n.handle,color:n.color,icon:n.icon,description:n.description,draggable:t.modelValue.length>1,indicators:n.indicators,actions:[{label:y(e)(`Settings`),icon:`gear`,onClick:()=>H(n.id)},...y(c)?[]:[{label:y(e)(`Remove`),variant:`danger`,icon:`x`,onClick:()=>I(n.id)}]],onHandleRef:e=>y(w)(e,n.id)},{"drag-handle":p(()=>[y(c)?h(``,!0):(u(),A(P,{key:0,variant:`inherit`,position:x(r),"onClick:up":e=>b(r,r-1),"onClick:down":e=>b(r,r+1)},null,8,[`position`,`onClick:up`,`onClick:down`]))]),_:2},1032,[`name`,`id`,`handle`,`color`,`icon`,`description`,`draggable`,`indicators`,`actions`,`onHandleRef`]),N(n.id)?.closestEdge===`bottom`?(u(),A(Q,{key:1,height:N(n.id)?.draggingRect?.height},null,8,[`height`])):h(``,!0)],2))),128))]),D(`div`,he,[t.entryTypes?.length?(u(),k(`craft-action-menu`,ge,[y(c)?h(``,!0):(u(),k(`craft-button`,_e,[r[2]||=D(`craft-icon`,{name:`chevron-down`,slot:`prefix`},null,-1),O(` `+E(y(e)(`Choose`)),1)])),D(`div`,ve,[D(`div`,ye,[d(z,{label:y(e)(`Search`),modelValue:f.value,"onUpdate:modelValue":r[0]||=e=>f.value=e,"label-sr-only":``},{default:p(()=>[...r[3]||=[D(`craft-icon`,{name:`search`,slot:`prefix`},null,-1)]]),_:1},8,[`label`,`modelValue`])]),r[4]||=D(`hr`,{class:`m-0`},null,-1),_.value.length<1?(u(),k(`div`,be,[d(j,{template:`No entry types match “{query}”`,params:{query:f.value}},null,8,[`params`])])):(u(!0),k(S,{key:1},a(_.value,e=>(u(),k(`craft-action-item`,{key:e.id,onClick:t=>F(e),type:`checkbox`,icon:e.icon??`empty`,checked:t.modelValue.find(t=>t.id===e.id),"data-color":(e.color&&typeof e.color!=`string`?e.color.value:e.color)??`white`},[D(`div`,null,[O(E(e.name)+` `,1),D(`pre`,null,E(e.handle),1)])],8,xe))),128))])])):h(``,!0),y(c)?h(``,!0):(u(),A(pe,{key:1,onSuccess:r[1]||=e=>y(v).reload({only:[`entryTypes`]})}))])],64))}}),[[`__scopeId`,`data-v-6c5576bc`]]),Ce=o({__name:`SiteSettingsTable`,props:{modelValue:{},selectedType:{},isMultisite:{type:Boolean,default:!1},isHeadless:{type:Boolean,default:!1}},emits:[`update:modelValue`],setup(t,{emit:n}){let r=n,i=t,a=x(),o=m(()=>a.props.homepageUri),s=m(()=>a.props.templateOptions),c=m(()=>({name:!0,enabled:i.isMultisite,singleHomepage:i.selectedType===`single`,singleUri:i.selectedType===`single`,uriFormat:i.selectedType!==`single`,template:!i.isHeadless,enabledByDefault:i.selectedType!==`single`})),{table:l}=U({data:()=>i.modelValue,key:`handle`,name:`sites`,columnVisibility:()=>c.value,onChange:e=>r(`update:modelValue`,e),columns:({columnHelper:t})=>[t.accessor(`name`,{header:e(`Site`),cell:({getValue:e})=>e(),meta:{cellTag:`th`,trackSize:`0.25fr`}}),t.lightswitch(`enabled`,{header:e(`Enabled`),meta:{trackSize:`80px`,cellClass:`bg-[var(--c-color-neutral-fill-quiet)]`},label:e(`Enabled`)}),t.checkbox(`singleHomepage`,{header:()=>b(`craft-icon`,{name:`home`,label:e(`Homepage`)}),meta:{trackSize:`44px`,cellClass:`text-center`,headerClass:`justify-center`},onChange:(e,{row:t})=>{if(e){let e={...i.modelValue};e[t.original.handle].singleUri=o.value??``,r(`update:modelValue`,e)}else{let e={...i.modelValue};e[t.original.handle].singleUri=``,r(`update:modelValue`,e)}},disabled:e=>!e.original.enabled}),t.text(`singleUri`,{header:e(`URI`),class:`font-mono text-xs`,placeholder:e(`Leave blank if the entry doesn't have a URL`),disabled:e=>!e.original.enabled||e.original.singleHomepage,meta:{headerTip:e(`What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.`)}}),t.text(`uriFormat`,{header:e(`Entry URI Format`),class:`font-mono text-xs`,placeholder:e(`Leave blank if the entry doesn't have a URL`),disabled:e=>!e.original.enabled,meta:{headerTip:e(`What entry URIs should look like for the site. Leave blank if entries don’t have URLs.`)}}),t.autocomplete(`template`,{header:e(`Template`),class:`w-full flex-1 font-mono text-xs !px-[var(--_cell-spacing)]`,options:s.value,disabled:e=>!e.original.enabled,meta:{headerTip:e(`Which template should be loaded when an entry’s URL is requested.`)}}),t.lightswitch(`enabledByDefault`,{header:e(`Default Status`),meta:{trackSize:`120px`},disabled:e=>!e.original.enabled})]});return(e,t)=>(u(),A(I,{padding:0,appearance:`raised`},{default:p(()=>[d(N,{table:y(l),spacing:y(M).Relaxed,reorderable:!1},null,8,[`table`,`spacing`])]),_:1}))}}),we={key:0,class:`border border-dashed border-neutral-border-quiet rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1`},Te=o({__name:`PreviewTargetsTable`,props:{modelValue:{},name:{default:`previewTargets`},disabled:{type:Boolean,default:!1}},emits:[`update:modelValue`],setup(t,{emit:n}){let r=n,i=t,{table:a}=U({data:()=>i.modelValue,name:i.name,onChange:e=>r(`update:modelValue`,e),columns:({columnHelper:t})=>[t.text(`label`,{header:e(`Label`),disabled:()=>i.disabled}),t.text(`urlFormat`,{header:e(`URL Format`),class:`font-mono text-xs`,disabled:()=>i.disabled}),t.lightswitch(`refresh`,{header:e(`Auto-Refresh`),disabled:()=>i.disabled}),t.display({id:`actions`,header:e(`Actions`),meta:{headerSrOnly:!0},cell:({row:e})=>b(`div`,{class:`flex justify-end gap-2`},[b(R,{disabled:i.disabled,onClick:()=>{let t=[...i.modelValue];t.splice(e.index,1),r(`update:modelValue`,t)}})])})]});function o(){r(`update:modelValue`,[...i.modelValue,{label:``,urlFormat:``,refresh:!0}])}return(n,r)=>(u(),k(S,null,[d(I,{padding:0,appearance:`raised`},{default:p(()=>[d(N,{table:y(a),spacing:y(M).Relaxed,reorderable:!1},null,8,[`table`,`spacing`])]),_:1}),t.disabled?h(``,!0):(u(),k(`div`,we,[D(`craft-button`,{type:`button`,size:`small`,onClick:o,class:`w-full`,appearance:`plain`},E(y(e)(`Add a target`)),1)]))],64))}}),Ee={class:`grid gap-3`},De=[`value`],Oe={slot:`input`},ke=[`value`],Ae={key:0,slot:`after`},je={variant:`danger`,appearance:`plain`,class:`p-0`,icon:`triangle-exclamation`},Me={class:`grid gap-3`},Ne={class:`font-bold text-sm`},Pe={class:`text-sm text-neutral-500 mb-2`},$={class:`grid gap-6`},Fe={class:`font-bold text-sm`},Ie={class:`text-sm text-neutral-500 mb-2`},Le={slot:`input`},Re=[`value`],ze={key:0,slot:`after`},Be={variant:`danger`,appearance:`plain`,class:`p-0`,icon:`triangle-exclamation`},Ve={class:`grid gap-3`},He={slot:`input`},Ue=[`value`],We={class:`grid gap-3`},Ge={class:`font-bold text-sm`},Ke={class:`text-sm text-neutral-500 mb-2`},qe={key:1,class:`grid gap-3`},Je=o({__name:`SectionsEdit`,props:{title:{},crumbs:{},section:{},brandNew:{type:Boolean},typeOptions:{},entryTypes:{},propagationOptions:{},placementOptions:{},siteSettings:{},isMultiSite:{type:Boolean},headlessMode:{type:Boolean},flash:{},errors:{}},setup(r){let i=r,{readOnly:o}=L(),s=w({sectionId:i.section.id,name:i.section.name??``,handle:i.section.handle??``,type:i.section.type,entryTypes:(i.section.entryTypes??[]).map(({actions:e,...t})=>t),enableVersioning:i.section.enableVersioning,minAuthors:i.section.minAuthors??0,maxAuthors:i.section.maxAuthors??``,maxLevels:i.section.maxLevels??``,propagationMethod:i.section.propagationMethod,defaultPlacement:i.section.defaultPlacement,previewTargets:i.section.previewTargets??[],sites:Object.fromEntries(i.siteSettings.map(e=>[e.handle,{enabled:e.enabled,siteId:e.siteId??null,name:e.name??``,singleHomepage:!1,singleUri:e.uriFormat??``,uriFormat:e.uriFormat??``,template:e.template??``,enabledByDefault:e.enabledByDefault}]))}),c=m(()=>s.type===`structure`),l=m(()=>s.type===`channel`||s.type===`structure`),f=J(()=>s.name,e=>s.handle=t(e)),g=J(()=>s.name,e=>{if(!s.sites)return;let t=n(e);s.sites=Object.fromEntries(Object.entries(s.sites).map(([e,n])=>[e,{...n,singleUri:t&&!n.singleHomepage?`${t}`:n.singleUri,uriFormat:t?`${t}/{slug}`:``,template:t?`${t}/_entry.twig`:``}]))});i.brandNew||(f.stop(),g.stop());let{save:_}=ee(s,G);return(t,n)=>(u(),A(V,{title:r.title,debug:{form:y(s),$props:t.$props},form:y(s),onSave:y(_)},{default:p(()=>[d(I,{appearance:`raised`},{default:p(()=>[D(`div`,Ee,[r.section.id?(u(),k(`input`,{key:0,type:`hidden`,name:`sectionId`,value:r.section.id},null,8,De)):h(``,!0),d(z,{label:y(e)(`Name`),"help-text":y(e)(`What this section will be called in the control panel.`),id:`name`,name:`name`,modelValue:y(s).name,"onUpdate:modelValue":n[0]||=e=>y(s).name=e,disabled:y(o),error:r.errors?.name,required:``,autofocus:``},null,8,[`label`,`help-text`,`modelValue`,`disabled`,`error`]),d(K,{label:y(e)(`Handle`),"help-text":y(e)(`How you'll refer to this section in the templates.`),id:`handle`,name:`handle`,modelValue:y(s).handle,"onUpdate:modelValue":n[1]||=e=>y(s).handle=e,disabled:y(o),error:r.errors?.handle,required:``,onChange:n[2]||=e=>y(f).markDirty()},null,8,[`label`,`help-text`,`modelValue`,`disabled`,`error`]),d(H,{label:y(e)(`Enable versioning for entries in this section`),id:`enableVersioning`,name:`enableVersioning`,disabled:y(o),modelValue:y(s).enableVersioning,"onUpdate:modelValue":n[3]||=e=>y(s).enableVersioning=e},null,8,[`label`,`disabled`,`modelValue`]),d(F,{label:y(e)(`Section Type`),"help-text":y(e)(`What type of section is this?`),id:`type`,name:`type`,modelValue:y(s).type,"onUpdate:modelValue":n[4]||=e=>y(s).type=e,disabled:y(o),error:r.errors?.type},{default:p(()=>[D(`select`,Oe,[(u(!0),k(S,null,a(r.typeOptions,e=>(u(),k(`option`,{key:e.value,value:e.value},E(e.label),9,ke))),128))]),r.section.id&&y(s).type!==`single`?(u(),k(`div`,Ae,[D(`craft-callout`,je,E(y(e)(`Changing this may result in data loss.`)),1)])):h(``,!0)]),_:1},8,[`label`,`help-text`,`modelValue`,`disabled`,`error`])]),n[14]||=D(`hr`,{class:`my-6`},null,-1),D(`div`,Me,[D(`div`,null,[D(`h3`,Ne,E(y(e)(`Entry Types`)),1),D(`p`,Pe,E(y(e)(`Choose the types of entries that can be included in this section.`)),1),d(Se,{"entry-types":r.entryTypes,modelValue:y(s).entryTypes,"onUpdate:modelValue":n[5]||=e=>y(s).entryTypes=e},null,8,[`entry-types`,`modelValue`])])]),n[15]||=D(`hr`,{class:`my-6`},null,-1),D(`div`,$,[D(`div`,null,[D(`h3`,Fe,E(y(e)(`Site settings`)),1),D(`p`,Ie,E(y(e)(`Choose which sites this section should be available in, and configure the site-specific settings.`)),1),d(Ce,{"is-multisite":r.isMultiSite,"is-headless":r.headlessMode,"selected-type":y(s).type,modelValue:y(s).sites,"onUpdate:modelValue":n[6]||=e=>y(s).sites=e},null,8,[`is-multisite`,`is-headless`,`selected-type`,`modelValue`])]),r.isMultiSite&&l.value?(u(),A(F,{key:0,label:y(e)(`Propagation Method`),"help-text":y(e)(`Of the enabled sites above, which sites should entries in this section be saved to?`),id:`propagationMethod`,name:`propagationMethod`,modelValue:y(s).propagationMethod,"onUpdate:modelValue":n[7]||=e=>y(s).propagationMethod=e,disabled:y(o)},{default:p(()=>[D(`select`,Le,[(u(!0),k(S,null,a(r.propagationOptions,e=>(u(),k(`option`,{key:e.value,value:e.value},E(e.label),9,Re))),128))]),r.section.id&&r.section.propagationMethod!==`none`&&r.siteSettings.length>1?(u(),k(`div`,ze,[D(`craft-callout`,Be,E(y(e)(`Changing this may result in data loss.`)),1)])):h(``,!0)]),_:1},8,[`label`,`help-text`,`modelValue`,`disabled`])):h(``,!0)]),c.value?(u(),k(S,{key:0},[n[13]||=D(`hr`,{class:`my-6`},null,-1),D(`div`,Ve,[d(z,{label:y(e)(`Max Levels`),"help-text":y(e)(`The maximum number of levels this section can have.`),id:`maxLevels`,name:`maxLevels`,modelValue:y(s).maxLevels,"onUpdate:modelValue":n[8]||=e=>y(s).maxLevels=e,disabled:y(o),inputmode:`numeric`,size:`5`,error:r.errors?.maxLevels},null,8,[`label`,`help-text`,`modelValue`,`disabled`,`error`]),d(F,{label:y(e)(`Default {type} Placement`,{type:y(e)(`Entry`)}),"help-text":y(e)(`Where new {type} should be placed by default in the structure.`,{type:y(e)(`entries`)}),id:`defaultPlacement`,name:`defaultPlacement`,modelValue:y(s).defaultPlacement,"onUpdate:modelValue":n[9]||=e=>y(s).defaultPlacement=e,disabled:y(o)},{default:p(()=>[D(`select`,He,[(u(!0),k(S,null,a(r.placementOptions,e=>(u(),k(`option`,{key:e.value,value:e.value},E(e.label),9,Ue))),128))])]),_:1},8,[`label`,`help-text`,`modelValue`,`disabled`])])],64)):h(``,!0),n[16]||=D(`hr`,{class:`my-6`},null,-1),D(`div`,We,[D(`div`,null,[D(`h3`,Ge,E(y(e)(`Preview Targets`)),1),D(`p`,Ke,E(y(e)(`Locations that should be available for previewing entries in this section.`)),1),d(Te,{modelValue:y(s).previewTargets,"onUpdate:modelValue":n[10]||=e=>y(s).previewTargets=e,disabled:y(o)},null,8,[`modelValue`,`disabled`])])]),n[17]||=D(`hr`,{class:`my-6`},null,-1),l.value?(u(),k(`div`,qe,[d(z,{label:y(e)(`Min Authors`),"help-text":y(e)(`The minimum number of authors that entries in this section can have.`),id:`minAuthors`,name:`minAuthors`,modelValue:y(s).minAuthors,"onUpdate:modelValue":n[11]||=e=>y(s).minAuthors=e,disabled:y(o),inputmode:`numeric`,maxlength:`5`,error:r.errors?.minAuthors},null,8,[`label`,`help-text`,`modelValue`,`disabled`,`error`]),d(z,{label:y(e)(`Max Authors`),"help-text":y(e)(`The maximum number of authors that entries in this section can have.`),id:`maxAuthors`,name:`maxAuthors`,modelValue:y(s).maxAuthors,"onUpdate:modelValue":n[12]||=e=>y(s).maxAuthors=e,disabled:y(o),inputmode:`numeric`,maxlength:`5`,error:r.errors?.maxAuthors},null,8,[`label`,`help-text`,`modelValue`,`disabled`,`error`])])):h(``,!0)]),_:1})]),_:1},8,[`title`,`debug`,`form`,`onSave`]))}});export{Je as default};
+    `,
+            a = new Craft.Slideout(i, {
+              containerElement: `form`,
+              containerAttributes: {
+                action: W().url,
+                method: `post`,
+                novalidate: ``,
+                class: `entry-type-override-settings`,
+              },
+            }),
+            c = a.$container[0];
+          if (c)
+            return (
+              c.addEventListener(`submit`, async (e) => {
+                e.preventDefault();
+                let t = e.target,
+                  n = new FormData(t),
+                  r = {
+                    id: n.get(`id`),
+                    settingsNamespace: n.get(`settingsNamespace`),
+                    settings: new URLSearchParams(n).toString(),
+                  };
+                try {
+                  let {data: e} = await Craft.sendActionRequest(
+                    `POST`,
+                    W().url,
+                    {data: r}
+                  );
+                  ((B.value = {...B.value, [e.config.id]: e.config}),
+                    o(
+                      `update:modelValue`,
+                      s.modelValue.map((t) =>
+                        t.id === e.entryType.id ? {...t, ...e.entryType} : t
+                      )
+                    ),
+                    a.close());
+                } catch (e) {
+                  console.error(e);
+                }
+              }),
+              c.querySelectorAll(`[data-action]`).forEach((e) => {
+                e.addEventListener(`click`, (e) => {
+                  let t = e.target;
+                  if (t)
+                    switch (t.dataset.action) {
+                      case `close`:
+                        a.close();
+                        break;
+                    }
+                });
+              }),
+              a.on(`close`, () => {
+                a.destroy();
+              }),
+              a
+            );
+        }
+        async function H(e) {
+          try {
+            let t = s.modelValue.find((t) => t.id === e),
+              {data: n} = await Craft.sendActionRequest(`POST`, te().url, {
+                data: {
+                  id: e,
+                  name: t?.name,
+                  handle: t?.handle,
+                  description: t?.description,
+                },
+              }),
+              {settingsHtml: a, headHtml: o, bodyHtml: c, namespace: l} = n;
+            ((R.value = V(a, {namespace: l, id: e})),
+              o && (await r(o)),
+              c && (await i(c)),
+              Craft?.initUiElements(R.value?.$container));
+          } catch (e) {
+            throw (Craft.cp?.displayError?.(e?.response?.data?.message), e);
+          }
+        }
+        return (n, r) => (
+          u(),
+          k(
+            S,
+            null,
+            [
+              D(`div`, me, [
+                (u(!0),
+                k(
+                  S,
+                  null,
+                  a(
+                    t.modelValue,
+                    (n, r) => (
+                      u(),
+                      k(
+                        `div`,
+                        {
+                          key: n.id,
+                          ref_for: !0,
+                          ref: (e) => y(C)(e, n.id),
+                          class: l([
+                            `entry-type-item`,
+                            {
+                              'entry-type-item--dragging':
+                                y(T)(n.id).type === `is-dragging`,
+                              'entry-type-item--hidden':
+                                y(T)(n.id).type === `is-dragging-and-left-self`,
+                            },
+                          ]),
+                        },
+                        [
+                          N(n.id)?.closestEdge === `top`
+                            ? (u(),
+                              A(
+                                Q,
+                                {key: 0, height: N(n.id)?.draggingRect?.height},
+                                null,
+                                8,
+                                [`height`]
+                              ))
+                            : h(``, !0),
+                          d(
+                            fe,
+                            {
+                              name: n.name,
+                              id: n.id,
+                              handle: n.handle,
+                              color: n.color,
+                              icon: n.icon,
+                              description: n.description,
+                              draggable: t.modelValue.length > 1,
+                              indicators: n.indicators,
+                              actions: [
+                                {
+                                  label: y(e)(`Settings`),
+                                  icon: `gear`,
+                                  onClick: () => H(n.id),
+                                },
+                                ...(y(c)
+                                  ? []
+                                  : [
+                                      {
+                                        label: y(e)(`Remove`),
+                                        variant: `danger`,
+                                        icon: `x`,
+                                        onClick: () => I(n.id),
+                                      },
+                                    ]),
+                              ],
+                              onHandleRef: (e) => y(w)(e, n.id),
+                            },
+                            {
+                              'drag-handle': p(() => [
+                                y(c)
+                                  ? h(``, !0)
+                                  : (u(),
+                                    A(
+                                      P,
+                                      {
+                                        key: 0,
+                                        variant: `inherit`,
+                                        position: x(r),
+                                        'onClick:up': (e) => b(r, r - 1),
+                                        'onClick:down': (e) => b(r, r + 1),
+                                      },
+                                      null,
+                                      8,
+                                      [`position`, `onClick:up`, `onClick:down`]
+                                    )),
+                              ]),
+                              _: 2,
+                            },
+                            1032,
+                            [
+                              `name`,
+                              `id`,
+                              `handle`,
+                              `color`,
+                              `icon`,
+                              `description`,
+                              `draggable`,
+                              `indicators`,
+                              `actions`,
+                              `onHandleRef`,
+                            ]
+                          ),
+                          N(n.id)?.closestEdge === `bottom`
+                            ? (u(),
+                              A(
+                                Q,
+                                {key: 1, height: N(n.id)?.draggingRect?.height},
+                                null,
+                                8,
+                                [`height`]
+                              ))
+                            : h(``, !0),
+                        ],
+                        2
+                      )
+                    )
+                  ),
+                  128
+                )),
+              ]),
+              D(`div`, he, [
+                t.entryTypes?.length
+                  ? (u(),
+                    k(`craft-action-menu`, ge, [
+                      y(c)
+                        ? h(``, !0)
+                        : (u(),
+                          k(`craft-button`, _e, [
+                            (r[2] ||= D(
+                              `craft-icon`,
+                              {name: `chevron-down`, slot: `prefix`},
+                              null,
+                              -1
+                            )),
+                            O(` ` + E(y(e)(`Choose`)), 1),
+                          ])),
+                      D(`div`, ve, [
+                        D(`div`, ye, [
+                          d(
+                            z,
+                            {
+                              label: y(e)(`Search`),
+                              modelValue: f.value,
+                              'onUpdate:modelValue': (r[0] ||= (e) =>
+                                (f.value = e)),
+                              'label-sr-only': ``,
+                            },
+                            {
+                              default: p(() => [
+                                ...(r[3] ||= [
+                                  D(
+                                    `craft-icon`,
+                                    {name: `search`, slot: `prefix`},
+                                    null,
+                                    -1
+                                  ),
+                                ]),
+                              ]),
+                              _: 1,
+                            },
+                            8,
+                            [`label`, `modelValue`]
+                          ),
+                        ]),
+                        (r[4] ||= D(`hr`, {class: `m-0`}, null, -1)),
+                        _.value.length < 1
+                          ? (u(),
+                            k(`div`, be, [
+                              d(
+                                j,
+                                {
+                                  template: `No entry types match “{query}”`,
+                                  params: {query: f.value},
+                                },
+                                null,
+                                8,
+                                [`params`]
+                              ),
+                            ]))
+                          : (u(!0),
+                            k(
+                              S,
+                              {key: 1},
+                              a(
+                                _.value,
+                                (e) => (
+                                  u(),
+                                  k(
+                                    `craft-action-item`,
+                                    {
+                                      key: e.id,
+                                      onClick: (t) => F(e),
+                                      type: `checkbox`,
+                                      icon: e.icon ?? `empty`,
+                                      checked: t.modelValue.find(
+                                        (t) => t.id === e.id
+                                      ),
+                                      'data-color':
+                                        (e.color && typeof e.color != `string`
+                                          ? e.color.value
+                                          : e.color) ?? `white`,
+                                    },
+                                    [
+                                      D(`div`, null, [
+                                        O(E(e.name) + ` `, 1),
+                                        D(`pre`, null, E(e.handle), 1),
+                                      ]),
+                                    ],
+                                    8,
+                                    xe
+                                  )
+                                )
+                              ),
+                              128
+                            )),
+                      ]),
+                    ]))
+                  : h(``, !0),
+                y(c)
+                  ? h(``, !0)
+                  : (u(),
+                    A(pe, {
+                      key: 1,
+                      onSuccess: (r[1] ||= (e) =>
+                        y(v).reload({only: [`entryTypes`]})),
+                    })),
+              ]),
+            ],
+            64
+          )
+        );
+      },
+    }),
+    [[`__scopeId`, `data-v-6c5576bc`]]
+  ),
+  Ce = o({
+    __name: `SiteSettingsTable`,
+    props: {
+      modelValue: {},
+      selectedType: {},
+      isMultisite: {type: Boolean, default: !1},
+      isHeadless: {type: Boolean, default: !1},
+    },
+    emits: [`update:modelValue`],
+    setup(t, {emit: n}) {
+      let r = n,
+        i = t,
+        a = x(),
+        o = m(() => a.props.homepageUri),
+        s = m(() => a.props.templateOptions),
+        c = m(() => ({
+          name: !0,
+          enabled: i.isMultisite,
+          singleHomepage: i.selectedType === `single`,
+          singleUri: i.selectedType === `single`,
+          uriFormat: i.selectedType !== `single`,
+          template: !i.isHeadless,
+          enabledByDefault: i.selectedType !== `single`,
+        })),
+        {table: l} = U({
+          data: () => i.modelValue,
+          key: `handle`,
+          name: `sites`,
+          columnVisibility: () => c.value,
+          onChange: (e) => r(`update:modelValue`, e),
+          columns: ({columnHelper: t}) => [
+            t.accessor(`name`, {
+              header: e(`Site`),
+              cell: ({getValue: e}) => e(),
+              meta: {cellTag: `th`, trackSize: `0.25fr`},
+            }),
+            t.lightswitch(`enabled`, {
+              header: e(`Enabled`),
+              meta: {
+                trackSize: `80px`,
+                cellClass: `bg-[var(--c-color-neutral-fill-quiet)]`,
+              },
+              label: e(`Enabled`),
+            }),
+            t.checkbox(`singleHomepage`, {
+              header: () =>
+                b(`craft-icon`, {name: `home`, label: e(`Homepage`)}),
+              meta: {
+                trackSize: `44px`,
+                cellClass: `text-center`,
+                headerClass: `justify-center`,
+              },
+              onChange: (e, {row: t}) => {
+                if (e) {
+                  let e = {...i.modelValue};
+                  ((e[t.original.handle].singleUri = o.value ?? ``),
+                    r(`update:modelValue`, e));
+                } else {
+                  let e = {...i.modelValue};
+                  ((e[t.original.handle].singleUri = ``),
+                    r(`update:modelValue`, e));
+                }
+              },
+              disabled: (e) => !e.original.enabled,
+            }),
+            t.text(`singleUri`, {
+              header: e(`URI`),
+              class: `font-mono text-xs`,
+              placeholder: e(`Leave blank if the entry doesn't have a URL`),
+              disabled: (e) => !e.original.enabled || e.original.singleHomepage,
+              meta: {
+                headerTip: e(
+                  `What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.`
+                ),
+              },
+            }),
+            t.text(`uriFormat`, {
+              header: e(`Entry URI Format`),
+              class: `font-mono text-xs`,
+              placeholder: e(`Leave blank if the entry doesn't have a URL`),
+              disabled: (e) => !e.original.enabled,
+              meta: {
+                headerTip: e(
+                  `What entry URIs should look like for the site. Leave blank if entries don’t have URLs.`
+                ),
+              },
+            }),
+            t.autocomplete(`template`, {
+              header: e(`Template`),
+              class: `w-full flex-1 font-mono text-xs !px-[var(--_cell-spacing)]`,
+              options: s.value,
+              disabled: (e) => !e.original.enabled,
+              meta: {
+                headerTip: e(
+                  `Which template should be loaded when an entry’s URL is requested.`
+                ),
+              },
+            }),
+            t.lightswitch(`enabledByDefault`, {
+              header: e(`Default Status`),
+              meta: {trackSize: `120px`},
+              disabled: (e) => !e.original.enabled,
+            }),
+          ],
+        });
+      return (e, t) => (
+        u(),
+        A(
+          I,
+          {padding: 0, appearance: `raised`},
+          {
+            default: p(() => [
+              d(
+                N,
+                {table: y(l), spacing: y(M).Relaxed, reorderable: !1},
+                null,
+                8,
+                [`table`, `spacing`]
+              ),
+            ]),
+            _: 1,
+          }
+        )
+      );
+    },
+  }),
+  we = {
+    key: 0,
+    class: `border border-dashed border-neutral-border-quiet rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1`,
+  },
+  Te = o({
+    __name: `PreviewTargetsTable`,
+    props: {
+      modelValue: {},
+      name: {default: `previewTargets`},
+      disabled: {type: Boolean, default: !1},
+    },
+    emits: [`update:modelValue`],
+    setup(t, {emit: n}) {
+      let r = n,
+        i = t,
+        {table: a} = U({
+          data: () => i.modelValue,
+          name: i.name,
+          onChange: (e) => r(`update:modelValue`, e),
+          columns: ({columnHelper: t}) => [
+            t.text(`label`, {header: e(`Label`), disabled: () => i.disabled}),
+            t.text(`urlFormat`, {
+              header: e(`URL Format`),
+              class: `font-mono text-xs`,
+              disabled: () => i.disabled,
+            }),
+            t.lightswitch(`refresh`, {
+              header: e(`Auto-Refresh`),
+              disabled: () => i.disabled,
+            }),
+            t.display({
+              id: `actions`,
+              header: e(`Actions`),
+              meta: {headerSrOnly: !0},
+              cell: ({row: e}) =>
+                b(`div`, {class: `flex justify-end gap-2`}, [
+                  b(R, {
+                    disabled: i.disabled,
+                    onClick: () => {
+                      let t = [...i.modelValue];
+                      (t.splice(e.index, 1), r(`update:modelValue`, t));
+                    },
+                  }),
+                ]),
+            }),
+          ],
+        });
+      function o() {
+        r(`update:modelValue`, [
+          ...i.modelValue,
+          {label: ``, urlFormat: ``, refresh: !0},
+        ]);
+      }
+      return (n, r) => (
+        u(),
+        k(
+          S,
+          null,
+          [
+            d(
+              I,
+              {padding: 0, appearance: `raised`},
+              {
+                default: p(() => [
+                  d(
+                    N,
+                    {table: y(a), spacing: y(M).Relaxed, reorderable: !1},
+                    null,
+                    8,
+                    [`table`, `spacing`]
+                  ),
+                ]),
+                _: 1,
+              }
+            ),
+            t.disabled
+              ? h(``, !0)
+              : (u(),
+                k(`div`, we, [
+                  D(
+                    `craft-button`,
+                    {
+                      type: `button`,
+                      size: `small`,
+                      onClick: o,
+                      class: `w-full`,
+                      appearance: `plain`,
+                    },
+                    E(y(e)(`Add a target`)),
+                    1
+                  ),
+                ])),
+          ],
+          64
+        )
+      );
+    },
+  }),
+  Ee = {class: `grid gap-3`},
+  De = [`value`],
+  Oe = {slot: `input`},
+  ke = [`value`],
+  Ae = {key: 0, slot: `after`},
+  je = {
+    variant: `danger`,
+    appearance: `plain`,
+    class: `p-0`,
+    icon: `triangle-exclamation`,
+  },
+  Me = {class: `grid gap-3`},
+  Ne = {class: `font-bold text-sm`},
+  Pe = {class: `text-sm text-neutral-500 mb-2`},
+  $ = {class: `grid gap-6`},
+  Fe = {class: `font-bold text-sm`},
+  Ie = {class: `text-sm text-neutral-500 mb-2`},
+  Le = {slot: `input`},
+  Re = [`value`],
+  ze = {key: 0, slot: `after`},
+  Be = {
+    variant: `danger`,
+    appearance: `plain`,
+    class: `p-0`,
+    icon: `triangle-exclamation`,
+  },
+  Ve = {class: `grid gap-3`},
+  He = {slot: `input`},
+  Ue = [`value`],
+  We = {class: `grid gap-3`},
+  Ge = {class: `font-bold text-sm`},
+  Ke = {class: `text-sm text-neutral-500 mb-2`},
+  qe = {key: 1, class: `grid gap-3`},
+  Je = o({
+    __name: `SectionsEdit`,
+    props: {
+      title: {},
+      crumbs: {},
+      section: {},
+      brandNew: {type: Boolean},
+      typeOptions: {},
+      entryTypes: {},
+      propagationOptions: {},
+      placementOptions: {},
+      siteSettings: {},
+      isMultiSite: {type: Boolean},
+      headlessMode: {type: Boolean},
+      flash: {},
+      errors: {},
+    },
+    setup(r) {
+      let i = r,
+        {readOnly: o} = L(),
+        s = w({
+          sectionId: i.section.id,
+          name: i.section.name ?? ``,
+          handle: i.section.handle ?? ``,
+          type: i.section.type,
+          entryTypes: (i.section.entryTypes ?? []).map(
+            ({actions: e, ...t}) => t
+          ),
+          enableVersioning: i.section.enableVersioning,
+          minAuthors: i.section.minAuthors ?? 0,
+          maxAuthors: i.section.maxAuthors ?? ``,
+          maxLevels: i.section.maxLevels ?? ``,
+          propagationMethod: i.section.propagationMethod,
+          defaultPlacement: i.section.defaultPlacement,
+          previewTargets: i.section.previewTargets ?? [],
+          sites: Object.fromEntries(
+            i.siteSettings.map((e) => [
+              e.handle,
+              {
+                enabled: e.enabled,
+                siteId: e.siteId ?? null,
+                name: e.name ?? ``,
+                singleHomepage: !1,
+                singleUri: e.uriFormat ?? ``,
+                uriFormat: e.uriFormat ?? ``,
+                template: e.template ?? ``,
+                enabledByDefault: e.enabledByDefault,
+              },
+            ])
+          ),
+        }),
+        c = m(() => s.type === `structure`),
+        l = m(() => s.type === `channel` || s.type === `structure`),
+        f = J(
+          () => s.name,
+          (e) => (s.handle = t(e))
+        ),
+        g = J(
+          () => s.name,
+          (e) => {
+            if (!s.sites) return;
+            let t = n(e);
+            s.sites = Object.fromEntries(
+              Object.entries(s.sites).map(([e, n]) => [
+                e,
+                {
+                  ...n,
+                  singleUri: t && !n.singleHomepage ? `${t}` : n.singleUri,
+                  uriFormat: t ? `${t}/{slug}` : ``,
+                  template: t ? `${t}/_entry.twig` : ``,
+                },
+              ])
+            );
+          }
+        );
+      i.brandNew || (f.stop(), g.stop());
+      let {save: _} = ee(s, G);
+      return (t, n) => (
+        u(),
+        A(
+          V,
+          {
+            title: r.title,
+            debug: {form: y(s), $props: t.$props},
+            form: y(s),
+            onSave: y(_),
+          },
+          {
+            default: p(() => [
+              d(
+                I,
+                {appearance: `raised`},
+                {
+                  default: p(() => [
+                    D(`div`, Ee, [
+                      r.section.id
+                        ? (u(),
+                          k(
+                            `input`,
+                            {
+                              key: 0,
+                              type: `hidden`,
+                              name: `sectionId`,
+                              value: r.section.id,
+                            },
+                            null,
+                            8,
+                            De
+                          ))
+                        : h(``, !0),
+                      d(
+                        z,
+                        {
+                          label: y(e)(`Name`),
+                          'help-text': y(e)(
+                            `What this section will be called in the control panel.`
+                          ),
+                          id: `name`,
+                          name: `name`,
+                          modelValue: y(s).name,
+                          'onUpdate:modelValue': (n[0] ||= (e) =>
+                            (y(s).name = e)),
+                          disabled: y(o),
+                          error: r.errors?.name,
+                          required: ``,
+                          autofocus: ``,
+                        },
+                        null,
+                        8,
+                        [
+                          `label`,
+                          `help-text`,
+                          `modelValue`,
+                          `disabled`,
+                          `error`,
+                        ]
+                      ),
+                      d(
+                        K,
+                        {
+                          label: y(e)(`Handle`),
+                          'help-text': y(e)(
+                            `How you'll refer to this section in the templates.`
+                          ),
+                          id: `handle`,
+                          name: `handle`,
+                          modelValue: y(s).handle,
+                          'onUpdate:modelValue': (n[1] ||= (e) =>
+                            (y(s).handle = e)),
+                          disabled: y(o),
+                          error: r.errors?.handle,
+                          required: ``,
+                          onChange: (n[2] ||= (e) => y(f).markDirty()),
+                        },
+                        null,
+                        8,
+                        [
+                          `label`,
+                          `help-text`,
+                          `modelValue`,
+                          `disabled`,
+                          `error`,
+                        ]
+                      ),
+                      d(
+                        H,
+                        {
+                          label: y(e)(
+                            `Enable versioning for entries in this section`
+                          ),
+                          id: `enableVersioning`,
+                          name: `enableVersioning`,
+                          disabled: y(o),
+                          modelValue: y(s).enableVersioning,
+                          'onUpdate:modelValue': (n[3] ||= (e) =>
+                            (y(s).enableVersioning = e)),
+                        },
+                        null,
+                        8,
+                        [`label`, `disabled`, `modelValue`]
+                      ),
+                      d(
+                        F,
+                        {
+                          label: y(e)(`Section Type`),
+                          'help-text': y(e)(`What type of section is this?`),
+                          id: `type`,
+                          name: `type`,
+                          modelValue: y(s).type,
+                          'onUpdate:modelValue': (n[4] ||= (e) =>
+                            (y(s).type = e)),
+                          disabled: y(o),
+                          error: r.errors?.type,
+                        },
+                        {
+                          default: p(() => [
+                            D(`select`, Oe, [
+                              (u(!0),
+                              k(
+                                S,
+                                null,
+                                a(
+                                  r.typeOptions,
+                                  (e) => (
+                                    u(),
+                                    k(
+                                      `option`,
+                                      {key: e.value, value: e.value},
+                                      E(e.label),
+                                      9,
+                                      ke
+                                    )
+                                  )
+                                ),
+                                128
+                              )),
+                            ]),
+                            r.section.id && y(s).type !== `single`
+                              ? (u(),
+                                k(`div`, Ae, [
+                                  D(
+                                    `craft-callout`,
+                                    je,
+                                    E(
+                                      y(e)(
+                                        `Changing this may result in data loss.`
+                                      )
+                                    ),
+                                    1
+                                  ),
+                                ]))
+                              : h(``, !0),
+                          ]),
+                          _: 1,
+                        },
+                        8,
+                        [
+                          `label`,
+                          `help-text`,
+                          `modelValue`,
+                          `disabled`,
+                          `error`,
+                        ]
+                      ),
+                    ]),
+                    (n[14] ||= D(`hr`, {class: `my-6`}, null, -1)),
+                    D(`div`, Me, [
+                      D(`div`, null, [
+                        D(`h3`, Ne, E(y(e)(`Entry Types`)), 1),
+                        D(
+                          `p`,
+                          Pe,
+                          E(
+                            y(e)(
+                              `Choose the types of entries that can be included in this section.`
+                            )
+                          ),
+                          1
+                        ),
+                        d(
+                          Se,
+                          {
+                            'entry-types': r.entryTypes,
+                            modelValue: y(s).entryTypes,
+                            'onUpdate:modelValue': (n[5] ||= (e) =>
+                              (y(s).entryTypes = e)),
+                          },
+                          null,
+                          8,
+                          [`entry-types`, `modelValue`]
+                        ),
+                      ]),
+                    ]),
+                    (n[15] ||= D(`hr`, {class: `my-6`}, null, -1)),
+                    D(`div`, $, [
+                      D(`div`, null, [
+                        D(`h3`, Fe, E(y(e)(`Site settings`)), 1),
+                        D(
+                          `p`,
+                          Ie,
+                          E(
+                            y(e)(
+                              `Choose which sites this section should be available in, and configure the site-specific settings.`
+                            )
+                          ),
+                          1
+                        ),
+                        d(
+                          Ce,
+                          {
+                            'is-multisite': r.isMultiSite,
+                            'is-headless': r.headlessMode,
+                            'selected-type': y(s).type,
+                            modelValue: y(s).sites,
+                            'onUpdate:modelValue': (n[6] ||= (e) =>
+                              (y(s).sites = e)),
+                          },
+                          null,
+                          8,
+                          [
+                            `is-multisite`,
+                            `is-headless`,
+                            `selected-type`,
+                            `modelValue`,
+                          ]
+                        ),
+                      ]),
+                      r.isMultiSite && l.value
+                        ? (u(),
+                          A(
+                            F,
+                            {
+                              key: 0,
+                              label: y(e)(`Propagation Method`),
+                              'help-text': y(e)(
+                                `Of the enabled sites above, which sites should entries in this section be saved to?`
+                              ),
+                              id: `propagationMethod`,
+                              name: `propagationMethod`,
+                              modelValue: y(s).propagationMethod,
+                              'onUpdate:modelValue': (n[7] ||= (e) =>
+                                (y(s).propagationMethod = e)),
+                              disabled: y(o),
+                            },
+                            {
+                              default: p(() => [
+                                D(`select`, Le, [
+                                  (u(!0),
+                                  k(
+                                    S,
+                                    null,
+                                    a(
+                                      r.propagationOptions,
+                                      (e) => (
+                                        u(),
+                                        k(
+                                          `option`,
+                                          {key: e.value, value: e.value},
+                                          E(e.label),
+                                          9,
+                                          Re
+                                        )
+                                      )
+                                    ),
+                                    128
+                                  )),
+                                ]),
+                                r.section.id &&
+                                r.section.propagationMethod !== `none` &&
+                                r.siteSettings.length > 1
+                                  ? (u(),
+                                    k(`div`, ze, [
+                                      D(
+                                        `craft-callout`,
+                                        Be,
+                                        E(
+                                          y(e)(
+                                            `Changing this may result in data loss.`
+                                          )
+                                        ),
+                                        1
+                                      ),
+                                    ]))
+                                  : h(``, !0),
+                              ]),
+                              _: 1,
+                            },
+                            8,
+                            [`label`, `help-text`, `modelValue`, `disabled`]
+                          ))
+                        : h(``, !0),
+                    ]),
+                    c.value
+                      ? (u(),
+                        k(
+                          S,
+                          {key: 0},
+                          [
+                            (n[13] ||= D(`hr`, {class: `my-6`}, null, -1)),
+                            D(`div`, Ve, [
+                              d(
+                                z,
+                                {
+                                  label: y(e)(`Max Levels`),
+                                  'help-text': y(e)(
+                                    `The maximum number of levels this section can have.`
+                                  ),
+                                  id: `maxLevels`,
+                                  name: `maxLevels`,
+                                  modelValue: y(s).maxLevels,
+                                  'onUpdate:modelValue': (n[8] ||= (e) =>
+                                    (y(s).maxLevels = e)),
+                                  disabled: y(o),
+                                  inputmode: `numeric`,
+                                  size: `5`,
+                                  error: r.errors?.maxLevels,
+                                },
+                                null,
+                                8,
+                                [
+                                  `label`,
+                                  `help-text`,
+                                  `modelValue`,
+                                  `disabled`,
+                                  `error`,
+                                ]
+                              ),
+                              d(
+                                F,
+                                {
+                                  label: y(e)(`Default {type} Placement`, {
+                                    type: y(e)(`Entry`),
+                                  }),
+                                  'help-text': y(e)(
+                                    `Where new {type} should be placed by default in the structure.`,
+                                    {type: y(e)(`entries`)}
+                                  ),
+                                  id: `defaultPlacement`,
+                                  name: `defaultPlacement`,
+                                  modelValue: y(s).defaultPlacement,
+                                  'onUpdate:modelValue': (n[9] ||= (e) =>
+                                    (y(s).defaultPlacement = e)),
+                                  disabled: y(o),
+                                },
+                                {
+                                  default: p(() => [
+                                    D(`select`, He, [
+                                      (u(!0),
+                                      k(
+                                        S,
+                                        null,
+                                        a(
+                                          r.placementOptions,
+                                          (e) => (
+                                            u(),
+                                            k(
+                                              `option`,
+                                              {key: e.value, value: e.value},
+                                              E(e.label),
+                                              9,
+                                              Ue
+                                            )
+                                          )
+                                        ),
+                                        128
+                                      )),
+                                    ]),
+                                  ]),
+                                  _: 1,
+                                },
+                                8,
+                                [`label`, `help-text`, `modelValue`, `disabled`]
+                              ),
+                            ]),
+                          ],
+                          64
+                        ))
+                      : h(``, !0),
+                    (n[16] ||= D(`hr`, {class: `my-6`}, null, -1)),
+                    D(`div`, We, [
+                      D(`div`, null, [
+                        D(`h3`, Ge, E(y(e)(`Preview Targets`)), 1),
+                        D(
+                          `p`,
+                          Ke,
+                          E(
+                            y(e)(
+                              `Locations that should be available for previewing entries in this section.`
+                            )
+                          ),
+                          1
+                        ),
+                        d(
+                          Te,
+                          {
+                            modelValue: y(s).previewTargets,
+                            'onUpdate:modelValue': (n[10] ||= (e) =>
+                              (y(s).previewTargets = e)),
+                            disabled: y(o),
+                          },
+                          null,
+                          8,
+                          [`modelValue`, `disabled`]
+                        ),
+                      ]),
+                    ]),
+                    (n[17] ||= D(`hr`, {class: `my-6`}, null, -1)),
+                    l.value
+                      ? (u(),
+                        k(`div`, qe, [
+                          d(
+                            z,
+                            {
+                              label: y(e)(`Min Authors`),
+                              'help-text': y(e)(
+                                `The minimum number of authors that entries in this section can have.`
+                              ),
+                              id: `minAuthors`,
+                              name: `minAuthors`,
+                              modelValue: y(s).minAuthors,
+                              'onUpdate:modelValue': (n[11] ||= (e) =>
+                                (y(s).minAuthors = e)),
+                              disabled: y(o),
+                              inputmode: `numeric`,
+                              maxlength: `5`,
+                              error: r.errors?.minAuthors,
+                            },
+                            null,
+                            8,
+                            [
+                              `label`,
+                              `help-text`,
+                              `modelValue`,
+                              `disabled`,
+                              `error`,
+                            ]
+                          ),
+                          d(
+                            z,
+                            {
+                              label: y(e)(`Max Authors`),
+                              'help-text': y(e)(
+                                `The maximum number of authors that entries in this section can have.`
+                              ),
+                              id: `maxAuthors`,
+                              name: `maxAuthors`,
+                              modelValue: y(s).maxAuthors,
+                              'onUpdate:modelValue': (n[12] ||= (e) =>
+                                (y(s).maxAuthors = e)),
+                              disabled: y(o),
+                              inputmode: `numeric`,
+                              maxlength: `5`,
+                              error: r.errors?.maxAuthors,
+                            },
+                            null,
+                            8,
+                            [
+                              `label`,
+                              `help-text`,
+                              `modelValue`,
+                              `disabled`,
+                              `error`,
+                            ]
+                          ),
+                        ]))
+                      : h(``, !0),
+                  ]),
+                  _: 1,
+                }
+              ),
+            ]),
+            _: 1,
+          },
+          8,
+          [`title`, `debug`, `form`, `onSave`]
+        )
+      );
+    },
+  });
+export {Je as default};

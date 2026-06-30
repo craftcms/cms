@@ -30,6 +30,7 @@ readonly class ProviderDefinition
         public bool $stateless = false,
         public ?bool $createsUsers = null,
         public bool $activatesUsers = false,
+        public bool $trustsEmail = false,
         /** @var string[] */
         public array $scopes = [],
         /** @var array<string, mixed> */

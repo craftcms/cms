@@ -44,7 +44,7 @@ jobs:
         # `testbench typescript:transform` and `testbench wayfinder:generate`
         # derive their output from controllers, DTOs, and routes in src/.
         run: |
-          echo "value=js-ci-v2-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-cp/src/**', 'packages/craftcms-cp/tsconfig*.json', 'packages/craftcms-cp/vite.config.*', 'packages/craftcms-cp/tsdown.config.*', 'src/**/*.php') }}" >> "$GITHUB_OUTPUT"
+          echo "value=js-ci-v2-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-cp/src/**', 'packages/craftcms-cp/tsconfig*.json', 'packages/craftcms-cp/vite.config.*', 'packages/craftcms-cp/tsdown.config.*', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore install + build + generated cache
         id: cache
@@ -68,6 +68,8 @@ jobs:
       - name: Install npm dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Build @craftcms/cp
         if: steps.cache.outputs.cache-hit != 'true'

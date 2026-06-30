@@ -1,1 +1,2 @@
-var e={optionsPopup:`Wyskakujące okno opcji pola wyboru`};export{e as default};
+var e = {optionsPopup: `Wyskakujące okno opcji pola wyboru`};
+export {e as default};

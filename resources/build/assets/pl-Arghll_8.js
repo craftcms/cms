@@ -1,1 +1,20 @@
-var e={allowedFileSize:`Prześlij plik o maks. rozmiarze {maxSize}.`,allowedFileValidatorSimple:`Prześlij plik {allowedType} o maks. rozmiarze {maxSize}.`,allowedFileValidatorComplex:`Prześlij plik {allowedTypesArray} lub {allowedTypesLastItem} o maks. rozmiarze {maxSize}.`,dragAndDropText:`Przeciągnij i upuść pliki tutaj lub`,fileNameDescriptionLabel:`Nazwa pliku: `,generalValidatorMessage:`"{validatorMessage}", dla {listOfErroneousFiles}.`,noFilesSelected:`Nie wybrano żadnych plików.`,noFilesUploaded:`Nie przesłano plików.`,fileSelected:`Wybrane plik: `,fileUploaded:`Przesłany plik: `,filesSelected:`Wybrane pliki: Liczba plików: {numberOfFiles}.`,filesUploaded:`Przesłane pliki: Liczba plików: {numberOfFiles}.`,numberOfFiles:`Liczba plików: {numberOfFiles}.`,removeButtonLabel:`Usuń plik {fileName}`,selectTextDuplicateFileName:`Plik o tej samej nazwie już istnieje.`,selectTextMultipleFile:`Wybierz pliki`,selectTextSingleFile:`Wybierz plik`};export{e as default};
+var e = {
+  allowedFileSize: `Prześlij plik o maks. rozmiarze {maxSize}.`,
+  allowedFileValidatorSimple: `Prześlij plik {allowedType} o maks. rozmiarze {maxSize}.`,
+  allowedFileValidatorComplex: `Prześlij plik {allowedTypesArray} lub {allowedTypesLastItem} o maks. rozmiarze {maxSize}.`,
+  dragAndDropText: `Przeciągnij i upuść pliki tutaj lub`,
+  fileNameDescriptionLabel: `Nazwa pliku: `,
+  generalValidatorMessage: `"{validatorMessage}", dla {listOfErroneousFiles}.`,
+  noFilesSelected: `Nie wybrano żadnych plików.`,
+  noFilesUploaded: `Nie przesłano plików.`,
+  fileSelected: `Wybrane plik: `,
+  fileUploaded: `Przesłany plik: `,
+  filesSelected: `Wybrane pliki: Liczba plików: {numberOfFiles}.`,
+  filesUploaded: `Przesłane pliki: Liczba plików: {numberOfFiles}.`,
+  numberOfFiles: `Liczba plików: {numberOfFiles}.`,
+  removeButtonLabel: `Usuń plik {fileName}`,
+  selectTextDuplicateFileName: `Plik o tej samej nazwie już istnieje.`,
+  selectTextMultipleFile: `Wybierz pliki`,
+  selectTextSingleFile: `Wybierz plik`,
+};
+export {e as default};

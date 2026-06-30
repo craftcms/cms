@@ -34,8 +34,8 @@ readonly class ActionRouteResolver
 
     private function segmentsFromPath(Request $request): ?array
     {
-        $actionTrigger = Cms::config()->actionTrigger;
-        $segmentIndex = $request->isCpRequest() ? 2 : 1;
+        $actionTrigger = trim(Cms::config()->actionTrigger, '/');
+        $segmentIndex = $this->actionTriggerSegmentIndex($request);
 
         if ($request->segment($segmentIndex) === $actionTrigger && count($request->segments()) > $segmentIndex) {
             return array_slice($request->segments(), $segmentIndex);
@@ -59,5 +59,14 @@ readonly class ActionRouteResolver
         $segments = array_values(array_filter(explode('/', $actionParam)));
 
         return $segments === [] ? null : $segments;
+    }
+
+    private function actionTriggerSegmentIndex(Request $request): int
+    {
+        if (! $request->isCpRequest()) {
+            return 1;
+        }
+
+        return trim((string) Cms::config()->cpTrigger, '/') === '' ? 1 : 2;
     }
 }

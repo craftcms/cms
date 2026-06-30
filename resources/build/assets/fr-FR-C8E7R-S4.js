@@ -1,1 +1,3 @@
-import e from"./fr-HB97ISbZ.js";var t={...e};export{t as default};
+import e from './fr-HB97ISbZ.js';
+var t = {...e};
+export {t as default};

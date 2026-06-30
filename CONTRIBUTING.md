@@ -80,7 +80,7 @@ If getting into the weeds is your thing, more detail on these pieces is provided
 
 ### Control Panel Assets
 
-The assets specific to the control panel live in the `resources` folder. Those are built using a fairly typical Vite setup. To develop assets for the control panel, there are two commands:
+The source files specific to the control panel live in the `resources` folder. Production builds are written to the local `cms-assets` package so they can be published through `craftcms/cms-assets`. To develop assets for the control panel, there are two commands:
 ```shell
 # Run the Vite development server
 npm run dev

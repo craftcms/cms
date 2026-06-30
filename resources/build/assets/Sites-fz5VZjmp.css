@@ -1,1 +1,16 @@
-.interior[data-v-f8afee1d]{gap:var(--c-spacing-md);grid-template-columns:minmax(7.5rem,16%) 1fr;align-items:start;display:grid}.title[data-v-f8afee1d]{align-items:center;gap:var(--c-spacing-md);display:flex}.separator[data-v-f8afee1d]{opacity:.5;font-size:.8em;font-weight:400}
+.interior[data-v-f8afee1d] {
+  gap: var(--c-spacing-md);
+  grid-template-columns: minmax(7.5rem, 16%) 1fr;
+  align-items: start;
+  display: grid;
+}
+.title[data-v-f8afee1d] {
+  align-items: center;
+  gap: var(--c-spacing-md);
+  display: flex;
+}
+.separator[data-v-f8afee1d] {
+  opacity: 0.5;
+  font-size: 0.8em;
+  font-weight: 400;
+}

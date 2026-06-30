@@ -181,7 +181,7 @@
     });
 
     router.post(
-      UpdaterController.index['/admin/actions/updater'](),
+      UpdaterController.index['/{cpTrigger?}/{actionTrigger?}/updater'](),
       {
         return: 'utilities/updates',
         install,

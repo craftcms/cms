@@ -96,4 +96,8 @@ export const inputStyles = css`
   :host([center]) ::slotted([slot='input']) {
     text-align: center;
   }
+
+  ::slotted([slot='input']) {
+    width: 100%;
+  }
 `;

@@ -217,6 +217,17 @@ JS, [
         ];
     }
 
+    #[Override]
+    public function pickerConfig(): array
+    {
+        return array_merge(parent::pickerConfig(), [
+            'kind' => 'element',
+            'elementType' => static::elementType(),
+            'refHandle' => static::elementType()::refHandle(),
+            'elementSelectConfig' => $this->elementSelectConfig(),
+        ]);
+    }
+
     public function validateValue(string $value, ?string &$error = null): bool
     {
         return true;

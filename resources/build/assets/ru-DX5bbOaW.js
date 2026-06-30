@@ -1,1 +1,2 @@
-var e={optionsPopup:`Всплывающее окно параметров поля со списком`};export{e as default};
+var e = {optionsPopup: `Всплывающее окно параметров поля со списком`};
+export {e as default};

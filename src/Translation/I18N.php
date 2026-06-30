@@ -10,7 +10,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -19,6 +18,8 @@ use Stringable;
 use Yiisoft\I18n\Locale as YiisoftLocale;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\Translator;
+
+use function CraftCms\Cms\currentUser;
 
 #[Singleton]
 class I18N
@@ -92,7 +93,7 @@ class I18N
             return $this->getLocale();
         }
 
-        if (Cms::isInstalled() && $user = Auth::craftUser()) {
+        if (Cms::isInstalled() && $user = currentUser()) {
             // If they have a preferred locale, use it
             if (($locale = $user->getPreference('locale')) !== null) {
                 return $this->getLocaleById($locale);

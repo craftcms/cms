@@ -106,10 +106,8 @@ readonly class LoginController extends AuthenticationController
 
         /**
          * @var EloquentUserProvider $provider
-         *
-         * @phpstan-ignore method.notFound
          */
-        $provider = auth('craft')->getProvider();
+        $provider = auth()->getProvider();
 
         $user = $this->retrieveLoginUser($request->input('loginName'));
 
@@ -156,7 +154,7 @@ readonly class LoginController extends AuthenticationController
 
     public function logout(Request $request): Response
     {
-        auth('craft')->logout();
+        auth()->logout();
 
         if ($request->wantsJson()) {
             return $this->asSuccess();

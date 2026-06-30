@@ -330,7 +330,7 @@ class FileHelperTest extends TestCase
             [FileHelper::normalizePath(getcwd(), '/') . '/baz/foo/bar', 'foo/bar', 'baz', '/'],
             ['C:/Documents/Newsletters/Summer2018.pdf', 'C:\Documents\Newsletters\Summer2018.pdf', null, '/'],
             ['C:\Documents\Newsletters\Summer2018.pdf', 'C:\Documents\Newsletters\Summer2018.pdf', null, '\\'],
-            ['C:\Documents\Newsletters\c:\Documents\Newsletters\Summer2018.pdf', 'c:\Documents\Newsletters\Summer2018.pdf', 'C:\Documents\Newsletters', '\\'],
+            ['c:\Documents\Newsletters\Summer2018.pdf', 'c:\Documents\Newsletters\Summer2018.pdf', 'C:\Documents\Newsletters', '\\'],
         ];
     }
 

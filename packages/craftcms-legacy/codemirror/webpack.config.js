@@ -9,7 +9,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/codemirror/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/codemirror/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

@@ -1,1 +1,7 @@
-var e={validationError:`Fehler,`,validationWarning:`Warnhinweis,`,validationSuccess:`Erfolgreich,`,validationInfo:`Info,`};export{e as default};
+var e = {
+  validationError: `Fehler,`,
+  validationWarning: `Warnhinweis,`,
+  validationSuccess: `Erfolgreich,`,
+  validationInfo: `Info,`,
+};
+export {e as default};

@@ -7,10 +7,11 @@ namespace CraftCms\Cms\Twig\Extensions;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Field\Data\MarkdownData;
+use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\View\InputNamespace;
@@ -162,19 +163,19 @@ class HtmlTwigExtension extends AbstractExtension
         bool $encode = false,
     ): string {
         if ($encode) {
-            if ($flavor !== null && ! in_array($flavor, ['original', 'pre-encoded'])) {
+            if ($flavor !== null && ! in_array($flavor, [MarkdownService::FLAVOR_ORIGINAL, MarkdownService::FLAVOR_PRE_ENCODED], true)) {
                 throw new InvalidArgumentException('The Markdown flavor cannot be specified when passing `encode=true`.');
             }
 
-            $markdown = Html::encode($markdown);
-            $flavor = 'pre-encoded';
+            $flavor = MarkdownService::FLAVOR_PRE_ENCODED;
         }
 
-        if ($inlineOnly) {
-            return Markdown::parseParagraph((string) $markdown, $flavor);
-        }
-
-        return Markdown::parse((string) $markdown, $flavor);
+        return new MarkdownData(
+            (string) $markdown,
+            $flavor ?? MarkdownService::FLAVOR_ORIGINAL,
+            encode: $encode,
+            inlineOnly: $inlineOnly,
+        )->getHtml();
     }
 
     /**

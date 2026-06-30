@@ -1,1 +1,554 @@
-import{l as e}from"./nav-item-CyC1px5v-DZDpUldI.js";import{a as t,o as n}from"./cp-npqTfNqh.js";import{B as r,E as i,R as a,T as o,X as s,Z as c,_ as l,b as u,ct as d,f,ht as p,l as ee,m,s as h,tt as g,v as _,w as v,x as y,y as b}from"./_plugin-vue_export-helper-g2tzphu6.js";import{t as x}from"./Pane-CJi1MPPH.js";import{t as S}from"./Badge-B_Mkh-0t.js";import{i as C}from"./wayfinder-V597ZF_3.js";import{n as w}from"./dist-BSfJDNP3.js";import{t as T}from"./AppLayout-BXGMFlSp.js";import{t as E}from"./CraftCombobox-NlyOETnv.js";import{t as D}from"./useSettingsSave-D5LL4sJi.js";import{t as O}from"./transformBooleanOptions-BLp8ecwx.js";import{t as k}from"./useInputGenerator-Cl1F0ZZS.js";import{a as A,t as j}from"./DeleteSiteModal-BN07_W_D.js";var M=[`label`,`help-text`,`.modelValue`,`disabled`],N={slot:`input`},P=[`value`],F={key:0,class:`error-list`,slot:`feedback`},I={key:1,slot:`after`},L={variant:`danger`,appearance:`plain`,class:`p-0`,icon:`triangle-exclamation`},R={class:`sr-only`},z={slot:`after`},B={variant:`info`,appearance:`plain`,class:`p-0`,icon:`lightbulb`},V={href:`https://craftcms.com/docs/5.x/configure.html#control-panel-settings`},H=[`label`,`help-text`,`has-feedback-for`,`disabled`],U={slot:`feedback`},W={key:0,class:`error-list`},G=[`innerHTML`],K={slot:`after`},q={key:0,variant:`warning`,appearance:`plain`,class:`p-0`,icon:`lightbulb`},J=[`innerHTML`],Y=[`label`,`help-text`,`disabled`,`checked`],te=[`label`,`disabled`,`checked`],ne={variant:`info`,appearance:`plain`,class:`p-0`,icon:`lightbulb`},re={href:`https://craftcms.com/docs/5.x/configure.html#control-panel-settings`},X=i({__name:`SiteFields`,props:{inertiaForm:{}},setup(i){let d=i,h=ee(),{readOnly:x}=C(),S=l(()=>d.inertiaForm),w=l(()=>h.props.isMultisite),T=l(()=>h.props.groupOptions),D=l(()=>h.props.nameSuggestions),A=l(()=>h.props.languageOptions),j=l(()=>O(h.props.booleanEnvOptions)),X=l(()=>h.props.baseUrlSuggestions),Z=l(()=>h.props.site),Q=k(()=>S.value.name,e=>S.value.handle=t(e)),$=k(()=>S.value.name,e=>S.value.baseUrl=n(e,{prefix:`$`,suffix:`_URL`}));return S.value.id&&(Q.stop(),$.stop()),(t,n)=>(a(),y(m,null,[S.value.id?c((a(),y(`input`,{key:0,name:`id`,"onUpdate:modelValue":n[0]||=e=>S.value.id=e,type:`hidden`},null,512)),[[f,S.value.id]]):u(``,!0),_(`craft-select`,{label:p(e)(`Group`),"help-text":p(e)(`Which group should this site belong to?`),name:`group`,id:`group`,".modelValue":S.value.group,onModelValueChanged:n[1]||=e=>S.value.group=e.target?.modelValue,disabled:p(x)},[_(`select`,N,[(a(!0),y(m,null,r(T.value,e=>(a(),y(`option`,{key:e.value,value:e.value},g(e.label),9,P))),128))]),S.value.errors?.group?(a(),y(`ul`,F,[(a(!0),y(m,null,r(S.value.errors?.group,e=>(a(),y(`li`,{key:e},g(e),1))),128))])):u(``,!0),S.value?.id&&w.value?(a(),y(`div`,I,[_(`craft-callout`,L,[_(`span`,R,g(p(e)(`Warning:`)),1),v(` `+g(p(e)(`Changing this may result in data loss.`)),1)])])):u(``,!0)],40,M),o(E,{modelValue:S.value.name,"onUpdate:modelValue":n[2]||=e=>S.value.name=e,options:D.value,label:p(e)(`Name`),id:`name`,name:`name`,disabled:p(x),error:S.value.errors?.name},{default:s(()=>[_(`div`,z,[_(`craft-callout`,B,[v(g(p(e)(`This can begin with an environment variable.`))+` `,1),_(`a`,V,g(p(e)(`Learn more`)),1)])])]),_:1},8,[`modelValue`,`options`,`label`,`disabled`,`error`]),c(_(`craft-input-handle`,{label:p(e)(`Handle`),"help-text":p(e)(`How you’ll refer to this site in the templates.`),ref:`handle`,id:`handle`,name:`handle`,"has-feedback-for":S.value.errors?.handle?`error`:``,disabled:p(x),"onUpdate:modelValue":n[3]||=e=>S.value.handle=e},[_(`div`,U,[S.value.errors?.handle?(a(),y(`ul`,W,[_(`li`,null,g(S.value.errors.handle),1)])):u(``,!0)])],8,H),[[f,S.value.handle]]),o(E,{modelValue:S.value.language,"onUpdate:modelValue":n[4]||=e=>S.value.language=e,label:p(e)(`Language`),name:`language`,id:`site-language`,"help-text":p(e)(`The language content in this site will use.`),options:A.value,disabled:p(x),error:S.value.errors?.language,"require-option-match":!0},{after:s(()=>[_(`craft-callout`,{variant:`info`,appearance:`plain`,class:`p-0`,icon:`lightbulb`,innerHTML:p(e)(`This can be set to an environment variable with a valid language ID ({examples}).`,{examples:`<code>en</code>/<code>en-GB</code>`})},null,8,G)]),_:1},8,[`modelValue`,`label`,`help-text`,`options`,`disabled`,`error`]),w.value||!Z.value.id?(a(),b(E,{key:1,label:p(e)(`Status`),name:`enabled`,id:`enabled`,disabled:p(x),modelValue:S.value.enabled,"onUpdate:modelValue":n[5]||=e=>S.value.enabled=e,"require-option-match":!0,options:j.value,error:S.value.errors?.enabled},{default:s(()=>[_(`div`,K,[Z.value.primary?(a(),y(`craft-callout`,q,g(p(e)(`The primary site cannot be disabled.`)),1)):u(``,!0),_(`craft-callout`,{variant:`info`,appearance:`plain`,class:`p-0`,icon:`lightbulb`,innerHTML:p(e)(`This can be set to an environment variable with a boolean value ({examples})`,{examples:`<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>`})},null,8,J)])]),_:1},8,[`label`,`disabled`,`modelValue`,`options`,`error`])):u(``,!0),(w.value||!Z.value.id)&&!Z.value.primary?(a(),y(m,{key:2},[Z.value.primary?u(``,!0):(a(),y(`craft-switch`,{key:0,label:p(e)(`Make this the primary site`),"help-text":p(e)(`The primary site will be loaded by default on the front end.`),disabled:p(x),checked:S.value.primary,onCheckedChanged:n[6]||=e=>S.value.primary=e.target?.checked},null,40,Y))],64)):u(``,!0),_(`craft-switch`,{label:p(e)(`This site has its own base URL`),id:`has-urls`,name:`hasUrls`,disabled:p(x),checked:S.value.hasUrls,onCheckedChanged:n[7]||=e=>S.value.hasUrls=e.target?.checked},null,40,te),S.value.hasUrls?(a(),b(E,{key:3,modelValue:S.value.baseUrl,"onUpdate:modelValue":n[8]||=e=>S.value.baseUrl=e,label:p(e)(`Base URL`),"help-text":p(e)(`The base URL for the site.`),id:`base-url`,name:`baseUrl`,error:S.value.errors?.baseUrl,options:X.value,disabled:p(x)},{after:s(()=>[_(`craft-callout`,ne,[v(g(p(e)(`This can begin with an environment variable or alias.`))+` `,1),_(`a`,re,g(p(e)(`Learn more`)),1)])]),_:1},8,[`modelValue`,`label`,`help-text`,`error`,`options`,`disabled`])):u(``,!0)],64))}}),Z={key:0,size:`small`,inline:``},Q={class:`grid gap-3`},$=i({__name:`SitesEdit`,props:{title:{},crumbs:{},site:{},groupId:{},flash:{},errors:{},isMultisite:{type:Boolean}},setup(t){let n=t,r=h({siteId:n.site.id??null,group:n.groupId,name:n.site.nameRaw,handle:n.site.handle,language:n.site.languageRaw,enabled:n.site.enabledRaw,hasUrls:n.site.hasUrls,primary:n.site.primary,baseUrl:n.site.baseUrlRaw??``});w(`keydown`,e=>{(e.metaKey||e.ctrlKey)&&e.key===`s`&&(e.preventDefault(),i())});let{save:i}=D(r,A),c=d(!1);return(l,d)=>(a(),y(m,null,[o(T,{title:t.title,form:p(r),onSave:p(i)},{"title-badge":s(()=>[o(S,{variant:t.site.enabled?`success`:`default`},{default:s(()=>[v(g(t.site.enabled?p(e)(`Enabled`):p(e)(`Disabled`)),1)]),_:1},8,[`variant`]),t.site.primary?(a(),y(`craft-callout`,Z,[_(`span`,null,g(p(e)(`Primary`)),1)])):u(``,!0)]),default:s(()=>[o(x,{appearance:`raised`},{default:s(()=>[_(`div`,Q,[o(X,{"inertia-form":p(r)},null,8,[`inertia-form`])])]),_:1})]),_:1},8,[`title`,`form`,`onSave`]),t.site.primary?u(``,!0):(a(),b(j,{key:0,onClose:d[0]||=e=>c.value=!1,open:c.value,site:n.site},null,8,[`open`,`site`]))],64))}});export{$ as default};
+import {l as e} from './nav-item-CyC1px5v-DZDpUldI.js';
+import {a as t, o as n} from './cp-npqTfNqh.js';
+import {
+  B as r,
+  E as i,
+  R as a,
+  T as o,
+  X as s,
+  Z as c,
+  _ as l,
+  b as u,
+  ct as d,
+  f,
+  ht as p,
+  l as ee,
+  m,
+  s as h,
+  tt as g,
+  v as _,
+  w as v,
+  x as y,
+  y as b,
+} from './_plugin-vue_export-helper-g2tzphu6.js';
+import {t as x} from './Pane-CJi1MPPH.js';
+import {t as S} from './Badge-B_Mkh-0t.js';
+import {i as C} from './wayfinder-V597ZF_3.js';
+import {n as w} from './dist-BSfJDNP3.js';
+import {t as T} from './AppLayout-BXGMFlSp.js';
+import {t as E} from './CraftCombobox-NlyOETnv.js';
+import {t as D} from './useSettingsSave-D5LL4sJi.js';
+import {t as O} from './transformBooleanOptions-BLp8ecwx.js';
+import {t as k} from './useInputGenerator-Cl1F0ZZS.js';
+import {a as A, t as j} from './DeleteSiteModal-BN07_W_D.js';
+var M = [`label`, `help-text`, `.modelValue`, `disabled`],
+  N = {slot: `input`},
+  P = [`value`],
+  F = {key: 0, class: `error-list`, slot: `feedback`},
+  I = {key: 1, slot: `after`},
+  L = {
+    variant: `danger`,
+    appearance: `plain`,
+    class: `p-0`,
+    icon: `triangle-exclamation`,
+  },
+  R = {class: `sr-only`},
+  z = {slot: `after`},
+  B = {variant: `info`, appearance: `plain`, class: `p-0`, icon: `lightbulb`},
+  V = {
+    href: `https://craftcms.com/docs/5.x/configure.html#control-panel-settings`,
+  },
+  H = [`label`, `help-text`, `has-feedback-for`, `disabled`],
+  U = {slot: `feedback`},
+  W = {key: 0, class: `error-list`},
+  G = [`innerHTML`],
+  K = {slot: `after`},
+  q = {
+    key: 0,
+    variant: `warning`,
+    appearance: `plain`,
+    class: `p-0`,
+    icon: `lightbulb`,
+  },
+  J = [`innerHTML`],
+  Y = [`label`, `help-text`, `disabled`, `checked`],
+  te = [`label`, `disabled`, `checked`],
+  ne = {variant: `info`, appearance: `plain`, class: `p-0`, icon: `lightbulb`},
+  re = {
+    href: `https://craftcms.com/docs/5.x/configure.html#control-panel-settings`,
+  },
+  X = i({
+    __name: `SiteFields`,
+    props: {inertiaForm: {}},
+    setup(i) {
+      let d = i,
+        h = ee(),
+        {readOnly: x} = C(),
+        S = l(() => d.inertiaForm),
+        w = l(() => h.props.isMultisite),
+        T = l(() => h.props.groupOptions),
+        D = l(() => h.props.nameSuggestions),
+        A = l(() => h.props.languageOptions),
+        j = l(() => O(h.props.booleanEnvOptions)),
+        X = l(() => h.props.baseUrlSuggestions),
+        Z = l(() => h.props.site),
+        Q = k(
+          () => S.value.name,
+          (e) => (S.value.handle = t(e))
+        ),
+        $ = k(
+          () => S.value.name,
+          (e) => (S.value.baseUrl = n(e, {prefix: `$`, suffix: `_URL`}))
+        );
+      return (
+        S.value.id && (Q.stop(), $.stop()),
+        (t, n) => (
+          a(),
+          y(
+            m,
+            null,
+            [
+              S.value.id
+                ? c(
+                    (a(),
+                    y(
+                      `input`,
+                      {
+                        key: 0,
+                        name: `id`,
+                        'onUpdate:modelValue': (n[0] ||= (e) =>
+                          (S.value.id = e)),
+                        type: `hidden`,
+                      },
+                      null,
+                      512
+                    )),
+                    [[f, S.value.id]]
+                  )
+                : u(``, !0),
+              _(
+                `craft-select`,
+                {
+                  label: p(e)(`Group`),
+                  'help-text': p(e)(`Which group should this site belong to?`),
+                  name: `group`,
+                  id: `group`,
+                  '.modelValue': S.value.group,
+                  onModelValueChanged: (n[1] ||= (e) =>
+                    (S.value.group = e.target?.modelValue)),
+                  disabled: p(x),
+                },
+                [
+                  _(`select`, N, [
+                    (a(!0),
+                    y(
+                      m,
+                      null,
+                      r(
+                        T.value,
+                        (e) => (
+                          a(),
+                          y(
+                            `option`,
+                            {key: e.value, value: e.value},
+                            g(e.label),
+                            9,
+                            P
+                          )
+                        )
+                      ),
+                      128
+                    )),
+                  ]),
+                  S.value.errors?.group
+                    ? (a(),
+                      y(`ul`, F, [
+                        (a(!0),
+                        y(
+                          m,
+                          null,
+                          r(
+                            S.value.errors?.group,
+                            (e) => (a(), y(`li`, {key: e}, g(e), 1))
+                          ),
+                          128
+                        )),
+                      ]))
+                    : u(``, !0),
+                  S.value?.id && w.value
+                    ? (a(),
+                      y(`div`, I, [
+                        _(`craft-callout`, L, [
+                          _(`span`, R, g(p(e)(`Warning:`)), 1),
+                          v(
+                            ` ` +
+                              g(p(e)(`Changing this may result in data loss.`)),
+                            1
+                          ),
+                        ]),
+                      ]))
+                    : u(``, !0),
+                ],
+                40,
+                M
+              ),
+              o(
+                E,
+                {
+                  modelValue: S.value.name,
+                  'onUpdate:modelValue': (n[2] ||= (e) => (S.value.name = e)),
+                  options: D.value,
+                  label: p(e)(`Name`),
+                  id: `name`,
+                  name: `name`,
+                  disabled: p(x),
+                  error: S.value.errors?.name,
+                },
+                {
+                  default: s(() => [
+                    _(`div`, z, [
+                      _(`craft-callout`, B, [
+                        v(
+                          g(
+                            p(e)(`This can begin with an environment variable.`)
+                          ) + ` `,
+                          1
+                        ),
+                        _(`a`, V, g(p(e)(`Learn more`)), 1),
+                      ]),
+                    ]),
+                  ]),
+                  _: 1,
+                },
+                8,
+                [`modelValue`, `options`, `label`, `disabled`, `error`]
+              ),
+              c(
+                _(
+                  `craft-input-handle`,
+                  {
+                    label: p(e)(`Handle`),
+                    'help-text': p(e)(
+                      `How you’ll refer to this site in the templates.`
+                    ),
+                    ref: `handle`,
+                    id: `handle`,
+                    name: `handle`,
+                    'has-feedback-for': S.value.errors?.handle ? `error` : ``,
+                    disabled: p(x),
+                    'onUpdate:modelValue': (n[3] ||= (e) =>
+                      (S.value.handle = e)),
+                  },
+                  [
+                    _(`div`, U, [
+                      S.value.errors?.handle
+                        ? (a(),
+                          y(`ul`, W, [
+                            _(`li`, null, g(S.value.errors.handle), 1),
+                          ]))
+                        : u(``, !0),
+                    ]),
+                  ],
+                  8,
+                  H
+                ),
+                [[f, S.value.handle]]
+              ),
+              o(
+                E,
+                {
+                  modelValue: S.value.language,
+                  'onUpdate:modelValue': (n[4] ||= (e) =>
+                    (S.value.language = e)),
+                  label: p(e)(`Language`),
+                  name: `language`,
+                  id: `site-language`,
+                  'help-text': p(e)(
+                    `The language content in this site will use.`
+                  ),
+                  options: A.value,
+                  disabled: p(x),
+                  error: S.value.errors?.language,
+                  'require-option-match': !0,
+                },
+                {
+                  after: s(() => [
+                    _(
+                      `craft-callout`,
+                      {
+                        variant: `info`,
+                        appearance: `plain`,
+                        class: `p-0`,
+                        icon: `lightbulb`,
+                        innerHTML: p(e)(
+                          `This can be set to an environment variable with a valid language ID ({examples}).`,
+                          {examples: `<code>en</code>/<code>en-GB</code>`}
+                        ),
+                      },
+                      null,
+                      8,
+                      G
+                    ),
+                  ]),
+                  _: 1,
+                },
+                8,
+                [
+                  `modelValue`,
+                  `label`,
+                  `help-text`,
+                  `options`,
+                  `disabled`,
+                  `error`,
+                ]
+              ),
+              w.value || !Z.value.id
+                ? (a(),
+                  b(
+                    E,
+                    {
+                      key: 1,
+                      label: p(e)(`Status`),
+                      name: `enabled`,
+                      id: `enabled`,
+                      disabled: p(x),
+                      modelValue: S.value.enabled,
+                      'onUpdate:modelValue': (n[5] ||= (e) =>
+                        (S.value.enabled = e)),
+                      'require-option-match': !0,
+                      options: j.value,
+                      error: S.value.errors?.enabled,
+                    },
+                    {
+                      default: s(() => [
+                        _(`div`, K, [
+                          Z.value.primary
+                            ? (a(),
+                              y(
+                                `craft-callout`,
+                                q,
+                                g(p(e)(`The primary site cannot be disabled.`)),
+                                1
+                              ))
+                            : u(``, !0),
+                          _(
+                            `craft-callout`,
+                            {
+                              variant: `info`,
+                              appearance: `plain`,
+                              class: `p-0`,
+                              icon: `lightbulb`,
+                              innerHTML: p(e)(
+                                `This can be set to an environment variable with a boolean value ({examples})`,
+                                {
+                                  examples: `<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>`,
+                                }
+                              ),
+                            },
+                            null,
+                            8,
+                            J
+                          ),
+                        ]),
+                      ]),
+                      _: 1,
+                    },
+                    8,
+                    [`label`, `disabled`, `modelValue`, `options`, `error`]
+                  ))
+                : u(``, !0),
+              (w.value || !Z.value.id) && !Z.value.primary
+                ? (a(),
+                  y(
+                    m,
+                    {key: 2},
+                    [
+                      Z.value.primary
+                        ? u(``, !0)
+                        : (a(),
+                          y(
+                            `craft-switch`,
+                            {
+                              key: 0,
+                              label: p(e)(`Make this the primary site`),
+                              'help-text': p(e)(
+                                `The primary site will be loaded by default on the front end.`
+                              ),
+                              disabled: p(x),
+                              checked: S.value.primary,
+                              onCheckedChanged: (n[6] ||= (e) =>
+                                (S.value.primary = e.target?.checked)),
+                            },
+                            null,
+                            40,
+                            Y
+                          )),
+                    ],
+                    64
+                  ))
+                : u(``, !0),
+              _(
+                `craft-switch`,
+                {
+                  label: p(e)(`This site has its own base URL`),
+                  id: `has-urls`,
+                  name: `hasUrls`,
+                  disabled: p(x),
+                  checked: S.value.hasUrls,
+                  onCheckedChanged: (n[7] ||= (e) =>
+                    (S.value.hasUrls = e.target?.checked)),
+                },
+                null,
+                40,
+                te
+              ),
+              S.value.hasUrls
+                ? (a(),
+                  b(
+                    E,
+                    {
+                      key: 3,
+                      modelValue: S.value.baseUrl,
+                      'onUpdate:modelValue': (n[8] ||= (e) =>
+                        (S.value.baseUrl = e)),
+                      label: p(e)(`Base URL`),
+                      'help-text': p(e)(`The base URL for the site.`),
+                      id: `base-url`,
+                      name: `baseUrl`,
+                      error: S.value.errors?.baseUrl,
+                      options: X.value,
+                      disabled: p(x),
+                    },
+                    {
+                      after: s(() => [
+                        _(`craft-callout`, ne, [
+                          v(
+                            g(
+                              p(e)(
+                                `This can begin with an environment variable or alias.`
+                              )
+                            ) + ` `,
+                            1
+                          ),
+                          _(`a`, re, g(p(e)(`Learn more`)), 1),
+                        ]),
+                      ]),
+                      _: 1,
+                    },
+                    8,
+                    [
+                      `modelValue`,
+                      `label`,
+                      `help-text`,
+                      `error`,
+                      `options`,
+                      `disabled`,
+                    ]
+                  ))
+                : u(``, !0),
+            ],
+            64
+          )
+        )
+      );
+    },
+  }),
+  Z = {key: 0, size: `small`, inline: ``},
+  Q = {class: `grid gap-3`},
+  $ = i({
+    __name: `SitesEdit`,
+    props: {
+      title: {},
+      crumbs: {},
+      site: {},
+      groupId: {},
+      flash: {},
+      errors: {},
+      isMultisite: {type: Boolean},
+    },
+    setup(t) {
+      let n = t,
+        r = h({
+          siteId: n.site.id ?? null,
+          group: n.groupId,
+          name: n.site.nameRaw,
+          handle: n.site.handle,
+          language: n.site.languageRaw,
+          enabled: n.site.enabledRaw,
+          hasUrls: n.site.hasUrls,
+          primary: n.site.primary,
+          baseUrl: n.site.baseUrlRaw ?? ``,
+        });
+      w(`keydown`, (e) => {
+        (e.metaKey || e.ctrlKey) && e.key === `s` && (e.preventDefault(), i());
+      });
+      let {save: i} = D(r, A),
+        c = d(!1);
+      return (l, d) => (
+        a(),
+        y(
+          m,
+          null,
+          [
+            o(
+              T,
+              {title: t.title, form: p(r), onSave: p(i)},
+              {
+                'title-badge': s(() => [
+                  o(
+                    S,
+                    {variant: t.site.enabled ? `success` : `default`},
+                    {
+                      default: s(() => [
+                        v(
+                          g(
+                            t.site.enabled ? p(e)(`Enabled`) : p(e)(`Disabled`)
+                          ),
+                          1
+                        ),
+                      ]),
+                      _: 1,
+                    },
+                    8,
+                    [`variant`]
+                  ),
+                  t.site.primary
+                    ? (a(),
+                      y(`craft-callout`, Z, [
+                        _(`span`, null, g(p(e)(`Primary`)), 1),
+                      ]))
+                    : u(``, !0),
+                ]),
+                default: s(() => [
+                  o(
+                    x,
+                    {appearance: `raised`},
+                    {
+                      default: s(() => [
+                        _(`div`, Q, [
+                          o(X, {'inertia-form': p(r)}, null, 8, [
+                            `inertia-form`,
+                          ]),
+                        ]),
+                      ]),
+                      _: 1,
+                    }
+                  ),
+                ]),
+                _: 1,
+              },
+              8,
+              [`title`, `form`, `onSave`]
+            ),
+            t.site.primary
+              ? u(``, !0)
+              : (a(),
+                b(
+                  j,
+                  {
+                    key: 0,
+                    onClose: (d[0] ||= (e) => (c.value = !1)),
+                    open: c.value,
+                    site: n.site,
+                  },
+                  null,
+                  8,
+                  [`open`, `site`]
+                )),
+          ],
+          64
+        )
+      );
+    },
+  });
+export {$ as default};

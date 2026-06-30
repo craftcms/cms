@@ -417,7 +417,7 @@
               // get instantiated before field toggles
               await Craft.appendHeadHtml(data.headHtml);
               await Craft.appendBodyHtml(data.bodyHtml);
-              Craft.initUiElements($entry.children('.fields'));
+              Craft.initUiElements($entry);
               new Craft.MatrixInput.Entry(this, $entry);
               this.entrySort?.addItems($entry);
               this.entrySelect.addItems($entry);
@@ -1273,6 +1273,7 @@
           [param('visibleLayoutElements')]: this.visibleLayoutElements,
           [param('staticLayoutElements')]: this.staticLayoutElements,
           [param('elementType')]: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          [param('siteId')]: this.matrix.settings.siteId,
           [param('ownerId')]: this.matrix.settings.ownerId,
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,

@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
-use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\Twig;
+use CraftCms\Cms\View\PageLifecycle;
 use Twig\Environment as TwigEnvironment;
 use Twig\Loader\ArrayLoader;
 

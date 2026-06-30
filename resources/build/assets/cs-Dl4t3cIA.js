@@ -1,1 +1,2 @@
-var e={optionsPopup:`Vyskakovací okno možností ComboBox`};export{e as default};
+var e = {optionsPopup: `Vyskakovací okno možností ComboBox`};
+export {e as default};

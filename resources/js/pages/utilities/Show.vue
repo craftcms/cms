@@ -24,7 +24,7 @@
 </script>
 
 <template>
-  <IndexLayout :title="title" :debug="$props">
+  <IndexLayout :title="title">
     <template #actions>
       <DynamicHtmlRenderer
         v-if="toolbarHtml"
@@ -55,5 +55,3 @@
     </div>
   </IndexLayout>
 </template>
-
-<style scoped lang="scss"></style>

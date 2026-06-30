@@ -10,10 +10,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
-use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class LatLongField extends BaseNativeField
@@ -61,6 +61,10 @@ class LatLongField extends BaseNativeField
     public function previewHtml(ElementInterface $element): string
     {
         /** @var Address $element */
+        if (! $element->longitude && ! $element->latitude) {
+            return '';
+        }
+
         return sprintf('%s, %s', $element->longitude ?? '0', $element->latitude ?? '0');
     }
 
@@ -88,7 +92,7 @@ class LatLongField extends BaseNativeField
             throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
         }
 
-        $isAdmin = Auth::craftUser()?->isAdmin();
+        $isAdmin = currentUser()?->isAdmin();
 
         return
             Html::beginTag('div', ['class' => 'flex-fields']).

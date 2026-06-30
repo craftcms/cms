@@ -55,9 +55,13 @@ test('activation notification uses set password link for passwordless users', fu
     ]);
     $token = Users::setVerificationCodeOnUser($user);
     $mailable = new ActivationNotification($token)->toMail($user);
+    parse_str(parse_url((string) $mailable->variables['link'], PHP_URL_QUERY), $query);
 
     expect($mailable->key)->toBe('account_activation')
-        ->and((string) $mailable->variables['link'])->toContain('setpassword?code='.$token)
+        ->and($query)->toMatchArray([
+            'code' => $token,
+            'uid' => $user->uid,
+        ])
         ->and((string) $mailable->variables['link'])->not->toContain('verifyemail?code=');
 });
 
@@ -68,9 +72,13 @@ test('activation notification uses verify email link for users with passwords', 
     ]);
     $token = Users::setVerificationCodeOnUser($user);
     $mailable = new ActivationNotification($token)->toMail($user);
+    parse_str(parse_url((string) $mailable->variables['link'], PHP_URL_QUERY), $query);
 
     expect($mailable->key)->toBe('account_activation')
-        ->and((string) $mailable->variables['link'])->toContain('verifyemail?code='.$token)
+        ->and($query)->toMatchArray([
+            'code' => $token,
+            'uid' => $user->uid,
+        ])
         ->and((string) $mailable->variables['link'])->not->toContain('setpassword?code=');
 });
 
@@ -78,9 +86,13 @@ test('email verification notification uses verify new email message and link', f
     $user = UserModel::factory()->createElement();
     $token = Users::setVerificationCodeOnUser($user);
     $mailable = new VerifyEmailNotification($token)->toMail($user);
+    parse_str(parse_url((string) $mailable->variables['link'], PHP_URL_QUERY), $query);
 
     expect($mailable->key)->toBe('verify_new_email')
-        ->and((string) $mailable->variables['link'])->toContain('verifyemail?code='.$token);
+        ->and($query)->toMatchArray([
+            'code' => $token,
+            'uid' => $user->uid,
+        ]);
 });
 
 test('purgeExpiredPendingUsers deletes users with expired tokens', function () {
@@ -88,7 +100,7 @@ test('purgeExpiredPendingUsers deletes users with expired tokens', function () {
     $user = User::find()->id($user->id)->one();
 
     // Create a token and backdate it
-    Password::broker('craft')->createToken($user);
+    Password::broker()->createToken($user);
     DB::table('password_reset_tokens')
         ->where('email', $user->email)
         ->update(['created_at' => now()->subDays(10)]);

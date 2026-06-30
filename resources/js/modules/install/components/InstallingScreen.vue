@@ -2,10 +2,12 @@
   import {t} from '@craftcms/cp';
   import {onMounted} from 'vue';
   import {usePost} from '@/common/composables/useFetch';
-  import {usePage} from '@inertiajs/vue3';
+  import {install as installAction} from '@actions/InstallController';
   import Pane from '@/common/components/Pane.vue';
 
-  const {props: pageProps} = usePage();
+  type InstallResponse = {
+    redirect: string;
+  };
 
   const props = defineProps<{
     data: any;
@@ -17,10 +19,10 @@
     isSuccess,
     isLoading,
     isError,
-  } = usePost('/admin/actions/install/install', {
-    onSuccess: () => {
+  } = usePost<InstallResponse>(installAction().url, {
+    onSuccess: ({redirect}) => {
       setTimeout(() => {
-        window.location.href = pageProps.postCpLoginRedirect as string;
+        window.location.href = redirect;
       }, 1000);
     },
   });

@@ -1,1 +1,182 @@
-import{l as e}from"./nav-item-CyC1px5v-DZDpUldI.js";import{r as t}from"./cp-npqTfNqh.js";import{B as n,E as r,R as i,T as a,X as o,_ as s,ct as c,gt as l,ht as u,k as d,m as f,tt as p,v as m,w as h,x as g,y as _}from"./_plugin-vue_export-helper-g2tzphu6.js";import{i as v,o as y,t as b}from"./AdminTable-32qWVDq-.js";import{t as x}from"./Empty-D0VMu5kQ.js";import{s as S}from"./InlineFlash-DnK6Yp2V.js";import{t as C}from"./DeleteButton-BLk4eDvl.js";import{t as w}from"./createCraftColumnHelper-ssekFPQZ.js";import{t as T}from"./IndexLayout-dNU8P7d2.js";import{c as E,i as D,o as O,s as k}from"./VolumesController-CeQEFyKw.js";var A=r({__name:`ImageTransforms`,props:{transforms:{}},setup(r){function A(t){confirm(e(`Are you sure you want to delete the “{name}” transform?`,{name:t.name}))&&l.delete(k(t.id))}let j=r,M=c({name:!0,handle:!0}),N=w(),P=c([N.link(`name`,{header:e(`Name`)}),N.handle(`handle`),N.accessor(`mode`,{header:e(`Mode`)}),N.display({id:`dimensions`,header:e(`Dimensions`),cell:({row:e})=>`${e.original.width??`Auto`} x ${e.original.height??`Auto`}`}),N.accessor(`interlace`,{header:e(`Interlace`),cell:({row:e})=>e.original.interlace?t(e.original.interlace):`None`}),N.accessor(`format`,{header:e(`Format`),cell:({row:e})=>e.original.format?t(e.original.format):`Auto`}),N.actions(({row:e})=>[d(C,{onClick:()=>A(e.original)})])]),F=v({get data(){return j.transforms},get columns(){return P.value},enableSorting:!1,getCoreRowModel:y(),state:{get columnVisibility(){return M.value}}}),I=s(()=>({volumes:{label:e(`Volumes`),url:D().url},transforms:{label:e(`Image Transforms`),url:E().url,active:!0}}));return(t,r)=>(i(),_(T,null,{actions:o(()=>[a(S,{appearance:`button`,inertia:!1,href:u(O)().url,variant:`accent`,icon:`plus`},{default:o(()=>[h(p(u(e)(`New image transform`)),1)]),_:1},8,[`href`])]),"interior-nav":o(()=>[m(`craft-nav-list`,null,[(i(!0),g(f,null,n(I.value,(e,t)=>(i(),_(S,{key:t,as:`craft-nav-item`,active:e.active??!1,href:e.url,block:``,flush:``,inertia:e.inertia??!0},{default:o(()=>[h(p(e.label),1)]),_:2},1032,[`active`,`href`,`inertia`]))),128))])]),default:o(()=>[a(b,{table:u(F)},{"empty-row":o(()=>[a(x,{label:u(e)(`No image transforms exist yet.`),icon:`image`},{default:o(()=>[a(S,{appearance:`button`,inertia:!1,href:u(O)().url,variant:`neutral`,icon:`plus`},{default:o(()=>[h(p(u(e)(`New image transform`)),1)]),_:1},8,[`href`])]),_:1},8,[`label`])]),_:1},8,[`table`])]),_:1}))}});export{A as default};
+import {l as e} from './nav-item-CyC1px5v-DZDpUldI.js';
+import {r as t} from './cp-npqTfNqh.js';
+import {
+  B as n,
+  E as r,
+  R as i,
+  T as a,
+  X as o,
+  _ as s,
+  ct as c,
+  gt as l,
+  ht as u,
+  k as d,
+  m as f,
+  tt as p,
+  v as m,
+  w as h,
+  x as g,
+  y as _,
+} from './_plugin-vue_export-helper-g2tzphu6.js';
+import {i as v, o as y, t as b} from './AdminTable-32qWVDq-.js';
+import {t as x} from './Empty-D0VMu5kQ.js';
+import {s as S} from './InlineFlash-DnK6Yp2V.js';
+import {t as C} from './DeleteButton-BLk4eDvl.js';
+import {t as w} from './createCraftColumnHelper-ssekFPQZ.js';
+import {t as T} from './IndexLayout-dNU8P7d2.js';
+import {c as E, i as D, o as O, s as k} from './VolumesController-CeQEFyKw.js';
+var A = r({
+  __name: `ImageTransforms`,
+  props: {transforms: {}},
+  setup(r) {
+    function A(t) {
+      confirm(
+        e(`Are you sure you want to delete the “{name}” transform?`, {
+          name: t.name,
+        })
+      ) && l.delete(k(t.id));
+    }
+    let j = r,
+      M = c({name: !0, handle: !0}),
+      N = w(),
+      P = c([
+        N.link(`name`, {header: e(`Name`)}),
+        N.handle(`handle`),
+        N.accessor(`mode`, {header: e(`Mode`)}),
+        N.display({
+          id: `dimensions`,
+          header: e(`Dimensions`),
+          cell: ({row: e}) =>
+            `${e.original.width ?? `Auto`} x ${e.original.height ?? `Auto`}`,
+        }),
+        N.accessor(`interlace`, {
+          header: e(`Interlace`),
+          cell: ({row: e}) =>
+            e.original.interlace ? t(e.original.interlace) : `None`,
+        }),
+        N.accessor(`format`, {
+          header: e(`Format`),
+          cell: ({row: e}) =>
+            e.original.format ? t(e.original.format) : `Auto`,
+        }),
+        N.actions(({row: e}) => [d(C, {onClick: () => A(e.original)})]),
+      ]),
+      F = v({
+        get data() {
+          return j.transforms;
+        },
+        get columns() {
+          return P.value;
+        },
+        enableSorting: !1,
+        getCoreRowModel: y(),
+        state: {
+          get columnVisibility() {
+            return M.value;
+          },
+        },
+      }),
+      I = s(() => ({
+        volumes: {label: e(`Volumes`), url: D().url},
+        transforms: {label: e(`Image Transforms`), url: E().url, active: !0},
+      }));
+    return (t, r) => (
+      i(),
+      _(T, null, {
+        actions: o(() => [
+          a(
+            S,
+            {
+              appearance: `button`,
+              inertia: !1,
+              href: u(O)().url,
+              variant: `accent`,
+              icon: `plus`,
+            },
+            {default: o(() => [h(p(u(e)(`New image transform`)), 1)]), _: 1},
+            8,
+            [`href`]
+          ),
+        ]),
+        'interior-nav': o(() => [
+          m(`craft-nav-list`, null, [
+            (i(!0),
+            g(
+              f,
+              null,
+              n(
+                I.value,
+                (e, t) => (
+                  i(),
+                  _(
+                    S,
+                    {
+                      key: t,
+                      as: `craft-nav-item`,
+                      active: e.active ?? !1,
+                      href: e.url,
+                      block: ``,
+                      flush: ``,
+                      inertia: e.inertia ?? !0,
+                    },
+                    {default: o(() => [h(p(e.label), 1)]), _: 2},
+                    1032,
+                    [`active`, `href`, `inertia`]
+                  )
+                )
+              ),
+              128
+            )),
+          ]),
+        ]),
+        default: o(() => [
+          a(
+            b,
+            {table: u(F)},
+            {
+              'empty-row': o(() => [
+                a(
+                  x,
+                  {
+                    label: u(e)(`No image transforms exist yet.`),
+                    icon: `image`,
+                  },
+                  {
+                    default: o(() => [
+                      a(
+                        S,
+                        {
+                          appearance: `button`,
+                          inertia: !1,
+                          href: u(O)().url,
+                          variant: `neutral`,
+                          icon: `plus`,
+                        },
+                        {
+                          default: o(() => [
+                            h(p(u(e)(`New image transform`)), 1),
+                          ]),
+                          _: 1,
+                        },
+                        8,
+                        [`href`]
+                      ),
+                    ]),
+                    _: 1,
+                  },
+                  8,
+                  [`label`]
+                ),
+              ]),
+              _: 1,
+            },
+            8,
+            [`table`]
+          ),
+        ]),
+        _: 1,
+      })
+    );
+  },
+});
+export {A as default};

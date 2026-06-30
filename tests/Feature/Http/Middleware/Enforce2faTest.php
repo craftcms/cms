@@ -23,7 +23,7 @@ test('allows user through when 2fa is disabled', function () {
     $user = UserModel::factory()->createElement();
     app(GeneralConfig::class)->disable2fa = true;
 
-    $this->actingAs($user, 'craft')
+    $this->actingAs($user)
         ->get('/test-2fa')
         ->assertStatus(200)
         ->assertSee('ok');
@@ -33,7 +33,7 @@ test('allows user through when 2fa is not required', function () {
     $user = UserModel::factory()->createElement();
     // By default 2FA is not required for a standard user in Solo edition or if not configured
 
-    $this->actingAs($user, 'craft')
+    $this->actingAs($user)
         ->get('/test-2fa')
         ->assertStatus(200)
         ->assertSee('ok');
@@ -45,7 +45,7 @@ test('redirects user to 2fa setup when required but not active', function () {
     // Force 2FA requirement for all users
     ProjectConfig::set('users.require2fa', 'all');
 
-    $this->actingAs($user, 'craft')
+    $this->actingAs($user)
         ->get('/test-2fa')
         ->assertStatus(200)
         ->assertViewIs('_special.setup-2fa')
@@ -62,7 +62,7 @@ test('allows user through when 2fa is required and active', function () {
     $auth = Mockery::mock(app(AuthMethods::class))->makePartial();
     $auth->shouldReceive('hasActiveMethod')->andReturn(true);
 
-    $this->actingAs($user, 'craft')
+    $this->actingAs($user)
         ->get('/test-2fa')
         ->assertStatus(200)
         ->assertSee('ok');

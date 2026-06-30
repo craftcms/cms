@@ -374,8 +374,11 @@ trait HasCustomFields
             throw new InvalidFieldException($fieldHandle);
         }
 
-        $this->_customFieldValues[$fieldHandle] = $field->normalizeValue($this->_customFieldValues[$fieldHandle] ?? null, $this);
+        // Mark the field as normalized up front to prevent infinite recursion,
+        // if the field's normalizeValue() method ends up calling renderObjectTemplate() on the element, etc.
         $this->_normalizedFieldValues[$fieldHandle] = true;
+
+        $this->_customFieldValues[$fieldHandle] = $field->normalizeValue($this->_customFieldValues[$fieldHandle] ?? null, $this);
     }
 
     protected function fieldByHandle(string $handle): ?FieldInterface

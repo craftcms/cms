@@ -42,7 +42,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   @property({attribute: 'match-invoker-width', type: Boolean})
   matchInvokerWidth = false;
 
-  // @ts-ignore – Lion expects this to return an OverlayConfig
+  // @ts-expect-error – Lion expects this to return an OverlayConfig
   _defineOverlayConfig() {
     return {
       ...withDropdownConfig(),

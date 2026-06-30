@@ -1,1 +1,24 @@
-import{_ as e,l as t}from"./_plugin-vue_export-helper-g2tzphu6.js";import{n}from"./dist-BSfJDNP3.js";function r(r,i,a={}){let o=t(),s=e(()=>o.props.redirectUrl);n(`keydown`,e=>{(e.metaKey||e.ctrlKey)&&e.key===`s`&&(e.preventDefault(),c({redirect:!1}))});function c({redirect:e=!0}={}){let t={};e&&(t={preserveScroll:!0,preserveState:!0}),r.clearErrors().transform(t=>({...a.transform?.(t)??t,redirect:e&&s.value?s.value:void 0})).submit(i(),t)}return{save:c}}export{r as t};
+import {_ as e, l as t} from './_plugin-vue_export-helper-g2tzphu6.js';
+import {n} from './dist-BSfJDNP3.js';
+function r(r, i, a = {}) {
+  let o = t(),
+    s = e(() => o.props.redirectUrl);
+  n(`keydown`, (e) => {
+    (e.metaKey || e.ctrlKey) &&
+      e.key === `s` &&
+      (e.preventDefault(), c({redirect: !1}));
+  });
+  function c({redirect: e = !0} = {}) {
+    let t = {};
+    (e && (t = {preserveScroll: !0, preserveState: !0}),
+      r
+        .clearErrors()
+        .transform((t) => ({
+          ...(a.transform?.(t) ?? t),
+          redirect: e && s.value ? s.value : void 0,
+        }))
+        .submit(i(), t));
+  }
+  return {save: c};
+}
+export {r as t};

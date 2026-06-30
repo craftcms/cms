@@ -82,7 +82,7 @@ JS, [
         $anySuccess = false;
         $anyFail = false;
 
-        foreach ($query->all() as $element) {
+        foreach ($query->cursor() as $element) {
             if (! Gate::check('save', $element)) {
                 continue;
             }

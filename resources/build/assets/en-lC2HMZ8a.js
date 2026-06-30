@@ -1,1 +1,2 @@
-var e={optionsPopup:`Combobox options popup`};export{e as default};
+var e = {optionsPopup: `Combobox options popup`};
+export {e as default};

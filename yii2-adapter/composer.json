@@ -70,6 +70,10 @@
     {
       "type": "path",
       "url": "../"
+    },
+    {
+      "type": "path",
+      "url": "../cms-assets"
     }
   ],
   "provide": {
@@ -85,7 +89,10 @@
       "CraftCms\\Cms\\": "constants/",
       "CraftCms\\Yii2Adapter\\": "src/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
-    }
+    },
+    "files": [
+      "src/Helpers/Queries.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

@@ -5,40 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Data;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
+use CraftCms\Cms\Image\Enums\ImageTransformFormat;
+use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use Illuminate\Validation\Rule;
 use Override;
 
-use function CraftCms\Cms\t;
-
 class ImageTransform extends Component
 {
     public const string DEFAULT_TRANSFORMER = ImageTransformer::class;
-
-    private const array POSITIONS = [
-        'top-left',
-        'top-center',
-        'top-right',
-        'center-left',
-        'center-center',
-        'center-right',
-        'bottom-left',
-        'bottom-center',
-        'bottom-right',
-    ];
-
-    private const array MODES = [
-        'crop',
-        'fit',
-        'stretch',
-        'letterbox',
-    ];
-
-    private const array INTERLACES = ['none', 'line', 'plane', 'partition'];
-
-    private const array FORMATS = ['jpg', 'gif', 'png', 'webp', 'avif'];
 
     public ?int $id = null;
 
@@ -74,21 +55,6 @@ class ImageTransform extends Component
     public function getIsNamedTransform(): bool
     {
         return $this->id && $this->getTransformer() === self::DEFAULT_TRANSFORMER;
-    }
-
-    /**
-     * Returns the available transform modes.
-     *
-     * @return array<string, string>
-     */
-    public static function modes(): array
-    {
-        return [
-            'crop' => t('Crop'),
-            'fit' => t('Fit'),
-            'stretch' => t('Stretch'),
-            'letterbox' => t('Letterbox'),
-        ];
     }
 
     /**
@@ -141,14 +107,14 @@ class ImageTransform extends Component
     {
         return [
             'name' => ['required', 'string'],
-            'handle' => ['required', 'string'],
+            'handle' => ['required', 'string', new HandleRule, Rule::unique(Table::IMAGETRANSFORMS, 'handle')->ignore($this->id)],
             'width' => ['nullable', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],
-            'mode' => ['required', Rule::in(self::MODES)],
-            'position' => ['required', Rule::in(self::POSITIONS)],
-            'interlace' => ['required', Rule::in(self::INTERLACES)],
+            'mode' => ['required', Rule::enum(ImageTransformMode::class)],
+            'position' => ['required', Rule::enum(ImageTransformPosition::class)],
+            'interlace' => ['required', Rule::enum(ImageTransformInterlace::class)],
             'quality' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'format' => ['nullable', Rule::in(self::FORMATS)],
+            'format' => ['nullable', Rule::enum(ImageTransformFormat::class)],
         ];
     }
 }

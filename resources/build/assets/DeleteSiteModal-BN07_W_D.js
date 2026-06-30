@@ -1,1 +1,259 @@
-import{l as e}from"./nav-item-CyC1px5v-DZDpUldI.js";import"./cp-npqTfNqh.js";import{B as t,E as n,R as r,X as i,_ as a,b as o,ht as s,l as c,m as l,r as u,s as d,tt as f,v as p,x as m,y as h}from"./_plugin-vue_export-helper-g2tzphu6.js";import{n as g,t as _}from"./wayfinder-V597ZF_3.js";import{t as v}from"./ModalForm-ZyQ-Rf8C.js";var y=e=>({url:y.url(e),method:`get`});y.definition={methods:[`get`,`head`],url:`/admin/settings/sites`},y.url=e=>y.definition.url+g(e),y.get=e=>({url:y.url(e),method:`get`}),y.head=e=>({url:y.url(e),method:`head`});var b=e=>({url:b.url(e),method:`get`});b.definition={methods:[`get`,`head`],url:`/admin/settings/sites/new`},b.url=e=>b.definition.url+g(e),b.get=e=>({url:b.url(e),method:`get`}),b.head=e=>({url:b.url(e),method:`head`});var x=e=>({url:x.url(e),method:`post`});x.definition={methods:[`post`],url:`/admin/settings/sites/reorder`},x.url=e=>x.definition.url+g(e),x.post=e=>({url:x.url(e),method:`post`});var S=e=>({url:S.url(e),method:`post`});S.definition={methods:[`post`],url:`/admin/settings/sites`},S.url=e=>S.definition.url+g(e),S.post=e=>({url:S.url(e),method:`post`});var C=(e,t)=>({url:C.url(e,t),method:`delete`});C.definition={methods:[`delete`],url:`/admin/settings/sites/{site}`},C.url=(e,t)=>{(typeof e==`string`||typeof e==`number`)&&(e={site:e}),Array.isArray(e)&&(e={site:e[0]}),e=_(e);let n={site:e.site};return C.definition.url.replace(`{site}`,n.site.toString()).replace(/\/+$/,``)+g(t)},C.delete=(e,t)=>({url:C.url(e,t),method:`delete`});var w=(e,t)=>({url:w.url(e,t),method:`get`});w.definition={methods:[`get`,`head`],url:`/admin/settings/sites/{site}`},w.url=(e,t)=>{(typeof e==`string`||typeof e==`number`)&&(e={site:e}),typeof e==`object`&&!Array.isArray(e)&&`id`in e&&(e={site:e.id}),Array.isArray(e)&&(e={site:e[0]}),e=_(e);let n={site:typeof e.site==`object`?e.site.id:e.site};return w.definition.url.replace(`{site}`,n.site.toString()).replace(/\/+$/,``)+g(t)},w.get=(e,t)=>({url:w.url(e,t),method:`get`}),w.head=(e,t)=>({url:w.url(e,t),method:`head`});var T={class:`grid gap-3`},E=[`label`,`help-text`,`.modelValue`],D=[`label`,`checked`],O=[`label`,`checked`],k=[`label`],A=[`label`,`.modelValue`],j={slot:`input`},M={value:``},N=[`selected`,`value`],P={slot:`feedback`},F={key:0,class:`error-list`},I=n({__name:`DeleteSiteModal`,props:{open:{type:Boolean,default:!1},site:{}},emits:[`close`],setup(n,{emit:g}){let _=g,y=n,b=c(),x=a(()=>b.props.transferContentOptions?b.props.transferContentOptions.filter(e=>e.id!==y.site.id):[]),S=d({id:y.site.id,contentDestination:`transfer`,transferContentTo:null});async function w(){I()}function I(){S.clearErrors().delete(C(y.site.id).url,{onSuccess:()=>{_(`close`),S.reset()}})}function L(){_(`close`),S.clearErrors(),S.reset()}return(a,c)=>(r(),h(v,{title:s(e)(`Delete {site}`,{site:n.site.name}),"is-active":n.open,onClose:L,onSubmit:w,loading:s(S).processing,"submit-label":s(e)(`Delete`)},{default:i(()=>[p(`div`,T,[p(`craft-radio-group`,{name:`contentDestination`,label:s(e)(`Content Destination`),"help-text":s(e)(`What do you want to do with any content that is only available in {siteName}?`,{siteName:n.site.name}),".modelValue":s(S).contentDestination,onModelValueChanged:c[0]||=e=>s(S).contentDestination=e.target.modelValue},[p(`craft-radio`,{label:s(e)(`Transfer it`),".choiceValue":`transfer`,checked:s(S).contentDestination===`transfer`},null,40,D),p(`craft-radio`,{label:s(e)(`Delete it`),".choiceValue":`delete`,checked:s(S).contentDestination===`delete`},null,40,O)],40,E),s(S).contentDestination===`transfer`?(r(),h(s(u),{key:0,data:`transferContentOptions`},{fallback:i(()=>[p(`craft-input`,{disabled:``,label:s(e)(`Transfer content to`)},null,8,k)]),default:i(()=>[p(`craft-select`,{label:s(e)(`Transfer content to`),id:`transfer-to`,name:`transferContentTo`,".modelValue":s(S).transferContentTo,onModelValueChanged:c[1]||=e=>s(S).transferContentTo=e.target.modelValue},[p(`select`,j,[p(`option`,M,f(s(e)(`Select site`)),1),(r(!0),m(l,null,t(x.value,e=>(r(),m(`option`,{key:e.id,selected:e.id===s(S).transferContentTo,value:e.id},f(e.name),9,N))),128))]),p(`div`,P,[s(S).errors?.transferContentTo?(r(),m(`ul`,F,[p(`li`,null,f(s(S).errors.transferContentTo),1)])):o(``,!0)])],40,A)]),_:1})):o(``,!0)])]),_:1},8,[`title`,`is-active`,`loading`,`submit-label`]))}});export{S as a,x as i,b as n,w as r,I as t};
+import {l as e} from './nav-item-CyC1px5v-DZDpUldI.js';
+import './cp-npqTfNqh.js';
+import {
+  B as t,
+  E as n,
+  R as r,
+  X as i,
+  _ as a,
+  b as o,
+  ht as s,
+  l as c,
+  m as l,
+  r as u,
+  s as d,
+  tt as f,
+  v as p,
+  x as m,
+  y as h,
+} from './_plugin-vue_export-helper-g2tzphu6.js';
+import {n as g, t as _} from './wayfinder-V597ZF_3.js';
+import {t as v} from './ModalForm-ZyQ-Rf8C.js';
+var y = (e) => ({url: y.url(e), method: `get`});
+((y.definition = {methods: [`get`, `head`], url: `/admin/settings/sites`}),
+  (y.url = (e) => y.definition.url + g(e)),
+  (y.get = (e) => ({url: y.url(e), method: `get`})),
+  (y.head = (e) => ({url: y.url(e), method: `head`})));
+var b = (e) => ({url: b.url(e), method: `get`});
+((b.definition = {methods: [`get`, `head`], url: `/admin/settings/sites/new`}),
+  (b.url = (e) => b.definition.url + g(e)),
+  (b.get = (e) => ({url: b.url(e), method: `get`})),
+  (b.head = (e) => ({url: b.url(e), method: `head`})));
+var x = (e) => ({url: x.url(e), method: `post`});
+((x.definition = {methods: [`post`], url: `/admin/settings/sites/reorder`}),
+  (x.url = (e) => x.definition.url + g(e)),
+  (x.post = (e) => ({url: x.url(e), method: `post`})));
+var S = (e) => ({url: S.url(e), method: `post`});
+((S.definition = {methods: [`post`], url: `/admin/settings/sites`}),
+  (S.url = (e) => S.definition.url + g(e)),
+  (S.post = (e) => ({url: S.url(e), method: `post`})));
+var C = (e, t) => ({url: C.url(e, t), method: `delete`});
+((C.definition = {methods: [`delete`], url: `/admin/settings/sites/{site}`}),
+  (C.url = (e, t) => {
+    ((typeof e == `string` || typeof e == `number`) && (e = {site: e}),
+      Array.isArray(e) && (e = {site: e[0]}),
+      (e = _(e)));
+    let n = {site: e.site};
+    return (
+      C.definition.url
+        .replace(`{site}`, n.site.toString())
+        .replace(/\/+$/, ``) + g(t)
+    );
+  }),
+  (C.delete = (e, t) => ({url: C.url(e, t), method: `delete`})));
+var w = (e, t) => ({url: w.url(e, t), method: `get`});
+((w.definition = {
+  methods: [`get`, `head`],
+  url: `/admin/settings/sites/{site}`,
+}),
+  (w.url = (e, t) => {
+    ((typeof e == `string` || typeof e == `number`) && (e = {site: e}),
+      typeof e == `object` &&
+        !Array.isArray(e) &&
+        `id` in e &&
+        (e = {site: e.id}),
+      Array.isArray(e) && (e = {site: e[0]}),
+      (e = _(e)));
+    let n = {site: typeof e.site == `object` ? e.site.id : e.site};
+    return (
+      w.definition.url
+        .replace(`{site}`, n.site.toString())
+        .replace(/\/+$/, ``) + g(t)
+    );
+  }),
+  (w.get = (e, t) => ({url: w.url(e, t), method: `get`})),
+  (w.head = (e, t) => ({url: w.url(e, t), method: `head`})));
+var T = {class: `grid gap-3`},
+  E = [`label`, `help-text`, `.modelValue`],
+  D = [`label`, `checked`],
+  O = [`label`, `checked`],
+  k = [`label`],
+  A = [`label`, `.modelValue`],
+  j = {slot: `input`},
+  M = {value: ``},
+  N = [`selected`, `value`],
+  P = {slot: `feedback`},
+  F = {key: 0, class: `error-list`},
+  I = n({
+    __name: `DeleteSiteModal`,
+    props: {open: {type: Boolean, default: !1}, site: {}},
+    emits: [`close`],
+    setup(n, {emit: g}) {
+      let _ = g,
+        y = n,
+        b = c(),
+        x = a(() =>
+          b.props.transferContentOptions
+            ? b.props.transferContentOptions.filter((e) => e.id !== y.site.id)
+            : []
+        ),
+        S = d({
+          id: y.site.id,
+          contentDestination: `transfer`,
+          transferContentTo: null,
+        });
+      async function w() {
+        I();
+      }
+      function I() {
+        S.clearErrors().delete(C(y.site.id).url, {
+          onSuccess: () => {
+            (_(`close`), S.reset());
+          },
+        });
+      }
+      function L() {
+        (_(`close`), S.clearErrors(), S.reset());
+      }
+      return (a, c) => (
+        r(),
+        h(
+          v,
+          {
+            title: s(e)(`Delete {site}`, {site: n.site.name}),
+            'is-active': n.open,
+            onClose: L,
+            onSubmit: w,
+            loading: s(S).processing,
+            'submit-label': s(e)(`Delete`),
+          },
+          {
+            default: i(() => [
+              p(`div`, T, [
+                p(
+                  `craft-radio-group`,
+                  {
+                    name: `contentDestination`,
+                    label: s(e)(`Content Destination`),
+                    'help-text': s(e)(
+                      `What do you want to do with any content that is only available in {siteName}?`,
+                      {siteName: n.site.name}
+                    ),
+                    '.modelValue': s(S).contentDestination,
+                    onModelValueChanged: (c[0] ||= (e) =>
+                      (s(S).contentDestination = e.target.modelValue)),
+                  },
+                  [
+                    p(
+                      `craft-radio`,
+                      {
+                        label: s(e)(`Transfer it`),
+                        '.choiceValue': `transfer`,
+                        checked: s(S).contentDestination === `transfer`,
+                      },
+                      null,
+                      40,
+                      D
+                    ),
+                    p(
+                      `craft-radio`,
+                      {
+                        label: s(e)(`Delete it`),
+                        '.choiceValue': `delete`,
+                        checked: s(S).contentDestination === `delete`,
+                      },
+                      null,
+                      40,
+                      O
+                    ),
+                  ],
+                  40,
+                  E
+                ),
+                s(S).contentDestination === `transfer`
+                  ? (r(),
+                    h(
+                      s(u),
+                      {key: 0, data: `transferContentOptions`},
+                      {
+                        fallback: i(() => [
+                          p(
+                            `craft-input`,
+                            {disabled: ``, label: s(e)(`Transfer content to`)},
+                            null,
+                            8,
+                            k
+                          ),
+                        ]),
+                        default: i(() => [
+                          p(
+                            `craft-select`,
+                            {
+                              label: s(e)(`Transfer content to`),
+                              id: `transfer-to`,
+                              name: `transferContentTo`,
+                              '.modelValue': s(S).transferContentTo,
+                              onModelValueChanged: (c[1] ||= (e) =>
+                                (s(S).transferContentTo = e.target.modelValue)),
+                            },
+                            [
+                              p(`select`, j, [
+                                p(`option`, M, f(s(e)(`Select site`)), 1),
+                                (r(!0),
+                                m(
+                                  l,
+                                  null,
+                                  t(
+                                    x.value,
+                                    (e) => (
+                                      r(),
+                                      m(
+                                        `option`,
+                                        {
+                                          key: e.id,
+                                          selected:
+                                            e.id === s(S).transferContentTo,
+                                          value: e.id,
+                                        },
+                                        f(e.name),
+                                        9,
+                                        N
+                                      )
+                                    )
+                                  ),
+                                  128
+                                )),
+                              ]),
+                              p(`div`, P, [
+                                s(S).errors?.transferContentTo
+                                  ? (r(),
+                                    m(`ul`, F, [
+                                      p(
+                                        `li`,
+                                        null,
+                                        f(s(S).errors.transferContentTo),
+                                        1
+                                      ),
+                                    ]))
+                                  : o(``, !0),
+                              ]),
+                            ],
+                            40,
+                            A
+                          ),
+                        ]),
+                        _: 1,
+                      }
+                    ))
+                  : o(``, !0),
+              ]),
+            ]),
+            _: 1,
+          },
+          8,
+          [`title`, `is-active`, `loading`, `submit-label`]
+        )
+      );
+    },
+  });
+export {S as a, x as i, b as n, w as r, I as t};

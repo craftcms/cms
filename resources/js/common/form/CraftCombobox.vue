@@ -10,10 +10,12 @@
     id?: string;
     name?: string;
     disabled?: boolean;
+    clearable?: boolean;
     options?: Array<SelectItem>;
     callouts?: Array<string>;
     error?: string;
     requireOptionMatch?: boolean;
+    showAllOnEmpty?: boolean;
   }>();
 
   const slots = useSlots();
@@ -39,6 +41,10 @@
       v-model="modelValue"
       :options="options"
       :label="label"
+      :disabled="disabled"
+      :clearable="clearable"
+      :require-option-match="requireOptionMatch"
+      :show-all-on-empty="showAllOnEmpty"
     >
       <!-- Forward all other slots -->
       <template v-for="(_, slotName) in forwardedSlots" #[slotName]="slotData">

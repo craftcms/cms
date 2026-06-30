@@ -7,7 +7,9 @@ module.exports = getConfig({
   config: {
     entry: {UserPermissions: './UserPermissions.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/userpermissions/dist',
+      path:
+        __dirname +
+        '/../../../cms-assets/resources/legacy/userpermissions/dist',
     },
   },
 });

@@ -1,4 +1,6 @@
 import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
+import type {CpComponentRegistry} from '@/bootstrap/components';
+import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 
 declare module '@tanstack/vue-table' {
   interface ColumnMeta {
@@ -52,8 +54,10 @@ type Site = {
   uid: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface CpStatic extends CpServices {}
+interface CpStatic extends CpServices {
+  $components: CpComponentRegistry;
+  $inertia: InertiaPageRegistry;
+}
 
 interface CpNotificationSettings {
   icon: string;
@@ -66,7 +70,22 @@ interface SlideoutInstance {
   open(): void;
   close(): void;
   destroy(): void;
+  on<T = unknown>(event: string, callback: (event: T) => void): void;
+}
+
+interface ElementSelectorModalInstance {
+  show(): void;
   on(event: string, callback: () => void): void;
+}
+
+interface ElementSelectorModalSettings {
+  closeOtherModals?: boolean;
+  criteria?: Record<string, unknown>;
+  hideOnSelect?: boolean;
+  modalTitle?: string;
+  multiSelect?: boolean;
+  onSelect?: (elements: any[]) => void;
+  sources?: string[];
 }
 
 interface CraftStatic {
@@ -77,6 +96,10 @@ interface CraftStatic {
   t(message: string, params?: object, category?: string): string;
   sendActionRequest(method: string, action: string, options?: object): Promise;
   initUiElements($container: JQuery): void;
+  createElementSelectorModal(
+    elementType: string,
+    settings?: ElementSelectorModalSettings
+  ): ElementSelectorModalInstance;
   expandPostArray(arr: object): any;
   escapeHtml(str: string);
   sites: Site[];

@@ -5,11 +5,11 @@ namespace craft\elements\conditions\categories;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\elements\Category;
-use craft\elements\db\CategoryQuery;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use function CraftCms\Cms\t;
 
 /**
@@ -51,8 +51,8 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var CategoryQuery $query */
         $categories = Craft::$app->getCategories();
+        /** @var CategoryQuery $query */
         $query->groupId($this->paramValue(fn(string $uid) => $categories->getGroupByUid($uid)->id ?? null));
     }
 

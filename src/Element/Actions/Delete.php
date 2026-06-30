@@ -172,7 +172,7 @@ JS, [
         $deletedElementIds = [];
         $deleteOwnership = [];
 
-        foreach ($query->all() as $element) {
+        foreach ($query->cursor() as $element) {
             if (! Gate::check('view', $element)) {
                 continue;
             }

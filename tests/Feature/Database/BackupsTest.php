@@ -34,7 +34,7 @@ afterEach(function () {
 
 function backupsTestPhpCommand(string $script, array $args = []): string
 {
-    $command = escapeshellarg(PHP_BINARY).' -r '.escapeshellarg($script);
+    $command = escapeshellarg(PHP_BINARY).' -n -r '.escapeshellarg($script);
 
     foreach ($args as $arg) {
         $command .= ' '.$arg;

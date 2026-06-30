@@ -7,11 +7,10 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
-
-use function Pest\Laravel\actingAs;
 
 it('can initialize from a handle', function () {
     expect(Edition::fromHandle('solo'))->toBe(Edition::Solo);
@@ -112,16 +111,23 @@ it('can determine if the edition can be tested', function () {
 
 it('determines if the edition can be upgraded', function () {
     Edition::set(Edition::Solo);
+    Cms::setIsInstalled();
+
+    $user = Mockery::mock(CraftUser::class);
+    $user->shouldReceive('isAdmin')->andReturnFalse();
+
+    $admin = Mockery::mock(CraftUser::class);
+    $admin->shouldReceive('isAdmin')->andReturnTrue();
+
+    Auth::shouldReceive('user')->andReturn(null, $user, $admin, $admin, $admin);
 
     // Not logged in
     expect(Edition::canUpgrade())->toBefalse();
 
-    actingAs(new User(['admin' => false]));
-
     // Not an admin
     expect(Edition::canUpgrade())->toBefalse();
 
-    actingAs(new User(['admin' => true]));
+    Cms::setIsInstalled();
 
     expect(Edition::canUpgrade())->toBeTrue();
 
@@ -131,8 +137,11 @@ it('determines if the edition can be upgraded', function () {
     expect(Edition::canUpgrade())->toBeFalse();
 
     Cms::config()->allowAdminChanges = true;
+    Cms::setIsInstalled(false);
 
+    Cms::setIsInstalled(false);
     Edition::set(Edition::Pro);
+    Cms::setIsInstalled();
 
     // Pro is already the "max"
     expect(Edition::canUpgrade())->toBeFalse();

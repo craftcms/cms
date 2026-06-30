@@ -161,9 +161,9 @@ describe('absolutePath', function () {
             ->toBe('C:/Documents/Newsletters/Summer2018.pdf');
     });
 
-    test('does not treat lowercase Windows drive letter as absolute with backslash separator', function () {
+    test('treats lowercase Windows drive letter as absolute with backslash separator', function () {
         expect(File::absolutePath('c:\Documents\Newsletters\Summer2018.pdf', 'C:\Documents\Newsletters', '\\'))
-            ->toBe('C:\Documents\Newsletters\c:\Documents\Newsletters\Summer2018.pdf');
+            ->toBe('c:\Documents\Newsletters\Summer2018.pdf');
     });
 });
 

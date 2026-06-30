@@ -15,6 +15,7 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
@@ -76,7 +77,7 @@ class FieldsController
             sortDir: $request->sortDir(),
         );
 
-        return Inertia::render('settings/Fields', [
+        return Inertia::render('settings/fields/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Fields')],
@@ -336,7 +337,7 @@ class FieldsController
     {
         $request->validate([
             'uid' => ['required', 'string'],
-            'elementType' => ['required', 'string'],
+            'elementType' => ['required', 'string', new ElementTypeRule],
             'layoutConfig' => ['required', 'array'],
             'config' => ['nullable', 'array'],
             'settings' => ['nullable', 'string'],

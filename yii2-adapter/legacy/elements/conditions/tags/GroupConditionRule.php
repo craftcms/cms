@@ -4,12 +4,12 @@ namespace craft\elements\conditions\tags;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
 use function CraftCms\Cms\t;
 
 /**
@@ -51,8 +51,8 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var TagQuery $query */
         $tags = Craft::$app->getTags();
+        /** @var TagQuery $query */
         $query->groupId($this->paramValue(fn($uid) => $tags->getTagGroupByUid($uid)->id ?? null));
     }
 

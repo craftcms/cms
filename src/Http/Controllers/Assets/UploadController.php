@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\UploadFailedException;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -32,7 +32,6 @@ use function CraftCms\Cms\t;
 
 readonly class UploadController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -85,8 +84,7 @@ readonly class UploadController
 
         abort_if(! $folder, 400, 'The target folder provided for uploading is not valid');
 
-        // Check the permissions to upload in the resolved folder.
-        $this->requireVolumePermissionByFolder('saveAssets', $folder);
+        Gate::authorize('uploadAsset', $folder);
 
         $filename = AssetsHelper::prepareAssetName($uploadedFile->getClientOriginalName());
 
@@ -215,13 +213,11 @@ readonly class UploadController
         }
 
         if ($assetToReplace) {
-            $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace);
-            $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace);
+            Gate::authorize('replaceFile', $assetToReplace);
         }
 
         if ($sourceAsset) {
-            $this->requireVolumePermissionByAsset('replaceFiles', $sourceAsset);
-            $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $sourceAsset);
+            Gate::authorize('replaceFile', $sourceAsset);
         }
 
         // Handle the Element Action

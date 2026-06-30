@@ -81,7 +81,7 @@ enum TemplateMode: string
     public function defaultTemplateExtensions(): array
     {
         return match ($this) {
-            self::Cp => ['twig', 'html'],
+            self::Cp => ['twig', 'html', 'blade.php'],
             self::Site => Cms::config()->defaultTemplateExtensions,
         };
     }

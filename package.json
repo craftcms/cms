@@ -71,6 +71,7 @@
     "@atlaskit/pragmatic-drag-and-drop": "^1.8.1",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@craftcms/cp": "file:packages/craftcms-cp",
+    "@craftcms/graphiql": "file:packages/craftcms-graphiql",
     "@headlessui/vue": "^1.7.23",
     "@inertiajs/vite": "^3.0.3",
     "@inertiajs/vue3": "^3.0.3",
@@ -79,6 +80,7 @@
     "axios": "^1.17.0",
     "laravel-vite-plugin": "^3.1.0",
     "lit": "^3.3.2",
+    "overtype": "^2.4.0",
     "tailwindcss": "^4.2.4",
     "vue": "^3.5.33"
   }

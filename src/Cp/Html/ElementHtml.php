@@ -29,11 +29,11 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -119,7 +119,7 @@ readonly class ElementHtml
         if ($config['showStatus']) {
             /** @var Chippable&Statusable $component */
             $html .= Html::tag('div', $this->statusHtml->componentStatusIndicatorHtml($component) ?? '', [
-                'slot' => 'indicator'
+                'slot' => 'indicator',
             ]);
         }
 
@@ -404,7 +404,7 @@ JS, [
             Html::beginTag('div', [
                 'class' => ['flex', 'flex-nowrap', 'gap-1', 'items-center'],
             ]).
-            ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '') .
+            ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
             ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
             Html::endTag('div'). // .flex
             $this->cardModifiedStatusHtml($element).
@@ -485,11 +485,9 @@ JS, [
             $html .= $thumbHtml.$contentHtml;
         } else {
             $html .= $contentHtml.$thumbHtml;
-        }
+        } // .card-main
 
-        $html .= Html::endTag('div'); // .card-main
-
-        return $html;
+        return $html.Html::endTag('div');
     }
 
     /**
@@ -648,7 +646,7 @@ JS, [
 
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
-        $user = Auth::craftUser();
+        $user = currentUser();
         $editable = $user && $user->can('view', $element);
 
         return Arr::merge(
@@ -743,9 +741,11 @@ JS, [
         // show the draft name?
         if (($config['showDraftName'] ?? true) && $element->getIsDraft() && ! $element->isProvisionalDraft && ! $element->getIsUnpublishedDraft()) {
             /** @var ElementInterface $element */
-            $content .= Html::tag('span', $element->draftName ?: t('Draft'), [
-                'class' => 'context-label',
-            ]);
+            $content .= Html::tag(
+                'span',
+                $element->draftName ? Html::encode($element->draftName) : t('Draft'),
+                ['class' => 'context-label'],
+            );
         }
 
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
