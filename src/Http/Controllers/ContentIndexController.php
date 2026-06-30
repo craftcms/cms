@@ -98,6 +98,10 @@ class ContentIndexController
             $elementQuery->status($request->input('status'));
         }
 
+        if ($request->filled('search')) {
+            $elementQuery->search($request->input('search'));
+        }
+
         // Apply the requested sort as the authoritative order. The client treats
         // the URL as the source of truth for sorting, so reset any ordering that
         // was applied while building the query (Laravel's orderBy() appends

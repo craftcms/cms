@@ -118,9 +118,9 @@ export default class CraftNavItem extends LitElement {
         <slot name="suffix">
           ${hasSubnav
             ? html`
-                  <craft-button
-                    @click="${this.toggleSubnav}"
-                    appearance="plain"
+                <craft-button
+                  @click="${this.toggleSubnav}"
+                  appearance="plain"
                   icon
                   size="small"
                   aria-controls="${this.id}-subnav"

@@ -13,6 +13,7 @@
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
   import {usePage} from '@inertiajs/vue3';
+  import {Appearance} from '@craftcms/cp';
 
   const props = withDefaults(
     defineProps<{
@@ -314,9 +315,9 @@
             :key="headerGroup.id"
           >
             <template v-if="!readOnly && reorderable">
-              <TH class="cell cell--header">
+              <th class="cell cell--header">
                 <span class="sr-only">Reorder</span>
-              </TH>
+              </th>
             </template>
             <th
               v-if="selectable"
@@ -481,7 +482,9 @@
 
     <div
       class="cp-table-footer"
-      :class="{'cp-table-footer--has-selection': showBulkActions && hasSelection}"
+      :class="{
+        'cp-table-footer--has-selection': showBulkActions && hasSelection,
+      }"
       v-if="showFooter"
     >
       <div class="cp-table-footer__lead">
@@ -507,6 +510,7 @@
             type="button"
             @click="table.previousPage()"
             :disabled="!table.getCanPreviousPage()"
+            :appearance="Appearance.Plain"
             icon
             size="small"
           >
@@ -525,8 +529,8 @@
               label-sr-only
               center
               size="small"
-            >
-            </craft-input>
+              style="width: 4ch"
+            />
             of
             {{ table.getPageCount() }}
           </div>
@@ -535,6 +539,7 @@
             @click="table.nextPage()"
             :disabled="!table.getCanNextPage()"
             size="small"
+            :appearance="Appearance.Plain"
             icon
           >
             <craft-icon
@@ -573,7 +578,7 @@
   // stays visible regardless of how far the list scrolls.
   .cp-table-footer {
     position: sticky;
-    bottom: 0;
+    bottom: var(--c-spacing-md);
     z-index: 1;
     background-color: var(--c-surface-default);
   }

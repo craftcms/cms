@@ -72,6 +72,7 @@ readonly class PerformElementActionController
                 ->positionedAfter(null)
                 ->positionedBefore(null)
                 ->id($elementIds)
+                ->status(null)
         );
 
         abort_if(! $result['valid'], 400, 'Element action params did not validate');

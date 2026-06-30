@@ -1,4 +1,4 @@
-import {css, html, render, type PropertyValues} from 'lit';
+import {css, html, type PropertyValues, render} from 'lit';
 import {property, queryAssignedElements} from 'lit/decorators.js';
 import type CraftActionItem from '@src/components/action-item/action-item';
 import {uuid} from '@lion/ui/core.js';
@@ -63,6 +63,12 @@ export default class CraftActionMenu extends CraftPopover {
       ::slotted([slot='content']) hr {
         margin: 0;
       }
+
+      :host([disabled]) ::slotted([slot='invoker']) {
+        cursor: not-allowed;
+        opacity: 0.5;
+        pointer-events: none;
+      }
     `,
   ];
 
@@ -87,12 +93,15 @@ export default class CraftActionMenu extends CraftPopover {
   @property() icon: string = 'ellipsis';
 
   /**
-   * Disables the generated default invoker (data-driven mode only). When `true`,
-   * the generated `craft-button` invoker is rendered disabled and the menu is
-   * prevented from opening. Has no effect in slot-based mode (a consumer-slotted
-   * invoker manages its own disabled state). Defaults to `false`.
+   * Disables the menu. When `true`, the popover is prevented from opening
+   * (click or keyboard activation of the invoker is a no-op) and `aria-disabled`
+   * is applied to the invoker — whether it's the generated default invoker
+   * (data-driven mode) or a consumer-slotted one (slot-based mode). The
+   * generated `craft-button` invoker is also rendered with its native
+   * `disabled` state. Reflected as an attribute so `:host([disabled])` styling
+   * applies. Defaults to `false`.
    */
-  @property({type: Boolean}) disabled = false;
+  @property({type: Boolean, reflect: true}) disabled = false;
 
   @queryAssignedElements({slot: 'invoker'})
   invokerNodes!: HTMLElement[];
@@ -127,6 +136,27 @@ export default class CraftActionMenu extends CraftPopover {
       firstInvoker.setAttribute('id', `invoker-${this.uid}`);
       firstInvoker.setAttribute('aria-controls', `content-${this.uid}`);
       firstInvoker.setAttribute('aria-haspopup', 'true');
+    }
+    this._syncInvokerDisabled();
+  }
+
+  /**
+   * Reflect `disabled` onto the current invoker (slotted or generated) as
+   * `aria-disabled`, so Lion's overlay controller (which checks
+   * `invokerNode.disabled || invokerNode.getAttribute('aria-disabled') ===
+   * 'true'` before toggling open) refuses to open the popover, and assistive
+   * tech announces the invoker as disabled. Runs for both slot-based and
+   * data-driven modes — a consumer-slotted invoker doesn't otherwise know
+   * about the host's `disabled` state.
+   */
+  private _syncInvokerDisabled(): void {
+    const invoker = this.invokerNodes[0];
+    if (!invoker) return;
+
+    if (this.disabled) {
+      invoker.setAttribute('aria-disabled', 'true');
+    } else {
+      invoker.removeAttribute('aria-disabled');
     }
   }
 
@@ -163,6 +193,14 @@ export default class CraftActionMenu extends CraftPopover {
   protected override willUpdate(changed: PropertyValues): void {
     super.willUpdate(changed);
 
+    // Prevent opening while disabled, regardless of slot-based vs data-driven
+    // mode — a consumer-slotted invoker shouldn't be able to open the menu
+    // either.
+    if (changed.has('opened') && this.opened && this.disabled) {
+      this.opened = false;
+      return;
+    }
+
     if (this.actions === undefined) {
       // Slot-based mode — tear down anything we previously generated.
       this._removeGeneratedNodes();
@@ -173,12 +211,6 @@ export default class CraftActionMenu extends CraftPopover {
     // `updated()` shows the overlay), so it can return state-dependent items.
     const openingWithProvider =
       changed.has('opened') && this.opened && this._hasActionsProvider();
-
-    // Prevent opening while disabled (data-driven / default-invoker mode).
-    if (changed.has('opened') && this.opened && this.disabled) {
-      this.opened = false;
-      return;
-    }
 
     if (
       changed.has('actions') ||
@@ -199,6 +231,10 @@ export default class CraftActionMenu extends CraftPopover {
    */
   protected override updated(changed: PropertyValues): void {
     super.updated(changed);
+
+    if (changed.has('disabled')) {
+      this._syncInvokerDisabled();
+    }
 
     if (this.actions === undefined) {
       return;

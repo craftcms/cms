@@ -80,7 +80,7 @@ export default class CraftReorderButton extends LitElement {
     const label = this.label ?? t('Reorder');
 
     return html`
-      <craft-action-menu>
+      <craft-action-menu ?disabled="${this.disabled}">
         <craft-button
           slot="invoker"
           type="button"
@@ -88,6 +88,7 @@ export default class CraftReorderButton extends LitElement {
           size="small"
           appearance="plain"
           variant="${this.variant}"
+          ?disabled="${this.disabled}"
         >
           <craft-icon label="${label}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">

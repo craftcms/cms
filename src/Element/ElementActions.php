@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
 use CraftCms\Cms\Element\Events\ElementActionPerforming;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -28,8 +29,7 @@ class ElementActions
      * @var list<class-string<ElementActionInterface>>
      */
     private const array INTERACTIVE_ACTIONS = [
-        'CraftCms\\Cms\\Element\\Actions\\SetStatus',
-        'CraftCms\\Cms\\Entry\\Actions\\MoveToSection',
+        MoveToSection::class,
     ];
 
     /**

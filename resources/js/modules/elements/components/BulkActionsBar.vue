@@ -5,6 +5,8 @@
   import type {ActionItem} from '@/common/types';
   import Text from '@/common/components/Text.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {useForm} from '@inertiajs/vue3';
+  import PerformElementActionController from '@actions/Elements/PerformElementActionController';
 
   const props = withDefaults(
     defineProps<{
@@ -59,6 +61,7 @@
    */
   const menuActions = computed<Array<ActionItem>>(() =>
     menuItems.value.map((item): ActionItem => {
+      console.log({item});
       const variant = item.variant ?? (item.destructive ? 'danger' : undefined);
 
       // Disabled (e.g. not-yet-ported interactive) actions render inert.
@@ -101,6 +104,29 @@
       emit('performed');
     }
   }
+
+  const action = useForm({
+    elementIds: props.selectedIds,
+    elementAction: SET_STATUS_KEY,
+    elementType: props.elementType,
+    context: props.context,
+    status: '',
+    source: props.source,
+  });
+
+  function setStatus(status: 'enabled' | 'disabled') {
+    action
+      .transform((data) => {
+        data.status = status;
+        data.elementIds = props.selectedIds;
+
+        return data;
+      })
+      .post(PerformElementActionController.url(), {
+        only: ['data', 'flash', 'pagination'],
+        preserveState: false,
+      });
+  }
 </script>
 
 <template>
@@ -127,16 +153,33 @@
     </div>
 
     <div class="bulk-actions-bar__actions">
-      <craft-button
+      <craft-action-menu
         v-if="setStatusAction"
-        type="button"
-        size="small"
         :disabled="setStatusAction.disabled"
       >
-        {{ setStatusAction.label }}
-      </craft-button>
+        <craft-button
+          slot="invoker"
+          type="button"
+          size="small"
+          :loading="action.processing"
+        >
+          {{ setStatusAction.label }}
+          <craft-icon name="chevron-down" slot="suffix"></craft-icon>
+        </craft-button>
 
-      <ActionMenu v-if="hasMenu" :label="t('Actions')" :actions="menuActions">
+        <div slot="content">
+          <craft-action-item @click="setStatus('enabled')">
+            <craft-indicator fill="success"></craft-indicator>
+            {{ t('Enabled') }}
+          </craft-action-item>
+          <craft-action-item @click="setStatus('disabled')">
+            <craft-indicator fill="danger"></craft-indicator>
+            {{ t('Disabled') }}
+          </craft-action-item>
+        </div>
+      </craft-action-menu>
+
+      <ActionMenu v-if="hasMenu" :actions="menuActions">
         <template #invoker="{attributes}">
           <craft-button type="button" size="small" v-bind="attributes">
             {{ t('Actions') }}

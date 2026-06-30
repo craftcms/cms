@@ -40,6 +40,13 @@
           :options="statusOptions"
           :label="t('Status')"
           label-sr-only
+          @model-value-changed="
+            (event: CustomEvent) => {
+              if (event.detail.isTriggeredByUser) {
+                emit('submit');
+              }
+            }
+          "
         >
           <template #option="{option}">
             <ElementStatus :label="option.label" :value="option.value" />

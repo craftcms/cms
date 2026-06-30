@@ -203,7 +203,7 @@
             <Breadcrumbs :items="crumbs" />
           </div>
         </slot>
-        <main id="main" tabindex="-1">
+        <main id="main" tabindex="-1" class="pb-2xl">
           <component
             :is="form ? 'form' : 'div'"
             method="post"
@@ -352,7 +352,6 @@
 
   .cp__main {
     container-type: size;
-    padding-block-end: var(--c-spacing-2xl);
   }
 
   .cp__header {
@@ -378,6 +377,10 @@
       grid-template-columns: minmax(0, 1fr) clamp(12rem, 20%, 16rem);
       align-items: start;
     }
+  }
+
+  main {
+    padding-block-end: var(--c-spacing-xl);
   }
 
   .details {

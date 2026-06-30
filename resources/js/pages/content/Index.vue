@@ -12,7 +12,7 @@
     type RowSelectionState,
     useVueTable,
   } from '@tanstack/vue-table';
-  import {computed, ref} from 'vue';
+  import {type Component, computed, ref} from 'vue';
   import {
     type PaginationData,
     type SortItem,
@@ -171,6 +171,36 @@
     ...paginationConfig,
     enableMultiSort: false,
   });
+
+  // ElementCards and AdminTable render the same data via two different
+  // layouts; they share most props, but each has a couple of its own (`data`
+  // for cards, `spacing` for the table) that the other doesn't declare.
+  // Keeping those separate from `sharedProps` avoids leaking them as raw DOM
+  // attributes onto whichever component isn't rendered (neither sets
+  // `inheritAttrs: false`).
+  const indexComponent = computed<Component>(() =>
+    mode.value === 'cards' ? ElementCards : AdminTable
+  );
+
+  const sharedProps = computed(() => ({
+    table: elementTable,
+    selectable: true,
+    loading: loading.value,
+    from: props.pagination.from,
+    to: props.pagination.to,
+    total: props.pagination.total,
+    enableAdjustPageSize: true,
+    actions: props.actions,
+    elementType: props.elementType,
+    source: props.source?.key,
+    context: props.context,
+  }));
+
+  const modeSpecificProps = computed(() =>
+    mode.value === 'cards'
+      ? {data: props.data}
+      : {spacing: TableSpacing.Spacious}
+  );
 </script>
 
 <template>
@@ -186,68 +216,22 @@
           :view-mode="mode"
         />
       </nav>
-
-      <div class="mt-4">
-        <ActionMenu
-          :actions="[
-            {
-              label: t('Customize sources'),
-              onClick: () => createCustomizeSourcesModal(),
-            },
-          ]"
-        />
-      </div>
-      <div id="source-actions"></div>
     </template>
 
-    <ElementCards
-      v-if="mode === 'cards'"
-      :table="elementTable"
-      :data="data"
-      :selectable="true"
-      :loading="loading"
-      :from="pagination.from"
-      :to="pagination.to"
-      :total="pagination.total"
-      :enable-adjust-page-size="true"
-      :actions="actions"
-      :element-type="elementType"
-      :source="source?.key"
-      :context="context"
-      @action-performed="onActionPerformed"
-    >
-      <template #table-header>
-        <ElementIndexToolbar
-          v-model:search="filters.form.search"
-          v-model:status="filters.form.status"
-          :processing="filters.form.processing"
-          :status-options="statusOptions"
-          :view-modes="visibleViewModes"
-          :column-options="columnOptions"
-          v-model:mode="mode"
-          v-model:sort-field="sortField"
-          v-model:sort-direction="sortDirection"
-          v-model:table-columns="tableColumns"
-          @submit="filters.submit"
-          @reorder="reorder"
-        />
-      </template>
-    </ElementCards>
+    <template #subnav-actions>
+      <ActionMenu
+        :actions="[
+          {
+            label: t('Customize sources'),
+            onClick: () => createCustomizeSourcesModal(),
+          },
+        ]"
+      />
+    </template>
 
-    <AdminTable
-      v-else
-      :table="elementTable"
-      :selectable="true"
-      :loading="loading"
-      :from="pagination.from"
-      :to="pagination.to"
-      :total="pagination.total"
-      :enable-adjust-page-size="true"
-      :spacing="TableSpacing.Spacious"
-      :actions="actions"
-      :element-type="elementType"
-      :source="source?.key"
-      :context="context"
+    <component
+      :is="indexComponent"
+      v-bind="{...sharedProps, ...modeSpecificProps}"
       @action-performed="onActionPerformed"
     >
       <template #table-header>
@@ -266,7 +250,7 @@
           @reorder="reorder"
         />
       </template>
-    </AdminTable>
+    </component>
   </IndexLayout>
 </template>
 
