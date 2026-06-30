@@ -214,6 +214,21 @@ class ImageHelperTest extends TestCase
         self::assertSame($expected, Image::imageSizeByStream($stream));
     }
 
+    public function testImageSizeByStreamUsesPrimaryIsoBmffProperty(): void
+    {
+        self::assertSame([640, 480], Image::imageSizeByStream(self::_isoBmffTestStream(
+            [[10, 10], [640, 480]],
+            [2]
+        )));
+    }
+
+    public function testImageSizeByStreamRejectsAmbiguousIsoBmffProperties(): void
+    {
+        self::assertFalse(Image::imageSizeByStream(self::_isoBmffTestStream(
+            [[10, 10], [640, 480]]
+        )));
+    }
+
     /**
      *
      */
@@ -264,6 +279,53 @@ class ImageHelperTest extends TestCase
             [[640, 480], fopen($dirnameFile3 . '/_data/assets/files/example-avif.avif', 'rb')],
             [false, fopen($dirnameFile3 . '/_data/assets/files/craft-logo.svg', 'rb')],
         ];
+    }
+
+    /**
+     * @param array<array{int,int}> $propertyDimensions
+     * @param int[] $primaryPropertyIndices
+     * @return resource
+     */
+    private static function _isoBmffTestStream(array $propertyDimensions, array $primaryPropertyIndices = [])
+    {
+        $stream = fopen('php://memory', 'r+');
+        fwrite($stream, self::_isoBmffTestData($propertyDimensions, $primaryPropertyIndices));
+        rewind($stream);
+
+        return $stream;
+    }
+
+    /**
+     * @param array<array{int,int}> $propertyDimensions
+     * @param int[] $primaryPropertyIndices
+     */
+    private static function _isoBmffTestData(array $propertyDimensions, array $primaryPropertyIndices): string
+    {
+        $ipco = '';
+        foreach ($propertyDimensions as $dimensions) {
+            $ipco .= self::_isoBmffBox('ispe', "\x00\x00\x00\x00" . pack('N2', $dimensions[0], $dimensions[1]));
+        }
+
+        $iprp = self::_isoBmffBox('ipco', $ipco);
+        if (!empty($primaryPropertyIndices)) {
+            $iprp .= self::_isoBmffFullBox('ipma', pack('NnC', 1, 1, count($primaryPropertyIndices)) . implode('', array_map('chr', $primaryPropertyIndices)));
+        }
+
+        return self::_isoBmffBox('ftyp', 'avif' . pack('N', 0) . 'avif') .
+            self::_isoBmffFullBox('meta',
+                self::_isoBmffFullBox('pitm', pack('n', 1)) .
+                self::_isoBmffBox('iprp', $iprp)
+            );
+    }
+
+    private static function _isoBmffFullBox(string $type, string $content): string
+    {
+        return self::_isoBmffBox($type, "\x00\x00\x00\x00" . $content);
+    }
+
+    private static function _isoBmffBox(string $type, string $content): string
+    {
+        return pack('N', strlen($content) + 8) . $type . $content;
     }
 
     /**

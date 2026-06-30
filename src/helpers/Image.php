@@ -580,28 +580,138 @@ class Image
     private static function _isoBmffSizeFromBoxes(string $buffer): ?array
     {
         $offset = 0;
+        $primaryItemId = null;
+        $propertyDimensions = [];
+        $ipma = null;
 
         while (($box = self::_imageSizeBoxAt($buffer, $offset)) !== null) {
-            if ($box['type'] === 'ispe') {
-                if ($box['contentSize'] < 12) {
-                    return null;
-                }
-
-                $dimensions = unpack('Nwidth/Nheight', substr($buffer, $box['contentOffset'] + 4, 8));
-                return [$dimensions['width'], $dimensions['height']];
-            }
-
-            if (in_array($box['type'], ['iprp', 'ipco'], true)) {
-                $dimensions = self::_isoBmffSizeFromBoxes(substr($buffer, $box['contentOffset'], $box['contentSize']));
-                if ($dimensions !== null) {
-                    return $dimensions;
-                }
+            switch ($box['type']) {
+                case 'pitm':
+                    $primaryItemId = self::_isoBmffPrimaryItemId(substr($buffer, $box['contentOffset'], $box['contentSize']));
+                    break;
+                case 'iprp':
+                    $iprp = substr($buffer, $box['contentOffset'], $box['contentSize']);
+                    for ($iprpOffset = 0; ($iprpBox = self::_imageSizeBoxAt($iprp, $iprpOffset)) !== null; $iprpOffset = $iprpBox['endOffset']) {
+                        switch ($iprpBox['type']) {
+                            case 'ipco':
+                                $propertyDimensions = self::_isoBmffPropertyDimensions(substr($iprp, $iprpBox['contentOffset'], $iprpBox['contentSize']));
+                                break;
+                            case 'ipma':
+                                $ipma = substr($iprp, $iprpBox['contentOffset'], $iprpBox['contentSize']);
+                                break;
+                        }
+                    }
+                    break;
             }
 
             $offset = $box['endOffset'];
         }
 
+        $dimensions = [];
+        if ($primaryItemId !== null && $ipma !== null) {
+            foreach (self::_isoBmffPrimaryPropertyIndices($ipma, $primaryItemId) as $propertyIndex) {
+                if (isset($propertyDimensions[$propertyIndex])) {
+                    $dimensions[] = $propertyDimensions[$propertyIndex];
+                }
+            }
+        }
+
+        if (count($dimensions) === 1) {
+            return $dimensions[0];
+        }
+
+        if (count($dimensions) === 0 && count($propertyDimensions) === 1) {
+            return reset($propertyDimensions);
+        }
+
         return null;
+    }
+
+    private static function _isoBmffPrimaryItemId(string $buffer): ?int
+    {
+        if (strlen($buffer) < 6) {
+            return null;
+        }
+
+        $version = ord($buffer[0]);
+        if ($version === 0) {
+            return unpack('n', substr($buffer, 4, 2))[1];
+        }
+
+        if ($version === 1 && strlen($buffer) >= 8) {
+            return unpack('N', substr($buffer, 4, 4))[1];
+        }
+
+        return null;
+    }
+
+    private static function _isoBmffPropertyDimensions(string $buffer): array
+    {
+        $dimensions = [];
+        $propertyIndex = 1;
+        $offset = 0;
+
+        while (($box = self::_imageSizeBoxAt($buffer, $offset)) !== null) {
+            if ($box['type'] === 'ispe' && $box['contentSize'] >= 12) {
+                $size = unpack('Nwidth/Nheight', substr($buffer, $box['contentOffset'] + 4, 8));
+                $dimensions[$propertyIndex] = [$size['width'], $size['height']];
+            }
+
+            $propertyIndex++;
+            $offset = $box['endOffset'];
+        }
+
+        return $dimensions;
+    }
+
+    private static function _isoBmffPrimaryPropertyIndices(string $buffer, int $primaryItemId): array
+    {
+        if (strlen($buffer) < 8) {
+            return [];
+        }
+
+        $version = ord($buffer[0]);
+        $entryCount = unpack('N', substr($buffer, 4, 4))[1];
+        $offset = 8;
+
+        for ($i = 0; $i < $entryCount; $i++) {
+            $itemIdLength = $version < 1 ? 2 : 4;
+            if (strlen($buffer) < $offset + $itemIdLength + 1) {
+                return [];
+            }
+
+            $itemId = $itemIdLength === 2 ? unpack('n', substr($buffer, $offset, 2))[1] : unpack('N', substr($buffer, $offset, 4))[1];
+            $offset += $itemIdLength;
+
+            $associationCount = ord($buffer[$offset]);
+            $offset++;
+
+            $propertyIndices = [];
+            $associationLength = $version < 1 ? 1 : 2;
+            for ($j = 0; $j < $associationCount; $j++) {
+                if (strlen($buffer) < $offset + $associationLength) {
+                    return [];
+                }
+
+                if ($associationLength === 1) {
+                    $propertyIndex = ord($buffer[$offset]) & 0x7F;
+                } else {
+                    $propertyIndex = unpack('n', substr($buffer, $offset, 2))[1] & 0x7FFF;
+                }
+
+                $offset += $associationLength;
+
+                if ($propertyIndex !== 0) {
+                    $propertyIndices[] = $propertyIndex;
+                }
+            }
+
+            if ($itemId === $primaryItemId) {
+                return $propertyIndices;
+            }
+        }
+
+        return [];
     }
 
     private static function _littleEndian24(string $bytes): int
