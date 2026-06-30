@@ -24,6 +24,8 @@ use yii\base\InvalidArgumentException;
  */
 class Image
 {
+    private const MAX_IMAGE_SIZE_STREAM_BYTES = 1048576;
+
     /** @since 4.14.0 */
     public const EXIF_IFD0_ROTATE_0 = 1;
     /** @since 4.14.0 */
@@ -308,6 +310,8 @@ class Image
         // PNG 8 byte signature 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
         // GIF 6 byte signature 0x47 0x49 0x46 0x38 0x39|0x37 0x61
         // JPG 2 byte signature 0xFF 0xD8
+        // WebP RIFF signature 0x52 0x49 .... WEBP
+        // HEIC/HEIF/AVIF ISO BMFF signature ....ftyp
 
         // It's much easier to work with a HEX string here, because of variable signature lengths
         $signature = mb_strtoupper(bin2hex(stream_get_contents($stream, 2)));
@@ -382,14 +386,248 @@ class Image
                     $dimensions = array_values($data);
 
                     break;
+                // Maybe WebP
+                case '5249':
+                    $buffer = hex2bin($signature);
+                    if ($buffer === false) {
+                        return false;
+                    }
+
+                    $dimensions = self::_webpSizeByStream($stream, $buffer);
+                    break;
                 default:
-                    return false;
+                    $buffer = hex2bin($signature);
+                    if ($buffer === false) {
+                        return false;
+                    }
+
+                    $dimensions = self::_isoBmffSizeByStream($stream, $buffer);
+                    if ($dimensions === null) {
+                        return false;
+                    }
             }
         } catch (ImageException $exception) {
             Craft::info($exception->getMessage(), __METHOD__);
         }
 
         return $dimensions;
+    }
+
+    /**
+     * @param resource $stream
+     */
+    private static function _webpSizeByStream($stream, string $buffer): array
+    {
+        $header = self::_readFromStream($stream, 12, $buffer);
+        if (strlen($header) < 12 || substr($header, 0, 4) !== 'RIFF' || substr($header, 8, 4) !== 'WEBP') {
+            throw new ImageException('Unrecognized image signature.');
+        }
+
+        $bytesRead = 12;
+        while ($bytesRead < self::MAX_IMAGE_SIZE_STREAM_BYTES) {
+            $chunkHeader = self::_readFromStream($stream, 8, $buffer);
+            if (strlen($chunkHeader) < 8) {
+                break;
+            }
+
+            $bytesRead += 8;
+            $chunk = substr($chunkHeader, 0, 4);
+            $chunkSize = unpack('V', substr($chunkHeader, 4, 4))[1];
+            $paddedChunkSize = $chunkSize + ($chunkSize % 2);
+
+            switch ($chunk) {
+                case 'VP8X':
+                    if ($chunkSize < 10) {
+                        throw new ImageException('Unrecognized WebP file structure.');
+                    }
+
+                    $data = self::_readFromStream($stream, 10, $buffer);
+                    if (strlen($data) < 10) {
+                        throw new ImageException('Unrecognized WebP file structure.');
+                    }
+
+                    return [
+                        self::_littleEndian24(substr($data, 4, 3)) + 1,
+                        self::_littleEndian24(substr($data, 7, 3)) + 1,
+                    ];
+                case 'VP8L':
+                    if ($chunkSize < 5) {
+                        throw new ImageException('Unrecognized WebP file structure.');
+                    }
+
+                    $data = self::_readFromStream($stream, 5, $buffer);
+                    if (strlen($data) < 5 || $data[0] !== "\x2F") {
+                        throw new ImageException('Unrecognized WebP file structure.');
+                    }
+
+                    $bytes = unpack('C4', substr($data, 1, 4));
+                    return [
+                        1 + $bytes[1] + (($bytes[2] & 0x3F) << 8),
+                        1 + (($bytes[2] & 0xC0) >> 6) + ($bytes[3] << 2) + (($bytes[4] & 0x0F) << 10),
+                    ];
+                case 'VP8 ':
+                    if ($chunkSize < 10) {
+                        throw new ImageException('Unrecognized WebP file structure.');
+                    }
+
+                    $data = self::_readFromStream($stream, 10, $buffer);
+                    if (strlen($data) < 10 || substr($data, 3, 3) !== "\x9D\x01\x2A") {
+                        throw new ImageException('Unrecognized WebP file structure.');
+                    }
+
+                    $dimensions = unpack('vwidth/vheight', substr($data, 6, 4));
+                    return [
+                        $dimensions['width'] & 0x3FFF,
+                        $dimensions['height'] & 0x3FFF,
+                    ];
+            }
+
+            if ($bytesRead + $paddedChunkSize > self::MAX_IMAGE_SIZE_STREAM_BYTES) {
+                break;
+            }
+
+            self::_readFromStream($stream, $paddedChunkSize, $buffer);
+            $bytesRead += $paddedChunkSize;
+        }
+
+        throw new ImageException('Unrecognized WebP file structure.');
+    }
+
+    /**
+     * @param resource $stream
+     */
+    private static function _isoBmffSizeByStream($stream, string $buffer): ?array
+    {
+        $buffer .= stream_get_contents($stream, 10);
+        if (strlen($buffer) < 12 || substr($buffer, 4, 4) !== 'ftyp') {
+            return null;
+        }
+
+        $ftypSize = unpack('N', substr($buffer, 0, 4))[1];
+        if ($ftypSize < 16 || $ftypSize > self::MAX_IMAGE_SIZE_STREAM_BYTES) {
+            return null;
+        }
+
+        $buffer .= stream_get_contents($stream, $ftypSize - strlen($buffer));
+        if (strlen($buffer) < $ftypSize) {
+            return null;
+        }
+
+        $ftyp = substr($buffer, 8, $ftypSize - 8);
+        if (!self::_isSupportedIsoBmffImage($ftyp)) {
+            return null;
+        }
+
+        $buffer .= stream_get_contents($stream, self::MAX_IMAGE_SIZE_STREAM_BYTES - strlen($buffer));
+
+        for ($offset = $ftypSize; ($box = self::_imageSizeBoxAt($buffer, $offset)) !== null; $offset = $box['endOffset']) {
+            if ($box['type'] === 'meta') {
+                if ($box['contentSize'] < 4) {
+                    return null;
+                }
+
+                return self::_isoBmffSizeFromBoxes(substr($buffer, $box['contentOffset'] + 4, $box['contentSize'] - 4));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{type:string,contentOffset:int,contentSize:int,endOffset:int}|null
+     */
+    private static function _imageSizeBoxAt(string $buffer, int $offset): ?array
+    {
+        if (strlen($buffer) < $offset + 8) {
+            return null;
+        }
+
+        $size = unpack('N', substr($buffer, $offset, 4))[1];
+        $contentOffset = $offset + 8;
+        $endOffset = $offset + $size;
+
+        if ($size < 8 || strlen($buffer) < $endOffset) {
+            return null;
+        }
+
+        return [
+            'type' => substr($buffer, $offset + 4, 4),
+            'contentOffset' => $contentOffset,
+            'contentSize' => $size - 8,
+            'endOffset' => $endOffset,
+        ];
+    }
+
+    /**
+     * @param resource $stream
+     */
+    private static function _readFromStream($stream, int $length, string &$buffer): string
+    {
+        if ($length === 0) {
+            return '';
+        }
+
+        $data = substr($buffer, 0, $length);
+        $buffer = substr($buffer, strlen($data));
+
+        if (strlen($data) < $length) {
+            $data .= stream_get_contents($stream, $length - strlen($data));
+        }
+
+        return $data;
+    }
+
+    private static function _isSupportedIsoBmffImage(string $ftyp): bool
+    {
+        if (strlen($ftyp) < 8) {
+            return false;
+        }
+
+        $brands = [substr($ftyp, 0, 4)];
+        for ($i = 8, $length = strlen($ftyp); $i + 4 <= $length; $i += 4) {
+            $brands[] = substr($ftyp, $i, 4);
+        }
+
+        foreach ($brands as $brand) {
+            if (in_array($brand, ['avif', 'heic', 'heif'], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function _isoBmffSizeFromBoxes(string $buffer): ?array
+    {
+        $offset = 0;
+
+        while (($box = self::_imageSizeBoxAt($buffer, $offset)) !== null) {
+            if ($box['type'] === 'ispe') {
+                if ($box['contentSize'] < 12) {
+                    return null;
+                }
+
+                $dimensions = unpack('Nwidth/Nheight', substr($buffer, $box['contentOffset'] + 4, 8));
+                return [$dimensions['width'], $dimensions['height']];
+            }
+
+            if (in_array($box['type'], ['iprp', 'ipco'], true)) {
+                $dimensions = self::_isoBmffSizeFromBoxes(substr($buffer, $box['contentOffset'], $box['contentSize']));
+                if ($dimensions !== null) {
+                    return $dimensions;
+                }
+            }
+
+            $offset = $box['endOffset'];
+        }
+
+        return null;
+    }
+
+    private static function _littleEndian24(string $bytes): int
+    {
+        $bytes = unpack('C3', $bytes);
+        return $bytes[1] + ($bytes[2] << 8) + ($bytes[3] << 16);
     }
 
     /**
