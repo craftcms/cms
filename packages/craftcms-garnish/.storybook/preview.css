@@ -1,0 +1,673 @@
+/**
+ * Global demo styles for @craftcms/garnish stories.
+ *
+ * Migrated from the old `playground/styles.css`. Stories reuse the same `.pg-*`
+ * class names so the imperative widgets (which the package itself renders into
+ * `.modal-shade`, `.hud .tip`, `.menu--disclosure`, etc.) look identical to the
+ * playground. The only structural change from the playground: the event-log
+ * panel is mounted INSIDE each story (`.pg-story` flex layout) instead of being
+ * a single page-fixed panel, so it scopes to the story canvas.
+ */
+
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --border: #d6d9de;
+  --text: #1c1f24;
+  --muted: #5c636e;
+  --accent: #1f6feb;
+  --accent-text: #ffffff;
+  --good: #1a7f37;
+  --bad: #b42318;
+  --radius: 6px;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+/* --- Story layout ------------------------------------------------------- */
+/* Events surface in Storybook's Actions panel, so the canvas is just the demo. */
+.pg-story {
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 60ch;
+}
+
+.pg-story > p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.pg-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pg-story button {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  transition: background 0.12s ease;
+}
+
+.pg-story button:hover {
+  background: #eef0f3;
+}
+
+.pg-story button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.pg-story code,
+.pg-story kbd {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 0.85em;
+}
+
+.pg-story code {
+  background: #eef0f3;
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+}
+
+.pg-story kbd {
+  background: #2a2f37;
+  color: #fff;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+}
+
+/* --- Focusable sample --------------------------------------------------- */
+.pg-focus-sample {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.pg-focus-sample > * {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fafbfc;
+  margin: 0;
+}
+
+.pg-focus-sample a {
+  color: var(--accent);
+}
+
+.pg-highlight-focusable {
+  outline: 2px solid var(--good) !important;
+  outline-offset: 1px;
+  background: #e7f6ec !important;
+}
+
+.pg-highlight-keyboard {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* --- Modal + shade (the part the package itself renders) ---------------- */
+.modal-shade {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 18, 22, 0.55);
+  z-index: 100;
+  display: none;
+  opacity: 0;
+}
+
+.pg-modal {
+  position: fixed;
+  z-index: 101;
+  display: none;
+  opacity: 0;
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  min-width: 320px;
+  max-width: 90vw;
+  overflow: auto;
+}
+
+.pg-modal h3 {
+  margin-top: 0;
+}
+
+.pg-modal .pg-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.pg-modal button {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.pg-modal-primary {
+  background: var(--accent) !important;
+  color: var(--accent-text) !important;
+  border-color: var(--accent) !important;
+}
+
+.pg-modal-primary:hover {
+  background: #1a5fce !important;
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* Draggable modal: give it a draggable look + a grabbable header. */
+.pg-modal.pg-modal--draggable {
+  cursor: grab;
+  /* Handles must opt out of browser touch gestures so pointer drags work on
+     touch devices (doc 08 §4). */
+  touch-action: none;
+}
+
+.pg-modal-drag-handle {
+  margin: -1.5rem -1.5rem 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #11151b;
+  color: #e6e9ee;
+  border-radius: var(--radius) var(--radius) 0 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+/* The resize handle Modal injects (.resizehandle) — give it a visible target. */
+.pg-modal .resizehandle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nwse-resize;
+  touch-action: none;
+  color: var(--muted);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 2px;
+}
+
+.pg-modal .resizehandle svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* --- Standalone drag arena --------------------------------------------- */
+.pg-drag-arena {
+  position: relative;
+  margin-top: 1rem;
+  height: 280px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: repeating-linear-gradient(
+    45deg,
+    #fafbfc,
+    #fafbfc 10px,
+    #f2f4f7 10px,
+    #f2f4f7 20px
+  );
+  overflow: hidden;
+}
+
+.pg-drag-box {
+  position: absolute;
+  width: 130px;
+  min-height: 56px;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: var(--shadow);
+  cursor: grab;
+  user-select: none;
+  /* Required so pointer drags aren't eaten by touch scrolling/panning. */
+  touch-action: none;
+}
+
+.pg-drag-box:active {
+  cursor: grabbing;
+}
+
+.pg-drag-box--move {
+  background: var(--good);
+}
+
+.pg-drag-box--xlock {
+  background: #0a6d2f;
+}
+
+.pg-drag-box--base {
+  background: var(--accent);
+}
+
+.pg-drag-box--scroll {
+  background: #b85c00;
+}
+
+/* --- Auto-scroll container ---------------------------------------------- */
+.pg-scroll-container {
+  position: relative;
+  margin-top: 1rem;
+  height: 260px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+
+.pg-scroll-tall {
+  position: relative;
+  height: 1100px;
+  padding: 1rem;
+}
+
+.pg-scroll-filler {
+  margin: 0;
+  padding: 8rem 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.pg-scroll-container .pg-drag-box--scroll {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+/* --- Drag with helpers -------------------------------------------------- */
+.pg-helper-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pg-helper-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: grab;
+  user-select: none;
+  /* Required so pointer drags aren't eaten by touch scrolling/panning. */
+  touch-action: none;
+}
+
+.pg-helper-item:active {
+  cursor: grabbing;
+}
+
+.pg-helper-grip {
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  letter-spacing: -0.15em;
+}
+
+/* The clone Drag creates gets the .draghelper class; give it a lifted look. */
+.draghelper {
+  box-shadow: var(--shadow);
+  opacity: 0.92;
+  border-color: var(--accent) !important;
+  cursor: grabbing;
+}
+
+/* --- DragDrop / drop targets -------------------------------------------- */
+.pg-dragdrop-layout {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.pg-dragdrop-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+
+.pg-dragdrop-chip {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-align: center;
+  cursor: grab;
+  user-select: none;
+  /* Required so pointer drags aren't eaten by touch scrolling/panning. */
+  touch-action: none;
+}
+
+.pg-dragdrop-chip:active {
+  cursor: grabbing;
+}
+
+.pg-dragdrop-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pg-dropzone {
+  padding: 1.1rem 0.75rem;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--surface);
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+/* DragDrop toggles `activeDropTargetClass` (default: 'active') on hover. */
+.pg-dropzone.active {
+  border-color: var(--good);
+  border-style: solid;
+  background: #e7f6ec;
+  color: var(--good);
+}
+
+/* Briefly flashed by the demo when a drop lands on a zone. */
+.pg-dropzone.pg-dropzone--hit {
+  border-color: var(--accent);
+  background: #e6f0ff;
+  color: var(--accent);
+}
+
+/* --- DragSort / reorderable list ---------------------------------------- */
+.pg-sort-list {
+  margin-top: 1rem;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pg-sort-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: grab;
+  user-select: none;
+  /* Required so pointer drags aren't eaten by touch scrolling/panning. */
+  touch-action: none;
+}
+
+.pg-sort-item:active {
+  cursor: grabbing;
+}
+
+.pg-sort-grip {
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  letter-spacing: -0.15em;
+}
+
+/* The placeholder DragSort inserts at the landing spot. */
+.pg-sort-insertion {
+  list-style: none;
+  height: 2.5rem;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius);
+  background: #e6f0ff;
+}
+
+/* --- HUD / anchored popover -------------------------------------------- */
+.pg-hud-arena {
+  position: relative;
+  margin-top: 1rem;
+  height: 360px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: repeating-linear-gradient(
+    -45deg,
+    #fafbfc,
+    #fafbfc 10px,
+    #f2f4f7 10px,
+    #f2f4f7 20px
+  );
+}
+
+.pg-hud-trigger {
+  position: absolute;
+}
+
+/* The HUD container — the HUD JS sets display/position/left/top inline. */
+.hud {
+  z-index: 102;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.hud .body {
+  margin: 0;
+}
+
+.hud .main-container {
+  overflow: hidden;
+}
+
+.hud .main {
+  padding: 0.9rem 1.1rem;
+  min-width: 200px;
+  max-width: 260px;
+}
+
+/* The tip/arrow. The JS positions it along the relevant edge (the perpendicular
+   offset), and the orientation class (tip-top/-bottom/-left/-right) pins it to
+   the correct edge. */
+.hud .tip {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+}
+
+.hud .tip::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+.hud .tip-top {
+  top: -15px;
+}
+
+.hud .tip-bottom {
+  bottom: -15px;
+}
+
+.hud .tip-left {
+  left: -15px;
+}
+
+.hud .tip-right {
+  right: -15px;
+}
+
+.pg-hud-content h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.pg-hud-content p {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hud-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 18, 22, 0.25);
+  display: none;
+}
+
+/* --- DisclosureMenu / dropdown menu ------------------------------------ */
+.pg-disc-trigger {
+  font-weight: 600;
+}
+
+/* The menu panel — the JS sets display/top/left/right/opacity inline. */
+.menu.menu--disclosure {
+  position: absolute;
+  display: none;
+  z-index: 102;
+  min-width: 180px;
+  padding: 4px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  opacity: 0;
+}
+
+.menu.menu--disclosure.visible {
+  display: block;
+}
+
+.menu--disclosure ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu--disclosure h3 {
+  margin: 0.4rem 0 0.2rem;
+  padding: 0 0.6rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.menu--disclosure hr {
+  margin: 0.35rem 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.menu--disclosure .menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.menu--disclosure .menu-item:hover,
+.menu--disclosure .menu-item:focus {
+  background: var(--accent-soft, #eef2ff);
+  outline: none;
+}
+
+.menu--disclosure .menu-item.sel {
+  font-weight: 600;
+}
+
+.menu--disclosure .menu-item.error {
+  color: #c0392b;
+}
+
+.menu--disclosure .menu-item.disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.menu--disclosure .search-container {
+  padding: 0.25rem 0.25rem 0.5rem;
+}
+
+.menu--disclosure .search-container input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font: inherit;
+}
+
+.menu--disclosure .clear-btn {
+  display: none;
+}
+
+/* Hidden / filtered items + their empty groups/separators collapse. */
+.menu--disclosure li.hidden,
+.menu--disclosure li.filtered,
+.menu--disclosure ul.hidden,
+.menu--disclosure hr.hidden,
+.menu--disclosure h3.hidden {
+  display: none;
+}

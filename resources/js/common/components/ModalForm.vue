@@ -36,6 +36,8 @@
     :overlay="overlay"
     @close="emit('close')"
     :width="width"
+    :height="height"
+    :max-height="maxHeight"
   >
     <form @submit.prevent="submitHandler">
       <Pane :title="title">

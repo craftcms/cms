@@ -44,7 +44,7 @@ jobs:
         # `testbench typescript:transform` and `testbench wayfinder:generate`
         # derive their output from controllers, DTOs, and routes in src/.
         run: |
-          echo "value=js-ci-v2-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-cp/src/**', 'packages/craftcms-cp/tsconfig*.json', 'packages/craftcms-cp/vite.config.*', 'packages/craftcms-cp/tsdown.config.*', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
+          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-cp/src/**', 'packages/craftcms-cp/tsconfig*.json', 'packages/craftcms-cp/vite.config.*', 'packages/craftcms-cp/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/tsdown.config.*', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore install + build + generated cache
         id: cache
@@ -54,6 +54,7 @@ jobs:
             node_modules
             packages/*/node_modules
             packages/craftcms-cp/dist
+            packages/craftcms-garnish/dist
             vendor
             resources/js/actions
             resources/js/routes
@@ -70,6 +71,13 @@ jobs:
         run: npm ci
         env:
           CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
+      # Build the garnish package so its `dist/*.d.ts` exist — `vue-tsc` resolves
+      # `@craftcms/garnish` from `dist` (its `types`), and dist is gitignored.
+      # Without this the typecheck job fails to resolve the module.
+      - name: Build @craftcms/garnish
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm run build:garnish
 
       - name: Build @craftcms/cp
         if: steps.cache.outputs.cache-hit != 'true'
@@ -105,6 +113,7 @@ jobs:
             node_modules
             packages/*/node_modules
             packages/craftcms-cp/dist
+            packages/craftcms-garnish/dist
             vendor
             resources/js/actions
             resources/js/routes
@@ -137,6 +146,7 @@ jobs:
             node_modules
             packages/*/node_modules
             packages/craftcms-cp/dist
+            packages/craftcms-garnish/dist
             vendor
             resources/js/actions
             resources/js/routes

@@ -51,13 +51,40 @@ function expandedHexValue(value: unknown): string | null {
   return null;
 }
 
+/**
+ * @summary A color input built on top of Lion's text input. Pairs a free
+ * text field (prefixed with `#`) with a native `<input type="color">` swatch and
+ * an optional datalist of preset colors.
+ *
+ * Values are normalized to bare lowercase-friendly hex throughout (the leading
+ * `#` is stripped and 3-digit shorthand is expanded to 6 digits for the picker),
+ * so the model value is always store-ready. The native picker is only rendered
+ * when the browser supports `<input type="color">`.
+ *
+ * @slot input - The text input element (provided by default; override to
+ * customize).
+ * @slot label - Field label.
+ * @slot help-text - Supplementary help text.
+ * @slot feedback - Validation feedback.
+ *
+ * @since 1.0
+ */
 export default class CraftInputColor extends LionInput {
   static override get styles() {
     return [...super.styles, inputStyles, styles];
   }
 
+  /**
+   * Cached result of {@link doesBrowserSupportColorInputs} (`null` until first
+   * probed).
+   */
   static _browserSupportsColorInputs: boolean | null = null;
 
+  /**
+   * Preset colors offered in the picker's datalist. Accepts an array, or a JSON
+   * array string via the `presets` attribute. Each value may be `#`-prefixed or
+   * bare, 3- or 6-digit hex; invalid entries are dropped.
+   */
   @property({converter: presetsConverter})
   presets: string[] = [];
 
@@ -68,6 +95,12 @@ export default class CraftInputColor extends LionInput {
     this.type = 'text';
   }
 
+  /**
+   * Whether the browser supports `<input type="color">`. Probed once by creating
+   * a throwaway input and checking whether the `color` type stuck; the result is
+   * cached on {@link _browserSupportsColorInputs}. When unsupported, the swatch
+   * picker is omitted and only the text field is shown.
+   */
   static doesBrowserSupportColorInputs(): boolean {
     if (CraftInputColor._browserSupportsColorInputs === null) {
       const input = document.createElement('input');

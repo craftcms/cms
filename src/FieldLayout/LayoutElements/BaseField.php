@@ -185,7 +185,8 @@ abstract class BaseField extends FieldLayoutElement
         $icon = $this->selectorIcon();
 
         $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('div', Icons::svg($indicator['icon'], altText: $indicator['label']), [
-            'class' => array_filter(['cp-icon', 'puny', $indicator['iconColor'] ?? null]),
+            'class' => ['cp-icon', 'w-[0.75em]', 'text-fill-normal'],
+            'data-color' => $indicator['iconColor'] ?? null,
             'title' => $indicator['label'],
         ]), $this->selectorIndicators()));
 
@@ -204,14 +205,14 @@ abstract class BaseField extends FieldLayoutElement
                 'class' => 'fld-attribute',
             ]).
             Html::tag('div', $this->attribute(), [
-                'class' => ['smalltext', 'light', 'code', 'fld-attribute-label'],
+                'class' => ['text-xs', 'font-light', 'font-mono', 'fld-attribute-label'],
                 'title' => $this->attribute(),
             ]).
             Html::endTag('div'); // .fld-attribute
 
         if ($indicatorHtml) {
             $innerHtml .= Html::tag('div', $indicatorHtml, [
-                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-xs'],
+                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-2'],
             ]);
         }
 
@@ -221,7 +222,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($icon) {
             return Html::tag('div', Icons::svg($icon), [
-                'class' => ['cp-icon', 'medium'],
+                'class' => ['fld-element-icon'],
             ]).$html;
         }
 

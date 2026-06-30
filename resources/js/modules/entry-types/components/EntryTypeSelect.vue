@@ -17,7 +17,6 @@
     useReorderableItems,
     type DropState,
   } from '@/common/composables/useReorderableItems';
-  import ReorderButton from '@/common/components/ReorderButton.vue';
   import useCraftData from '@/common/composables/useCraftData';
 
   const emit = defineEmits<{
@@ -281,13 +280,18 @@
           @handle-ref="(el) => setHandleRef(el, entryType.id)"
         >
           <template #drag-handle>
-            <ReorderButton
+            <craft-reorder-button
               v-if="!readOnly"
               variant="inherit"
               :position="getRowPosition(index)"
-              @click:up="reorder(index, index - 1)"
-              @click:down="reorder(index, index + 1)"
-            />
+              @reorder="
+                (e: CustomEvent<{direction: 'up' | 'down'}>) =>
+                  reorder(
+                    index,
+                    e.detail.direction === 'up' ? index - 1 : index + 1
+                  )
+              "
+            ></craft-reorder-button>
           </template>
         </EntryTypeChip>
 

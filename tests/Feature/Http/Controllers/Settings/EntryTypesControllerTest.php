@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -44,8 +45,11 @@ it('requires authentication', function () {
 it('requires admin changes', function () {
     Cms::config()->allowAdminChanges = false;
 
-    // Read only
-    get(action([EntryTypesController::class, 'edit'], [EntryType::first()->id]))->assertSee(t('Changes to these settings aren’t permitted in this environment.'));
+    get(action([EntryTypesController::class, 'edit'], [EntryType::first()->id]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/entry-types/Edit')
+            ->where('readOnly', true));
 
     // Not allowed
     get(action([EntryTypesController::class, 'create']))->assertForbidden();

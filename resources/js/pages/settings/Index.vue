@@ -41,6 +41,7 @@
                   <CpLink
                     :href="item.url || `${settingsIndex().url}/${handle}`"
                     class="settings-item"
+                    block
                   >
                     <div class="settings-content">
                       <div class="settings-icon">

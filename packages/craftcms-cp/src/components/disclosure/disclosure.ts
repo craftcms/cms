@@ -1,3 +1,5 @@
+import type {WindowWithCraft} from '@src/types/globals';
+
 /**
  * Very simple disclosure trigger.
  *
@@ -55,7 +57,11 @@ export default class CraftDisclosure extends HTMLElement {
 
     this.trigger.addEventListener('click', this.toggle.bind(this));
 
-    this.state === 'expanded' ? this.open() : this.close();
+    if (this.state === 'expanded') {
+      this.open();
+    } else {
+      this.close();
+    }
   }
 
   disconnectedCallback() {
@@ -91,7 +97,7 @@ export default class CraftDisclosure extends HTMLElement {
     }
 
     if (this.cookieName) {
-      window.Craft?.setCookie(this.cookieName, 'expanded');
+      (window as WindowWithCraft).Craft?.setCookie(this.cookieName, 'expanded');
     }
   };
 
@@ -109,7 +115,10 @@ export default class CraftDisclosure extends HTMLElement {
     }
 
     if (this.cookieName) {
-      window.Craft?.setCookie(this.cookieName, 'collapsed');
+      (window as WindowWithCraft).Craft?.setCookie(
+        this.cookieName,
+        'collapsed'
+      );
     }
   };
 

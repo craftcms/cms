@@ -6,10 +6,13 @@
     isActive?: boolean;
     overlay?: boolean;
     width?: string;
+    height?: string;
+    maxHeight?: string;
   }
 
   const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'opened', el: Element): void;
   }>();
 
   const props = withDefaults(defineProps<ModalProps>(), {
@@ -25,16 +28,29 @@
   const widthClass = computed(() => {
     return `w-${props.width}`;
   });
+
+  const contentStyle = computed(() => {
+    const viewportCap = 'calc(100vh - (var(--c-spacing-lg) * 2))';
+    const style: Record<string, string> = {};
+    if (props.height) {
+      style.height = `min(${props.height}, ${viewportCap})`;
+    }
+    if (props.maxHeight) {
+      style.maxHeight = `min(${props.maxHeight}, ${viewportCap})`;
+    }
+    return Object.keys(style).length ? style : undefined;
+  });
 </script>
 
 <template>
-  <Transition name="body">
+  <Transition name="body" @after-enter="(el) => emit('opened', el as Element)">
     <div class="cp-modal" v-if="isActive">
       <div
         :class="{
           content: true,
           [widthClass]: true,
         }"
+        :style="contentStyle"
       >
         <slot></slot>
       </div>
