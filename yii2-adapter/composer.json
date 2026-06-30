@@ -70,6 +70,10 @@
     {
       "type": "path",
       "url": "../"
+    },
+    {
+      "type": "path",
+      "url": "../cms-assets"
     }
   ],
   "provide": {

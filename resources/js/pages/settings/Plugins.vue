@@ -64,5 +64,3 @@
     <PluginsList :read-only="readOnly" :plugin-info="fullPluginInfo" />
   </AppLayout>
 </template>
-
-<style scoped lang="scss"></style>

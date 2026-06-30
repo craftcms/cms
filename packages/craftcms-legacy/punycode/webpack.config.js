@@ -7,7 +7,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/punycode/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/punycode/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

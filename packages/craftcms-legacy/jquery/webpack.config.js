@@ -7,7 +7,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/jquery/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/jquery/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

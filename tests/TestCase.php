@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Tests;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
@@ -73,6 +74,7 @@ class TestCase extends Orchestra
         // This is needed because AppServiceProvider::setTimezone() runs during boot,
         // before RefreshDatabase has prepared the database, potentially reading stale data
         Cms::config()->timezone('America/Los_Angeles');
+        Cms::setDefaultTimezone();
 
         // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
@@ -232,6 +234,25 @@ class TestCase extends Orchestra
             $config->set("database.connections.{$connection}.charset", env('DB_CHARSET', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'));
             $config->set("database.connections.{$connection}.collation", env('DB_COLLATION', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : 'utf8'));
             $config->set("database.connections.{$connection}.prefix", env('DB_PREFIX'));
+
+            $connectionConfig = $config->get("database.connections.{$connection}");
+
+            if (is_array($connectionConfig)) {
+                $connectionConfig = ConnectionConfig::normalize($connectionConfig);
+
+                if (($connectionConfig['driver'] ?? null) === 'sqlite') {
+                    unset(
+                        $connectionConfig['busy_timeout'],
+                        $connectionConfig['journal_mode'],
+                        $connectionConfig['pragmas'],
+                        $connectionConfig['synchronous'],
+                    );
+
+                    ConnectionConfig::ensureSqliteDatabaseFile((string) ($connectionConfig['database'] ?? ''));
+                }
+
+                $config->set("database.connections.{$connection}", $connectionConfig);
+            }
 
             if ($connection === 'pgsql') {
                 $config->set("database.connections.{$connection}.options", [

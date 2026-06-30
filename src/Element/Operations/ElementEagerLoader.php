@@ -244,11 +244,16 @@ readonly class ElementEagerLoader
                         $query->offset(null);
                         $query->limit(null);
 
-                        // The mapping criteria should take precedence here
-                        // (see https://github.com/craftcms/cms/pull/18704)
+                        // The mapping criteria should take precedence here, except for `siteId`/`site`
+                        // (see https://github.com/craftcms/cms/pull/18704 and https://github.com/craftcms/cms/issues/18588)
+                        $siteParams = ['siteId', 'site'];
+                        $siteCriteria = Arr::only($map['criteria'] ?? [], $siteParams);
+                        $otherCriteria = Arr::except($map['criteria'] ?? [], $siteParams);
+
                         $criteria = array_merge(
+                            $siteCriteria,
                             $plan->criteria,
-                            $map['criteria'] ?? [],
+                            $otherCriteria,
                         );
 
                         // Save the offset & limit params for later

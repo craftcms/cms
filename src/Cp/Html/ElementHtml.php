@@ -665,9 +665,11 @@ JS, [
         // show the draft name?
         if (($config['showDraftName'] ?? true) && $element->getIsDraft() && ! $element->isProvisionalDraft && ! $element->getIsUnpublishedDraft()) {
             /** @var ElementInterface $element */
-            $content .= Html::tag('span', $element->draftName ?: t('Draft'), [
-                'class' => 'context-label',
-            ]);
+            $content .= Html::tag(
+                'span',
+                $element->draftName ? Html::encode($element->draftName) : t('Draft'),
+                ['class' => 'context-label'],
+            );
         }
 
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)

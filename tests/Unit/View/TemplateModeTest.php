@@ -78,7 +78,7 @@ it('restores original mode even when callback throws', function () {
 });
 
 it('returns correct default template extensions', function () {
-    expect(TemplateMode::Cp->defaultTemplateExtensions())->toBe(['twig', 'html']);
+    expect(TemplateMode::Cp->defaultTemplateExtensions())->toBe(['twig', 'html', 'blade.php']);
 
     expect(TemplateMode::Site->defaultTemplateExtensions())->toBe(Cms::config()->defaultTemplateExtensions);
 });

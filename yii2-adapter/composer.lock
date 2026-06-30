@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1d0458e14eedd367cf66609d800fb475",
+    "content-hash": "4cbc75dfba221e3fc791d08652e2b08b",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -476,12 +476,13 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "21e88dd88ada36a2ef41c80d9177ae571cd0c6da"
+                "reference": "bec2222fab8f22749cb8475c21dcd14a51b9bc40"
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.0",
                 "commerceguys/addressing": "^2.1.1",
                 "composer/semver": "^3.3.2",
+                "craftcms/cms-assets": "self.version",
                 "craftcms/laravel-aliases": "^2.0",
                 "craftcms/laravel-dependency-aware-cache": "^1.2.3",
                 "craftcms/laravel-ruleset-validation": "^1.1",
@@ -700,6 +701,23 @@
                 "docs": "https://craftcms.com/docs/5.x/",
                 "rss": "https://github.com/craftcms/cms/releases.atom"
             },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "craftcms/cms-assets",
+            "version": "6.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "../cms-assets",
+                "reference": "6b7f21fe6abe9c9750de4682b6b318fbeb79a9b3"
+            },
+            "type": "library",
+            "license": [
+                "proprietary"
+            ],
+            "description": "Built assets for Craft CMS.",
             "transport-options": {
                 "relative": true
             }
@@ -16551,9 +16569,9 @@
         "ext-pdo": "*",
         "ext-zip": "*"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "platform-overrides": {
         "php": "8.5"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.3.0"
 }

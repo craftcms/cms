@@ -42,7 +42,11 @@ test('reset password notification uses the broker token', function () {
     $user = UserModel::factory()->createElement();
     $token = Password::broker()->createToken($user);
     $mailable = new ResetPasswordNotification($token)->toMail($user);
+    parse_str(parse_url((string) $mailable->variables['link'], PHP_URL_QUERY), $query);
 
-    expect((string) $mailable->variables['link'])->toContain('setpassword?code='.$token)
+    expect($query)->toMatchArray([
+        'code' => $token,
+        'uid' => $user->uid,
+    ])
         ->and(Password::broker()->tokenExists($user, $token))->toBeTrue();
 });

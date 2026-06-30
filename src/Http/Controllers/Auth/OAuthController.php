@@ -49,6 +49,16 @@ readonly class OAuthController extends AuthenticationController
             $socialiteUser = $oauthManager->buildProvider($definition, $isCpRequest)->user();
             $identity = $oauthManager->resolveIdentity($definition, $socialiteUser);
             $user = $oauthManager->resolveUser($definition, $socialiteUser, $identity);
+            $email = $socialiteUser->getEmail();
+
+            if (
+                ! $user &&
+                ! $definition->trustsEmail &&
+                is_string($email) &&
+                $oauthManager->findUserByEmail($email)
+            ) {
+                return $this->failedResponse($isCpRequest, t('Authentication failed.'));
+            }
 
             if (! $user && ! $oauthManager->canCreateUsers($definition)) {
                 return $this->failedResponse(

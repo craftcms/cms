@@ -182,6 +182,16 @@ enum Edition: int implements Arrayable
         return $this->value >= self::Pro->value;
     }
 
+    public function supportsRequiring2FA(): bool
+    {
+        return self::isAtLeast(self::Team);
+    }
+
+    public function supportsPublicRegistration(): bool
+    {
+        return self::isAtLeast(self::Pro);
+    }
+
     public function toArray(): array
     {
         return [

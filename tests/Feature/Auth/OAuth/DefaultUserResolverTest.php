@@ -10,7 +10,7 @@ use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
 
-function defaultUserResolverProviderDefinition(): ProviderDefinition
+function defaultUserResolverProviderDefinition(bool $trustsEmail = false): ProviderDefinition
 {
     return new ProviderDefinition(
         handle: 'test',
@@ -20,6 +20,7 @@ function defaultUserResolverProviderDefinition(): ProviderDefinition
         label: 'Continue with Test',
         clientId: null,
         clientSecret: null,
+        trustsEmail: $trustsEmail,
     );
 }
 
@@ -70,7 +71,7 @@ test('it allows the user-link event to provide a user', function () {
     expect($resolvedUser?->id)->toBe($user->id);
 });
 
-test('it falls back to matching by email', function () {
+test('it falls back to matching by email for trusted providers', function () {
     $user = UserModel::factory()->active()->createElement([
         'email' => 'fallback-user@example.com',
         'username' => 'fallback-user',
@@ -79,7 +80,7 @@ test('it falls back to matching by email', function () {
     $resolver = app(UserResolver::class);
 
     $resolvedUser = $resolver->handle(
-        defaultUserResolverProviderDefinition(),
+        defaultUserResolverProviderDefinition(trustsEmail: true),
         FakeOAuthProvider::fakeUser([
             'id' => 'provider-user-email-fallback',
             'email' => 'fallback-user@example.com',
@@ -88,6 +89,46 @@ test('it falls back to matching by email', function () {
     );
 
     expect($resolvedUser?->id)->toBe($user->id);
+});
+
+test('it does not fall back to matching by email for untrusted providers', function () {
+    UserModel::factory()->active()->createElement([
+        'email' => 'untrusted-fallback-user@example.com',
+        'username' => 'untrusted-fallback-user',
+    ]);
+
+    $resolver = app(UserResolver::class);
+
+    $resolvedUser = $resolver->handle(
+        defaultUserResolverProviderDefinition(),
+        FakeOAuthProvider::fakeUser([
+            'id' => 'provider-user-untrusted-email',
+            'email' => 'untrusted-fallback-user@example.com',
+        ]),
+        'provider-user-untrusted-email',
+    );
+
+    expect($resolvedUser)->toBeNull();
+});
+
+test('it only matches trusted provider emails against user emails', function () {
+    UserModel::factory()->active()->createElement([
+        'email' => 'actual-email@example.com',
+        'username' => 'username-only-match',
+    ]);
+
+    $resolver = app(UserResolver::class);
+
+    $resolvedUser = $resolver->handle(
+        defaultUserResolverProviderDefinition(trustsEmail: true),
+        FakeOAuthProvider::fakeUser([
+            'id' => 'provider-user-username-value',
+            'email' => 'username-only-match',
+        ]),
+        'provider-user-username-value',
+    );
+
+    expect($resolvedUser)->toBeNull();
 });
 
 test('it returns null when no linked user or email is available', function () {

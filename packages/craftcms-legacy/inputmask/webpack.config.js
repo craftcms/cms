@@ -9,7 +9,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/inputmask/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/inputmask/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

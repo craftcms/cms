@@ -28,7 +28,7 @@ readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
-    public const string VERSION = '6.0.0-alpha.8';
+    public const string VERSION = '6.0.0-alpha.9';
 
     public const string SCHEMA_VERSION = '6.0.0.3';
 
@@ -70,14 +70,33 @@ readonly class Cms
         }
 
         if (! $timezone) {
-            $timezone = Cms::config()->timezone ?? ProjectConfig::get('system.timeZone');
+            return self::systemTimezone();
         }
+
+        return self::validatedTimezone($timezone);
+    }
+
+    public static function systemTimezone(): string
+    {
+        $timezone = Cms::config()->timezone ?? ProjectConfig::get('system.timeZone') ?? config('app.timezone', 'UTC');
+
+        return self::validatedTimezone($timezone);
+    }
+
+    public static function setDefaultTimezone(?string $timezone = null): void
+    {
+        $timezone = Cms::config()->timezone ?? $timezone ?? ProjectConfig::get('system.timeZone') ?? config('app.timezone', 'UTC');
+
+        date_default_timezone_set(self::validatedTimezone($timezone));
+    }
+
+    private static function validatedTimezone(?string $timezone): string
+    {
+        $timezone = Env::parse($timezone);
 
         if (! $timezone) {
-            $timezone = config('app.timezone', 'UTC');
+            return 'UTC';
         }
-
-        $timezone = Env::parse($timezone);
 
         if ($timezone !== 'UTC') {
             // Make sure that ICU supports this timezone
@@ -126,7 +145,7 @@ readonly class Cms
 
     private static function fallbackLanguage(Request $request): string
     {
-        return $request->getPreferredLanguage(I18N::getAppLocaleIds()->all());
+        return I18N::normalizeLanguage($request->getPreferredLanguage(I18N::getAppLocaleIds()->all()));
     }
 
     public static function systemName(): string

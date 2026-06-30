@@ -13,6 +13,7 @@ use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
@@ -95,6 +96,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->setNamespace();
         $this->bootAliases();
+        Cms::setDefaultTimezone();
 
         $this->app->booted(function () {
             /**
@@ -116,8 +118,8 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->publishes([
-            "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
-            "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
+            CmsAssets::resourcesPath('build') => public_path('vendor/craft/build'),
+            CmsAssets::resourcesPath('legacy') => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
     }
 
@@ -244,6 +246,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
         Aliases::set('@craftcms', File::normalizePath($this->root));
+        Aliases::set('@cmsAssets', CmsAssets::packagePath());
         Aliases::set('@package', '@craftcms/src');
         Aliases::set('@resources', "{$this->root}/resources");
         Aliases::set('@vendor', '@root/vendor');

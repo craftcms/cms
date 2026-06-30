@@ -32,6 +32,8 @@ readonly class HandleMatchedElementRoute
             return $next($request);
         }
 
+        $this->enforceOfflineAccess($request);
+
         $path = $this->sites->getRequestPath($request);
 
         if ($path === Element::HOMEPAGE_URI) {
@@ -57,8 +59,6 @@ readonly class HandleMatchedElementRoute
         $routeParams = is_array($route[1] ?? null) ? $route[1] : [];
 
         MatchedElement::set($element, $route);
-
-        $this->enforceOfflineAccess($request);
 
         return new DynamicRoute($route[0], $routeParams + ['publicOnly' => false])->handle($request);
     }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eea0cfb136b4ecded451f59dab56b72f",
+    "content-hash": "957fbd0073e1fd52ec602dd39d65d563",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -408,6 +408,23 @@
                 }
             ],
             "time": "2025-08-20T19:15:30+00:00"
+        },
+        {
+            "name": "craftcms/cms-assets",
+            "version": "6.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "./cms-assets",
+                "reference": "6b7f21fe6abe9c9750de4682b6b318fbeb79a9b3"
+            },
+            "type": "library",
+            "license": [
+                "proprietary"
+            ],
+            "description": "Built assets for Craft CMS.",
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "craftcms/laravel-aliases",
@@ -5040,7 +5057,7 @@
                 "shasum": ""
             },
             "require": {
-                "brick/math": ">=0.8.16 <=0.17",
+                "brick/math": ">=0.8.16 <=0.18",
                 "php": "^8.0",
                 "ramsey/collection": "^1.2 || ^2.0"
             },
@@ -14975,7 +14992,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {},
+    "stability-flags": {
+        "craftcms/cms-assets": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -14991,9 +15010,9 @@
         "ext-pdo": "*",
         "ext-zip": "*"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "platform-overrides": {
         "php": "8.5"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.3.0"
 }

@@ -3,14 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Twig\Events\PageEnded;
-use CraftCms\Cms\Twig\Events\PageStarting;
-use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\PageTemplateRendering;
-use CraftCms\Cms\Twig\Events\TemplateRendered;
-use CraftCms\Cms\Twig\Events\TemplateRendering;
-use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\Twig;
+use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
@@ -30,25 +25,11 @@ beforeEach(function () {
 
     app()->forgetScopedInstances();
 
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 afterEach(function () {
     File::deleteDirectory($this->tempDir);
-});
-
-describe('isRenderingTemplate', function () {
-    it('returns false when no template is being rendered', function () {
-        expect($this->renderer->isRenderingTemplate())->toBeFalse();
-        expect($this->renderer->isRenderingTemplate)->toBeFalse();
-    });
-});
-
-describe('isRenderingPageTemplate', function () {
-    it('returns false when no page template is being rendered', function () {
-        expect($this->renderer->isRenderingPageTemplate())->toBeFalse();
-        expect($this->renderer->isRenderingPageTemplate)->toBeFalse();
-    });
 });
 
 describe('renderString', function () {
@@ -119,152 +100,13 @@ describe('renderTemplate', function () {
         expect($result)->toBe('Hello, World!');
     });
 
-    it('dispatches TemplateRendering event before rendering', function () {
-        Event::fake([TemplateRendering::class, TemplateRendered::class]);
-
-        $this->renderer->renderTemplate('test-template.twig', ['name' => 'world']);
-
-        Event::assertDispatched(fn (TemplateRendering $event) => $event->template === 'test-template.twig'
-            && $event->variables === ['name' => 'world']);
-    });
-
-    it('dispatches TemplateRendered event after rendering', function () {
-        Event::fake([TemplateRendered::class]);
-
-        $this->renderer->renderTemplate('test-template.twig');
-
-        Event::assertDispatched(fn (TemplateRendered $event) => $event->template === 'test-template.twig');
-    });
-
-    it('returns empty string when TemplateRendering event is cancelled', function () {
-        Event::listen(TemplateRendering::class, function (TemplateRendering $event) {
-            $event->isValid = false;
-        });
-
-        $result = $this->renderer->renderTemplate('test-template.twig');
-
-        expect($result)->toBe('');
-    });
-
-    it('allows the TemplateRendered event to modify the output', function () {
-        Event::listen(TemplateRendered::class, function (TemplateRendered $event) {
-            $event->output = 'modified output';
-        });
-
-        $result = $this->renderer->renderTemplate('test-template.twig');
-
-        expect($result)->toBe('modified output');
-    });
-
     it('allows the TemplateRendering event to modify the template name', function () {
         Event::listen(TemplateRendering::class, function (TemplateRendering $event) {
             $event->template = 'other-template.twig';
         });
 
-        Event::fake([TemplateRendered::class]);
-
-        $this->renderer->renderTemplate('test-template.twig');
-
-        Event::assertDispatched(fn (TemplateRendered $event) => $event->template === 'other-template.twig');
-    });
-
-    it('restores the template mode after rendering', function () {
-        TemplateMode::set(TemplateMode::Cp);
-
-        $this->renderer->renderTemplate('test-template.twig', templateMode: TemplateMode::Site);
-
-        expect(TemplateMode::get())->toBe(TemplateMode::Cp);
-    });
-
-    it('restores the template mode even if rendering fails', function () {
-        TemplateMode::set(TemplateMode::Site);
-
-        try {
-            $this->renderer->renderTemplate('nonexistent-template.twig', templateMode: TemplateMode::Cp);
-        } catch (Throwable) {
-        }
-
-        expect(TemplateMode::get())->toBe(TemplateMode::Site);
-    });
-});
-
-describe('renderPageTemplate', function () {
-    it('dispatches lifecycle events in order', function () {
-        $events = [];
-
-        Event::listen(PageTemplateRendering::class, function () use (&$events) {
-            $events[] = 'PageTemplateRendering';
-        });
-        Event::listen(PageStarting::class, function () use (&$events) {
-            $events[] = 'PageStarting';
-        });
-        Event::listen(TemplateRendering::class, function () use (&$events) {
-            $events[] = 'TemplateRendering';
-        });
-        Event::listen(TemplateRendered::class, function () use (&$events) {
-            $events[] = 'TemplateRendered';
-        });
-        Event::listen(PageEnded::class, function () use (&$events) {
-            $events[] = 'PageEnded';
-        });
-        Event::listen(PageTemplateRendered::class, function () use (&$events) {
-            $events[] = 'PageTemplateRendered';
-        });
-
-        $this->renderer->renderPageTemplate('test-template.twig');
-
-        expect($events)->toBe([
-            'PageTemplateRendering',
-            'PageStarting',
-            'TemplateRendering',
-            'TemplateRendered',
-            'PageEnded',
-            'PageTemplateRendered',
-        ]);
-    });
-
-    it('returns empty string when PageTemplateRendering event is cancelled', function () {
-        Event::listen(PageTemplateRendering::class, function (PageTemplateRendering $event) {
-            $event->isValid = false;
-        });
-
-        $result = $this->renderer->renderPageTemplate('test-template.twig');
-
-        expect($result)->toBe('');
-    });
-
-    it('allows the PageTemplateRendered event to modify output', function () {
-        Event::listen(PageTemplateRendered::class, function (PageTemplateRendered $event) {
-            $event->output = 'page output overridden';
-        });
-
-        $result = $this->renderer->renderPageTemplate('test-template.twig');
-
-        expect($result)->toBe('page output overridden');
-    });
-
-    it('sets isRenderingPageTemplate during render and resets after', function () {
-        expect($this->renderer->isRenderingPageTemplate())->toBeFalse();
-
-        $renderer = $this->renderer;
-        $wasRendering = false;
-
-        Event::listen(PageEnded::class, function () use (&$wasRendering, $renderer) {
-            $wasRendering = $renderer->isRenderingPageTemplate();
-        });
-
-        $this->renderer->renderPageTemplate('test-template.twig');
-
-        expect($wasRendering)->toBeTrue();
-        expect($this->renderer->isRenderingPageTemplate())->toBeFalse();
-    });
-
-    it('restores the template mode after rendering', function () {
-        TemplateMode::set(TemplateMode::Cp);
-
-        $this->renderer->renderPageTemplate('test-template.twig', templateMode: TemplateMode::Site);
-
-        expect(TemplateMode::get())->toBe(TemplateMode::Cp);
+        expect($this->renderer->renderTemplate('test-template.twig'))
+            ->toBe('Other template content');
     });
 });
 

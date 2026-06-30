@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\File;
 
 use function CraftCms\Cms\backTraceAsString;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\pageTemplate;
 use function CraftCms\Cms\silence;
+use function CraftCms\Cms\template;
 
 test('normalizeVersion', function (string $expected, string $version) {
     expect(normalizeVersion($version))->toBe($expected);
@@ -77,4 +82,42 @@ test('silence', function () {
 test('backtraceAsString', function () {
     expect(backtraceAsString())->toBeString();
     expect(backtraceAsString())->toContain('backtraceAsString');
+});
+
+describe('template helpers', function () {
+    beforeEach(function () {
+        $this->tempDir = sys_get_temp_dir().'/craft-template-helper-test-'.uniqid();
+        File::ensureDirectoryExists($this->tempDir);
+        Aliases::set('@templates', $this->tempDir);
+        TemplateMode::set(TemplateMode::Site);
+        app()->forgetScopedInstances();
+    });
+
+    afterEach(function () {
+        File::deleteDirectory($this->tempDir);
+    });
+
+    test('template renders Blade templates through the neutral renderer', function () {
+        File::put($this->tempDir.'/helper.blade.php', 'Blade {{ $name }}');
+
+        expect(template('helper', ['name' => 'Craft']))->toBe('Blade Craft');
+    });
+
+    test('pageTemplate renders Blade page templates through the neutral renderer', function () {
+        File::put($this->tempDir.'/page.blade.php', <<<'BLADE'
+<html>
+<head>@craftHead</head>
+<body>
+@craftEndBody
+@craftJs('console.log("helper");')
+Page {{ $name }}
+</body>
+</html>
+BLADE);
+
+        expect(pageTemplate('page', ['name' => 'Craft']))
+            ->toContain('Page Craft')
+            ->toContain('console.log("helper");')
+            ->not->toContain('CRAFT-BLOCK-BODY-END');
+    });
 });

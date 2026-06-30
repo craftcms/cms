@@ -948,10 +948,10 @@ Moved the following controllers:
 - Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on the `pageTrigger` general config setting.
 - Added `CraftCms\Cms\Twig\Twig` service for managing Twig environments, replacing the Twig management logic previously in `craft\web\View`.
 - Added `CraftCms\Cms\Twig\TemplateRenderer` for rendering templates, replacing the rendering logic previously in `craft\web\View`.
-- Added `CraftCms\Cms\Twig\PageLifecycle` for managing the page rendering lifecycle (head/body placeholder replacement), replacing the page lifecycle logic previously in `craft\web\View`.
+- Added `CraftCms\Cms\View\PageLifecycle` for managing the page rendering lifecycle (head/body placeholder replacement), replacing the page lifecycle logic previously in `craft\web\View`.
 - Added `CraftCms\Cms\Support\Facades\Twig` facade, resolving to `CraftCms\Cms\Twig\TemplateRenderer`.
 - Added `CraftCms\Cms\Twig\Environment`, moved from `craft\web\twig\Environment`.
-- Added `CraftCms\Cms\Twig\TemplateResolver`.
+- Added `CraftCms\Cms\View\TemplateResolver`.
 - Added `CraftCms\Cms\Twig\TemplateLoader`.
 - Added `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException`.
 - Added helper functions in the `CraftCms\Cms` namespace: `template()`, `sandboxedTemplate()`, `pageTemplate()`, `renderString()`, `renderSandboxedString()`, `renderObjectTemplate()`, `renderSandboxedObjectTemplate()`.
@@ -975,8 +975,8 @@ Moved the following controllers:
 - Deprecated `craft\web\View::getIsRenderingPageTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::isRenderingPageTemplate` should be used instead.
 - Deprecated `craft\web\twig\Environment`. `CraftCms\Cms\Twig\Environment` should be used instead.
 - Deprecated `craft\web\View::EVENT_AFTER_CREATE_TWIG`. `CraftCms\Cms\Twig\Events\TwigCreated` should be used instead.
-- Deprecated `craft\web\View::doesTemplateExist()`. `CraftCms\Cms\Twig\TemplateResolver::doesTemplateExist()` should be used instead.
-- Deprecated `craft\web\View::resolveTemplate()`. `CraftCms\Cms\Twig\TemplateResolver::resolveTemplate()` should be used instead.
+- Deprecated `craft\web\View::doesTemplateExist()`. `CraftCms\Cms\View\TemplateResolver::doesTemplateExist()` should be used instead.
+- Deprecated `craft\web\View::resolveTemplate()`. `CraftCms\Cms\View\TemplateResolver::resolveTemplate()` should be used instead.
 - Deprecated `craft\web\twig\TemplateLoader`. `CraftCms\Cms\Twig\TemplateLoader` should be used instead.
 - Deprecated `craft\web\twig\TemplateLoaderException`. `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException` should be used instead.
 
@@ -1017,8 +1017,8 @@ Moved the following controllers:
   - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
   - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
 - Removed `\craft\controllers\UserSettingsController` in favor of:
-  - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
-  - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController`
 - Deprecated `UserGroupEvent` in favor of:
   - `CraftCms\Cms\User\Events\UserGroupSaving`
   - `CraftCms\Cms\User\Events\UserGroupSaved`
