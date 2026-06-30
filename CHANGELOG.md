@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a PHP error that occurred when merging canonical changes into a draft that contained nested elements that don’t track changes.
 - Fixed a bug where the `site`/`siteId` params weren’t being respected on eager-loaded `localized` queries. ([#18588](https://github.com/craftcms/cms/issues/18588))
 - Fixed a bug where it wasn’t possible to enter decimal values after tabbing into a Money field. ([#19156](https://github.com/craftcms/cms/issues/19156))
 - Fixed a bug where the search inputs on the Entry Types and Fields settings index pages were case-sensitive on PostgreSQL. ([#19158](https://github.com/craftcms/cms/issues/19158))
