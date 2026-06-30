@@ -416,14 +416,14 @@ class Image
      */
     private static function _webpSizeByStream($stream, string $buffer): array
     {
-        $header = self::_readFromStream($stream, 12, $buffer);
+        $header = $buffer . stream_get_contents($stream, 12 - strlen($buffer));
         if (strlen($header) < 12 || substr($header, 0, 4) !== 'RIFF' || substr($header, 8, 4) !== 'WEBP') {
             throw new ImageException('Unrecognized image signature.');
         }
 
         $bytesRead = 12;
         while ($bytesRead < self::MAX_IMAGE_SIZE_STREAM_BYTES) {
-            $chunkHeader = self::_readFromStream($stream, 8, $buffer);
+            $chunkHeader = stream_get_contents($stream, 8);
             if (strlen($chunkHeader) < 8) {
                 break;
             }
@@ -439,7 +439,7 @@ class Image
                         throw new ImageException('Unrecognized WebP file structure.');
                     }
 
-                    $data = self::_readFromStream($stream, 10, $buffer);
+                    $data = stream_get_contents($stream, 10);
                     if (strlen($data) < 10) {
                         throw new ImageException('Unrecognized WebP file structure.');
                     }
@@ -453,7 +453,7 @@ class Image
                         throw new ImageException('Unrecognized WebP file structure.');
                     }
 
-                    $data = self::_readFromStream($stream, 5, $buffer);
+                    $data = stream_get_contents($stream, 5);
                     if (strlen($data) < 5 || $data[0] !== "\x2F") {
                         throw new ImageException('Unrecognized WebP file structure.');
                     }
@@ -468,7 +468,7 @@ class Image
                         throw new ImageException('Unrecognized WebP file structure.');
                     }
 
-                    $data = self::_readFromStream($stream, 10, $buffer);
+                    $data = stream_get_contents($stream, 10);
                     if (strlen($data) < 10 || substr($data, 3, 3) !== "\x9D\x01\x2A") {
                         throw new ImageException('Unrecognized WebP file structure.');
                     }
@@ -484,7 +484,7 @@ class Image
                 break;
             }
 
-            self::_readFromStream($stream, $paddedChunkSize, $buffer);
+            stream_get_contents($stream, $paddedChunkSize);
             $bytesRead += $paddedChunkSize;
         }
 
@@ -554,25 +554,6 @@ class Image
             'contentSize' => $size - 8,
             'endOffset' => $endOffset,
         ];
-    }
-
-    /**
-     * @param resource $stream
-     */
-    private static function _readFromStream($stream, int $length, string &$buffer): string
-    {
-        if ($length === 0) {
-            return '';
-        }
-
-        $data = substr($buffer, 0, $length);
-        $buffer = substr($buffer, strlen($data));
-
-        if (strlen($data) < $length) {
-            $data .= stream_get_contents($stream, $length - strlen($data));
-        }
-
-        return $data;
     }
 
     private static function _isSupportedIsoBmffImage(string $ftyp): bool
