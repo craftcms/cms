@@ -332,13 +332,11 @@ readonly class ElementSourcesController
 
     private function tableAttributeKeys(array $attributes): array|string
     {
-        $attributes = $attributes
-            |> (fn (array $attributes) => array_map(
-                fn (mixed $attribute) => data_get($attribute, 'value', $attribute),
-                $attributes,
-            ))
-            |> array_filter(...)
-            |> array_values(...);
+        $attributes = collect($attributes)
+            ->map(fn (mixed $attribute) => data_get($attribute, 'value', $attribute))
+            ->filter()
+            ->values()
+            ->all();
 
         return $attributes ?: '-';
     }
