@@ -200,7 +200,7 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * Returns whether the given file path is located within or above any system directories.
+     * Returns whether the given file path is located within or above any Craft-specific system directories.
      *
      * @param string $path
      * @return bool
@@ -213,6 +213,61 @@ class Security extends \yii\base\Security
         foreach (Craft::$app->getPath()->getSystemPaths() as $dir) {
             $dir = FileHelper::absolutePath($dir, '/');
             if (str_starts_with("$path/", "$dir/") || str_starts_with("$dir/", "$path/")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the given file path is located in what's considered a sensitive/restricted directory.
+     *
+     * @param string $path
+     * @return bool
+     * @since 5.10.9
+     */
+    public function isRestrictedDir(string $path): bool
+    {
+        $path = FileHelper::absolutePath($path, '/');
+
+        // is it located directly in the filesystem's root (e.g. /myfile.json)
+        $parent = dirname($path);
+        if ($parent === dirname($parent)) {
+            return true;
+        }
+
+        // is it located within a Craft-specific system directory
+        if ($this->isSystemDir($path)) {
+            return true;
+        }
+
+        // is it located within a sensitive os directory
+        // windows-based sensitive directories
+        if (PHP_OS_FAMILY === 'Windows') {
+            $winRoot = rtrim($_SERVER['SystemRoot'] ?? 'C:\\Windows', '\\');
+            $drive = substr($winRoot, 0, 3); // e.g. "C:\"
+            $sensitiveDirs = [
+                $winRoot, // C:\Windows
+                $drive . 'Users', // C:\Users
+                $drive . 'Program Files',
+                $drive . 'Program Files (x86)',
+                $drive . 'ProgramData',
+            ];
+        } else {
+            // non-windows-based sensitive directories
+            $sensitiveDirs = [
+                '/boot',
+                '/dev',
+                '/etc',
+                '/proc',
+                '/root',
+                '/sys',
+            ];
+        }
+
+        foreach ($sensitiveDirs as $dir) {
+            if ($path === $dir || FileHelper::isWithin($path, $dir)) {
                 return true;
             }
         }
