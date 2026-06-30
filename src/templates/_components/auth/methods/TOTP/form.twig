@@ -2,7 +2,13 @@
 
 {% set formId = formId ?? "totp-form-#{random()}" %}
 
-<form id="{{ formId }}">
+<form id="{{ formId }}" method="post">
+  {{ actionInput('auth/verify-totp') }}
+
+  {% if craft.app.config.general.enableCsrfProtection %}
+    {{ csrfInput() }}
+  {% endif %}
+
   {% embed '_includes/forms/field.twig' with {
     fieldClass: 'first',
     label: 'Verification Code'|t('app'),
@@ -14,6 +20,7 @@
         {{ forms.text({
           class: 'code auth-totp-code',
           id: 'verification-code',
+          name: 'code',
           autocomplete: 'one-time-code',
           maxlength: 6,
         }) }}

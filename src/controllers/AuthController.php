@@ -105,7 +105,6 @@ class AuthController extends Controller
      */
     public function actionRemoveMethod(): ?Response
     {
-        $this->requireCpRequest();
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
