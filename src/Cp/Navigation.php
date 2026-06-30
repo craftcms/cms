@@ -90,29 +90,23 @@ readonly class Navigation
                 ->icon('user-group'));
         }
 
-        if ($user?->can('viewImportConfigs') || $user?->can('viewImportRuns')) {
-            $subNavItems = [];
+        if (Gate::check('viewImportConfigs') || Gate::check('viewImportRuns')) {
+            $subNavItems = collect();
 
-            if ($user?->can('viewImportConfigs')) {
-                $subNavItems['configs'] = [
-                    'label' => t('Configs'),
-                    'url' => 'import/configs',
-                ];
+            if (Gate::check('viewImportConfigs')) {
+                $subNavItems->add(new NavItem()->label(t('Configs'))->url(cp_url('import/configs')));
             }
 
-            if ($user?->can('viewImportRuns')) {
-                $subNavItems['runs'] = [
-                    'label' => t('Runs'),
-                    'url' => 'import/runs',
-                ];
+            if (Gate::check('viewImportRuns')) {
+                $subNavItems->add(new NavItem()->label(t('Runs'))->url(cp_url('import/runs')));
             }
 
-            $navItems[] = [
-                'label' => t('Import'),
-                'url' => 'import',
-                'icon' => 'arrow-up-to-bracket',
-                'subnav' => $subNavItems,
-            ];
+            $navItems->add(new NavItem()
+                ->label(t('Import'))
+                ->url('importusers')
+                ->icon('arrow-up-to-bracket')
+                ->subnav($subNavItems->all())
+            );
         }
 
         // Add any Plugin nav items
