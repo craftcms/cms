@@ -296,15 +296,10 @@ class Entries
     {
         $count = DB::table(Table::ENTRIES_AUTHORS)
             ->whereIn('authorId', Arr::wrap($oldUserId))
-            ->whereNotExists(function (Builder $query) use ($newUserId) {
-                $query->selectRaw('1')
-                    ->fromSub(
-                        DB::table(Table::ENTRIES_AUTHORS, 'ea2')
-                            ->select('ea2.entryId')
-                            ->where('ea2.authorId', $newUserId),
-                        'existingAuthor',
-                    )
-                    ->whereColumn('existingAuthor.entryId', Table::ENTRIES_AUTHORS.'.entryId');
+            ->whereNotIn('entryId', function (Builder $query) use ($newUserId) {
+                $query->select('entryId')
+                    ->from(Table::ENTRIES_AUTHORS)
+                    ->where('authorId', $newUserId);
             })
             ->update([
                 'authorId' => $newUserId,

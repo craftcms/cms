@@ -704,8 +704,10 @@ class EntryTypes
         $searchQueries = [];
 
         if ($term !== '') {
+            $isPgqsl = DB::isPgsql();
+
             foreach ($searchParams as $param) {
-                $searchQueries[] = [$param, 'like', '%'.$term.'%'];
+                $searchQueries[] = [$param, $isPgqsl ? 'ilike' : 'like', '%'.$term.'%'];
             }
         }
 
