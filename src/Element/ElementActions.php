@@ -137,6 +137,10 @@ class ElementActions
                 $item['variant'] = 'danger';
             }
 
+            if (! $action::supportsBulk()) {
+                $item['bulk'] = false;
+            }
+
             // Interactive actions still need a native Vue picker before they can
             // submit; surface them disabled until ported (see INTERACTIVE_ACTIONS).
             if (in_array($action::class, self::INTERACTIVE_ACTIONS, true)) {

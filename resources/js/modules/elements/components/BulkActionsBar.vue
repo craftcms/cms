@@ -61,11 +61,15 @@
    */
   const menuActions = computed<Array<ActionItem>>(() =>
     menuItems.value.map((item): ActionItem => {
-      console.log({item});
       const variant = item.variant ?? (item.destructive ? 'danger' : undefined);
 
-      // Disabled (e.g. not-yet-ported interactive) actions render inert.
-      if (item.disabled || !item.action) {
+      // Disabled (e.g. not-yet-ported interactive, or non-bulk actions with
+      // more than one element selected) actions render inert.
+      if (
+        item.disabled ||
+        !item.action ||
+        (item.bulk === false && selectedCount.value > 1)
+      ) {
         return {
           type: 'button',
           label: item.label,

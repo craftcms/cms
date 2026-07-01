@@ -20,6 +20,8 @@ export interface BulkActionItem {
   variant?: string;
   /** Disabled actions (e.g. interactive ones not yet ported to Vue). */
   disabled?: boolean;
+  /** `false` if only performable on a single selected element (mirrors the legacy `bulk: false` trigger setting). Omitted when bulk-capable. */
+  bulk?: boolean;
   /** The primitive action descriptor. Absent for disabled/placeholder items. */
   action?: {
     type: 'http' | 'download' | 'clipboard' | 'event';

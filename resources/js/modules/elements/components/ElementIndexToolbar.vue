@@ -61,15 +61,21 @@
         v-model="search"
         label-sr-only
       >
-        <craft-button
-          type="button"
-          slot="suffix"
-          icon
-          size="small"
-          appearance="plain"
-        >
-          <craft-icon name="filter" :label="t('Filter results')"></craft-icon>
-        </craft-button>
+        <div slot="suffix" class="flex">
+          <craft-button
+            type="button"
+            icon
+            size="small"
+            appearance="plain"
+            v-if="search"
+            @click="search = ''"
+          >
+            <craft-icon name="x" :label="t('Clear search')"></craft-icon>
+          </craft-button>
+          <craft-button type="button" icon size="small" appearance="plain">
+            <craft-icon name="filter" :label="t('Filter results')"></craft-icon>
+          </craft-button>
+        </div>
       </CraftInput>
 
       <craft-button-group
