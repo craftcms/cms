@@ -8,6 +8,7 @@
 - Fixed a bug where the search inputs on the Entry Types and Fields settings index pages were case-sensitive on PostgreSQL. ([#19158](https://github.com/craftcms/cms/issues/19158))
 - Fixed a bug where timepicker menus weren’t auto-scrolling to the selected time when opened. ([#19142](https://github.com/craftcms/cms/issues/19142))
 - Fixed an error that could occur when reassigning entries to a new author when deleting a user. ([#19154](https://github.com/craftcms/cms/issues/19154))
+- Fixed a bug where the “All entries” and “All users” sources weren’t available to be selected within Entries/Users field settings. ([#19185](https://github.com/craftcms/cms/discussions/19185))
 
 ## 5.10.8.1 - 2026-06-23
 
