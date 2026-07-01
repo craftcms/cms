@@ -6,7 +6,6 @@
   import Select from '@/common/form/Select.vue';
   import Empty from '@/common/components/Empty.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import LoadingSkeleton from '@/common/components/LoadingSkeleton.vue';
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
 
@@ -77,15 +76,6 @@
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
-
-  // Roughly match the number of skeleton cards to what's currently shown (the
-  // previous page stays in `data` during a refetch), clamped so a large page
-  // size doesn't render an excessive placeholder.
-  const skeletonCount = computed(() => {
-    const size =
-      props.data?.length || props.table.getState().pagination.pageSize || 6;
-    return Math.min(Math.max(size, 3), 12);
-  });
 
   // Look up the table row for a card so selection reads/writes the same model
   // the table view uses (keyed by element id via `getRowId`).
@@ -160,7 +150,9 @@
     </div>
 
     <div class="cp-table-body" :aria-busy="loading ? 'true' : undefined">
-      <LoadingSkeleton v-if="loading" variant="cards" :count="skeletonCount" />
+      <div class="grid place-items-center min-h-50" v-if="loading">
+        <craft-spinner></craft-spinner>
+      </div>
       <template v-else-if="data!.length > 0">
         <div class="card-grid-header" v-if="selectable">
           <craft-checkbox
@@ -219,7 +211,9 @@
 
     <div
       class="cp-table-footer"
-      :class="{'cp-table-footer--has-selection': showBulkActions && hasSelection}"
+      :class="{
+        'cp-table-footer--has-selection': showBulkActions && hasSelection,
+      }"
       v-if="showFooter"
     >
       <div class="cp-table-footer__lead">

@@ -9,7 +9,6 @@
   import Select from '@/common/form/Select.vue';
   import Text from '@/common/components/Text.vue';
   import Empty from '@/common/components/Empty.vue';
-  import LoadingSkeleton from '@/common/components/LoadingSkeleton.vue';
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
   import {usePage} from '@inertiajs/vue3';
@@ -80,23 +79,6 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  // Roughly match the skeleton to the table currently shown (the previous rows
-  // stay mounted during a refetch), clamped so a large page size doesn't render
-  // an excessive placeholder.
-  const skeletonCount = computed(() => {
-    const size =
-      props.table.getRowModel().rows.length ||
-      props.table.getState().pagination.pageSize ||
-      6;
-    return Math.min(Math.max(size, 3), 12);
-  });
-
-  // Skeleton column count mirrors the visible data columns plus the selection
-  // column, so the placeholder lines up with the real header.
-  const skeletonColumns = computed(
-    () =>
-      props.table.getVisibleLeafColumns().length + (props.selectable ? 1 : 0)
-  );
   const {setRowRef, setHandleRef, getDragState, getDropState} =
     useReorderableRows({
       getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
@@ -283,12 +265,9 @@
     </div>
 
     <div class="cp-table-body" :aria-busy="loading ? 'true' : undefined">
-      <LoadingSkeleton
-        v-if="loading"
-        variant="table"
-        :count="skeletonCount"
-        :columns="skeletonColumns"
-      />
+      <div class="grid place-items-center min-h-20" v-if="loading">
+        <craft-spinner></craft-spinner>
+      </div>
       <table
         v-else
         :class="{
@@ -446,6 +425,7 @@
                 :key="cell.id"
                 :class="{
                   'cp-table-cell': true,
+                  [`cp-table-cell--${cell.column.id}`]: true,
                   'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
                   ...resolveMetaClasses(
                     cell.column.columnDef.meta?.columnClass
@@ -605,10 +585,20 @@
     white-space: normal;
   }
 
+  :deep(.cp-table-cell) {
+    width: min-content;
+  }
+
   // Selection column hugs its checkbox rather than claiming a data-column share.
   :deep(.cp-table-cell--select) {
     width: 1px;
+    max-width: calc(30rem / 16);
     white-space: nowrap;
+  }
+
+  :deep(.cp-table-cell--title) {
+    width: 45%;
+    min-width: 14rem;
   }
 
   :deep(.cell--drag-handle) {

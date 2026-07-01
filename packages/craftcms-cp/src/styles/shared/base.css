@@ -320,6 +320,12 @@ Modify with `cp-table--auto` to apply table-layout: auto
   table-layout: auto;
 }
 
+.cp-table--loading {
+  tbody {
+    opacity: 0.4;
+  }
+}
+
 .cp-table--fixed {
   table-layout: fixed;
 }
@@ -335,6 +341,10 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
 .cp-table--spacious {
   --_row-height: calc(50rem / 16);
+}
+
+.cp-table-body {
+  position: relative;
 }
 
 .cp-table-header,
