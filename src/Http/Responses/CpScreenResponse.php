@@ -124,6 +124,13 @@ class CpScreenResponse implements Responsable
     public array $tabs = [];
 
     /**
+     * @var array|null Secondary navigation items.
+     *
+     * @see subnav()
+     */
+    public ?array $subnav = null;
+
+    /**
      * @var string|null Class that should be added to the slideout body.
      */
     public ?string $slideoutBodyClass = null;
@@ -397,6 +404,16 @@ class CpScreenResponse implements Responsable
     public function tabs(array $value): self
     {
         $this->tabs = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the secondary navigation items.
+     */
+    public function subnav(?array $value): self
+    {
+        $this->subnav = $value;
 
         return $this;
     }
@@ -869,6 +886,7 @@ class CpScreenResponse implements Responsable
             'submitButtonLabel' => $this->submitButtonLabel,
             'additionalButtons' => $addlButtons,
             'tabs' => $this->tabs,
+            'subnav' => $this->subnav,
             'fullPageForm' => $isForm,
             'mainAttributes' => $this->mainAttributes,
             'mainFormAttributes' => $this->formAttributes,
@@ -889,10 +907,9 @@ class CpScreenResponse implements Responsable
         ];
 
         if ($this->inertiaPage) {
-            return Inertia::render($this->inertiaPage, [
-                ...$templateProps,
-                ...$this->inertiaProps,
-            ])->toResponse($request);
+            return Inertia::render($this->inertiaPage, $this->inertiaProps)
+                ->with($templateProps)
+                ->toResponse($request);
         }
 
         // Render and return the template
