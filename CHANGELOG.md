@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where Content Block fields’ nested fields could be listed multiple times in element index column settings, when the same field was used by multiple entry types. ([#19197](https://github.com/craftcms/cms/pull/19197))
 - Fixed a bug where the `site`/`siteId` params weren’t being respected on eager-loaded `localized` queries. ([#18588](https://github.com/craftcms/cms/issues/18588))
 - Fixed a bug where it wasn’t possible to enter decimal values after tabbing into a Money field. ([#19156](https://github.com/craftcms/cms/issues/19156))
 - Fixed a bug where the search inputs on the Entry Types and Fields settings index pages were case-sensitive on PostgreSQL. ([#19158](https://github.com/craftcms/cms/issues/19158))
