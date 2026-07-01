@@ -1685,25 +1685,6 @@ td.right {
   }
 }
 
-.checkbox-select-item {
-  display: flex;
-  gap: var(--xs);
-  align-items: flex-start;
-  align-content: stretch;
-  padding-block: 4px;
-
-  .move {
-    margin-block-start: -4px;
-    margin-inline-end: var(--xs);
-    position: relative;
-    z-index: 1;
-  }
-
-  .action-btn {
-    margin-block: -4px;
-  }
-}
-
 ul.path {
   display: flex;
   flex-flow: row wrap;
@@ -8157,29 +8138,29 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 }
 
 // Selects
-.select:not(.selectize),
-.select:not(.selectize) select {
+.select:not(.selectize):not(.cp-select),
+.select:not(.selectize):not(.cp-select) select {
   @include mixins.select-styles;
 }
 
-.select:not(.selectize) {
+.select:not(.selectize):not(.cp-select) {
   @include mixins.select-container-styles;
 }
 
-.select:not(.selectize)::after {
+.select:not(.selectize):not(.cp-select)::after {
   @include mixins.select-arrow-styles;
 }
 
-.select:not(.selectize) select {
+.select:not(.selectize):not(.cp-select) select {
   @include mixins.select-input-styles;
   white-space: pre;
 }
 
-.select:not(.selectize).fullwidth select {
+.select:not(.selectize):not(.cp-select).fullwidth select {
   @include mixins.select-input-fullwidth-styles;
 }
 
-.select:not(.selectize) select {
+.select:not(.selectize):not(.cp-select) select {
   &:hover:not(:disabled) {
     @include mixins.select-input-hovered-styles;
   }
@@ -8189,11 +8170,11 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
   }
 }
 
-.select:not(.selectize).small::after {
+.select:not(.selectize):not(.cp-select).small::after {
   inset-block-start: 9px;
 }
 
-.select:not(.selectize).small select {
+.select:not(.selectize):not(.cp-select).small select {
   padding-block: 4px !important;
   font-size: 11px;
 }
@@ -8492,13 +8473,12 @@ body {
 /* timepicker */
 .ui-timepicker-wrapper {
   z-index: 101;
+  overflow-y: auto;
+  max-height: 210px;
 }
 
 .ui-timepicker-list {
-  margin-inline-start: 1px;
-  overflow-y: auto;
   width: calc(14px + 6em);
-  height: 210px;
   z-index: 100;
 }
 

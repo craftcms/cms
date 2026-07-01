@@ -181,4 +181,3 @@ If you're rendering a menu item manually in a Vue or Inertia page, pass `action`
 
 The `feedbackDuration` attribute (milliseconds, default `1000`) controls how long success/error messages show before the
 item resets to idle.
-

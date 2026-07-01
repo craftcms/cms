@@ -10,11 +10,13 @@
 - Renamed `CraftCms\Cms\Twig\TemplateResolver` to `CraftCms\Cms\View\TemplateResolver`. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Fixed a bug where anonymous homepage and fallback site-template requests could bypass offline-site access enforcement. ([#19151](https://github.com/craftcms/cms/pull/19151))
 - Fixed an error that could occur during Craft 6 upgrades when the `migrations` table was missing its `track` column. ([#19168](https://github.com/craftcms/cms/pull/19168))
+- Fixed an error that occurred when saving Users source settings after selecting the Groups table column. ([#19184](https://github.com/craftcms/cms/pull/19184))
 
 ## 6.0.0-alpha.9 - 2026-06-23
 
 - Added `CraftCms\Yii2Adapter\Database\DeprecatedTable`.
 - Added `CraftCms\Cms\Translation\Formatter::asRelativeTime()`. ([#19146](https://github.com/craftcms/cms/pull/19146))
+- Updated `webonyx/graphql-php` to 15.33.1. ([#18757](https://github.com/craftcms/cms/pull/18757))
 - `craft\elements\Category::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\CategoryQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - `craft\elements\GlobalSet::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - `craft\elements\Tag::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\TagQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))

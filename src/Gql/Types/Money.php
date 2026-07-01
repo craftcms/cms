@@ -17,17 +17,11 @@ use Override;
 
 class Money extends ScalarType implements SingularTypeInterface
 {
-    /**
-     * @var string
-     */
     #[Override]
-    public $name = 'Money';
+    public string $name = 'Money';
 
-    /**
-     * @var string
-     */
     #[Override]
-    public $description = 'The `Money` scalar type represents a money value as a string.';
+    public ?string $description = 'The `Money` scalar type represents a money value as a string.';
 
     public static function getType(): Money
     {

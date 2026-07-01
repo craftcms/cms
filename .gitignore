@@ -33,4 +33,7 @@ resources/js/generated/*
 !resources/js/generated/.gitkeep
 
 # Built CMS assets
-cms-assets/resources/
+cms-assets/resources/build
+cms-assets/resources/legacy
+cms-assets/resources/icons/*
+!cms-assets/resources/icons/custom-icons

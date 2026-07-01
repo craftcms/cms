@@ -25,9 +25,7 @@ import './Money.scss';
           this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
         }
 
-        if (this.$field.val() !== '') {
-          this.updateInputMask();
-        }
+        this.updateInputMask();
 
         this.$field.data('money-input', this);
       },
@@ -102,7 +100,7 @@ import './Money.scss';
         maskOptions: {
           alias: 'currency',
           autoGroup: false,
-          clearMaskOnLostFocus: false,
+          clearMaskOnLostFocus: true,
           digits: 2,
           digitsOptional: false,
           groupSeparator: ',',

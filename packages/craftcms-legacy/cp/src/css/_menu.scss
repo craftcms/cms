@@ -7,12 +7,12 @@
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   @include mixins.menu-styles;
 }
 
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   padding: 0;
 }
 

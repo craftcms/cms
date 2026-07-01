@@ -1,4 +1,4 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest';
+import {beforeEach, describe, expect, test, vi} from 'vitest';
 
 // Prevent happy-dom from making real network requests for CSS/JS files
 const happyDOM = (window as any).happyDOM;
@@ -32,8 +32,10 @@ describe('appendHeadHtml', () => {
     );
     const links = document.head.querySelectorAll('link');
     expect(links.length).toBe(1);
-    expect(links[0].getAttribute('rel')).toBe('stylesheet');
-    expect(links[0].getAttribute('href')).toBe('https://example.com/style.css');
+    expect(links[0]!.getAttribute('rel')).toBe('stylesheet');
+    expect(links[0]!.getAttribute('href')).toBe(
+      'https://example.com/style.css'
+    );
   });
 
   test('appends a script element to head', async () => {
@@ -43,7 +45,7 @@ describe('appendHeadHtml', () => {
     );
     const scripts = document.head.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].getAttribute('src')).toBe(
+    expect(scripts[0]!.getAttribute('src')).toBe(
       'https://example.com/script.js'
     );
   });
@@ -53,7 +55,7 @@ describe('appendHeadHtml', () => {
     await appendHeadHtml('<script>console.log("hello")</script>');
     const scripts = document.head.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].textContent).toBe('console.log("hello")');
+    expect(scripts[0]!.textContent).toBe('console.log("hello")');
   });
 
   test('appends arbitrary HTML to head', async () => {
@@ -61,7 +63,7 @@ describe('appendHeadHtml', () => {
     await appendHeadHtml('<meta name="description" content="test">');
     const metas = document.head.querySelectorAll('meta[name="description"]');
     expect(metas.length).toBe(1);
-    expect(metas[0].getAttribute('content')).toBe('test');
+    expect(metas[0]!.getAttribute('content')).toBe('test');
   });
 
   test('preserves link attributes when appending', async () => {
@@ -107,7 +109,7 @@ describe('appendBodyHtml', () => {
     await appendBodyHtml('<script src="https://example.com/body.js"></script>');
     const scripts = document.body.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].getAttribute('src')).toBe('https://example.com/body.js');
+    expect(scripts[0]!.getAttribute('src')).toBe('https://example.com/body.js');
   });
 });
 

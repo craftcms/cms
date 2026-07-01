@@ -23,3 +23,22 @@ type Story = StoryObj<any>;
 export const Default: Story = {
   args: {},
 };
+
+// Render a custom inline SVG via the default slot. When the slot has content,
+// the slotted SVG is shown instead of the name-based icon.
+export const SlottedSvg: Story = {
+  render: () => html`
+    <craft-icon>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 2 15 9l7 .5-5.5 4.5L18 22l-6-3.5L6 22l1.5-8L2 9.5 9 9z" />
+      </svg>
+    </craft-icon>
+  `,
+};
