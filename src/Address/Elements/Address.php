@@ -631,4 +631,13 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     {
         return app(Addresses::class)->getFieldLayout();
     }
+
+    #[Override]
+    public static function isImportable(): bool
+    {
+        // address elements never exist on their own; they're always either owned by something or is the content of Addresses field;
+        // addresses can be imported via an importable element that has a field layout that contains Addresses field,
+        // or via User addresses
+        return false;
+    }
 }

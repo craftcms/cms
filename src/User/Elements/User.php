@@ -32,6 +32,7 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -301,6 +302,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      *
      * @see getAddresses()
      */
+    #[Importable('addresses', 'Addresses', false, true, false)]
     private ElementCollection $_addresses;
 
     /**

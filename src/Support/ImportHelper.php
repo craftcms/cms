@@ -28,6 +28,8 @@ class ImportHelper
                 'name' => $arguments[0],
                 'label' => $arguments[1] ?? $arguments[0],
                 'excludeFromUiMapping' => $arguments[2] ?? false,
+                'isContainer' => $arguments[3] ?? false,
+                'canBeMatchCriteria' => $arguments[4] ?? true,
                 'defaultValue' => $property->getDefaultValue(),
             ];
         }, $properties);

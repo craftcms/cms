@@ -207,8 +207,8 @@ class Import
             if (property_exists($import, 'site')) {
                 $settings['site'] = $import->site->uid;
             }
-            if (property_exists($import, 'fieldLayoutUid')) {
-                $settings['fieldLayoutUid'] = $import->fieldLayoutUid;
+            if (property_exists($import, 'fieldLayout')) {
+                $settings['fieldLayout'] = $import->fieldLayout;
             }
             $configRecord->settings = $settings;
             $configRecord->save();

@@ -58,7 +58,7 @@
                             },
                         ] %}
 
-                        {% if not config.isElementImport() or config.fieldLayoutUid is not empty %}
+                        {% if not config.isElementImport() or config.fieldLayout is not empty %}
                             {% set actionItems = actionItems|merge([
                                 {
                                     label: 'Edit Mapping'|t('app'),

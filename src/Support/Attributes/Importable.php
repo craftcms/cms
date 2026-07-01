@@ -13,5 +13,7 @@ final readonly class Importable
         public string $name,
         public string $label,
         public bool $excludeFromUiMapping = false,
+        public bool $isContainer = false,
+        public bool $canBeMatchCriteria = true,
     ) {}
 }

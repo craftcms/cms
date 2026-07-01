@@ -7,9 +7,9 @@
 
 {{ forms.selectField({
     label: 'Choose the field layout provider to import into (e.g. entry type, volume)',
-    name: 'fieldLayoutUid',
+    name: 'fieldLayout',
     options: availableFieldLayoutProviders,
-    value: old('fieldLayoutUid', import.fieldLayoutUid ?? null),
+    value: old('fieldLayout', import.fieldLayout ?? null),
 }) }}
 
 {# todo: this link either needs to first save the current screen's data or it needs to only show once the current screen has been saved #}

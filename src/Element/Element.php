@@ -737,6 +737,12 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     }
 
     #[Override]
+    public static function isImportable(): bool
+    {
+        return true;
+    }
+
+    #[Override]
     public static function getDefaultTransformer(): ?string
     {
         return ElementTransformer::class;

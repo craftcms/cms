@@ -223,12 +223,12 @@ class ImportConfigController
         abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
         $this->request->validate([
-            'fieldLayoutUid' => ['nullable', 'string', 'max:36'],
+            'fieldLayout' => ['nullable', 'string', 'max:255'],
         ]);
 
         /** @var ElementImporter $import */
-        if (property_exists($import, 'fieldLayoutUid')) {
-            $import->fieldLayoutUid($this->request->input('fieldLayoutUid', $import->fieldLayoutUid));
+        if (property_exists($import, 'fieldLayout')) {
+            $import->fieldLayout($this->request->input('fieldLayout', $import->fieldLayout));
         }
 
         if (! $this->importService->saveConfig($import)) {

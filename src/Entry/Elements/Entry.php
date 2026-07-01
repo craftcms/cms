@@ -2773,16 +2773,16 @@ JS;
     #[Override]
     public function prepareNewElementForImport(BaseImporter $config, array &$data): self
     {
-        // if it's UI-driven element import where the fieldLayoutUid was chosen in the editable config,
+        // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
         // we need to ensure the typeId is set
-        if ($config->fieldLayoutUid) {
+        if ($config->fieldLayout) {
             $allEntryTypes = app(\CraftCms\Cms\Entry\EntryTypes::class)->getAllEntryTypes();
             $allFieldLayouts = $allEntryTypes->mapWithKeys(function ($entryType) {
                 $fieldLayout = $entryType->getFieldLayout();
 
                 return [$fieldLayout->id => $fieldLayout];
             });
-            $entryType = $allFieldLayouts->firstWhere('uid', $config->fieldLayoutUid)?->provider;
+            $entryType = $allFieldLayouts->firstWhere('uid', $config->fieldLayout)?->provider;
             if ($entryType) {
                 $this->setTypeId($entryType->id);
                 if (isset($data['matchCriteria']['typeId'])) {

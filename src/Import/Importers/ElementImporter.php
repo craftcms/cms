@@ -30,7 +30,7 @@ class ElementImporter extends BaseImporter
 {
     public protected(set) ?Site $site = null;
 
-    public protected(set) ?string $fieldLayoutUid = null;
+    public protected(set) ?string $fieldLayout = null;
 
     public function __construct(?array $config = null)
     {
@@ -48,10 +48,12 @@ class ElementImporter extends BaseImporter
     protected function settingsHtml(bool $readOnly): string
     {
         $allElementTypes = Elements::getAllElementTypes();
-        $availableElementTypes = array_map(fn ($type) => [
-            'label' => $type::displayName(),
-            'value' => $type,
-        ], $allElementTypes);
+        $availableElementTypes = collect($allElementTypes)
+            ->filter(fn ($type) => $type::isImportable())
+            ->map(fn ($type) => [
+                'label' => $type::displayName(),
+                'value' => $type,
+            ]);
 
         $defaultElementType = null;
         if (in_array(Entry::class, $allElementTypes, true)) {
@@ -61,7 +63,7 @@ class ElementImporter extends BaseImporter
         return template('import/_importer-types/element-importer', [
             'readOnly' => $readOnly,
             'import' => $this,
-            'availableElementTypes' => $availableElementTypes,
+            'availableElementTypes' => $availableElementTypes->all(),
             'defaultElementType' => $defaultElementType,
             'availableSites' => Sites::getEditableSites()
                 ->map(fn ($item) => ['label' => $item->name, 'value' => $item->handle])
@@ -185,26 +187,28 @@ class ElementImporter extends BaseImporter
         return $this;
     }
 
-    public function fieldLayoutUid(string|int|FieldLayout|null $value): self
+    public function fieldLayout(string|int|FieldLayout|null $value): self
     {
         $fieldsService = app(Fields::class);
 
         if ($value instanceof FieldLayout) {
-            $this->fieldLayoutUid = $value->uid;
+            // if the field layout is saved in the database, then it has an ID and therefore persistent UID;
+            // otherwise, it's the default layout and we need to use the type
+            $this->fieldLayout = $value->id ? $value->uid : $value->type;
         } elseif ($value === null) {
-            $this->fieldLayoutUid = null;
+            $this->fieldLayout = null;
         } elseif (is_numeric($value)) {
             $fieldLayout = $fieldsService->getLayoutById($value);
             if ($fieldLayout === null) {
                 throw new InvalidArgumentException("No field layout found with ID: $value");
             }
-            $this->fieldLayoutUid = $fieldLayout->uid;
+            $this->fieldLayout = $fieldLayout->uid;
         } elseif (is_string($value)) {
-            $fieldLayout = $fieldsService->getLayoutByUid($value);
+            $fieldLayout = $fieldsService->getLayoutByUid($value) ?? $fieldsService->getLayoutByType($value);
             if ($fieldLayout === null) {
-                throw new InvalidArgumentException("No field layout found with UID: \"$value\".");
+                throw new InvalidArgumentException("No field layout found with UID or Type of: \"$value\".");
             }
-            $this->fieldLayoutUid = $fieldLayout->uid;
+            $this->fieldLayout = $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type;
         }
 
         return $this;
@@ -246,18 +250,21 @@ class ElementImporter extends BaseImporter
     public function getAvailableFieldLayoutProviders(): array
     {
         $element = (new $this->className);
-        $fieldLayouts = $element::fieldLayouts(null);
+        $fieldLayout = $element->getFieldLayout();
 
-        // if we only have one field layout and we don't have a provider, lets assume there can only be one for the element;
+        // if we were able to get the field layout this way, then there can only be one for the element;
         // like there's only one for Address or User element
-        if (count($fieldLayouts) == 1 && $fieldLayouts[0]->provider === null) {
+        if ($fieldLayout) {
             return [
                 [
                     'label' => $element::displayName(),
-                    'value' => $fieldLayouts[0]->uid,
+                    'value' => $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type,
                 ],
             ];
         }
+
+        // otherwise, get them all
+        $fieldLayouts = $element::fieldLayouts(null);
 
         $providers = [
             [
@@ -294,16 +301,17 @@ class ElementImporter extends BaseImporter
                 'prefixedHandleForMatchCriteria' => Html::namespaceInputName($prop['name'], 'matchCriteria'),
                 'prefixedHandle' => $prop['name'],
                 'prefixedHandleAsArray' => Arr::bracketsToArray($prop['name']),
-                'isContainer' => false,
-                'canBeMatchCriteria' => true,
+                'isContainer' => $prop['isContainer'] ?? false,
+                'canBeMatchCriteria' => $prop['canBeMatchCriteria'] ?? true,
             ], $props);
         }
 
-        if ($this->fieldLayoutUid === null) {
+        if ($this->fieldLayout === null) {
             return $propertyCols;
         }
 
-        $fieldLayout = app(Fields::class)->getLayoutByUid($this->fieldLayoutUid);
+        $fieldsService = app(Fields::class);
+        $fieldLayout = $fieldsService->getLayoutByUid($this->fieldLayout) ?? $fieldsService->getLayoutByType($this->fieldLayout);
 
         $fieldLayoutCols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
 

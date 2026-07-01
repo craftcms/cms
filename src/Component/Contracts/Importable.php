@@ -13,6 +13,11 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 interface Importable
 {
     /**
+     * Returns whether the component can be imported into directly.
+     */
+    public static function isImportable(): bool;
+
+    /**
      * Returns the class name of the default transformer for the component.
      */
     public static function getDefaultTransformer(): ?string;
