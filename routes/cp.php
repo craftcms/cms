@@ -142,6 +142,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount', [UsersController::class, 'edit']);
     Route::get('myaccount/addresses', [AddressesController::class, 'index']);
     Route::get('myaccount/permissions', [PermissionsController::class, 'index']);
+    Route::patch('myaccount/permissions', [PermissionsController::class, 'update']);
     Route::get('myaccount/passkeys', [PasskeysController::class, 'index']);
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
@@ -152,7 +153,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::get('users/new', [UsersController::class, 'create']);
         Route::get('users/{userId}', [UsersController::class, 'edit'])->whereNumber('userId');
         Route::get('users/{userId}/addresses', [AddressesController::class, 'index'])->whereNumber('userId');
-        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index']);
+        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index'])->whereNumber('userId');
+        Route::patch('users/{userId}/permissions', [PermissionsController::class, 'update'])->whereNumber('userId');
     });
 
     Route::get('users/{slug?}', [UsersController::class, 'index']);

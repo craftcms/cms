@@ -9,6 +9,7 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
+use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Update\Data\Updates;
@@ -43,6 +44,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     PermissionGroup::class,
                     Route::class,
                     Updates::class,
+                    UserPermissionsViewModel::class,
                     UserSettings::class,
                 ],
                 [
