@@ -160,7 +160,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
   --_cell-spacing-block: 0;
-  --_row-height: auto;
+  --_row-height: calc(34rem / 16);
   text-align: left;
   width: 100%;
   border-spacing: 0;

@@ -3,7 +3,6 @@
   import {h} from 'vue';
   import Pane from '@/common/components/Pane.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {TableSpacing} from '@/common/types';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {useEditableTable} from '@/modules/admin-table/composables/useEditableTable';
 
@@ -82,7 +81,6 @@
   <Pane :padding="0" appearance="raised">
     <AdminTable
       :table="table"
-      :spacing="TableSpacing.Relaxed"
       :reorderable="false"
     />
   </Pane>

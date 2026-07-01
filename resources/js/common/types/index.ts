@@ -172,7 +172,6 @@ export type EditableTableCellType =
  * @TODO this could probably be a more generic `spacing` constant
  */
 export const TableSpacing = {
-  Relaxed: 'relaxed',
   Compact: 'compact',
   Spacious: 'spacious',
 } as const;

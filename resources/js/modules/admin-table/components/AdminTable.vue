@@ -295,7 +295,6 @@
           'cp-table': true,
           'cp-table--grid': false,
           'cp-table--compact': spacing === TableSpacing.Compact,
-          'cp-table--relaxed': spacing === TableSpacing.Relaxed,
           'cp-table--spacious': spacing === TableSpacing.Spacious,
           'cp-table--auto': layout === 'auto',
         }"
