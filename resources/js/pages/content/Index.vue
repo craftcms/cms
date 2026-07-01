@@ -18,6 +18,9 @@
     type SortItem,
     TableSpacing,
   } from '@/common/types';
+  import NewEntryButton, {
+    type PublishableSection,
+  } from '@/modules/elements/components/NewEntryButton.vue';
   import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
   import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
   import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
@@ -63,6 +66,7 @@
       // The serialized bulk actions available for the active source (null when
       // the source/context offers none).
       actions?: Array<BulkActionItem> | null;
+      publishableSections: Array<PublishableSection>;
     }>(),
     {
       context: 'index',
@@ -205,16 +209,20 @@
 
 <template>
   <IndexLayout>
+    <template #actions>
+      <NewEntryButton
+        :sources="sources"
+        :source="source"
+        :publishable-sections="publishableSections"
+        :element-display-name="elementDisplayName"
+      />
+    </template>
     <template #interior-nav>
       <nav aria-labelledby="source-heading">
         <h2 id="source-heading" class="sr-only">
           {{ t('Sources') }}
         </h2>
-        <ElementSources
-          :sources="sources"
-          :active-source="source?.key"
-          :view-mode="mode"
-        />
+        <ElementSources :sources="sources" :active-source="source?.key" />
       </nav>
     </template>
 

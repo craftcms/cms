@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
@@ -291,6 +292,7 @@ class ContentIndexController
             'data' => $elements,
             'actions' => $actions,
             'sort' => $sort,
+            'publishableSections' => Sections::getPublishableSections()->values(),
             'pagination' => [
                 'total' => $paginator->total(),
                 'per_page' => $paginator->perPage(),

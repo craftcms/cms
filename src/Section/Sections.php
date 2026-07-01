@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
@@ -45,6 +45,7 @@ use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
@@ -59,6 +60,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\t;
 
 #[Scoped]
 class Sections
@@ -267,6 +269,43 @@ class Sections
         return $this->getAllSections()->filter(
             fn (Section $section) => $user->can("viewEntries:$section->uid"),
         );
+    }
+
+    /**
+     * Returns all sections the given user is able to publish.
+     *
+     * @throws AuthenticationException
+     */
+    public function getPublishableSections(): Collection
+    {
+        $currentUser = currentUser();
+
+        if (! $currentUser) {
+            return collect();
+        }
+
+        if ($this->getEditableSections()->isEmpty()) {
+            return collect();
+        }
+
+        return collect($this->getEditableSections())
+            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid"))
+            ->map(fn (Section $section) => [
+                'entryTypes' => collect($section->getEntryTypes())
+                    ->map(fn (EntryType $type) => [
+                        'handle' => $type->handle,
+                        'id' => (int) $type->id,
+                        'name' => t($type->name, category: 'site'),
+                        'icon' => $type->icon ? Icons::resolveIconName($type->icon) : null,
+                    ]),
+                'handle' => $section->handle,
+                'id' => (int) $section->id,
+                'name' => t($section->name, category: 'site'),
+                'sites' => $section->getSiteIds(),
+                'type' => $section->type,
+                'uid' => $section->uid,
+                'canSave' => $currentUser->can("saveEntries:$section->uid"),
+            ]);
     }
 
     /**
