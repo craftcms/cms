@@ -573,12 +573,9 @@
     overflow-x: auto;
   }
 
-  // The footer sticks to the bottom of the scroll viewport so the bulk-actions
-  // bar never slides out from under the cursor while a selection exists and
-  // stays visible regardless of how far the list scrolls.
   .cp-table-footer {
     position: sticky;
-    bottom: var(--c-spacing-md);
+    bottom: 0;
     z-index: 1;
     background-color: var(--c-surface-default);
   }
