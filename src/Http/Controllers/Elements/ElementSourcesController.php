@@ -262,7 +262,7 @@ readonly class ElementSourcesController
                 $postedSettings = $sourceSettings[$key];
 
                 if ($type !== ElementSources::TYPE_HEADING) {
-                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
+                    $sourceConfig['tableAttributes'] = $this->tableAttributeKeys($postedSettings['tableAttributes'] ?? []);
                 }
 
                 if (isset($postedSettings['defaultSort'])) {
@@ -328,5 +328,16 @@ readonly class ElementSourcesController
         return $this->asSuccess(t('Source settings saved'), data: [
             'disabledSourceKeys' => $disabledSourceKeys,
         ]);
+    }
+
+    private function tableAttributeKeys(array $attributes): array|string
+    {
+        $attributes = collect($attributes)
+            ->map(fn (mixed $attribute) => data_get($attribute, 'value', $attribute))
+            ->filter()
+            ->values()
+            ->all();
+
+        return $attributes ?: '-';
     }
 }
