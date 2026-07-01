@@ -231,12 +231,6 @@ class Security extends \yii\base\Security
     {
         $path = FileHelper::absolutePath($path, '/');
 
-        // is it located directly in the filesystem's root (e.g. /myfile.json)
-        $parent = dirname($path);
-        if ($parent === dirname($parent)) {
-            return true;
-        }
-
         // is it located within a Craft-specific system directory
         if ($this->isSystemDir($path)) {
             return true;
@@ -245,16 +239,28 @@ class Security extends \yii\base\Security
         // is it located within a sensitive os directory
         // windows-based sensitive directories
         if (PHP_OS_FAMILY === 'Windows') {
-            $winRoot = rtrim($_SERVER['SystemRoot'] ?? 'C:\\Windows', '\\');
-            $drive = substr($winRoot, 0, 3); // e.g. "C:\"
+            // is it located directly in the filesystem's root (e.g. C:\myfile.json, \\server\sharename\myfile.json)
+            // we're using forward slashes cause FileHelper::absolutePath() already normalized this path
+            if (preg_match('#^(?:[A-Za-z]:/[^/]+|//[^/]+/[^/]+/[^/]+)$#', $path)) {
+                return true;
+            }
+
+            $winRoot = FileHelper::normalizePath($_SERVER['SystemRoot'] ?? 'C:\\Windows');
+            $drive = substr($winRoot, 0, 3); // e.g. "C:/" because we've normalized it
             $sensitiveDirs = [
-                $winRoot, // C:\Windows
-                $drive . 'Users', // C:\Users
+                $winRoot, // C:/Windows
+                $drive . 'Users', // C:/Users
                 $drive . 'Program Files',
                 $drive . 'Program Files (x86)',
                 $drive . 'ProgramData',
             ];
         } else {
+            // is it located directly in the filesystem's root (e.g. /myfile.json)
+            $parent = dirname($path);
+            if ($parent === dirname($parent)) {
+                return true;
+            }
+
             // non-windows-based sensitive directories
             $sensitiveDirs = [
                 '/boot',
