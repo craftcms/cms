@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,11 +44,11 @@ class CpScreenResponse implements Responsable
     private ?string $inertiaPage = null;
 
     /**
-     * @var array Props to pass to the Inertia page component.
+     * @var array|Arrayable Props to pass to the Inertia page component.
      *
      * @see inertiaPage()
      */
-    private array $inertiaProps = [];
+    private array|Arrayable $inertiaProps = [];
 
     /**
      * @var callable|null Callable that will be called before other properties are added to the screen.
@@ -629,7 +630,7 @@ class CpScreenResponse implements Responsable
      * When set, `toResponse()` will render an Inertia response instead of a Twig template.
      * The `title` and `crumbs` properties will be automatically included as props.
      */
-    public function inertiaPage(?string $value, array $props = []): self
+    public function inertiaPage(?string $value, array|Arrayable $props = []): self
     {
         $this->inertiaPage = $value;
         $this->inertiaProps = $props;
