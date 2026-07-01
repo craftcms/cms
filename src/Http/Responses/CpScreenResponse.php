@@ -907,6 +907,10 @@ class CpScreenResponse implements Responsable
         ];
 
         if ($this->inertiaPage) {
+            if ($this->subnav === null) {
+                unset($templateProps['subnav']);
+            }
+
             return Inertia::render($this->inertiaPage, $this->inertiaProps)
                 ->with($templateProps)
                 ->toResponse($request);
