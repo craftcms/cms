@@ -1,0 +1,328 @@
+<script setup lang="ts">
+  import {computed} from 'vue';
+  import {t} from '@craftcms/cp';
+  import {useForm, usePage} from '@inertiajs/vue3';
+  import IndexLayout from '@/common/layouts/IndexLayout.vue';
+  import CraftCombobox from '@/common/form/CraftCombobox.vue';
+  import Select from '@/common/form/Select.vue';
+  import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
+  import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import {update} from '@actions/Users/PreferencesController';
+
+  defineOptions({
+    inheritAttrs: false,
+  });
+
+  type UserPreferencesViewModel =
+    CraftCms.Cms.Http.ViewModels.UserPreferencesViewModel & {
+      details?: string | null;
+    };
+
+  interface UserPreferencesForm {
+    preferredLanguage: string;
+    preferredLocale: string;
+    weekStartDay: string;
+    timeZone: string;
+    useShapes: boolean;
+    underlineLinks: boolean;
+    disableAutofocus: boolean;
+    notificationDuration: string;
+    notificationPosition: string;
+    slideoutPosition: string;
+    showFieldHandles?: boolean;
+    showExceptionView?: boolean;
+    profileTemplates?: boolean;
+  }
+
+  const props = usePage<UserPreferencesViewModel>().props;
+  const preferences = props.preferences;
+
+  const form = useForm<UserPreferencesForm>({
+    preferredLanguage: preferences.preferredLanguage?.toString() ?? '',
+    preferredLocale: preferences.preferredLocale?.toString() ?? '',
+    weekStartDay: preferences.weekStartDay?.toString() ?? '0',
+    timeZone: preferences.timeZone?.toString() ?? '__blank__',
+    useShapes: Boolean(preferences.useShapes),
+    underlineLinks: Boolean(preferences.underlineLinks),
+    disableAutofocus: Boolean(preferences.disableAutofocus),
+    notificationDuration:
+      preferences.notificationDuration?.toString() ?? '5000',
+    notificationPosition:
+      preferences.notificationPosition?.toString() ?? 'end-start',
+    slideoutPosition: preferences.slideoutPosition?.toString() ?? 'end',
+    ...(props.isAdmin
+      ? {
+          showFieldHandles: Boolean(preferences.showFieldHandles),
+          showExceptionView: Boolean(preferences.showExceptionView),
+          profileTemplates: Boolean(preferences.profileTemplates),
+        }
+      : {}),
+  });
+
+  const {save} = useSettingsSave(form, update);
+
+  const displaySettings = computed({
+    get: () => [
+      ...(form.useShapes ? ['useShapes'] : []),
+      ...(form.underlineLinks ? ['underlineLinks'] : []),
+    ],
+    set: (values: Array<string>) => {
+      form.useShapes = values.includes('useShapes');
+      form.underlineLinks = values.includes('underlineLinks');
+    },
+  });
+
+  const generalSettings = computed({
+    get: () => (form.disableAutofocus ? ['disableAutofocus'] : []),
+    set: (values: Array<string>) => {
+      form.disableAutofocus = values.includes('disableAutofocus');
+    },
+  });
+
+  const developmentSettings = computed({
+    get: () => [
+      ...(form.showFieldHandles ? ['showFieldHandles'] : []),
+      ...(form.profileTemplates ? ['profileTemplates'] : []),
+      ...(form.showExceptionView ? ['showExceptionView'] : []),
+    ],
+    set: (values: Array<string>) => {
+      form.showFieldHandles = values.includes('showFieldHandles');
+      form.profileTemplates = values.includes('profileTemplates');
+      form.showExceptionView = values.includes('showExceptionView');
+    },
+  });
+
+  const notificationDurationOptions = computed(() => [
+    {label: t('{num, number} seconds', {num: 2}), value: '2000'},
+    {label: t('{num, number} seconds', {num: 5}), value: '5000'},
+    {label: t('{num, number} seconds', {num: 10}), value: '10000'},
+    {label: t('Show them indefinitely'), value: '0'},
+  ]);
+
+  const displaySettingOptions = computed(() => [
+    {label: t('Use shapes to represent statuses'), value: 'useShapes'},
+    {label: t('Underline links'), value: 'underlineLinks'},
+  ]);
+
+  const generalSettingOptions = computed(() => [
+    {label: t('Disable autofocus'), value: 'disableAutofocus'},
+  ]);
+
+  const developmentSettingOptions = computed(() => [
+    {label: t('Show field handles in edit forms'), value: 'showFieldHandles'},
+    {
+      label: t('Profile Twig templates when Dev Mode is disabled'),
+      value: 'profileTemplates',
+    },
+    {
+      label: t('Show full exception views when Dev Mode is disabled'),
+      value: 'showExceptionView',
+    },
+  ]);
+
+  const notificationPositionOptions = computed(() => [
+    {
+      icon:
+        props.orientation === 'ltr'
+          ? 'custom-icons/notification-top-left'
+          : 'custom-icons/notification-top-right',
+      label: props.orientation === 'ltr' ? t('Top-Left') : t('Top-Right'),
+      value: 'start-start',
+    },
+    {
+      icon:
+        props.orientation === 'ltr'
+          ? 'custom-icons/notification-top-right'
+          : 'custom-icons/notification-top-left',
+      label: props.orientation === 'ltr' ? t('Top-Right') : t('Top-Left'),
+      value: 'start-end',
+    },
+    {
+      icon:
+        props.orientation === 'ltr'
+          ? 'custom-icons/notification-bottom-left'
+          : 'custom-icons/notification-bottom-right',
+      label: props.orientation === 'ltr' ? t('Bottom-Left') : t('Bottom-Right'),
+      value: 'end-start',
+    },
+    {
+      icon:
+        props.orientation === 'ltr'
+          ? 'custom-icons/notification-bottom-right'
+          : 'custom-icons/notification-bottom-left',
+      label: props.orientation === 'ltr' ? t('Bottom-Right') : t('Bottom-Left'),
+      value: 'end-end',
+    },
+  ]);
+
+  const slideoutPositionOptions = computed(() => [
+    {
+      icon:
+        props.orientation === 'ltr'
+          ? 'custom-icons/slideout-left'
+          : 'custom-icons/slideout-right',
+      label: props.orientation === 'ltr' ? t('Left') : t('Right'),
+      value: 'start',
+    },
+    {
+      icon:
+        props.orientation === 'ltr'
+          ? 'custom-icons/slideout-right'
+          : 'custom-icons/slideout-left',
+      label: props.orientation === 'ltr' ? t('Right') : t('Left'),
+      value: 'end',
+    },
+  ]);
+</script>
+
+<template>
+  <IndexLayout :form="form" @save="save">
+    <div class="grid gap-6 p-4">
+      <section class="grid gap-3">
+        <h2 class="text-base">{{ t('General') }}</h2>
+
+        <CraftCombobox
+          v-model="form.preferredLanguage"
+          :label="t('Language')"
+          :help-text="t('The language that the control panel should use.')"
+          id="preferredLanguage"
+          name="preferredLanguage"
+          :options="props.languageOptions"
+          :error="form.errors.preferredLanguage"
+          :require-option-match="true"
+          show-all-on-empty
+        />
+
+        <CraftCombobox
+          v-model="form.preferredLocale"
+          :label="t('Formatting Locale')"
+          :help-text="
+            t('The locale that should be used for date and number formatting.')
+          "
+          id="preferredLocale"
+          name="preferredLocale"
+          :options="props.localeOptions"
+          :error="form.errors.preferredLocale"
+          :require-option-match="true"
+          show-all-on-empty
+        />
+
+        <Select
+          v-model="form.weekStartDay"
+          :label="t('Week Start Day')"
+          id="weekStartDay"
+          name="weekStartDay"
+          :options="props.weekStartDayOptions"
+          :error="form.errors.weekStartDay"
+        />
+
+        <CraftCombobox
+          v-model="form.timeZone"
+          :label="t('Time Zone')"
+          id="time-zone"
+          name="timeZone"
+          :options="props.timeZoneOptions"
+          :error="form.errors.timeZone"
+          :require-option-match="true"
+          show-all-on-empty
+        />
+      </section>
+
+      <hr />
+
+      <section class="grid gap-3">
+        <h2 class="text-base">{{ t('Accessibility') }}</h2>
+
+        <CheckboxGroup
+          v-model="displaySettings"
+          :label="t('Display Settings')"
+          :options="displaySettingOptions"
+        />
+
+        <CheckboxGroup
+          v-model="generalSettings"
+          :label="t('General Settings')"
+          :options="generalSettingOptions"
+        />
+
+        <Select
+          v-model="form.notificationDuration"
+          :label="t('Notification Duration')"
+          :help-text="
+            t(
+              'How long notifications should be shown before they disappear automatically.'
+            )
+          "
+          name="notificationDuration"
+          id="notificationDuration"
+          :options="notificationDurationOptions"
+          :error="form.errors.notificationDuration"
+        />
+
+        <div class="grid gap-2">
+          <h3 class="text-sm">{{ t('Notification Position') }}</h3>
+          <craft-button-group role="group">
+            <craft-button
+              v-for="option in notificationPositionOptions"
+              :key="option.value"
+              type="button"
+              appearance="outline"
+              :active="
+                form.notificationPosition === option.value ? 'true' : null
+              "
+              :aria-pressed="form.notificationPosition === option.value"
+              :title="option.label"
+              @click="form.notificationPosition = option.value"
+            >
+              <craft-icon :name="option.icon" :label="option.label" />
+            </craft-button>
+          </craft-button-group>
+          <ul class="error-list" v-if="form.errors.notificationPosition">
+            <li>{{ form.errors.notificationPosition }}</li>
+          </ul>
+        </div>
+
+        <div class="grid gap-2">
+          <h3 class="text-sm">{{ t('Slideout Position') }}</h3>
+          <craft-button-group role="group">
+            <craft-button
+              v-for="option in slideoutPositionOptions"
+              :key="option.value"
+              type="button"
+              appearance="outline"
+              :active="form.slideoutPosition === option.value ? 'true' : null"
+              :aria-pressed="form.slideoutPosition === option.value"
+              :title="option.label"
+              @click="form.slideoutPosition = option.value"
+            >
+              <craft-icon :name="option.icon" :label="option.label" />
+            </craft-button>
+          </craft-button-group>
+          <ul class="error-list" v-if="form.errors.slideoutPosition">
+            <li>{{ form.errors.slideoutPosition }}</li>
+          </ul>
+        </div>
+      </section>
+
+      <template v-if="props.isAdmin">
+        <hr />
+
+        <section class="grid gap-3">
+          <h2 class="text-base">{{ t('Development') }}</h2>
+
+          <CheckboxGroup
+            v-model="developmentSettings"
+            :label="t('Development Settings')"
+            :options="developmentSettingOptions"
+          />
+        </section>
+      </template>
+
+      <!-- TODO: {% hook 'cp.users.edit.prefs' %} -->
+    </div>
+
+    <template v-if="props.details" #details>
+      <div v-html="props.details"></div>
+    </template>
+  </IndexLayout>
+</template>

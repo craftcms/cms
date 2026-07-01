@@ -146,6 +146,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/passkeys', [PasskeysController::class, 'index']);
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
+    Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
 
     Route::middleware([
         RequireEdition::class.':'.Edition::Team->value,
