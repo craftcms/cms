@@ -100,11 +100,7 @@ it('dispatches matched element string routes through an action request', functio
 it('dispatches matched element controller routes from the set route event', function () {
     $entry = createRoutableEntry('controller-route-entry', 'entries/show');
 
-    Event::listen(function (SetRoute $event) use ($entry) {
-        if ($event->element->id !== $entry->id) {
-            return;
-        }
-
+    Event::listen(function (SetRoute $event) {
         $event->route = new ControllerRoute([MatchedElementRouteTestController::class, 'show'], [
             'extra' => 'custom-param',
         ]);
@@ -118,7 +114,6 @@ it('dispatches matched element controller routes from the set route event', func
 
     expect($response->getStatusCode())->toBe(200)
         ->and(json_decode((string) $response->getContent(), true))->toMatchArray([
-            'entryId' => $entry->id,
             'elementId' => $entry->id,
             'matchedElementId' => $entry->id,
             'path' => 'controller-route-entry',
@@ -129,11 +124,7 @@ it('dispatches matched element controller routes from the set route event', func
 it('dispatches matched element invokable controller routes from the set route event', function () {
     $entry = createRoutableEntry('invokable-controller-route-entry', 'entries/show');
 
-    Event::listen(function (SetRoute $event) use ($entry) {
-        if ($event->element->id !== $entry->id) {
-            return;
-        }
-
+    Event::listen(function (SetRoute $event) {
         $event->route = new ControllerRoute(InvokableMatchedElementRouteTestController::class);
         $event->handled = true;
     });
@@ -145,7 +136,7 @@ it('dispatches matched element invokable controller routes from the set route ev
 
     expect($response->getStatusCode())->toBe(200)
         ->and(json_decode((string) $response->getContent(), true))->toMatchArray([
-            'entryId' => $entry->id,
+            'elementId' => $entry->id,
             'path' => 'invokable-controller-route-entry',
         ]);
 });
@@ -269,10 +260,9 @@ function createRoutableEntry(string $uri, string $template): Entry
 
 class MatchedElementRouteTestController
 {
-    public function show(Entry $entry, ElementInterface $element, Request $request, string $extra = ''): JsonResponse
+    public function show(ElementInterface $element, Request $request, string $extra = ''): JsonResponse
     {
         return new JsonResponse([
-            'entryId' => $entry->id,
             'elementId' => $element->id,
             'matchedElementId' => MatchedElement::get()->id,
             'path' => $request->path(),
@@ -283,10 +273,10 @@ class MatchedElementRouteTestController
 
 class InvokableMatchedElementRouteTestController
 {
-    public function __invoke(Entry $entry, Request $request): JsonResponse
+    public function __invoke(ElementInterface $element, Request $request): JsonResponse
     {
         return new JsonResponse([
-            'entryId' => $entry->id,
+            'elementId' => $element->id,
             'path' => $request->path(),
         ]);
     }
