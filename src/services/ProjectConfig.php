@@ -1650,8 +1650,12 @@ class ProjectConfig extends Component
 
             if (!empty($projectConfigNames)) {
                 foreach ($projectConfigNames as $uid => $name) {
+                    // Trim the name so the appended comment doesn’t end up with trailing
+                    // whitespace, which many editors strip on save (causing project config
+                    // diffs/conflicts). (Only affects the comment; the stored value is intact.)
+                    $name = trim((string)$name);
                     $uids[] = '/^(.*' . preg_quote($uid) . '.*)$/mi';
-                    $replacements[] = '$1 # ' . $name;
+                    $replacements[] = $name !== '' ? '$1 # ' . $name : '$1';
                 }
             }
 

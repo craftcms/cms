@@ -8,6 +8,7 @@
 - Fixed a bug where timepicker menus weren’t auto-scrolling to the selected time when opened. ([#19142](https://github.com/craftcms/cms/issues/19142))
 - Fixed an error that could occur when reassigning entries to a new author when deleting a user. ([#19154](https://github.com/craftcms/cms/issues/19154))
 - Fixed a bug where the “All entries” and “All users” sources weren’t available to be selected within Entries/Users field settings. ([#19185](https://github.com/craftcms/cms/discussions/19185))
+- Fixed a bug where a component’s name that ended in a space could cause its project config files to be written with trailing whitespace on the name comments, resulting in spurious diffs in editors that trim trailing whitespace. ([#19198](https://github.com/craftcms/cms/pull/19198))
 
 ## 5.10.8.1 - 2026-06-23
 
