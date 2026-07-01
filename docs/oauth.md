@@ -60,6 +60,7 @@ Each provider supports the following keys:
 - `groups` optional. Array of user group IDs, UIDs, or handles to assign to newly-created users.
 - `createsUsers` optional. Defaults to `null`, which inherits Craft's public registration setting.
 - `activatesUsers` optional. Defaults to `false`.
+- `trustsEmail` optional. Defaults to `true` for known trusted providers (`google`, `github`, `apple`, `bitbucket`, `slack`, `slack-openid`, and `twitter-oauth-2`), and `false` otherwise. Set to `true` only when the provider is trusted to verify ownership of the returned email address; this allows first-time matching to existing Craft users by email.
 - `identityResolver` optional. Class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
 - `userResolver` optional. Class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
 - `userPopulator` optional. Class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\PopulatesOAuthUser`.
@@ -86,6 +87,7 @@ return GeneralConfig::create()
             'groups' => ['members', 'editors'],
             'createsUsers' => true,
             'activatesUsers' => true,
+            'trustsEmail' => true,
             'userPopulator' => GitHubUserPopulator::class,
             'buttonRenderer' => GitHubButtonRenderer::class,
         ],
@@ -126,11 +128,13 @@ The default user resolver tries, in order:
 
 1. An existing link in `sso_identities`
 2. The `ResolvingOAuthUserLink` event
-3. `Users::getUserByUsernameOrEmail()` using the provider email
+3. An existing user with the provider email, only when `trustsEmail` is `true`
 
 If none of those produce a user, the resolver returns `null`. The controller will only create a new user record afterward if `createsUsers` allows it.
 
-If the provider does not return an email, there is no default username/email fallback match.
+If `trustsEmail` is `false` or the provider does not return an email, there is no default email fallback match to an existing user. This prevents untrusted providers from linking to existing accounts by asserting someone else's email address.
+
+Only enable `trustsEmail` for additional providers when your provider configuration guarantees the returned email address belongs to the authenticated external user. Set it to `false` to opt out for a known provider.
 
 ### User Population
 
@@ -162,6 +166,8 @@ OAuth will create a new user according to `createsUsers`:
 - `false`: never allow provider-driven user creation
 
 If no existing user can be matched and creation is not allowed by that policy, the OAuth login is rejected without creating an account.
+
+If `trustsEmail` is `false` and the provider email already belongs to an existing Craft user, the OAuth login is rejected instead of linking the existing user or creating a duplicate account.
 
 ### Group Assignment
 

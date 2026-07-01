@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\LegacyAssets;
 
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\View\HtmlStack;
 
@@ -39,7 +40,7 @@ class DatepickerI18nAsset implements LegacyAssetInterface
             $languages[] = $fallbacks[$languageId];
         }
 
-        $sourcePath = dirname(__DIR__, 3).'/resources/legacy/datepickeri18n/dist';
+        $sourcePath = CmsAssets::resourcesPath('legacy/datepickeri18n/dist');
 
         foreach ($languages as $language) {
             $filename = "datepicker-$language.js";

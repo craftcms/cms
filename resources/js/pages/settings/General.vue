@@ -185,22 +185,3 @@
     </Pane>
   </AppLayout>
 </template>
-
-<style scoped lang="scss">
-  .stage {
-    padding: var(--c-spacing-md);
-  }
-  .preview {
-    border: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .preview--icon {
-    aspect-ratio: 1;
-    width: 32px;
-  }
-  .preview--logo {
-    aspect-ratio: 16/9;
-    width: 288px;
-    height: auto;
-  }
-</style>

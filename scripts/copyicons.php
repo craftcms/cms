@@ -35,7 +35,12 @@ $styles = [
 
 $kitDir = dirname(__DIR__).'/node_modules/@awesome.me/kit-ddaed3f5c5';
 $kitSvgsDir = "$kitDir/icons/svgs";
-$iconsDir = dirname(__DIR__).'/resources/icons';
+$iconsDir = dirname(__DIR__).'/cms-assets/resources/icons';
+
+if (! is_dir($iconsDir)) {
+    mkdir($iconsDir, recursive: true);
+}
+
 $metaPath = "$kitDir/icons/metadata/icons.json";
 $meta = json_decode(file_get_contents($metaPath), true);
 $index = [];
@@ -59,6 +64,10 @@ PHP;
 $skipped = 0;
 $wrote = 0;
 
+if (! is_dir($iconsDir.'/light')) {
+    mkdir($iconsDir.'/light');
+}
+
 foreach ($lightIcons as $name) {
     $iconPath = "$iconsDir/light/$name.svg";
     echo "Writing light/$name.svg ... ";
@@ -80,6 +89,10 @@ foreach ($meta as $name => $info) {
         'custom' => 'custom-icons',
         default => $style,
     };
+
+    if (! is_dir("$iconsDir/$dir")) {
+        mkdir("$iconsDir/$dir");
+    }
 
     $iconPath = "$iconsDir/$dir/$name.svg";
     echo "Writing $dir/$name.svg ... ";

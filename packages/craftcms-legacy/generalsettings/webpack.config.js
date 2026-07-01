@@ -7,7 +7,9 @@ module.exports = getConfig({
   config: {
     entry: {rebrand: './rebrand.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/generalsettings/dist',
+      path:
+        __dirname +
+        '/../../../cms-assets/resources/legacy/generalsettings/dist',
     },
   },
 });

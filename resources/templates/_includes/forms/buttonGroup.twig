@@ -1,66 +1,59 @@
-{% import '_includes/forms.twig' as forms %}
-
 {%- set options = options ?? [] %}
 {%- set value = value ?? null %}
 {%- set disabled = disabled ?? false %}
 {%- set static = static ?? false %}
+{%- set appearance = appearance ?? 'outline' %}
+{%- set size = size ?? null %}
 
 {%- set id = id ?? "button-group-#{random()}" %}
-{%- set class = (class ?? [])|explodeClass|merge([
-  'btngroup',
-  'btngroup--exclusive',
-]|filter) %}
+{%- set class = (class ?? [])|explodeClass %}
 
 {%- set containerAttributes = {
   id,
   class,
+  role: 'group',
   aria: {
     labelledby: labelledBy ?? false,
   },
 }|merge(containerAttributes ?? [], recursive=true) %}
 
-<div class="btngroup-container">
-  {% tag 'div' with containerAttributes %}
+{% tag 'craft-listbox' with { disabled: (disabled or static) ? true : false } %}
+  {% tag 'craft-button-group' with containerAttributes %}
     {%- for key, option in options %}
       {%- if option is not iterable %}
         {%- set option = {label: option, value: key} %}
       {%- endif %}
-      {% set selected = option.value is defined and option.value == value %}
-      {{ forms.button(option|merge({
+      {%- set selected = option.value is defined and option.value == value %}
+      {% tag 'craft-button' with {
         type: 'button',
-        class: (selected ? ['active'] : [])|merge((option.class ?? [])|explodeClass),
-        attributes: {
-          aria: {
-            pressed: selected ? 'true' : 'false',
-          },
-          data: {
-            value: option.value ?? null,
-          },
-          disabled: disabled or static,
-          tabindex: disabled ? '-1' : '0',
-        }|merge(option.attributes ?? {}, recursive=true),
-        readOnly: disabled,
-      })) }}
+        appearance: option.appearance ?? appearance,
+        size: option.size ?? size,
+        active: selected ? 'true' : null,
+        class: (option.class ?? [])|explodeClass,
+        aria: {
+          pressed: selected ? 'true' : 'false',
+        },
+        data: {
+          value: option.value ?? null,
+        },
+        value: option.value ?? null,
+        disabled: disabled or static,
+      }|merge(option.attributes ?? {}, recursive=true)|filter %}
+        {% if option.icon ?? false %}
+          <craft-icon name="{{ option.icon }}" slot="prefix"></craft-icon>
+        {% endif %}
+        {%- if option.labelHtml is defined -%}
+          {{ option.labelHtml|raw }}
+        {%- else -%}
+          {{ option.label ?? '' }}
+        {%- endif -%}
+      {% endtag %}
     {% endfor %}
   {% endtag %}
-</div>
-
-{% if name ?? false %}
-  {% set inputId = "#{id}-input" %}
-  {{ hiddenInput(name, value, {
-    id: inputId,
-  }) }}
-{% endif %}
-
-{% js %}
-(() => {
-  new Craft.Listbox($('#{{ id|namespaceInputId }}'), {
-    {% if name ?? false %}
-      onChange: (selectedOption) => {
-        $('#{{ inputId|namespaceInputId }}').val(selectedOption.data('value'));
-      },
-    {% endif %}
-    readOnly: {{ disabled ? 1 : 0 }}
-  });
-})();
-{% endjs %}
+  {% if name ?? false %}
+    {% set inputId = "#{id}-input" %}
+    {{ hiddenInput(name, value, {
+      id: inputId,
+    }) }}
+  {% endif %}
+{% endtag %}

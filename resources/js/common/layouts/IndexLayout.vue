@@ -1,19 +1,31 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
+  import {usePage} from '@inertiajs/vue3';
   import AppLayout, {type AppLayoutProps} from '@/common/layouts/AppLayout.vue';
+  import CpLink from '@/common/components/CpLink.vue';
   import {computed, ref, useSlots, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
 
-  defineProps<AppLayoutProps & {}>();
+  const props = defineProps<AppLayoutProps & {}>();
   const slots = useSlots();
 
+  const emit = defineEmits<{
+    (e: 'save', options?: {redirect?: boolean}): void;
+  }>();
+
+  const page = usePage<{
+    subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
+  }>();
+
+  const layoutSlotNames = ['default', 'interior-nav', 'subnav-actions'];
   const isLarge = useMediaQuery('(min-width: 768px)');
   const navState = ref<'expanded' | 'collapsed'>('expanded');
-  const forwardedSlots = computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const {default: _, ...rest} = slots;
-    return rest;
-  });
+  const subnav = computed(() => page.props.subnav ?? []);
+  const forwardedSlots = computed(() =>
+    Object.fromEntries(
+      Object.entries(slots).filter(([name]) => !layoutSlotNames.includes(name))
+    )
+  );
 
   const toggleLabel = computed(() =>
     navState.value === 'expanded' ? t('Hide sidebar') : t('Show sidebar')
@@ -46,7 +58,12 @@
     :full-width="true"
     :title="title"
     :debug="debug"
+    :form="props.form"
+    :default-form-actions="props.defaultFormActions"
+    :form-actions="props.formActions"
+    :form-additional-actions="props.formAdditionalActions"
     :additional-skip-links="skipLinks"
+    @save="(options) => emit('save', options)"
   >
     <!-- Forward all other slots -->
     <template v-for="(_, name) in forwardedSlots" #[name]="slotData">
@@ -76,7 +93,22 @@
           {{ toggleLabel }}
         </craft-button>
         <div v-if="navState === 'expanded'" id="nav-container">
-          <slot name="interior-nav" :state="navState"></slot>
+          <slot name="interior-nav" :state="navState">
+            <craft-nav-list v-if="subnav.length">
+              <template v-for="(item, index) in subnav" :key="index">
+                <CpLink
+                  as="craft-nav-item"
+                  :active="item.selected"
+                  :href="item.url"
+                  block
+                  flush
+                >
+                  {{ item.label }}
+                </CpLink>
+              </template>
+            </craft-nav-list>
+          </slot>
+          <slot name="subnav-actions" :state="navState"></slot>
         </div>
       </nav>
       <div

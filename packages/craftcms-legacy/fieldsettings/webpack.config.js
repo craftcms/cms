@@ -7,7 +7,8 @@ module.exports = getConfig({
   config: {
     entry: {fieldsettings: './fieldsettings.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/fieldsettings/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/fieldsettings/dist',
     },
   },
 });

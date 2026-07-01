@@ -58,7 +58,7 @@ readonly class SectionsController
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Sections')],
             ])
-            ->inertiaPage('settings/Sections', [
+            ->inertiaPage('settings/sections/Index', [
                 'data' => fn () => $tableData,
                 'pagination' => fn () => $pagination,
                 'sort' => $request->sort(),
@@ -79,7 +79,7 @@ readonly class SectionsController
             ->addCrumb(t('Settings'), 'settings')
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->inertiaPage('settings/SectionsEdit', $this->sectionProps($section, $sites, brandNew: true));
+            ->inertiaPage('settings/sections/Edit', $this->sectionProps($section, $sites, brandNew: true));
     }
 
     public function edit(Sections $sections, Sites $sites, SectionModel $section): CpScreenResponse
@@ -92,7 +92,7 @@ readonly class SectionsController
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->inertiaPage('settings/SectionsEdit', $this->sectionProps($sectionData, $sites, brandNew: false));
+            ->inertiaPage('settings/sections/Edit', $this->sectionProps($sectionData, $sites, brandNew: false));
     }
 
     private function sectionProps(SectionData $section, Sites $sites, bool $brandNew): array

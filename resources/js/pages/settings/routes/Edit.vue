@@ -5,8 +5,8 @@
   import Pane from '@/common/components/Pane.vue';
   import Select from '@/common/form/Select.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import type {RouteActionMenuItem, RouteData, RouteFormData} from './types';
-  import {store, update} from '@actions/Settings/RoutesController';
+  import type {RouteData, RouteFormData} from './types';
+  import {destroy, store, update} from '@actions/Settings/RoutesController';
   import {router, useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import {computed, shallowRef} from 'vue';
@@ -20,7 +20,6 @@
     sites: Array<BaseOption>;
     isMultiSite: boolean;
     readOnly?: boolean;
-    actionMenuItems?: Array<RouteActionMenuItem> | null;
     errors: Record<string, string> | null;
     templateOptions: Array<SelectItem>;
   }>();
@@ -33,9 +32,19 @@
     siteUid: props.route.siteUid ?? '',
   });
 
-  const actionMenuActions = computed<Array<any>>(() =>
-    (props.actionMenuItems ?? []).flatMap(actionFromMenuItem)
-  );
+  const additionalActions = computed(() => {
+    if (!props.route.uid || props.readOnly) {
+      return [];
+    }
+
+    return [
+      {
+        variant: 'danger' as const,
+        label: t('Delete'),
+        onClick: deleteRoute,
+      },
+    ];
+  });
 
   const routeAction = () =>
     props.route.uid ? update({uid: props.route.uid}) : store();
@@ -70,49 +79,8 @@
     );
   }
 
-  function actionFromMenuItem(item: RouteActionMenuItem): Array<any> {
-    if (item.type === 'hr') {
-      return [{type: 'hr'}];
-    }
-
-    if (item.type === 'group') {
-      return (item.items ?? []).flatMap(actionFromMenuItem);
-    }
-
-    const action = {
-      label: item.label ?? '',
-      icon: item.icon,
-      variant: item.destructive ? ('danger' as const) : undefined,
-    };
-
-    if (item.type === 'link' && item.url) {
-      return [
-        {
-          ...action,
-          type: 'link',
-          href: item.url,
-        },
-      ];
-    }
-
-    return [
-      {
-        ...action,
-        onClick: () => handleActionMenuItem(item),
-      },
-    ];
-  }
-
-  function handleActionMenuItem(item: RouteActionMenuItem) {
-    const data = item.attributes?.data ?? {};
-
-    if (data['route-delete-action']) {
-      deleteRoute(String(data['route-delete-url'] ?? ''));
-    }
-  }
-
-  function deleteRoute(url: string) {
-    if (!props.route.uid || !url) {
+  function deleteRoute() {
+    if (!props.route.uid) {
       return;
     }
 
@@ -120,7 +88,7 @@
       return;
     }
 
-    router.delete(url, {
+    router.delete(destroy({uid: props.route.uid}), {
       preserveScroll: true,
     });
   }
@@ -130,7 +98,7 @@
   <AppLayout
     :title="title"
     :form="form"
-    :form-additional-actions="actionMenuActions"
+    :form-additional-actions="additionalActions"
     @save="saveRoute"
   >
     <Pane appearance="raised">

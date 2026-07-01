@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -74,7 +74,7 @@ readonly class Cp
     public static function vite(): Vite
     {
         return (clone app(Vite::class))
-            ->useHotFile(Aliases::get('@resources/hot'))
+            ->useHotFile(CmsAssets::resourcesPath('hot'))
             ->useBuildDirectory('vendor/craft/build');
     }
 

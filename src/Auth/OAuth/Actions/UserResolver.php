@@ -9,14 +9,12 @@ use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\Auth\OAuth\Events\OAuthUserLinkResolving;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Users;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 class UserResolver implements ResolvesOAuthUser
 {
     public function __construct(
         protected readonly OAuth $oauthManager,
-        protected readonly Users $users,
     ) {}
 
     public function handle(ProviderDefinition $provider, SocialiteUser $socialiteUser, string $identity): ?User
@@ -31,12 +29,16 @@ class UserResolver implements ResolvesOAuthUser
             return $event->user;
         }
 
-        $email = $socialiteUser->getEmail();
-
-        if (! is_string($email) || trim($email) === '') {
+        if (! $provider->trustsEmail) {
             return null;
         }
 
-        return $this->users->getUserByUsernameOrEmail(trim($email));
+        $email = $socialiteUser->getEmail();
+
+        if (! is_string($email)) {
+            return null;
+        }
+
+        return $this->oauthManager->findUserByEmail($email);
     }
 }

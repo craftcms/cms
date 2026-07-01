@@ -56,6 +56,7 @@ use CraftCms\Cms\Gql\Queries\User as UserQuery;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Mutation;
 use CraftCms\Cms\Gql\Types\Number;
+use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Gql\Types\Query;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -181,7 +182,7 @@ class Gql
             $this->_registerGqlMutations();
 
             $schemaConfig = [
-                'typeLoader' => TypeLoader::class.'::loadType',
+                'typeLoader' => TypeLoader::loadType(...),
                 'query' => TypeLoader::loadType('Query'),
                 'mutation' => TypeLoader::loadType('Mutation'),
                 'directives' => $this->_loadGqlDirectives($schema),
@@ -191,13 +192,21 @@ class Gql
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (! $prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
+                // add default description (use schema name), or DumpSchemaCommandTest and SchemaPrinter::printSchemaDefinition() will error
+                // because of SchemaPrinter::hasDefaultRootOperationTypes($schema) and "Subscription"
+                if ($this->_schemaDef->description === null) {
+                    $this->_schemaDef->description = $schema?->name;
+                }
 
                 // but we always have to add the InputObjectType mutation args
-                foreach ($schemaConfig['mutation']->config['fields'] as $item) {
+                /** @var ObjectType $mutation */
+                $mutation = $schemaConfig['mutation'];
+                foreach ($mutation->config['fields'] as $item) {
                     if (isset($item['args'])) {
                         foreach ($item['args'] as $arg) {
-                            if ($arg instanceof InputObjectType) {
-                                TypeInfo::extractTypes($arg);
+                            $argType = Type::getNamedType($arg->getType());
+                            if ($argType instanceof InputObjectType) {
+                                TypeInfo::extractTypes($argType, $arg);
                             }
                         }
                     }
@@ -220,6 +229,11 @@ class Gql
             try {
                 $this->_schemaDef = new Schema($schemaConfig);
                 $this->_schemaDef->getTypeMap();
+                // add default description (use schema name), or DumpSchemaCommandTest and SchemaPrinter::printSchemaDefinition() will error
+                // because of SchemaPrinter::hasDefaultRootOperationTypes($schema) and "Subscription"
+                if ($this->_schemaDef->description === null) {
+                    $this->_schemaDef->description = $schema?->name;
+                }
             } catch (Throwable $exception) {
                 throw new GqlException('Failed to validate the GQL Schema - '.$exception->getMessage(),
                     previous: $exception);
@@ -260,7 +274,7 @@ class Gql
         }
 
         if (! $generalConfig->enableGraphqlIntrospection && Auth::guest()) {
-            $validationRules[DisableIntrospection::class] = new DisableIntrospection;
+            $validationRules[DisableIntrospection::class] = new DisableIntrospection(0);
         }
 
         event($event = new GqlValidationRulesResolving(
@@ -940,8 +954,9 @@ class Gql
     }
 
     /**
-     * @param  Error[]  $errors
-     * @return Error[]
+     * @param  list<Error>  $errors
+     * @param  callable(Throwable): array{message: string, locations?: array<int, array{line: int, column: int}>, path?: array<int, int|string>, extensions?: array<string, mixed>}  $formatter
+     * @return list<array{message: string, locations?: array<int, array{line: int, column: int}>, path?: array<int, int|string>, extensions?: array<string, mixed>}>
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
@@ -1125,7 +1140,7 @@ class Gql
         event($event = new GqlDirectivesResolving(directives: $directiveClasses));
         $directiveClasses = $event->directives;
 
-        $directives = GraphQL::getStandardDirectives();
+        $directives = GqlDirective::builtInDirectives();
 
         foreach ($directiveClasses as $class) {
             /** @var class-string<Directive> $class */

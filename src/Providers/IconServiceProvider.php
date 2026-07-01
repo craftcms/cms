@@ -11,7 +11,7 @@ class IconServiceProvider extends ServiceProvider
 {
     public function boot(YiiAliases $aliases): void
     {
-        $aliases->set('@icons', '@craftcms/resources/icons');
+        $aliases->set('@icons', '@cmsAssets/resources/icons');
         $aliases->set('@appicons', '@icons/solid');
 
         $customIconsPath = '@icons/custom-icons';
@@ -24,7 +24,9 @@ class IconServiceProvider extends ServiceProvider
         $aliases->set('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
         $aliases->set('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
 
-        require $aliases->get('@icons/aliases.php');
+        if (file_exists($aliasesFile = $aliases->get('@icons/aliases.php'))) {
+            require $aliasesFile;
+        }
 
         $solidIconsPath = '@icons/solid';
 

@@ -35,7 +35,7 @@ class LineBreak extends FieldLayoutElement
         return <<<HTML
 <div>
   <div class="fld-br">
-    <div class="smalltext light flex flex-nowrap gap-xs">
+    <div class="fld-br__label">
       <span>$label</span>
       $indicatorHtml
     </div>

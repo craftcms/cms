@@ -7,7 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {DbBackupUtility: './DbBackupUtility.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/dbbackup/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/dbbackup/dist',
     },
   },
 });

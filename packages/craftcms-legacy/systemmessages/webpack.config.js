@@ -7,7 +7,8 @@ module.exports = getConfig({
   config: {
     entry: {system_messages: './system_messages.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/systemmessages/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/systemmessages/dist',
     },
   },
 });

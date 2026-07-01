@@ -1260,7 +1260,7 @@ class Users
 
         $params = [
             'code' => $token,
-            'id' => $user->uid,
+            'uid' => $user->uid,
         ];
 
         $isCpRequest = request()->isCpRequest();

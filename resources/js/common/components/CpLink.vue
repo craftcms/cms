@@ -57,6 +57,7 @@
       :class="classes"
       :variant="variant"
       :size="size"
+      prefetch="click"
     >
       <div class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>

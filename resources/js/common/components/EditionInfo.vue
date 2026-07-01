@@ -11,7 +11,7 @@
 
 <template>
   <div
-    class="flex flex-col items-center justify-center py-4 px-2 text-muted gap-1"
+    class="flex flex-col items-center justify-center py-4 px-2 text-quiet gap-1"
   >
     <div lang="en" class="flex items-center gap-2">
       Craft CMS {{ app.version }}

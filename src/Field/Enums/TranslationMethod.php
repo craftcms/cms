@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Enums;
 
+use CraftCms\Cms\Cp\Concerns\CanSelect;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 use function CraftCms\Cms\renderObjectTemplate;
@@ -11,6 +12,8 @@ use function CraftCms\Cms\t;
 
 enum TranslationMethod: string
 {
+    use CanSelect;
+
     case None = 'none';
     case Site = 'site';
     case SiteGroup = 'siteGroup';
@@ -37,6 +40,17 @@ enum TranslationMethod: string
             self::Custom => $translationKeyFormat === null
                 ? (string) $element->siteId
                 : renderObjectTemplate($translationKeyFormat, $element),
+        };
+    }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::None => t('Not translatable'),
+            self::Site => t('Translate for each site'),
+            self::SiteGroup => t('Translate for each site group'),
+            self::Language => t('Translate for each language'),
+            self::Custom => t('Custom…'),
         };
     }
 }

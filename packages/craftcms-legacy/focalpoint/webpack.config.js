@@ -13,7 +13,7 @@ module.exports = getConfig({
         name: 'Craft',
         type: 'assign-properties',
       },
-      path: __dirname + '/../../../resources/legacy/focalpoint/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/focalpoint/dist',
     },
   },
 });

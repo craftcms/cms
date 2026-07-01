@@ -27,5 +27,3 @@
     </craft-login-form>
   </AuthBase>
 </template>
-
-<style scoped lang="scss"></style>

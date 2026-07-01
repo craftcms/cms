@@ -1017,8 +1017,8 @@ Moved the following controllers:
   - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
   - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
 - Removed `\craft\controllers\UserSettingsController` in favor of:
-  - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
-  - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController`
 - Deprecated `UserGroupEvent` in favor of:
   - `CraftCms\Cms\User\Events\UserGroupSaving`
   - `CraftCms\Cms\User\Events\UserGroupSaved`

@@ -2,20 +2,13 @@
 
 :root {
   --input-color: var(--bg-input, hsl(212deg 25% 50%));
-  --graphiql-header-height: calc(42rem / 16);
-}
-
-body,
-.cp-graphiql {
-  width: 100vw;
-  height: 100vh;
 }
 
 .graphiql-container {
   --color-base: transparent;
   --color-neutral: 219, 28%, 32%;
   --color-primary: 0, 72%, 51%;
-  height: calc(100% - var(--graphiql-header-height));
+  height: 100%;
 }
 
 .cp-graphiql {
@@ -37,45 +30,6 @@ body,
 .graphiql-query-editor {
   .CodeMirror-gutters {
     background-color: #fff;
-  }
-}
-
-.cp-graphiql-header {
-  height: var(--graphiql-header-height);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-block: 8px 0;
-  padding-inline: 16px;
-  gap: 1.5em;
-
-  .select select {
-    color: var(--text-color);
-    background-color: color-mix(
-      in oklch,
-      var(--bg-input, hsl(212deg 25% 50%)) 25%,
-      transparent
-    );
-  }
-}
-
-.cp-graphiql-title {
-  margin: 0;
-}
-
-.schema-selector {
-  display: flex;
-  gap: 0.5em;
-
-  .field {
-    margin: 0;
-    display: flex;
-    gap: 0.5em;
-    align-items: baseline;
-  }
-
-  .heading {
-    margin-block-end: 0;
   }
 }
 

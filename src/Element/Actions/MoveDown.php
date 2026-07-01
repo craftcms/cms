@@ -43,7 +43,7 @@ class MoveDown extends ElementAction
       const selectedItemIndex = Object.values(elementIndex.view.getAllElements()).indexOf(selectedItems[0]);
       const offset = selectedItemIndex + 1;
       await elementIndex.onBeforeReorderElements(selectedItems, offset);
-      
+
       const data = Object.assign($params, {
         elementIds: elementIndex.getSelectedElementIds(),
         offset: offset,

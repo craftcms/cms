@@ -1,7 +1,7 @@
 import {css} from 'lit';
 export default css`
   :host {
-    // Necessary to use variables here to override the default active style specificity
+    /* Necessary to use variables here to override the default active style specificity */
     --_active-background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)) h s
         calc(l - 10)
@@ -174,6 +174,13 @@ export default css`
         calc(l - 8)
     );
     --_active-color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+  }
+
+  :host([appearance~='plain'][active]),
+  :host([appearance~='outline'][active]) {
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
+    border-color: var(--c-color-border-loud);
   }
 
   /* Plain */

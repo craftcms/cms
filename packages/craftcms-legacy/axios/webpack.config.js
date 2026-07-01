@@ -5,12 +5,11 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const pkgDir = require('pkg-dir');
 const path = require('path');
 
-
 module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/axios/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/axios/dist',
     },
     plugins: [
       new CopyWebpackPlugin({
