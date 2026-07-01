@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\HtmlStack as HtmlStackService;
 use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
@@ -35,6 +36,19 @@ use function CraftCms\Cms\template;
 class CpScreenResponse implements Responsable
 {
     use Conditionable;
+
+    private const array INERTIA_ASSET_BUFFER_KEYS = [
+        'js',
+        'scripts',
+        'css',
+        'jsFiles',
+        'cssFiles',
+        'html',
+        'metaTags',
+        'linkTags',
+        'jsImports',
+        'icons',
+    ];
 
     /**
      * @var string|null The Inertia page component to render.
@@ -811,7 +825,26 @@ class CpScreenResponse implements Responsable
     private function response(Request $request): Response
     {
         $isForm = (bool) $this->action;
+        $bufferingInertiaAssets = false;
 
+        if ($this->inertiaPage) {
+            // Flush globally pending CP assets before buffering page-specific Inertia assets.
+            HtmlStack::headHtml(false);
+            HtmlStack::startBuffer(self::INERTIA_ASSET_BUFFER_KEYS);
+            $bufferingInertiaAssets = true;
+        }
+
+        try {
+            return $this->buildResponse($request, $isForm, $bufferingInertiaAssets);
+        } finally {
+            if ($bufferingInertiaAssets) {
+                HtmlStack::clearBuffer(self::INERTIA_ASSET_BUFFER_KEYS);
+            }
+        }
+    }
+
+    private function buildResponse(Request $request, bool $isForm, bool &$bufferingInertiaAssets): Response
+    {
         if ($this->prepareScreen) {
             call_user_func($this->prepareScreen, $this, $isForm ? 'main-form' : 'main');
         }
@@ -911,6 +944,9 @@ class CpScreenResponse implements Responsable
                 unset($templateProps['subnav']);
             }
 
+            $bufferingInertiaAssets = false;
+            $templateProps = array_merge($templateProps, $this->renderBufferedInertiaAssets());
+
             return Inertia::render($this->inertiaPage, $this->inertiaProps)
                 ->with($templateProps)
                 ->toResponse($request);
@@ -922,6 +958,25 @@ class CpScreenResponse implements Responsable
             $templateProps,
             TemplateMode::Cp
         ));
+    }
+
+    private function renderBufferedInertiaAssets(): array
+    {
+        $htmlStack = app(HtmlStackService::class);
+        $buffer = $htmlStack->clearBuffer(self::INERTIA_ASSET_BUFFER_KEYS);
+
+        $htmlStack->startBuffer(self::INERTIA_ASSET_BUFFER_KEYS);
+
+        try {
+            $htmlStack->applyBuffer($buffer);
+
+            return [
+                'headHtml' => $htmlStack->headHtml(),
+                'bodyHtml' => $htmlStack->bodyHtml(),
+            ];
+        } finally {
+            $htmlStack->clearBuffer(self::INERTIA_ASSET_BUFFER_KEYS);
+        }
     }
 
     private function contextMenu(?string $namespace = null): ?string

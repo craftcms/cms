@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -29,21 +28,23 @@ readonly class AddressesController
 
         $response = $this->asEditUserScreen($user, self::SCREEN_ADDRESSES);
 
-        $response->contentHtml(function () use ($user) {
-            $config = [
-                'showInGrid' => true,
-                'canCreate' => Gate::check('editUsers'),
-            ];
+        $response
+            ->contentHtml(function () use ($user) {
+                $config = [
+                    'showInGrid' => true,
+                    'canCreate' => Gate::check('save', $user),
+                ];
 
-            // Use an element index view if there's more than 50 addresses
-            $total = Address::find()->owner($user)->count();
-            if ($total > 50) {
-                return $user->getAddressManager()->getIndexHtml($user, $config);
-            }
+                // Use an element index view if there's more than 50 addresses
+                $total = Address::find()->owner($user)->count();
+                if ($total > 50) {
+                    return $user->getAddressManager()->getIndexHtml($user, $config);
+                }
 
-            return Html::tag('h2', t('Addresses')).
-                $user->getAddressManager()->getCardsHtml($user, $config);
-        });
+                return Html::tag('h2', t('Addresses')).
+                    $user->getAddressManager()->getCardsHtml($user, $config);
+            })
+            ->inertiaPage('users/Addresses');
 
         return $response;
     }

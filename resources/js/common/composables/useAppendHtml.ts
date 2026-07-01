@@ -3,7 +3,7 @@ import {
   appendBodyHtml,
   type AppendHtmlDisposer,
 } from '@craftcms/cp';
-import {computed, watch, onBeforeUnmount} from 'vue';
+import {computed, nextTick, watch, onBeforeUnmount} from 'vue';
 import {usePage} from '@inertiajs/vue3';
 
 interface HtmlContent {
@@ -57,6 +57,8 @@ export function useAppendHtml(source?: HtmlContent) {
       async (value) => {
         disposeAll();
 
+        await nextTick();
+
         if (value.headHtml) {
           disposers.push(await appendHeadHtml(value.headHtml));
         }
@@ -65,7 +67,7 @@ export function useAppendHtml(source?: HtmlContent) {
           disposers.push(await appendBodyHtml(value.bodyHtml));
         }
       },
-      {immediate: true}
+      {immediate: true, flush: 'post'}
     );
   }
 

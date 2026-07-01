@@ -744,6 +744,9 @@ JS, [
                     'buttonHtml' => Html::tag('craft-icon', '', [
                         'name' => 'ellipsis',
                     ]),
+                    'buttonAttributes' => [
+                        'class' => ['action-btn'],
+                    ],
                     'omitIfEmpty' => false,
                 ]);
             },

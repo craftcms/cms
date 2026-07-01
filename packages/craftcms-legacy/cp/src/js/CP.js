@@ -1221,7 +1221,7 @@ Craft.CP = Garnish.Base.extend(
 
     _invokeElementCopyCallbacks: function (elementInfo) {
       const buttonLabel = this._pasteElementsButtonLabel(elementInfo);
-      for (callback of this.copyElementCallbacks) {
+      for (const callback of this.copyElementCallbacks) {
         callback(elementInfo, buttonLabel);
       }
     },
