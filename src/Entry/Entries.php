@@ -26,7 +26,6 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -294,13 +293,14 @@ class Entries
      */
     public function reassignEntries(int|array $oldUserId, int $newUserId): int
     {
+        $oldUserIds = Arr::wrap($oldUserId);
+
         $count = DB::table(Table::ENTRIES_AUTHORS)
-            ->whereIn('authorId', Arr::wrap($oldUserId))
-            ->whereNotIn('entryId', function (Builder $query) use ($newUserId) {
-                $query->select('entryId')
-                    ->from(Table::ENTRIES_AUTHORS)
-                    ->where('authorId', $newUserId);
-            })
+            ->whereIn('authorId', $oldUserIds)
+            ->whereNotIn('entryId', DB::table(Table::ENTRIES_AUTHORS)
+                ->where('authorId', $newUserId)
+                ->pluck('entryId')
+            )
             ->update([
                 'authorId' => $newUserId,
             ]);
