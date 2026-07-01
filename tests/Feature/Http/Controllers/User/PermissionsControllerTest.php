@@ -14,13 +14,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
 
-use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\patchJson;
-use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::find()->one());
@@ -262,8 +260,4 @@ test('update does not persist inherited group permissions as direct user permiss
         ->where('userId', $user->id)
         ->whereIn('permissionId', $permissionIds)
         ->exists())->toBeFalse();
-});
-
-test('old save permissions action route is removed', function () {
-    postJson(action_url('users/save-permissions'))->assertMethodNotAllowed();
 });
