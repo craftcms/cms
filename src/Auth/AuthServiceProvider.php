@@ -48,7 +48,9 @@ class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        if (! class_exists($this->app->make(Repository::class)->get('auth.providers.users.model'))) {
+        $configuredModel = $this->app->make(Repository::class)->get('auth.providers.users.model');
+
+        if (! is_string($configuredModel) || ! is_a($configuredModel, CraftUser::class, true)) {
             $this->app->make(Repository::class)->set('auth.providers.users.model', User::class);
         }
 
