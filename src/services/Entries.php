@@ -2051,11 +2051,12 @@ SQL)->execute();
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle'];
+        $isPgsql = Craft::$app->getDb()->getIsPgsql();
         $searchQueries = [];
 
         if ($term !== '') {
             foreach ($searchParams as $param) {
-                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+                $searchQueries[] = [$isPgsql ? 'ilike' : 'like', $param, "%$term%", false];
             }
         }
 
@@ -2357,14 +2358,12 @@ SQL)->execute();
             'and',
             ['authorId' => $oldUserId],
             [
-                'not exists',
+                'not in',
+                'entryId',
                 (new Query())
-                    ->from(
-                        (new Query())
-                            ->from(['ea2' => Table::ENTRIES_AUTHORS])
-                            ->where(sprintf('[[ea2.entryId]] = %s.[[entryId]]', Table::ENTRIES_AUTHORS))
-                            ->andWhere(['ea2.authorId' => $newUserId])
-                    ),
+                    ->select(['entryId'])
+                    ->from(Table::ENTRIES_AUTHORS)
+                    ->where(['authorId' => $newUserId]),
             ],
         ], [], false);
 

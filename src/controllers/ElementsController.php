@@ -2230,7 +2230,7 @@ JS, [
             $errors = $element->getErrors();
             $invalidNestedElementIds = $element->getInvalidNestedElementIds();
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
-            $elementsService->saveElement($element, saveContent: $saveContent);
+            $elementsService->saveElement($element, false, saveContent: $saveContent);
             $element->clearErrors();
             $element->addErrors($errors);
             $element->addInvalidNestedElementIds($invalidNestedElementIds);

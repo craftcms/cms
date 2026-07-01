@@ -3332,48 +3332,46 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
-            // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
-            if (
-                ($this->alt === null || $this->alt === '') &&
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
-            ) {
-                $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
-                if ($alt !== null) {
-                    // ensure it's UTF-8
-                    // (see https://github.com/craftcms/cms/issues/19069)
-                    $this->alt = StringHelper::convertToUtf8($alt);
-                }
-            }
+            $isImage = isset($this->tempFilePath) && Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE;
 
-            // Are we uploading an image that needs to be sanitized?
-            if (
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
-                ($this->sanitizeOnUpload ?? (
-                    !Craft::$app->getRequest()->getIsCpRequest() ||
-                    Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
-                ))
-            ) {
-                Image::cleanImageByPath($this->tempFilePath);
-            }
-
-            // if we're creating or replacing and image, get the width or height via getimagesize
-            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
             $fallbackWidth = null;
             $fallbackHeight = null;
-            if (
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
-            ) {
-                $imageSize = getimagesize($this->tempFilePath);
-                if (isset($imageSize[0])) {
-                    $fallbackWidth = (int)$imageSize[0];
+
+            if ($isImage) {
+                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+                if (
+                    ($this->alt === null || $this->alt === '') &&
+                    in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
+                ) {
+                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                    if ($alt !== null) {
+                        // ensure it's UTF-8
+                        // (see https://github.com/craftcms/cms/issues/19069)
+                        $this->alt = StringHelper::convertToUtf8($alt);
+                    }
                 }
-                if (isset($imageSize[1])) {
-                    $fallbackHeight = (int)$imageSize[1];
+
+                // Are we uploading an image that needs to be sanitized?
+                if (
+                    in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                    ($this->sanitizeOnUpload ?? (
+                        !Craft::$app->getRequest()->getIsCpRequest() ||
+                        Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
+                    ))
+                ) {
+                    Image::cleanImageByPath($this->tempFilePath);
+                }
+
+                // if we're creating or replacing and image, get the width or height via getimagesize
+                // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+                if (in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true)) {
+                    $imageSize = getimagesize($this->tempFilePath);
+                    if (isset($imageSize[0])) {
+                        $fallbackWidth = (int)$imageSize[0];
+                    }
+                    if (isset($imageSize[1])) {
+                        $fallbackHeight = (int)$imageSize[1];
+                    }
                 }
             }
 

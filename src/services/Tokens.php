@@ -113,7 +113,8 @@ class Tokens extends Component
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        $interval = DateTimeHelper::secondsToInterval(Craft::$app->getConfig()->getGeneral()->previewTokenDuration);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $interval = DateTimeHelper::secondsToInterval($generalConfig->previewTokenDuration ?? $generalConfig->defaultTokenDuration);
         $expiryDate = DateTimeHelper::currentUTCDateTime()->add($interval);
         return $this->createToken($route, $usageLimit, $expiryDate, $token);
     }

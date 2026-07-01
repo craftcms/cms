@@ -13,6 +13,7 @@ use craft\elements\ElementCollection;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 
 /**
  * Class RelationDeletionBlocker
@@ -63,14 +64,14 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
         /** @var class-string<ElementInterface> $targetElementType */
         $targetElementType = $this->elements->first()::class;
 
-        return Craft::t('app', 'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} related by {numRelations, number} other {numRelations, plural, =1{{sourceTypeSingular}} other{{sourceTypePlural}}}.', [
+        return StringHelper::upperCaseFirst(Craft::t('app', 'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} related by {numRelations, number} other {numRelations, plural, =1{{sourceTypeSingular}} other{{sourceTypePlural}}}.', [
             'sourceTypeSingular' => $this->sourceElementType::lowerDisplayName(),
             'sourceTypePlural' => $this->sourceElementType::pluralLowerDisplayName(),
             'targetTypeSingular' => $targetElementType::lowerDisplayName(),
             'targetTypePlural' => $targetElementType::pluralLowerDisplayName(),
             'numRelations' => $this->relationCount,
             'numTargets' => $this->elements->count(),
-        ]);
+        ]));
     }
 
     public function getDetails(): ?string
@@ -134,12 +135,12 @@ JS, [
                     'numRelations' => $this->relationCount,
                 ]),
                 'callback' => Html::jsWithVars(fn($message) => "resolve($message);", [
-                    Craft::t('app', 'The {numRelations, plural, =1{relation} other {relations}} will be removed once the {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} deleted.', [
+                    StringHelper::upperCaseFirst(Craft::t('app', 'The {numRelations, plural, =1{relation} other {relations}} will be removed once the {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} deleted.', [
                         'targetTypeSingular' => $targetElementType::lowerDisplayName(),
                         'targetTypePlural' => $targetElementType::pluralLowerDisplayName(),
                         'numRelations' => $this->relationCount,
                         'numTargets' => $numTargets,
-                    ]),
+                    ])),
                 ]),
             ],
         ];

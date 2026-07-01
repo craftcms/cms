@@ -2,10 +2,30 @@
 
 ## Unreleased
 
+- Fixed a bug where the `site`/`siteId` params weren’t being respected on eager-loaded `localized` queries. ([#18588](https://github.com/craftcms/cms/issues/18588))
+- Fixed a bug where it wasn’t possible to enter decimal values after tabbing into a Money field. ([#19156](https://github.com/craftcms/cms/issues/19156))
+- Fixed a bug where the search inputs on the Entry Types and Fields settings index pages were case-sensitive on PostgreSQL. ([#19158](https://github.com/craftcms/cms/issues/19158))
+- Fixed a bug where timepicker menus weren’t auto-scrolling to the selected time when opened. ([#19142](https://github.com/craftcms/cms/issues/19142))
+- Fixed an error that could occur when reassigning entries to a new author when deleting a user. ([#19154](https://github.com/craftcms/cms/issues/19154))
+
+## 5.10.8.1 - 2026-06-23
+
+- Fixed an error that occurred when saving an existing asset. ([#19152](https://github.com/craftcms/cms/issues/19152))
+
+## 5.10.8 - 2026-06-23
+
+- Fixed a bug where element thumbnails could have inconsistent rounded corners. ([#19117](https://github.com/craftcms/cms/issues/19117))
+- Fixed a bug where video file uploads could cause a timeout or exhaust the memory limit. ([#19131](https://github.com/craftcms/cms/issues/19131))
+- Fixed an error that occurred if a custom source had a condition rule that referenced a field instance that no longer existed. ([#19132](https://github.com/craftcms/cms/issues/19132))
+- Fixed a bug where the relation deletion blocker’s messages weren’t always properly capitalized. ([#19133](https://github.com/craftcms/cms/pull/19133))
+- Fixed a bug where the “Delete” button within element deletion blocker modals wasn’t getting translated properly. ([#19134](https://github.com/craftcms/cms/pull/19134))
+- Fixed a bug where the `previewTokenDuration` config setting was defaulting to 1 day, rather than to the `defaultTokenDuration` value. ([#18550](https://github.com/craftcms/cms/issues/18550))
+- Fixed a bug where nested elements weren’t showing validation errors. ([#19147](https://github.com/craftcms/cms/issues/19147))
+- Fixed a bug where error summaries weren’t properly linking to their corresponding fields’ error lists. ([#19147](https://github.com/craftcms/cms/issues/19147))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
-## 5.10.7 - 2027-06-17
+## 5.10.7 - 2026-06-17
 
 - Added `craft\web\twig\AllowableInSandbox`.
 - Fixed a bug where `craft\helpers\App::parseEnv()` wasn’t resolving aliases for environment variables that referenced an alias (e.g. `@root/storage/rebrand`). ([#19108](https://github.com/craftcms/cms/issues/19108))
