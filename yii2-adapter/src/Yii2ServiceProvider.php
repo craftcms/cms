@@ -145,7 +145,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $handler->renderable(function(Throwable $exception) {
             $this->triggerLegacyBeforeHandleException($exception);
 
-            $response = Craft::$app?->getResponse();
+            $response = class_exists(Craft::class) ? Craft::$app?->getResponse() : null;
 
             if ($response?->isSent || $response?->getIsRedirection()) {
                 return LegacyMiddleware::createResponse();
@@ -157,7 +157,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
     private function triggerLegacyBeforeHandleException(Throwable $exception): void
     {
-        if ($exception instanceof ExitException || !Craft::$app) {
+        if ($exception instanceof ExitException || !class_exists(Craft::class) || !Craft::$app) {
             return;
         }
 
