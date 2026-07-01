@@ -82,7 +82,7 @@ class ContentIndexController
         $renderContext = 'index';
         [$sourceKey, $source] = $this->resolveSource($elementType, $request->input('source', '*'), $renderContext);
 
-        // The view mode is pushed as a flat `viewMode` query param when the user
+        // The view mode is sent as a string when the user
         // switches views (see the `useElementIndexViewMode` composable); fall
         // back to the persisted view state, then the default table mode.
         $mode = $request->input('viewMode') ?: ($this->resolveViewState()['mode'] ?? 'table');
@@ -95,41 +95,55 @@ class ContentIndexController
 
         $elementQuery = $this->buildElementQueryState($elementType, $source, null)['query'];
 
-        if ($request->has('status')) {
-            $elementQuery->status($request->input('status'));
-        }
+        $elementQuery->status($request->input('status') ?: null);
 
         if ($request->filled('search')) {
             $elementQuery->search($request->input('search'));
         }
 
-        // Apply the requested sort as the authoritative order. The client treats
-        // the URL as the source of truth for sorting, so reset any ordering that
-        // was applied while building the query (Laravel's orderBy() appends
-        // rather than replaces, which would otherwise demote the requested sort
-        // to a tiebreaker) and then apply the requested columns in order.
+        $returnUrl = $this->resolveReturnUrl();
+
+        // The client treats the URL as the source of truth for sorting, so map
+        // the requested sort into the view state's order/sort. indexData() then
+        // applies the index's ordering — including structures
         $orderBy = array_values(array_filter(
             $sort,
             fn ($sortItem) => ! empty($sortItem['field']),
         ));
 
-        if (! empty($orderBy)) {
+        $viewState = [
+            ...$this->resolveViewState(),
+            'mode' => $mode,
+            'order' => $orderBy[0]['field'] ?? null,
+            'sort' => $orderBy[0]['direction'] ?? 'asc',
+            'orderHistory' => array_map(
+                fn (array $sortItem) => [$sortItem['field'], $sortItem['direction'] ?? 'asc'],
+                array_slice($orderBy, 1),
+            ),
+            'showHeaderColumn' => true,
+            'fieldLayouts' => $this->resolveFieldLayouts(),
+            'returnUrl' => $returnUrl,
+        ];
+
+        // Reset any ordering applied while building the query so the requested
+        // sort stays authoritative, then let indexData() apply it.
+        if ($orderBy) {
             $elementQuery->getQuery()->reorder();
-
-            foreach ($orderBy as $sortItem) {
-                if (($sortItem['direction'] ?? 'asc') === 'desc') {
-                    $elementQuery->orderByDesc($sortItem['field']);
-                } else {
-                    $elementQuery->orderBy($sortItem['field']);
-                }
-            }
         }
 
-        // get the return URL with `?` replaced with a token
-        // (see https://github.com/craftcms/cms/issues/18923)
-        if ($returnUrl = $request->input('returnUrl')) {
-            $returnUrl = str_replace('?', ':QS:', $returnUrl);
-        }
+        // indexData() applies the ordering and table-attribute preparation to
+        // the query and returns the shared index variables (structure info,
+        // resolved columns, view flags) — the same data that backs the legacy
+        // HTML index — so the two indexes stay in sync.
+        $indexData = $elementType::indexData(
+            elementQuery: $elementQuery,
+            disabledElementIds: $request->array('disabledElementIds'),
+            viewState: $viewState,
+            sourceKey: $sourceKey,
+            context: $renderContext,
+            selectable: true,
+            sortable: false,
+        );
 
         // Paginate a clone so the query the legacy index HTML uses below stays
         // unbounded.
@@ -164,21 +178,14 @@ class ContentIndexController
             ->values()
             ->all();
 
-        $contextColumns = collect($context['tableColumns'])
+        // Selectable columns: common attributes plus the source's field columns.
+        $tableColumns = $this->elementSources->getAvailableTableAttributes($elementType)
+            ->merge($this->elementSources->getSourceTableAttributes($elementType, $sourceKey))
             ->map(fn (array $attribute, string $key) => [
                 'label' => $attribute['label'],
                 'value' => $key,
             ])
-            ->values()
-            ->all();
-
-        $tableColumns = $this->elementSources->getSourceTableAttributes($elementType, $sourceKey)
-            ->map(fn (array $attribute, string $key) => [
-                ...$attribute,
-                'value' => $key,
-            ])
-            ->values()
-            ->all();
+            ->values();
 
         $defaultTableColumns = $this->elementSources->getTableAttributes(
             elementType: $elementType,
@@ -191,12 +198,11 @@ class ContentIndexController
             ->all();
 
         if ($mode === 'cards') {
-            // Cards mirror the table's per-element shape, but each element
-            // carries a single server-rendered `cardHtml` string (the Craft 6
-            // equivalent of `Cp::elementCardHtml`) instead of per-column HTML.
-            // The Vue shell renders the `.card-grid` wrapper and owns selection,
-            // so the card itself is display-only: no Garnish-managed edit button
-            // or auto-reload, and the title is hyperlinked to the edit URL.
+            /**
+             * Cards send down a single server-rendered `cardHtml` (from
+             * `Cp::elementCardHtml`) which will be rendered in the Vue
+             * view. Vue owns the selection process.
+             */
             $elements = collect($paginator->items())
                 ->map(function (ElementInterface $element) use ($renderContext) {
                     // A per-element `id` is shared across the full card and its
@@ -213,15 +219,7 @@ class ContentIndexController
                     ];
 
                     return [
-                        // `id` keys row selection (see `getRowId`) so selection
-                        // tracks elements across sorting and pagination.
                         'id' => $element->id,
-                        // The full composed card is kept for backwards
-                        // compatibility; the individual parts let the Vue shell
-                        // render each region. `cardAttributes` are the structured
-                        // tag attributes for the wrapper `.card` div, matching
-                        // what `cardHtml` applies to that element.
-                        'cardHtml' => $this->elementHtml->elementCardHtml($element, $cardConfig),
                         'cardAttributes' => $this->elementHtml->elementCardAttributes($element, $cardConfig),
                         'cardHeaderHtml' => $this->elementHtml->elementCardHeaderHtml($element, $cardConfig),
                         'cardContentHtml' => $this->elementHtml->elementCardContentHtml($element, $cardConfig),
@@ -229,14 +227,9 @@ class ContentIndexController
                     ];
                 });
         } else {
-            // @TODO: this should be from the view state
-            // $attributes = ['id', 'title', 'status', 'uri', 'dateUpdated', 'dateCreated'];
             $attributes = ['title', ...array_keys($elementType::tableAttributes()), ...collect($tableColumns)->pluck('value')->all()];
             $elements = collect($paginator->items())
                 ->map(fn (ElementInterface $element) => [
-                    // `id` is not a rendered column; the table keys row selection by
-                    // it (see `getRowId`) so selection tracks elements across sorting
-                    // and pagination.
                     'id' => $element->id,
                     ...collect($attributes)
                         ->mapWithKeys(fn (string $attribute) => [
@@ -254,40 +247,17 @@ class ContentIndexController
                 ]);
         }
 
-        $viewState = [
-            ...$this->resolveViewState(),
-            'mode' => $mode,
-            'showHeaderColumn' => true,
-            'fieldLayouts' => $this->resolveFieldLayouts(),
-            'returnUrl' => $returnUrl,
-        ];
-
-        $contentHtml = $elementType::indexHtml(
-            elementQuery: $elementQuery,
-            disabledElementIds: $request->array('disabledElementIds'),
-            viewState: $viewState,
-            sourceKey: $sourceKey,
-            context: $renderContext,
-            includeContainer: false,
-            selectable: true,
-            sortable: false,
-        );
-
-        // PrepareElementSourcesVariables seeds $context['tableColumns'] with the
-        // full set of available attributes, keyed by attribute. Drop it so the
-        // recursive Arr::merge below doesn't fold our source-specific list (a
-        // sequential array) into that associative structure — the page expects a
-        // plain array of {label, value}.
-        unset($context['tableColumns']);
-
         return Inertia::render('content/Index', Arr::merge($context, [
             'status' => $request->input('status', ''),
             'source' => $this->resolveSource($elementType, $request->input('source', '*'), $renderContext)[1],
             'search' => $request->input('search'),
+            'structure' => isset($indexData['structure'])
+                ? ['id' => $indexData['structure']->id, 'editable' => $indexData['structureEditable'] ?? false]
+                : null,
             'viewState' => $viewState,
             'statusOptions' => $statusOptions,
             'sortOptions' => $sortOptions,
-            'tableColumns' => array_merge($contextColumns, $tableColumns),
+            'tableColumns' => $tableColumns,
             'defaultTableColumns' => $defaultTableColumns,
             'data' => $elements,
             'actions' => $actions,
@@ -303,7 +273,6 @@ class ContentIndexController
                 'from' => $paginator->firstItem(),
                 'to' => $paginator->lastItem(),
             ],
-            'contentHtml' => $contentHtml,
         ]));
     }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, ref} from 'vue';
   import {index} from '@routes/cp/content/index.js';
   import {router} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
@@ -58,8 +58,51 @@
     );
   }
 
+  // The source the user just clicked. It's activated immediately instead of
+  // waiting for the round-trip; once the visit settles, the server-provided
+  // `activeSource` becomes authoritative again.
+  const pendingSource = ref<string | null>(null);
+
+  // Optimistic active source: a pending click wins until it resolves, otherwise
+  // fall back to the source the server says is active.
+  const activeKey = computed(() => pendingSource.value ?? props.activeSource);
+
+  function onSourceClick(event: MouseEvent, key: string) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (key === activeKey.value) {
+      return;
+    }
+
+    visitSource(key);
+  }
+
   function visitSource(key: string) {
-    router.visit(sourceUrl(key), {preserveState: true});
+    // Reflect the selection right away, before the request goes out.
+    pendingSource.value = key;
+
+    router.visit(sourceUrl(key), {
+      // Switching sources rebuilds the list view (data, columns, sort, actions,
+      // pagination…), but the source nav itself and the publishable sections
+      // behind the New-entry button don't change — so skip re-sending those two
+      // rather than re-fetching the entire page. Mirrors the partial-reload
+      // approach the sort/pagination/view-mode composables already use.
+      except: ['sources', 'publishableSections'],
+      preserveState: true,
+      preserveScroll: true,
+      onFinish: () => {
+        // Hand control back to the server prop once this visit settles. The
+        // key guard means a superseded (cancelled) visit from rapid switching
+        // won't clear the highlight for a newer selection.
+        if (pendingSource.value === key) {
+          pendingSource.value = null;
+        }
+      },
+    });
   }
 </script>
 
@@ -71,7 +114,7 @@
     >
       <template v-if="source.type === 'heading'">
         <craft-nav-item initial-state="open">
-          <span class="text-xs font-bold">
+          <span class="text-xs font-bold" v-if="source.heading">
             {{ source.heading }}
           </span>
           <div slot="subnav">
@@ -79,9 +122,9 @@
               v-for="child in source.children"
               :key="child.key"
               :href="sourceUrl(child.key)"
-              :active="child.key === activeSource"
+              :active="child.key === activeKey"
               :data-group="source.heading"
-              @click.prevent="visitSource(child.key)"
+              @click="onSourceClick($event, child.key)"
             >
               {{ child.label }}
             </craft-nav-item>
@@ -91,8 +134,8 @@
       <template v-else>
         <craft-nav-item
           :href="sourceUrl(source.key)"
-          :active="source.key === activeSource"
-          @click.prevent="visitSource(source.key)"
+          :active="source.key === activeKey"
+          @click="onSourceClick($event, source.key)"
         >
           {{ source.label }}
         </craft-nav-item>
