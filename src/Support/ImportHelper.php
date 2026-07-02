@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Attributes\Importable;
+use CraftCms\Cms\Support\Facades\Fields;
 
 class ImportHelper
 {
@@ -52,6 +54,31 @@ class ImportHelper
                     // addresses field has (by default) label, country code and address field which then contains a bunch of other fields;
                     // and custom fields have yet another way of getting this
                     $cols[] = $fieldLayoutElement->getFieldsForMapping($fieldLayout, $ownerField, $provider, $prefix);
+                }
+            }
+        }
+
+        return $cols;
+    }
+
+    public static function getDestinationColsForProperty(
+        BaseImporter $config,
+        string $property,
+        ?FieldLayout $fieldLayout,
+        ?string $prefix = null
+    ): array {
+        $cols = [];
+        $fieldLayout = Fields::getLayoutByType(Address::class);
+        if ($fieldLayout) {
+            $allElements = $fieldLayout->getAllElements();
+
+            foreach ($allElements as $fieldLayoutElement) {
+                if ($fieldLayoutElement instanceof ImportableFieldLayoutElementInterface) {
+                    // get element's fields for mapping; for example,
+                    // lat/long has two fields;
+                    // addresses field has (by default) label, country code and address field which then contains a bunch of other fields;
+                    // and custom fields have yet another way of getting this
+                    $cols[] = $fieldLayoutElement->getFieldsForMapping($fieldLayout, null, null, $prefix);
                 }
             }
         }
@@ -149,7 +176,7 @@ class ImportHelper
             }
 
             if ($rule === null) {
-                $result[$targetKey] = null;
+                // $result[$targetKey] = null;
 
                 continue;
             }

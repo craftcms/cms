@@ -303,6 +303,7 @@ class ElementImporter extends BaseImporter
                 'prefixedHandleAsArray' => Arr::bracketsToArray($prop['name']),
                 'isContainer' => $prop['isContainer'] ?? false,
                 'canBeMatchCriteria' => $prop['canBeMatchCriteria'] ?? true,
+                'isProperty' => true,
             ], $props);
         }
 
@@ -337,8 +338,8 @@ class ElementImporter extends BaseImporter
         $attributeHandles = $element->attributes();
         // $fieldHandles has custom and native field - basically all field layout elements
         $fieldHandles = array_diff(array_keys($item), $attributeHandles);
-        $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
-        $fields = array_filter($item, fn ($value, $key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_BOTH);
+        $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
+        $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
 
         $element->setAttributesFromRequest($attributes);
 

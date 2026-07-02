@@ -63,10 +63,3 @@
     placeholder: 'CraftCms\\Cms\\Import\\Transformers\\ElementTransformer',
     static: static,
 }) }}
-
-
-{# todo: this link either needs to first save the current screen's data or it needs to only show once the current screen has been saved #}
-{# for element types that can have multiple field layout providers (like Entries) we now go to an field layout provider screen
-    and then from that screen to the mapping one;
-#}
-<a href="{{ cpUrl('import/configs/' ~ import.handle ~ '/field-layout-provider') }}" class="btn submit">Configure field layout provider</a>

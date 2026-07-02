@@ -199,8 +199,13 @@ class ImportConfigController
                         ->redirectUrl('import/configs')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'import/configs/{handle}/field-layout-provider',
-                            'shortcut' => true,
+                            'shortcut' => false,
                             'retainScroll' => true,
+                        ])
+                        ->addAltAction(t('Save and configure mapping'), [
+                            'redirect' => 'import/configs/{handle}/map',
+                            'shortcut' => true,
+                            'retainScroll' => false,
                         ]);
                 },
                 default: function (CpScreenResponse $response) {
@@ -264,7 +269,7 @@ class ImportConfigController
             'sourceDataCols' => $import->getSourceDataCols(),
         ];
 
-        return new CpScreenResponse()
+        $response = new CpScreenResponse()
             ->title(t('Edit map', ['name' => $import->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Configs'), 'import/configs')
@@ -288,6 +293,12 @@ class ImportConfigController
                     }
                 },
             );
+
+        if ($import->isElementImport()) {
+            $response->addCrumb(t('Field Layout Provider'), 'import/configs/'.$import->handle.'/field-layout-provider');
+        }
+
+        return $response;
     }
 
     public function storeMap(): Response
@@ -341,6 +352,7 @@ class ImportConfigController
         [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
 
         $fieldHandle = $this->request->input('fieldHandle');
+        $fieldIsProperty = $this->request->input('fieldIsProperty');
         $currentPartialMap = $this->request->input('currentMap');
         $currentPartialMatchCriteria = $this->request->input('currentMatchCriteria');
 
@@ -360,6 +372,14 @@ class ImportConfigController
             }
         }
 
+        // if it's a property, and we have the method that takes care of importing into that property, use that method
+        if (! $field && $fieldIsProperty && method_exists($import->className, 'getDestinationColsForProperty')) {
+            $cols[$fieldHandle] = [
+                'provider' => null,
+                'destinationCols' => $import->className::getDestinationColsForProperty($import, $fieldHandle),
+            ];
+        }
+
         $currentUser = $this->request->craftUser();
 
         $templateVars = [
@@ -374,7 +394,7 @@ class ImportConfigController
         ];
 
         return new CpScreenResponse()
-            ->title(t('Edit map for {fieldName}', ['fieldName' => $field->name]))
+            ->title(t('Edit map for {fieldName}', ['fieldName' => $field?->name ?? $fieldHandle]))
 //            ->addCrumb(t('Import'), 'import')
 //            ->addCrumb(t('Configs'), 'import/configs')
 //            ->addCrumb(t($import->name), 'import/configs/'.$import->handle)
@@ -432,7 +452,7 @@ class ImportConfigController
     {
         [$fieldUid, $field, $importUid, $import] = $this->fieldImportUids();
 
-        $fieldHandle = Arr::dotifyKey($this->request->input('fieldHandle', $field->handle));
+        $fieldHandle = Arr::dotifyKey($this->request->input('fieldHandle', $field?->handle));
 
         // validate the map fragment;
         // if it errors, a toast notification will show with the error
@@ -469,10 +489,11 @@ class ImportConfigController
     private function fieldImportUids(): array
     {
         $fieldUid = $this->request->input('fieldUid');
-        abort_if(empty($fieldUid), 400, 'No field UID provided');
 
-        $field = Fields::getFieldByUid($fieldUid);
-        abort_if(is_null($field), 400, 'Invalid field UID.');
+        $field = null;
+        if (! empty($fieldUid)) {
+            $field = Fields::getFieldByUid($fieldUid);
+        }
 
         $importUid = $this->request->input('importUid');
         abort_if(empty($importUid), 400, 'No import UID provided');
@@ -536,7 +557,7 @@ class ImportConfigController
                         ->redirectUrl('import/configs')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'import/configs/{handle}',
-                            'shortcut' => true,
+                            'shortcut' => ! $import->isElementImport(),
                             'retainScroll' => true,
                         ])
                         ->addAltAction(t('Delete'), [
@@ -547,6 +568,14 @@ class ImportConfigController
                                 'name' => $import?->name,
                             ]),
                         ]);
+
+                    if ($import->isElementImport()) {
+                        $response->addAltAction(t('Save and configure field layout provider'), [
+                            'redirect' => 'import/configs/{handle}/field-layout-provider',
+                            'shortcut' => true,
+                            'retainScroll' => false,
+                        ]);
+                    }
                 },
                 default: function (CpScreenResponse $response) {
                     if ($this->readOnly) {

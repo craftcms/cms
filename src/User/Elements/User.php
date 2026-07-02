@@ -28,13 +28,13 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -43,6 +43,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
@@ -181,6 +182,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Photo asset ID
      */
     #[AllowedInSandbox]
+    #[Importable('photoId', 'Photo ID')]
     public ?int $photoId = null;
 
     /**
@@ -211,29 +213,32 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var bool Admin
      */
     #[AllowedInSandbox]
+    #[Importable('admin', 'Is Admin?', false, false, false)]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
     #[AllowedInSandbox]
-    public ?string $username = null;
+    public ?string $username = null; // imported via Field Layout Element
 
     /**
      * @var string|null Email
      */
     #[AllowedInSandbox]
-    public ?string $email = null;
+    public ?string $email = null; // imported via Field Layout Element
 
     /**
      * @var string|null Password
      */
+    #[Importable('password', 'Password', false, false, false)]
     public ?string $password = null;
 
     /**
      * @var int|null Affiliated site ID
      */
     #[AllowedInSandbox]
+    #[Importable('affiliatedSiteId', 'Affiliated Site ID', false, false, false)]
     public ?int $affiliatedSiteId = null;
 
     /**
@@ -265,6 +270,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var bool Password reset required
      */
+    #[Importable('passwordResetRequired', 'Password Reset Required?', false, false, false)]
     public bool $passwordResetRequired = false;
 
     /**
@@ -336,6 +342,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @see setAttributesFromRequest()
      * @see afterSave()
      */
+    #[Importable('sendVerificationEmailAfterRequest', 'Send Verification Email?', false, false, false)]
     private bool $sendVerificationEmailAfterRequest = false;
 
     public function __construct($config = [])
@@ -2011,5 +2018,15 @@ JS, [
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 
         return true;
+    }
+
+    public static function getDestinationColsForProperty(BaseImporter $config, string $property): ?array
+    {
+        return match ($property) {
+            'addresses' => ImportHelper::getDestinationColsForFieldLayout(
+                app(Fields::class)->getLayoutByType(Address::class), null, null, $property
+            ),
+            default => null
+        };
     }
 }

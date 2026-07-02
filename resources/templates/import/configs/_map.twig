@@ -65,14 +65,20 @@
                 (value, part) => value and value is iterable and value[part] is defined ? attribute(value, part) : null,
                 import.matchCriteria) : null %}
 
-{#            {{ dump(nestedFieldValueForMap) }}#}
             {% if col.isContainer %}
-                {{ hiddenInput(col.prefixedHandleForMap, nestedFieldValueForMap|json_encode) }}
-                {{ hiddenInput(col.prefixedHandleForMatchCriteria, nestedFieldValueForMatchCriteria|json_encode) }}
+                {{ hiddenInput(
+                    col.prefixedHandleForMap,
+                    nestedFieldValueForMap ? nestedFieldValueForMap|json_encode : null
+                ) }}
+                {{ hiddenInput(
+                    col.prefixedHandleForMatchCriteria,
+                    nestedFieldValueForMatchCriteria ? nestedFieldValueForMatchCriteria|json_encode : null
+                ) }}
                 <a href="#"
                    class="btn mapping-slideout"
                    data-field-uid="{{ col.fieldUid ?? '' }}" {# this is the global field UID #}
                    data-field-handle="{{ col.prefixedHandle }}" {# this will be the layout handle, so can be the overwritten one #}
+                   data-field-is-property="{{ col.isProperty ?? false }}" {# this will be the layout handle, so can be the overwritten one #}
                    data-import-uid="{{ import.uid }}"
                 >
                     Map field
@@ -111,6 +117,7 @@ $('.mapping-slideout').on('activate', function(e) {
 
     const fieldUid = $(this).data('field-uid');
     const fieldHandle = $(this).data('field-handle');
+    const fieldIsProperty = $(this).data('field-is-property');
     const importUid = $(this).data('import-uid');
     let $mapInput = $(this).prevAll('input[type="hidden"][name^="map["], input[type="hidden"][name*="[map]["]');
     let $matchCriteriaInput = $(this).prevAll('input[type="hidden"][name^="matchCriteria["], input[type="hidden"][name*="[matchCriteria]["]');
@@ -123,6 +130,7 @@ $('.mapping-slideout').on('activate', function(e) {
                 params: {
                     'fieldUid': fieldUid,
                     'fieldHandle': fieldHandle,
+                    'fieldIsProperty': fieldIsProperty,
                     'importUid': importUid,
                     'currentMap': $mapInput.val(),
                     'currentMatchCriteria': $matchCriteriaInput.val(),

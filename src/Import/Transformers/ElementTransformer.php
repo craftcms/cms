@@ -43,7 +43,9 @@ class ElementTransformer extends BaseTransformer
 
         $array = [];
         foreach ($this->props as $prop) {
-            $array[$prop['name']] = $this->normalizePropertyValue($item, $prop, $element);
+            if (array_key_exists((string) $prop['name'], $item)) {
+                $array[$prop['name']] = $this->normalizePropertyValue($item, $prop, $element);
+            }
         }
 
         // include all custom fields
@@ -69,7 +71,9 @@ class ElementTransformer extends BaseTransformer
             );
 
             foreach ($fieldHandles as $fieldHandle) {
-                $array[$fieldHandle] = $item[$fieldHandle] ?? null;
+                if (array_key_exists((string) $fieldHandle, $item)) {
+                    $array[$fieldHandle] = $item[$fieldHandle];
+                }
             }
         }
 
