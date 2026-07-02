@@ -418,7 +418,7 @@ class Image
     private static function _webpSizeByStream($stream, string $buffer): array
     {
         $header = $buffer . stream_get_contents($stream, 12 - strlen($buffer));
-        if (strlen($header) < 12 || substr($header, 0, 4) !== 'RIFF' || substr($header, 8, 4) !== 'WEBP') {
+        if (strlen($header) < 12 || !str_starts_with($header, 'RIFF') || substr($header, 8, 4) !== 'WEBP') {
             throw new ImageException('Unrecognized image signature.');
         }
 
