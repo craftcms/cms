@@ -25,6 +25,7 @@ use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
 use Spatie\TypeScriptTransformer\Writers\GlobalNamespaceWriter;
 use Workbench\App\TypeScript\ClassListClassTransformer;
 use Workbench\App\TypeScript\ClassListTransformedProvider;
+use Workbench\App\TypeScript\ViewModelTransformer;
 
 class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicationServiceProvider
 {
@@ -53,6 +54,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                 ],
                 [
                     new EnumTransformer,
+                    new ViewModelTransformer,
                     new ClassListClassTransformer,
                 ],
             ));

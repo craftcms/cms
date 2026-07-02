@@ -16,90 +16,68 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\HtmlFragment;
 use CraftCms\Cms\View\TemplateGlobals;
 use CraftCms\Cms\View\TemplateHooks;
-use Illuminate\Contracts\Support\Arrayable;
 
 use function CraftCms\Cms\t;
 
-class UserPreferencesViewModel implements Arrayable
+class UserPreferencesViewModel extends ViewModel
 {
-    public bool $readOnly = false;
-
-    /** @var array<string, mixed> */
-    public array $preferences;
-
-    /** @var array<int, array{label: string, value: string, data?: array<string, mixed>}> */
-    public array $languageOptions;
-
-    /** @var array<int, array{label: string, value: string, data?: array<string, mixed>}> */
-    public array $localeOptions;
-
-    /** @var array<int, array{label: string, value: string}> */
-    public array $weekStartDayOptions;
-
-    /** @var array<int, array{label: string, value: string, data?: array<string, mixed>|null}> */
-    public array $timeZoneOptions;
-
-    public string $orientation;
-
-    public bool $isAdmin;
-
-    public ?HtmlFragment $prefsHook = null;
-
     public function __construct(
         private readonly User $user,
-    ) {
+    ) {}
+
+    /** @return array<string, mixed> */
+    public function preferences(): array
+    {
         $a11yDefaults = Cms::config()->accessibilityDefaults;
 
-        $this->preferences = [
+        return [
             'preferredLanguage' => $this->userLanguage(),
             'preferredLocale' => $this->userLocale(),
-            'weekStartDay' => $user->getPreference('weekStartDay', Cms::config()->defaultWeekStartDay),
-            'timeZone' => $user->getPreference('timeZone'),
-            'useShapes' => $user->getPreference('useShapes') ?? $a11yDefaults['useShapes'] ?? false,
-            'underlineLinks' => $user->getPreference('underlineLinks') ?? $a11yDefaults['underlineLinks'] ?? false,
-            'disableAutofocus' => $user->getPreference('disableAutofocus') ?? $a11yDefaults['disableAutofocus'] ?? false,
-            'notificationDuration' => $user->getPreference('notificationDuration') ?? $a11yDefaults['notificationDuration'] ?? 5000,
-            'notificationPosition' => $user->getPreference('notificationPosition') ?? $a11yDefaults['notificationPosition'] ?? 'end-start',
-            'slideoutPosition' => $user->getPreference('slideoutPosition') ?? $a11yDefaults['slideoutPosition'] ?? 'end',
-            'showFieldHandles' => $user->getPreference('showFieldHandles') ?? false,
-            'showExceptionView' => $user->getPreference('showExceptionView') ?? false,
-            'profileTemplates' => $user->getPreference('profileTemplates') ?? false,
+            'weekStartDay' => $this->user->getPreference('weekStartDay', Cms::config()->defaultWeekStartDay),
+            'timeZone' => $this->user->getPreference('timeZone'),
+            'useShapes' => $this->user->getPreference('useShapes') ?? $a11yDefaults['useShapes'] ?? false,
+            'underlineLinks' => $this->user->getPreference('underlineLinks') ?? $a11yDefaults['underlineLinks'] ?? false,
+            'disableAutofocus' => $this->user->getPreference('disableAutofocus') ?? $a11yDefaults['disableAutofocus'] ?? false,
+            'notificationDuration' => $this->user->getPreference('notificationDuration') ?? $a11yDefaults['notificationDuration'] ?? 5000,
+            'notificationPosition' => $this->user->getPreference('notificationPosition') ?? $a11yDefaults['notificationPosition'] ?? 'end-start',
+            'slideoutPosition' => $this->user->getPreference('slideoutPosition') ?? $a11yDefaults['slideoutPosition'] ?? 'end',
+            'showFieldHandles' => $this->user->getPreference('showFieldHandles') ?? false,
+            'showExceptionView' => $this->user->getPreference('showExceptionView') ?? false,
+            'profileTemplates' => $this->user->getPreference('profileTemplates') ?? false,
         ];
+    }
 
-        $this->languageOptions = SelectOptions::getLanguageOptions(showLocalizedNames: true, appLocales: true);
-        $this->localeOptions = [
+    /** @return array<int, array{label: string, value: string, data?: array<string, mixed>}> */
+    public function languageOptions(): array
+    {
+        return SelectOptions::getLanguageOptions(showLocalizedNames: true, appLocales: true);
+    }
+
+    /** @return array<int, array{label: string, value: string, data?: array<string, mixed>}> */
+    public function localeOptions(): array
+    {
+        return [
             ['label' => t('Same as language'), 'value' => '__blank__'],
             ...SelectOptions::getLanguageOptions(showLocalizedNames: true),
         ];
-        $this->weekStartDayOptions = $this->weekStartDayOptions();
-        $this->timeZoneOptions = $this->timeZoneOptions();
-        $this->orientation = I18N::getLocale()->getOrientation();
-        $this->isAdmin = $user->isAdmin();
+    }
 
+    public function isAdmin(): bool
+    {
+        return $this->user->isAdmin();
+    }
+
+    public function prefsHook(): ?HtmlFragment
+    {
         $context = [
             ...app(TemplateGlobals::class)->resolve(),
-            'user' => $user,
+            'user' => $this->user,
             'isNewUser' => false,
         ];
 
         $fragment = HtmlStack::capture(fn (): string => app(TemplateHooks::class)->invoke('cp.users.edit.prefs', $context));
 
-        $this->prefsHook = $fragment->isEmpty() ? null : $fragment;
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'readOnly' => $this->readOnly,
-            'preferences' => $this->preferences,
-            'languageOptions' => $this->languageOptions,
-            'localeOptions' => $this->localeOptions,
-            'weekStartDayOptions' => $this->weekStartDayOptions,
-            'timeZoneOptions' => $this->timeZoneOptions,
-            'orientation' => $this->orientation,
-            'isAdmin' => $this->isAdmin,
-            'prefsHook' => $this->prefsHook,
-        ];
+        return $fragment->isEmpty() ? null : $fragment;
     }
 
     private function userLanguage(): string
@@ -137,7 +115,8 @@ class UserPreferencesViewModel implements Arrayable
         return $timeZone ? DateTimeHelper::timeZoneAbbreviation(Env::parse($timeZone)) : 'UTC';
     }
 
-    private function weekStartDayOptions(): array
+    /** @return array<int, array{label: string, value: string}> */
+    public function weekStartDayOptions(): array
     {
         return collect(I18N::getLocale()->getWeekDayNames())
             ->map(fn (string $label, int $value): array => [
@@ -148,7 +127,8 @@ class UserPreferencesViewModel implements Arrayable
             ->all();
     }
 
-    private function timeZoneOptions(): array
+    /** @return array<int, array{label: string, value: string, data?: array<string, mixed>|null}> */
+    public function timeZoneOptions(): array
     {
         return [
             [
@@ -156,6 +136,92 @@ class UserPreferencesViewModel implements Arrayable
                 'value' => '__blank__',
             ],
             ...SelectOptions::getTimeZoneOptions(),
+        ];
+    }
+
+    /** @return array<int, array{label: string, value: string}> */
+    public function notificationDurationOptions(): array
+    {
+        return [
+            ['label' => t('{num, number} seconds', ['num' => 2]), 'value' => '2000'],
+            ['label' => t('{num, number} seconds', ['num' => 5]), 'value' => '5000'],
+            ['label' => t('{num, number} seconds', ['num' => 10]), 'value' => '10000'],
+            ['label' => t('Show them indefinitely'), 'value' => '0'],
+        ];
+    }
+
+    /** @return array<int, array{label: string, value: string}> */
+    public function displaySettingOptions(): array
+    {
+        return [
+            ['label' => t('Use shapes to represent statuses'), 'value' => 'useShapes'],
+            ['label' => t('Underline links'), 'value' => 'underlineLinks'],
+        ];
+    }
+
+    /** @return array<int, array{label: string, value: string}> */
+    public function generalSettingOptions(): array
+    {
+        return [
+            ['label' => t('Disable autofocus'), 'value' => 'disableAutofocus'],
+        ];
+    }
+
+    /** @return array<int, array{label: string, value: string}> */
+    public function developmentSettingOptions(): array
+    {
+        return [
+            ['label' => t('Show field handles in edit forms'), 'value' => 'showFieldHandles'],
+            ['label' => t('Profile Twig templates when Dev Mode is disabled'), 'value' => 'profileTemplates'],
+            ['label' => t('Show full exception views when Dev Mode is disabled'), 'value' => 'showExceptionView'],
+        ];
+    }
+
+    /** @return array<int, array{icon: string, label: string, value: string}> */
+    public function notificationPositionOptions(): array
+    {
+        $orientation = I18N::getLocale()->getOrientation();
+
+        return [
+            [
+                'icon' => $orientation === 'ltr' ? 'custom-icons/notification-top-left' : 'custom-icons/notification-top-right',
+                'label' => $orientation === 'ltr' ? t('Top-Left') : t('Top-Right'),
+                'value' => 'start-start',
+            ],
+            [
+                'icon' => $orientation === 'ltr' ? 'custom-icons/notification-top-right' : 'custom-icons/notification-top-left',
+                'label' => $orientation === 'ltr' ? t('Top-Right') : t('Top-Left'),
+                'value' => 'start-end',
+            ],
+            [
+                'icon' => $orientation === 'ltr' ? 'custom-icons/notification-bottom-left' : 'custom-icons/notification-bottom-right',
+                'label' => $orientation === 'ltr' ? t('Bottom-Left') : t('Bottom-Right'),
+                'value' => 'end-start',
+            ],
+            [
+                'icon' => $orientation === 'ltr' ? 'custom-icons/notification-bottom-right' : 'custom-icons/notification-bottom-left',
+                'label' => $orientation === 'ltr' ? t('Bottom-Right') : t('Bottom-Left'),
+                'value' => 'end-end',
+            ],
+        ];
+    }
+
+    /** @return array<int, array{icon: string, label: string, value: string}> */
+    public function slideoutPositionOptions(): array
+    {
+        $orientation = I18N::getLocale()->getOrientation();
+
+        return [
+            [
+                'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-left' : 'custom-icons/slideout-right',
+                'label' => $orientation === 'ltr' ? t('Left') : t('Right'),
+                'value' => 'start',
+            ],
+            [
+                'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-right' : 'custom-icons/slideout-left',
+                'label' => $orientation === 'ltr' ? t('Right') : t('Left'),
+                'value' => 'end',
+            ],
         ];
     }
 }

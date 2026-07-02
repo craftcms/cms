@@ -94,87 +94,6 @@
     },
   });
 
-  const notificationDurationOptions = computed(() => [
-    {label: t('{num, number} seconds', {num: 2}), value: '2000'},
-    {label: t('{num, number} seconds', {num: 5}), value: '5000'},
-    {label: t('{num, number} seconds', {num: 10}), value: '10000'},
-    {label: t('Show them indefinitely'), value: '0'},
-  ]);
-
-  const displaySettingOptions = computed(() => [
-    {label: t('Use shapes to represent statuses'), value: 'useShapes'},
-    {label: t('Underline links'), value: 'underlineLinks'},
-  ]);
-
-  const generalSettingOptions = computed(() => [
-    {label: t('Disable autofocus'), value: 'disableAutofocus'},
-  ]);
-
-  const developmentSettingOptions = computed(() => [
-    {label: t('Show field handles in edit forms'), value: 'showFieldHandles'},
-    {
-      label: t('Profile Twig templates when Dev Mode is disabled'),
-      value: 'profileTemplates',
-    },
-    {
-      label: t('Show full exception views when Dev Mode is disabled'),
-      value: 'showExceptionView',
-    },
-  ]);
-
-  const notificationPositionOptions = computed(() => [
-    {
-      icon:
-        props.orientation === 'ltr'
-          ? 'custom-icons/notification-top-left'
-          : 'custom-icons/notification-top-right',
-      label: props.orientation === 'ltr' ? t('Top-Left') : t('Top-Right'),
-      value: 'start-start',
-    },
-    {
-      icon:
-        props.orientation === 'ltr'
-          ? 'custom-icons/notification-top-right'
-          : 'custom-icons/notification-top-left',
-      label: props.orientation === 'ltr' ? t('Top-Right') : t('Top-Left'),
-      value: 'start-end',
-    },
-    {
-      icon:
-        props.orientation === 'ltr'
-          ? 'custom-icons/notification-bottom-left'
-          : 'custom-icons/notification-bottom-right',
-      label: props.orientation === 'ltr' ? t('Bottom-Left') : t('Bottom-Right'),
-      value: 'end-start',
-    },
-    {
-      icon:
-        props.orientation === 'ltr'
-          ? 'custom-icons/notification-bottom-right'
-          : 'custom-icons/notification-bottom-left',
-      label: props.orientation === 'ltr' ? t('Bottom-Right') : t('Bottom-Left'),
-      value: 'end-end',
-    },
-  ]);
-
-  const slideoutPositionOptions = computed(() => [
-    {
-      icon:
-        props.orientation === 'ltr'
-          ? 'custom-icons/slideout-left'
-          : 'custom-icons/slideout-right',
-      label: props.orientation === 'ltr' ? t('Left') : t('Right'),
-      value: 'start',
-    },
-    {
-      icon:
-        props.orientation === 'ltr'
-          ? 'custom-icons/slideout-right'
-          : 'custom-icons/slideout-left',
-      label: props.orientation === 'ltr' ? t('Right') : t('Left'),
-      value: 'end',
-    },
-  ]);
 </script>
 
 <template>
@@ -238,13 +157,13 @@
         <CheckboxGroup
           v-model="displaySettings"
           :label="t('Display Settings')"
-          :options="displaySettingOptions"
+          :options="props.displaySettingOptions"
         />
 
         <CheckboxGroup
           v-model="generalSettings"
           :label="t('General Settings')"
-          :options="generalSettingOptions"
+          :options="props.generalSettingOptions"
         />
 
         <Select
@@ -257,7 +176,7 @@
           "
           name="notificationDuration"
           id="notificationDuration"
-          :options="notificationDurationOptions"
+          :options="props.notificationDurationOptions"
           :error="form.errors.notificationDuration"
         />
 
@@ -265,7 +184,7 @@
           <h3 class="text-sm">{{ t('Notification Position') }}</h3>
           <craft-button-group role="group">
             <craft-button
-              v-for="option in notificationPositionOptions"
+              v-for="option in props.notificationPositionOptions"
               :key="option.value"
               type="button"
               appearance="outline"
@@ -288,7 +207,7 @@
           <h3 class="text-sm">{{ t('Slideout Position') }}</h3>
           <craft-button-group role="group">
             <craft-button
-              v-for="option in slideoutPositionOptions"
+              v-for="option in props.slideoutPositionOptions"
               :key="option.value"
               type="button"
               appearance="outline"
@@ -315,7 +234,7 @@
           <CheckboxGroup
             v-model="developmentSettings"
             :label="t('Development Settings')"
-            :options="developmentSettingOptions"
+            :options="props.developmentSettingOptions"
           />
         </section>
       </template>
