@@ -11,6 +11,7 @@
 - Fixed a bug where the “All entries” and “All users” sources weren’t available to be selected within Entries/Users field settings. ([#19185](https://github.com/craftcms/cms/discussions/19185))
 - Fixed a bug where database backups weren’t using the `--single-transaction` flag on MariaDB. ([#19191](https://github.com/craftcms/cms/issues/19191))
 - Fixed a bug where element indexes could show multiple table columns for the same nested fields within Content Block fields. ([#19197](https://github.com/craftcms/cms/pull/19197))
+- Fixed a PHP error that could occur when merging canonical changes into a draft that contained nested elements. ([#19187](https://github.com/craftcms/cms/pull/19187))
 
 ## 5.10.8.1 - 2026-06-23
 
