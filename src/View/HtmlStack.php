@@ -26,7 +26,7 @@ use Stringable;
 #[Scoped]
 class HtmlStack
 {
-    private const FragmentBufferKeys = [
+    private const array FragmentBufferKeys = [
         'js',
         'scripts',
         'jsFiles',

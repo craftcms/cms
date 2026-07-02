@@ -82,9 +82,7 @@ class UserPreferencesViewModel implements Arrayable
             'isNewUser' => false,
         ];
 
-        $fragment = HtmlStack::capture(function () use ($context): string {
-            return app(TemplateHooks::class)->invoke('cp.users.edit.prefs', $context);
-        });
+        $fragment = HtmlStack::capture(fn (): string => app(TemplateHooks::class)->invoke('cp.users.edit.prefs', $context));
 
         $this->prefsHook = $fragment->isEmpty() ? null : $fragment;
     }
