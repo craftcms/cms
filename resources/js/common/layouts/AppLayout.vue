@@ -153,9 +153,7 @@
   }
 
   function isFormButtonProcessing(key: string) {
-    return (
-      Boolean(props.form?.processing) && activeFormButton.value === key
-    );
+    return Boolean(props.form?.processing) && activeFormButton.value === key;
   }
 
   function activateFormButton(key: string) {
@@ -288,7 +286,9 @@
                             <craft-button
                               type="submit"
                               variant="accent"
-                              :loading="isFormButtonProcessing(primaryFormButton)"
+                              :loading="
+                                isFormButtonProcessing(primaryFormButton)
+                              "
                               :disabled="form.processing"
                             >
                               {{ t('Save') }}

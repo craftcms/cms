@@ -93,7 +93,6 @@
       form.showExceptionView = values.includes('showExceptionView');
     },
   });
-
 </script>
 
 <template>
@@ -102,51 +101,55 @@
       <section class="grid gap-3">
         <h2 class="text-base">{{ t('General') }}</h2>
 
-        <CraftCombobox
-          v-model="form.preferredLanguage"
-          :label="t('Language')"
-          :help-text="t('The language that the control panel should use.')"
-          id="preferredLanguage"
-          name="preferredLanguage"
-          :options="props.languageOptions"
-          :error="form.errors.preferredLanguage"
-          :require-option-match="true"
-          show-all-on-empty
-        />
+        <craft-field-group>
+          <CraftCombobox
+            v-model="form.preferredLanguage"
+            :label="t('Language')"
+            :help-text="t('The language that the control panel should use.')"
+            id="preferredLanguage"
+            name="preferredLanguage"
+            :options="props.languageOptions"
+            :error="form.errors.preferredLanguage"
+            :require-option-match="true"
+            show-all-on-empty
+          />
 
-        <CraftCombobox
-          v-model="form.preferredLocale"
-          :label="t('Formatting Locale')"
-          :help-text="
-            t('The locale that should be used for date and number formatting.')
-          "
-          id="preferredLocale"
-          name="preferredLocale"
-          :options="props.localeOptions"
-          :error="form.errors.preferredLocale"
-          :require-option-match="true"
-          show-all-on-empty
-        />
+          <CraftCombobox
+            v-model="form.preferredLocale"
+            :label="t('Formatting Locale')"
+            :help-text="
+              t(
+                'The locale that should be used for date and number formatting.'
+              )
+            "
+            id="preferredLocale"
+            name="preferredLocale"
+            :options="props.localeOptions"
+            :error="form.errors.preferredLocale"
+            :require-option-match="true"
+            show-all-on-empty
+          />
 
-        <Select
-          v-model="form.weekStartDay"
-          :label="t('Week Start Day')"
-          id="weekStartDay"
-          name="weekStartDay"
-          :options="props.weekStartDayOptions"
-          :error="form.errors.weekStartDay"
-        />
+          <Select
+            v-model="form.weekStartDay"
+            :label="t('Week Start Day')"
+            id="weekStartDay"
+            name="weekStartDay"
+            :options="props.weekStartDayOptions"
+            :error="form.errors.weekStartDay"
+          />
 
-        <CraftCombobox
-          v-model="form.timeZone"
-          :label="t('Time Zone')"
-          id="time-zone"
-          name="timeZone"
-          :options="props.timeZoneOptions"
-          :error="form.errors.timeZone"
-          :require-option-match="true"
-          show-all-on-empty
-        />
+          <CraftCombobox
+            v-model="form.timeZone"
+            :label="t('Time Zone')"
+            id="time-zone"
+            name="timeZone"
+            :options="props.timeZoneOptions"
+            :error="form.errors.timeZone"
+            :require-option-match="true"
+            show-all-on-empty
+          />
+        </craft-field-group>
       </section>
 
       <hr />
@@ -154,75 +157,77 @@
       <section class="grid gap-3">
         <h2 class="text-base">{{ t('Accessibility') }}</h2>
 
-        <CheckboxGroup
-          v-model="displaySettings"
-          :label="t('Display Settings')"
-          :options="props.displaySettingOptions"
-        />
+        <craft-field-group>
+          <CheckboxGroup
+            v-model="displaySettings"
+            :label="t('Display Settings')"
+            :options="props.displaySettingOptions"
+          />
 
-        <CheckboxGroup
-          v-model="generalSettings"
-          :label="t('General Settings')"
-          :options="props.generalSettingOptions"
-        />
+          <CheckboxGroup
+            v-model="generalSettings"
+            :label="t('General Settings')"
+            :options="props.generalSettingOptions"
+          />
 
-        <Select
-          v-model="form.notificationDuration"
-          :label="t('Notification Duration')"
-          :help-text="
-            t(
-              'How long notifications should be shown before they disappear automatically.'
-            )
-          "
-          name="notificationDuration"
-          id="notificationDuration"
-          :options="props.notificationDurationOptions"
-          :error="form.errors.notificationDuration"
-        />
+          <Select
+            v-model="form.notificationDuration"
+            :label="t('Notification Duration')"
+            :help-text="
+              t(
+                'How long notifications should be shown before they disappear automatically.'
+              )
+            "
+            name="notificationDuration"
+            id="notificationDuration"
+            :options="props.notificationDurationOptions"
+            :error="form.errors.notificationDuration"
+          />
 
-        <div class="grid gap-2">
-          <h3 class="text-sm">{{ t('Notification Position') }}</h3>
-          <craft-button-group role="group">
-            <craft-button
-              v-for="option in props.notificationPositionOptions"
-              :key="option.value"
-              type="button"
-              appearance="outline"
-              :active="
-                form.notificationPosition === option.value ? 'true' : null
-              "
-              :aria-pressed="form.notificationPosition === option.value"
-              :title="option.label"
-              @click="form.notificationPosition = option.value"
-            >
-              <craft-icon :name="option.icon" :label="option.label" />
-            </craft-button>
-          </craft-button-group>
-          <ul class="error-list" v-if="form.errors.notificationPosition">
-            <li>{{ form.errors.notificationPosition }}</li>
-          </ul>
-        </div>
+          <craft-field-group>
+            <h3 class="text-sm">{{ t('Notification Position') }}</h3>
+            <craft-button-group role="group">
+              <craft-button
+                v-for="option in props.notificationPositionOptions"
+                :key="option.value"
+                type="button"
+                appearance="outline"
+                :active="
+                  form.notificationPosition === option.value ? 'true' : null
+                "
+                :aria-pressed="form.notificationPosition === option.value"
+                :title="option.label"
+                @click="form.notificationPosition = option.value"
+              >
+                <craft-icon :name="option.icon" :label="option.label" />
+              </craft-button>
+            </craft-button-group>
+            <ul class="error-list" v-if="form.errors.notificationPosition">
+              <li>{{ form.errors.notificationPosition }}</li>
+            </ul>
+          </craft-field-group>
 
-        <div class="grid gap-2">
-          <h3 class="text-sm">{{ t('Slideout Position') }}</h3>
-          <craft-button-group role="group">
-            <craft-button
-              v-for="option in props.slideoutPositionOptions"
-              :key="option.value"
-              type="button"
-              appearance="outline"
-              :active="form.slideoutPosition === option.value ? 'true' : null"
-              :aria-pressed="form.slideoutPosition === option.value"
-              :title="option.label"
-              @click="form.slideoutPosition = option.value"
-            >
-              <craft-icon :name="option.icon" :label="option.label" />
-            </craft-button>
-          </craft-button-group>
-          <ul class="error-list" v-if="form.errors.slideoutPosition">
-            <li>{{ form.errors.slideoutPosition }}</li>
-          </ul>
-        </div>
+          <craft-field-group>
+            <h3 class="text-sm">{{ t('Slideout Position') }}</h3>
+            <craft-button-group role="group">
+              <craft-button
+                v-for="option in props.slideoutPositionOptions"
+                :key="option.value"
+                type="button"
+                appearance="outline"
+                :active="form.slideoutPosition === option.value ? 'true' : null"
+                :aria-pressed="form.slideoutPosition === option.value"
+                :title="option.label"
+                @click="form.slideoutPosition = option.value"
+              >
+                <craft-icon :name="option.icon" :label="option.label" />
+              </craft-button>
+            </craft-button-group>
+            <ul class="error-list" v-if="form.errors.slideoutPosition">
+              <li>{{ form.errors.slideoutPosition }}</li>
+            </ul>
+          </craft-field-group>
+        </craft-field-group>
       </section>
 
       <template v-if="props.isAdmin">
@@ -231,11 +236,13 @@
         <section class="grid gap-3">
           <h2 class="text-base">{{ t('Development') }}</h2>
 
-          <CheckboxGroup
-            v-model="developmentSettings"
-            :label="t('Development Settings')"
-            :options="props.developmentSettingOptions"
-          />
+          <craft-field-group>
+            <CheckboxGroup
+              v-model="developmentSettings"
+              :label="t('Development Settings')"
+              :options="props.developmentSettingOptions"
+            />
+          </craft-field-group>
         </section>
       </template>
 
