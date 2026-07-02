@@ -6,6 +6,7 @@
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
+  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {update} from '@actions/Users/PreferencesController';
 
@@ -16,6 +17,7 @@
   type UserPreferencesViewModel =
     CraftCms.Cms.Http.ViewModels.UserPreferencesViewModel & {
       details?: string | null;
+      prefsHook?: CraftCms.Cms.View.HtmlFragment | null;
     };
 
   interface UserPreferencesForm {
@@ -318,7 +320,7 @@
         </section>
       </template>
 
-      <!-- TODO: {% hook 'cp.users.edit.prefs' %} -->
+      <HtmlFragmentRenderer :fragment="props.prefsHook" />
     </div>
 
     <template v-if="props.details" #details>
