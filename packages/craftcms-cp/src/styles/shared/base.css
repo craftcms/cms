@@ -13,6 +13,16 @@ body {
   -webkit-font-smoothing: subpixel-antialiased;
 }
 
+/*
+  Global keyboard-focus indicator: any focusable element gets a visible ring
+  when focused via the keyboard. Uses :focus-visible so it stays off during
+  pointer interaction. Placeholder treatment — adjust as needed.
+*/
+:focus-visible {
+  outline: 2px solid var(--c-text-link);
+  outline-offset: 2px;
+}
+
 h1,
 h2,
 h3,
