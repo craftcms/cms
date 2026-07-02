@@ -1,7 +1,9 @@
 <?php
 
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\View\TemplateHooks;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -36,7 +38,28 @@ test('index shows preferences page', function () {
             ->has('weekStartDayOptions', 7)
             ->has('timeZoneOptions')
             ->has('subnav')
-            ->has('details'));
+            ->has('details')
+            ->where('prefsHook', null));
+});
+
+test('index includes preferences hook output and assets', function () {
+    app(TemplateHooks::class)->register('cp.users.edit.prefs', function (array &$context, bool &$handled): string {
+        expect($context['user'])->toBeInstanceOf(User::class)
+            ->and($context['isNewUser'])->toBeFalse();
+
+        HtmlStack::cssFile('/prefs-hook.css');
+        HtmlStack::js('window.prefsHookReady = true');
+
+        return '<div data-hook="prefs">Preferences hook</div>';
+    });
+
+    get(cp_url('myaccount/preferences'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Preferences')
+            ->where('prefsHook.html', '<div data-hook="prefs">Preferences hook</div>')
+            ->where('prefsHook.headHtml', fn (string $html): bool => str_contains($html, '/prefs-hook.css'))
+            ->where('prefsHook.bodyHtml', fn (string $html): bool => str_contains($html, 'window.prefsHookReady = true')));
 });
 
 test('update saves language', function () {

@@ -8,10 +8,14 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\HtmlFragment;
+use CraftCms\Cms\View\TemplateGlobals;
+use CraftCms\Cms\View\TemplateHooks;
 use Illuminate\Contracts\Support\Arrayable;
 
 use function CraftCms\Cms\t;
@@ -38,6 +42,8 @@ class UserPreferencesViewModel implements Arrayable
     public string $orientation;
 
     public bool $isAdmin;
+
+    public ?HtmlFragment $prefsHook = null;
 
     public function __construct(
         private readonly User $user,
@@ -69,6 +75,18 @@ class UserPreferencesViewModel implements Arrayable
         $this->timeZoneOptions = $this->timeZoneOptions();
         $this->orientation = I18N::getLocale()->getOrientation();
         $this->isAdmin = $user->isAdmin();
+
+        $context = [
+            ...app(TemplateGlobals::class)->resolve(),
+            'user' => $user,
+            'isNewUser' => false,
+        ];
+
+        $fragment = HtmlStack::capture(function () use ($context): string {
+            return app(TemplateHooks::class)->invoke('cp.users.edit.prefs', $context);
+        });
+
+        $this->prefsHook = $fragment->isEmpty() ? null : $fragment;
     }
 
     public function toArray(): array
@@ -82,6 +100,7 @@ class UserPreferencesViewModel implements Arrayable
             'timeZoneOptions' => $this->timeZoneOptions,
             'orientation' => $this->orientation,
             'isAdmin' => $this->isAdmin,
+            'prefsHook' => $this->prefsHook,
         ];
     }
 

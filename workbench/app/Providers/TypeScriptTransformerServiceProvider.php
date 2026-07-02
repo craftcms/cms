@@ -17,6 +17,7 @@ use CraftCms\Cms\Update\Data\Updates;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Data\UserSettings;
+use CraftCms\Cms\View\HtmlFragment;
 use DateTimeInterface;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
 use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
@@ -45,6 +46,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     PermissionGroup::class,
                     Route::class,
                     Updates::class,
+                    HtmlFragment::class,
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,
                     UserSettings::class,
