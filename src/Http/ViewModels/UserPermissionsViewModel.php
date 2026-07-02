@@ -13,17 +13,18 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
-class UserPermissionsViewModel implements Arrayable
+class UserPermissionsViewModel extends ViewModel
 {
-    public bool $readOnly = false;
+    public function __construct(
+        private readonly UserElement $user,
+        private readonly CraftUser $currentUser,
+    ) {}
 
-    public ?string $details = null;
-
-    /** @var array{
+    /** @return array{
      *     id: int,
      *     username: string|null,
      *     admin: bool,
@@ -31,9 +32,18 @@ class UserPermissionsViewModel implements Arrayable
      *     isCredentialed: bool,
      * }
      */
-    public array $user;
+    public function user(): array
+    {
+        return [
+            'id' => $this->user->id,
+            'username' => $this->user->username,
+            'admin' => $this->user->admin,
+            'isCurrent' => $this->user->getIsCurrent(),
+            'isCredentialed' => $this->user->getIsCredentialed(),
+        ];
+    }
 
-    /** @var array<int, array{
+    /** @return array<int, array{
      *     id: int,
      *     name: string,
      *     handle: string,
@@ -41,64 +51,9 @@ class UserPermissionsViewModel implements Arrayable
      *     permissions: string[],
      * }>
      */
-    public array $groups;
-
-    /** @var int[] */
-    public array $currentGroupIds;
-
-    /** @var array<int, array{
-     *     heading: string,
-     *     permissions: array<string, Permission>,
-     *     handle: string,
-     *     keys: string[],
-     * }>
-     */
-    public array $permissions;
-
-    /** @var string[] */
-    public array $directPermissions;
-
-    /** @var string[] */
-    public array $inheritedPermissions;
-
-    public bool $showAdminSwitch;
-
-    /** @var array{
-     *     allowAdminChanges: bool,
-     *     settingsUrl: string,
-     *     path: string[],
-     * }|null
-     */
-    public ?array $teamPermissionsNotice;
-
-    /** @var array{
-     *     assignUserPermissions: bool,
-     *     assignUserGroups: bool,
-     *     createGroups: bool,
-     *     canSendActivationEmail: bool,
-     * }
-     */
-    public array $can;
-
-    public function __construct(UserElement $user, CraftUser $currentUser)
+    public function groups(): array
     {
-        $groupPermissions = $user->id
-            ? UserPermissions::getGroupPermissionsByUserId($user->id)->values()
-            : collect();
-
-        $userPermissions = $user->id
-            ? UserPermissions::getPermissionsByUserId($user->id)
-            : collect();
-
-        $this->user = [
-            'id' => $user->id,
-            'username' => $user->username,
-            'admin' => $user->admin,
-            'isCurrent' => $user->getIsCurrent(),
-            'isCredentialed' => $user->getIsCredentialed(),
-        ];
-
-        $this->groups = UserGroups::getAssignableGroups($user)
+        return UserGroups::getAssignableGroups($this->user)
             ->map(fn (UserGroup $group): array => [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -108,34 +63,53 @@ class UserPermissionsViewModel implements Arrayable
             ])
             ->values()
             ->all();
-
-        $this->currentGroupIds = collect($user->getGroups())->pluck('id')->filter()->values()->all();
-        $this->permissions = UserPermissions::getAssignablePermissions($user)->values()->toArray();
-        $this->directPermissions = $userPermissions->diff($groupPermissions)->values()->all();
-        $this->inheritedPermissions = $groupPermissions->all();
-        $this->showAdminSwitch = $currentUser->isAdmin();
-        $this->teamPermissionsNotice = $this->teamPermissionsNotice();
-        $this->can = $this->permissionsAbilities($currentUser, $user);
     }
 
-    public function toArray(): array
+    /** @return int[] */
+    public function currentGroupIds(): array
     {
-        return [
-            'readOnly' => $this->readOnly,
-            'details' => $this->details,
-            'user' => $this->user,
-            'groups' => $this->groups,
-            'currentGroupIds' => $this->currentGroupIds,
-            'permissions' => $this->permissions,
-            'directPermissions' => $this->directPermissions,
-            'inheritedPermissions' => $this->inheritedPermissions,
-            'showAdminSwitch' => $this->showAdminSwitch,
-            'teamPermissionsNotice' => $this->teamPermissionsNotice,
-            'can' => $this->can,
-        ];
+        return collect($this->user->getGroups())->pluck('id')->filter()->values()->all();
     }
 
-    private function teamPermissionsNotice(): ?array
+    /** @return array<int, array{
+     *     heading: string,
+     *     permissions: array<string, Permission>,
+     *     handle: string,
+     *     keys: string[],
+     * }>
+     */
+    public function permissions(): array
+    {
+        return UserPermissions::getAssignablePermissions($this->user)->values()->toArray();
+    }
+
+    /** @return string[] */
+    public function directPermissions(): array
+    {
+        return $this->userPermissions()
+            ->diff($this->groupPermissions())
+            ->values()
+            ->all();
+    }
+
+    /** @return string[] */
+    public function inheritedPermissions(): array
+    {
+        return $this->groupPermissions()->all();
+    }
+
+    public function showAdminSwitch(): bool
+    {
+        return $this->currentUser->isAdmin();
+    }
+
+    /** @return array{
+     *     allowAdminChanges: bool,
+     *     settingsUrl: string,
+     *     path: string[],
+     * }|null
+     */
+    public function teamPermissionsNotice(): ?array
     {
         if (Edition::get() !== Edition::Team) {
             return null;
@@ -148,13 +122,34 @@ class UserPermissionsViewModel implements Arrayable
         ];
     }
 
-    private function permissionsAbilities(CraftUser $currentUser, UserElement $user): array
+    /** @return array{
+     *     assignUserPermissions: bool,
+     *     assignUserGroups: bool,
+     *     createGroups: bool,
+     *     canSendActivationEmail: bool,
+     * }
+     */
+    public function can(): array
     {
         return [
-            'assignUserPermissions' => $currentUser->can('assignUserPermissions'),
-            'assignUserGroups' => $currentUser->can('assignUserGroups', $user),
-            'createGroups' => $currentUser->isAdmin() && Cms::config()->allowAdminChanges && Edition::get()->value >= Edition::Pro->value,
-            'canSendActivationEmail' => ! $user->getIsCredentialed() && $user->username && $currentUser->can('sendActivationEmail', $user),
+            'assignUserPermissions' => $this->currentUser->can('assignUserPermissions'),
+            'assignUserGroups' => $this->currentUser->can('assignUserGroups', $this->user),
+            'createGroups' => $this->currentUser->isAdmin() && Cms::config()->allowAdminChanges && Edition::get()->value >= Edition::Pro->value,
+            'canSendActivationEmail' => ! $this->user->getIsCredentialed() && $this->user->username && $this->currentUser->can('sendActivationEmail', $this->user),
         ];
+    }
+
+    private function groupPermissions(): Collection
+    {
+        return $this->user->id
+            ? UserPermissions::getGroupPermissionsByUserId($this->user->id)->values()
+            : collect();
+    }
+
+    private function userPermissions(): Collection
+    {
+        return $this->user->id
+            ? UserPermissions::getPermissionsByUserId($this->user->id)
+            : collect();
     }
 }

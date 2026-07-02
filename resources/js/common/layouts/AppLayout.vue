@@ -52,7 +52,7 @@
 
   const page = usePage<{
     title: string;
-    readOnly: boolean;
+    readOnly?: boolean;
     crumbs?: Array<{
       url?: string;
       label: string;
@@ -70,7 +70,7 @@
     {label: t('Skip to main section'), url: '#main'},
     ...(props.additionalSkipLinks ?? []),
   ]);
-  const readOnly = computed(() => page.props.readOnly);
+  const readOnly = computed(() => Boolean(page.props.readOnly));
   const hasDetails = computed(() => Boolean(slots.details));
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const primaryFormButton = 'primary';
@@ -153,9 +153,7 @@
   }
 
   function isFormButtonProcessing(key: string) {
-    return (
-      Boolean(props.form?.processing) && activeFormButton.value === key
-    );
+    return Boolean(props.form?.processing) && activeFormButton.value === key;
   }
 
   function activateFormButton(key: string) {
@@ -288,7 +286,9 @@
                             <craft-button
                               type="submit"
                               variant="accent"
-                              :loading="isFormButtonProcessing(primaryFormButton)"
+                              :loading="
+                                isFormButtonProcessing(primaryFormButton)
+                              "
                               :disabled="form.processing"
                             >
                               {{ t('Save') }}
