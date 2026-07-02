@@ -37,14 +37,12 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {onToggleAllSelected, selectRow} = useElementIndexSelection(
-    () => props.table,
-    {
+  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} =
+    useElementIndexSelection(() => props.table, {
       selectable: () => props.selectable ?? false,
       readOnly,
       actions: () => [], // actions/bulk bar live on BaseElementIndex
-    }
-  );
+    });
 
   // Captures modifier state from the native click, because craft-checkbox's
   // `model-value-changed` event does not carry `shiftKey`.
@@ -159,6 +157,40 @@
 
     return 'middle';
   }
+
+  function focusRowByIndex(index: number, el: HTMLElement) {
+    const table = el.closest('table');
+    const rows = table?.querySelectorAll<HTMLElement>('tbody > tr[tabindex]');
+    rows?.[index]?.focus();
+  }
+
+  function onRowKeydown(
+    row: any,
+    index: number | string,
+    event: KeyboardEvent
+  ) {
+    if (!props.selectable) return;
+    const rows = props.table.getRowModel().rows;
+    const target = event.currentTarget as HTMLElement;
+    index = Number(index);
+    switch (event.key) {
+      case ' ':
+      case 'Enter':
+        event.preventDefault();
+        toggleRow(row);
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        if (event.shiftKey) extendSelectionTo(rows[Math.min(index + 1, rows.length - 1)]);
+        focusRowByIndex(Math.min(index + 1, rows.length - 1), target);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        if (event.shiftKey) extendSelectionTo(rows[Math.max(index - 1, 0)]);
+        focusRowByIndex(Math.max(index - 1, 0), target);
+        break;
+    }
+  }
 </script>
 
 <template>
@@ -266,15 +298,17 @@
     <tbody>
       <template v-if="table.getRowModel().rows.length > 0">
         <tr
-          v-for="row in table.getRowModel().rows"
+          v-for="(row, rowIdx) in table.getRowModel().rows"
           :key="row.id"
           :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
+          :tabindex="selectable ? 0 : undefined"
           :class="{
             row: true,
             'cp-table-row': true,
             'row--dragging':
               !readOnly && getDragState(row.id).type === 'is-dragging',
           }"
+          @keydown="onRowKeydown(row, rowIdx, $event)"
         >
           <template v-if="reorderable && !readOnly">
             <td>
