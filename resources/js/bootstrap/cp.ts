@@ -17,10 +17,29 @@ import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
+import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
+
+/**
+ * Pages under these prefixes render outside the CP shell: auth screens wrap
+ * `<AuthBase/>` themselves and the installer is a standalone wizard.
+ */
+const shellLessPagePrefixes = ['auth/', 'install/'];
+
+/**
+ * The default Inertia layout. Pages that render `<AppLayout>` inline (to pass
+ * it props or fill its slots) opt out with `defineOptions({layout: []})`.
+ */
+function defaultPageLayout(name: string) {
+  if (shellLessPagePrefixes.some((prefix) => name.startsWith(prefix))) {
+    return null;
+  }
+
+  return AppLayout;
+}
 
 // Instantiate services
 const config = ConfigService.getInstance();
@@ -106,6 +125,7 @@ const Cp = {
 
     await createInertiaApp({
       resolve: (name) => resolveInertiaPage(name),
+      layout: defaultPageLayout,
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');

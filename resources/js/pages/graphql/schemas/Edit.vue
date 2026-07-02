@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
@@ -53,72 +54,68 @@
   };
 
   const {save} = useSettingsSave(form, routeAction);
+
+  useAppLayout({form, onSave: save});
 </script>
 
 <template>
-  <AppLayout :form="form" @save="save">
-    <Pane appearance="raised">
-      <div class="grid gap-3">
-        <CraftInput
-          v-if="!schema.isPublic"
-          :label="t('Name')"
-          :help-text="
-            t('What this schema will be called in the control panel.')
-          "
-          id="name"
-          name="name"
-          v-model="form.name"
-          :error="form.errors.name"
-          :disabled="readOnly"
-          required
-          autofocus
-        />
-
-        <hr v-if="!schema.isPublic" />
-
-        <section class="grid gap-3">
-          <h2 class="text-base">
-            {{
-              t('Choose the available content for querying with this schema:')
-            }}
-          </h2>
-
-          <div
-            v-for="group in permissions"
-            :key="group.handle"
-            class="user-permissions"
-          >
-            <PermissionList
-              :heading="group.heading"
-              :permissions="group.permissions"
-              :permission-keys="group.keys"
-              v-model="form.permissions"
-              :disabled="readOnly"
-            />
-          </div>
-        </section>
-      </div>
-    </Pane>
-
-    <template v-if="schema.isPublic" #details>
-      <CraftSwitch
-        :label="t('Enabled')"
-        id="enabled"
-        name="enabled"
-        v-model="form.enabled"
-        :disabled="readOnly"
-        :error="form.errors.enabled"
-      />
-
+  <Pane appearance="raised">
+    <div class="grid gap-3">
       <CraftInput
-        :label="t('Expiry Date')"
-        id="expiryDate"
-        name="expiryDate"
-        type="datetime-local"
-        v-model="form.expiryDate"
+        v-if="!schema.isPublic"
+        :label="t('Name')"
+        :help-text="t('What this schema will be called in the control panel.')"
+        id="name"
+        name="name"
+        v-model="form.name"
+        :error="form.errors.name"
         :disabled="readOnly"
-        :error="form.errors.expiryDate"
+        required
+        autofocus
       />
-    </template>
-  </AppLayout>
+
+      <hr v-if="!schema.isPublic" />
+
+      <section class="grid gap-3">
+        <h2 class="text-base">
+          {{ t('Choose the available content for querying with this schema:') }}
+        </h2>
+
+        <div
+          v-for="group in permissions"
+          :key="group.handle"
+          class="user-permissions"
+        >
+          <PermissionList
+            :heading="group.heading"
+            :permissions="group.permissions"
+            :permission-keys="group.keys"
+            v-model="form.permissions"
+            :disabled="readOnly"
+          />
+        </div>
+      </section>
+    </div>
+  </Pane>
+
+  <LayoutSlot v-if="schema.isPublic" name="details">
+    <CraftSwitch
+      :label="t('Enabled')"
+      id="enabled"
+      name="enabled"
+      v-model="form.enabled"
+      :disabled="readOnly"
+      :error="form.errors.enabled"
+    />
+
+    <CraftInput
+      :label="t('Expiry Date')"
+      id="expiryDate"
+      name="expiryDate"
+      type="datetime-local"
+      v-model="form.expiryDate"
+      :disabled="readOnly"
+      :error="form.errors.expiryDate"
+    />
+  </LayoutSlot>
 </template>
