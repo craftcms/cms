@@ -3,7 +3,6 @@
 ## Unreleased
 
 - `craft\helpers\Image::imageSizeByStream()` now supports WebP, AVIF, and HEIC/HEIF images. ([#19189](https://github.com/craftcms/cms/pull/19189))
-- Fixed a PHP error that occurred when merging canonical changes into a draft that contained nested elements that don’t track changes.
 - Fixed a bug where the `site`/`siteId` params weren’t being respected on eager-loaded `localized` queries. ([#18588](https://github.com/craftcms/cms/issues/18588))
 - Fixed a bug where it wasn’t possible to enter decimal values after tabbing into a Money field. ([#19156](https://github.com/craftcms/cms/issues/19156))
 - Fixed a bug where the search inputs on the Entry Types and Fields settings index pages were case-sensitive on PostgreSQL. ([#19158](https://github.com/craftcms/cms/issues/19158))
@@ -12,6 +11,7 @@
 - Fixed a bug where the “All entries” and “All users” sources weren’t available to be selected within Entries/Users field settings. ([#19185](https://github.com/craftcms/cms/discussions/19185))
 - Fixed a bug where database backups weren’t using the `--single-transaction` flag on MariaDB. ([#19191](https://github.com/craftcms/cms/issues/19191))
 - Fixed a bug where element indexes could show multiple table columns for the same nested fields within Content Block fields. ([#19197](https://github.com/craftcms/cms/pull/19197))
+- Fixed a PHP error that could occur when merging canonical changes into a draft that contained nested elements. ([#19187](https://github.com/craftcms/cms/pull/19187))
 
 ## 5.10.8.1 - 2026-06-23
 
