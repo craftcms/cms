@@ -3,7 +3,8 @@
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import ElementSources from '@/modules/elements/ElementSources.vue';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
-  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
+  import DataTable from '@/modules/elements/components/DataTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -12,7 +13,7 @@
     type RowSelectionState,
     useVueTable,
   } from '@tanstack/vue-table';
-  import {type Component, computed, ref} from 'vue';
+  import {computed, ref} from 'vue';
   import {
     type PaginationData,
     type SortItem,
@@ -175,36 +176,6 @@
     ...paginationConfig,
     enableMultiSort: false,
   });
-
-  // ElementCards and AdminTable render the same data via two different
-  // layouts; they share most props, but each has a couple of its own (`data`
-  // for cards, `spacing` for the table) that the other doesn't declare.
-  // Keeping those separate from `sharedProps` avoids leaking them as raw DOM
-  // attributes onto whichever component isn't rendered (neither sets
-  // `inheritAttrs: false`).
-  const indexComponent = computed<Component>(() =>
-    mode.value === 'cards' ? ElementCards : AdminTable
-  );
-
-  const sharedProps = computed(() => ({
-    table: elementTable,
-    selectable: true,
-    loading: loading.value,
-    from: props.pagination.from,
-    to: props.pagination.to,
-    total: props.pagination.total,
-    enableAdjustPageSize: true,
-    actions: props.actions,
-    elementType: props.elementType,
-    source: props.source?.key,
-    context: props.context,
-  }));
-
-  const modeSpecificProps = computed(() =>
-    mode.value === 'cards'
-      ? {data: props.data}
-      : {spacing: TableSpacing.Spacious}
-  );
 </script>
 
 <template>
@@ -237,12 +208,21 @@
       />
     </template>
 
-    <component
-      :is="indexComponent"
-      v-bind="{...sharedProps, ...modeSpecificProps}"
+    <BaseElementIndex
+      :table="elementTable"
+      :selectable="true"
+      :loading="loading"
+      :from="props.pagination.from"
+      :to="props.pagination.to"
+      :total="props.pagination.total"
+      :enable-adjust-page-size="true"
+      :actions="props.actions"
+      :element-type="props.elementType"
+      :source="props.source?.key"
+      :context="props.context"
       @action-performed="onActionPerformed"
     >
-      <template #table-header>
+      <template #header>
         <ElementIndexToolbar
           v-model:search="filters.form.search"
           v-model:status="filters.form.status"
@@ -258,7 +238,23 @@
           @reorder="reorder"
         />
       </template>
-    </component>
+      <template #body>
+        <ElementCards
+          v-if="mode === 'cards'"
+          :table="elementTable"
+          :data="props.data"
+          :selectable="true"
+          :loading="loading"
+        />
+        <DataTable
+          v-else
+          :table="elementTable"
+          :selectable="true"
+          :loading="loading"
+          :spacing="TableSpacing.Spacious"
+        />
+      </template>
+    </BaseElementIndex>
   </IndexLayout>
 </template>
 
