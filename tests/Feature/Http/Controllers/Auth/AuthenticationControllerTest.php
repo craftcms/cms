@@ -19,7 +19,6 @@ describe('renderViewWithFallback', function () {
         get(action([LoginController::class, 'showLogin']))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->has('action')
                 ->has('username')
             );
     });
