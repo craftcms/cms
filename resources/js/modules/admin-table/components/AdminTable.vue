@@ -80,7 +80,11 @@
       <DataTable
         v-bind="viewProps"
         @reorder="(s: number, f: number) => emit('reorder', s, f)"
-      />
+      >
+        <template #empty-row v-if="$slots['empty-row']">
+          <slot name="empty-row" />
+        </template>
+      </DataTable>
     </template>
   </BaseElementIndex>
 </template>
