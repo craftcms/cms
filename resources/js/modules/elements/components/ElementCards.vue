@@ -16,16 +16,18 @@
       readOnly?: boolean;
       loading?: boolean;
     }>(),
-    {data: () => [], selectable: false, loading: false},
+    {data: () => [], selectable: false, loading: false}
   );
 
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} = useElementIndexSelection(
-    () => props.table,
-    {selectable: () => props.selectable, readOnly, actions: () => []},
-  );
+  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} =
+    useElementIndexSelection(() => props.table, {
+      selectable: () => props.selectable,
+      readOnly,
+      actions: () => [],
+    });
 
   function rowFor(id: number | string) {
     return props.table.getRow(String(id));
@@ -42,7 +44,11 @@
     items?.[index]?.focus();
   }
 
-  function onCardKeydown(id: number | string, index: number, event: KeyboardEvent) {
+  function onCardKeydown(
+    id: number | string,
+    index: number,
+    event: KeyboardEvent
+  ) {
     if (!props.selectable) return;
     const target = event.currentTarget as HTMLElement;
     const last = props.data!.length - 1;
@@ -85,7 +91,9 @@
         .checked="table.getIsAllRowsSelected()"
         .indeterminate="table.getIsSomeRowsSelected()"
         .disabled="readOnly"
-        @model-value-changed="onToggleAllSelected(($event.target as HTMLInputElement).checked)"
+        @model-value-changed="
+          onToggleAllSelected(($event.target as HTMLInputElement).checked)
+        "
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
@@ -150,13 +158,5 @@
 
   .card-grid > li {
     position: relative;
-  }
-
-  // Placeholder keyboard-focus indicator for the roving card focus (cards are
-  // focusable via tabindex when selectable). Outset to wrap the card. Treatment
-  // is a stand-in — adjust later. Mirrors DataTable's row focus style.
-  .card-grid > li:focus-visible {
-    outline: 2px solid var(--c-text-link);
-    outline-offset: 2px;
   }
 </style>

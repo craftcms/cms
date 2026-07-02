@@ -181,7 +181,8 @@
         break;
       case 'ArrowDown':
         event.preventDefault();
-        if (event.shiftKey) extendSelectionTo(rows[Math.min(index + 1, rows.length - 1)]);
+        if (event.shiftKey)
+          extendSelectionTo(rows[Math.min(index + 1, rows.length - 1)]);
         focusRowByIndex(Math.min(index + 1, rows.length - 1), target);
         break;
       case 'ArrowUp':
@@ -433,13 +434,5 @@
 
   :deep(.row--dragging) {
     opacity: 0.4;
-  }
-
-  // Placeholder keyboard-focus indicator for the roving row focus (rows are
-  // focusable via tabindex when selectable). Inset offset so the outline isn't
-  // clipped by row/cell overflow. Treatment is a stand-in — adjust later.
-  :deep(.cp-table-row:focus-visible) {
-    outline: 2px solid var(--c-text-link);
-    outline-offset: -2px;
   }
 </style>
