@@ -50,7 +50,7 @@ export default css`
   }
 
   .card__header {
-    min-height: calc(1lh + 0.625rem);
+    min-height: 1lh;
     border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
     border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
     border-block-end-width: 1px;

@@ -35,7 +35,7 @@
       actions: () => [],
       source: null,
       context: 'index',
-    },
+    }
   );
 
   const emit = defineEmits<{
@@ -72,7 +72,10 @@
 </script>
 
 <template>
-  <BaseElementIndex v-bind="baseProps" @action-performed="emit('action-performed')">
+  <BaseElementIndex
+    v-bind="baseProps"
+    @action-performed="emit('action-performed')"
+  >
     <template #header v-if="$slots['table-header']">
       <slot name="table-header"></slot>
     </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed, ref, watch} from 'vue';
   import {usePage} from '@inertiajs/vue3';
-  import {t, Appearance} from '@craftcms/cp';
+  import {Appearance, t} from '@craftcms/cp';
   import Text from '@/common/components/Text.vue';
   import Select from '@/common/form/Select.vue';
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
@@ -32,7 +32,7 @@
       actions: () => [],
       source: null,
       context: 'index',
-    },
+    }
   );
 
   const emit = defineEmits<{'action-performed': []}>();
@@ -46,14 +46,11 @@
     showBulkActions,
     bulkActionsActive,
     clearSelection,
-  } = useElementIndexSelection(
-    () => props.table,
-    {
-      selectable: () => props.selectable,
-      readOnly,
-      actions: () => props.actions,
-    },
-  );
+  } = useElementIndexSelection(() => props.table, {
+    selectable: () => props.selectable,
+    readOnly,
+    actions: () => props.actions,
+  });
 
   function onActionPerformed() {
     clearSelection();
@@ -76,14 +73,14 @@
   const showPagination = computed(() => props.table.getPageCount() > 1);
   const showPageSize = computed(() => props.enableAdjustPageSize);
   const showDisplayedRows = computed(
-    () => props.from && props.to && props.total,
+    () => props.from && props.to && props.total
   );
   const showFooter = computed(
     () =>
       showPagination.value ||
       showPageSize.value ||
       showDisplayedRows.value ||
-      (showBulkActions.value && hasSelection.value),
+      (showBulkActions.value && hasSelection.value)
   );
 
   // --- ARIA live region ---
@@ -96,7 +93,7 @@
         liveMessage.value = t('{total, plural, =1{# item} other{# items}}', {
           total: props.total ?? 0,
         });
-    },
+    }
   );
   watch(selectedIds, (ids) => {
     liveMessage.value = ids.length
@@ -117,82 +114,102 @@
       <slot name="body"></slot>
     </div>
 
-    <div
-      class="element-index__footer"
-      :class="{'element-index__footer--has-selection': showBulkActions && hasSelection}"
-      v-if="showFooter"
-    >
-      <div class="element-index__footer-lead">
-        <BulkActionsBar
-          v-if="showBulkActions && hasSelection"
-          :selected-ids="selectedIds"
-          :actions="actions"
-          :element-type="elementType ?? ''"
-          :source="source"
-          :context="context"
-          @performed="onActionPerformed"
-          @clear="clearSelection"
-        />
-        <Text
-          v-else-if="showDisplayedRows"
-          template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
-          :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
-        />
-      </div>
-      <div class="flex gap-1">
-        <template v-if="showPagination && !bulkActionsActive">
-          <craft-button
-            type="button"
-            @click="table.previousPage()"
-            :disabled="!table.getCanPreviousPage()"
-            :appearance="Appearance.Plain"
-            icon
-            size="small"
-          >
-            <craft-icon name="chevron-left" :label="t('Previous page')"></craft-icon>
-          </craft-button>
-          <div class="flex items-center gap-1 mx-2">
-            {{ t('Page') }}
-            <craft-input
-              type="text"
-              v-model="pageIndexProxy"
-              maxlength="3"
-              :label="t('Current page')"
-              label-sr-only
-              center
+    <div class="element-index__footer" ref="indexFooter" v-if="showFooter">
+      <BulkActionsBar
+        v-if="showBulkActions && hasSelection"
+        :selected-ids="selectedIds"
+        :actions="actions"
+        :element-type="elementType ?? ''"
+        :source="source"
+        :context="context"
+        @performed="onActionPerformed"
+        @clear="clearSelection"
+      />
+      <div
+        v-show="!(showBulkActions && hasSelection)"
+        class="flex justify-between items-center w-full"
+      >
+        <div>
+          <Text
+            v-if="showDisplayedRows"
+            template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
+            :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
+          />
+        </div>
+        <div class="flex gap-1">
+          <template v-if="showPagination && !bulkActionsActive">
+            <craft-button
+              type="button"
+              @click="table.previousPage()"
+              :disabled="!table.getCanPreviousPage()"
+              :appearance="Appearance.Plain"
+              icon
               size="small"
-              style="width: 4ch"
+            >
+              <craft-icon
+                name="chevron-left"
+                :label="t('Previous page')"
+              ></craft-icon>
+            </craft-button>
+            <div class="flex items-center gap-1 mx-2">
+              {{ t('Page') }}
+              <craft-input
+                type="text"
+                v-model="pageIndexProxy"
+                maxlength="3"
+                :label="t('Current page')"
+                label-sr-only
+                center
+                size="small"
+                style="width: 4ch"
+              />
+              {{ t('of') }}
+              {{ table.getPageCount() }}
+            </div>
+            <craft-button
+              type="button"
+              @click="table.nextPage()"
+              :disabled="!table.getCanNextPage()"
+              size="small"
+              :appearance="Appearance.Plain"
+              icon
+            >
+              <craft-icon
+                name="chevron-right"
+                :label="t('Next page')"
+              ></craft-icon>
+            </craft-button>
+          </template>
+        </div>
+        <div class="flex gap-2 items-center">
+          <template v-if="showPageSize && !bulkActionsActive">
+            {{ t('Items per page:') }}
+            <Select
+              small
+              :options="pageSizeOptions!"
+              v-model="pageSizeProxy"
+              class="w-auto"
             />
-            {{ t('of') }}
-            {{ table.getPageCount() }}
-          </div>
-          <craft-button
-            type="button"
-            @click="table.nextPage()"
-            :disabled="!table.getCanNextPage()"
-            size="small"
-            :appearance="Appearance.Plain"
-            icon
-          >
-            <craft-icon name="chevron-right" :label="t('Next page')"></craft-icon>
-          </craft-button>
-        </template>
-      </div>
-      <div class="flex gap-2 items-center">
-        <template v-if="showPageSize && !bulkActionsActive">
-          {{ t('Items per page:') }}
-          <Select small :options="pageSizeOptions!" v-model="pageSizeProxy" class="w-auto" />
-        </template>
+          </template>
+        </div>
       </div>
     </div>
 
-    <span class="sr-only" role="status" aria-live="polite">{{ liveMessage }}</span>
+    <span class="sr-only" role="status" aria-live="polite">{{
+      liveMessage
+    }}</span>
   </div>
 </template>
 
 <style scoped lang="scss">
   .element-index {
     overflow-y: clip;
+  }
+
+  .element-index__header,
+  .element-index__footer {
+    background-color: var(--c-color-neutral-fill-quiet);
+    padding: var(--c-spacing-md);
   }
 
   .element-index__body {
@@ -203,10 +220,9 @@
     position: sticky;
     bottom: 0;
     z-index: 1;
-    background-color: var(--c-surface-default);
-  }
-
-  .element-index__footer--has-selection .element-index__footer-lead {
-    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+    min-height: calc(50rem / 16);
   }
 </style>

@@ -122,7 +122,9 @@ export default class CraftNavItem extends LitElement {
       >
         <craft-icon
           id="${this.id}-toggle-icon"
-          name="${this.subnavState === 'closed' ? 'chevron-down' : 'chevron-up'}"
+          name="${this.subnavState === 'closed'
+            ? 'chevron-down'
+            : 'chevron-up'}"
           style="font-size: calc(10rem / 16)"
           label="${t('Toggle subnavigation')}"
         ></craft-icon>

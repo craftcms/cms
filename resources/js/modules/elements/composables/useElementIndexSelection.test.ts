@@ -14,7 +14,7 @@ function makeSelection(): Ref<Record<string, boolean>> {
 function makeRow(
   id: number,
   selection: Ref<Record<string, boolean>>,
-  selected = false,
+  selected = false
 ) {
   const rowId = String(id);
   if (selected) {
@@ -43,12 +43,21 @@ function makeTable(rows: ReturnType<typeof makeRow>[]) {
   } as any;
 }
 
-const opts = (over = {}) => ({selectable: true, readOnly: false, actions: [], ...over});
+const opts = (over = {}) => ({
+  selectable: true,
+  readOnly: false,
+  actions: [],
+  ...over,
+});
 
 describe('useElementIndexSelection', () => {
   it('toggles a single row and sets the anchor', () => {
     const selection = makeSelection();
-    const rows = [makeRow(1, selection), makeRow(2, selection), makeRow(3, selection)];
+    const rows = [
+      makeRow(1, selection),
+      makeRow(2, selection),
+      makeRow(3, selection),
+    ];
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
@@ -74,7 +83,12 @@ describe('useElementIndexSelection', () => {
     s.selectRow(rows[0]! as any, {checked: true}); // anchor = 0
     s.selectRow(rows[2]! as any, {checked: true, shiftKey: true});
 
-    expect(rows.map((r) => r.getIsSelected())).toEqual([true, true, true, false]);
+    expect(rows.map((r) => r.getIsSelected())).toEqual([
+      true,
+      true,
+      true,
+      false,
+    ]);
   });
 
   it('ignores a programmatic change where checked already matches (no shift)', () => {

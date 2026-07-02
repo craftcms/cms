@@ -79,10 +79,7 @@
 
 <template>
   <Pane :padding="0" appearance="raised">
-    <AdminTable
-      :table="table"
-      :reorderable="false"
-    />
+    <AdminTable :table="table" :reorderable="false" />
   </Pane>
   <div
     v-if="!disabled"

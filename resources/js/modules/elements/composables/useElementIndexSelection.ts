@@ -1,4 +1,4 @@
-import {computed, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
+import {computed, type MaybeRefOrGetter, ref, type Ref, toValue} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 
@@ -10,7 +10,7 @@ export interface ElementIndexSelectionOptions {
 
 export function useElementIndexSelection(
   table: MaybeRefOrGetter<Table<any>>,
-  options: ElementIndexSelectionOptions,
+  options: ElementIndexSelectionOptions
 ) {
   // The anchor is the last individually-toggled row; shift-click selects the
   // inclusive range between it and the clicked row in current row-model order.
@@ -25,13 +25,13 @@ export function useElementIndexSelection(
   });
   const hasSelection = computed(() => selectedIds.value.length > 0);
   const hasBulkActions = computed(
-    () => (toValue(options.actions)?.length ?? 0) > 0,
+    () => (toValue(options.actions)?.length ?? 0) > 0
   );
   const showBulkActions = computed(
-    () => toValue(options.selectable) && hasBulkActions.value,
+    () => toValue(options.selectable) && hasBulkActions.value
   );
   const bulkActionsActive = computed(
-    () => showBulkActions.value && hasSelection.value,
+    () => showBulkActions.value && hasSelection.value
   );
 
   function clearSelection() {
@@ -56,7 +56,7 @@ export function useElementIndexSelection(
 
   function selectRow(
     row: Row<any>,
-    {checked, shiftKey = false}: {checked: boolean; shiftKey?: boolean},
+    {checked, shiftKey = false}: {checked: boolean; shiftKey?: boolean}
   ) {
     if (readOnly.value) return;
     const rows = toValue(table).getRowModel().rows;
