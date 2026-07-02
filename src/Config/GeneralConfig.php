@@ -1617,6 +1617,7 @@ class GeneralConfig extends BaseConfig
      * - `enabled`: Whether the provider should be available. Defaults to `true`.
      * - `name`: A human-friendly provider name.
      * - `label`: The rendered button label.
+     * - `icon`: The control panel brand icon name.
      * - `scopes`: Additional Socialite scopes.
      * - `with`: Additional Socialite request parameters.
      * - `stateless`: Whether the provider should bypass Socialite state checks.

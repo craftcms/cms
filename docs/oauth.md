@@ -54,6 +54,7 @@ Each provider supports the following keys:
 - `clientSecret` optional for named drivers when already defined in Laravel's `services` config. Required for provider classes.
 - `name` optional. Human-friendly provider name.
 - `label` optional. Button label. Defaults to `Sign in with {name}`.
+- `icon` optional. Control panel brand icon name for the sign-in providers screen.
 - `scopes` optional. Array of scopes passed to Socialite.
 - `with` optional. Array of extra request parameters passed to the provider.
 - `stateless` optional. Set to `true` to bypass Socialite state validation.
@@ -83,6 +84,7 @@ return GeneralConfig::create()
             'clientId' => env('GITHUB_CLIENT_ID'),
             'clientSecret' => env('GITHUB_CLIENT_SECRET'),
             'label' => 'Continue with GitHub',
+            'icon' => 'github',
             'scopes' => ['read:user', 'user:email'],
             'groups' => ['members', 'editors'],
             'createsUsers' => true,
