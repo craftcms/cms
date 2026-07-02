@@ -22,7 +22,7 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {onToggleAllSelected, selectRow} = useElementIndexSelection(
+  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} = useElementIndexSelection(
     () => props.table,
     {selectable: () => props.selectable, readOnly, actions: () => []},
   );
@@ -34,6 +34,43 @@
   const pendingShiftKey = ref(false);
   function rememberShift(event: MouseEvent) {
     pendingShiftKey.value = event.shiftKey;
+  }
+
+  function focusCardByIndex(index: number, el: HTMLElement) {
+    const list = el.closest('ul.card-grid');
+    const items = list?.querySelectorAll<HTMLElement>(':scope > li[tabindex]');
+    items?.[index]?.focus();
+  }
+
+  function onCardKeydown(id: number | string, index: number, event: KeyboardEvent) {
+    if (!props.selectable) return;
+    const target = event.currentTarget as HTMLElement;
+    const last = props.data!.length - 1;
+    switch (event.key) {
+      case ' ':
+      case 'Enter':
+        event.preventDefault();
+        toggleRow(rowFor(id));
+        break;
+      case 'ArrowRight':
+      case 'ArrowDown': {
+        event.preventDefault();
+        const nextIndex = Math.min(index + 1, last);
+        const nextEl = props.data![nextIndex];
+        if (event.shiftKey && nextEl) extendSelectionTo(rowFor(nextEl.id));
+        focusCardByIndex(nextIndex, target);
+        break;
+      }
+      case 'ArrowLeft':
+      case 'ArrowUp': {
+        event.preventDefault();
+        const prevIndex = Math.max(index - 1, 0);
+        const prevEl = props.data![prevIndex];
+        if (event.shiftKey && prevEl) extendSelectionTo(rowFor(prevEl.id));
+        focusCardByIndex(prevIndex, target);
+        break;
+      }
+    }
   }
 </script>
 
@@ -56,9 +93,11 @@
 
     <ul class="card-grid">
       <li
-        v-for="element in data"
+        v-for="(element, cardIdx) in data"
         :key="element.id"
         :data-id="element.id"
+        :tabindex="selectable ? 0 : undefined"
+        @keydown="onCardKeydown(element.id, cardIdx, $event)"
         :class="{element: true, sel: rowFor(element.id)?.getIsSelected()}"
       >
         <craft-card
