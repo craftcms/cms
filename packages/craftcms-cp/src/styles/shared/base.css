@@ -342,25 +342,3 @@ Modify with `cp-table--auto` to apply table-layout: auto
 .cp-table--spacious {
   --_row-height: calc(50rem / 16);
 }
-
-.cp-table-body {
-  position: relative;
-}
-
-.cp-table-header,
-.cp-table-footer {
-  padding: var(--c-spacing-md);
-  background-color: var(--c-color-neutral-fill-quiet);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.cp-table-footer {
-  border-block-start-color: var(--c-color-neutral-border-quiet);
-}
-
-.cp-table-body__header {
-  padding: var(--c-spacing-md);
-  height: calc(50rem / 16);
-}
