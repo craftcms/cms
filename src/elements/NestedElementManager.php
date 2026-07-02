@@ -26,7 +26,6 @@ use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
@@ -1371,16 +1370,13 @@ JS, [
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
                             $elementsService->deleteElement($derivativeElement);
                         }
-                    } elseif (!$derivativeElement->trashed && ElementHelper::isOutdated($derivativeElement)) {
-                        if ($derivativeElement::trackChanges()) {
-                            // Merge the upstream changes into the derivative nested element
-                            $elementsService->mergeCanonicalChanges($derivativeElement);
-                        } else {
-                            // No change tracking just mark it as merged so it's no longer outdated
-                            Db::update(Table::ELEMENTS, [
-                                'dateLastMerged' => Db::prepareDateForDb(DateTimeHelper::now()),
-                            ], ['id' => $derivativeElement->id]);
-                        }
+                    } elseif (
+                        !$derivativeElement->trashed &&
+                        $derivativeElement::trackChanges() &&
+                        ElementHelper::isOutdated($derivativeElement)
+                    ) {
+                        // Merge the upstream changes into the derivative nested element
+                        $elementsService->mergeCanonicalChanges($derivativeElement);
                     }
                 } elseif (!$canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
                     // This is a new nested element, so duplicate its ownership into the derivative
