@@ -1,31 +1,44 @@
 import {describe, expect, it} from 'vitest';
-import {ref} from 'vue';
+import {ref, type Ref} from 'vue';
 import {useElementIndexSelection} from './useElementIndexSelection';
 
-// Minimal TanStack-table stand-in: rows own their selected state.
-function makeRow(id: number, selected = false) {
-  let sel = selected;
+// Minimal TanStack-table stand-in: row-selection state lives in a single Vue
+// ref (matching TanStack's `RowSelectionState`, a `Record<rowId, boolean>`),
+// mirroring how the real table's `onRowSelectionChange` writes to a ref that
+// `state.rowSelection` reads back. This lets plain `computed`s genuinely
+// re-track, the same way they do in production.
+function makeSelection(): Ref<Record<string, boolean>> {
+  return ref({});
+}
+
+function makeRow(
+  id: number,
+  selection: Ref<Record<string, boolean>>,
+  selected = false,
+) {
+  const rowId = String(id);
+  if (selected) {
+    selection.value = {...selection.value, [rowId]: true};
+  }
   return {
-    id: String(id),
+    id: rowId,
     original: {id},
-    getIsSelected: () => sel,
+    getIsSelected: () => !!selection.value[rowId],
     toggleSelected: (v?: boolean) => {
-      sel = v ?? !sel;
+      const next = v ?? !selection.value[rowId];
+      selection.value = {...selection.value, [rowId]: next};
     },
   };
 }
 
 function makeTable(rows: ReturnType<typeof makeRow>[]) {
-  let allToggled: boolean | null = null;
   return {
     getRowModel: () => ({rows}),
     getSelectedRowModel: () => ({rows: rows.filter((r) => r.getIsSelected())}),
     getIsAllRowsSelected: () => rows.every((r) => r.getIsSelected()),
     toggleAllRowsSelected: (v: boolean) => {
-      allToggled = v;
       rows.forEach((r) => r.toggleSelected(v));
     },
-    _allToggled: () => allToggled,
     resetRowSelection: () => rows.forEach((r) => r.toggleSelected(false)),
   } as any;
 }
@@ -34,7 +47,8 @@ const opts = (over = {}) => ({selectable: true, readOnly: false, actions: [], ..
 
 describe('useElementIndexSelection', () => {
   it('toggles a single row and sets the anchor', () => {
-    const rows = [makeRow(1), makeRow(2), makeRow(3)];
+    const selection = makeSelection();
+    const rows = [makeRow(1, selection), makeRow(2, selection), makeRow(3, selection)];
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
@@ -47,7 +61,13 @@ describe('useElementIndexSelection', () => {
   });
 
   it('shift-clicking selects the inclusive range from the anchor', () => {
-    const rows = [makeRow(1), makeRow(2), makeRow(3), makeRow(4)];
+    const selection = makeSelection();
+    const rows = [
+      makeRow(1, selection),
+      makeRow(2, selection),
+      makeRow(3, selection),
+      makeRow(4, selection),
+    ];
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
@@ -58,7 +78,8 @@ describe('useElementIndexSelection', () => {
   });
 
   it('ignores a programmatic change where checked already matches (no shift)', () => {
-    const rows = [makeRow(1, true)];
+    const selection = makeSelection();
+    const rows = [makeRow(1, selection, true)];
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
@@ -67,7 +88,8 @@ describe('useElementIndexSelection', () => {
   });
 
   it('does nothing when read-only', () => {
-    const rows = [makeRow(1)];
+    const selection = makeSelection();
+    const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts({readOnly: true}));
 
@@ -78,7 +100,8 @@ describe('useElementIndexSelection', () => {
   });
 
   it('computes bulk-action visibility from selectable + actions + selection', () => {
-    const rows = [makeRow(1)];
+    const selection = makeSelection();
+    const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
     const actions = ref<any[]>([{label: 'Delete'}]);
     const s = useElementIndexSelection(table, opts({actions}));

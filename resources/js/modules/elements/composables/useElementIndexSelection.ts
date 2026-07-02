@@ -18,13 +18,7 @@ export function useElementIndexSelection(
 
   const readOnly = computed(() => toValue(options.readOnly));
 
-  // Use a trigger to force computed retriggering when table state changes
-  const selectionVersion = ref(0);
-
   const selectedIds = computed<Array<string | number>>(() => {
-    // Access the trigger to create a dependency
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    selectionVersion.value;
     const t = toValue(table);
     const selectedRows = t.getSelectedRowModel().rows;
     return selectedRows.map((row) => row.original.id);
@@ -42,7 +36,6 @@ export function useElementIndexSelection(
 
   function clearSelection() {
     toValue(table).resetRowSelection();
-    selectionVersion.value++;
   }
 
   // craft-checkbox (Lion) fires `model-value-changed` on programmatic `.checked`
@@ -52,7 +45,6 @@ export function useElementIndexSelection(
     const t = toValue(table);
     if (checked !== t.getIsAllRowsSelected()) {
       t.toggleAllRowsSelected(checked);
-      selectionVersion.value++;
     }
   }
 
@@ -78,7 +70,6 @@ export function useElementIndexSelection(
       for (let i = start; i <= end; i++) {
         rows[i]!.toggleSelected(checked);
       }
-      selectionVersion.value++;
       return; // anchor is preserved across a range select
     }
 
@@ -86,14 +77,12 @@ export function useElementIndexSelection(
     if (checked === row.getIsSelected()) return;
     row.toggleSelected(checked);
     anchorIndex.value = index;
-    selectionVersion.value++;
   }
 
   function toggleRow(row: Row<any>) {
     if (readOnly.value) return;
     row.toggleSelected();
     anchorIndex.value = rowIndex(row);
-    selectionVersion.value++;
   }
 
   function extendSelectionTo(row: Row<any>) {
@@ -105,7 +94,6 @@ export function useElementIndexSelection(
     for (let i = start; i <= end; i++) {
       rows[i]!.toggleSelected(true);
     }
-    selectionVersion.value++;
   }
 
   return {
