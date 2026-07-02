@@ -133,4 +133,10 @@ JS, [
 
         return array_merge($element->errors()->get('email'), $element->errors()->get('unverifiedEmail'));
     }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        return true;
+    }
 }

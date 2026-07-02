@@ -45,13 +45,13 @@ class ImportHelper
         if ($fieldLayout) {
             $allElements = $fieldLayout->getAllElements();
 
-            foreach ($allElements as $element) {
-                if ($element instanceof ImportableFieldLayoutElementInterface) {
+            foreach ($allElements as $fieldLayoutElement) {
+                if ($fieldLayoutElement instanceof ImportableFieldLayoutElementInterface) {
                     // get element's fields for mapping; for example,
                     // lat/long has two fields;
                     // addresses field has (by default) label, country code and address field which then contains a bunch of other fields;
                     // and custom fields have yet another way of getting this
-                    $cols[] = $element->getFieldsForMapping($fieldLayout, $ownerField, $provider, $prefix);
+                    $cols[] = $fieldLayoutElement->getFieldsForMapping($fieldLayout, $ownerField, $provider, $prefix);
                 }
             }
         }
@@ -91,7 +91,7 @@ class ImportHelper
                 $prefixedHandle = $namePrefix."[$attribute]";
             }
         } else {
-            $prefixedHandle = $attribute;
+            $prefixedHandle = ! empty($prefix) ? $prefix."[$attribute]" : $attribute;
         }
 
         $prefixedHandleForMap = Html::namespaceInputName($prefixedHandle, 'map');

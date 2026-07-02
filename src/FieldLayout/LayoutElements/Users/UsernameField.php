@@ -84,4 +84,10 @@ class UsernameField extends TextField implements ImportableFieldLayoutElementInt
             'autocomplete' => $element->getIsCurrent() ? 'username' : 'off',
         ];
     }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        return true;
+    }
 }
