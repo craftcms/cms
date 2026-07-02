@@ -11,13 +11,15 @@ it('returns public properties and public method values', function () {
 
         public array $items;
 
-        private string $secret = 'hidden';
-
-        public function __construct() {}
+        public function __construct(private readonly string $secret = 'hidden') {}
 
         public function status(): string
         {
-            return 'ready';
+            if ($this->secret === 'hidden') {
+                return 'ready';
+            }
+
+            return 'not-ready';
         }
 
         public static function ignored(): string
