@@ -151,4 +151,12 @@
   .card-grid > li {
     position: relative;
   }
+
+  // Placeholder keyboard-focus indicator for the roving card focus (cards are
+  // focusable via tabindex when selectable). Outset to wrap the card. Treatment
+  // is a stand-in — adjust later. Mirrors DataTable's row focus style.
+  .card-grid > li:focus-visible {
+    outline: 2px solid var(--c-text-link);
+    outline-offset: 2px;
+  }
 </style>

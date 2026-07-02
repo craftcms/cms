@@ -434,4 +434,12 @@
   :deep(.row--dragging) {
     opacity: 0.4;
   }
+
+  // Placeholder keyboard-focus indicator for the roving row focus (rows are
+  // focusable via tabindex when selectable). Inset offset so the outline isn't
+  // clipped by row/cell overflow. Treatment is a stand-in — adjust later.
+  :deep(.cp-table-row:focus-visible) {
+    outline: 2px solid var(--c-text-link);
+    outline-offset: -2px;
+  }
 </style>
