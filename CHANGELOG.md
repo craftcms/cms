@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.10 - 2026-07-03
 
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
