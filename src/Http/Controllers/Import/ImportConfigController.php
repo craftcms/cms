@@ -557,7 +557,7 @@ class ImportConfigController
                         ->redirectUrl('import/configs')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'import/configs/{handle}',
-                            'shortcut' => ! $import->isElementImport(),
+                            'shortcut' => ! $import?->isElementImport(),
                             'retainScroll' => true,
                         ])
                         ->addAltAction(t('Delete'), [
@@ -569,7 +569,7 @@ class ImportConfigController
                             ]),
                         ]);
 
-                    if ($import->isElementImport()) {
+                    if ($import?->isElementImport()) {
                         $response->addAltAction(t('Save and configure field layout provider'), [
                             'redirect' => 'import/configs/{handle}/field-layout-provider',
                             'shortcut' => true,

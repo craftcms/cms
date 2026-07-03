@@ -27,6 +27,7 @@ class ImportHelper
             $arguments = $attribute->getArguments();
 
             return [
+                'property' => $property->getName(),
                 'name' => $arguments[0],
                 'label' => $arguments[1] ?? $arguments[0],
                 'excludeFromUiMapping' => $arguments[2] ?? false,
@@ -35,6 +36,20 @@ class ImportHelper
                 'defaultValue' => $property->getDefaultValue(),
             ];
         }, $properties);
+    }
+
+    public static function getImportableContainerProperties(BaseImporter $config): array
+    {
+        $importableProperties = self::getImportableProperties($config);
+        $importableContainerProperties = [];
+
+        foreach ($importableProperties as $property) {
+            if ($property['isContainer']) {
+                $importableContainerProperties[] = $property;
+            }
+        }
+
+        return $importableContainerProperties;
     }
 
     public static function getDestinationColsForFieldLayout(

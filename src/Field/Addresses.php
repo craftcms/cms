@@ -376,7 +376,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $query;
     }
 
-    private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
+    public function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Get the old addresses
         if ($element->id) {
@@ -922,6 +922,14 @@ JS, [
         $i = 0;
 
         foreach ($value as $address) {
+            if (! is_array($address)) {
+                continue;
+            }
+
+            if (empty(array_filter($address))) {
+                continue;
+            }
+
             $addressElement = null;
             $newKey = null;
 
@@ -930,8 +938,8 @@ JS, [
             if (($rootOwner?->id)) {
                 $criteria = [];
 
-                if (! empty($entry['matchCriteria'])) {
-                    $criteria = $entry['matchCriteria'];
+                if (! empty($address['matchCriteria'])) {
+                    $criteria = $address['matchCriteria'];
                 }
 
                 if (! empty($criteria)) {

@@ -511,8 +511,8 @@ class Import
             }
             if (array_is_list($data[$key]) && ! array_is_list($value)) {
                 foreach ($data[$key] as &$item) {
-                    if (is_array($item) && isset($item['type'], $value[$item['type']])) {
-                        $this->resolveMatchCriteria($item, $value[$item['type']]);
+                    if (is_array($item) /* && isset($item['type'], $value[$item['type']]) */) {
+                        $this->resolveMatchCriteria($item, $criteria[$key]/* $value[$item['type']] */);
                     }
                 }
                 unset($item);

@@ -112,7 +112,7 @@ it('recursively decodes a JSON-encoded string element inside an array', function
 // getPrefixedHandlesForMapping – third return value
 
 it('returns the handle split into path-part segments as the third return value', function () {
-    [,,, $parts] = ImportHelper::getPrefixedHandlesForMapping('title', null, null, null, null, null);
+    [,,, $parts] = ImportHelper::getPrefixedHandlesForMapping('title', null, null, null, null);
 
     expect($parts)->toBe(['title']);
 });
@@ -131,10 +131,10 @@ it('leaves unmapped keys in the output', function () {
     expect($result)->toBe(['b' => 1, 'c' => 2]);
 });
 
-it('sets a key to null when the rule is null', function () {
+it('doesn’t set a key when the rule is null', function () {
     $result = ImportHelper::remapData(['b' => null], ['a' => 1]);
 
-    expect($result['b'])->toBeNull();
+    expect(array_keys($result))->not()->toContain('b');
     expect($result['a'])->toBe(1);
 });
 

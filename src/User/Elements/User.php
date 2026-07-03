@@ -22,10 +22,12 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
+use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -35,6 +37,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -75,6 +78,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Traits\Macroable;
@@ -213,7 +217,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var bool Admin
      */
     #[AllowedInSandbox]
-    #[Importable('admin', 'Is Admin?', false, false, false)]
+    #[Importable('admin', 'Is Admin?', canBeMatchCriteria: false)]
     public bool $admin = false;
 
     /**
@@ -231,14 +235,14 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var string|null Password
      */
-    #[Importable('password', 'Password', false, false, false)]
+    #[Importable('password', 'Password', canBeMatchCriteria: false)]
     public ?string $password = null;
 
     /**
      * @var int|null Affiliated site ID
      */
     #[AllowedInSandbox]
-    #[Importable('affiliatedSiteId', 'Affiliated Site ID', false, false, false)]
+    #[Importable('affiliatedSiteId', 'Affiliated Site ID', canBeMatchCriteria: false)]
     public ?int $affiliatedSiteId = null;
 
     /**
@@ -270,7 +274,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var bool Password reset required
      */
-    #[Importable('passwordResetRequired', 'Password Reset Required?', false, false, false)]
+    #[Importable('passwordResetRequired', 'Password Reset Required?', canBeMatchCriteria: false)]
     public bool $passwordResetRequired = false;
 
     /**
@@ -342,7 +346,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @see setAttributesFromRequest()
      * @see afterSave()
      */
-    #[Importable('sendVerificationEmailAfterRequest', 'Send Verification Email?', false, false, false)]
     private bool $sendVerificationEmailAfterRequest = false;
 
     public function __construct($config = [])
@@ -2028,5 +2031,26 @@ JS, [
             ),
             default => null
         };
+    }
+
+    public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $config): void
+    {
+        // user addresses are super-special; they're kind of the same as Addresses field and technically they are nested elements,
+        // but when added to User element, they're not "taken care of" by `NestedElementManager->maintainNestedElements()`;
+        // that's why we have to prep them and then save them once we're sure that the User they belong to actually exists;
+        if ($attribute['name'] === 'addresses' && isset($item['addresses'])) {
+            $addressesField = new Addresses;
+            $addresses = ElementCollection::make($addressesField->normalizeValueForImport($item['addresses'], $config, $this));
+            $this->_addresses = $addresses;
+
+            Event::listen(function (ElementSaved $event) use ($addressesField) {
+                if ($event->element === $this && $this->_addresses->isNotEmpty()) {
+                    $addresses = $addressesField->createAddressesFromSerializedData($this->_addresses->all(), $event->element, true);
+                    foreach ($addresses as $address) {
+                        Elements::saveElement($address);
+                    }
+                }
+            });
+        }
     }
 }

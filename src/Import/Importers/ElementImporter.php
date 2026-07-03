@@ -336,7 +336,7 @@ class ElementImporter extends BaseImporter
         $item = app(Import::class)->processData($this, $data, $element);
 
         $attributeHandles = $element->attributes();
-        // $fieldHandles has custom and native field - basically all field layout elements
+        // $fieldHandles has custom and native fields - basically all field layout elements
         $fieldHandles = array_diff(array_keys($item), $attributeHandles);
         $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
         $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
@@ -347,6 +347,14 @@ class ElementImporter extends BaseImporter
         $fields = $this->normalizeFields($element, $fields);
 
         $element->setFieldValues($fields);
+
+        // now get attributes that are containers - those need special processing
+        $containerAttributes = ImportHelper::getImportableContainerProperties($this);
+        foreach ($containerAttributes as $attribute) {
+            if (isset($item[$attribute['name']]) && method_exists($element, 'importIntoContainerAttribute')) {
+                $element->importIntoContainerAttribute($attribute, $item, $this);
+            }
+        }
 
         Elements::saveElement($element);
     }
