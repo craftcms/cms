@@ -12,6 +12,8 @@
 - Fixed a bug where the login page would show a CSRF token mismatch on http requests
 - Fixed an error that could occur during Craft 6 upgrades when the `migrations` table was missing its `track` column. ([#19168](https://github.com/craftcms/cms/pull/19168))
 - Fixed an error that occurred when saving Users source settings after selecting the Groups table column. ([#19184](https://github.com/craftcms/cms/pull/19184))
+- Fixed a bug where database backups weren’t using the `--single-transaction` or `--column-statistics=0` flags on MySQL.
+- Fixed a bug where Content Block fields’ nested fields weren’t available as table columns on element indexes.
 
 ## 6.0.0-alpha.9 - 2026-06-23
 
