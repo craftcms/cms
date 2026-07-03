@@ -268,7 +268,8 @@ class DashboardController extends Controller
     {
         $url = $this->request->getRequiredBodyParam('url');
         $data = $this->request->getRequiredBodyParam('data');
-        Craft::$app->getCache()->set("feed:$url", $data);
+        $key = sprintf('feed:%s:%s', static::currentUser()->id, $url);
+        Craft::$app->getCache()->set($key, $data);
         return $this->asSuccess();
     }
 

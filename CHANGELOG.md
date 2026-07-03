@@ -17,6 +17,8 @@
 - Fixed an error that could occur when applying project config changes, if a site group was deleted. ([#19076](https://github.com/craftcms/cms/issues/19076))
 - Fixed an error that could occur when nested Matrix entries were copied. ([#19195](https://github.com/craftcms/cms/issues/19195))
 - Fixed a bug where project config YAML files could include component name comments with trailing whitespace. ([#19198](https://github.com/craftcms/cms/pull/19198))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) cache poisoning vulnerability.
 
 ## 5.10.8.1 - 2026-06-23
 
