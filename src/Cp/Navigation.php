@@ -103,7 +103,7 @@ readonly class Navigation
 
             $navItems->add(new NavItem()
                 ->label(t('Import'))
-                ->url('importusers')
+                ->url('import')
                 ->icon('arrow-up-to-bracket')
                 ->subnav($subNavItems->all())
             );
