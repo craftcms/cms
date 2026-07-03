@@ -40,8 +40,9 @@ class ControllerRoute
         );
 
         $route->bind($request);
+        $route->setParameter('element', $element);
 
-        foreach ($this->routeParams($element) as $name => $value) {
+        foreach ($this->params as $name => $value) {
             $route->setParameter($name, $value);
         }
 
@@ -55,16 +56,5 @@ class ControllerRoute
             ->then(fn () => $route->run());
 
         return $router->prepareResponse($request, $response);
-    }
-
-    private function routeParams(ElementInterface $element): array
-    {
-        $params = ['element' => $element];
-
-        if ($refHandle = $element::refHandle()) {
-            $params[$refHandle] = $element;
-        }
-
-        return $params + $this->params;
     }
 }
