@@ -775,22 +775,24 @@
           );
 
         const $pasteBtn = $buttons.filter('[data-action="paste"]');
-        const copiedElements = Craft.cp.getCopiedElements();
-        const showPasteButton =
-          copiedElements.length && this.matrix.canPaste(copiedElements);
-        if (showPasteButton) {
-          this.actionDisclosure.showItem($pasteBtn[0]);
-          $pasteBtn.children('.menu-item-label').text(
-            copiedElements.length === 1
-              ? Craft.t('app', 'Paste {type} above', {
-                  type: Craft.t('app', 'block'),
-                })
-              : Craft.t('app', 'Paste {type} above', {
-                  type: Craft.t('app', 'blocks'),
-                })
-          );
-        } else {
-          this.actionDisclosure.hideItem($pasteBtn[0]);
+        if ($pasteBtn.length) {
+          const copiedElements = Craft.cp.getCopiedElements();
+          const showPasteButton =
+            copiedElements.length && this.matrix.canPaste(copiedElements);
+          if (showPasteButton) {
+            this.actionDisclosure.showItem($pasteBtn[0]);
+            $pasteBtn.children('.menu-item-label').text(
+              copiedElements.length === 1
+                ? Craft.t('app', 'Paste {type} above', {
+                    type: Craft.t('app', 'block'),
+                  })
+                : Craft.t('app', 'Paste {type} above', {
+                    type: Craft.t('app', 'blocks'),
+                  })
+            );
+          } else {
+            this.actionDisclosure.hideItem($pasteBtn[0]);
+          }
         }
       });
 
