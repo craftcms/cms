@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `craft\services\Security::isRestrictedDir()`. ([#19179](https://github.com/craftcms/cms/pull/19179))
 - `craft\helpers\Image::imageSizeByStream()` now supports WebP, AVIF, and HEIC/HEIF images. ([#19189](https://github.com/craftcms/cms/pull/19189))
 - `craft\services\Sites::getGroupById()` now has a `$withTrashed` argument.
 - Fixed a bug where the `site`/`siteId` params weren’t being respected on eager-loaded `localized` queries. ([#18588](https://github.com/craftcms/cms/issues/18588))
