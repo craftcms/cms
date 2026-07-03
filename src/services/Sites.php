@@ -232,11 +232,28 @@ class Sites extends Component
      * Returns a site group by its ID.
      *
      * @param int $groupId The site group’s ID
+     * @param bool $withTrashed
      * @return SiteGroup|null The site group, or null if it doesn’t exist
      */
-    public function getGroupById(int $groupId): ?SiteGroup
+    public function getGroupById(int $groupId, bool $withTrashed = false): ?SiteGroup
     {
-        return $this->_groups()->firstWhere('id', $groupId);
+        $group = $this->_groups()->firstWhere('id', $groupId);
+
+        if (!$group && $withTrashed) {
+            /** @var SiteGroupRecord|null $record */
+            $record = SiteGroupRecord::findWithTrashed()
+                ->andWhere(['id' => $groupId])
+                ->one();
+            if ($record) {
+                $group = new SiteGroup($record->toArray([
+                    'id',
+                    'name',
+                    'uid',
+                ]));
+            }
+        }
+
+        return $group;
     }
 
     /**
@@ -1207,7 +1224,6 @@ class Sites extends Component
             ->from(['s' => Table::SITES])
             ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
             ->where(['s.dateDeleted' => null])
-            ->andWhere(['sg.dateDeleted' => null])
             ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC, 's.id' => SORT_ASC])
             ->all();
 
