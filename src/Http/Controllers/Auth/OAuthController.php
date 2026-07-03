@@ -52,7 +52,11 @@ readonly class OAuthController extends AuthenticationController
             $identity = $oauthManager->resolveIdentity($definition, $socialiteUser);
 
             if ($connectRequest = $this->pullConnectRequest($request)) {
-                return $this->connectResponse($request, $connectRequest, $definition, $identity, $oauthManager);
+                try {
+                    return $this->connectResponse($request, $connectRequest, $definition, $identity, $oauthManager);
+                } catch (Throwable $e) {
+                    return $this->connectFailedResponse(t('Authentication failed.'), $e);
+                }
             }
 
             $user = $oauthManager->resolveUser($definition, $socialiteUser, $identity);
