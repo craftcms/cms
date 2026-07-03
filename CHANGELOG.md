@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.18.4 - 2026-07-03
 
 - `craft\helpers\Image::imageSizeByStream()` now supports WebP, AVIF, and HEIC/HEIF images. ([#19189](https://github.com/craftcms/cms/pull/19189))
 - Fixed a bug where database backups weren’t using the `--single-transaction` flag on MariaDB. ([#19191](https://github.com/craftcms/cms/issues/19191))
