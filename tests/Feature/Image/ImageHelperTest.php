@@ -24,7 +24,13 @@ beforeEach(function () {
         'craft-logo.svg',
         'dirty-svg.svg',
         'empty-file.text',
+        'example-avif.avif',
         'example-gif.gif',
+        'example-heic.heic',
+        'example-heif.heif',
+        'example-webp-alpha.webp',
+        'example-webp-lossless.webp',
+        'example-webp.webp',
         'gng.svg',
         'google.png',
         'ign.jpg',
@@ -214,11 +220,37 @@ it('returns image dimensions from supported stream signatures', function (array|
     [[400, 300], 'example-gif.gif'],
     [[960, 640], 'background.jpg'],
     [[200, 200], 'google.png'],
+    [[320, 240], 'example-webp.webp'],
+    [[640, 480], 'example-webp-lossless.webp'],
+    [[800, 600], 'example-webp-alpha.webp'],
+    [[572, 428], 'example-heic.heic'],
+    [[128, 72], 'example-heif.heif'],
+    [[640, 480], 'example-avif.avif'],
     [false, 'craft-logo.svg'],
 ]);
 
 it('throws for non-resource stream input', function () {
     expect(fn () => ImageHelper::imageSizeByStream(1))->toThrow(TypeError::class);
+});
+
+it('uses the primary item property for ISO BMFF images', function () {
+    $stream = isoBmffTestStream([[10, 10], [640, 480]], [2]);
+
+    try {
+        expect(ImageHelper::imageSizeByStream($stream))->toBe([640, 480]);
+    } finally {
+        fclose($stream);
+    }
+});
+
+it('rejects ambiguous ISO BMFF properties', function () {
+    $stream = isoBmffTestStream([[10, 10], [640, 480]]);
+
+    try {
+        expect(ImageHelper::imageSizeByStream($stream))->toBeFalse();
+    } finally {
+        fclose($stream);
+    }
 });
 
 it('returns empty dimensions for malformed stream structures', function (string $file) {
@@ -275,3 +307,50 @@ it('cleans exif data from imagick images under both config modes', function () {
         Cms::config()->preserveExifData = $originalPreserveExif;
     }
 });
+
+/**
+ * @param  array<array{int,int}>  $propertyDimensions
+ * @param  int[]  $primaryPropertyIndices
+ * @return resource
+ */
+function isoBmffTestStream(array $propertyDimensions, array $primaryPropertyIndices = [])
+{
+    $stream = fopen('php://memory', 'r+');
+    fwrite($stream, isoBmffTestData($propertyDimensions, $primaryPropertyIndices));
+    rewind($stream);
+
+    return $stream;
+}
+
+/**
+ * @param  array<array{int,int}>  $propertyDimensions
+ * @param  int[]  $primaryPropertyIndices
+ */
+function isoBmffTestData(array $propertyDimensions, array $primaryPropertyIndices): string
+{
+    $ipco = '';
+    foreach ($propertyDimensions as $dimensions) {
+        $ipco .= isoBmffBox('ispe', "\x00\x00\x00\x00".pack('N2', $dimensions[0], $dimensions[1]));
+    }
+
+    $iprp = isoBmffBox('ipco', $ipco);
+    if (! empty($primaryPropertyIndices)) {
+        $iprp .= isoBmffFullBox('ipma', pack('NnC', 1, 1, count($primaryPropertyIndices)).implode('', array_map(chr(...), $primaryPropertyIndices)));
+    }
+
+    return isoBmffBox('ftyp', 'avif'.pack('N', 0).'avif').
+        isoBmffFullBox('meta',
+            isoBmffFullBox('pitm', pack('n', 1)).
+            isoBmffBox('iprp', $iprp)
+        );
+}
+
+function isoBmffFullBox(string $type, string $content): string
+{
+    return isoBmffBox($type, "\x00\x00\x00\x00".$content);
+}
+
+function isoBmffBox(string $type, string $content): string
+{
+    return pack('N', strlen($content) + 8).$type.$content;
+}

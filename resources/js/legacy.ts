@@ -11,6 +11,7 @@ import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import './modules/listbox/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
+import './modules/editable-table/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 

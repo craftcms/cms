@@ -58,20 +58,18 @@
         {{- hiddenInput(name, '') }}
     {%- endif %}
     {%- for key, option in options %}
-        {% if not showAllOption or option.value is not defined or option.value != allValue %}
-            <div class="cp-checkbox-select__item">
-                {% set selected = (showAllOption and allChecked) or (option.value is defined and option.value in values) %}
-                {# The drag handle is the <craft-reorder-button> that
+        <div class="cp-checkbox-select__item">
+            {% set selected = (showAllOption and allChecked) or (option.value is defined and option.value in values) %}
+            {# The drag handle is the <craft-reorder-button> that
                    Craft.SortableCheckboxSelect prepends to each item (it is both
                    the drag handle and the Move up/down action menu). #}
-                {% include "_includes/forms/checkbox" with {
-                    name: (name ?? false) ? "#{name}[]" : null,
-                    checked: selected,
-                    disabled: (showAllOption and allChecked) or disabled,
-                    targetPrefix: targetPrefix ?? null,
-                }|merge(option) only %}
-            </div>
-        {% endif %}
+            {% include "_includes/forms/checkbox" with {
+                name: (name ?? false) ? "#{name}[]" : null,
+                checked: selected,
+                disabled: (showAllOption and allChecked) or disabled,
+                targetPrefix: targetPrefix ?? null,
+            }|merge(option) only %}
+        </div>
     {% endfor %}
 {% endtag %}
 
