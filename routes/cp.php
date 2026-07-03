@@ -152,7 +152,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
 
-
     Route::middleware([
         RequireEdition::class.':'.Edition::Team->value,
     ])->group(function () {
