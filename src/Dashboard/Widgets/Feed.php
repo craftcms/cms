@@ -11,6 +11,7 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Support\Facades\Cache;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -63,7 +64,16 @@ class Feed extends Widget
     public function getBodyHtml(): string
     {
         // See if it's already cached
-        if ($data = Cache::get("feed:$this->url")) {
+        $userId = currentUser()?->getCraftUserId();
+
+        if ($userId) {
+            $key = sprintf('feed:%s:%s', $userId, $this->url);
+            $data = Cache::get($key);
+        } else {
+            $data = null;
+        }
+
+        if ($data) {
             $data['items'] = array_slice($data['items'] ?? [], 0, $this->limit);
 
             return $this->render($data);
