@@ -92,6 +92,7 @@
                   v-if="provider.connected"
                   type="button"
                   size="small"
+                  :aria-label="t('Disconnect {provider}', {provider: provider.name})"
                   :loading="processingProvider === provider.handle"
                   @click="disconnectProvider(provider)"
                 >
