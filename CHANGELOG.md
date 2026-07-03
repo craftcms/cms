@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.9 - 2026-07-03
 
 - Added `craft\services\Security::isRestrictedDir()`. ([#19179](https://github.com/craftcms/cms/pull/19179))
 - `craft\helpers\Image::imageSizeByStream()` now supports WebP, AVIF, and HEIC/HEIF images. ([#19189](https://github.com/craftcms/cms/pull/19189))
