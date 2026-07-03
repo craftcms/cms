@@ -14,7 +14,7 @@
 - Fixed a bug where element indexes could show multiple table columns for the same nested fields within Content Block fields. ([#19197](https://github.com/craftcms/cms/pull/19197))
 - Fixed a PHP error that could occur when merging canonical changes into a draft that contained nested elements. ([#19187](https://github.com/craftcms/cms/pull/19187))
 - Fixed an error that could occur when applying project config changes, if a site group was deleted. ([#19076](https://github.com/craftcms/cms/issues/19076))
-- Fixed a bug where a component’s name that ended in a space could cause its project config files to be written with trailing whitespace on the name comments, resulting in spurious diffs in editors that trim trailing whitespace. ([#19198](https://github.com/craftcms/cms/pull/19198))
+- Fixed a bug where project config YAML files could include component name comments with trailing whitespace. ([#19198](https://github.com/craftcms/cms/pull/19198))
 
 ## 5.10.8.1 - 2026-06-23
 
