@@ -147,9 +147,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/passkeys', [PasskeysController::class, 'index']);
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
+    Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
     Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
     Route::get('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
+
 
     Route::middleware([
         RequireEdition::class.':'.Edition::Team->value,

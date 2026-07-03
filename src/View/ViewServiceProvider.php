@@ -84,7 +84,7 @@ class ViewServiceProvider extends ServiceProvider
 
     private function registerBladeDirectives(): void
     {
-        $this->app->afterResolving('blade.compiler', function (BladeCompiler $blade): void {
+        $this->callAfterResolving('blade.compiler', function (BladeCompiler $blade): void {
             PageLifecycleDirective::register($blade);
             ResourceDirective::register($blade);
             CacheDirective::register($blade);

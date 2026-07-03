@@ -1168,7 +1168,11 @@ JS, [
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
                             Elements::deleteElement($derivativeElement);
                         }
-                    } elseif (! $derivativeElement->trashed && ElementHelper::isOutdated($derivativeElement)) {
+                    } elseif (
+                        ! $derivativeElement->trashed &&
+                        $derivativeElement::trackChanges() &&
+                        ElementHelper::isOutdated($derivativeElement)
+                    ) {
                         Elements::mergeCanonicalChanges($derivativeElement);
                     }
                 } elseif (! $canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {

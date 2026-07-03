@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.10 - 2026-07-03
 
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
@@ -9,8 +9,11 @@
 - Renamed `CraftCms\Cms\Twig\PageLifecycle` to `CraftCms\Cms\View\PageLifecycle`. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Renamed `CraftCms\Cms\Twig\TemplateResolver` to `CraftCms\Cms\View\TemplateResolver`. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Fixed a bug where anonymous homepage and fallback site-template requests could bypass offline-site access enforcement. ([#19151](https://github.com/craftcms/cms/pull/19151))
+- Fixed a bug where the login page would show a CSRF token mismatch on http requests
 - Fixed an error that could occur during Craft 6 upgrades when the `migrations` table was missing its `track` column. ([#19168](https://github.com/craftcms/cms/pull/19168))
 - Fixed an error that occurred when saving Users source settings after selecting the Groups table column. ([#19184](https://github.com/craftcms/cms/pull/19184))
+- Fixed a bug where database backups weren’t using the `--single-transaction` or `--column-statistics=0` flags on MySQL.
+- Fixed a bug where Content Block fields’ nested fields weren’t available as table columns on element indexes.
 
 ## 6.0.0-alpha.9 - 2026-06-23
 

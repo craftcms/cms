@@ -14,8 +14,12 @@
     inheritAttrs: false,
   });
 
-  const props =
-    usePage<CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel>().props;
+  type UserPermissionsPageProps =
+    CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel & {
+      details?: string | null;
+    };
+
+  const props = usePage<UserPermissionsPageProps>().props;
 
   const form = useForm({
     admin: props.user.admin,

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Support;
 
 use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Facades\Request;
 use SensitiveParameter;
 
 #[Singleton]
@@ -64,7 +65,7 @@ class Security
     }
 
     /**
-     * Returns whether the given file path is located within or above any system directories.
+     * Returns whether the given file path is located within or above any Craft-specific system directories.
      */
     public function isSystemDir(string $path): bool
     {
@@ -79,5 +80,56 @@ class Security
         }
 
         return false;
+    }
+
+    /**
+     * Returns whether the given file path is located in what's considered a sensitive/restricted directory.
+     */
+    public function isRestrictedDir(string $path): bool
+    {
+        $path = File::absolutePath($path, '/');
+
+        // is it located within a Craft-specific system directory
+        if ($this->isSystemDir($path)) {
+            return true;
+        }
+
+        // is it located within a sensitive os directory
+        // windows-based sensitive directories
+        if (PHP_OS_FAMILY === 'Windows') {
+            // is it located directly in the filesystem's root (e.g. C:\myfile.json, \\server\sharename\myfile.json)
+            // we're using forward slashes cause File::absolutePath() already normalized this path
+            if (preg_match('#^(?:[A-Za-z]:/[^/]+|//[^/]+/[^/]+/[^/]+)$#', $path)) {
+                return true;
+            }
+
+            $winRoot = File::normalizePath(Request::server('SystemRoot') ?? 'C:\\Windows', '/');
+            $drive = substr($winRoot, 0, 3); // e.g. "C:/" because we've normalized it
+            $sensitiveDirs = [
+                $winRoot, // C:/Windows
+                $drive.'Users', // C:/Users
+                $drive.'Program Files',
+                $drive.'Program Files (x86)',
+                $drive.'ProgramData',
+            ];
+        } else {
+            // is it located directly in the filesystem's root (e.g. /myfile.json)
+            $parent = dirname($path);
+            if ($parent === dirname($parent)) {
+                return true;
+            }
+
+            // non-windows-based sensitive directories
+            $sensitiveDirs = [
+                '/boot',
+                '/dev',
+                '/etc',
+                '/proc',
+                '/root',
+                '/sys',
+            ];
+        }
+
+        return array_any($sensitiveDirs, fn ($dir) => $path === $dir || str_starts_with("$path/", "$dir/"));
     }
 }
