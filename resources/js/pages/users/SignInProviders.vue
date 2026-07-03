@@ -102,6 +102,7 @@
                   v-else
                   type="button"
                   size="small"
+                  :aria-label="t('Connect {provider}', {provider: provider.name})"
                   :disabled="!provider.canConnect"
                   @click="connectProvider(provider)"
                 >
