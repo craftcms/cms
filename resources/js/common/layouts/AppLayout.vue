@@ -12,7 +12,11 @@
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/types';
+  import type {
+    ActionItem,
+    ActionItemButton,
+    FormSaveOptions,
+  } from '@/common/types';
   import {useFlash} from '@/common/composables/useFlash';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
@@ -20,10 +24,6 @@
   import UserMenu from '@/common/components/UserMenu.vue';
   import FlashMessages from '@/common/components/FlashMessages.vue';
   import Pane from '@/common/components/Pane.vue';
-
-  interface SaveOptions {
-    redirect?: boolean;
-  }
 
   type DefaultFormAction = 'saveAndContinueEditing';
 
@@ -35,22 +35,24 @@
     defaultFormActions?: Array<DefaultFormAction>;
     formActions?: Array<ActionItem>;
     formAdditionalActions?: Array<ActionItem>;
+    formAdditionalButtons?: Array<ActionItemButton>;
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }
 
   const emit = defineEmits<{
-    (e: 'save', options?: Partial<SaveOptions>): void;
+    (e: 'save', options?: FormSaveOptions): void;
   }>();
   const props = withDefaults(defineProps<AppLayoutProps>(), {
     fullWidth: false,
     crumbs: () => [],
     form: null,
     defaultFormActions: () => ['saveAndContinueEditing'],
+    formAdditionalButtons: () => [],
   });
 
   const page = usePage<{
     title: string;
-    readOnly: boolean;
+    readOnly?: boolean;
     crumbs?: Array<{
       url?: string;
       label: string;
@@ -68,13 +70,23 @@
     {label: t('Skip to main section'), url: '#main'},
     ...(props.additionalSkipLinks ?? []),
   ]);
-  const readOnly = computed(() => page.props.readOnly);
+  const readOnly = computed(() => Boolean(page.props.readOnly));
   const hasDetails = computed(() => Boolean(slots.details));
   const sidebarToggle = useTemplateRef('sidebarToggle');
+  const primaryFormButton = 'primary';
+  const activeFormButton = ref<string | null>(null);
   const {announcement, announce} = useAnnouncer();
 
   watch(successFlash, (newMessage) => announce(newMessage));
   watch(errorFlash, (newMessage) => announce(newMessage));
+  watch(
+    () => props.form?.processing,
+    (processing) => {
+      if (!processing) {
+        activeFormButton.value = null;
+      }
+    }
+  );
 
   useAppendHtml();
 
@@ -132,12 +144,35 @@
     if (action === 'saveAndContinueEditing') {
       return {
         label: t('Save and continue editing'),
-        onClick: () => emit('save', {redirect: false}),
+        onClick: () => save({redirect: false}),
         shortcut: 'S',
       };
     }
 
     throw new Error(`Unknown default form action: ${action}`);
+  }
+
+  function isFormButtonProcessing(key: string) {
+    return Boolean(props.form?.processing) && activeFormButton.value === key;
+  }
+
+  function activateFormButton(key: string) {
+    activeFormButton.value = key;
+    setTimeout(() => {
+      if (!props.form?.processing) {
+        activeFormButton.value = null;
+      }
+    });
+  }
+
+  function save(options?: FormSaveOptions) {
+    activateFormButton(primaryFormButton);
+    emit('save', options);
+  }
+
+  function handleAdditionalButtonClick(button: ActionItemButton, event: Event) {
+    activateFormButton(button.label);
+    button.onClick?.(event);
   }
 
   const sidebarWidth = computed(() => {
@@ -207,7 +242,7 @@
           <component
             :is="form ? 'form' : 'div'"
             method="post"
-            @submit.prevent="emit('save')"
+            @submit.prevent="save()"
           >
             <slot name="header">
               <div :class="{container: true, 'container--full': fullWidth}">
@@ -230,11 +265,31 @@
                           v-if="!readOnly"
                           class="flex items-center justify-end gap-2"
                         >
+                          <craft-button
+                            v-for="button in formAdditionalButtons"
+                            :key="button.label"
+                            type="button"
+                            :variant="button.variant ?? 'neutral'"
+                            :loading="isFormButtonProcessing(button.label)"
+                            :disabled="form.processing || button.disabled"
+                            @click="handleAdditionalButtonClick(button, $event)"
+                          >
+                            <craft-icon
+                              v-if="button.icon"
+                              :name="button.icon"
+                              slot="prefix"
+                            ></craft-icon>
+                            {{ button.label }}
+                          </craft-button>
+
                           <craft-button-group v-if="formActionItems.length">
                             <craft-button
                               type="submit"
                               variant="accent"
-                              :loading="form.processing"
+                              :loading="
+                                isFormButtonProcessing(primaryFormButton)
+                              "
+                              :disabled="form.processing"
                             >
                               {{ t('Save') }}
                             </craft-button>
@@ -262,7 +317,8 @@
                             v-else
                             type="submit"
                             variant="accent"
-                            :loading="form.processing"
+                            :loading="isFormButtonProcessing(primaryFormButton)"
+                            :disabled="form.processing"
                           >
                             {{ t('Save') }}
                           </craft-button>

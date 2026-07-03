@@ -1,6 +1,7 @@
 import {useEventListener} from '@vueuse/core';
 import {type InertiaForm, usePage} from '@inertiajs/vue3';
 import {computed} from 'vue';
+import type {FormSaveOptions} from '@/common/types';
 
 interface UseSettingsSaveOptions<T extends Record<string, any>> {
   transform?: (data: T) => Record<string, any>;
@@ -30,11 +31,7 @@ export function useSettingsSave<T extends Record<string, any>>(
     // Callers can opt out of state preservation — e.g. "save as new", which
     // navigates to a different record and needs the form to re-initialize.
     preserveState = true,
-  }: {
-    redirect?: boolean;
-    data?: Record<string, any>;
-    preserveState?: boolean;
-  } = {}) {
+  }: FormSaveOptions = {}) {
     const submitOptions = redirect
       ? {
           preserveScroll: true,
