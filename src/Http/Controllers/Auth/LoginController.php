@@ -55,6 +55,7 @@ readonly class LoginController extends AuthenticationController
         return $this->renderViewWithFallback(
             cpTemplate: 'login',
             data: [
+                'action' => action([self::class, 'attemptLogin']),
                 'oauthLoginButtons' => $oauthLoginButtons,
             ],
             inertiaComponent: 'auth/Login',
