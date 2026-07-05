@@ -387,7 +387,7 @@ it('can merge fields', function () {
             ->and($this->fields->getFieldByHandle('outgoingText'))->toBeNull()
             ->and($layoutElement->getFieldUid())->toBe($persistingField->uid)
             ->and($migrationPath)->toBeFile()
-            ->and(DB::table(Table::MIGRATIONS)->where('migration', basename($migrationPath, '.php'))->exists())->toBeTrue();
+            ->and(DB::table(Table::MIGRATIONS)->where('migration', basename((string) $migrationPath, '.php'))->exists())->toBeTrue();
     } finally {
         if ($migrationPath) {
             @unlink($migrationPath);
