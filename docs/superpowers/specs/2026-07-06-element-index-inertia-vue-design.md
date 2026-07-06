@@ -174,3 +174,21 @@ section's create URL.
 4. Inline editing; export
 5. JSON controller exposing the ElementIndexService payload for modal/field
    contexts; migrate assets/categories/users indexes
+
+## Addendum (2026-07-06, post-merge)
+
+`feature/inertia-element-indexes` was merged into this branch, folding its
+full feature set (selection + bulk actions, cards view, view-mode switching,
+per-source column/sort customization, sources sidebar, publishable-sections
+New Entry button, CP package components) into the service-based architecture
+above. Notes:
+
+- The Vue module now lives at `resources/js/modules/elements/` (the merged
+  branch's richer module); the core-slice `modules/element-index/` and
+  `pages/entries/Index.vue` were superseded and removed.
+- `ContentIndexController` serves `content/{page}/{sectionHandle?}` and
+  delegates data assembly to the `ElementIndexes` service.
+- `EntriesIndexController` handles all entries/content redirects.
+- Cell rendering goes through `$element->getAttributeHtml()` (not
+  `ElementAttributeRenderer` directly) so element-type attribute overrides
+  like Entry's `authors` keep working.
