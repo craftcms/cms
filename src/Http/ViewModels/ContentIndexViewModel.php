@@ -287,7 +287,7 @@ class ContentIndexViewModel extends ViewModel
 
     public function publishableSections(): array
     {
-        return Sections::getPublishableSections()->values()->all();
+        return Sections::getPublishableSections();
     }
 
     /**

@@ -274,18 +274,33 @@ class Sections
     /**
      * Returns all sections the given user is able to publish.
      *
+     * Returned as plain arrays rather than a Collection: array shapes are
+     * covariant under static analysis, so branch-narrowed member types stay
+     * assignable — Collection's TValue is invariant and rejects them.
+     *
+     * @return array<int, array{
+     *     entryTypes: array<int, array{handle: string|null, id: int, name: string, icon: string|null}>,
+     *     handle: string|null,
+     *     id: int,
+     *     name: string,
+     *     sites: array<int>,
+     *     type: SectionType|null,
+     *     uid: string|null,
+     *     canSave: bool,
+     * }>
+     *
      * @throws AuthenticationException
      */
-    public function getPublishableSections(): Collection
+    public function getPublishableSections(): array
     {
         $currentUser = currentUser();
 
         if (! $currentUser) {
-            return collect();
+            return [];
         }
 
         if ($this->getEditableSections()->isEmpty()) {
-            return collect();
+            return [];
         }
 
         return collect($this->getEditableSections())
@@ -297,7 +312,9 @@ class Sections
                         'id' => (int) $type->id,
                         'name' => t($type->name, category: 'site'),
                         'icon' => $type->icon ? Icons::resolveIconName($type->icon) : null,
-                    ]),
+                    ])
+                    ->values()
+                    ->all(),
                 'handle' => $section->handle,
                 'id' => (int) $section->id,
                 'name' => t($section->name, category: 'site'),
@@ -305,7 +322,9 @@ class Sections
                 'type' => $section->type,
                 'uid' => $section->uid,
                 'canSave' => $currentUser->can("saveEntries:$section->uid"),
-            ]);
+            ])
+            ->values()
+            ->all();
     }
 
     /**

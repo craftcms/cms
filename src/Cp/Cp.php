@@ -285,7 +285,7 @@ readonly class Cp
 
     private static function publishableSections(): array
     {
-        return Sections::getPublishableSections()->toArray();
+        return Sections::getPublishableSections();
     }
 
     private static function sites(): array
