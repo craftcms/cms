@@ -61,7 +61,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy packages/craftcms-cp/storybook-static --project-name=craftcms-cp-storybook --branch=${{ steps.branch.outputs.value }}
+          command: pages deploy packages/craftcms-cp/storybook-static --project-name=craftcms-ui-storybook --branch=${{ steps.branch.outputs.value }}
 
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
