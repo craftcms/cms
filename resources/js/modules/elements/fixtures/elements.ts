@@ -179,6 +179,14 @@ export const sampleActions: Array<BulkActionItem> = [
     },
   },
   {
+    key: 'demo\\Copy',
+    label: 'Copy',
+    action: {
+      type: 'event',
+      name: 'craft:copy-elements',
+    },
+  },
+  {
     key: 'demo\\Delete',
     label: 'Delete',
     destructive: true,

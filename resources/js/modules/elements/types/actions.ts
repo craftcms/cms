@@ -28,6 +28,10 @@ export interface BulkActionItem {
     method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
     url?: string;
     body?: Record<string, unknown>;
+    /** For `event` actions: the window event name to dispatch. */
+    name?: string;
+    /** For `event` actions: the event detail; the live selection is merged in. */
+    detail?: Record<string, unknown>;
     confirm?: string;
   };
 }

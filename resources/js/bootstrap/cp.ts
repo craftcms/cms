@@ -135,12 +135,34 @@ const Cp = {
     });
 
     handleNonInertiaRequests();
+    ensureLegacyNotificationContainer();
 
     console.log('Calling booted callbacks', bootedCallbacks);
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
   },
 };
+
+/**
+ * The legacy notifier (`Craft.cp.displayNotification()`, element-copy
+ * notifications, …) appends into `#notifications`, which only the Twig layout
+ * renders. Create it for Inertia pages — outside the Vue root, so page visits
+ * can't clobber legacy-appended notifications — and re-point the CP
+ * singleton's cached (empty) reference if it booted before the container
+ * existed.
+ */
+function ensureLegacyNotificationContainer() {
+  if (!document.getElementById('notifications')) {
+    const container = document.createElement('div');
+    container.id = 'notifications';
+    container.setAttribute('role', 'status');
+    document.body.appendChild(container);
+  }
+
+  if (Craft.cp && !Craft.cp.$notificationContainer?.length && window.$) {
+    Craft.cp.$notificationContainer = $('#notifications');
+  }
+}
 
 function handleNonInertiaRequests() {
   let fallbackUrl = '';

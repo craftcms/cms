@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, onMounted, onUnmounted} from 'vue';
   import {t} from '@craftcms/cp';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
   import type {ActionItem} from '@/common/types';
@@ -58,6 +58,9 @@
    * (`elementType`, `source`, `context`) so the perform endpoint can rebuild the
    * same query the index used. `runAction()` then handles the request, confirm,
    * spinner, and feedback — no bespoke code here.
+   *
+   * `event` actions run client-side instead: the selection merges into the
+   * event detail, and a listener (e.g. `craft:copy-elements` below) handles it.
    */
   const menuActions = computed<Array<ActionItem>>(() =>
     menuItems.value.map((item): ActionItem => {
@@ -78,6 +81,22 @@
         };
       }
 
+      if (item.action.type === 'event') {
+        return {
+          type: 'button',
+          label: item.label,
+          variant,
+          action: {
+            ...item.action,
+            detail: {
+              ...(item.action.detail ?? {}),
+              elementType: props.elementType,
+              elementIds: props.selectedIds,
+            },
+          },
+        } as ActionItem;
+      }
+
       return {
         type: 'button',
         label: item.label,
@@ -95,6 +114,33 @@
         feedback: {success: {message: t('Done')}},
       } as ActionItem;
     })
+  );
+
+  /**
+   * Copy mirrors Craft 5: the selection is handed to the legacy
+   * `Craft.cp.copyElements()`, which stores it in localStorage (for paste
+   * targets like nested element managers), shows the persistent "copied"
+   * notification, and broadcasts to other tabs. Nothing changes server-side,
+   * so no refresh/`performed` is emitted.
+   */
+  function onCopyElements(event: Event) {
+    const detail = (event as CustomEvent).detail ?? {};
+    const ids: Array<string | number> = detail.elementIds ?? props.selectedIds;
+
+    Craft.cp?.copyElements?.(
+      ids.map((id) => ({
+        type: detail.elementType ?? props.elementType,
+        id,
+        siteId: Craft.siteId ?? null,
+      }))
+    );
+  }
+
+  onMounted(() =>
+    window.addEventListener('craft:copy-elements', onCopyElements)
+  );
+  onUnmounted(() =>
+    window.removeEventListener('craft:copy-elements', onCopyElements)
   );
 
   /**

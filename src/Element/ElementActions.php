@@ -33,6 +33,18 @@ class ElementActions
     ];
 
     /**
+     * Actions that run entirely client-side, serialized as `event` actions:
+     * clicking one dispatches the mapped window event (with the live selection
+     * in its detail) instead of POSTing to the perform endpoint. Copy mirrors
+     * Craft 5, where it stores the selection in localStorage for paste targets.
+     *
+     * @var array<class-string<ElementActionInterface>, string>
+     */
+    private const array CLIENT_EVENT_ACTIONS = [
+        Actions\Copy::class => 'craft:copy-elements',
+    ];
+
+    /**
      * @param  class-string<ElementInterface>  $elementType
      * @return ElementActionInterface[]
      */
@@ -145,6 +157,16 @@ class ElementActions
             // submit; surface them disabled until ported (see INTERACTIVE_ACTIONS).
             if (in_array($action::class, self::INTERACTIVE_ACTIONS, true)) {
                 $item['disabled'] = true;
+                $items[] = $item;
+
+                continue;
+            }
+
+            if (isset(self::CLIENT_EVENT_ACTIONS[$action::class])) {
+                $item['action'] = [
+                    'type' => 'event',
+                    'name' => self::CLIENT_EVENT_ACTIONS[$action::class],
+                ];
                 $items[] = $item;
 
                 continue;
