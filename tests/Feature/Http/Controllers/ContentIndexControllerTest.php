@@ -324,3 +324,21 @@ it('serializes sort options with string values and default directions', function
                 ))
         );
 });
+
+it('serializes tableColumns as a list, unpolluted by the legacy context shape', function () {
+    // PrepareElementSourcesVariables puts an assoc-keyed `tableColumns` into
+    // the hook context; a recursive merge with the view model's list would
+    // interleave them into a JSON object and break the Vue column controls.
+    EntryModel::factory()->create();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('tableColumns', function ($columns) {
+                $columns = collect($columns)->all();
+
+                return array_is_list($columns)
+                    && collect($columns)->every(fn ($column) => isset($column['label'], $column['value']));
+            })
+        );
+});
