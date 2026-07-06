@@ -1,6 +1,8 @@
 import {computed, onMounted, type Ref} from 'vue';
-import {router} from '@inertiajs/vue3';
-import {index} from '@/routes/craft/cp/content/index.js';
+import {
+  createIndexVisitor,
+  type ElementIndexRoute,
+} from '@/modules/elements/composables/useElementIndexVisits';
 import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
@@ -10,8 +12,6 @@ import type {SourceItem} from '@/modules/elements/types/sources';
 type Row = Record<any, any>;
 
 interface ElementIndexColumnsContext {
-  page: string;
-  sectionHandle?: string | number;
   /** Columns available for the current source: `{label, value}` per column. */
   tableColumns: Array<{label: string; value: string}>;
   /** The active source; a custom source may carry its own `tableAttributes`. */
@@ -41,8 +41,11 @@ interface PinnedColumn {
 export function useElementIndexColumns(
   props: ElementIndexColumnsContext,
   viewState: Ref<ViewState>,
-  pinned: PinnedColumn
+  pinned: PinnedColumn,
+  route: ElementIndexRoute
 ) {
+  const visitor = createIndexVisitor(route);
+
   // Column state is stored per source; fall back to a shared bucket when there
   // is no resolved source (e.g. the implicit "all elements" view).
   const sourceKey = computed(() => props.source?.key ?? '*');
@@ -140,29 +143,9 @@ export function useElementIndexColumns(
     visible: Array<string>,
     options: {replace?: boolean} = {}
   ) {
-    // Drop any existing `columns[…]` params — they'd otherwise merge with the
-    // new selection, since the serialized keys (`columns[0]`, …) don't match
-    // the `columns` key we set below.
-    const params = Object.fromEntries(
-      [...new URLSearchParams(window.location.search)].filter(
-        ([key]) => key !== 'columns' && !key.startsWith('columns[')
-      )
-    );
-
-    router.visit(
-      index(
-        {
-          page: props.page ?? '',
-          sectionHandle: props.sectionHandle ?? undefined,
-        },
-        {query: {...params, columns: visible}}
-      ),
-      {
-        only: ['data'],
-        preserveState: true,
-        preserveScroll: true,
-        replace: options.replace ?? false,
-      }
+    visitor.merge(
+      {columns: visible},
+      {only: ['data'], replace: options.replace ?? false}
     );
   }
 

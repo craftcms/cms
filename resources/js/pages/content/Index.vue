@@ -39,6 +39,8 @@
     ViewState,
   } from '@/modules/elements/types/view-state';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
+  import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+  import {index} from '@/routes/craft/cp/content/index.js';
   import {router} from '@inertiajs/vue3';
 
   type Element = Record<any, any>;
@@ -78,17 +80,38 @@
     }
   );
 
+  // The composables are route-agnostic; this page owns the fact that its index
+  // lives at `content.index` with `page`/`sectionHandle` route params.
+  const route: ElementIndexRoute = {
+    url: (query = {}) =>
+      index.url(
+        {
+          page: props.page ?? '',
+          sectionHandle: props.sectionHandle || undefined,
+        },
+        {query: query as Record<string, string>}
+      ),
+  };
+
   const viewState = useElementIndexViewState(props);
   const {conditions} = useConditionBuilder({
     initialState: props.currentCondition ?? null,
   });
-  const filters = useElementIndexFilters(props, viewState, conditions);
+  const filters = useElementIndexFilters(props, viewState, route, conditions);
   const {columns, columnOrder, columnOptions, reorder, tableColumns} =
-    useElementIndexColumns(props, viewState, {key: 'title', label: t('Entry')});
+    useElementIndexColumns(
+      props,
+      viewState,
+      {key: 'title', label: t('Entry')},
+      route
+    );
   const {sortingState, sortingConfig, sortField, sortDirection} =
-    useElementIndexSort(props, viewState);
-  const {paginationState, paginationConfig} = useElementIndexPagination(props);
-  const {mode} = useElementIndexViewMode(props, viewState);
+    useElementIndexSort(props, viewState, {route});
+  const {paginationState, paginationConfig} = useElementIndexPagination(
+    props,
+    route
+  );
+  const {mode} = useElementIndexViewMode(route, viewState);
   const {loading} = useElementIndexLoading();
 
   // The structure view mode only applies to structure sources, so hide it
@@ -197,7 +220,12 @@
         <h2 id="source-heading" class="sr-only">
           {{ t('Sources') }}
         </h2>
-        <ElementSources :sources="sources" :active-source="source?.key" />
+        <ElementSources
+          :sources="sources"
+          :route="route"
+          :active-source="source?.key"
+          :view-mode="viewState.mode !== 'table' ? viewState.mode : null"
+        />
       </nav>
     </template>
 

@@ -1,12 +1,9 @@
 import {computed, onMounted, type Ref} from 'vue';
-import {router} from '@inertiajs/vue3';
-import {index} from '@/routes/craft/cp/content/index.js';
+import {
+  createIndexVisitor,
+  type ElementIndexRoute,
+} from '@/modules/elements/composables/useElementIndexVisits';
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
-
-interface ElementIndexViewModeContext {
-  page: string;
-  sectionHandle?: string | number;
-}
 
 /**
  * Server-driven view mode. Switching modes updates the local view state
@@ -16,9 +13,11 @@ interface ElementIndexViewModeContext {
  * optimistic local state in place while the server responds.
  */
 export function useElementIndexViewMode(
-  props: ElementIndexViewModeContext,
+  route: ElementIndexRoute,
   viewState: Ref<ViewState>
 ) {
+  const visitor = createIndexVisitor(route);
+
   const mode = computed<ViewMode['mode']>({
     get: () => viewState.value.mode,
     set: (value) => {
@@ -30,21 +29,7 @@ export function useElementIndexViewMode(
       viewState.value.mode = value;
 
       // Reflect the change in the URL and refresh the server-rendered bits.
-      const params = new URLSearchParams(window.location.search);
-      router.visit(
-        index(
-          {
-            page: props.page ?? '',
-            sectionHandle: props.sectionHandle ?? undefined,
-          },
-          {query: {...Object.fromEntries(params), viewMode: value}}
-        ),
-        {
-          only: ['data', 'pagination'],
-          preserveState: true,
-          preserveScroll: true,
-        }
-      );
+      visitor.merge({viewMode: value}, {only: ['data', 'pagination']});
     },
   });
 
@@ -60,20 +45,9 @@ export function useElementIndexViewMode(
       return;
     }
 
-    router.visit(
-      index(
-        {
-          page: props.page ?? '',
-          sectionHandle: props.sectionHandle ?? undefined,
-        },
-        {query: {...Object.fromEntries(params), viewMode: persisted}}
-      ),
-      {
-        only: ['data', 'pagination'],
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-      }
+    visitor.merge(
+      {viewMode: persisted},
+      {only: ['data', 'pagination'], replace: true}
     );
   });
 

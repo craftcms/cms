@@ -1,12 +1,12 @@
 import {watch} from 'vue';
-import {router} from '@inertiajs/vue3';
-import {index} from '@/routes/craft/cp/content/index.js';
+import {
+  createIndexVisitor,
+  type ElementIndexRoute,
+} from '@/modules/elements/composables/useElementIndexVisits';
 import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
 import type {PaginationData} from '@/common/types';
 
 interface ElementIndexPaginationContext {
-  page: string;
-  sectionHandle?: string | number;
   pagination: PaginationData;
 }
 
@@ -16,25 +16,15 @@ interface ElementIndexPaginationContext {
  * mirrored back into the table state.
  */
 export function useElementIndexPagination(
-  props: ElementIndexPaginationContext
+  props: ElementIndexPaginationContext,
+  route: ElementIndexRoute
 ) {
+  const visitor = createIndexVisitor(route);
+
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
     onChange: ({query}) => {
-      router.visit(
-        index(
-          {
-            page: props.page ?? '',
-            sectionHandle: props.sectionHandle ?? undefined,
-          },
-          {query}
-        ),
-        {
-          only: ['data', 'pagination'],
-          preserveState: true,
-          preserveScroll: true,
-        }
-      );
+      visitor.visit(query, {only: ['data', 'pagination']});
     },
   });
 

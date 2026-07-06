@@ -22,9 +22,13 @@ vi.mock('@inertiajs/vue3', () => ({
   }),
 }));
 
-vi.mock('@/routes/craft/cp/content/index.js', () => ({
-  index: vi.fn(() => ({url: '/cp/content/entries', method: 'get'})),
-}));
+const stubRoute = {
+  url: (query: Record<string, unknown> = {}) =>
+    '/cp/content/entries' +
+    (Object.keys(query).length
+      ? '?' + new URLSearchParams(query as Record<string, string>)
+      : ''),
+};
 
 function makeViewState(): ViewState {
   return {
@@ -54,8 +58,9 @@ describe('useElementIndexFilters', () => {
     };
 
     const {submit} = useElementIndexFilters(
-      {status: null, page: 'entries'},
+      {status: null},
       ref(makeViewState()),
+      stubRoute,
       ref(condition)
     );
 
@@ -75,8 +80,9 @@ describe('useElementIndexFilters', () => {
     // (and one applied filter into duplicate rules). 'indices' keeps each
     // rule's fields grouped under a stable numeric key.
     const {submit} = useElementIndexFilters(
-      {status: null, page: 'entries'},
+      {status: null},
       ref(makeViewState()),
+      stubRoute,
       ref({class: 'SomeCondition', conditionRules: []})
     );
 

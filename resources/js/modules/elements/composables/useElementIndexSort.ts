@@ -1,14 +1,14 @@
 import {computed, onMounted, type Ref, watch} from 'vue';
-import {router} from '@inertiajs/vue3';
-import {index} from '@/routes/craft/cp/content/index.js';
+import {
+  createIndexVisitor,
+  type ElementIndexRoute,
+} from '@/modules/elements/composables/useElementIndexVisits';
 import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
 import type {SortItem} from '@/common/types';
 import type {SortOption, ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
 
 interface ElementIndexSortContext {
-  page: string;
-  sectionHandle?: string | number;
   sort: Array<SortItem>;
   source?: SourceItem | null;
   /** The sortable attributes; switching to one starts at its `defaultDir`. */
@@ -16,6 +16,8 @@ interface ElementIndexSortContext {
 }
 
 interface UseElementIndexSortOptions {
+  /** The index route to visit when the sort changes. */
+  route: ElementIndexRoute;
   /** Called with the server-confirmed sort, e.g. to keep a filter form in sync. */
   onSortChange?: (sort: Array<SortItem>) => void;
 }
@@ -55,12 +57,9 @@ function sortItemsToQuery(items: Array<SortItem>) {
 export function useElementIndexSort(
   props: ElementIndexSortContext,
   viewState: Ref<ViewState>,
-  options: UseElementIndexSortOptions = {}
+  options: UseElementIndexSortOptions
 ) {
-  const routeArgs = () => ({
-    page: props.page ?? '',
-    sectionHandle: props.sectionHandle ?? undefined,
-  });
+  const visitor = createIndexVisitor(options.route);
 
   // The user's sort is persisted per source, so each source falls back to its
   // own `defaultSort` (resolved server-side) until the user sorts it.
@@ -77,11 +76,7 @@ export function useElementIndexSort(
   const {sortingState, sortingConfig, onSortingChange} = useServerSort({
     initialState: normalizeSort(props.sort ?? persistedSort()),
     onChange: ({query}) => {
-      router.visit(index(routeArgs(), {query}), {
-        only: ['data', 'sort', 'pagination'],
-        preserveState: true,
-        preserveScroll: true,
-      });
+      visitor.visit(query, {only: ['data', 'sort', 'pagination']});
     },
   });
 
@@ -122,19 +117,9 @@ export function useElementIndexSort(
       return;
     }
 
-    router.visit(
-      index(routeArgs(), {
-        query: {
-          ...Object.fromEntries(params),
-          sort: sortItemsToQuery(persisted),
-        },
-      }),
-      {
-        only: ['data', 'sort', 'pagination'],
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-      }
+    visitor.merge(
+      {sort: sortItemsToQuery(persisted)},
+      {only: ['data', 'sort', 'pagination'], replace: true}
     );
   });
 

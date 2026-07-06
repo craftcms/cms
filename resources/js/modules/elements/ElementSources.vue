@@ -1,13 +1,14 @@
 <script setup lang="ts">
   import {computed, ref} from 'vue';
-  import {index} from '@routes/cp/content/index.js';
   import {router} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
+  import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
   import type {Source, SourceHeading} from '@/modules/elements/types/sources';
 
   const props = withDefaults(
     defineProps<{
       sources: Array<Source>;
+      route: ElementIndexRoute;
       activeSource?: string | null;
       viewMode?: string | null;
     }>(),
@@ -38,24 +39,18 @@
     return result;
   });
 
-  // `index.url()` returns the plain string URL (vs. `index()`, which returns a
-  // `{url, method}` pair). craft-nav-item needs a real string href so it renders
-  // an interactive link; we intercept the click for SPA navigation.
+  // craft-nav-item needs a real string href so it renders an interactive link;
+  // we intercept the click for SPA navigation.
   // Carry the active view mode so the server renders data for the mode the page
   // is actually showing. Without it, the source visit would fall back to the
   // default `table` mode while the restored local view state still shows cards
   // (mirrors how `useElementIndexViewMode` pushes a `viewMode` query param).
   function sourceUrl(key: string) {
-    return index.url(
-      {page: 'entries'},
-      {
-        query: {
-          source: key,
-          site: site?.handle,
-          ...(props.viewMode ? {viewMode: props.viewMode} : {}),
-        },
-      }
-    );
+    return props.route.url({
+      source: key,
+      site: site?.handle,
+      ...(props.viewMode ? {viewMode: props.viewMode} : {}),
+    });
   }
 
   // The source the user just clicked. It's activated immediately instead of

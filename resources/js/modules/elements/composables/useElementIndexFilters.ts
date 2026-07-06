@@ -1,6 +1,6 @@
 import type {Ref} from 'vue';
 import {useForm} from '@inertiajs/vue3';
-import {index} from '@/routes/craft/cp/content/index.js';
+import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
 import type {ConditionConfig} from '@/modules/elements/composables/useConditionBuilder';
@@ -8,8 +8,6 @@ import type {ConditionConfig} from '@/modules/elements/composables/useConditionB
 interface ElementIndexFiltersContext {
   search?: string | null;
   status: string | null;
-  page: string;
-  sectionHandle?: string | number;
   source?: SourceItem | null;
 }
 
@@ -21,6 +19,7 @@ interface ElementIndexFiltersContext {
 export function useElementIndexFilters(
   props: ElementIndexFiltersContext,
   viewState: Ref<ViewState>,
+  route: ElementIndexRoute,
   conditions?: Ref<ConditionConfig | null>
 ) {
   const form = useForm({
@@ -41,10 +40,7 @@ export function useElementIndexFilters(
         condition: conditions?.value ?? undefined,
       }))
       .submit(
-        index({
-          page: props.page ?? '',
-          sectionHandle: props.sectionHandle ?? undefined,
-        }),
+        {url: route.url(), method: 'get'},
         {
           // `condition.conditionRules` and `sort` are arrays of objects.
           // Inertia's default 'brackets' format serializes those as repeated
