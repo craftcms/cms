@@ -1,7 +1,10 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
+  import {computed} from 'vue';
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItems} from '@/common/components/ActionMenu.vue';
   import ElementIndex from '@/modules/element-index/components/ElementIndex.vue';
   import SourceList from '@/modules/element-index/components/SourceList.vue';
   import {useElementIndexQuery} from '@/modules/element-index/composables/useElementIndexQuery';
@@ -15,7 +18,7 @@
     ElementIndexStatus,
   } from '@/modules/element-index/types';
 
-  defineProps<{
+  const props = defineProps<{
     title: string;
     sources: Array<ElementIndexSource>;
     selectedSource: string | null;
@@ -31,9 +34,18 @@
     selectedStatus: string | null;
     canCreate: boolean;
     newEntryUrl: string | null;
+    newEntryOptions: Array<{label: string; url: string}>;
   }>();
 
-  const {selectSource} = useElementIndexQuery();
+  const {sourceUrl} = useElementIndexQuery();
+
+  const newEntryMenuActions = computed<ActionItems>(() =>
+    props.newEntryOptions.map((option) => ({
+      type: 'link',
+      label: option.label,
+      href: option.url,
+    }))
+  );
 </script>
 
 <template>
@@ -49,13 +61,25 @@
       >
         {{ t('New entry') }}
       </CpLink>
+      <ActionMenu
+        v-else-if="newEntryOptions.length"
+        :actions="newEntryMenuActions"
+        :label="t('New entry')"
+        icon="plus"
+      >
+        <template #invoker="{attributes}">
+          <craft-button v-bind="attributes" variant="accent">
+            {{ t('New entry') }}
+          </craft-button>
+        </template>
+      </ActionMenu>
     </template>
 
     <template #interior-nav>
       <SourceList
         :sources="sources"
         :selected="selectedSource"
-        @select="selectSource"
+        :source-url="sourceUrl"
       />
     </template>
 

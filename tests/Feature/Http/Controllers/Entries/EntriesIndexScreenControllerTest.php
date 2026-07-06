@@ -214,6 +214,19 @@ it('exposes the new entry URL when the user can create entries in the section', 
             ->where('newEntryUrl', fn ($url) => str_contains((string) $url, 'entries/blog/new')));
 });
 
+it('exposes new entry options for creatable sections when the selected source is not creatable', function () {
+    Section::factory()->create(['handle' => 'home', 'type' => SectionType::Single]);
+    Section::factory()->create(['name' => 'News', 'handle' => 'news', 'type' => SectionType::Channel]);
+
+    get(entriesIndexUrl('content/entries', ['source' => 'singles']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('canCreate', false)
+            ->where('newEntryUrl', null)
+            ->count('newEntryOptions', 1)
+            ->where('newEntryOptions.0.label', 'News')
+            ->where('newEntryOptions.0.url', fn ($url) => str_contains((string) $url, 'entries/news/new')));
+});
+
 it('includes table columns and sort options for the source', function () {
     $section = Section::factory()->create();
 

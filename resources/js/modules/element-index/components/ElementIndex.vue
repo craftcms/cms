@@ -47,6 +47,10 @@
   const tableColumns = computed(() =>
     props.columns.map((column) => ({
       id: column.key,
+      accessorFn: (row: ElementIndexElement) =>
+        column.key === 'title'
+          ? row.title
+          : (row.attributeHtml[column.key] ?? ''),
       header: () => column.label,
       enableSorting: sortableAttributes.value.has(column.key),
       cell: ({row}: {row: {original: ElementIndexElement}}) =>

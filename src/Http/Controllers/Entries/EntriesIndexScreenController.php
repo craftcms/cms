@@ -112,7 +112,7 @@ class EntriesIndexScreenController
                 ->values()
                 ->all(),
             'selectedStatus' => $this->request->status(),
-            ...$this->createButtonProps($data['selectedSource']),
+            ...$this->createButtonProps($data['sources'], $data['selectedSource']),
         ]);
     }
 
@@ -158,27 +158,60 @@ class EntriesIndexScreenController
         return t('Entries');
     }
 
-    private function createButtonProps(?string $sourceKey): array
+    /**
+     * Builds the "New entry" button props: a direct URL when the selected source is a
+     * creatable section, plus one option per creatable section on the page so the button
+     * can fall back to a menu when it isn't.
+     */
+    private function createButtonProps(array $sources, ?string $sourceKey): array
     {
-        $props = ['canCreate' => false, 'newEntryUrl' => null];
+        $user = currentUser();
+        $newEntryUrl = null;
+        $options = [];
 
-        if (! $sourceKey || ! str_starts_with($sourceKey, 'section:')) {
-            return $props;
-        }
+        foreach ($this->sectionSourceKeys($sources) as $key) {
+            $section = Sections::getSectionByUid(substr($key, strlen('section:')));
 
-        $section = Sections::getSectionByUid(substr($sourceKey, strlen('section:')));
+            if (
+                $section === null ||
+                $section->type === SectionType::Single ||
+                ! $user?->can("createEntries:$section->uid")
+            ) {
+                continue;
+            }
 
-        if (
-            $section === null ||
-            $section->type === SectionType::Single ||
-            ! currentUser()?->can("createEntries:$section->uid")
-        ) {
-            return $props;
+            $url = Url::cpUrl("entries/$section->handle/new");
+            $options[] = ['label' => $section->name, 'url' => $url];
+
+            if ($key === $sourceKey) {
+                $newEntryUrl = $url;
+            }
         }
 
         return [
-            'canCreate' => true,
-            'newEntryUrl' => Url::cpUrl("entries/$section->handle/new"),
+            'canCreate' => $newEntryUrl !== null,
+            'newEntryUrl' => $newEntryUrl,
+            'newEntryOptions' => $options,
         ];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function sectionSourceKeys(array $sources): array
+    {
+        $keys = [];
+
+        foreach ($sources as $source) {
+            if (isset($source['key']) && str_starts_with((string) $source['key'], 'section:')) {
+                $keys[] = $source['key'];
+            }
+
+            if (! empty($source['nested'])) {
+                $keys = array_merge($keys, $this->sectionSourceKeys($source['nested']));
+            }
+        }
+
+        return $keys;
     }
 }

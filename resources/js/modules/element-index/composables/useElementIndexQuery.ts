@@ -37,24 +37,22 @@ export function useElementIndexQuery() {
   }
 
   /**
-   * Switch sources. Columns and sort options are per-source, so this is a
-   * full visit that keeps only cross-source state (search, site, status).
+   * URL for switching to a source. Columns and sort options are per-source,
+   * so sort/page params are dropped and only cross-source state (search,
+   * site, status) is kept.
    */
-  function selectSource(key: string) {
+  function sourceUrl(key: string): string {
     const current = currentQuery();
-    const query: Record<string, string> = {source: key};
+    const query = new URLSearchParams({source: key});
 
     for (const keep of ['search', 'site', 'status']) {
       if (current[keep]) {
-        query[keep] = current[keep];
+        query.set(keep, current[keep]);
       }
     }
 
-    router.get(window.location.pathname, query, {
-      preserveScroll: true,
-      preserveState: true,
-    });
+    return `${window.location.pathname}?${query.toString()}`;
   }
 
-  return {apply, selectSource};
+  return {apply, sourceUrl};
 }

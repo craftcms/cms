@@ -10,10 +10,7 @@
   defineProps<{
     sources: Array<ElementIndexSource>;
     selected: string | null;
-  }>();
-
-  const emit = defineEmits<{
-    (e: 'select', key: string): void;
+    sourceUrl: (key: string) => string;
   }>();
 </script>
 
@@ -26,11 +23,10 @@
       <template v-else>
         <CpLink
           as="craft-nav-item"
-          href="#"
+          :href="sourceUrl(source.key!)"
           :active="source.key === selected"
           block
           flush
-          @click.prevent="emit('select', source.key!)"
         >
           {{ source.label }}
           <span
@@ -45,8 +41,8 @@
           v-if="source.nested?.length"
           :sources="source.nested"
           :selected="selected"
+          :source-url="sourceUrl"
           class="ps-4"
-          @select="(key) => emit('select', key)"
         />
       </template>
     </template>
