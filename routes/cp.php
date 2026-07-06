@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
@@ -16,7 +17,6 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
-use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexScreenController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
 use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
@@ -129,12 +129,13 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
      * Entries & Content
      */
     Route::get('entries', EntriesIndexController::class);
-    Route::get('entries/{sectionHandle}', EntriesIndexScreenController::class);
+    Route::get('entries/{sectionHandle}', EntriesIndexController::class);
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
-    Route::get('content/{page}', EntriesIndexScreenController::class)->where('page', '[^\/]+');
-    Route::get('content/{page}/{sectionHandle}', EntriesIndexScreenController::class)->where('page', '[^\/]+');
+    Route::get('content/{page}/{sectionHandle?}', ContentIndexController::class)
+        ->name('content.index')
+        ->where('page', '[^\/]+');
     Route::get('content/{section}/new', CreateEntryController::class);
 
     /**

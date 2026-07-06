@@ -1,0 +1,55 @@
+import {n as e, t} from './wayfinder-V597ZF_3.js';
+var n = (e) => ({url: n.url(e), method: `get`});
+((n.definition = {
+  methods: [`get`, `head`],
+  url: `/admin/settings/users/groups/new`,
+}),
+  (n.url = (t) => n.definition.url + e(t)),
+  (n.get = (e) => ({url: n.url(e), method: `get`})),
+  (n.head = (e) => ({url: n.url(e), method: `head`})));
+var r = (e) => ({url: r.url(e), method: `post`});
+((r.definition = {methods: [`post`], url: `/admin/settings/users/groups`}),
+  (r.url = (t) => r.definition.url + e(t)),
+  (r.post = (e) => ({url: r.url(e), method: `post`})));
+var i = (e, t) => ({url: i.url(e, t), method: `delete`});
+((i.definition = {
+  methods: [`delete`],
+  url: `/admin/settings/users/groups/{groupId}`,
+}),
+  (i.url = (n, r) => {
+    ((typeof n == `string` || typeof n == `number`) && (n = {groupId: n}),
+      Array.isArray(n) && (n = {groupId: n[0]}),
+      (n = t(n)));
+    let a = {groupId: n.groupId};
+    return (
+      i.definition.url
+        .replace(`{groupId}`, a.groupId.toString())
+        .replace(/\/+$/, ``) + e(r)
+    );
+  }),
+  (i.delete = (e, t) => ({url: i.url(e, t), method: `delete`})));
+var a = (e, t) => ({url: a.url(e, t), method: `get`});
+((a.definition = {
+  methods: [`get`, `head`],
+  url: `/admin/settings/users/groups/{userGroup}`,
+}),
+  (a.url = (n, r) => {
+    ((typeof n == `string` || typeof n == `number`) && (n = {userGroup: n}),
+      typeof n == `object` &&
+        !Array.isArray(n) &&
+        `id` in n &&
+        (n = {userGroup: n.id}),
+      Array.isArray(n) && (n = {userGroup: n[0]}),
+      (n = t(n)));
+    let i = {
+      userGroup: typeof n.userGroup == `object` ? n.userGroup.id : n.userGroup,
+    };
+    return (
+      a.definition.url
+        .replace(`{userGroup}`, i.userGroup.toString())
+        .replace(/\/+$/, ``) + e(r)
+    );
+  }),
+  (a.get = (e, t) => ({url: a.url(e, t), method: `get`})),
+  (a.head = (e, t) => ({url: a.url(e, t), method: `head`})));
+export {r as i, i as n, a as r, n as t};

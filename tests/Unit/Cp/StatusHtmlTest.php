@@ -63,8 +63,11 @@ describe('component status helpers', function () {
         $labelHtml = $statusHtml->componentStatusLabelHtml($component);
         $editedHtml = $statusHtml->editedStatusLabelHtml();
 
-        expect($labelHtml)->toContain('status-label')
+        expect($labelHtml)->toContain('<craft-badge')
+            ->and($labelHtml)->toContain('fill="yellow"')
             ->and($labelHtml)->toContain('Pending')
+            ->and($editedHtml)->toContain('<craft-badge')
+            ->and($editedHtml)->toContain('slot="prefix"')
             ->and($editedHtml)->toContain('Edited');
     });
 });

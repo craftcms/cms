@@ -1,0 +1,147 @@
+<script setup lang="ts">
+  import {computed, ref} from 'vue';
+  import {index} from '@routes/cp/content/index.js';
+  import {router} from '@inertiajs/vue3';
+  import useCraftData from '@/common/composables/useCraftData';
+  import type {Source, SourceHeading} from '@/modules/elements/types/sources';
+
+  const props = withDefaults(
+    defineProps<{
+      sources: Array<Source>;
+      activeSource?: string | null;
+      viewMode?: string | null;
+    }>(),
+    {activeSource: null, viewMode: null}
+  );
+
+  const {site} = useCraftData();
+
+  // Group the flat source list: each heading absorbs the items that follow it
+  // (until the next heading) into its `children`. Items before the first
+  // heading stay at the top level. Already-grouped headings keep their existing
+  // children, so this is safe to run on a partially/fully normalized list.
+  const normalizedSources = computed<Source[]>(() => {
+    const result: Source[] = [];
+    let currentHeading: SourceHeading | null = null;
+
+    for (const source of props.sources) {
+      if (source.type === 'heading') {
+        currentHeading = {...source, children: [...(source.children || [])]};
+        result.push(currentHeading);
+      } else if (currentHeading) {
+        currentHeading.children.push(source);
+      } else {
+        result.push(source);
+      }
+    }
+
+    return result;
+  });
+
+  // `index.url()` returns the plain string URL (vs. `index()`, which returns a
+  // `{url, method}` pair). craft-nav-item needs a real string href so it renders
+  // an interactive link; we intercept the click for SPA navigation.
+  // Carry the active view mode so the server renders data for the mode the page
+  // is actually showing. Without it, the source visit would fall back to the
+  // default `table` mode while the restored local view state still shows cards
+  // (mirrors how `useElementIndexViewMode` pushes a `viewMode` query param).
+  function sourceUrl(key: string) {
+    return index.url(
+      {page: 'entries'},
+      {
+        query: {
+          source: key,
+          site: site?.handle,
+          ...(props.viewMode ? {viewMode: props.viewMode} : {}),
+        },
+      }
+    );
+  }
+
+  // The source the user just clicked. It's activated immediately instead of
+  // waiting for the round-trip; once the visit settles, the server-provided
+  // `activeSource` becomes authoritative again.
+  const pendingSource = ref<string | null>(null);
+
+  // Optimistic active source: a pending click wins until it resolves, otherwise
+  // fall back to the source the server says is active.
+  const activeKey = computed(() => pendingSource.value ?? props.activeSource);
+
+  function onSourceClick(event: MouseEvent, key: string) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (key === activeKey.value) {
+      return;
+    }
+
+    visitSource(key);
+  }
+
+  function visitSource(key: string) {
+    // Reflect the selection right away, before the request goes out.
+    pendingSource.value = key;
+
+    router.visit(sourceUrl(key), {
+      // Switching sources rebuilds the list view (data, columns, sort, actions,
+      // pagination…), but the source nav itself and the publishable sections
+      // behind the New-entry button don't change — so skip re-sending those two
+      // rather than re-fetching the entire page. Mirrors the partial-reload
+      // approach the sort/pagination/view-mode composables already use.
+      except: ['sources', 'publishableSections'],
+      preserveState: true,
+      preserveScroll: true,
+      onFinish: () => {
+        // Hand control back to the server prop once this visit settles. The
+        // key guard means a superseded (cancelled) visit from rapid switching
+        // won't clear the highlight for a newer selection.
+        if (pendingSource.value === key) {
+          pendingSource.value = null;
+        }
+      },
+    });
+  }
+</script>
+
+<template>
+  <craft-nav-list>
+    <template
+      v-for="source in normalizedSources"
+      :key="source.type === 'heading' ? source.heading : source.key"
+    >
+      <template v-if="source.type === 'heading'">
+        <craft-nav-item initial-state="open">
+          <span class="text-xs font-bold" v-if="source.heading">
+            {{ source.heading }}
+          </span>
+          <div slot="subnav">
+            <craft-nav-item
+              v-for="child in source.children"
+              :key="child.key"
+              :href="sourceUrl(child.key)"
+              :active="child.key === activeKey"
+              :data-group="source.heading"
+              @click="onSourceClick($event, child.key)"
+            >
+              {{ child.label }}
+            </craft-nav-item>
+          </div>
+        </craft-nav-item>
+      </template>
+      <template v-else>
+        <craft-nav-item
+          :href="sourceUrl(source.key)"
+          :active="source.key === activeKey"
+          @click="onSourceClick($event, source.key)"
+        >
+          {{ source.label }}
+        </craft-nav-item>
+      </template>
+    </template>
+  </craft-nav-list>
+</template>
+
+<style scoped lang="scss"></style>

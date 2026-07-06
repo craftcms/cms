@@ -1,0 +1,2 @@
+var e = {optionsPopup: `Pop-up van opties`};
+export {e as default};

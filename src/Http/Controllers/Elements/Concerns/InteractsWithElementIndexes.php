@@ -114,6 +114,18 @@ trait InteractsWithElementIndexes
     }
 
     /**
+     * Returns the return URL with `?` swapped for a token.
+     *
+     * @see https://github.com/craftcms/cms/issues/18923
+     */
+    protected function resolveReturnUrl(): ?string
+    {
+        $returnUrl = request()->input('returnUrl');
+
+        return $returnUrl ? str_replace('?', ':QS:', $returnUrl) : null;
+    }
+
+    /**
      * @param  class-string<ElementInterface>  $elementType
      * @return array{query:ElementQueryInterface,unfilteredQuery:ElementQueryInterface|null}
      */
@@ -131,12 +143,6 @@ trait InteractsWithElementIndexes
                 'query' => $query,
                 'unfilteredQuery' => null,
             ];
-        }
-
-        if ($source['type'] === ElementSources::TYPE_CUSTOM) {
-            /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = Conditions::createCondition($source['condition']);
-            $sourceCondition->modifyQuery($query);
         }
 
         $applyCriteria = function (array $criteria) use ($query): bool {
@@ -164,6 +170,14 @@ trait InteractsWithElementIndexes
 
             return true;
         };
+
+        if ($source['type'] === ElementSources::TYPE_CUSTOM) {
+            /** @var ElementConditionInterface $sourceCondition */
+            $sourceCondition = Conditions::createCondition($source['condition']);
+            $sourceCondition->modifyQuery($query);
+        } else {
+            $applyCriteria($source['criteria'] ?? []);
+        }
 
         $applyCriteria(request()->input('baseCriteria') ?? []);
 

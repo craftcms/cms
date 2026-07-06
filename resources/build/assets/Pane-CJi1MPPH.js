@@ -1,0 +1,169 @@
+import {
+  E as e,
+  K as t,
+  Q as n,
+  R as r,
+  U as i,
+  V as a,
+  X as o,
+  _ as s,
+  b as c,
+  d as l,
+  t as u,
+  tt as d,
+  v as f,
+  x as p,
+  y as m,
+} from './_plugin-vue_export-helper-g2tzphu6.js';
+var h = {class: `cp-pane__header`},
+  g = {key: 0, class: `text-lg`},
+  _ = {class: `cp-pane__actions`},
+  v = {class: `cp-pane__body`},
+  y = {class: `cp-pane__footer`},
+  b = {class: `actions`},
+  x = u(
+    e({
+      __name: `Pane`,
+      props: {
+        as: {default: `div`},
+        variant: {},
+        appearance: {},
+        hideHeader: {type: Boolean, default: !1},
+        hideFooter: {type: Boolean, default: !1},
+        title: {},
+        padding: {default: `lg`},
+      },
+      setup(e) {
+        l((e) => ({e9fb4380: T.value}));
+        let u = t(),
+          x = e;
+        function S(e) {
+          return !isNaN(parseFloat(String(e))) && isFinite(Number(e));
+        }
+        let C = s(
+            () => !!(u.header || x.title || u.title || u[`header-actions`])
+          ),
+          w = s(
+            () =>
+              u.footer ||
+              u.actions ||
+              u.feedback ||
+              u[`footer-content`] ||
+              u[`primary-action`] ||
+              u[`secondary-action`]
+          ),
+          T = s(() =>
+            x.padding === 0
+              ? 0
+              : S(x.padding)
+                ? `calc(${x.padding}rem / 16)`
+                : [`sm`, `md`, `lg`, `xl`].includes(x.padding)
+                  ? `var(--c-spacing-${x.padding})`
+                  : x.padding
+          );
+        return (t, s) => (
+          r(),
+          m(
+            i(e.as),
+            {
+              class: n({
+                'cp-pane': !0,
+                'cp-pane--code': e.variant === `code`,
+                'cp-pane--error': e.variant === `error`,
+                'cp-pane--outline': e.appearance === `outline`,
+                'cp-pane--raised': e.appearance === `raised`,
+              }),
+            },
+            {
+              default: o(() => [
+                C.value
+                  ? a(
+                      t.$slots,
+                      `header`,
+                      {key: 0},
+                      () => [
+                        f(`div`, h, [
+                          a(
+                            t.$slots,
+                            `title`,
+                            {},
+                            () => [
+                              e.title
+                                ? (r(), p(`h1`, g, d(e.title), 1))
+                                : c(``, !0),
+                            ],
+                            !0
+                          ),
+                          f(`div`, _, [
+                            a(t.$slots, `header-actions`, {}, void 0, !0),
+                          ]),
+                        ]),
+                      ],
+                      !0
+                    )
+                  : c(``, !0),
+                a(
+                  t.$slots,
+                  `body`,
+                  {},
+                  () => [f(`div`, v, [a(t.$slots, `default`, {}, void 0, !0)])],
+                  !0
+                ),
+                w.value
+                  ? a(
+                      t.$slots,
+                      `footer`,
+                      {key: 1},
+                      () => [
+                        f(`div`, y, [
+                          a(
+                            t.$slots,
+                            `footer-content`,
+                            {},
+                            () => [
+                              a(t.$slots, `feedback`, {}, void 0, !0),
+                              (s[0] ||= f(`div`, {class: `flex-1`}, null, -1)),
+                              a(
+                                t.$slots,
+                                `actions`,
+                                {},
+                                () => [
+                                  f(`div`, b, [
+                                    a(
+                                      t.$slots,
+                                      `secondary-action`,
+                                      {},
+                                      void 0,
+                                      !0
+                                    ),
+                                    a(
+                                      t.$slots,
+                                      `primary-action`,
+                                      {},
+                                      void 0,
+                                      !0
+                                    ),
+                                  ]),
+                                ],
+                                !0
+                              ),
+                            ],
+                            !0
+                          ),
+                        ]),
+                      ],
+                      !0
+                    )
+                  : c(``, !0),
+              ]),
+              _: 3,
+            },
+            8,
+            [`class`]
+          )
+        );
+      },
+    }),
+    [[`__scopeId`, `data-v-5e15a836`]]
+  );
+export {x as t};

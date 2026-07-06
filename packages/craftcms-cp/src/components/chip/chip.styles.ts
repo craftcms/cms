@@ -6,13 +6,15 @@ export default css`
   }
 
   .cp-chip {
-    --_min-height: var(--c-chip-height, var(--c-size-control-sm));
+    --_min-height: var(--c-chip-height, none);
+    --_thumb-size: calc(24rem / 16);
+    --_radius: var(--c-chip-radius, var(--c-radius-md));
+    --_fill: var(--c-color-fill-quiet, var(--c-surface-raised));
+    padding: 0;
     display: inline-flex;
     min-width: auto;
-    border-radius: var(--c-chip-radius, var(--c-radius-md));
-    padding-inline: var(--c-chip-spacing-inline, 0);
-    padding-block: var(--c-chip-spacing-block, var(--c-spacing-sm));
-    align-items: start;
+    border-radius: var(--_radius);
+    align-items: center;
     box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
 
     /* colorable styles */
@@ -24,6 +26,7 @@ export default css`
       var(--c-color-neutral-border-quiet)
     );
     background-color: var(--c-color-fill-quiet, var(--c-surface-raised));
+    overflow: clip;
   }
 
   .cp-chip__body ::slotted(a) {
@@ -34,6 +37,7 @@ export default css`
 
   .cp-chip[appearance='plain'],
   .cp-chip--plain {
+    --_min-height: none;
     padding-block: 0;
     padding-inline: 0;
     border-color: transparent;
@@ -43,8 +47,7 @@ export default css`
 
   .cp-chip[size='small'],
   .cp-chip--small {
-    --_min-height: var(--c-size-control-sm);
-    padding-block: calc(var(--c-spacing-xs) / 2);
+    /*padding-block: calc(var(--c-spacing-xs) / 2);*/
   }
 
   .cp-chip[size='medium'],
@@ -69,10 +72,20 @@ export default css`
   }
 
   .cp-chip__prefix {
-    padding-inline: calc(var(--c-spacing-md) / 2);
+    padding-inline-end: var(--c-spacing-sm);
   }
 
   .cp-chip__suffix {
     padding-inline-start: var(--c-spacing-md);
+  }
+
+  .cp-chip__indicator {
+    display: inline-flex;
+    padding-inline: var(--c-spacing-sm);
+  }
+
+  .cp-chip__thumbnail {
+    padding: var(--c-spacing-sm);
+    /*border-radius: calc(var(--_radius) - var(--c-spacing-xs));*/
   }
 `;

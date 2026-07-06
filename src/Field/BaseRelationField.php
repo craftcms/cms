@@ -988,7 +988,7 @@ JS, [
     {
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element)->all();
+            $value = ElementCollection::make($this->_all($value, $element)->all());
         } else {
             // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
             $rawValue = $element->getCustomFieldRawValue($this->handle);

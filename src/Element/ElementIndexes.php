@@ -5,150 +5,70 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Support\Facades\Conditions;
-use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Arr;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
+/**
+ * Assembles the data behind Inertia element index screens: query building,
+ * view state, pagination, bulk-action items, column/sort option metadata, and
+ * table-row/card serialization. Controllers stay thin request/response wiring.
+ */
 #[Scoped]
 class ElementIndexes
 {
+    use InteractsWithElementIndexes;
+
     public function __construct(
         private readonly ElementSources $elementSources,
+        private readonly ElementHtml $elementHtml,
+        private readonly ElementActions $elementActions,
     ) {}
 
     /**
-     * Returns the data needed to render an element index screen for the given element type.
+     * Resolves the effective sort: a requested sort wins; otherwise the
+     * source's configured `defaultSort` (`[attribute, direction]`), then a
+     * sensible default.
      *
-     * Returns null if the requested source doesn't exist (or no sources are available), so
-     * callers can redirect to a valid source page.
-     *
-     * @param  class-string<ElementInterface>  $elementType
+     * @return array<int, array{field: string, direction: string}>
      */
-    public function indexData(
-        string $elementType,
-        ?string $page = null,
-        ?string $sourceKey = null,
-        ?string $search = null,
-        ?string $sortAttribute = null,
-        string $sortDirection = 'asc',
-        ?int $siteId = null,
-        ?string $status = null,
-        int $pageNum = 1,
-        int $perPage = 100,
-    ): ?array {
-        $sources = $this->elementSources->getSources($elementType, page: $page)
-            ->reject(fn (array $source) => ($source['sites'] ?? null) === []);
-
-        $selectableSources = $sources->reject(
-            fn (array $source) => ($source['type'] ?? null) === ElementSources::TYPE_HEADING,
-        )->values();
-
-        if ($selectableSources->isEmpty()) {
-            return null;
+    public function resolveSort(array $requestedSort, ?array $source): array
+    {
+        if (! empty($requestedSort)) {
+            return $requestedSort;
         }
 
-        $source = $sourceKey !== null
-            ? $selectableSources->firstWhere('key', $sourceKey)
-            : $selectableSources->first();
+        $defaultSort = $source['defaultSort'] ?? null;
 
-        if ($source === null) {
-            return null;
+        if (is_array($defaultSort) && isset($defaultSort[0])) {
+            return [[
+                'field' => $defaultSort[0],
+                'direction' => ($defaultSort[1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
+            ]];
         }
 
-        $sourceKey = $source['key'];
-
-        $columns = $this->columns($elementType, $sourceKey);
-        $sortOptions = $this->sortOptions($elementType, $sourceKey);
-        $sortableAttributes = array_column($sortOptions, 'attribute');
-
-        if ($sortAttribute === null || ! in_array($sortAttribute, $sortableAttributes, true)) {
-            [$sortAttribute, $sortDirection] = $this->defaultSort($source);
-        }
-
-        if ($status !== null && ! array_key_exists($status, $elementType::statuses())) {
-            $status = null;
-        }
-
-        $query = $this->buildQuery($elementType, $source, $search, $siteId, $status);
-
-        if ($sortAttribute !== null && $sortAttribute !== 'structure') {
-            $elementType::applyIndexSort($query, $sourceKey, $sortAttribute, $sortDirection);
-        }
-
-        $total = $elementType::indexElementCount(clone $query, $sourceKey);
-        $lastPage = max(1, (int) ceil($total / $perPage));
-        $pageNum = min(max(1, $pageNum), $lastPage);
-
-        $query->offset(($pageNum - 1) * $perPage)->limit($perPage);
-        $elements = $query->all();
-
-        $paginator = new LengthAwarePaginator(
-            items: $elements,
-            total: $total,
-            perPage: $perPage,
-            currentPage: $pageNum,
-            options: [
-                'path' => request()->url(),
-                'pageName' => Cms::config()->getPageTriggerParam(),
-            ],
-        );
-        $paginator->appends(request()->query());
-
-        return [
-            'sources' => $this->serializeSources($sources, $siteId),
-            'selectedSource' => $sourceKey,
-            'columns' => $columns,
-            'sortOptions' => $sortOptions,
-            'sort' => [['field' => $sortAttribute ?? '', 'direction' => $sortDirection]],
-            'elements' => $this->serializeElements($elements, $columns),
-            'pagination' => Arr::only($paginator->toArray(), [
-                'total',
-                'per_page',
-                'current_page',
-                'last_page',
-                'next_page_url',
-                'prev_page_url',
-                'from',
-                'to',
-            ]),
-        ];
+        return [['field' => 'dateCreated', 'direction' => 'desc']];
     }
 
     /**
+     * Builds the element query for a source, with status and search applied.
+     *
      * @param  class-string<ElementInterface>  $elementType
      */
-    private function buildQuery(
+    public function buildQuery(
         string $elementType,
-        array $source,
-        ?string $search,
-        ?int $siteId,
-        ?string $status,
+        ?array $source,
+        ?string $status = null,
+        ?string $search = null,
     ): ElementQueryInterface {
-        $query = $elementType::find();
+        $query = $this->buildElementQueryState($elementType, $source, null)['query'];
 
-        if ($source['type'] === ElementSources::TYPE_CUSTOM) {
-            /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = Conditions::createCondition($source['condition']);
-            $sourceCondition->modifyQuery($query);
-        }
-
-        if (! empty($source['criteria'])) {
-            Typecast::configure($query, ElementHelper::cleanseQueryCriteria($source['criteria']));
-        }
-
-        if ($siteId !== null) {
-            $query->siteId($siteId);
-        }
-
-        if ($status !== null) {
-            $query->status($status);
-        }
+        $query->status($status ?: null);
 
         if ($search !== null && $search !== '') {
             $query->search($search);
@@ -158,141 +78,217 @@ class ElementIndexes
     }
 
     /**
+     * Assembles the view state for the index. The client treats the URL as the
+     * source of truth for sorting, so the requested sort maps into the view
+     * state's order/sort/orderHistory, which indexData() then applies.
+     *
+     * @param  array<int, array{field: string, direction: string}>  $sort
+     */
+    public function viewState(array $sort, string $mode): array
+    {
+        $orderBy = array_values(array_filter(
+            $sort,
+            fn ($sortItem) => ! empty($sortItem['field']),
+        ));
+
+        return [
+            ...$this->resolveViewState(),
+            'mode' => $mode,
+            'order' => $orderBy[0]['field'] ?? null,
+            'sort' => $orderBy[0]['direction'] ?? 'asc',
+            'orderHistory' => array_map(
+                fn (array $sortItem) => [$sortItem['field'], $sortItem['direction'] ?? 'asc'],
+                array_slice($orderBy, 1),
+            ),
+            'showHeaderColumn' => true,
+            'fieldLayouts' => $this->resolveFieldLayouts(),
+            'returnUrl' => $this->resolveReturnUrl(),
+        ];
+    }
+
+    /**
+     * Paginates the query. Out-of-range pages clamp to the last valid page.
+     *
+     * @return array{0: LengthAwarePaginator, 1: array}
+     */
+    public function paginate(ElementQueryInterface $query, int $perPage, int $page): array
+    {
+        $perPage = max(1, $perPage);
+        $page = max(1, $page);
+        $pageParam = Cms::config()->getPageTriggerParam();
+
+        $paginator = (clone $query)->paginate(
+            perPage: $perPage,
+            pageName: $pageParam,
+            page: $page,
+        );
+
+        if ($page > $paginator->lastPage()) {
+            $paginator = (clone $query)->paginate(
+                perPage: $perPage,
+                pageName: $pageParam,
+                page: max(1, $paginator->lastPage()),
+            );
+        }
+
+        return [$paginator, [
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'next_page_url' => $paginator->nextPageUrl(),
+            'prev_page_url' => $paginator->previousPageUrl(),
+            'from' => $paginator->firstItem(),
+            'to' => $paginator->lastItem(),
+        ]];
+    }
+
+    /**
+     * Serializes the available bulk actions for the source so the bulk-actions
+     * bar can offer them, or null when the source is unresolved or has none.
+     *
      * @param  class-string<ElementInterface>  $elementType
      */
-    private function columns(string $elementType, string $sourceKey): array
+    public function actionItems(string $elementType, ?string $sourceKey, ElementQueryInterface $query): ?array
     {
-        return $this->elementSources
-            ->getTableAttributes($elementType, $sourceKey)
-            ->map(fn (array $attribute) => [
-                'key' => $attribute[0],
-                'label' => $attribute[1]['label'] ?? '',
+        if ($sourceKey === null) {
+            return null;
+        }
+
+        $availableActions = $this->elementActions->availableActions($elementType, $sourceKey, $query);
+
+        return empty($availableActions)
+            ? null
+            : $this->elementActions->serializeActionItems($availableActions);
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array<int, array{label: string, value: string, defaultDir: string}>
+     */
+    public function sortOptions(string $elementType, ?string $sourceKey): array
+    {
+        if ($sourceKey === null) {
+            return [];
+        }
+
+        return $this->elementSources->getSourceSortOptions($elementType, $sourceKey)
+            ->map(fn (array $option) => [
+                'label' => $option['label'],
+                'value' => $option['attribute'] ?? $option['orderBy'],
+                'defaultDir' => $option['defaultDir'] ?? 'asc',
             ])
             ->values()
             ->all();
     }
 
     /**
+     * Selectable columns: common attributes plus the source's field columns.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return Collection<int, array{label: string, value: string}>
+     */
+    public function availableTableColumns(string $elementType, ?string $sourceKey): Collection
+    {
+        if ($sourceKey === null) {
+            return collect();
+        }
+
+        return $this->elementSources->getAvailableTableAttributes($elementType)
+            ->merge($this->elementSources->getSourceTableAttributes($elementType, $sourceKey))
+            ->map(fn (array $attribute, string $key) => [
+                'label' => $attribute['label'],
+                'value' => $key,
+            ])
+            ->values();
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @return string[]
+     */
+    public function defaultTableColumns(string $elementType, ?string $sourceKey, ?array $fieldLayouts): array
+    {
+        if ($sourceKey === null) {
+            return [];
+        }
+
+        return $this->elementSources->getTableAttributes(
+            elementType: $elementType,
+            sourceKey: $sourceKey,
+            fieldLayouts: $fieldLayouts,
+        )
+            ->map(fn (array $attribute) => $attribute[0])
+            ->filter(fn (string $attribute) => $attribute !== 'title')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Serializes elements as table rows: the title renders as a CpLink-wrapped
+     * chip; every other attribute renders through the element's attribute-HTML
+     * pipeline (which element types override for attributes like `authors`).
+     *
+     * @param  iterable<ElementInterface>  $elements
      * @param  class-string<ElementInterface>  $elementType
      */
-    private function sortOptions(string $elementType, string $sourceKey): array
+    public function tableRows(iterable $elements, string $elementType, array $tableColumns, string $context): Collection
     {
-        $options = [];
+        $attributes = [
+            'title',
+            ...array_keys($elementType::tableAttributes()),
+            ...collect($tableColumns)->pluck('value')->all(),
+        ];
 
-        foreach ($elementType::sortOptions() as $key => $option) {
-            if (! is_array($option)) {
-                $options[$key] = [
-                    'label' => $option,
-                    'attribute' => $key,
-                    'defaultDir' => 'asc',
-                ];
-
-                continue;
-            }
-
-            $attribute = $option['attribute']
-                ?? (is_string($option['orderBy'] ?? null) ? $option['orderBy'] : null);
-
-            if ($attribute !== null) {
-                $options[$attribute] = [
-                    'label' => $option['label'] ?? $attribute,
-                    'attribute' => $attribute,
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
-                ];
-            }
-        }
-
-        foreach ($this->elementSources->getSourceSortOptions($elementType, $sourceKey) as $option) {
-            $attribute = $option['attribute']
-                ?? (is_string($option['orderBy'] ?? null) ? $option['orderBy'] : null);
-
-            if ($attribute !== null && ! isset($options[$attribute])) {
-                $options[$attribute] = [
-                    'label' => $option['label'] ?? $attribute,
-                    'attribute' => $attribute,
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
-                ];
-            }
-        }
-
-        return array_values($options);
-    }
-
-    /**
-     * @return array{0:?string,1:string}
-     */
-    private function defaultSort(array $source): array
-    {
-        $defaultSort = $source['defaultSort'] ?? null;
-
-        if (is_string($defaultSort)) {
-            return [$defaultSort, 'asc'];
-        }
-
-        if (is_array($defaultSort) && isset($defaultSort[0])) {
-            return [$defaultSort[0], strcasecmp($defaultSort[1] ?? 'asc', 'desc') === 0 ? 'desc' : 'asc'];
-        }
-
-        return [null, 'asc'];
-    }
-
-    private function serializeSources(Collection $sources, ?int $siteId): array
-    {
-        $serialized = [];
-
-        foreach ($sources as $source) {
-            if (($source['type'] ?? null) === ElementSources::TYPE_HEADING) {
-                $serialized[] = [
-                    'type' => ElementSources::TYPE_HEADING,
-                    'heading' => $source['heading'] ?? '',
-                ];
-
-                continue;
-            }
-
-            if (
-                $siteId !== null &&
-                isset($source['sites']) &&
-                ! in_array($siteId, $source['sites'], true)
-            ) {
-                continue;
-            }
-
-            $serialized[] = [
-                'type' => $source['type'],
-                'key' => $source['key'],
-                'label' => $source['label'] ?? '',
-                'badgeCount' => $source['badgeCount'] ?? null,
-                'nested' => isset($source['nested'])
-                    ? $this->serializeSources(collect($source['nested']), $siteId)
-                    : [],
-            ];
-        }
-
-        return $serialized;
-    }
-
-    /**
-     * @param  Element[]  $elements
-     */
-    private function serializeElements(array $elements, array $columns): array
-    {
-        return array_map(function (Element $element) use ($columns): array {
-            $attributeHtml = [];
-
-            foreach ($columns as $column) {
-                if ($column['key'] !== 'title') {
-                    $attributeHtml[$column['key']] = $element->getAttributeHtml($column['key']);
-                }
-            }
-
-            return [
+        return collect($elements)
+            ->map(fn (ElementInterface $element) => [
                 'id' => $element->id,
-                'title' => $element->getUiLabel(),
-                'url' => $element->getCpEditUrl(),
-                'status' => $element->getStatus(),
-                'attributeHtml' => $attributeHtml,
-            ];
-        }, $elements);
+                ...collect($attributes)
+                    ->mapWithKeys(fn (string $attribute) => [
+                        $attribute => $attribute === 'title' ?
+                            Html::tag('CpLink',
+                                $this->elementHtml->chipHtml($element, [
+                                    'context' => $context,
+                                    'appearance' => 'plain',
+                                ]),
+                                ['href' => $element->getCpEditUrl(), 'inertia' => false]
+                            )
+                            : (string) $element->getAttributeHtml($attribute),
+                    ])
+                    ->all(),
+            ]);
+    }
+
+    /**
+     * Serializes elements as server-rendered card parts for the cards view.
+     * Vue owns the selection process, so cards render non-selectable.
+     *
+     * @param  iterable<ElementInterface>  $elements
+     */
+    public function cardData(iterable $elements, string $context): Collection
+    {
+        return collect($elements)
+            ->map(function (ElementInterface $element) use ($context) {
+                // A per-element `id` is shared across the full card and its
+                // parts so the header/body/footer line up if they're
+                // recomposed client-side, while staying unique per card.
+                $cardConfig = [
+                    'id' => sprintf('card-%s', mt_rand()),
+                    'context' => $context,
+                    'hyperlink' => true,
+                    'showEditButton' => false,
+                    'autoReload' => false,
+                    'selectable' => false,
+                    'sortable' => false,
+                ];
+
+                return [
+                    'id' => $element->id,
+                    'cardAttributes' => $this->elementHtml->elementCardAttributes($element, $cardConfig),
+                    'cardHeaderHtml' => $this->elementHtml->elementCardHeaderHtml($element, $cardConfig),
+                    'cardContentHtml' => $this->elementHtml->elementCardContentHtml($element, $cardConfig),
+                    'cardFooterHtml' => $this->elementHtml->elementCardFooterHtml($element, $cardConfig),
+                ];
+            });
     }
 }

@@ -33,7 +33,7 @@ export function createAssetController(
 
   function open(): void {
     if (!assetSelectorModal) {
-      assetSelectorModal = window.Craft.createElementSelectorModal(
+      assetSelectorModal = Craft.createElementSelectorModal(
         ASSET_ELEMENT_TYPE,
         {
           closeOtherModals: false,

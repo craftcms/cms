@@ -132,7 +132,10 @@
               </template>
             </craft-nav-list>
           </slot>
-          <slot name="subnav-actions" :state="navState"></slot>
+          <div class="mt-4">
+            <slot name="subnav-actions" :state="navState"></slot>
+          </div>
+          <div id="source-actions"></div>
         </div>
       </nav>
       <div

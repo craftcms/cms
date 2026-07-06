@@ -1,0 +1,2 @@
+var e = {optionsPopup: `Vyskakovacie okno možností kombinovaného poľa`};
+export {e as default};

@@ -111,6 +111,7 @@ interface CraftStatic {
   getUrl(path: string, params?: string | object, baseUrl?: string): string;
   baseCpUrl: string;
   getCpUrl(path: string, params?: string | object): string;
+  defaultIndexCriteria: Record<string, any>;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;
@@ -126,6 +127,7 @@ interface CraftStatic {
       settings?: CpNotificationSettings
     ) => object;
   };
+  defaultIndexCriteria: Record<string, any>;
   systemUid?: string;
   canAccessQueueManager?: boolean;
   queue?: {
@@ -147,6 +149,10 @@ interface CraftStatic {
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
   };
+  CustomizeSourcesModal: new (
+    elementIndex: unknown,
+    settings?: object
+  ) => {destroy(): void};
   FieldLayoutDesigner: {
     new (container: any, settings?: object): FieldLayoutDesignerInstance;
   };

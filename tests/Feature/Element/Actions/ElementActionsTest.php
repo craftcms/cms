@@ -61,6 +61,17 @@ it('resolves canonical entry actions for non-trashed queries', function () {
         ->and($types)->not->toContain(Restore::class);
 });
 
+it('flags non-bulk actions when serializing action items', function () {
+    $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
+    $items = $this->elementActions->serializeActionItems($actions);
+    $flags = array_column($items, 'bulk', 'key');
+
+    expect($flags[View::class])->toBeFalse()
+        ->and($flags[Edit::class])->toBeFalse()
+        ->and($flags[Duplicate::class] ?? null)->toBeNull()
+        ->and($flags[Delete::class] ?? null)->toBeNull();
+});
+
 it('puts restore first for trashed queries', function () {
     $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find()->trashed());
 

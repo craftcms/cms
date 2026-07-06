@@ -1,0 +1,3 @@
+import e from './uk-h1uxyBaZ.js';
+var t = {...e};
+export {t as default};

@@ -1,0 +1,240 @@
+import {l as e} from './nav-item-CyC1px5v-DZDpUldI.js';
+import {
+  E as t,
+  R as n,
+  T as r,
+  X as i,
+  b as a,
+  ct as o,
+  gt as s,
+  ht as c,
+  k as l,
+  p as u,
+  s as d,
+  tt as f,
+  v as p,
+  w as m,
+  x as h,
+  y as g,
+} from './_plugin-vue_export-helper-g2tzphu6.js';
+import {i as _, o as v, t as y} from './AdminTable-32qWVDq-.js';
+import {t as b} from './Pane-CJi1MPPH.js';
+import {s as x} from './InlineFlash-DnK6Yp2V.js';
+import {i as S} from './wayfinder-V597ZF_3.js';
+import {t as C} from './createCraftColumnHelper-ssekFPQZ.js';
+import {n as w, t as T} from './AppLayout-BXGMFlSp.js';
+import {n as E, r as D, t as O} from './useServerSort-DgkJYi_Z.js';
+import {i as k, n as A, r as j, t as M} from './SectionsController-BNRww-4W.js';
+var N = [`loading`],
+  P = [`label`],
+  F = t({
+    __name: `DeleteSectionButton`,
+    props: {section: {}},
+    setup(t) {
+      let r = t,
+        i = d({id: r.section.id});
+      function a() {
+        confirm(
+          e(`Are you sure you want to delete “{name}” and all its entries?`, {
+            name: r.section.name,
+          })
+        ) && i.submit(A());
+      }
+      return (t, r) => (
+        n(),
+        h(
+          `form`,
+          {onSubmit: u(a, [`prevent`]), method: `post`},
+          [
+            p(
+              `craft-button`,
+              {
+                variant: `danger`,
+                type: `submit`,
+                size: `small`,
+                icon: ``,
+                appearance: `plain`,
+                loading: c(i).processing,
+              },
+              [
+                p(
+                  `craft-icon`,
+                  {label: c(e)(`Delete section`), name: `x`},
+                  null,
+                  8,
+                  P
+                ),
+              ],
+              8,
+              N
+            ),
+          ],
+          32
+        )
+      );
+    },
+  }),
+  I = t({
+    __name: `Sections`,
+    props: {
+      title: {},
+      data: {},
+      pagination: {},
+      sort: {},
+      searchTerm: {},
+      emptyMessage: {},
+    },
+    setup(t) {
+      let u = t,
+        {readOnly: d} = S(),
+        h = o(u.searchTerm ?? ``),
+        A = C(),
+        N = o([
+          A.accessor(`name`, {
+            header: e(`Name`),
+            cell: ({row: e, getValue: t}) =>
+              l(
+                `a`,
+                {
+                  class: `font-bold`,
+                  href: j[`/admin/settings/sections/{section}`](e.original.id)
+                    .url,
+                },
+                t()
+              ),
+          }),
+          A.accessor(`handle`, {
+            header: e(`Handle`),
+            cell: ({getValue: e}) =>
+              l(`craft-copy-attribute`, {value: e()}, e()),
+          }),
+          A.accessor(`type`, {header: e(`Type`)}),
+          A.actions(({row: e}) => [l(F, {section: e.original})]),
+        ]),
+        {paginationState: P, paginationConfig: I} = D({
+          initialState: u.pagination,
+          onChange: ({query: e}) => {
+            s.visit(k({query: e}), {
+              only: [`data`, `pagination`],
+              preserveScroll: !0,
+            });
+          },
+        }),
+        {sortingState: L, sortingConfig: R} = O({
+          initialState: u.sort,
+          onChange: ({query: e}) => {
+            s.visit(k({query: e}), {
+              only: [`data`, `sort`],
+              preserveScroll: !0,
+            });
+          },
+        }),
+        z = _({
+          get data() {
+            return u.data;
+          },
+          get columns() {
+            return N.value;
+          },
+          getCoreRowModel: v(),
+          state: {
+            get pagination() {
+              return P.value;
+            },
+            get sorting() {
+              return L.value;
+            },
+            get columnVisibility() {
+              return {actions: !d};
+            },
+          },
+          ...I,
+          ...R,
+        });
+      return (o, s) => (
+        n(),
+        g(
+          T,
+          {title: t.title},
+          {
+            actions: i(() => [
+              c(d)
+                ? a(``, !0)
+                : (n(),
+                  g(
+                    x,
+                    {
+                      key: 0,
+                      as: `craft-button`,
+                      variant: `accent`,
+                      href: c(M)(),
+                    },
+                    {
+                      default: i(() => [
+                        (s[1] ||= p(
+                          `craft-icon`,
+                          {name: `plus`, slot: `prefix`},
+                          null,
+                          -1
+                        )),
+                        m(` ` + f(c(e)(`New section`)), 1),
+                      ]),
+                      _: 1,
+                    },
+                    8,
+                    [`href`]
+                  )),
+            ]),
+            default: i(() => [
+              c(d) ? (n(), g(w, {key: 0})) : a(``, !0),
+              r(
+                b,
+                {padding: 0, appearance: `raised`},
+                {
+                  default: i(() => [
+                    r(
+                      y,
+                      {
+                        spacing: `relaxed`,
+                        title: t.title,
+                        table: c(z),
+                        reorderable: !1,
+                        from: t.pagination.from,
+                        to: t.pagination.to,
+                        total: t.pagination.total,
+                        'enable-adjust-page-size': !0,
+                      },
+                      {
+                        'search-form': i(() => [
+                          r(
+                            E,
+                            {
+                              action: c(k)(),
+                              modelValue: h.value,
+                              'onUpdate:modelValue': (s[0] ||= (e) =>
+                                (h.value = e)),
+                            },
+                            null,
+                            8,
+                            [`action`, `modelValue`]
+                          ),
+                        ]),
+                        _: 1,
+                      },
+                      8,
+                      [`title`, `table`, `from`, `to`, `total`]
+                    ),
+                  ]),
+                  _: 1,
+                }
+              ),
+            ]),
+            _: 1,
+          },
+          8,
+          [`title`]
+        )
+      );
+    },
+  });
+export {I as default};

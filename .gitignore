@@ -36,5 +36,6 @@ resources/js/generated/*
 cms-assets/resources/build
 cms-assets/resources/hot
 cms-assets/resources/legacy
+cms-assets/resources/hot
 cms-assets/resources/icons/*
 !cms-assets/resources/icons/custom-icons

@@ -13,6 +13,6 @@ import './modules/field-layout-designer';
 import './modules/editable-table';
 import './modules/generated-fields';
 
-window.Cp = Cp;
+window.Cp = Cp as unknown as typeof window.Cp;
 
 console.log('window.Cp defined', window.Cp);

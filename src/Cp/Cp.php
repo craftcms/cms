@@ -15,8 +15,6 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Providers\AppServiceProvider;
-use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -206,7 +204,7 @@ readonly class Cp
             'previewIframeResizerOptions' => self::previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),
-            'publishableSections' => $upToDate ? self::publishableSections($currentUser) : [],
+            'publishableSections' => $upToDate ? self::publishableSections() : [],
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'sites' => self::sites(),
@@ -285,41 +283,9 @@ readonly class Cp
         return $generalConfig->previewIframeResizerOptions;
     }
 
-    private static function publishableSections(User $currentUser): array
+    private static function publishableSections(): array
     {
-        $sections = [];
-
-        foreach (Sections::getEditableSections() as $section) {
-            if ($section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid")) {
-                $sections[] = [
-                    'entryTypes' => self::entryTypes($section),
-                    'handle' => $section->handle,
-                    'id' => (int) $section->id,
-                    'name' => t($section->name, category: 'site'),
-                    'sites' => $section->getSiteIds(),
-                    'type' => $section->type,
-                    'uid' => $section->uid,
-                    'canSave' => $currentUser->can("saveEntries:$section->uid"),
-                ];
-            }
-        }
-
-        return $sections;
-    }
-
-    private static function entryTypes(Section $section): array
-    {
-        $types = [];
-
-        foreach ($section->getEntryTypes() as $type) {
-            $types[] = [
-                'handle' => $type->handle,
-                'id' => (int) $type->id,
-                'name' => t($type->name, category: 'site'),
-            ];
-        }
-
-        return $types;
+        return Sections::getPublishableSections()->toArray();
     }
 
     private static function sites(): array

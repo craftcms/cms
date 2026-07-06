@@ -24,3 +24,13 @@ type Story = StoryObj<any>;
 export const Default: Story = {
   args: {},
 };
+
+export const NoLabel: Story = {
+  render: function () {
+    return html`<craft-checkbox
+      label="Craft Input"
+      help-text="This is some instructions text"
+      label-sr-only
+    ></craft-checkbox>`;
+  },
+};

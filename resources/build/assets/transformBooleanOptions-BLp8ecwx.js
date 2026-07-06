@@ -1,0 +1,33 @@
+import {l as e} from './nav-item-CyC1px5v-DZDpUldI.js';
+import './cp-npqTfNqh.js';
+function t(
+  t,
+  {trueLabel: n = e(`Enabled`), falseLabel: r = e(`Disabled`)} = {}
+) {
+  return t.value.startsWith(`$`) || t.value.startsWith(`@`)
+    ? {
+        ...t,
+        data: {
+          ...(t.data || {}),
+          hint: t.data?.boolean === `1` ? n : r,
+          indicator: t.data?.boolean
+            ? {variant: t.data?.boolean === `1` ? `success` : `empty`}
+            : null,
+        },
+      }
+    : t;
+}
+function n(
+  n,
+  {trueLabel: r = e(`Enabled`), falseLabel: i = e(`Disabled`)} = {}
+) {
+  return n.map((e) =>
+    e.type === `optgroup`
+      ? {
+          ...e,
+          options: e.options.map((e) => t(e, {trueLabel: r, falseLabel: i})),
+        }
+      : t(e, {trueLabel: r, falseLabel: i})
+  );
+}
+export {n as t};

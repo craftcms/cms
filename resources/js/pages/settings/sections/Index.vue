@@ -145,7 +145,6 @@
 
     <Pane :padding="0" appearance="raised">
       <AdminTable
-        spacing="relaxed"
         :title="title"
         :table="sectionTable"
         :reorderable="false"

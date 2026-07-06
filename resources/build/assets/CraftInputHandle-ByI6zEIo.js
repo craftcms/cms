@@ -1,0 +1,46 @@
+import {
+  E as e,
+  G as t,
+  M as n,
+  R as r,
+  V as i,
+  b as a,
+  tt as o,
+  v as s,
+  x as c,
+} from './_plugin-vue_export-helper-g2tzphu6.js';
+var l = [`.modelValue`, `has-feedback-for`],
+  u = {slot: `feedback`},
+  d = {key: 0, class: `error-list`},
+  f = e({
+    name: `CraftInputHandle`,
+    __name: `CraftInputHandle`,
+    props: n({error: {}}, {modelValue: {}, modelModifiers: {}}),
+    emits: [`update:modelValue`],
+    setup(e) {
+      let n = t(e, `modelValue`);
+      return (t, f) => (
+        r(),
+        c(
+          `craft-input-handle`,
+          {
+            '.modelValue': n.value,
+            onModelValueChanged: (f[0] ||= (e) =>
+              (n.value = e.target?.modelValue)),
+            'has-feedback-for': e.error ? `error` : ``,
+          },
+          [
+            i(t.$slots, `default`),
+            s(`div`, u, [
+              e.error
+                ? (r(), c(`ul`, d, [s(`li`, null, o(e.error), 1)]))
+                : a(``, !0),
+            ]),
+          ],
+          40,
+          l
+        )
+      );
+    },
+  });
+export {f as t};

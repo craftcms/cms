@@ -20,7 +20,7 @@ use function CraftCms\Cms\craftAsset;
 class CpAsset implements LegacyAssetInterface
 {
     public array $depends = [
-        TailwindResetAsset::class,
+        // TailwindResetAsset::class,
         AnimationBlockerAsset::class,
         AxiosAsset::class,
         D3Asset::class,

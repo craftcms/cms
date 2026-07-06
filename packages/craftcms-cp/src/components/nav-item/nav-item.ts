@@ -1,10 +1,12 @@
 import {html, LitElement, nothing} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import '../badge-indicator/badge-indicator';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {Appearance} from '@src/constants/appearances';
 
 /**
  *
@@ -42,8 +44,30 @@ export default class CraftNavItem extends LitElement {
   @property()
   flush: boolean = false;
 
+  /** Whether the subnav starts open or closed. Active items always start open. */
+  @property({reflect: true, attribute: 'initial-state'})
+  initialState: 'open' | 'closed' = 'closed';
+
+  /** Where the subnav disclosure toggle is rendered. */
+  @property({attribute: 'toggle-position'})
+  togglePosition: 'prefix' | 'suffix' = 'suffix';
+
   @state()
   subnavState: string = 'closed';
+
+  /** Whether the default slot (the item's label) has any content. */
+  private get hasLabel(): boolean {
+    return Array.from(this.childNodes).some((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return !!node.textContent?.trim();
+      }
+
+      return (
+        node.nodeType === Node.ELEMENT_NODE &&
+        !(node as Element).hasAttribute('slot')
+      );
+    });
+  }
 
   constructor() {
     super();
@@ -52,8 +76,9 @@ export default class CraftNavItem extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    // Default to open when the item is active
-    this.subnavState = this.active ? 'open' : 'closed';
+    // Default to open when the item is active, or when explicitly requested.
+    this.subnavState =
+      this.active || this.initialState === 'open' ? 'open' : 'closed';
   }
 
   toggleSubnav(event: Event) {
@@ -62,17 +87,21 @@ export default class CraftNavItem extends LitElement {
     this.subnavState = this.subnavState === 'open' ? 'closed' : 'open';
   }
 
-  renderIconItem(hasSubnav: boolean) {
+  renderIconItem(showToggle: boolean) {
     const itemId = `item-${this.id}`;
 
     return html`
       <a
-        class="nav-item nav-item--icon"
+        class="${classMap({
+          'nav-item': true,
+          'nav-item--icon': true,
+          'nav-item--static': !this.href,
+        })}"
         id="${itemId}"
-        href="${this.href}"
+        href="${ifDefined(this.href || undefined)}"
         aria-current="${this.active ? 'page' : false}"
       >
-        ${this.renderPrefix()} ${this.renderSuffix(hasSubnav)}
+        ${this.renderPrefix()} ${this.renderSuffix(showToggle)}
       </a>
       <c-tooltip for="${itemId}" placement="right-start"
         ><slot></slot
@@ -80,7 +109,36 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderPrefix() {
+  renderSubnavToggle() {
+    return html`
+      <craft-button
+        @click="${this.toggleSubnav}"
+        appearance="${Appearance.Plain}"
+        icon
+        size="small"
+        aria-controls="${this.id}-subnav"
+        aria-expanded="${this.subnavState === 'open' ? 'true' : 'false'}"
+        aria-labelledby="${this.id}-toggle-icon ${this.id}-label"
+      >
+        <craft-icon
+          id="${this.id}-toggle-icon"
+          name="${this.subnavState === 'closed'
+            ? 'chevron-down'
+            : 'chevron-up'}"
+          style="font-size: calc(10rem / 16)"
+          label="${t('Toggle subnavigation')}"
+        ></craft-icon>
+      </craft-button>
+    `;
+  }
+
+  renderPrefix(showToggle: boolean = false) {
+    if (showToggle && this.togglePosition === 'prefix') {
+      return html`
+        <span class="nav-item__prefix">${this.renderSubnavToggle()}</span>
+      `;
+    }
+
     return html`
       <span class="nav-item__prefix">
         <slot name="prefix">
@@ -102,78 +160,64 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  renderSuffix(hasSubnav: boolean = false) {
+  renderSuffix(showToggle: boolean = false) {
     return html`
       <div class="nav-item__suffix">
         <slot name="suffix">
-          ${hasSubnav
-            ? html`
-                  <craft-button
-                    @click="${this.toggleSubnav}"
-                    appearance="plain"
-                  icon
-                  size="small"
-                  aria-controls="${this.id}-subnav"
-                  aria-expanded="${
-                    this.subnavState === 'open' ? 'true' : 'false'
-                  }"
-                    aria-labelledby="${this.id}-toggle-icon ${this.id}-label"
-                  >
-                    <craft-icon
-                      id="${this.id}-toggle-icon""
-                      name="${
-                        this.subnavState === 'closed'
-                          ? 'chevron-down'
-                          : 'chevron-up'
-                      }"
-                      style="font-size: calc(10rem / 16)"
-                      label="${t('Toggle subnavigation')}"
-                  ></craft-icon>
-                </craft-button>
-              `
+          ${showToggle && this.togglePosition === 'suffix'
+            ? this.renderSubnavToggle()
             : nothing}
         </slot>
       </div>
     `;
   }
 
-  renderItem(hasSubnav: boolean, hasPrefix: boolean = false) {
+  renderItem(showToggle: boolean, hasPrefix: boolean = false) {
     return html`
       <a
         class="${classMap({
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
+          'nav-item--static': !this.href,
         })}"
-        href="${this.href}"
+        href="${ifDefined(this.href || undefined)}"
         aria-current="${this.active ? 'page' : false}"
       >
-        ${hasPrefix ? this.renderPrefix() : nothing}
-        <slot id="${this.id}-label"></slot>
-        ${this.renderSuffix(hasSubnav)}
+        ${hasPrefix ? this.renderPrefix(showToggle) : nothing}
+        <slot
+          id="${this.id}-label"
+          @slotchange="${() => this.requestUpdate()}"
+        ></slot>
+        ${this.renderSuffix(showToggle)}
       </a>
     `;
   }
 
   override render() {
     const hasSubnav = !!this.querySelector('[slot="subnav"]');
+    // No label means no toggle, and no way to collapse.
+    const showToggle = hasSubnav && this.hasLabel;
+    const toggleInPrefix = showToggle && this.togglePosition === 'prefix';
     const hasPrefix =
+      toggleInPrefix ||
       !!this.icon ||
       !!this.querySelector('[slot="prefix"]') ||
       !!this.querySelector('[slot="icon"]');
+    const subnavOpen = showToggle ? this.subnavState === 'open' : true;
 
     return html`
       <li>
         ${this.iconOnly
-          ? this.renderIconItem(hasSubnav)
-          : this.renderItem(hasSubnav, hasPrefix)}
+          ? this.renderIconItem(showToggle)
+          : this.renderItem(showToggle, hasPrefix)}
         ${hasSubnav
           ? html`
               <div
                 class="subnav"
                 id="${this.id}-subnav"
                 style="${styleMap({
-                  display: this.subnavState === 'open' ? 'block' : 'none',
+                  display: subnavOpen ? 'block' : 'none',
                 })}"
               >
                 <slot name="subnav"></slot>
