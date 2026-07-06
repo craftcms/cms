@@ -41,3 +41,4 @@ cms-assets/resources/icons/*
 
 # Storybook build output
 /storybook-static
+resources/build

@@ -1,3 +1,0 @@
-import e from './en-Ied68Ew1.js';
-var t = {...e};
-export {t as default};

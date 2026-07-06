@@ -1,2 +1,0 @@
-var e = {optionsPopup: `Vyskakovací okno možností ComboBox`};
-export {e as default};

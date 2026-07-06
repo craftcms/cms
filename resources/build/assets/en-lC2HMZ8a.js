@@ -1,2 +1,0 @@
-var e = {optionsPopup: `Combobox options popup`};
-export {e as default};

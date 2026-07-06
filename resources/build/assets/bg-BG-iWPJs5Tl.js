@@ -1,3 +1,0 @@
-import e from './bg-aTY7Mr5o.js';
-var t = {...e};
-export {t as default};

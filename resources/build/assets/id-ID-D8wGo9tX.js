@@ -1,3 +1,0 @@
-import e from './id-XoGAd2fw.js';
-var t = {...e};
-export {t as default};

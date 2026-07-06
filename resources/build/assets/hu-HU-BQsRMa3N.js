@@ -1,3 +1,0 @@
-import e from './hu-DA3EH3LV.js';
-var t = {...e};
-export {t as default};

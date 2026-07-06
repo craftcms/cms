@@ -1,7 +1,0 @@
-var e = {
-  validationError: `Error,`,
-  validationWarning: `Advertencia,`,
-  validationSuccess: `Satisfactorio,`,
-  validationInfo: `Información,`,
-};
-export {e as default};

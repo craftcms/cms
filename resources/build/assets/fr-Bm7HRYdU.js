@@ -1,2 +1,0 @@
-var e = {optionsPopup: `Fenêtre popup des options de la boîte combinée`};
-export {e as default};

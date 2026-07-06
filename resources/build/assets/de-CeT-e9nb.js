@@ -1,2 +1,0 @@
-var e = {optionsPopup: `Popup-Fenster für Kombibox-Optionen`};
-export {e as default};
