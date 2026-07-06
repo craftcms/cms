@@ -1,9 +1,13 @@
 <script setup lang="ts">
-  import {ref} from 'vue';
+  import {h, ref} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import {connect, destroy} from '@actions/Users/SignInProvidersController';
+  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
+  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import Badge from '@/common/components/Badge.vue';
 
   defineOptions({
     inheritAttrs: false,
@@ -50,69 +54,81 @@
       });
     });
   }
+
+  const columnHelper = createCraftColumnHelper<Provider>();
+  const table = useVueTable<Provider>({
+    get data() {
+      return page.props.providers;
+    },
+    get columns() {
+      return [
+        columnHelper.display({
+          id: 'name',
+          header: t('Provider'),
+          cell: ({row}) =>
+            h('div', {class: 'flex items-center gap-1'}, [
+              row.original.icon &&
+                h('craft-icon', {
+                  name: row.original.icon,
+                  family: 'brands',
+                }),
+              row.original.name,
+            ]),
+        }),
+        columnHelper.display({
+          id: 'status',
+          header: t('Status'),
+
+          cell: ({row}) =>
+            h(
+              Badge,
+              {
+                variant: row.original.connected ? 'success' : 'default',
+              },
+              () =>
+                row.original.connected ? t('Connected') : t('Not connected')
+            ),
+        }),
+        columnHelper.actions(({row}) => [
+          !row.original.connected &&
+            h(
+              'craft-button',
+              {
+                type: 'button',
+                size: 'small',
+                'aria-label': t('Connect {provider}', {
+                  provider: row.original.name,
+                }),
+                disabled: !row.original.canConnect,
+                onclick: () => connectProvider(row.original),
+              },
+              t('Connect')
+            ),
+          row.original.connected &&
+            h(
+              'craft-button',
+              {
+                type: 'button',
+                size: 'small',
+                'aria-label': t('Disconnect {provider}', {
+                  provider: row.original.name,
+                }),
+
+                loading: processingProvider.value === row.original.handle,
+                onclick: () => disconnectProvider(row.original),
+              },
+              t('Disconnect')
+            ),
+        ]),
+      ];
+    },
+    getCoreRowModel: getCoreRowModel<Provider>(),
+    enableSorting: false,
+  });
 </script>
 
 <template>
   <IndexLayout>
-    <div class="grid gap-4 p-4">
-      <div class="tableview">
-        <table class="data fullwidth">
-          <thead>
-            <tr>
-              <th scope="col">{{ t('Provider') }}</th>
-              <th scope="col">{{ t('Status') }}</th>
-              <th scope="col">
-                <span class="visually-hidden">{{ t('Actions') }}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="provider in page.props.providers" :key="provider.handle">
-              <th scope="row">
-                <div class="flex flex-col gap-2xs">
-                  <span class="flex items-center gap-1">
-                    <craft-icon
-                      v-if="provider.icon"
-                      :name="provider.icon"
-                      family="brands"
-                      aria-hidden="true"
-                    />
-                    <span>{{ provider.name }}</span>
-                  </span>
-                  <span v-if="provider.disabledReason" class="smalltext light">
-                    {{ provider.disabledReason }}
-                  </span>
-                </div>
-              </th>
-              <td>
-                {{ provider.connected ? t('Connected') : t('Not connected') }}
-              </td>
-              <td class="text-right">
-                <craft-button
-                  v-if="provider.connected"
-                  type="button"
-                  size="small"
-                  :aria-label="t('Disconnect {provider}', {provider: provider.name})"
-                  :loading="processingProvider === provider.handle"
-                  @click="disconnectProvider(provider)"
-                >
-                  {{ t('Disconnect') }}
-                </craft-button>
-                <craft-button
-                  v-else
-                  type="button"
-                  size="small"
-                  :aria-label="t('Connect {provider}', {provider: provider.name})"
-                  :disabled="!provider.canConnect"
-                  @click="connectProvider(provider)"
-                >
-                  {{ t('Connect') }}
-                </craft-button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <AdminTable :table="table" />
   </IndexLayout>
 </template>

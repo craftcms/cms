@@ -18,6 +18,10 @@
 
   const page = usePage<{
     username?: string;
+    flash?: {
+      success: string | null;
+      error: string | null;
+    };
   }>();
   const {general} = useCraftData();
 </script>
@@ -29,6 +33,7 @@
       show-reset-password
       show-remember-me
       :username="page.props.username"
+      :initial-error="page.props.flash?.error ?? ''"
       :use-email-as-username="general.useEmailAsUsername ? '' : null"
     >
       <div
