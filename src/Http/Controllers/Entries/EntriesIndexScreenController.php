@@ -55,7 +55,7 @@ class EntriesIndexScreenController
 
         $sourceKey = $this->request->source() ?? $this->sourceKeyForSection($sectionHandle);
 
-        $selectedSiteId = $this->selectedSiteId();
+        $selectedSiteId = $this->selectedSiteId() ?? Sites::getCurrentSite()->id;
 
         $data = $this->elementIndexes->indexData(
             elementType: Entry::class,
