@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- `craft\services\Sites::getGroupById()` now has a `$withTrashed` argument.
+- Fixed an error that could occur when applying project config changes, if a site group was deleted. ([#19076](https://github.com/craftcms/cms/issues/19076))
+
 ## 4.18.4 - 2026-07-03
 
 - `craft\helpers\Image::imageSizeByStream()` now supports WebP, AVIF, and HEIC/HEIF images. ([#19189](https://github.com/craftcms/cms/pull/19189))
