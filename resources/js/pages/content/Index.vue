@@ -24,6 +24,10 @@
   } from '@/modules/elements/components/NewEntryButton.vue';
   import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
   import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
+  import {
+    useConditionBuilder,
+    type ConditionConfig,
+  } from '@/modules/elements/composables/useConditionBuilder';
   import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
   import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
   import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
@@ -46,6 +50,7 @@
       elementPluralDisplayName: string;
       context?: string;
       canHaveDrafts?: boolean;
+      currentCondition?: ConditionConfig | null;
       criteria?: Record<string, any>;
       page: string;
       sources: Array<Source>;
@@ -78,7 +83,10 @@
   );
 
   const viewState = useElementIndexViewState(props);
-  const filters = useElementIndexFilters(props, viewState);
+  const {conditions} = useConditionBuilder({
+    initialState: props.currentCondition ?? null,
+  });
+  const filters = useElementIndexFilters(props, viewState, conditions);
   const {columns, columnOrder, columnOptions, reorder, tableColumns} =
     useElementIndexColumns(props, viewState, {key: 'title', label: t('Entry')});
   const {sortingState, sortingConfig, sortField, sortDirection} =
@@ -226,6 +234,7 @@
         <ElementIndexToolbar
           v-model:search="filters.form.search"
           v-model:status="filters.form.status"
+          v-model:conditions="conditions"
           :processing="filters.form.processing"
           :status-options="statusOptions"
           :view-modes="visibleViewModes"

@@ -98,6 +98,9 @@ export default class CraftButton extends LionButtonSubmit {
 
   @property() icon: string | null = null;
 
+  @property({attribute: 'icon-position'}) iconPosition: 'prefix' | 'suffix' =
+    'prefix';
+
   @state()
   private _hasAccessibilityError: boolean = false;
 
@@ -115,12 +118,16 @@ export default class CraftButton extends LionButtonSubmit {
         part="content"
       >
         <slot name="prefix" class="prefix" part="prefix">
-          ${this.icon
+          ${this.icon && this.iconPosition === 'prefix'
             ? html`<craft-icon name="${this.icon}"></craft-icon>`
             : nothing}
         </slot>
         <slot class="label" part="label"></slot>
-        <slot name="suffix" class="suffix" part="suffix"></slot>
+        <slot name="suffix" class="suffix" part="suffix">
+          ${this.icon && this.iconPosition === 'suffix'
+            ? html`<craft-icon name="${this.icon}"></craft-icon>`
+            : nothing}
+        </slot>
       </div>
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`

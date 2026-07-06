@@ -49,13 +49,15 @@ export default css`
     }
   }
 
-  :host(:not(:disabled):not(.loading):active) {
+  :host(:not(:disabled):not(.loading):active),
+  :host(.is-active:not(:disabled):not(.loading)) {
     color: var(--_active-color);
     background-color: var(--_active-background-color);
     box-shadow: inset 0 1px 3px var(--c-color-mix-active);
   }
 
-  :host(:not(:disabled):not(.loading)[active]) {
+  :host(:not(:disabled):not(.loading)[active]),
+  :host(.is-active:not(:disabled):not(.loading)) {
     color: var(--c-color-on-loud);
     background-color: var(--c-color-fill-loud);
     border-color: var(--c-color-border-loud);
@@ -103,7 +105,7 @@ export default css`
   /*
   Icon
    */
-  :host([icon]) {
+  :host([icon='']) {
     aspect-ratio: 1;
     padding-inline: 0;
     padding-block: 0;
