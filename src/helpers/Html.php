@@ -1071,7 +1071,7 @@ class Html extends \yii\helpers\Html
 
         $file = FileHelper::absolutePath(Craft::getAlias($file), '/');
 
-        // make sure it's contained within the project rot
+        // make sure it's contained within the project root
         $rootPath = FileHelper::absolutePath(Craft::getAlias('@root'), '/');
         if (!str_starts_with($file, "$rootPath/")) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));

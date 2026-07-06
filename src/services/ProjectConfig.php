@@ -1650,8 +1650,12 @@ class ProjectConfig extends Component
 
             if (!empty($projectConfigNames)) {
                 foreach ($projectConfigNames as $uid => $name) {
-                    $uids[] = '/^(.*' . preg_quote($uid) . '.*)$/mi';
-                    $replacements[] = '$1 # ' . $name;
+                    $name = trim((string)$name);
+
+                    if ($name !== '') {
+                        $uids[] = sprintf('/^.*\b%s\b.*$/m', preg_quote($uid));
+                        $replacements[] = "$0 # $name";
+                    }
                 }
             }
 
