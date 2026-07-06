@@ -7,13 +7,12 @@ namespace CraftCms\Cms\Http\Controllers;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 use function CraftCms\Cms\t;
@@ -23,8 +22,6 @@ use function CraftCms\Cms\t;
  */
 class ContentIndexController
 {
-    use InteractsWithElementIndexes;
-
     private const string RENDER_CONTEXT = 'index';
 
     /**
@@ -53,7 +50,7 @@ class ContentIndexController
         private readonly ElementIndexes $elementIndexes,
     ) {}
 
-    public function __invoke(Request $request, string $page, ?string $sectionHandle = null)
+    public function __invoke(ElementIndexRequest $request, string $page, ?string $sectionHandle = null)
     {
         $elementType = Entry::class;
         $context = [
@@ -78,16 +75,16 @@ class ContentIndexController
             ?? $this->sourceKeyForSectionHandle($sectionHandle)
             ?? '*';
 
-        [$sourceKey, $source] = $this->resolveSource($elementType, $requestedSource, self::RENDER_CONTEXT);
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $requestedSource, self::RENDER_CONTEXT);
 
         // The view mode is sent as a string when the user switches views (see
         // the `useElementIndexViewMode` composable); fall back to the persisted
         // view state, then the default table mode.
-        $mode = $request->input('viewMode') ?: ($this->resolveViewState()['mode'] ?? 'table');
+        $mode = $request->input('viewMode') ?: $request->viewState()['mode'];
 
         $sort = $this->elementIndexes->resolveSort($request->array('sort'), $source);
 
-        $currentCondition = $this->resolveElementIndexCondition();
+        $currentCondition = $request->condition();
 
         $elementQuery = $this->elementIndexes->buildQuery(
             elementType: $elementType,
@@ -97,14 +94,23 @@ class ContentIndexController
             search: $request->input('search'),
         );
 
+        $fieldLayouts = $request->fieldLayouts();
+
         $visibleColumns = $this->elementIndexes->visibleTableColumns(
             elementType: $elementType,
             sourceKey: $sourceKey,
             requested: $request->array('columns'),
-            fieldLayouts: $this->resolveFieldLayouts(),
+            fieldLayouts: $fieldLayouts,
         );
 
-        $viewState = $this->elementIndexes->viewState($sort, $mode, $visibleColumns);
+        $viewState = $this->elementIndexes->viewState(
+            sort: $sort,
+            mode: $mode,
+            tableColumns: $visibleColumns,
+            fieldLayouts: $fieldLayouts,
+            returnUrl: $request->returnUrl(),
+            clientViewState: $request->viewState(),
+        );
 
         // Reset any ordering applied while building the query so the requested
         // sort stays authoritative, then let indexData() apply it.
@@ -153,7 +159,7 @@ class ContentIndexController
             'defaultTableColumns' => $this->elementIndexes->defaultTableColumns(
                 $elementType,
                 $sourceKey,
-                $this->resolveFieldLayouts(),
+                $fieldLayouts,
             ),
             'data' => $elements,
             'actions' => $this->elementIndexes->actionItems($elementType, $sourceKey, $elementQuery),

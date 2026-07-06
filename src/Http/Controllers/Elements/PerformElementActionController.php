@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\ElementActions;
+use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -17,41 +17,45 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class PerformElementActionController
 {
-    private ElementIndexRequest $request;
-
-    use InteractsWithElementIndexes;
     use RespondsWithFlash;
 
     public function __construct(
-        private ElementActions $elementActions,
-        private ElementSources $elementSources,
-        private TranslationI18N $i18N,
+        private readonly ElementActions $elementActions,
+        private readonly ElementIndexes $elementIndexes,
+        private readonly ElementSources $elementSources,
+        private readonly TranslationI18N $i18N,
     ) {}
 
     public function __invoke(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): SymfonyResponse
     {
-        $this->request = $request;
-
-        $validated = $this->request->validate([
+        $validated = $request->validate([
             'elementAction' => ['required', 'string'],
             'elementIds' => ['required', 'array'],
         ]);
 
         /** @var class-string<ElementInterface> $elementType */
-        $elementType = $this->request->elementType();
+        $elementType = $request->elementType();
         $actionClass = $validated['elementAction'];
         $elementIds = $validated['elementIds'];
-        $context = $this->request->context();
+        $context = $request->context();
 
-        [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $context);
-        $queryState = $this->buildElementQueryState($elementType, $source, $this->request->condition());
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source'), $context);
+        $queryState = $this->elementIndexes->buildQueryState(
+            elementType: $elementType,
+            source: $source,
+            condition: $request->condition(),
+            baseCriteria: $request->baseCriteria(),
+            criteria: $request->criteria(),
+            filterConditionConfig: $request->filterConditionConfig(),
+            collapsedElementIds: $request->collapsedElementIds(),
+        );
         $elementQuery = $queryState['query'];
 
         $currentElementIndex->activate($elementQuery);
 
         $actions = null;
 
-        if ($this->request->isAdministrative($context) && isset($sourceKey)) {
+        if ($request->isAdministrative($context) && isset($sourceKey)) {
             $actions = $this->elementActions->availableActions($elementType, $sourceKey, $elementQuery);
         }
 
@@ -59,7 +63,7 @@ class PerformElementActionController
         abort_if($action === null, 400, 'Element action is not supported by the element type');
 
         foreach ($action->settingsAttributes() as $paramName) {
-            $paramValue = $this->request->input($paramName);
+            $paramValue = $request->input($paramName);
 
             if ($paramValue !== null) {
                 $action->$paramName = $paramValue;
@@ -88,7 +92,7 @@ class PerformElementActionController
             return $this->asFailure($result['message']);
         }
 
-        $responseData = new ElementIndexResource()->toArray($this->request);
+        $responseData = new ElementIndexResource()->toArray($request);
 
         $formatter = $this->i18N->getFormatter();
 

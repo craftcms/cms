@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
 use CraftCms\Cms\Element\CurrentElementIndex;
+use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use Illuminate\Http\JsonResponse;
 
@@ -14,25 +14,20 @@ use function CraftCms\Cms\template;
 
 class ElementIndexSourcesController
 {
-    private ElementIndexRequest $request;
-
-    use InteractsWithElementIndexes;
-
     public function __construct(
-        private ElementSources $elementSources,
+        private readonly ElementIndexes $elementIndexes,
+        private readonly ElementSources $elementSources,
     ) {}
 
     public function sourcePath(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
     {
-        $this->request = $request;
-
-        $this->request->validate([
+        $request->validate([
             'stepKey' => ['required', 'string'],
         ]);
 
-        $elementType = $this->request->elementType();
-        $sourceKey = $this->request->input('source', '');
-        $stepKey = $this->request->input('stepKey');
+        $elementType = $request->elementType();
+        $sourceKey = $request->input('source', '');
+        $stepKey = $request->input('stepKey');
 
         $currentElementIndex->activate();
 
@@ -40,19 +35,17 @@ class ElementIndexSourcesController
             'sourcePath' => $elementType::sourcePath(
                 sourceKey: $sourceKey,
                 stepKey: $stepKey,
-                context: $this->request->context(),
+                context: $request->context(),
             ),
         ]);
     }
 
     public function sourceAttributeInfo(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
     {
-        $this->request = $request;
-
-        $elementType = $this->request->elementType();
-        $context = $this->request->context();
-        [$sourceKey] = $this->resolveSource($elementType, $this->request->input('source'), $context);
-        $fieldLayouts = $this->resolveFieldLayouts();
+        $elementType = $request->elementType();
+        $context = $request->context();
+        [$sourceKey] = $this->elementIndexes->resolveSource($elementType, $request->input('source'), $context);
+        $fieldLayouts = $request->fieldLayouts();
 
         $currentElementIndex->activate();
 
@@ -100,13 +93,11 @@ class ElementIndexSourcesController
 
     public function getSourceTreeHtml(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
     {
-        $this->request = $request;
-
         $currentElementIndex->activate();
 
         $sources = $this->elementSources->getSources(
-            elementType: $elementType = $this->request->elementType(),
-            context: $this->request->context(),
+            elementType: $elementType = $request->elementType(),
+            context: $request->context(),
         )->all();
 
         return new JsonResponse([

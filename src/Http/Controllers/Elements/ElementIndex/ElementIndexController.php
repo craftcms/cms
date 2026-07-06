@@ -8,8 +8,8 @@ use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
+use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -19,26 +19,19 @@ use function CraftCms\Cms\t;
 
 class ElementIndexController
 {
-    private ElementIndexRequest $request;
-
-    use InteractsWithElementIndexes;
-
     public function __construct(
-        private Conditions $conditions,
-        private ElementSources $elementSources,
+        private readonly Conditions $conditions,
+        private readonly ElementSources $elementSources,
+        private readonly ElementIndexes $elementIndexes,
     ) {}
 
-    public function getElements(ElementIndexRequest $request): ElementIndexResource
+    public function getElements(): ElementIndexResource
     {
-        $this->request = $request;
-
         return new ElementIndexResource;
     }
 
-    public function getMoreElements(ElementIndexRequest $request): ElementIndexResource
+    public function getMoreElements(): ElementIndexResource
     {
-        $this->request = $request;
-
         return new ElementIndexResource(
             includeContainer: false,
             includeActions: false,
@@ -47,14 +40,16 @@ class ElementIndexController
 
     public function countElements(ElementIndexRequest $request): JsonResponse
     {
-        $this->request = $request;
-
-        $elementType = $this->request->elementType();
-        [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $this->request->context());
-        $elementQueryState = $this->buildElementQueryState(
+        $elementType = $request->elementType();
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source'), $request->context());
+        $elementQueryState = $this->elementIndexes->buildQueryState(
             elementType: $elementType,
             source: $source,
-            condition: $this->request->condition(),
+            condition: $request->condition(),
+            baseCriteria: $request->baseCriteria(),
+            criteria: $request->criteria(),
+            filterConditionConfig: $request->filterConditionConfig(),
+            collapsedElementIds: $request->collapsedElementIds(),
         );
 
         $total = $elementType::indexElementCount($elementQueryState['query'], $sourceKey);
@@ -63,7 +58,7 @@ class ElementIndexController
             : $total;
 
         return new JsonResponse([
-            'resultSet' => $this->request->input('resultSet'),
+            'resultSet' => $request->input('resultSet'),
             'total' => $total,
             'unfilteredTotal' => $unfilteredTotal,
         ]);
@@ -71,19 +66,17 @@ class ElementIndexController
 
     public function filterHud(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
     {
-        $this->request = $request;
-
-        $elementType = $this->request->elementType();
-        $context = $this->request->context();
-        [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source.key'), $context);
-        $fieldLayouts = $this->resolveFieldLayouts();
-        $currentCondition = $this->resolveElementIndexCondition();
-        $id = $this->request->input('id');
+        $elementType = $request->elementType();
+        $context = $request->context();
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source.key'), $context);
+        $fieldLayouts = $request->fieldLayouts();
+        $currentCondition = $request->condition();
+        $id = $request->input('id');
 
         abort_if($id === null || $id === '', 400, 'Request missing required body param');
 
-        $conditionConfig = $this->request->input('conditionConfig');
-        $serialized = $this->request->input('serialized');
+        $conditionConfig = $request->input('conditionConfig');
+        $serialized = $request->input('serialized');
 
         if (! $conditionConfig && $serialized) {
             parse_str((string) $serialized, $conditionConfig);
@@ -103,7 +96,7 @@ class ElementIndexController
         $condition->id = (string) $id;
         $condition->addRuleLabel = t('Add a filter');
 
-        $this->populateFilterHudQueryParams($condition, $source, $sourceKey, $currentCondition);
+        $this->elementIndexes->populateFilterHudQueryParams($condition, $source, $sourceKey, $currentCondition);
         $currentElementIndex->activate();
 
         return new JsonResponse([
@@ -115,26 +108,28 @@ class ElementIndexController
 
     public function elementTableHtml(ElementIndexRequest $request): JsonResponse
     {
-        $this->request = $request;
-
-        $this->request->validate([
+        $request->validate([
             'id' => ['required', 'integer', 'min:1'],
         ]);
 
-        $elementType = $this->request->elementType();
-        [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $this->request->context());
-        $elementQuery = $this->buildElementQueryState(
+        $elementType = $request->elementType();
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source'), $request->context());
+        $elementQuery = $this->elementIndexes->buildQueryState(
             elementType: $elementType,
             source: $source,
-            condition: $this->request->condition(),
+            condition: $request->condition(),
+            baseCriteria: $request->baseCriteria(),
+            criteria: $request->criteria(),
+            filterConditionConfig: $request->filterConditionConfig(),
+            collapsedElementIds: $request->collapsedElementIds(),
         )['query'];
 
         abort_if(! $sourceKey, 400, 'Request missing required body param');
 
         /** @var ElementInterface|null $element */
         $element = (clone $elementQuery)
-            ->draftOf($this->request->integer('id'))
-            ->draftCreator($this->request->craftUser()?->asElement())
+            ->draftOf($request->integer('id'))
+            ->draftCreator($request->craftUser()?->asElement())
             ->provisionalDrafts()
             ->status(null)
             ->one();
@@ -142,18 +137,18 @@ class ElementIndexController
         if (! $element) {
             /** @var ElementInterface|null $element */
             $element = (clone $elementQuery)
-                ->id($this->request->integer('id'))
+                ->id($request->integer('id'))
                 ->status(null)
                 ->one();
         }
 
-        abort_if(! $element, 400, 'Invalid element ID: '.$this->request->integer('id'));
+        abort_if(! $element, 400, 'Invalid element ID: '.$request->integer('id'));
 
         $attributes = $this->elementSources->getTableAttributes(
             elementType: $elementType,
             sourceKey: $sourceKey,
-            customAttributes: $this->resolveViewState()['tableColumns'] ?? null,
-            fieldLayouts: $this->resolveFieldLayouts(),
+            customAttributes: $request->viewState()['tableColumns'] ?? null,
+            fieldLayouts: $request->fieldLayouts(),
         );
 
         $attributeHtml = [];
