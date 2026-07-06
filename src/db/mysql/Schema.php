@@ -214,8 +214,11 @@ class Schema extends \yii\db\mysql\Schema
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
-        // https://bugs.mysql.com/bug.php?id=109685
-        $useSingleTransaction = $isMySQL8 && version_compare($serverVersion, '8.0.32', '<');
+        // MySQL: https://bugs.mysql.com/bug.php?id=109685
+        $useSingleTransaction = (
+            $this->db->getIsMaria() ||
+            ($isMySQL8 && version_compare($serverVersion, '8.0.32', '<'))
+        );
 
         if ($useSingleTransaction) {
             $baseCommand->addArg('--single-transaction');

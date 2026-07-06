@@ -328,7 +328,7 @@ class Site extends Model implements Chippable
             throw new InvalidConfigException('Site is missing its group ID');
         }
 
-        if (($group = Craft::$app->getSites()->getGroupById($this->groupId)) === null) {
+        if (($group = Craft::$app->getSites()->getGroupById($this->groupId, true)) === null) {
             throw new InvalidConfigException('Invalid site group ID: ' . $this->groupId);
         }
 

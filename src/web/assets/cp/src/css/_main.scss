@@ -7686,12 +7686,12 @@ $min2ColWidth: 400px;
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   @include mixins.menu-styles;
 }
 
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   padding: 0;
 }
 
@@ -9432,13 +9432,12 @@ body {
 /* timepicker */
 .ui-timepicker-wrapper {
   z-index: 101;
+  overflow-y: auto;
+  max-height: 210px;
 }
 
 .ui-timepicker-list {
-  margin-inline-start: 1px;
-  overflow-y: auto;
   width: calc(14px + 6em);
-  height: 210px;
   z-index: 100;
 }
 
