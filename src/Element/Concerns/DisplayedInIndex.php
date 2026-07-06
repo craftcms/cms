@@ -281,29 +281,6 @@ trait DisplayedInIndex
     }
 
     /**
-     * Applies an element index sort attribute to the element query, resolving it against the
-     * element type's sort options and the source's field layout sort options.
-     *
-     * @return bool Whether the attribute resolved to a sort option
-     */
-    public static function applyIndexSort(
-        ElementQueryInterface $elementQuery,
-        string $sourceKey,
-        string $attribute,
-        string $dir = 'asc',
-    ): bool {
-        $orderBy = self::_indexOrderBy($sourceKey, $attribute, $dir);
-
-        if ($orderBy === false) {
-            return false;
-        }
-
-        self::applyIndexOrderBy($elementQuery, $orderBy);
-
-        return true;
-    }
-
-    /**
      * Applies a normalized element index ordering to the element query.
      */
     private static function applyIndexOrderBy(ElementQueryInterface $elementQuery, ExpressionInterface|array $orderBy): void

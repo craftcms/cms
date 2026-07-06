@@ -133,10 +133,12 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
+    // Registered before the index route, which would otherwise match
+    // `content/{section}/new` with `new` as its section handle.
+    Route::get('content/{section}/new', CreateEntryController::class);
     Route::get('content/{page}/{sectionHandle?}', ContentIndexController::class)
         ->name('content.index')
         ->where('page', '[^\/]+');
-    Route::get('content/{section}/new', CreateEntryController::class);
 
     /**
      * Users

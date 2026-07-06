@@ -5,12 +5,13 @@
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import IndexViewSettings from '@/modules/elements/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';
-  import type {ViewMode} from '@/modules/elements/types/view-state';
+  import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
 
   defineProps<{
     statusOptions?: Array<{label: string; value: string}>;
     viewModes?: Array<ViewMode>;
     columnOptions: Array<CheckboxOption>;
+    sortOptions: Array<SortOption>;
     processing?: boolean;
   }>();
 
@@ -96,6 +97,7 @@
 
       <IndexViewSettings
         :options="columnOptions"
+        :sort-options="sortOptions"
         v-model:sort-field="sortField"
         v-model:sort-direction="sortDirection"
         v-model:table-columns="tableColumns"

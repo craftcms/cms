@@ -27,6 +27,25 @@ class ContentIndexController
 
     private const string RENDER_CONTEXT = 'index';
 
+    /**
+     * Maps a section-handle route segment to its source key (`singles` for
+     * Single sections, `section:{uid}` otherwise).
+     */
+    private function sourceKeyForSectionHandle(?string $sectionHandle): ?string
+    {
+        if ($sectionHandle === null || $sectionHandle === '') {
+            return null;
+        }
+
+        if ($sectionHandle === 'singles') {
+            return 'singles';
+        }
+
+        $section = Sections::getSectionByHandle($sectionHandle);
+
+        return $section ? "section:$section->uid" : null;
+    }
+
     public function __construct(
         private readonly PrepareElementIndexVariables $prepareElementIndexVariables,
         private readonly PrepareElementToolbarVariables $prepareElementToolbarVariables,
@@ -53,7 +72,13 @@ class ContentIndexController
             ->values()
             ->all();
 
-        [$sourceKey, $source] = $this->resolveSource($elementType, $request->input('source', '*'), self::RENDER_CONTEXT);
+        // An explicit ?source= wins; otherwise a section-handle URL (e.g.
+        // content/entries/blog, content/entries/singles) selects that source.
+        $requestedSource = $request->input('source')
+            ?? $this->sourceKeyForSectionHandle($sectionHandle)
+            ?? '*';
+
+        [$sourceKey, $source] = $this->resolveSource($elementType, $requestedSource, self::RENDER_CONTEXT);
 
         // The view mode is sent as a string when the user switches views (see
         // the `useElementIndexViewMode` composable); fall back to the persisted
@@ -69,7 +94,14 @@ class ContentIndexController
             search: $request->input('search'),
         );
 
-        $viewState = $this->elementIndexes->viewState($sort, $mode);
+        $visibleColumns = $this->elementIndexes->visibleTableColumns(
+            elementType: $elementType,
+            sourceKey: $sourceKey,
+            requested: $request->array('columns'),
+            fieldLayouts: $this->resolveFieldLayouts(),
+        );
+
+        $viewState = $this->elementIndexes->viewState($sort, $mode, $visibleColumns);
 
         // Reset any ordering applied while building the query so the requested
         // sort stays authoritative, then let indexData() apply it.
@@ -101,7 +133,7 @@ class ContentIndexController
 
         $elements = $mode === 'cards'
             ? $this->elementIndexes->cardData($paginator->items(), self::RENDER_CONTEXT)
-            : $this->elementIndexes->tableRows($paginator->items(), $elementType, $tableColumns->all(), self::RENDER_CONTEXT);
+            : $this->elementIndexes->tableRows($paginator->items(), $elementType, $visibleColumns, self::RENDER_CONTEXT);
 
         return Inertia::render('content/Index', Arr::merge($context, [
             'status' => $request->input('status', ''),

@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {attrs, t} from '@craftcms/cp';
   import {computed, ref} from 'vue';
+  import type {Table} from '@tanstack/vue-table';
   import {usePage} from '@inertiajs/vue3';
   import Empty from '@/common/components/Empty.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
@@ -10,7 +11,7 @@
 
   const props = withDefaults(
     defineProps<{
-      table: any;
+      table: Table<any>;
       data?: Array<CardElement>;
       selectable?: boolean;
       readOnly?: boolean;

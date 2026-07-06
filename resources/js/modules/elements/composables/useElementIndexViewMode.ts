@@ -69,7 +69,7 @@ export function useElementIndexViewMode(
         {query: {...Object.fromEntries(params), viewMode: persisted}}
       ),
       {
-        only: ['data', 'pagination', 'contentHtml'],
+        only: ['data', 'pagination'],
         preserveState: true,
         preserveScroll: true,
         replace: true,

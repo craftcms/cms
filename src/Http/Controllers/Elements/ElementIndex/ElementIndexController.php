@@ -17,31 +17,38 @@ use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\t;
 
-readonly class ElementIndexController
+class ElementIndexController
 {
+    private ElementIndexRequest $request;
+
     use InteractsWithElementIndexes;
 
     public function __construct(
         private Conditions $conditions,
-        private ElementIndexRequest $request,
         private ElementSources $elementSources,
     ) {}
 
-    public function getElements(): ElementIndexResource
+    public function getElements(ElementIndexRequest $request): ElementIndexResource
     {
+        $this->request = $request;
+
         return new ElementIndexResource;
     }
 
-    public function getMoreElements(): ElementIndexResource
+    public function getMoreElements(ElementIndexRequest $request): ElementIndexResource
     {
+        $this->request = $request;
+
         return new ElementIndexResource(
             includeContainer: false,
             includeActions: false,
         );
     }
 
-    public function countElements(): JsonResponse
+    public function countElements(ElementIndexRequest $request): JsonResponse
     {
+        $this->request = $request;
+
         $elementType = $this->request->elementType();
         [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $this->request->context());
         $elementQueryState = $this->buildElementQueryState(
@@ -62,8 +69,10 @@ readonly class ElementIndexController
         ]);
     }
 
-    public function filterHud(CurrentElementIndex $currentElementIndex): JsonResponse
+    public function filterHud(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
     {
+        $this->request = $request;
+
         $elementType = $this->request->elementType();
         $context = $this->request->context();
         [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $context);
@@ -104,8 +113,10 @@ readonly class ElementIndexController
         ]);
     }
 
-    public function elementTableHtml(): JsonResponse
+    public function elementTableHtml(ElementIndexRequest $request): JsonResponse
     {
+        $this->request = $request;
+
         $this->request->validate([
             'id' => ['required', 'integer', 'min:1'],
         ]);

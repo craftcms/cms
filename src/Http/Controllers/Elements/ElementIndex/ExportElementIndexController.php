@@ -13,17 +13,20 @@ use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use Symfony\Component\HttpFoundation\Response;
 
-readonly class ExportElementIndexController
+class ExportElementIndexController
 {
+    private ElementIndexRequest $request;
+
     use InteractsWithElementIndexes;
 
     public function __construct(
-        private ElementIndexRequest $request,
         private ElementExporters $elementExporters,
     ) {}
 
-    public function __invoke(): Response
+    public function __invoke(ElementIndexRequest $request): Response
     {
+        $this->request = $request;
+
         $validated = $this->request->validate([
             'elementType' => [
                 'required',

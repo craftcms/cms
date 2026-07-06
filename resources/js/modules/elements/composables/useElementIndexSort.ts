@@ -3,7 +3,7 @@ import {router} from '@inertiajs/vue3';
 import {index} from '@/routes/craft/cp/content/index.js';
 import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
 import type {SortItem} from '@/common/types';
-import type {ViewState} from '@/modules/elements/types/view-state';
+import type {SortOption, ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
 
 interface ElementIndexSortContext {
@@ -11,6 +11,8 @@ interface ElementIndexSortContext {
   sectionHandle?: string | number;
   sort: Array<SortItem>;
   source?: SourceItem | null;
+  /** The sortable attributes; switching to one starts at its `defaultDir`. */
+  sortOptions?: Array<SortOption>;
 }
 
 interface UseElementIndexSortOptions {
@@ -142,10 +144,19 @@ export function useElementIndexSort(
   // sync.
   const sortField = computed<string>({
     get: () => sortingState.value[0]?.id ?? 'title',
-    set: (field) =>
+    set: (field) => {
+      // A newly chosen attribute starts at its own default direction (e.g.
+      // dates sort newest-first); only same-field changes keep the current one.
+      const option = props.sortOptions?.find((o) => o.value === field);
       onSortingChange([
-        {id: field, desc: sortingState.value[0]?.desc ?? false},
-      ]),
+        {
+          id: field,
+          desc: option
+            ? option.defaultDir === 'desc'
+            : (sortingState.value[0]?.desc ?? false),
+        },
+      ]);
+    },
   });
 
   const sortDirection = computed<'asc' | 'desc'>({

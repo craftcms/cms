@@ -15,20 +15,23 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Translation\I18N as TranslationI18N;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-readonly class PerformElementActionController
+class PerformElementActionController
 {
+    private ElementIndexRequest $request;
+
     use InteractsWithElementIndexes;
     use RespondsWithFlash;
 
     public function __construct(
-        private ElementIndexRequest $request,
         private ElementActions $elementActions,
         private ElementSources $elementSources,
         private TranslationI18N $i18N,
     ) {}
 
-    public function __invoke(CurrentElementIndex $currentElementIndex): SymfonyResponse
+    public function __invoke(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): SymfonyResponse
     {
+        $this->request = $request;
+
         $validated = $this->request->validate([
             'elementAction' => ['required', 'string'],
             'elementIds' => ['required', 'array'],

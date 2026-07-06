@@ -36,3 +36,10 @@ it('falls back to the first page for unknown section handles', function () {
     get(cp_url('entries/nope'))
         ->assertRedirect(cp_url('content/entries'));
 });
+
+it('redirects the singles handle to the singles source page', function () {
+    actingAs(User::find()->one());
+
+    get(cp_url('entries/singles'))
+        ->assertRedirect(cp_url('content/entries/singles'));
+});

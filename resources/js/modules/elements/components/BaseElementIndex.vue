@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {computed, ref, watch} from 'vue';
   import {usePage} from '@inertiajs/vue3';
+  import type {Table} from '@tanstack/vue-table';
   import {Appearance, t} from '@craftcms/cp';
   import Text from '@/common/components/Text.vue';
   import Select from '@/common/form/Select.vue';
@@ -10,7 +11,7 @@
 
   const props = withDefaults(
     defineProps<{
-      table: any;
+      table: Table<any>;
       selectable?: boolean;
       readOnly?: boolean;
       loading?: boolean;

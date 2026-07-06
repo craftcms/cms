@@ -1,4 +1,6 @@
-import {computed, type Ref} from 'vue';
+import {computed, onMounted, type Ref} from 'vue';
+import {router} from '@inertiajs/vue3';
+import {index} from '@/routes/craft/cp/content/index.js';
 import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
@@ -8,6 +10,8 @@ import type {SourceItem} from '@/modules/elements/types/sources';
 type Row = Record<any, any>;
 
 interface ElementIndexColumnsContext {
+  page: string;
+  sectionHandle?: string | number;
   /** Columns available for the current source: `{label, value}` per column. */
   tableColumns: Array<{label: string; value: string}>;
   /** The active source; a custom source may carry its own `tableAttributes`. */
@@ -129,11 +133,69 @@ export function useElementIndexColumns(
     viewState.value.sources = sources;
   }
 
+  // The server only renders the columns it's asked for, so any change to the
+  // visible set refetches the rows with the new `columns` selection. Ordering
+  // is purely presentational and stays client-side.
+  function refetchWithColumns(
+    visible: Array<string>,
+    options: {replace?: boolean} = {}
+  ) {
+    // Drop any existing `columns[…]` params — they'd otherwise merge with the
+    // new selection, since the serialized keys (`columns[0]`, …) don't match
+    // the `columns` key we set below.
+    const params = Object.fromEntries(
+      [...new URLSearchParams(window.location.search)].filter(
+        ([key]) => key !== 'columns' && !key.startsWith('columns[')
+      )
+    );
+
+    router.visit(
+      index(
+        {
+          page: props.page ?? '',
+          sectionHandle: props.sectionHandle ?? undefined,
+        },
+        {query: {...params, columns: visible}}
+      ),
+      {
+        only: ['data'],
+        preserveState: true,
+        preserveScroll: true,
+        replace: options.replace ?? false,
+      }
+    );
+  }
+
   // Writable model for the toolbar's column toggles: reading yields the
-  // effective visible keys; writing records a per-source override.
+  // effective visible keys; writing records a per-source override and pulls
+  // the newly visible columns' data from the server.
   const tableColumns = computed<Array<string>>({
     get: () => visibleKeys.value,
-    set: (value) => patchSourceColumnState({visible: value}),
+    set: (value) => {
+      patchSourceColumnState({visible: value});
+      refetchWithColumns(value);
+    },
+  });
+
+  // On load, if the user has a persisted column selection that differs from
+  // what the server rendered by default, restore it into the URL (without
+  // adding a history entry) so the rows include those columns' data.
+  onMounted(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hasColumnsInUrl = [...params.keys()].some(
+      (key) => key === 'columns' || key.startsWith('columns[')
+    );
+    const persisted = sourceColumnState.value?.visible;
+
+    if (hasColumnsInUrl || !persisted?.length) {
+      return;
+    }
+
+    if (JSON.stringify(persisted) === JSON.stringify(defaultVisible.value)) {
+      return;
+    }
+
+    refetchWithColumns(persisted, {replace: true});
   });
 
   function reorder(options: Array<{value: string}>) {

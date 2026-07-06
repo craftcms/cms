@@ -257,3 +257,70 @@ it('serializes bulk action items for the active source', function () {
             ->has('actions')
         );
 });
+
+it('selects the source for a section-handle URL', function () {
+    $section = Section::factory()->create(['handle' => 'blog']);
+
+    get("/{$this->cpTrigger}/content/entries/blog")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.key', "section:{$section->uid}")
+        );
+});
+
+it('selects the singles source for the singles handle', function () {
+    Section::factory()->create(['type' => SectionType::Single]);
+
+    get("/{$this->cpTrigger}/content/entries/singles")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.key', 'singles')
+        );
+});
+
+it('renders only the default columns unless specific columns are requested', function () {
+    EntryModel::factory()->create();
+
+    // `slug` is a valid column but not among the entry defaults.
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('data.0.title')
+            ->missing('data.0.slug')
+        );
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'columns' => ['slug'],
+    ]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('data.0.title')
+            ->has('data.0.slug')
+        );
+});
+
+it('ignores unknown requested columns', function () {
+    EntryModel::factory()->create();
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'columns' => ['nope', 'slug'],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('data.0.slug')
+            ->missing('data.0.nope')
+        );
+});
+
+it('serializes sort options with string values and default directions', function () {
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('sortOptions')
+            ->where('sortOptions', fn ($options) => collect($options)->isNotEmpty()
+                && collect($options)->pluck('value')->contains('title')
+                && collect($options)->pluck('value')->contains('postDate')
+                && collect($options)->every(
+                    fn ($option) => is_string($option['value'])
+                        && $option['value'] !== ''
+                        && in_array($option['defaultDir'], ['asc', 'desc'], true)
+                ))
+        );
+});

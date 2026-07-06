@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {type Column, FlexRender} from '@tanstack/vue-table';
+  import {type Column, FlexRender, type Table} from '@tanstack/vue-table';
   import {t} from '@craftcms/cp';
   import {computed, ref, useId} from 'vue';
   import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
@@ -12,7 +12,7 @@
 
   const props = withDefaults(
     defineProps<{
-      table: any;
+      table: Table<any>;
       title?: string;
       reorderable?: boolean;
       selectable?: boolean;
@@ -120,7 +120,7 @@
 
     const columnCount = visibleColumnCount.value;
 
-    const styles: {[key: string]: number} = {
+    const styles: {[key: string]: number | string} = {
       '--table-column-count': columnCount,
     };
 
@@ -179,17 +179,22 @@
         event.preventDefault();
         toggleRow(row);
         break;
-      case 'ArrowDown':
+      case 'ArrowDown': {
         event.preventDefault();
-        if (event.shiftKey)
-          extendSelectionTo(rows[Math.min(index + 1, rows.length - 1)]);
-        focusRowByIndex(Math.min(index + 1, rows.length - 1), target);
+        const next = Math.min(index + 1, rows.length - 1);
+        const nextRow = rows[next];
+        if (event.shiftKey && nextRow) extendSelectionTo(nextRow);
+        focusRowByIndex(next, target);
         break;
-      case 'ArrowUp':
+      }
+      case 'ArrowUp': {
         event.preventDefault();
-        if (event.shiftKey) extendSelectionTo(rows[Math.max(index - 1, 0)]);
-        focusRowByIndex(Math.max(index - 1, 0), target);
+        const prev = Math.max(index - 1, 0);
+        const prevRow = rows[prev];
+        if (event.shiftKey && prevRow) extendSelectionTo(prevRow);
+        focusRowByIndex(prev, target);
         break;
+      }
     }
   }
 </script>

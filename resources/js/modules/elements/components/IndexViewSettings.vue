@@ -3,9 +3,13 @@
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {CheckboxOption} from '@/common/types';
+  import type {SortOption} from '@/modules/elements/types/view-state';
 
   defineProps<{
+    /** The toggleable/reorderable table columns. */
     options: Array<CheckboxOption>;
+    /** The sortable attributes for the "Sort by" select. */
+    sortOptions: Array<SortOption>;
   }>();
 
   const sortField = defineModel<string>('sortField', {required: true});
@@ -44,7 +48,7 @@
           <Select
             :label="t('Sort by')"
             v-model="sortField"
-            :options="options"
+            :options="sortOptions"
           />
           <craft-button-group
             @change="

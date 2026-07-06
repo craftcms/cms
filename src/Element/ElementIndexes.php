@@ -80,11 +80,14 @@ class ElementIndexes
     /**
      * Assembles the view state for the index. The client treats the URL as the
      * source of truth for sorting, so the requested sort maps into the view
-     * state's order/sort/orderHistory, which indexData() then applies.
+     * state's order/sort/orderHistory, which indexData() then applies. The
+     * resolved visible columns go into `tableColumns` so indexData() prepares
+     * (eager-loads) exactly the attributes that will be rendered.
      *
      * @param  array<int, array{field: string, direction: string}>  $sort
+     * @param  string[]|null  $tableColumns
      */
-    public function viewState(array $sort, string $mode): array
+    public function viewState(array $sort, string $mode, ?array $tableColumns = null): array
     {
         $orderBy = array_values(array_filter(
             $sort,
@@ -94,6 +97,7 @@ class ElementIndexes
         return [
             ...$this->resolveViewState(),
             'mode' => $mode,
+            'tableColumns' => $tableColumns,
             'order' => $orderBy[0]['field'] ?? null,
             'sort' => $orderBy[0]['direction'] ?? 'asc',
             'orderHistory' => array_map(
@@ -172,14 +176,50 @@ class ElementIndexes
             return [];
         }
 
-        return $this->elementSources->getSourceSortOptions($elementType, $sourceKey)
-            ->map(fn (array $option) => [
-                'label' => $option['label'],
-                'value' => $option['attribute'] ?? $option['orderBy'],
-                'defaultDir' => $option['defaultDir'] ?? 'asc',
-            ])
-            ->values()
-            ->all();
+        $options = [];
+
+        // The element type's own sort options: either `attribute => label`
+        // pairs or arrays with label/attribute/orderBy/defaultDir keys.
+        foreach ($elementType::sortOptions() as $attribute => $option) {
+            if (! is_array($option)) {
+                $options[$attribute] = [
+                    'label' => $option,
+                    'value' => $attribute,
+                    'defaultDir' => 'asc',
+                ];
+
+                continue;
+            }
+
+            // `orderBy` can be a query expression or closure; only string
+            // attributes are addressable from the client.
+            $value = $option['attribute']
+                ?? (is_string($option['orderBy'] ?? null) ? $option['orderBy'] : null);
+
+            if (is_string($value) && $value !== '') {
+                $options[$value] = [
+                    'label' => $option['label'] ?? $value,
+                    'value' => $value,
+                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                ];
+            }
+        }
+
+        // Plus the source's field-layout sort options (sortable custom fields).
+        foreach ($this->elementSources->getSourceSortOptions($elementType, $sourceKey) as $option) {
+            $value = $option['attribute']
+                ?? (is_string($option['orderBy'] ?? null) ? $option['orderBy'] : null);
+
+            if (is_string($value) && $value !== '' && ! isset($options[$value])) {
+                $options[$value] = [
+                    'label' => $option['label'] ?? $value,
+                    'value' => $value,
+                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                ];
+            }
+        }
+
+        return array_values($options);
     }
 
     /**
@@ -225,20 +265,48 @@ class ElementIndexes
     }
 
     /**
+     * Resolves the columns to render: the client's requested columns (its
+     * per-source visibility selection), validated against what the source
+     * offers, falling back to the source/element-type defaults.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  string[]  $requested
+     * @return string[]
+     */
+    public function visibleTableColumns(
+        string $elementType,
+        ?string $sourceKey,
+        array $requested,
+        ?array $fieldLayouts = null,
+    ): array {
+        $available = $this->availableTableColumns($elementType, $sourceKey)
+            ->pluck('value')
+            ->all();
+
+        $requested = array_values(array_unique(array_intersect(
+            array_filter($requested, is_string(...)),
+            $available,
+        )));
+
+        return $requested !== []
+            ? $requested
+            : $this->defaultTableColumns($elementType, $sourceKey, $fieldLayouts);
+    }
+
+    /**
      * Serializes elements as table rows: the title renders as a CpLink-wrapped
-     * chip; every other attribute renders through the element's attribute-HTML
-     * pipeline (which element types override for attributes like `authors`).
+     * chip; every other visible column renders through the element's
+     * attribute-HTML pipeline (which element types override for attributes
+     * like `authors`). Only the given columns render — the client refetches
+     * when its column selection changes.
      *
      * @param  iterable<ElementInterface>  $elements
      * @param  class-string<ElementInterface>  $elementType
+     * @param  string[]  $columns
      */
-    public function tableRows(iterable $elements, string $elementType, array $tableColumns, string $context): Collection
+    public function tableRows(iterable $elements, string $elementType, array $columns, string $context): Collection
     {
-        $attributes = [
-            'title',
-            ...array_keys($elementType::tableAttributes()),
-            ...collect($tableColumns)->pluck('value')->all(),
-        ];
+        $attributes = array_values(array_unique(['title', ...$columns]));
 
         return collect($elements)
             ->map(fn (ElementInterface $element) => [

@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
+import type {Table} from '@tanstack/vue-table';
 import ElementCards from './ElementCards.vue';
 import {
   createSampleTable,
@@ -27,6 +28,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Each story builds its real table inside setup(); this satisfies the
+// required `table` prop in `args`, which the template's :table overrides.
+const tablePlaceholder = null as unknown as Table<any>;
+
 function render(extraProps: Record<string, unknown> = {}) {
   return (args: Record<string, unknown>) => ({
     components: {ElementCards},
@@ -42,17 +47,17 @@ function render(extraProps: Record<string, unknown> = {}) {
 
 export const Default: Story = {
   render: render(),
-  args: {table: null},
+  args: {table: tablePlaceholder},
 };
 
 export const Selectable: Story = {
   render: render({selectable: true}),
-  args: {table: null},
+  args: {table: tablePlaceholder},
 };
 
 export const Loading: Story = {
   render: render({loading: true}),
-  args: {table: null},
+  args: {table: tablePlaceholder},
 };
 
 export const Empty: Story = {
@@ -64,5 +69,5 @@ export const Empty: Story = {
     },
     template: '<ElementCards v-bind="args" :table="table" :data="[]" />',
   }),
-  args: {table: null},
+  args: {table: tablePlaceholder},
 };

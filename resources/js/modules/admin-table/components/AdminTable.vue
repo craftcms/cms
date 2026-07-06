@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
+  import type {Table} from '@tanstack/vue-table';
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
   import DataTable from '@/modules/elements/components/DataTable.vue';
   import {type TableSpacingValue} from '@/common/types';
@@ -7,7 +8,7 @@
 
   const props = withDefaults(
     defineProps<{
-      table: any;
+      table: Table<any>;
       title?: string;
       reorderable?: boolean;
       selectable?: boolean;

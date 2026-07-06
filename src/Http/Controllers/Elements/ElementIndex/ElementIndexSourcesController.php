@@ -12,17 +12,20 @@ use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\template;
 
-readonly class ElementIndexSourcesController
+class ElementIndexSourcesController
 {
+    private ElementIndexRequest $request;
+
     use InteractsWithElementIndexes;
 
     public function __construct(
-        private ElementIndexRequest $request,
         private ElementSources $elementSources,
     ) {}
 
-    public function sourcePath(CurrentElementIndex $currentElementIndex): JsonResponse
+    public function sourcePath(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
     {
+        $this->request = $request;
+
         $this->request->validate([
             'stepKey' => ['required', 'string'],
         ]);
@@ -42,8 +45,10 @@ readonly class ElementIndexSourcesController
         ]);
     }
 
-    public function sourceAttributeInfo(CurrentElementIndex $currentElementIndex): JsonResponse
+    public function sourceAttributeInfo(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
     {
+        $this->request = $request;
+
         $elementType = $this->request->elementType();
         $context = $this->request->context();
         [$sourceKey] = $this->resolveSource($elementType, $this->request->input('source'), $context);
@@ -93,8 +98,10 @@ readonly class ElementIndexSourcesController
         ));
     }
 
-    public function getSourceTreeHtml(CurrentElementIndex $currentElementIndex): JsonResponse
+    public function getSourceTreeHtml(ElementIndexRequest $request, CurrentElementIndex $currentElementIndex): JsonResponse
     {
+        $this->request = $request;
+
         $currentElementIndex->activate();
 
         $sources = $this->elementSources->getSources(

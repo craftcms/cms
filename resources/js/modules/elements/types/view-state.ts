@@ -38,8 +38,9 @@ export type ViewState = {
   static: boolean;
 };
 
+/** A sortable attribute, as serialized by `ElementIndexes::sortOptions()`. */
 export type SortOption = {
   label: string;
-  attr: string;
+  value: string;
   defaultDir: 'asc' | 'desc';
 };

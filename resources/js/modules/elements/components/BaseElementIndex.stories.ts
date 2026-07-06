@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
+import type {Table} from '@tanstack/vue-table';
 import BaseElementIndex from './BaseElementIndex.vue';
 import DataTable from './DataTable.vue';
 import {
@@ -25,6 +26,10 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+// Each story builds its real table inside setup(); this satisfies the
+// required `table` prop in `args`, which the template's :table overrides.
+const tablePlaceholder = null as unknown as Table<any>;
 
 /**
  * A paginated index: the footer shows the displayed-rows text, the pager, and
@@ -60,7 +65,7 @@ export const Default: Story = {
       </BaseElementIndex>
     `,
   }),
-  args: {table: null},
+  args: {table: tablePlaceholder},
 };
 
 /**
@@ -92,7 +97,7 @@ export const WithBulkActions: Story = {
       </BaseElementIndex>
     `,
   }),
-  args: {table: null},
+  args: {table: tablePlaceholder},
 };
 
 /**
@@ -114,5 +119,5 @@ export const Loading: Story = {
       </BaseElementIndex>
     `,
   }),
-  args: {table: null},
+  args: {table: tablePlaceholder},
 };

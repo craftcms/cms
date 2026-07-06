@@ -45,12 +45,9 @@
       elementDisplayName: string;
       elementPluralDisplayName: string;
       context?: string;
-      canHaveDrafts?: boolean;
-      criteria?: Record<string, any>;
       page: string;
       sources: Array<Source>;
       source?: SourceItem;
-      contentHtml?: string;
       search?: string | null;
       status: string | null;
       viewMode?: string | null;
@@ -61,7 +58,7 @@
       tableColumns: Array<{label: string; value: string}>;
       defaultTableColumns?: Array<string>;
       viewModes?: Array<ViewMode>;
-      baseSortOptions: Array<SortOption>;
+      sortOptions?: Array<SortOption>;
       pagination: PaginationData;
       sort: Array<SortItem>;
       // The serialized bulk actions available for the active source (null when
@@ -71,9 +68,8 @@
     }>(),
     {
       context: 'index',
-      canHaveDrafts: false,
       data: () => [],
-      criteria: () => Craft.defaultIndexCriteria,
+      sortOptions: () => [],
     }
   );
 
@@ -230,6 +226,7 @@
           :status-options="statusOptions"
           :view-modes="visibleViewModes"
           :column-options="columnOptions"
+          :sort-options="sortOptions"
           v-model:mode="mode"
           v-model:sort-field="sortField"
           v-model:sort-direction="sortDirection"

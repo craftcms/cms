@@ -16,6 +16,12 @@ readonly class EntriesIndexController
 {
     public function __invoke(ElementSources $elementSources, ?string $sectionHandle = null): RedirectResponse
     {
+        $slug = Str::slug($elementSources->getFirstPage(Entry::class) ?? 'entries');
+
+        if ($sectionHandle === 'singles') {
+            return cp_redirect("content/$slug/singles");
+        }
+
         if ($sectionHandle !== null) {
             $redirect = Sections::getSectionByHandle($sectionHandle)?->getCpIndexUri();
 
@@ -23,8 +29,6 @@ readonly class EntriesIndexController
                 return cp_redirect($redirect);
             }
         }
-
-        $slug = Str::slug($elementSources->getFirstPage(Entry::class) ?? 'entries');
 
         return cp_redirect("content/$slug");
     }
