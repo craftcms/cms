@@ -18,7 +18,7 @@ class SearchController
     private ElementIndexRequest $request;
 
     public function __construct(
-        private Elements $elements,
+        private readonly Elements $elements,
     ) {}
 
     public function __invoke(ElementIndexRequest $request): JsonResponse
