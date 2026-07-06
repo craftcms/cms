@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
@@ -56,17 +57,19 @@ class ElementIndexes
     }
 
     /**
-     * Builds the element query for a source, with status and search applied.
+     * Builds the element query for a source, with the current condition,
+     * status, and search applied.
      *
      * @param  class-string<ElementInterface>  $elementType
      */
     public function buildQuery(
         string $elementType,
         ?array $source,
+        ?ElementConditionInterface $condition = null,
         ?string $status = null,
         ?string $search = null,
     ): ElementQueryInterface {
-        $query = $this->buildElementQueryState($elementType, $source, null)['query'];
+        $query = $this->buildElementQueryState($elementType, $source, $condition)['query'];
 
         $query->status($status ?: null);
 

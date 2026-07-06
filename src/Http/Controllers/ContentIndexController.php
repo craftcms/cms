@@ -87,9 +87,12 @@ class ContentIndexController
 
         $sort = $this->elementIndexes->resolveSort($request->array('sort'), $source);
 
+        $currentCondition = $this->resolveElementIndexCondition();
+
         $elementQuery = $this->elementIndexes->buildQuery(
             elementType: $elementType,
             source: $source,
+            condition: $currentCondition,
             status: $request->input('status'),
             search: $request->input('search'),
         );
@@ -142,6 +145,7 @@ class ContentIndexController
             'structure' => isset($indexData['structure'])
                 ? ['id' => $indexData['structure']->id, 'editable' => $indexData['structureEditable'] ?? false]
                 : null,
+            'currentCondition' => $currentCondition?->getConfig(),
             'viewState' => $viewState,
             'statusOptions' => $statusOptions,
             'sortOptions' => $this->elementIndexes->sortOptions($elementType, $sourceKey),

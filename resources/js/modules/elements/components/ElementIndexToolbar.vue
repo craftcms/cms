@@ -6,6 +6,9 @@
   import IndexViewSettings from '@/modules/elements/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';
   import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
+  import FilterHud from './FilterHud.vue';
+  import type {ConditionConfig} from '@/modules/elements/composables/useConditionBuilder';
+  import {ref} from 'vue';
 
   defineProps<{
     statusOptions?: Array<{label: string; value: string}>;
@@ -25,11 +28,16 @@
   const tableColumns = defineModel<Array<string>>('tableColumns', {
     required: true,
   });
+  const conditions = defineModel<ConditionConfig | null>('conditions', {
+    required: true,
+  });
 
   const emit = defineEmits<{
     (e: 'submit'): void;
     (e: 'reorder', options: Array<CheckboxOption>): void;
   }>();
+
+  const filterActive = ref(false);
 </script>
 
 <template>
@@ -55,29 +63,47 @@
         </CraftSelectRich>
       </div>
 
-      <CraftInput
-        class="flex-1"
-        name="search"
-        :label="t('Search term')"
-        v-model="search"
-        label-sr-only
-      >
-        <div slot="suffix" class="flex">
-          <craft-button
-            type="button"
-            icon
-            size="small"
-            appearance="plain"
-            v-if="search"
-            @click="search = ''"
-          >
-            <craft-icon name="x" :label="t('Clear search')"></craft-icon>
-          </craft-button>
-          <craft-button type="button" icon size="small" appearance="plain">
-            <craft-icon name="filter" :label="t('Filter results')"></craft-icon>
-          </craft-button>
-        </div>
-      </CraftInput>
+      <div class="relative flex-1">
+        <CraftInput
+          name="search"
+          :label="t('Search term')"
+          v-model="search"
+          label-sr-only
+        >
+          <div slot="suffix" class="flex">
+            <craft-button
+              type="button"
+              icon
+              size="small"
+              appearance="plain"
+              v-if="search"
+              @click="search = ''"
+            >
+              <craft-icon name="x" :label="t('Clear search')"></craft-icon>
+            </craft-button>
+            <craft-button
+              type="button"
+              icon
+              size="small"
+              appearance="plain"
+              @click="filterActive = true"
+              :class="{'is-active': !!conditions}"
+            >
+              <craft-icon
+                name="filter"
+                :label="t('Filter results')"
+              ></craft-icon>
+            </craft-button>
+          </div>
+        </CraftInput>
+
+        <FilterHud
+          v-if="filterActive"
+          @close="filterActive = false"
+          @apply="emit('submit')"
+          v-model="conditions"
+        />
+      </div>
 
       <craft-button-group
         name="viewState[mode]"

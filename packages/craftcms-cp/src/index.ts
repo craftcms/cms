@@ -15,7 +15,11 @@ export {default as CraftBadge} from './components/badge/badge.js';
 export {default as CraftBreadcrumbItem} from './components/breadcrumb-item/breadcrumb-item.js';
 export {default as CraftBreadcrumbs} from './components/breadcrumbs/breadcrumbs.js';
 export {default as CraftButtonGroup} from './components/button-group/button-group.js';
-export {default as CraftButton} from './components/button/button.js';
+export {
+  default as CraftButton,
+  ButtonAppearance,
+  ButtonVariant,
+} from './components/button/button.js';
 export {default as CraftCallout} from './components/callout/callout.js';
 export {default as CraftCard} from './components/card/card.js';
 export {default as CraftCheckboxGroup} from './components/checkbox-group/checkbox-group.js';

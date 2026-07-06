@@ -75,7 +75,7 @@ class ElementIndexController
 
         $elementType = $this->request->elementType();
         $context = $this->request->context();
-        [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $context);
+        [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source.key'), $context);
         $fieldLayouts = $this->resolveFieldLayouts();
         $currentCondition = $this->resolveElementIndexCondition();
         $id = $this->request->input('id');
