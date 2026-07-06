@@ -10,10 +10,13 @@ export type ViewMode = {
 
 /** A source's persisted view overrides (columns + sort). */
 export type SourceViewState = {
-  /** Columns the user has explicitly chosen to show, in selection order. */
+  /**
+   * Columns the user has explicitly chosen to show, in display order — the
+   * single source of column-order truth. Checking a column appends it;
+   * dragging in the View popover rewrites the order. Unchecked columns have
+   * no persisted order (they present alphabetically).
+   */
   visible?: Array<string>;
-  /** The user's column ordering for this source. */
-  order?: Array<string>;
   /**
    * The user's explicit sort for this source. Absent entries fall back to the
    * source's `defaultSort` (resolved server-side).

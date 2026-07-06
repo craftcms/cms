@@ -26,44 +26,35 @@
   }>();
 
   /**
-   * The columns as displayed in the popover. Mirroring Craft 5: each time the
-   * popover *opens*, the checked columns group to the top (keeping their
-   * display order) so they're easy to drag into new positions — but the list
-   * is a snapshot, so toggling checkboxes while it's open doesn't re-sort
-   * anything out from under the pointer. Only a drag persists a new order.
+   * The columns as displayed in the popover — an open-time snapshot of the
+   * canonical order (visible columns in the user's order, then the rest
+   * alphabetically; see `useElementIndexColumns`). Mirroring Craft 5: the
+   * snapshot refreshes each time the popover *opens*, so toggling checkboxes
+   * while it's open never re-sorts rows out from under the pointer — a newly
+   * checked column stays put here while appending to the table, and shows in
+   * its new position on the next open.
    */
   const displayOptions = ref<Array<CheckboxOption>>([]);
 
-  function groupCheckedFirst() {
-    const checked = new Set(tableColumns.value);
-
-    displayOptions.value = [
-      // The pinned column (disabled + always on) leads, then the checked
-      // columns in display order, then everything else.
-      ...props.options.filter(
-        (option) => option.disabled || checked.has(option.value)
-      ),
-      ...props.options.filter(
-        (option) => !option.disabled && !checked.has(option.value)
-      ),
-    ];
+  function takeSnapshot() {
+    displayOptions.value = [...props.options];
   }
 
-  groupCheckedFirst();
+  takeSnapshot();
 
   // A source switch replaces the available columns entirely; refresh the
   // snapshot so the popover doesn't show the previous source's list. Watch the
   // option *values* rather than the array: `options` is a computed that gets a
-  // new identity whenever a checkbox toggles, and regrouping then would
-  // re-sort the list out from under the pointer.
+  // new identity (and order) whenever a checkbox toggles, and re-snapshotting
+  // then would re-sort the list mid-edit.
   watch(
-    () => props.options.map((option) => option.value).join(','),
-    () => groupCheckedFirst()
+    () => [...props.options.map((option) => option.value)].sort().join(','),
+    () => takeSnapshot()
   );
 
   function onOpenedChanged(event: Event) {
     if ((event as CustomEvent).detail?.opened) {
-      groupCheckedFirst();
+      takeSnapshot();
     }
   }
 

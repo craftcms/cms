@@ -32,9 +32,15 @@ interface PinnedColumn {
  * table's column order, the toggle/sort options, and a reorder handler.
  *
  * Visible columns follow Craft's precedence, resolved per source:
- *   user override (`viewState.columns[sourceKey]`)
+ *   user override (`viewState.sources[sourceKey].visible`)
  *     → the source's own `tableAttributes` (custom sources)
  *     → the element-type defaults.
+ *
+ * The persisted `visible` array is the single source of order truth: the table
+ * renders its columns in that order, checking a column appends it to the end,
+ * and dragging in the View popover rewrites it. Unchecked columns have no
+ * persisted order — they always present alphabetically.
+ *
  * A single pinned column (e.g. the element's title) is always rendered first
  * and excluded from toggling/reordering.
  */
@@ -73,64 +79,61 @@ export function useElementIndexColumns(
     () => sourceColumnState.value?.visible ?? defaultVisible.value
   );
 
-  // Available columns ordered by the persisted (per-source) order; unknown/new
-  // columns fall to the end in their natural order. Each column is keyed by its
-  // `value` (e.g. `field:{uuid}`), which matches the row data's attribute keys.
-  const orderedColumns = computed<Array<[string, {label: string}]>>(() => {
-    const order = sourceColumnState.value?.order ?? [];
-    return props.tableColumns
-      .map((column): [string, {label: string}] => [column.value, column])
-      .sort(([a], [b]) => {
-        const ai = order.indexOf(a);
-        const bi = order.indexOf(b);
-        if (ai === -1 && bi === -1) return 0;
-        if (ai === -1) return 1;
-        if (bi === -1) return -1;
-        return ai - bi;
-      });
-  });
+  // Available columns by key (e.g. `field:{uuid}`, matching row attribute keys).
+  const columnsByKey = computed(
+    () => new Map(props.tableColumns.map((column) => [column.value, column]))
+  );
 
-  // The selected columns, in display order (drives both the table columns and
-  // the table's column order).
-  const visibleOrderedColumns = computed(() =>
-    orderedColumns.value.filter(([key]) => visibleKeys.value.includes(key))
+  // The visible columns, in the user's order (`visible` is an ordered array).
+  // Keys persisted for since-removed columns are silently skipped.
+  const visibleOrderedColumns = computed<Array<{label: string; value: string}>>(
+    () =>
+      visibleKeys.value
+        .map((key) => columnsByKey.value.get(key))
+        .filter((column) => column !== undefined)
   );
 
   const columnHelper = createCraftColumnHelper<Row>();
 
   const columns = computed(() => [
     columnHelper.html(pinned.key, {header: pinned.label}),
-    ...visibleOrderedColumns.value.map(([key, value]) =>
-      columnHelper.html(key, {header: value.label})
+    ...visibleOrderedColumns.value.map((column) =>
+      columnHelper.html(column.value, {header: column.label})
     ),
   ]);
 
   // The table's column order, kept in sync with `columns` (pinned first).
   const columnOrder = computed(() => [
     pinned.key,
-    ...visibleOrderedColumns.value.map(([key]) => key),
+    ...visibleOrderedColumns.value.map((column) => column.value),
   ]);
 
-  // Options for the toggle/sort controls: the pinned column (always on) first,
-  // then every available column in display order.
-  const columnOptions = computed(() => [
-    {
-      label: pinned.label,
-      value: pinned.key,
-      disabled: true,
-      checked: true,
-    },
-    ...orderedColumns.value.map(([key, value]) => ({
-      label: value.label,
-      value: key,
-    })),
-  ]);
+  // Options for the toggle/reorder controls, in canonical presentation order:
+  // the pinned column (always on), the visible columns in the user's order,
+  // then the remaining columns alphabetically.
+  const columnOptions = computed(() => {
+    const visible = new Set(visibleKeys.value);
+
+    return [
+      {
+        label: pinned.label,
+        value: pinned.key,
+        disabled: true,
+        checked: true,
+      },
+      ...visibleOrderedColumns.value.map((column) => ({
+        label: column.label,
+        value: column.value,
+      })),
+      ...props.tableColumns
+        .filter((column) => !visible.has(column.value))
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .map((column) => ({label: column.label, value: column.value})),
+    ];
+  });
 
   // Merge a patch into the active source's view state (and persist it).
-  function patchSourceColumnState(patch: {
-    visible?: Array<string>;
-    order?: Array<string>;
-  }) {
+  function patchSourceColumnState(patch: {visible?: Array<string>}) {
     const sources = {...(viewState.value.sources ?? {})};
     sources[sourceKey.value] = {...sources[sourceKey.value], ...patch};
     viewState.value.sources = sources;
@@ -151,12 +154,19 @@ export function useElementIndexColumns(
 
   // Writable model for the toolbar's column toggles: reading yields the
   // effective visible keys; writing records a per-source override and pulls
-  // the newly visible columns' data from the server.
+  // the newly visible columns' data from the server. The checkbox group emits
+  // values in its own order, so normalize: kept columns preserve their current
+  // order, and newly checked ones append to the end.
   const tableColumns = computed<Array<string>>({
     get: () => visibleKeys.value,
     set: (value) => {
-      patchSourceColumnState({visible: value});
-      refetchWithColumns(value);
+      const next = [
+        ...visibleKeys.value.filter((key) => value.includes(key)),
+        ...value.filter((key) => !visibleKeys.value.includes(key)),
+      ];
+
+      patchSourceColumnState({visible: next});
+      refetchWithColumns(next);
     },
   });
 
@@ -182,12 +192,16 @@ export function useElementIndexColumns(
   });
 
   function reorder(options: Array<{value: string}>) {
-    // Persist the new column order for this source; the pinned column always
-    // stays first, so it's excluded from the stored order.
+    // Dragging rewrites the visible columns' order to match what's displayed
+    // (the pinned column always stays first, and unchecked columns carry no
+    // persisted order). No refetch — the data is already loaded; only the
+    // client-side column order changes.
+    const visible = new Set(visibleKeys.value);
+
     patchSourceColumnState({
-      order: options
+      visible: options
         .map((option) => option.value)
-        .filter((value) => value !== pinned.key),
+        .filter((value) => value !== pinned.key && visible.has(value)),
     });
   }
 
