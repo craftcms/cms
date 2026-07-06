@@ -12,11 +12,8 @@ use GraphQL\Type\Definition\ScalarType;
  */
 class MockType extends ScalarType
 {
-    /**
-     * @var string
-     */
     #[\Override]
-    public $name = 'mockType';
+    public string $name = 'mockType';
 
     /**
      * Returns a singleton instance to ensure one type per schema.

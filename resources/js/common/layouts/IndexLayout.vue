@@ -3,6 +3,7 @@
   import {usePage} from '@inertiajs/vue3';
   import AppLayout, {type AppLayoutProps} from '@/common/layouts/AppLayout.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import type {FormSaveOptions} from '@/common/types';
   import {computed, ref, useSlots, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
 
@@ -10,7 +11,7 @@
   const slots = useSlots();
 
   const emit = defineEmits<{
-    (e: 'save', options?: {redirect?: boolean}): void;
+    (e: 'save', options?: FormSaveOptions): void;
   }>();
 
   const page = usePage<{
@@ -62,6 +63,7 @@
     :default-form-actions="props.defaultFormActions"
     :form-actions="props.formActions"
     :form-additional-actions="props.formAdditionalActions"
+    :form-additional-buttons="props.formAdditionalButtons"
     :additional-skip-links="skipLinks"
     @save="(options) => emit('save', options)"
   >
@@ -96,7 +98,29 @@
           <slot name="interior-nav" :state="navState">
             <craft-nav-list v-if="subnav.length">
               <template v-for="(item, index) in subnav" :key="index">
+                <li v-if="item.subnav" class="nav-heading">
+                  <span class="nav-heading-label">{{ item.label }}</span>
+
+                  <craft-nav-list>
+                    <template
+                      v-for="(subitem, subindex) in item.subnav"
+                      :key="subindex"
+                    >
+                      <CpLink
+                        as="craft-nav-item"
+                        :active="subitem.selected"
+                        :href="subitem.url"
+                        block
+                        flush
+                      >
+                        {{ subitem.label }}
+                      </CpLink>
+                    </template>
+                  </craft-nav-list>
+                </li>
+
                 <CpLink
+                  v-else
                   as="craft-nav-item"
                   :active="item.selected"
                   :href="item.url"
@@ -128,5 +152,18 @@
 <style scoped lang="scss">
   #nav-container {
     background-color: color-mix(var(--color-slate-900), trans);
+  }
+
+  .nav-heading {
+    display: grid;
+    gap: var(--c-spacing-sm);
+    margin: 0;
+  }
+
+  .nav-heading-label {
+    display: block;
+    padding-block: var(--c-spacing-sm);
+    color: var(--c-text-quiet);
+    font-weight: 600;
   }
 </style>

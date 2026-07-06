@@ -17,17 +17,11 @@ use Override;
 
 class DateTime extends ScalarType implements SingularTypeInterface
 {
-    /**
-     * @var string
-     */
     #[Override]
-    public $name = 'DateTime';
+    public string $name = 'DateTime';
 
-    /**
-     * @var string
-     */
     #[Override]
-    public $description = 'The `DateTime` scalar type represents a point in time.';
+    public ?string $description = 'The `DateTime` scalar type represents a point in time.';
 
     /**
      * @var bool Whether parsed dates should be set to the system time zone

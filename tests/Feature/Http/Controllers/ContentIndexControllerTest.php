@@ -32,7 +32,7 @@ it('returns an Inertia response with elements and pagination', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('content/Index')
-            ->has('elements')
+            ->has('data')
             ->has('pagination')
             ->has('sort')
             ->has('sources')
@@ -66,13 +66,14 @@ it('accepts sort parameters', function () {
         );
 });
 
-it('defaults to dateCreated desc sort', function () {
+it('defaults to the source’s defaultSort', function () {
     EntryModel::factory()->create();
 
+    // The "All entries" (`*`) source declares `defaultSort: ['postDate', 'desc']`.
     get("/{$this->cpTrigger}/content/entries")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sort.0.field', 'dateCreated')
+            ->where('sort.0.field', 'postDate')
             ->where('sort.0.direction', 'desc')
         );
 });
@@ -213,5 +214,46 @@ it('shows a single that was auto-created on section save', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('pagination.total', 1)
+        );
+});
+
+it('narrows results with a search term', function () {
+    $section = Section::factory()->create();
+    EntryModel::factory()->forSection($section)->indexed()->createElement(['title' => 'Needle entry']);
+    EntryModel::factory()->forSection($section)->indexed()->createElement(['title' => 'Haystack entry']);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'search' => 'Needle',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('pagination.total', 1)
+            ->where('search', 'Needle')
+        );
+});
+
+it('clamps out-of-range page numbers to the last page', function () {
+    EntryModel::factory()->count(3)->create();
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'per_page' => 2,
+        Cms::config()->getPageTriggerParam() => 99,
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('pagination.current_page', 2)
+            ->where('pagination.last_page', 2)
+            ->count('data', 1)
+        );
+});
+
+it('serializes bulk action items for the active source', function () {
+    $section = Section::factory()->create();
+    EntryModel::factory()->forSection($section)->create();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('actions')
         );
 });

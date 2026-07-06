@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string bodyHtml(bool $clear = true)
  * @method static string bodyBeginHtml(bool $clear = true)
  * @method static string bodyEndHtml(bool $clear = true)
+ * @method static \CraftCms\Cms\View\HtmlFragment capture(callable $render)
  * @method static void startBuffer(array|string $keys)
  * @method static mixed clearBuffer(array|string $keys)
  * @method static void startCssBuffer()

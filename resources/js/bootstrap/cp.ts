@@ -95,7 +95,7 @@ const Cp = {
 
     axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     axios.defaults.headers.common['X-CSRF-TOKEN'] =
-      this.$config.get('csrfToken');
+      this.$config.get('csrfTokenValue');
 
     console.groupCollapsed('Craft configuration');
     console.log(config.all().entries());

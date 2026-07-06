@@ -80,9 +80,7 @@ use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
-use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
-use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
@@ -484,8 +482,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
         });
 
-        Route::post('users/save-permissions', [PermissionsController::class, 'store']);
-        Route::post('users/save-preferences', [PreferencesController::class, 'store']);
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);

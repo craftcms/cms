@@ -54,7 +54,7 @@ class DeleteAssets extends Delete
         await elementIndex.onBeforeDeleteElements(selectedItems);
         elementIndex.setIndexBusy();
         const elementIds = elementIndex.getSelectedElementIds();
-    
+
         new Craft.ElementDeletionManager($elementType, elementIds, {
           siteId: elementIndex.siteId,
           ownerId: elementIndex.settings.criteria?.ownerId,

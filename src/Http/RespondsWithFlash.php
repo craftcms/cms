@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 
 trait RespondsWithFlash
@@ -104,10 +105,16 @@ trait RespondsWithFlash
         ?string $redirect = null,
     ): Response {
         $modelName ??= 'model';
+        $modelData = Arr::toArray($model);
+
+        if (! request()->isCpRequest() && ! currentUser()?->can('accessCp')) {
+            unset($modelData['cpEditUrl']);
+        }
+
         $data += [
             'modelName' => $modelName,
             'modelClass' => $model::class,
-            $modelName => Arr::toArray($model),
+            $modelName => $modelData,
         ];
 
         if ($model instanceof Identifiable) {

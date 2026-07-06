@@ -1357,8 +1357,10 @@ class Fields
             return $searchQueries;
         }
 
+        $isPgqsl = DB::isPgsql();
+
         foreach ($searchParams as $param) {
-            $searchQueries[] = [$param, 'like', '%'.$term.'%'];
+            $searchQueries[] = [$param, $isPgqsl ? 'ilike' : 'like', '%'.$term.'%'];
         }
 
         return $searchQueries;

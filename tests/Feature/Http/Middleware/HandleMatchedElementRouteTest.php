@@ -5,11 +5,13 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Route\ControllerRoute;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -92,6 +94,50 @@ it('dispatches matched element string routes through an action request', functio
     expect($response->getStatusCode())->toBe(200)
         ->and(json_decode((string) $response->getContent(), true))->toMatchArray([
             'matchedElementId' => $entry->id,
+        ]);
+});
+
+it('dispatches matched element controller routes from the set route event', function () {
+    $entry = createRoutableEntry('controller-route-entry', 'entries/show');
+
+    Event::listen(function (SetRoute $event) {
+        $event->route = new ControllerRoute([MatchedElementRouteTestController::class, 'show'], [
+            'extra' => 'custom-param',
+        ]);
+        $event->handled = true;
+    });
+
+    $request = Request::create('/controller-route-entry');
+    app()->instance('request', $request);
+
+    $response = $this->middleware->handle($request, fn () => response('next'));
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and(json_decode((string) $response->getContent(), true))->toMatchArray([
+            'elementId' => $entry->id,
+            'matchedElementId' => $entry->id,
+            'path' => 'controller-route-entry',
+            'extra' => 'custom-param',
+        ]);
+});
+
+it('dispatches matched element invokable controller routes from the set route event', function () {
+    $entry = createRoutableEntry('invokable-controller-route-entry', 'entries/show');
+
+    Event::listen(function (SetRoute $event) {
+        $event->route = new ControllerRoute(InvokableMatchedElementRouteTestController::class);
+        $event->handled = true;
+    });
+
+    $request = Request::create('/invokable-controller-route-entry');
+    app()->instance('request', $request);
+
+    $response = $this->middleware->handle($request, fn () => response('next'));
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and(json_decode((string) $response->getContent(), true))->toMatchArray([
+            'elementId' => $entry->id,
+            'path' => 'invokable-controller-route-entry',
         ]);
 });
 
@@ -210,4 +256,28 @@ function createRoutableEntry(string $uri, string $template): Entry
         ]);
 
     return Entry::find()->id($entry->id)->one();
+}
+
+class MatchedElementRouteTestController
+{
+    public function show(ElementInterface $element, Request $request, string $extra = ''): JsonResponse
+    {
+        return new JsonResponse([
+            'elementId' => $element->id,
+            'matchedElementId' => MatchedElement::get()->id,
+            'path' => $request->path(),
+            'extra' => $extra,
+        ]);
+    }
+}
+
+class InvokableMatchedElementRouteTestController
+{
+    public function __invoke(ElementInterface $element, Request $request): JsonResponse
+    {
+        return new JsonResponse([
+            'elementId' => $element->id,
+            'path' => $request->path(),
+        ]);
+    }
 }
