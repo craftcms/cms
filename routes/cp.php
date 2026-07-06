@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
+use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexScreenController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
 use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
@@ -128,12 +129,12 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
      * Entries & Content
      */
     Route::get('entries', EntriesIndexController::class);
-    Route::view('entries/{sectionHandle}', 'entries.index');
+    Route::get('entries/{sectionHandle}', EntriesIndexScreenController::class);
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
-    Route::view('content/{page}', 'entries.index')->where('page', '[^\/]+');
-    Route::view('content/{page}/{sectionHandle}', 'entries.index')->where('page', '[^\/]+');
+    Route::get('content/{page}', EntriesIndexScreenController::class)->where('page', '[^\/]+');
+    Route::get('content/{page}/{sectionHandle}', EntriesIndexScreenController::class)->where('page', '[^\/]+');
     Route::get('content/{section}/new', CreateEntryController::class);
 
     /**
