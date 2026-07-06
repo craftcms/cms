@@ -43,7 +43,7 @@ class UserSignInProvidersViewModel implements Arrayable
                 return [
                     'handle' => $provider->handle,
                     'name' => $provider->name,
-                    'icon' => $provider->icon ?? OAuth::DRIVER_ICONS[$provider->driver] ?? null,
+                    'icon' => $provider->icon,
                     'connected' => $connected,
                     'canConnect' => ! $connected && ! $provider->stateless,
                     'disabledReason' => $this->disabledReason($provider, $connected),

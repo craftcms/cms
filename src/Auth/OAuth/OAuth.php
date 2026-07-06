@@ -398,6 +398,7 @@ class OAuth
         $providerClass = $this->resolveProviderClass($handle, $driver);
         $name = ($config['name'] ?? null) ?: Str::headline($handle);
         $label = ($config['label'] ?? null) ?: t('Sign in with {name}', ['name' => $name]);
+        $icon = $config['icon'] ?? self::DRIVER_ICONS[$handle] ?? null;
 
         $definition = new ProviderDefinition(
             handle: $handle,
@@ -407,7 +408,7 @@ class OAuth
             label: $label,
             clientId: $clientId !== null ? (string) $clientId : null,
             clientSecret: $clientSecret !== null ? (string) $clientSecret : null,
-            icon: ($config['icon'] ?? null) !== null ? (string) $config['icon'] : null,
+            icon: $icon,
             stateless: (bool) ($config['stateless'] ?? false),
             createsUsers: array_key_exists('createsUsers', $config)
                 ? ($config['createsUsers'] === null ? null : (bool) $config['createsUsers'])
