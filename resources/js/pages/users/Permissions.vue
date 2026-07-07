@@ -2,8 +2,10 @@
   import {computed} from 'vue';
   import {t} from '@craftcms/cp';
   import {useForm, usePage} from '@inertiajs/vue3';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import Pane from '@/common/components/Pane.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import PermissionList from '@/modules/permissions/components/PermissionList.vue';
   import UserGroupSelect from '@/modules/user/components/UserGroupSelect.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
@@ -57,25 +59,23 @@
       },
     ];
   });
+
+  useAppLayout(() => ({
+    form,
+    formAdditionalButtons: additionalButtons.value,
+    onSave: save,
+  }));
 </script>
 
 <template>
-  <IndexLayout
-    :form="form"
-    :form-additional-buttons="additionalButtons"
-    @save="save"
-  >
-    <input
-      type="hidden"
-      data-user-groups-input
-      :value="form.groups.join(',')"
-    />
-    <input
-      type="hidden"
-      data-user-permissions-input
-      :value="form.permissions.join(',')"
-    />
+  <input type="hidden" data-user-groups-input :value="form.groups.join(',')" />
+  <input
+    type="hidden"
+    data-user-permissions-input
+    :value="form.permissions.join(',')"
+  />
 
+  <Pane appearance="raised" :padding="0">
     <div class="grid gap-6 p-4">
       <section v-if="props.can.assignUserGroups" class="grid gap-3">
         <h2 class="text-lg">{{ t('User Groups') }}</h2>
@@ -149,9 +149,9 @@
         </div>
       </section>
     </div>
+  </Pane>
 
-    <template v-if="props.details" #details>
-      <div v-html="props.details"></div>
-    </template>
-  </IndexLayout>
+  <LayoutSlot v-if="props.details" name="details">
+    <div v-html="props.details"></div>
+  </LayoutSlot>
 </template>

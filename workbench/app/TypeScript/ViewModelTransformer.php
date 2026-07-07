@@ -17,11 +17,13 @@ use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptUnknown;
 
 class ViewModelTransformer extends ClassListClassTransformer
 {
+    #[\Override]
     protected function shouldTransform(PhpClassNode $phpClassNode): bool
     {
         return is_subclass_of($phpClassNode->reflection->getName(), ViewModel::class);
     }
 
+    #[\Override]
     protected function getTypeScriptNode(
         PhpClassNode $phpClassNode,
         TransformationContext $context,

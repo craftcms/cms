@@ -2,18 +2,24 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
@@ -28,6 +34,26 @@ test('showLogin redirects already authenticated users', function () {
 test('showLogin shows the login form for guests', function () {
     get(action([LoginController::class, 'showLogin']))
         ->assertOk();
+});
+
+test('showLogin includes configured OAuth buttons', function () {
+    Edition::set(Edition::Pro);
+
+    app(GeneralConfig::class)->oauthProviders([
+        'test' => [
+            'driver' => FakeOAuthProvider::class,
+            'clientId' => 'client-id',
+            'clientSecret' => 'client-secret',
+            'label' => 'Continue with Test OAuth',
+        ],
+    ]);
+
+    get(cp_url(CpAuthPath::Login->value))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('auth/Login')
+            ->where('oauthLoginButtons.0', fn (string $button) => str_contains($button, 'Continue with Test OAuth') &&
+                str_contains($button, 'oauth/test/redirect')));
 });
 
 test('showLogin redirects to 2fa form when verify parameter is present', function () {
@@ -174,7 +200,7 @@ test('attemptLogin dispatches Failed event on wrong credentials', function () {
         'password' => 'wrongpassword',
     ]);
 
-    Event::assertDispatched(fn (Failed $event) => $event->user->id === $user->id
+    Event::assertDispatched(fn (Failed $event) => $event->user?->getAuthIdentifier() === $user->id
         && $event->credentials['loginName'] === $user->email);
 });
 

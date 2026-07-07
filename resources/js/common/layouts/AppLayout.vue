@@ -1,29 +1,31 @@
 <script setup lang="ts">
-  import SystemInfo from '@/common/components/SystemInfo.vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed, reactive, ref, useSlots, useTemplateRef, watch} from 'vue';
-  import CpSidebar from '@/common/components/CpSidebar.vue';
-  import {useMediaQuery} from '@vueuse/core';
+  import {computed, watch} from 'vue';
   import {Head, type InertiaForm, usePage} from '@inertiajs/vue3';
-  import VarDump from '@/common/components/VarDump.vue';
   import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
-  import {useAnnouncer} from '@/common/composables/useAnnouncer';
+  import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
+  import CpSidebar from '@/common/components/CpSidebar.vue';
+  import DebugPanel from '@/common/components/DebugPanel.vue';
+  import FlashMessages from '@/common/components/FlashMessages.vue';
+  import FormActions from '@/common/components/FormActions.vue';
+  import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import LiveRegion from '@/common/components/LiveRegion.vue';
-  import {useAppendHtml} from '@/common/composables/useAppendHtml';
+  import Pane from '@/common/components/Pane.vue';
+  import SecondaryNav from '@/common/components/SecondaryNav.vue';
+  import SystemInfo from '@/common/components/SystemInfo.vue';
+  import UserMenu from '@/common/components/UserMenu.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
+  import {useAppendHtml} from '@/common/composables/useAppendHtml';
+  import {useFlash} from '@/common/composables/useFlash';
+  import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
+  import {hasLayoutSlot} from '@/common/composables/layoutSlots';
   import type {
     ActionItem,
     ActionItemButton,
     FormSaveOptions,
   } from '@/common/types';
-  import {useFlash} from '@/common/composables/useFlash';
-  import InlineFlash from '@/common/components/InlineFlash.vue';
-  import ErrorSummary from '@/common/form/ErrorSummary.vue';
-  import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
-  import UserMenu from '@/common/components/UserMenu.vue';
-  import FlashMessages from '@/common/components/FlashMessages.vue';
-  import Pane from '@/common/components/Pane.vue';
 
   type DefaultFormAction = 'saveAndContinueEditing';
 
@@ -42,13 +44,58 @@
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
   }>();
+
   const props = withDefaults(defineProps<AppLayoutProps>(), {
     fullWidth: false,
-    crumbs: () => [],
     form: null,
     defaultFormActions: () => ['saveAndContinueEditing'],
     formAdditionalButtons: () => [],
   });
+
+  /**
+   * The layout's extension points, mirroring Craft 5's `_layouts/cp.twig`
+   * blocks and variables (noted per slot).
+   */
+  const slots = defineSlots<{
+    /** Page content inside the content column. Craft 5: `block content`. */
+    default?: () => any;
+    /** Replaces the entire main column: breadcrumb bar, page header, and content. Craft 5: `block main`. */
+    main?: () => any;
+    /** Replaces the breadcrumb bar. Default renders the `crumbs` page prop and the `context-menu` slot. */
+    breadcrumbs?: () => any;
+    /** Extra controls next to the breadcrumbs, e.g. a site picker. Craft 5: `contextMenu`. */
+    'context-menu'?: () => any;
+    /** Replaces the page header (title through action buttons). Pass empty content to hide it. Craft 5: `block header` / `showHeader`. */
+    header?: () => any;
+    /** Replaces the default `<h1>` page title. Craft 5: `block pageTitle`. */
+    title?: () => any;
+    /** Status badges next to the title. Craft 5: `#revision-indicators`. */
+    'title-badge'?: () => any;
+    /** Controls between the title and the action buttons. Craft 5: `toolbar`. */
+    toolbar?: () => any;
+    /** Replaces the whole action-buttons area, including the form save UI. Craft 5: `actionButton`. */
+    actions?: () => any;
+    /** Extra buttons before the form save UI. Craft 5: `additionalButtons`. */
+    'additional-buttons'?: () => any;
+    /** Replaces the save button while keeping the form action menu. Craft 5: `block submitButton`. */
+    'submit-button'?: () => any;
+    /** Replaces the default form error summary. Craft 5: `errorSummary`. */
+    'error-summary'?: () => any;
+    /** Status notice at the top of the content column. Craft 5: `contentNotice`. */
+    'content-notice'?: () => any;
+    /** Tabs above the content. Craft 5: `tabs`. */
+    tabs?: () => any;
+    /** Left column beside the content. Defaults to a secondary nav built from the `subnav` page prop. Craft 5: `sidebar`. */
+    sidebar?: () => any;
+    /** Extra controls below the default secondary nav. */
+    'subnav-actions'?: () => any;
+    /** Bottom of the content column (pagination, meta info, …). Craft 5: `footer` (content pane). */
+    'content-footer'?: () => any;
+    /** Right details column beside the content. Craft 5: `details`. */
+    details?: () => any;
+    /** Global page footer. */
+    footer?: () => any;
+  }>();
 
   const page = usePage<{
     title: string;
@@ -57,88 +104,64 @@
       url?: string;
       label: string;
     }> | null;
+    subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
   }>();
 
-  const {errorFlash, successFlash} = useFlash();
-  const slots = useSlots();
+  // Page chrome from props and shared page data.
+  const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
   const crumbs = computed(() => page.props.crumbs ?? null);
+  const subnav = computed(() => page.props.subnav ?? []);
+  const readOnly = computed(() => Boolean(page.props.readOnly));
+
+  // Which optional layout regions are in play — filled either by an inline
+  // slot or by a page-side <LayoutSlot> teleport. These computeds may only
+  // toggle visibility (v-show) and classes, never remove an outlet's
+  // wrapper from the DOM: teleport targets must persist.
+  const hasContextMenu = computed(
+    () => Boolean(slots['context-menu']) || hasLayoutSlot('context-menu')
+  );
+  const hasToolbar = computed(
+    () => Boolean(slots.toolbar) || hasLayoutSlot('toolbar')
+  );
+  const hasContentNotice = computed(
+    () => Boolean(slots['content-notice']) || hasLayoutSlot('content-notice')
+  );
+  const hasContentFooter = computed(
+    () => Boolean(slots['content-footer']) || hasLayoutSlot('content-footer')
+  );
+  const hasDetails = computed(
+    () => Boolean(slots.details) || hasLayoutSlot('details')
+  );
+  const hasSidebar = computed(
+    () =>
+      Boolean(slots.sidebar) ||
+      Boolean(slots['subnav-actions']) ||
+      hasLayoutSlot('sidebar') ||
+      hasLayoutSlot('subnav-actions') ||
+      subnav.value.length > 0
+  );
+
+  const skipLinks = computed(() => [
+    {label: t('Skip to main section'), url: '#main'},
+    ...(hasSidebar.value
+      ? [{label: t('Skip to secondary navigation'), url: '#secondary-nav'}]
+      : []),
+    ...(props.additionalSkipLinks ?? []),
+  ]);
+
+  const {
+    isLargeScreen,
+    sidebar: globalSidebar,
+    toggle: toggleSidebar,
+    close: closeSidebar,
+    icon: sidebarIcon,
+    width: sidebarWidth,
+  } = useGlobalSidebar();
+
   const formActionItems = computed(() => [
     ...props.defaultFormActions.map(defaultFormActionItem),
     ...(props.formActions ?? []),
   ]);
-  const skipLinks = computed(() => [
-    {label: t('Skip to main section'), url: '#main'},
-    ...(props.additionalSkipLinks ?? []),
-  ]);
-  const readOnly = computed(() => Boolean(page.props.readOnly));
-  const hasDetails = computed(() => Boolean(slots.details));
-  const sidebarToggle = useTemplateRef('sidebarToggle');
-  const primaryFormButton = 'primary';
-  const activeFormButton = ref<string | null>(null);
-  const {announcement, announce} = useAnnouncer();
-
-  watch(successFlash, (newMessage) => announce(newMessage));
-  watch(errorFlash, (newMessage) => announce(newMessage));
-  watch(
-    () => props.form?.processing,
-    (processing) => {
-      if (!processing) {
-        activeFormButton.value = null;
-      }
-    }
-  );
-
-  useAppendHtml();
-
-  // Bridge `@craftcms/cp` action redirects into Inertia SPA visits.
-  useActionRedirect();
-
-  const state = reactive<{
-    sidebar: {
-      mode: 'docked' | 'floating';
-      visibility: 'hidden' | 'visible';
-    };
-  }>({
-    sidebar: {
-      mode: 'floating',
-      visibility: 'hidden',
-    },
-  });
-
-  const isLargeScreen = useMediaQuery('(min-width: 1024px)');
-  const debugOpen = ref(false);
-  const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
-
-  watch(
-    isLargeScreen,
-    (value) => {
-      if (value) {
-        state.sidebar.mode = 'docked';
-        state.sidebar.visibility = 'visible';
-      } else {
-        state.sidebar.mode = 'floating';
-        state.sidebar.visibility = 'hidden';
-      }
-    },
-    {immediate: true}
-  );
-
-  function toggleSidebar() {
-    if (state.sidebar.visibility === 'visible') {
-      state.sidebar.visibility = 'hidden';
-    } else {
-      state.sidebar.visibility = 'visible';
-    }
-  }
-
-  function closeSidebar() {
-    state.sidebar.visibility = 'hidden';
-    (sidebarToggle.value as HTMLButtonElement).focus();
-  }
-
-  const sidebarIcon = computed(() => {
-    return state.sidebar.visibility === 'visible' ? 'x' : 'bars';
-  });
 
   function defaultFormActionItem(action: DefaultFormAction): ActionItem {
     if (action === 'saveAndContinueEditing') {
@@ -152,42 +175,25 @@
     throw new Error(`Unknown default form action: ${action}`);
   }
 
-  function isFormButtonProcessing(key: string) {
-    return Boolean(props.form?.processing) && activeFormButton.value === key;
-  }
-
-  function activateFormButton(key: string) {
-    activeFormButton.value = key;
-    setTimeout(() => {
-      if (!props.form?.processing) {
-        activeFormButton.value = null;
-      }
-    });
-  }
-
   function save(options?: FormSaveOptions) {
-    activateFormButton(primaryFormButton);
     emit('save', options);
   }
 
-  function handleAdditionalButtonClick(button: ActionItemButton, event: Event) {
-    activateFormButton(button.label);
-    button.onClick?.(event);
-  }
+  // Announce flash messages to screen readers.
+  const {announce} = useAnnouncer();
+  const {errorFlash, successFlash} = useFlash();
+  watch(successFlash, (newMessage) => announce(newMessage));
+  watch(errorFlash, (newMessage) => announce(newMessage));
 
-  const sidebarWidth = computed(() => {
-    if (state.sidebar.mode === 'docked') {
-      return state.sidebar.visibility === 'visible'
-        ? 'var(--global-sidebar-width)'
-        : '0';
-    }
-    return 'auto';
-  });
+  useAppendHtml();
+
+  // Bridge `@craftcms/cp` action redirects into Inertia SPA visits.
+  useActionRedirect();
 </script>
 
 <template>
   <Head :title="pageTitle" />
-  <LiveRegion :debug="true"></LiveRegion>
+  <LiveRegion></LiveRegion>
   <div class="cp">
     <header class="cp__header">
       <a
@@ -223,8 +229,8 @@
     </header>
     <div class="cp__sidebar">
       <CpSidebar
-        :mode="state.sidebar.mode"
-        :visibility="state.sidebar.visibility"
+        :mode="globalSidebar.mode"
+        :visibility="globalSidebar.visibility"
         @close="closeSidebar"
       />
     </div>
@@ -232,10 +238,15 @@
       <slot name="main">
         <slot name="breadcrumbs">
           <div
-            class="px-4 py-2 border-b border-b-neutral-border-quiet"
-            v-if="crumbs"
+            class="px-4 py-2 border-b border-b-neutral-border-quiet flex flex-nowrap items-center gap-2"
+            v-show="crumbs || hasContextMenu"
           >
-            <Breadcrumbs :items="crumbs" />
+            <Breadcrumbs v-if="crumbs" :items="crumbs" />
+            <div v-show="hasContextMenu" class="context-menu-container">
+              <LayoutSlotOutlet name="context-menu">
+                <slot name="context-menu"></slot>
+              </LayoutSlotOutlet>
+            </div>
           </div>
         </slot>
         <main id="main" tabindex="-1">
@@ -248,115 +259,126 @@
               <div :class="{container: true, 'container--full': fullWidth}">
                 <div class="index-grid index-grid--header">
                   <div class="index-grid__aside">
-                    <slot name="title">
-                      <h1 class="text-xl">{{ pageTitle }}</h1>
-                    </slot>
-                    <slot name="title-badge"></slot>
+                    <LayoutSlotOutlet name="title">
+                      <slot name="title">
+                        <h1 class="text-xl">{{ pageTitle }}</h1>
+                      </slot>
+                    </LayoutSlotOutlet>
+                    <LayoutSlotOutlet name="title-badge">
+                      <slot name="title-badge"></slot>
+                    </LayoutSlotOutlet>
                   </div>
 
                   <div class="index-grid__main">
-                    <slot name="actions">
-                      <template v-if="form">
-                        <InlineFlash
-                          :is-active="form.recentlySuccessful || form.hasErrors"
-                        />
+                    <div
+                      v-show="hasToolbar"
+                      id="toolbar"
+                      class="flex items-center gap-2"
+                    >
+                      <LayoutSlotOutlet name="toolbar">
+                        <slot name="toolbar"></slot>
+                      </LayoutSlotOutlet>
+                    </div>
 
-                        <div
-                          v-if="!readOnly"
-                          class="flex items-center justify-end gap-2"
+                    <LayoutSlotOutlet name="actions">
+                      <slot name="actions">
+                        <slot name="additional-buttons"></slot>
+
+                        <FormActions
+                          v-if="form"
+                          :form="form"
+                          :action-items="formActionItems"
+                          :additional-actions="formAdditionalActions"
+                          :additional-buttons="formAdditionalButtons"
+                          :read-only="readOnly"
                         >
-                          <craft-button
-                            v-for="button in formAdditionalButtons"
-                            :key="button.label"
-                            type="button"
-                            :variant="button.variant ?? 'neutral'"
-                            :loading="isFormButtonProcessing(button.label)"
-                            :disabled="form.processing || button.disabled"
-                            @click="handleAdditionalButtonClick(button, $event)"
+                          <template
+                            v-if="slots['submit-button']"
+                            #submit-button
                           >
-                            <craft-icon
-                              v-if="button.icon"
-                              :name="button.icon"
-                              slot="prefix"
-                            ></craft-icon>
-                            {{ button.label }}
-                          </craft-button>
-
-                          <craft-button-group v-if="formActionItems.length">
-                            <craft-button
-                              type="submit"
-                              variant="accent"
-                              :loading="
-                                isFormButtonProcessing(primaryFormButton)
-                              "
-                              :disabled="form.processing"
-                            >
-                              {{ t('Save') }}
-                            </craft-button>
-                            <ActionMenu
-                              icon="chevron-down"
-                              :actions="formActionItems"
-                            >
-                              <template #invoker="{label}">
-                                <craft-button
-                                  slot="invoker"
-                                  variant="accent"
-                                  type="button"
-                                  icon
-                                >
-                                  <craft-icon
-                                    name="chevron-down"
-                                    :label="label"
-                                  ></craft-icon>
-                                </craft-button>
-                              </template>
-                            </ActionMenu>
-                          </craft-button-group>
-
-                          <craft-button
-                            v-else
-                            type="submit"
-                            variant="accent"
-                            :loading="isFormButtonProcessing(primaryFormButton)"
-                            :disabled="form.processing"
-                          >
-                            {{ t('Save') }}
-                          </craft-button>
-
-                          <ActionMenu
-                            v-if="formAdditionalActions?.length"
-                            :actions="formAdditionalActions"
-                          />
-                        </div>
-                      </template>
-                    </slot>
+                            <slot name="submit-button"></slot>
+                          </template>
+                        </FormActions>
+                      </slot>
+                    </LayoutSlotOutlet>
                   </div>
                 </div>
               </div>
             </slot>
             <div :class="{container: true, 'container--full': fullWidth}">
-              <ErrorSummary
-                v-if="form && form.hasErrors"
-                :errors="form.errors"
-              />
+              <LayoutSlotOutlet name="error-summary">
+                <slot name="error-summary">
+                  <ErrorSummary
+                    v-if="form && form.hasErrors"
+                    :errors="form.errors"
+                  />
+                </slot>
+              </LayoutSlotOutlet>
               <template v-if="readOnly">
                 <CalloutReadOnly />
               </template>
-              <template v-if="hasDetails">
-                <div class="content-with-details">
-                  <div>
-                    <slot></slot>
+              <div
+                class="content-layout"
+                :class="{
+                  'content-layout--sidebar': hasSidebar,
+                  'content-layout--details': hasDetails,
+                }"
+              >
+                <aside
+                  v-show="hasSidebar"
+                  id="secondary-nav"
+                  tabindex="-1"
+                  class="content-layout__sidebar"
+                >
+                  <LayoutSlotOutlet name="sidebar">
+                    <slot name="sidebar">
+                      <!-- The subnav-actions outlet lives inside this
+                        fallback, so a page must not teleport `sidebar` and
+                        `subnav-actions` at the same time. -->
+                      <SecondaryNav :items="subnav">
+                        <template #actions>
+                          <LayoutSlotOutlet name="subnav-actions">
+                            <slot name="subnav-actions"></slot>
+                          </LayoutSlotOutlet>
+                        </template>
+                      </SecondaryNav>
+                    </slot>
+                  </LayoutSlotOutlet>
+                </aside>
+                <div class="content-layout__main">
+                  <div
+                    v-show="hasContentNotice"
+                    id="content-notice"
+                    role="status"
+                  >
+                    <LayoutSlotOutlet name="content-notice">
+                      <slot name="content-notice"></slot>
+                    </LayoutSlotOutlet>
                   </div>
-                  <aside>
-                    <Pane appearance="raised">
-                      <div class="details">
-                        <slot name="details"></slot>
-                      </div>
-                    </Pane>
-                  </aside>
+                  <LayoutSlotOutlet name="tabs">
+                    <slot name="tabs"></slot>
+                  </LayoutSlotOutlet>
+                  <slot></slot>
+                  <div v-show="hasContentFooter" class="content-footer">
+                    <LayoutSlotOutlet name="content-footer">
+                      <slot name="content-footer"></slot>
+                    </LayoutSlotOutlet>
+                  </div>
                 </div>
-              </template>
-              <slot v-else></slot>
+                <!-- v-show, not v-if: the aside hosts a LayoutSlotOutlet
+                  teleport target, which must stay in the DOM so page-side
+                  <LayoutSlot> content can mount before registration flips
+                  hasDetails. -->
+                <aside v-show="hasDetails">
+                  <Pane appearance="raised">
+                    <div class="details">
+                      <LayoutSlotOutlet name="details">
+                        <slot name="details"></slot>
+                      </LayoutSlotOutlet>
+                    </div>
+                  </Pane>
+                </aside>
+              </div>
             </div>
           </component>
         </main>
@@ -365,40 +387,15 @@
     <div class="cp__footer">
       <footer>
         <div :class="{container: true, 'container--full': fullWidth}">
-          <slot name="footer"></slot>
+          <LayoutSlotOutlet name="footer">
+            <slot name="footer"></slot>
+          </LayoutSlotOutlet>
         </div>
       </footer>
     </div>
   </div>
 
-  <template v-if="debug">
-    <div class="fixed bottom-2 right-2 flex gap-2 justify-end items-center p-2">
-      <div class="bg-blue-50 border border-blue-500 py-1 px-4 rounded">
-        {{ announcement ?? 'No announcement' }}
-      </div>
-
-      <div>
-        <VarDump
-          :data="debug"
-          class="max-h-[50vh] max-w-[600px] overflow-scroll absolute transform -translate-full"
-          v-if="debugOpen"
-        />
-        <template v-if="debugOpen">
-          <craft-button icon type="button" @click="debugOpen = false">
-            <craft-icon :label="t('Close Debug panel')" name="x"></craft-icon>
-          </craft-button>
-        </template>
-        <template v-else>
-          <craft-button type="button" @click="debugOpen = true" icon>
-            <craft-icon
-              name="code"
-              :label="t('Show debug variables')"
-            ></craft-icon>
-          </craft-button>
-        </template>
-      </div>
-    </div>
-  </template>
+  <DebugPanel v-if="debug" :data="debug" />
 </template>
 
 <style scoped lang="css">
@@ -426,14 +423,44 @@
     max-width: none;
   }
 
-  .content-with-details {
+  .content-layout {
     display: grid;
     gap: var(--c-spacing-md);
 
     @container (width >= 768px) {
-      grid-template-columns: minmax(0, 1fr) clamp(12rem, 20%, 16rem);
       align-items: start;
+
+      &.content-layout--details {
+        grid-template-columns: minmax(0, 1fr) clamp(12rem, 20%, 16rem);
+      }
+
+      &.content-layout--sidebar {
+        grid-template-columns:
+          clamp(calc(120rem / 16), 20%, calc(220rem / 16))
+          minmax(0, 1fr);
+      }
+
+      &.content-layout--sidebar.content-layout--details {
+        grid-template-columns:
+          clamp(calc(120rem / 16), 20%, calc(220rem / 16))
+          minmax(0, 1fr)
+          clamp(12rem, 20%, 16rem);
+      }
     }
+  }
+
+  .content-layout__main {
+    display: grid;
+    gap: var(--c-spacing-md);
+    align-content: start;
+  }
+
+  .content-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--c-spacing-md);
+    margin-block-start: var(--c-spacing-md);
   }
 
   .details {

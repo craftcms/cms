@@ -47,5 +47,6 @@ readonly class ProviderDefinition
         public string $groupResolver = UserGroupResolver::class,
         /** @var class-string<RendersOAuthButton> */
         public string $buttonRenderer = ButtonRenderer::class,
+        public ?string $icon = null,
     ) {}
 }

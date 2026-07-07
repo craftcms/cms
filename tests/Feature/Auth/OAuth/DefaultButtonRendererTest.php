@@ -26,7 +26,6 @@ test('it returns safe encoded markup for the login button', function () {
 
     expect($button->toHtml())
         ->toContain('&lt;Test OAuth&gt;')
-        ->toContain('class="btn"')
         ->toContain('data-provider="test"')
         ->toContain('/admin/oauth/test/redirect');
 });

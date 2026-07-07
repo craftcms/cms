@@ -12,5 +12,8 @@
   'initial-error': initialError ?? null,
   'use-email-as-username': generalConfig.useEmailAsUsername
 }) }}>
-  <div slot="alternative-methods">{% hook 'cp.login.alternative-login-methods' %}</div>
+  <div slot="alternative-methods">
+    {{ (oauthLoginButtons ?? [])|join|raw }}
+    {% hook 'cp.login.alternative-login-methods' %}
+  </div>
 </craft-login-form>

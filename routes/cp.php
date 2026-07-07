@@ -24,6 +24,7 @@ use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
@@ -34,6 +35,7 @@ use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
@@ -43,6 +45,7 @@ use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
@@ -97,7 +100,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::post('system-messages', [SystemMessagesController::class, 'store']);
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
-        Route::view('settings/addresses', 'settings/addresses/_fields');
+        Route::get('settings/addresses', [AddressSettingsController::class, 'index']);
+        Route::post('settings/addresses', [AddressSettingsController::class, 'store']);
     });
 
     /**
@@ -147,6 +151,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
+    Route::get('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
+    Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
 
     Route::middleware([
         RequireEdition::class.':'.Edition::Team->value,
@@ -321,7 +328,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         } else {
             Route::get('settings/users', fn () => redirect(cp_url('settings/users/fields')));
         }
-        Route::view('settings/users/fields', 'settings/users/fields');
+        Route::get('settings/users/fields', [UserFieldsController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)
+            ->post('settings/users/fields', [UserFieldsController::class, 'store']);
 
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {
