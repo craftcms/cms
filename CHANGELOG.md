@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an error that could occur when running CLI commands. ([#19030](https://github.com/craftcms/cms/issues/19030))
+
 ## 5.10.9 - 2026-07-03
 
 - Added `craft\services\Security::isRestrictedDir()`. ([#19179](https://github.com/craftcms/cms/pull/19179))

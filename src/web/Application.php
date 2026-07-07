@@ -35,7 +35,6 @@ use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
@@ -99,10 +98,6 @@ class Application extends \yii\web\Application
         $this->_preInit();
 
         parent::init();
-
-        if (!App::isEphemeral()) {
-            $this->ensureResourcePathExists();
-        }
 
         $this->_postInit();
 
@@ -392,24 +387,6 @@ class Application extends \yii\web\Application
         }
 
         return $component;
-    }
-
-    /**
-     * Ensures that the resources folder exists and is writable.
-     *
-     * @throws ErrorException
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
-    protected function ensureResourcePathExists(): void
-    {
-        $generalConfig = $this->getConfig()->getGeneral();
-
-        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
-
-        if (!@FileHelper::createDirectory($resourceBasePath)) {
-            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
-        }
     }
 
     /**
