@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
@@ -291,40 +290,20 @@ class Sections
      *
      * @throws AuthenticationException
      */
-    public function getPublishableSections(): array
+    public function getPublishableSections(): Collection
     {
         $currentUser = currentUser();
 
         if (! $currentUser) {
-            return [];
+            return Collection::empty();
         }
 
         if ($this->getEditableSections()->isEmpty()) {
-            return [];
+            return Collection::empty();
         }
 
         return collect($this->getEditableSections())
-            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid"))
-            ->map(fn (Section $section) => [
-                'entryTypes' => collect($section->getEntryTypes())
-                    ->map(fn (EntryType $type) => [
-                        'handle' => $type->handle,
-                        'id' => (int) $type->id,
-                        'name' => t($type->name, category: 'site'),
-                        'icon' => $type->icon ? Icons::resolveIconName($type->icon) : null,
-                    ])
-                    ->values()
-                    ->all(),
-                'handle' => $section->handle,
-                'id' => (int) $section->id,
-                'name' => t($section->name, category: 'site'),
-                'sites' => $section->getSiteIds(),
-                'type' => $section->type,
-                'uid' => $section->uid,
-                'canSave' => $currentUser->can("saveEntries:$section->uid"),
-            ])
-            ->values()
-            ->all();
+            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid"));
     }
 
     /**

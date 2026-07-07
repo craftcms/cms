@@ -15,6 +15,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Providers\AppServiceProvider;
+use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -204,7 +205,7 @@ readonly class Cp
             'previewIframeResizerOptions' => self::previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),
-            'publishableSections' => $upToDate ? self::publishableSections() : [],
+            'publishableSections' => $upToDate ? SectionResource::collection(Sections::getPublishableSections()) : [],
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'sites' => self::sites(),
@@ -281,11 +282,6 @@ readonly class Cp
         }
 
         return $generalConfig->previewIframeResizerOptions;
-    }
-
-    private static function publishableSections(): array
-    {
-        return Sections::getPublishableSections();
     }
 
     private static function sites(): array

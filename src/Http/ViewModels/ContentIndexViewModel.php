@@ -10,6 +10,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -285,9 +287,11 @@ class ContentIndexViewModel extends ViewModel
         return $this->resolvedSort = [['field' => 'dateCreated', 'direction' => 'desc']];
     }
 
-    public function publishableSections(): array
+    public function publishableSections()
     {
-        return Sections::getPublishableSections();
+        return SectionResource::collection(Sections::getPublishableSections())
+            ->values()
+            ->all();
     }
 
     /**
