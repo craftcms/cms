@@ -46,7 +46,7 @@ export default class CraftInfoIcon extends LitElement {
     const {signal} = this.#eventController;
 
     this.addEventListener(
-      'wa-show',
+      'craft-show',
       () => {
         if (
           CraftInfoIcon.#openInstance &&
@@ -64,7 +64,7 @@ export default class CraftInfoIcon extends LitElement {
     );
 
     this.addEventListener(
-      'wa-after-show',
+      'craft-after-show',
       () => {
         this.status = '';
         setTimeout(() => {
@@ -75,7 +75,7 @@ export default class CraftInfoIcon extends LitElement {
     );
 
     this.addEventListener(
-      'wa-after-hide',
+      'craft-after-hide',
       () => {
         if (CraftInfoIcon.#openInstance === this) {
           CraftInfoIcon.#openInstance = null;
