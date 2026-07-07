@@ -145,6 +145,28 @@ test('logout logs the user out and redirects', function () {
     expect(Auth::check())->toBeFalse();
 });
 
+test('logout redirects to the post-logout redirect, not back to the previous page', function () {
+    Cms::config()->postLogoutRedirect = '';
+
+    actingAs(User::findOne());
+
+    // Even when arriving from a page, logout must not fall through to back().
+    $response = $this->from('https://localhost/members/dashboard')
+        ->get('/'.Cms::config()->getLogoutPath())
+        ->assertRedirect();
+
+    expect($response->headers->get('Location'))->toBe('https://localhost/');
+});
+
+test('logout honors a configured post-logout redirect', function () {
+    Cms::config()->postLogoutRedirect = 'goodbye';
+
+    actingAs(User::findOne());
+
+    $this->get('/'.Cms::config()->getLogoutPath())
+        ->assertRedirect('https://localhost/goodbye');
+});
+
 test('showLoginModal requires email parameter', function () {
     postJson(action([LoginController::class, 'showLoginModal']), [])
         ->assertJsonValidationErrors(['email']);

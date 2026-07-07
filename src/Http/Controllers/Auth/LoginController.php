@@ -180,8 +180,6 @@ readonly class LoginController extends AuthenticationController
             return redirect(cp_url(CpAuthPath::Login->value));
         }
 
-        return $this->asSuccess(
-            redirect: $this->generalConfig->getPostLogoutRedirect(),
-        );
+        return redirect(\CraftCms\Cms\Support\Url::siteUrl($this->generalConfig->getPostLogoutRedirect()));
     }
 }
