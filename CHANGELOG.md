@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a bug where some control panel resources and pages weren’t loading properly. ([#19214](https://github.com/craftcms/cms/issues/19214))
+
 ## 6.0.0-alpha.10 - 2026-07-03
 
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
