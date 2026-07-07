@@ -9,6 +9,8 @@
   } from '@/modules/updater/composables/useUpdater';
   import {getCpUrl} from '@/common/api/actionClient';
 
+  defineOptions({layout: []});
+
   const props = defineProps<{
     title: string;
     initialState: UpdaterState;

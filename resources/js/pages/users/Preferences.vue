@@ -2,8 +2,10 @@
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import Pane from '@/common/components/Pane.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
@@ -63,6 +65,8 @@
 
   const {save} = useSettingsSave(form, update);
 
+  useAppLayout({form, onSave: save});
+
   const displaySettings = computed({
     get: () => [
       ...(form.useShapes ? ['useShapes'] : []),
@@ -96,7 +100,7 @@
 </script>
 
 <template>
-  <IndexLayout :form="form" @save="save">
+  <Pane appearance="raised" :padding="0">
     <div class="grid gap-6 p-4">
       <section class="grid gap-3">
         <h2 class="text-base">{{ t('General') }}</h2>
@@ -248,9 +252,9 @@
 
       <HtmlFragmentRenderer :fragment="props.prefsHook" />
     </div>
+  </Pane>
 
-    <template v-if="props.details" #details>
-      <div v-html="props.details"></div>
-    </template>
-  </IndexLayout>
+  <LayoutSlot v-if="props.details" name="details">
+    <div v-html="props.details"></div>
+  </LayoutSlot>
 </template>

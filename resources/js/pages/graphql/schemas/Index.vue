@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {h} from 'vue';
   import {t} from '@craftcms/ui';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import Pane from '@/common/components/Pane.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
@@ -10,6 +9,7 @@
   import CpLink from '@/common/components/CpLink.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   interface SchemaData {
     id: number;
@@ -86,18 +86,16 @@
 </script>
 
 <template>
-  <AppLayout>
-    <template #actions>
-      <CpLink
-        :href="create.url()"
-        icon="plus"
-        appearance="button"
-        variant="accent"
-        >{{ t('New schema') }}</CpLink
-      >
-    </template>
-    <Pane :padding="0" appearance="raised">
-      <AdminTable :table="table" />
-    </Pane>
-  </AppLayout>
+  <LayoutSlot name="actions">
+    <CpLink
+      :href="create.url()"
+      icon="plus"
+      appearance="button"
+      variant="accent"
+      >{{ t('New schema') }}</CpLink
+    >
+  </LayoutSlot>
+  <Pane :padding="0" appearance="raised">
+    <AdminTable :table="table" />
+  </Pane>
 </template>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import {default as settingsIndex} from '@actions/Settings/SettingsIndexController';
   import CpLink from '@/common/components/CpLink.vue';
@@ -20,54 +19,52 @@
 </script>
 
 <template>
-  <AppLayout :title="t('Settings')">
-    <div class="py-3">
-      <template v-if="readOnly">
-        <CalloutReadOnly />
-      </template>
+  <div class="py-3">
+    <template v-if="readOnly">
+      <CalloutReadOnly />
+    </template>
 
-      <div class="grid gap-6">
-        <div v-for="(items, category, index) in settings" :key="category">
-          <h2
-            :id="`category-heading-${index}`"
-            class="mb-2 text-lg leading-tight"
-          >
-            {{ category }}
-          </h2>
-          <nav :aria-labelledby="`category-heading-${index}`">
-            <ul class="settings-grid">
-              <template v-for="(item, handle) in items" :key="handle">
-                <li>
-                  <CpLink
-                    :href="item.url || `${settingsIndex().url}/${handle}`"
-                    class="settings-item"
-                    block
-                  >
-                    <div class="settings-content">
-                      <div class="settings-icon">
-                        <craft-icon
-                          v-if="item.iconName"
-                          :name="item.iconName"
-                          style="font-size: calc(40rem / 16)"
-                        ></craft-icon>
-                        <div
-                          v-else-if="item.icon"
-                          v-html="item.icon"
-                          class="w-[40px] h-[40px] inline-block align-self-center"
-                        ></div>
-                      </div>
-                      {{ item.label
-                      }}<span class="sr-only"> - {{ t('Settings') }}</span>
+    <div class="grid gap-6">
+      <div v-for="(items, category, index) in settings" :key="category">
+        <h2
+          :id="`category-heading-${index}`"
+          class="mb-2 text-lg leading-tight"
+        >
+          {{ category }}
+        </h2>
+        <nav :aria-labelledby="`category-heading-${index}`">
+          <ul class="settings-grid">
+            <template v-for="(item, handle) in items" :key="handle">
+              <li>
+                <CpLink
+                  :href="item.url || `${settingsIndex().url}/${handle}`"
+                  class="settings-item"
+                  block
+                >
+                  <div class="settings-content">
+                    <div class="settings-icon">
+                      <craft-icon
+                        v-if="item.iconName"
+                        :name="item.iconName"
+                        style="font-size: calc(40rem / 16)"
+                      ></craft-icon>
+                      <div
+                        v-else-if="item.icon"
+                        v-html="item.icon"
+                        class="w-[40px] h-[40px] inline-block align-self-center"
+                      ></div>
                     </div>
-                  </CpLink>
-                </li>
-              </template>
-            </ul>
-          </nav>
-        </div>
+                    {{ item.label
+                    }}<span class="sr-only"> - {{ t('Settings') }}</span>
+                  </div>
+                </CpLink>
+              </li>
+            </template>
+          </ul>
+        </nav>
       </div>
     </div>
-  </AppLayout>
+  </div>
 </template>
 
 <style scoped lang="scss">

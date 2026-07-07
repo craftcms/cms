@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import {useForm} from '@inertiajs/vue3';
   import type {Site} from '@/common/types';
   import {t} from '@craftcms/ui';
@@ -10,6 +9,8 @@
   import Badge from '@/common/components/Badge.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import Pane from '@/common/components/Pane.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   const props = defineProps<{
     title: string;
@@ -36,25 +37,25 @@
   const {save} = useSettingsSave(form, store);
 
   const modalActive = ref(false);
+
+  useAppLayout(() => ({title: props.title, form, onSave: save}));
 </script>
 
 <template>
-  <AppLayout :title="title" :form="form" @save="save">
-    <template #title-badge>
-      <Badge :variant="site.enabled ? 'success' : 'default'">
-        {{ site.enabled ? t('Enabled') : t('Disabled') }}
-      </Badge>
-      <craft-callout v-if="site.primary" size="small" inline>
-        <span>{{ t('Primary') }}</span>
-      </craft-callout>
-    </template>
+  <LayoutSlot name="title-badge">
+    <Badge :variant="site.enabled ? 'success' : 'default'">
+      {{ site.enabled ? t('Enabled') : t('Disabled') }}
+    </Badge>
+    <craft-callout v-if="site.primary" size="small" inline>
+      <span>{{ t('Primary') }}</span>
+    </craft-callout>
+  </LayoutSlot>
 
-    <Pane appearance="raised">
-      <div class="grid gap-3">
-        <SiteFields :inertia-form="form" />
-      </div>
-    </Pane>
-  </AppLayout>
+  <Pane appearance="raised">
+    <div class="grid gap-3">
+      <SiteFields :inertia-form="form" />
+    </div>
+  </Pane>
 
   <DeleteSiteModal
     @close="modalActive = false"

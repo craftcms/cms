@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
+  import Pane from '@/common/components/Pane.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, nextTick, ref, watch} from 'vue';
@@ -16,6 +16,8 @@
     reorder,
   } from '@actions/Settings/VolumesController';
   import type {SortItem} from '@/common/types';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   interface VolumeData {
     id: number;
@@ -131,22 +133,24 @@
     enableSorting: false,
     getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
+
+  useAppLayout({title: props.title, fullWidth: true});
 </script>
 
 <template>
-  <IndexLayout :title="title">
-    <template #actions>
-      <CpLink
-        appearance="button"
-        :href="create().url"
-        variant="accent"
-        :inertia="false"
-        icon="plus"
-      >
-        {{ t('New volume') }}
-      </CpLink>
-    </template>
+  <LayoutSlot name="actions">
+    <CpLink
+      appearance="button"
+      :href="create().url"
+      variant="accent"
+      :inertia="false"
+      icon="plus"
+    >
+      {{ t('New volume') }}
+    </CpLink>
+  </LayoutSlot>
 
+  <Pane appearance="raised" :padding="0" class="@container">
     <AdminTable
       :table="table"
       :reorderable="true"
@@ -157,5 +161,5 @@
         <Empty :label="t('No volumes exist yet.')" icon="light/files" />
       </template>
     </AdminTable>
-  </IndexLayout>
+  </Pane>
 </template>

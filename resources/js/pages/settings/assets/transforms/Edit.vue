@@ -3,7 +3,7 @@
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import useCraftData from '@/common/composables/useCraftData';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import {store as saveTransform} from '@actions/Settings/ImageTransformsController';
   import {t, toHandle} from '@craftcms/ui';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
@@ -108,228 +108,228 @@
   }
 
   const {save} = useSettingsSave(form, saveTransform);
+
+  useAppLayout({form, onSave: save});
 </script>
 
 <template>
-  <AppLayout :form="form" @save="save">
-    <Pane appearance="raised">
-      <div class="grid gap-3">
-        <CraftInput
-          :label="t('Name')"
-          id="name"
-          name="name"
-          v-model="form.name"
-          :error="form.errors.name"
-          :disabled="readOnly"
-          required
-          autofocus
-        />
+  <Pane appearance="raised">
+    <div class="grid gap-3">
+      <CraftInput
+        :label="t('Name')"
+        id="name"
+        name="name"
+        v-model="form.name"
+        :error="form.errors.name"
+        :disabled="readOnly"
+        required
+        autofocus
+      />
 
-        <CraftInputHandle
-          :label="t('Handle')"
-          id="handle"
-          name="handle"
-          v-model="form.handle"
-          :error="form.errors.handle"
-          :disabled="readOnly"
-          required
-          @change="handleGenerator.markDirty()"
-        />
+      <CraftInputHandle
+        :label="t('Handle')"
+        id="handle"
+        name="handle"
+        v-model="form.handle"
+        :error="form.errors.handle"
+        :disabled="readOnly"
+        required
+        @change="handleGenerator.markDirty()"
+      />
 
-        <div class="field">
-          <div class="heading">
-            <label id="mode-label">{{ t('Mode') }}</label>
-          </div>
-
-          <div
-            class="mode-options"
-            role="radiogroup"
-            aria-labelledby="mode-label"
-          >
-            <label
-              v-for="option in modeOptions"
-              :key="option.value"
-              class="mode-option"
-              :class="{'mode-option--selected': form.mode === option.value}"
-            >
-              <img
-                class="mode-option__image"
-                :src="option.imageUrl"
-                width="113"
-                height="75"
-                alt=""
-              />
-              <span class="mode-option__label">
-                <input
-                  v-model="form.mode"
-                  type="radio"
-                  name="mode"
-                  :value="option.value"
-                  :disabled="readOnly"
-                />
-                {{ option.label }}
-              </span>
-            </label>
-          </div>
-
-          <ul v-if="form.errors.mode" class="error-list">
-            <li>{{ form.errors.mode }}</li>
-          </ul>
+      <div class="field">
+        <div class="heading">
+          <label id="mode-label">{{ t('Mode') }}</label>
         </div>
 
-        <CraftInputColor
-          v-if="shouldShowFillColor"
-          id="fill"
-          name="fill"
-          :label="t('Fill Color')"
-          v-model="form.fill"
-          :error="form.errors.fill"
-          :disabled="readOnly"
-        />
-
-        <div v-if="shouldShowPosition" class="field">
-          <div class="heading">
-            <label id="position-label">{{ positionLabel }}</label>
-          </div>
-
-          <div
-            class="position-grid"
-            role="radiogroup"
-            aria-labelledby="position-label"
+        <div
+          class="mode-options"
+          role="radiogroup"
+          aria-labelledby="mode-label"
+        >
+          <label
+            v-for="option in modeOptions"
+            :key="option.value"
+            class="mode-option"
+            :class="{'mode-option--selected': form.mode === option.value}"
           >
-            <label
-              v-for="option in positionOptions"
-              :key="option.value"
-              class="position-option"
-              :class="{
-                'position-option--selected': form.position === option.value,
-                'position-option--disabled': readOnly,
-              }"
-              :title="option.label"
-            >
+            <img
+              class="mode-option__image"
+              :src="option.imageUrl"
+              width="113"
+              height="75"
+              alt=""
+            />
+            <span class="mode-option__label">
               <input
-                v-model="form.position"
+                v-model="form.mode"
                 type="radio"
-                name="position"
+                name="mode"
                 :value="option.value"
                 :disabled="readOnly"
-                :aria-label="option.label"
               />
-              <span class="position-option__marker"></span>
-            </label>
-          </div>
-
-          <ul v-if="form.errors.position" class="error-list">
-            <li>{{ form.errors.position }}</li>
-          </ul>
+              {{ option.label }}
+            </span>
+          </label>
         </div>
 
-        <CraftInput
-          :label="t('Width')"
-          id="width"
-          name="width"
-          v-model="form.width"
-          :error="form.errors.width"
-          :disabled="readOnly"
-          inputmode="numeric"
-          size="5"
-        />
-
-        <CraftInput
-          :label="t('Height')"
-          id="height"
-          name="height"
-          v-model="form.height"
-          :error="form.errors.height"
-          :disabled="readOnly"
-          inputmode="numeric"
-          size="5"
-        />
-
-        <CraftSwitch
-          :label="t('Allow Upscaling')"
-          id="upscale"
-          name="upscale"
-          v-model="form.upscale"
-          :error="form.errors.upscale"
-          :disabled="readOnly"
-        />
-
-        <div class="quality-field">
-          <CraftSelect
-            :label="t('Quality')"
-            id="quality-picker"
-            v-model="qualityPickerValue"
-            :error="form.errors.quality"
-            :disabled="readOnly"
-          >
-            <select slot="input">
-              <option value="0">{{ t('Auto') }}</option>
-              <option
-                v-for="option in qualityOptions"
-                :key="option.value"
-                :value="String(option.value)"
-              >
-                {{ option.label }}
-              </option>
-            </select>
-          </CraftSelect>
-
-          <CraftInput
-            v-show="qualityPickerValue !== '0'"
-            id="quality"
-            name="quality"
-            v-model="form.quality"
-            :error="form.errors.quality"
-            :disabled="readOnly"
-            type="number"
-            min="1"
-            max="100"
-            size="5"
-          />
-        </div>
-
-        <CraftSelect
-          :label="t('Interlacing')"
-          id="interlace"
-          name="interlace"
-          v-model="form.interlace"
-          :error="form.errors.interlace"
-          :disabled="readOnly"
-        >
-          <select slot="input">
-            <option
-              v-for="option in interlaceOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </CraftSelect>
-
-        <CraftSelect
-          :label="t('Image Format')"
-          :help-text="t('The image format that transformed images should use.')"
-          id="format"
-          name="format"
-          v-model="form.format"
-          :error="form.errors.format"
-          :disabled="readOnly"
-        >
-          <select slot="input">
-            <option
-              v-for="option in formatOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </CraftSelect>
+        <ul v-if="form.errors.mode" class="error-list">
+          <li>{{ form.errors.mode }}</li>
+        </ul>
       </div>
-    </Pane>
-  </AppLayout>
+
+      <CraftInputColor
+        v-if="shouldShowFillColor"
+        id="fill"
+        name="fill"
+        :label="t('Fill Color')"
+        v-model="form.fill"
+        :error="form.errors.fill"
+        :disabled="readOnly"
+      />
+
+      <div v-if="shouldShowPosition" class="field">
+        <div class="heading">
+          <label id="position-label">{{ positionLabel }}</label>
+        </div>
+
+        <div
+          class="position-grid"
+          role="radiogroup"
+          aria-labelledby="position-label"
+        >
+          <label
+            v-for="option in positionOptions"
+            :key="option.value"
+            class="position-option"
+            :class="{
+              'position-option--selected': form.position === option.value,
+              'position-option--disabled': readOnly,
+            }"
+            :title="option.label"
+          >
+            <input
+              v-model="form.position"
+              type="radio"
+              name="position"
+              :value="option.value"
+              :disabled="readOnly"
+              :aria-label="option.label"
+            />
+            <span class="position-option__marker"></span>
+          </label>
+        </div>
+
+        <ul v-if="form.errors.position" class="error-list">
+          <li>{{ form.errors.position }}</li>
+        </ul>
+      </div>
+
+      <CraftInput
+        :label="t('Width')"
+        id="width"
+        name="width"
+        v-model="form.width"
+        :error="form.errors.width"
+        :disabled="readOnly"
+        inputmode="numeric"
+        size="5"
+      />
+
+      <CraftInput
+        :label="t('Height')"
+        id="height"
+        name="height"
+        v-model="form.height"
+        :error="form.errors.height"
+        :disabled="readOnly"
+        inputmode="numeric"
+        size="5"
+      />
+
+      <CraftSwitch
+        :label="t('Allow Upscaling')"
+        id="upscale"
+        name="upscale"
+        v-model="form.upscale"
+        :error="form.errors.upscale"
+        :disabled="readOnly"
+      />
+
+      <div class="quality-field">
+        <CraftSelect
+          :label="t('Quality')"
+          id="quality-picker"
+          v-model="qualityPickerValue"
+          :error="form.errors.quality"
+          :disabled="readOnly"
+        >
+          <select slot="input">
+            <option value="0">{{ t('Auto') }}</option>
+            <option
+              v-for="option in qualityOptions"
+              :key="option.value"
+              :value="String(option.value)"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </CraftSelect>
+
+        <CraftInput
+          v-show="qualityPickerValue !== '0'"
+          id="quality"
+          name="quality"
+          v-model="form.quality"
+          :error="form.errors.quality"
+          :disabled="readOnly"
+          type="number"
+          min="1"
+          max="100"
+          size="5"
+        />
+      </div>
+
+      <CraftSelect
+        :label="t('Interlacing')"
+        id="interlace"
+        name="interlace"
+        v-model="form.interlace"
+        :error="form.errors.interlace"
+        :disabled="readOnly"
+      >
+        <select slot="input">
+          <option
+            v-for="option in interlaceOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+      </CraftSelect>
+
+      <CraftSelect
+        :label="t('Image Format')"
+        :help-text="t('The image format that transformed images should use.')"
+        id="format"
+        name="format"
+        v-model="form.format"
+        :error="form.errors.format"
+        :disabled="readOnly"
+      >
+        <select slot="input">
+          <option
+            v-for="option in formatOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+      </CraftSelect>
+    </div>
+  </Pane>
 </template>
 
 <style scoped>

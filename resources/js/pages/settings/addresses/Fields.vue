@@ -7,6 +7,8 @@
   import {store} from '@actions/Settings/AddressSettingsController';
   import Pane from '@/common/components/Pane.vue';
 
+  defineOptions({layout: []});
+
   defineProps<{
     title: string;
     fieldLayoutDesigner: {html: string};

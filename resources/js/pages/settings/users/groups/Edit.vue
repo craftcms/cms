@@ -1,18 +1,17 @@
 <script setup lang="ts">
   import {t, toHandle} from '@craftcms/ui';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import {router, useForm} from '@inertiajs/vue3';
   import type {ActionItem, UserGroup} from '@/common/types';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftHandleInput from '@craftcms/ui/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
-
   import Pane from '@/common/components/Pane.vue';
   import PermissionList from '@/modules/permissions/components/PermissionList.vue';
   import {destroy, store} from '@actions/Settings/Users/UserGroupsController';
   import {computed} from 'vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
 
   type PermissionGroup = Omit<
     CraftCms.Cms.User.Data.PermissionGroup,
@@ -78,63 +77,63 @@
       },
     ];
   });
+
+  useAppLayout({form, formActions: actions.value, onSave: save});
 </script>
 
 <template>
-  <AppLayout :form="form" :form-actions="actions" @save="save">
-    <Pane appearance="raised">
-      <div class="grid gap-3">
-        <CraftInput
-          :label="t('Name')"
-          id="name"
-          data-error-key="name"
-          :autofocus="true"
-          :required="true"
-          :disabled="readOnly"
-          :error="errors?.name"
-          name="name"
-          v-model="form.name"
-        />
+  <Pane appearance="raised">
+    <div class="grid gap-3">
+      <CraftInput
+        :label="t('Name')"
+        id="name"
+        data-error-key="name"
+        :autofocus="true"
+        :required="true"
+        :disabled="readOnly"
+        :error="errors?.name"
+        name="name"
+        v-model="form.name"
+      />
 
-        <CraftHandleInput
-          :label="t('Handle')"
-          id="handle"
-          v-model="form.handle"
-          :autocorrect="false"
-          :autocapitalize="false"
-          name="handle"
-          :error="errors?.handle"
-          :required="true"
-          data-error-key="handle"
-          :disabled="readOnly"
-          @change="handleGenerator.markDirty()"
-        />
+      <CraftHandleInput
+        :label="t('Handle')"
+        id="handle"
+        v-model="form.handle"
+        :autocorrect="false"
+        :autocapitalize="false"
+        name="handle"
+        :error="errors?.handle"
+        :required="true"
+        data-error-key="handle"
+        :disabled="readOnly"
+        @change="handleGenerator.markDirty()"
+      />
 
-        <CraftTextarea
-          :label="t('Description')"
-          id="description"
-          name="description"
-          v-model="form.description"
-          :error="errors?.description"
-          data-error-key="description"
-          :disabled="readOnly"
+      <CraftTextarea
+        :label="t('Description')"
+        id="description"
+        name="description"
+        v-model="form.description"
+        :error="errors?.description"
+        data-error-key="description"
+        :disabled="readOnly"
+      />
+    </div>
+
+    <hr class="my-8" />
+
+    <h2 class="text-lg mb-3">{{ t('Permissions') }}</h2>
+
+    <div class="grid gap-3">
+      <div v-for="set in permissions" :key="set.handle">
+        <PermissionList
+          :heading="set.heading"
+          :permissions="set.permissions"
+          :permission-keys="set.keys"
+          v-model="form.permissions"
         />
       </div>
-
-      <hr class="my-8" />
-
-      <h2 class="text-lg mb-3">{{ t('Permissions') }}</h2>
-
-      <div class="grid gap-3">
-        <div v-for="set in permissions" :key="set.handle">
-          <PermissionList
-            :heading="set.heading"
-            :permissions="set.permissions"
-            :permission-keys="set.keys"
-            v-model="form.permissions"
-          />
-        </div>
-      </div>
-    </Pane>
-  </AppLayout>
+    </div>
+  </Pane>
 </template>

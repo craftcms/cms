@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import type {MixedInputPart} from '@/pages/settings/routes/types';
   import MixedInput from '@/common/form/MixedInput.vue';
   import Pane from '@/common/components/Pane.vue';
@@ -92,81 +92,81 @@
       preserveScroll: true,
     });
   }
+
+  useAppLayout(() => ({
+    title: props.title,
+    form,
+    formAdditionalActions: additionalActions.value,
+    onSave: saveRoute,
+  }));
 </script>
 
 <template>
-  <AppLayout
-    :title="title"
-    :form="form"
-    :form-additional-actions="additionalActions"
-    @save="saveRoute"
-  >
-    <Pane appearance="raised">
-      <div class="route-form">
-        <Select
-          :label="t('Site')"
-          v-if="isMultiSite"
-          class="route-site-select"
-          id="route-site"
-          name="siteUid"
-          v-model="form.siteUid"
-          :options="sites"
-          :disabled="form.processing || readOnly"
-          :aria-label="t('Site')"
-        />
+  <Pane appearance="raised">
+    <div class="route-form">
+      <Select
+        :label="t('Site')"
+        v-if="isMultiSite"
+        class="route-site-select"
+        id="route-site"
+        name="siteUid"
+        v-model="form.siteUid"
+        :options="sites"
+        :disabled="form.processing || readOnly"
+        :aria-label="t('Site')"
+      />
 
-        <div class="route-uri-field">
-          <craft-input
-            :label="t('If the URI looks like this')"
-            :has-feedback-for="form.errors.uriParts ? 'error' : ''"
-          >
-            <MixedInput
-              slot="input"
-              ref="mixedInput"
-              v-model="form.uriParts"
-              class="route-uri-input"
-              :invalid="!!form.errors.uriParts"
-              :disabled="form.processing || readOnly"
-              :aria-label="t('URI')"
-            />
+      <div class="route-uri-field">
+        <craft-input
+          :label="t('If the URI looks like this')"
+          :has-feedback-for="form.errors.uriParts ? 'error' : ''"
+        >
+          <MixedInput
+            slot="input"
+            ref="mixedInput"
+            v-model="form.uriParts"
+            class="route-uri-input"
+            :invalid="!!form.errors.uriParts"
+            :disabled="form.processing || readOnly"
+            :aria-label="t('URI')"
+          />
 
-            <div slot="feedback">
-              <ul class="error-list" v-if="form.errors.uriParts">
-                <li>{{ form.errors.uriParts }}</li>
-              </ul>
-            </div>
-          </craft-input>
-
-          <div class="route-token-picker">
-            <h3>{{ t('Add a token') }}</h3>
-            <button
-              v-for="token in tokens"
-              :key="token.label"
-              type="button"
-              class="route-token route-token--button"
-              :disabled="form.processing || readOnly"
-              @mousedown.prevent="addUriToken(token)"
-              @click="handleUriTokenClick($event, token)"
-            >
-              {{ token.label }}
-            </button>
+          <div slot="feedback">
+            <ul class="error-list" v-if="form.errors.uriParts">
+              <li>{{ form.errors.uriParts }}</li>
+            </ul>
           </div>
-        </div>
+        </craft-input>
 
-        <CraftCombobox
-          :label="t('Load this template')"
-          id="route-template"
-          name="template"
-          v-model="form.template"
-          dir="ltr"
-          :disabled="form.processing || readOnly"
-          :error="form.errors.template"
-          required
-          :options="templateOptions"
-        />
+        <div class="route-token-picker">
+          <h3>{{ t('Add a token') }}</h3>
+          <button
+            v-for="token in tokens"
+            :key="token.label"
+            type="button"
+            class="route-token route-token--button"
+            :disabled="form.processing || readOnly"
+            @mousedown.prevent="addUriToken(token)"
+            @click="handleUriTokenClick($event, token)"
+          >
+            {{ token.label }}
+          </button>
+        </div>
       </div>
-    </Pane>
-  </AppLayout>
+
+      <CraftCombobox
+        :label="t('Load this template')"
+        id="route-template"
+        name="template"
+        v-model="form.template"
+        dir="ltr"
+        :disabled="form.processing || readOnly"
+        :error="form.errors.template"
+        required
+        :options="templateOptions"
+      />
+    </div>
+  </Pane>
 </template>
 
 <style scoped lang="scss">

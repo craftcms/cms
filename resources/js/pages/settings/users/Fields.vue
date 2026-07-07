@@ -1,10 +1,13 @@
 <script setup lang="ts">
   import {ref} from 'vue';
   import {useForm} from '@inertiajs/vue3';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store} from '@actions/Settings/Users/UserFieldsController';
+  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import Pane from '@/common/components/Pane.vue';
+
+  defineOptions({layout: []});
 
   defineProps<{
     fieldLayoutDesigner: {html: string};
@@ -38,11 +41,11 @@
 </script>
 
 <template>
-  <IndexLayout :form="form" :default-form-actions="[]" @save="save">
-    <div class="grid gap-6 p-4">
+  <AppLayout :form="form" :default-form-actions="[]" @save="save">
+    <Pane appearance="raised">
       <div ref="fldHost">
         <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
       </div>
-    </div>
-  </IndexLayout>
+    </Pane>
+  </AppLayout>
 </template>

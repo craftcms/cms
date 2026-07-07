@@ -6,6 +6,8 @@
   import Select from '@/common/form/Select.vue';
   import type {BaseOption} from '@/common/types';
 
+  defineOptions({layout: []});
+
   const props = defineProps<{
     endpoint: string;
     exploreUrl: string;
