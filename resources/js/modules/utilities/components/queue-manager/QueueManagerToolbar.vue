@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {type JobInfo, JobStatus} from '@craftcms/cp';
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/cp/utilities/translate';
   import {computed, ref, watch} from 'vue';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import TransitionFade from '@/common/components/TransitionFade.vue';

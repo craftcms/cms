@@ -1,4 +1,4 @@
-import {formatMessage, t} from '@craftcms/cp/utilities/translate.ts.mjs';
+import {formatMessage, t} from '@craftcms/cp/utilities/translate';
 import * as d3 from 'd3';
 
 /** global: Craft */
