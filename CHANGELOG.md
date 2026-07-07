@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Users can now connect their accounts to one or more Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
+- The login page now lists Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
 - Fixed a bug where some control panel resources and pages weren’t loading properly. ([#19214](https://github.com/craftcms/cms/issues/19214))
 
 ## 6.0.0-alpha.10 - 2026-07-03
