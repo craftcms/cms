@@ -332,4 +332,44 @@ export default css`
       transform: translateX(-100%);
     }
   }
+
+  /*
+  Link mode: the inner <a> is the full interactive surface.
+  Move inline padding from :host to the anchor so the whole button is clickable.
+   */
+  :host([href]:not([disabled])) {
+    padding-inline: 0;
+  }
+
+  .link {
+    display: flex;
+    align-items: center;
+    justify-content: inherit;
+    gap: inherit;
+    inline-size: 100%;
+    /* Stretch to the host's full cross size so the whole button (including
+       block padding) is the clickable link. The host's height is indefinite
+       (min-height), so a percentage min-block-size would not resolve. */
+    align-self: stretch;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    padding-inline: var(
+      --c-button-spacing-inline,
+      var(--c-form-control-spacing-inline)
+    );
+  }
+
+  :host([href][size~='small']:not([disabled])) .link {
+    padding-inline: var(--c-spacing-sm);
+  }
+
+  :host([href][size~='large']:not([disabled])) .link {
+    padding-inline: var(--c-spacing-lg);
+  }
+
+  :host([href][size~='zero']:not([disabled])) .link,
+  :host([href][icon]:not([disabled])) .link {
+    padding-inline: 0;
+  }
 `;
