@@ -339,9 +339,18 @@ export default css`
    */
   :host([href]:not([disabled])) {
     padding-inline: 0;
+
+    /* Lion's minimum-click-target overlay is positioned, so it paints above
+       the (non-positioned) anchor and swallows every pointer click before it
+       can activate the link. Recreate the overlay on the anchor instead, so
+       the full target navigates. */
+    &::before {
+      display: none;
+    }
   }
 
   .link {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: inherit;
@@ -358,6 +367,20 @@ export default css`
       --c-button-spacing-inline,
       var(--c-form-control-spacing-inline)
     );
+
+    /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
+       part of the anchor so clicks on it follow the link. */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-height: 44px;
+      min-width: 44px;
+      width: 100%;
+      height: 100%;
+    }
   }
 
   :host([href][size~='small']:not([disabled])) .link {
