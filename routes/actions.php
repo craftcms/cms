@@ -83,7 +83,6 @@ use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
-use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
@@ -205,7 +204,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
     Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
-        Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
 
         // App
         Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
@@ -488,7 +486,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
-        Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
 
         // Pluginstore
         Route::middleware([
