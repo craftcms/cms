@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.11 - 2026-07-07
 
 - Users can now connect their accounts to one or more Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
 - The login page now lists Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
