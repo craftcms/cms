@@ -480,10 +480,18 @@ abstract class Controller extends \yii\web\Controller
         array $data = [],
         ?string $redirect = null,
     ): YiiResponse {
+        $modelData = $model->toArray();
+
+        $isCpRequest = $this->request->getIsCpRequest();
+
+        if (!$isCpRequest && !currentUser()?->can('accessCp')) {
+            unset($modelData['cpEditUrl']);
+        }
+
         $data += array_filter([
             'modelName' => $modelName,
             'modelClass' => get_class($model),
-            ($modelName ?? 'model') => $model->toArray(),
+            ($modelName ?? 'model') => $modelData,
         ]);
 
         if ($model instanceof Identifiable) {
@@ -491,7 +499,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         $notificationSettings = [];
-        if ($model instanceof Chippable) {
+        if ($isCpRequest && $model instanceof Chippable) {
             $notificationSettings['details'] = app(ElementHtml::class)->chipHtml($model);
         }
 

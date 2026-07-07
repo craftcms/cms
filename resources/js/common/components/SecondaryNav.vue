@@ -60,7 +60,29 @@
       <slot>
         <craft-nav-list v-if="items.length">
           <template v-for="(item, index) in items" :key="index">
+            <li v-if="item.subnav" class="nav-heading">
+              <span class="nav-heading-label">{{ item.label }}</span>
+
+              <craft-nav-list>
+                <template
+                  v-for="(subitem, subindex) in item.subnav"
+                  :key="subindex"
+                >
+                  <CpLink
+                    as="craft-nav-item"
+                    :active="subitem.selected"
+                    :href="subitem.url"
+                    block
+                    flush
+                  >
+                    {{ subitem.label }}
+                  </CpLink>
+                </template>
+              </craft-nav-list>
+            </li>
+
             <CpLink
+              v-else
               as="craft-nav-item"
               :active="item.selected"
               :href="item.url"
@@ -76,3 +98,18 @@
     </div>
   </nav>
 </template>
+
+<style scoped lang="css">
+  .nav-heading {
+    display: grid;
+    gap: var(--c-spacing-sm);
+    margin: 0;
+  }
+
+  .nav-heading-label {
+    display: block;
+    padding-block: var(--c-spacing-sm);
+    color: var(--c-text-quiet);
+    font-weight: 600;
+  }
+</style>

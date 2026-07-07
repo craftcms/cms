@@ -9,12 +9,16 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
+use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
+use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Update\Data\Updates;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Data\UserSettings;
+use CraftCms\Cms\View\HtmlFragment;
 use DateTimeInterface;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
 use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
@@ -22,6 +26,7 @@ use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
 use Spatie\TypeScriptTransformer\Writers\GlobalNamespaceWriter;
 use Workbench\App\TypeScript\ClassListClassTransformer;
 use Workbench\App\TypeScript\ClassListTransformedProvider;
+use Workbench\App\TypeScript\ViewModelTransformer;
 
 class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicationServiceProvider
 {
@@ -43,10 +48,15 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     PermissionGroup::class,
                     Route::class,
                     Updates::class,
+                    HtmlFragment::class,
+                    UserPermissionsViewModel::class,
+                    UserPreferencesViewModel::class,
                     UserSettings::class,
+                    UserSignInProvidersViewModel::class,
                 ],
                 [
                     new EnumTransformer,
+                    new ViewModelTransformer,
                     new ClassListClassTransformer,
                 ],
             ));

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import {create} from '@actions/Settings/EntryTypesController';
   import {useTemplateRef} from 'vue';
+
+  defineProps<{
+    url: string;
+  }>();
 
   const emit = defineEmits<{
     (e: 'success'): void;
@@ -9,10 +11,8 @@
 
   const invoker = useTemplateRef('invoker');
 
-  function createSlideout() {
-    const slideout = new Craft.CpScreenSlideout(
-      create['/{cpTrigger?}/settings/entry-types/new']().url
-    );
+  function openSlideout(url: string) {
+    const slideout = new Craft.CpScreenSlideout(url);
 
     slideout.on('submit', () => {
       emit('success');
@@ -22,22 +22,15 @@
       invoker.value?.focus();
     });
   }
-
-  function handleClick() {
-    createSlideout();
-  }
 </script>
 
 <template>
   <craft-button
     type="button"
     appearance="filled"
-    @click="handleClick"
+    @click="openSlideout(url)"
     ref="invoker"
   >
-    <craft-icon name="plus" slot="prefix"></craft-icon>
-    {{ t('Create') }}
+    <slot></slot>
   </craft-button>
 </template>
-
-<style scoped lang="scss"></style>

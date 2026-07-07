@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -20,6 +22,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -345,6 +348,51 @@ it('can find field usages', function () {
     expect($this->fields->findFieldUsages(new PlainText))->toBeEmpty();
 
     $this->markTestIncomplete('Add test with field usage');
+});
+
+it('can merge fields', function () {
+    $this->fields->saveField($this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Persisting Text',
+        'handle' => 'persistingText',
+    ]));
+
+    $this->fields->saveField($this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Outgoing Text',
+        'handle' => 'outgoingText',
+    ]));
+
+    $persistingField = $this->fields->getFieldByHandle('persistingText');
+    $outgoingField = $this->fields->getFieldByHandle('outgoingText');
+
+    $layoutModel = FieldLayoutModel::factory()
+        ->forField(FieldModel::firstWhere('handle', 'outgoingText'))
+        ->create();
+
+    EntryType::factory()->create([
+        'fieldLayoutId' => $layoutModel->id,
+    ]);
+
+    $migrationPath = null;
+
+    try {
+        $result = $this->fields->merge($persistingField, $outgoingField);
+        $migrationPath = $result->migrationPath;
+
+        $layout = $this->fields->getLayoutById($layoutModel->id);
+        $layoutElement = $layout->getCustomFieldElements()[0];
+
+        expect($result->updatedLayouts)->toBe(1)
+            ->and($this->fields->getFieldByHandle('outgoingText'))->toBeNull()
+            ->and($layoutElement->getFieldUid())->toBe($persistingField->uid)
+            ->and($migrationPath)->toBeFile()
+            ->and(DB::table(Table::MIGRATIONS)->where('migration', basename((string) $migrationPath, '.php'))->exists())->toBeTrue();
+    } finally {
+        if ($migrationPath) {
+            @unlink($migrationPath);
+        }
+    }
 });
 
 it('returns laravel-style pagination metadata for table data', function () {

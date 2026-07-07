@@ -21,11 +21,11 @@
   import {useFlash} from '@/common/composables/useFlash';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
   import {hasLayoutSlot} from '@/common/composables/layoutSlots';
-  import type {ActionItem} from '@/common/types';
-
-  interface SaveOptions {
-    redirect?: boolean;
-  }
+  import type {
+    ActionItem,
+    ActionItemButton,
+    FormSaveOptions,
+  } from '@/common/types';
 
   type DefaultFormAction = 'saveAndContinueEditing';
 
@@ -37,17 +37,19 @@
     defaultFormActions?: Array<DefaultFormAction>;
     formActions?: Array<ActionItem>;
     formAdditionalActions?: Array<ActionItem>;
+    formAdditionalButtons?: Array<ActionItemButton>;
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }
 
   const emit = defineEmits<{
-    (e: 'save', options?: Partial<SaveOptions>): void;
+    (e: 'save', options?: FormSaveOptions): void;
   }>();
 
   const props = withDefaults(defineProps<AppLayoutProps>(), {
     fullWidth: false,
     form: null,
     defaultFormActions: () => ['saveAndContinueEditing'],
+    formAdditionalButtons: () => [],
   });
 
   /**
@@ -97,7 +99,7 @@
 
   const page = usePage<{
     title: string;
-    readOnly: boolean;
+    readOnly?: boolean;
     crumbs?: Array<{
       url?: string;
       label: string;
@@ -109,7 +111,7 @@
   const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
   const crumbs = computed(() => page.props.crumbs ?? null);
   const subnav = computed(() => page.props.subnav ?? []);
-  const readOnly = computed(() => page.props.readOnly);
+  const readOnly = computed(() => Boolean(page.props.readOnly));
 
   // Which optional layout regions are in play — filled either by an inline
   // slot or by a page-side <LayoutSlot> teleport. These computeds may only
@@ -165,12 +167,16 @@
     if (action === 'saveAndContinueEditing') {
       return {
         label: t('Save and continue editing'),
-        onClick: () => emit('save', {redirect: false}),
+        onClick: () => save({redirect: false}),
         shortcut: 'S',
       };
     }
 
     throw new Error(`Unknown default form action: ${action}`);
+  }
+
+  function save(options?: FormSaveOptions) {
+    emit('save', options);
   }
 
   // Announce flash messages to screen readers.
@@ -247,7 +253,7 @@
           <component
             :is="form ? 'form' : 'div'"
             method="post"
-            @submit.prevent="emit('save')"
+            @submit.prevent="save()"
           >
             <slot name="header">
               <div :class="{container: true, 'container--full': fullWidth}">
@@ -283,6 +289,7 @@
                           :form="form"
                           :action-items="formActionItems"
                           :additional-actions="formAdditionalActions"
+                          :additional-buttons="formAdditionalButtons"
                           :read-only="readOnly"
                         >
                           <template

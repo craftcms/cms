@@ -8,7 +8,14 @@ let existingJs: string[] | null = null;
  */
 export type AppendHtmlDisposer = () => void;
 
-async function appendHtml(
+function waitForScript(script: HTMLScriptElement): Promise<void> {
+  return new Promise((resolve) => {
+    script.addEventListener('load', () => resolve(), {once: true});
+    script.addEventListener('error', () => resolve(), {once: true});
+  });
+}
+
+export async function appendElementHtml(
   html: string,
   parent: HTMLElement
 ): Promise<AppendHtmlDisposer> {
@@ -72,6 +79,8 @@ async function appendHtml(
 
     if (node instanceof HTMLScriptElement) {
       const script = document.createElement('script');
+      let scriptLoaded: Promise<void> | null = null;
+
       Array.from(node.attributes).forEach((attr) => {
         script.setAttribute(attr.name, attr.value);
       });
@@ -91,12 +100,18 @@ async function appendHtml(
         existingJs.push(src);
         jsAdded.push(src);
         script.async = false;
+        scriptLoaded = waitForScript(script);
       } else {
         script.textContent = node.textContent;
       }
 
       parent.appendChild(script);
       appended.push(script);
+
+      if (scriptLoaded) {
+        await scriptLoaded;
+      }
+
       continue;
     }
 
@@ -116,7 +131,7 @@ async function appendHtml(
 export async function appendHeadHtml(
   html: string
 ): Promise<AppendHtmlDisposer> {
-  return appendHtml(html, document.head);
+  return appendElementHtml(html, document.head);
 }
 
 /**
@@ -127,5 +142,5 @@ export async function appendHeadHtml(
 export async function appendBodyHtml(
   html: string
 ): Promise<AppendHtmlDisposer> {
-  return appendHtml(html, document.body);
+  return appendElementHtml(html, document.body);
 }

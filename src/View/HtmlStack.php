@@ -26,6 +26,19 @@ use Stringable;
 #[Scoped]
 class HtmlStack
 {
+    private const array FragmentBufferKeys = [
+        'js',
+        'scripts',
+        'jsFiles',
+        'cssFiles',
+        'css',
+        'html',
+        'jsImports',
+        'metaTags',
+        'linkTags',
+        'icons',
+    ];
+
     /** @var array<int, array<string, string>> */
     private array $js = [];
 
@@ -64,6 +77,8 @@ class HtmlStack
      * @var array<string, list<mixed>>
      */
     private array $buffers = [];
+
+    private bool $suppressAssetRenderingEvents = false;
 
     /**
      * Registers inline JavaScript code.
@@ -276,7 +291,7 @@ class HtmlStack
      */
     public function headHtml(bool $clear = true): string
     {
-        event(new ViewAssetsRendering);
+        $this->dispatchAssetsRenderingEvent();
 
         $head = Position::Head->value;
 
@@ -332,7 +347,7 @@ class HtmlStack
      */
     public function bodyBeginHtml(bool $clear = true): string
     {
-        event(new ViewAssetsRendering);
+        $this->dispatchAssetsRenderingEvent();
 
         $body = Position::BodyBegin->value;
 
@@ -358,7 +373,7 @@ class HtmlStack
      */
     public function bodyEndHtml(bool $clear = true): string
     {
-        event(new ViewAssetsRendering);
+        $this->dispatchAssetsRenderingEvent();
 
         $body = Position::BodyEnd->value;
 
@@ -387,6 +402,28 @@ class HtmlStack
         }
 
         return $parts->implode(PHP_EOL);
+    }
+
+    public function capture(callable $render): HtmlFragment
+    {
+        $this->dispatchAssetsRenderingEvent();
+        $this->startBuffer(self::FragmentBufferKeys);
+        $wasSuppressingAssetRenderingEvents = $this->suppressAssetRenderingEvents;
+
+        try {
+            $html = (string) $render();
+            $this->dispatchAssetsRenderingEvent();
+            $this->suppressAssetRenderingEvents = true;
+
+            return new HtmlFragment(
+                $html,
+                $this->headHtml(),
+                $this->bodyHtml(),
+            );
+        } finally {
+            $this->suppressAssetRenderingEvents = $wasSuppressingAssetRenderingEvents;
+            $this->clearBuffer(self::FragmentBufferKeys);
+        }
     }
 
     /**
@@ -754,6 +791,15 @@ class HtmlStack
                 ]),
             )
             ->map(fn (string|Stringable $part) => (string) $part);
+    }
+
+    private function dispatchAssetsRenderingEvent(): void
+    {
+        if ($this->suppressAssetRenderingEvents) {
+            return;
+        }
+
+        event(new ViewAssetsRendering);
     }
 
     private function readyJs(): string

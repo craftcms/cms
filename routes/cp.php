@@ -43,6 +43,7 @@ use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
@@ -142,9 +143,14 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount', [UsersController::class, 'edit']);
     Route::get('myaccount/addresses', [AddressesController::class, 'index']);
     Route::get('myaccount/permissions', [PermissionsController::class, 'index']);
+    Route::patch('myaccount/permissions', [PermissionsController::class, 'update']);
     Route::get('myaccount/passkeys', [PasskeysController::class, 'index']);
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
+    Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
+    Route::get('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
+    Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
 
     Route::middleware([
         RequireEdition::class.':'.Edition::Team->value,
@@ -152,7 +158,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::get('users/new', [UsersController::class, 'create']);
         Route::get('users/{userId}', [UsersController::class, 'edit'])->whereNumber('userId');
         Route::get('users/{userId}/addresses', [AddressesController::class, 'index'])->whereNumber('userId');
-        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index']);
+        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index'])->whereNumber('userId');
+        Route::patch('users/{userId}/permissions', [PermissionsController::class, 'update'])->whereNumber('userId');
     });
 
     Route::get('users/{slug?}', [UsersController::class, 'index']);

@@ -75,6 +75,7 @@ export interface ActionItemButton {
   label: string;
   variant?: VariantKey | string;
   icon?: string;
+  disabled?: boolean;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
   [key: string]: unknown;
@@ -97,6 +98,12 @@ export type ActionItem =
   | ActionItemLink;
 
 export type ActionItems = Array<ActionItem>;
+
+export interface FormSaveOptions {
+  redirect?: boolean;
+  data?: Record<string, any>;
+  preserveState?: boolean;
+}
 
 export interface EntryType {
   id: number;

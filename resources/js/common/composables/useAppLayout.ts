@@ -1,7 +1,11 @@
 import {watchEffect} from 'vue';
 import {setLayoutProps} from '@inertiajs/vue3';
 import type {InertiaForm} from '@inertiajs/vue3';
-import type {ActionItem} from '@/common/types';
+import type {
+  ActionItem,
+  ActionItemButton,
+  FormSaveOptions,
+} from '@/common/types';
 
 export interface UseAppLayoutOptions {
   title?: string;
@@ -10,7 +14,8 @@ export interface UseAppLayoutOptions {
   defaultFormActions?: Array<'saveAndContinueEditing'>;
   formActions?: Array<ActionItem>;
   formAdditionalActions?: Array<ActionItem>;
-  onSave?: (options?: {redirect?: boolean}) => void;
+  formAdditionalButtons?: Array<ActionItemButton>;
+  onSave?: (options?: FormSaveOptions) => void;
 }
 
 /**
