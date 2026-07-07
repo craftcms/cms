@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\Html\FieldHtml;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -23,6 +24,7 @@ class FieldEditViewModel extends ViewModel
     public function __construct(
         private readonly Field $field,
         private readonly Fields $fieldsService,
+        private readonly bool $readOnly = false,
     ) {}
 
     /** @return array{
@@ -44,7 +46,7 @@ class FieldEditViewModel extends ViewModel
             'handle' => $this->field->handle,
             'instructions' => $this->field->instructions,
             'searchable' => $this->field->searchable,
-            'type' => $this->field::class,
+            'type' => $this->typeClass(),
             'translationMethod' => $this->field->translationMethodValue,
             'translationKeyFormat' => $this->field->translationKeyFormat,
         ];
@@ -53,6 +55,11 @@ class FieldEditViewModel extends ViewModel
     public function brandNew(): bool
     {
         return ! $this->field->id;
+    }
+
+    public function readOnly(): bool
+    {
+        return $this->readOnly;
     }
 
     /** @return array<int, array{
@@ -71,9 +78,7 @@ class FieldEditViewModel extends ViewModel
             ? $this->fieldsService->getCompatibleFieldTypes($this->field, includeCurrent: true)
             : $allFieldTypes;
 
-        $currentType = $this->field instanceof MissingField
-            ? $this->field->expectedType
-            : $this->field::class;
+        $currentType = $this->typeClass();
 
         $options = [];
         $names = [];
@@ -99,13 +104,39 @@ class FieldEditViewModel extends ViewModel
 
         array_multisort($names, $options);
 
+        // A missing type still needs a selectable (blank) option so the select
+        // reflects it until the user picks a real type
+        if ($this->field instanceof MissingField && ! in_array($currentType, array_column($options, 'value'), true)) {
+            array_unshift($options, [
+                'value' => $currentType,
+                'label' => '',
+                'icon' => null,
+                'id' => Html::id($currentType),
+                'compatible' => true,
+            ]);
+        }
+
         return $options;
+    }
+
+    public function missingFieldPlaceholder(): ?string
+    {
+        return $this->field instanceof MissingField
+            ? $this->field->getPlaceholderHtml()
+            : null;
+    }
+
+    public function metadataHtml(): ?string
+    {
+        return $this->field->id
+            ? app(FieldHtml::class)->metadataHtml($this->field)
+            : null;
     }
 
     /** @return array<class-string<Field>, string[]> */
     public function supportedTranslationMethods(): array
     {
-        $currentType = $this->field::class;
+        $currentType = $this->typeClass();
 
         return $this->fieldsService->getAllFieldTypes()
             ->filter(fn (string $class): bool => $class === $currentType || $class::isSelectable())
@@ -144,8 +175,19 @@ class FieldEditViewModel extends ViewModel
     {
         return HtmlStack::capture(fn (): string => template('settings/fields/_type-settings', [
             'field' => $this->field,
-            'namespace' => sprintf('types[%s]', Html::id($this->field::class)),
-            'readOnly' => false,
+            'namespace' => sprintf('types[%s]', Html::id($this->typeClass())),
+            'readOnly' => $this->readOnly,
         ], templateMode: TemplateMode::Cp));
+    }
+
+    /**
+     * @return class-string<Field> The type the field presents as — a missing
+     *                             field's expected type rather than MissingField itself.
+     */
+    private function typeClass(): string
+    {
+        return $this->field instanceof MissingField
+            ? $this->field->expectedType
+            : $this->field::class;
     }
 }

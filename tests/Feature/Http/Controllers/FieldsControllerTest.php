@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -116,10 +117,59 @@ it('can edit a field', function () {
     ]));
 
     $this->get(action([FieldsController::class, 'edit'], ['fieldId' => $field->id]))
-        ->assertOk()
-        ->assertSee('My plaintext field')
-        ->assertSee('plainText');
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/fields/Edit')
+            ->where('title', 'My plaintext field')
+            ->where('brandNew', false)
+            ->where('readOnly', false)
+            ->where('field.id', $field->id)
+            ->where('field.name', 'My plaintext field')
+            ->where('field.handle', 'plainText')
+            ->where('field.type', PlainText::class)
+            ->where('metadataHtml', fn ($value) => is_string($value) && $value !== '')
+            ->where('missingFieldPlaceholder', null)
+            ->has('settings.html'));
 });
+
+it('renders the edit screen read-only without admin changes', function () {
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'My plaintext field',
+        'handle' => 'plainText',
+    ]));
+
+    Cms::config()->allowAdminChanges(false);
+
+    $this->get(sprintf('/%s/settings/fields/edit/%d', Cms::config()->cpTrigger, $field->id))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/fields/Edit')
+            ->where('readOnly', true));
+});
+
+it('serves the legacy screen to slideout requests', function (?callable $setUp) {
+    $fieldId = $setUp ? $setUp()->id : null;
+
+    $this->getJson(
+        action([FieldsController::class, 'edit'], array_filter(['fieldId' => $fieldId])),
+        ['X-Craft-Container-Id' => 'slideout'],
+    )
+        ->assertOk()
+        ->assertJsonPath('action', 'fields/save-field')
+        ->assertJson(fn (AssertableJson $json) => $json
+            ->whereType('content', 'string')
+            ->etc());
+})->with([
+    'new field' => [null],
+    'existing field' => [function () {
+        Fields::saveField($field = Fields::createField([
+            'type' => PlainText::class,
+            'name' => 'My plaintext field',
+            'handle' => 'plainText',
+        ]));
+
+        return $field;
+    }],
+]);
 
 it('can render the settings of a field', function () {
     $this->postJson(action([FieldsController::class, 'renderSettings']), [

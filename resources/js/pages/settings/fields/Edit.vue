@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
   import {actionClient, t, toHandle} from '@craftcms/cp';
   import {computed, ref, watch} from 'vue';
@@ -9,6 +9,7 @@
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import Pane from '@/common/components/Pane.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -40,6 +41,9 @@
     translationMethodOptions: Array<{value: string; label: string}>;
     isMultiSite: boolean;
     settings: CraftCms.Cms.View.HtmlFragment;
+    readOnly: boolean;
+    metadataHtml: string | null;
+    missingFieldPlaceholder: string | null;
     formActions?: Array<any>;
   }>();
 
@@ -163,13 +167,23 @@
       // preselected), so the form must re-initialize rather than keep state.
       onClick: () => save({data: {addAnother: 1}, preserveState: false}),
     },
+    // Server-defined actions (Delete on existing fields)
     ...(props.formActions ?? []),
   ]);
+
+  useAppLayout(() => ({
+    form,
+    onSave: save,
+    formActions: formActionItems.value,
+  }));
 </script>
 
 <template>
-  <AppLayout :form="form" @save="save" :form-actions="formActionItems">
-    <Pane appearance="raised">
+  <div class="grid gap-6 grid-cols-4">
+    <Pane
+      appearance="raised"
+      :class="metadataHtml ? 'col-span-3' : 'col-span-4'"
+    >
       <craft-field-group>
         <CraftInput
           :label="t('Name')"
@@ -178,6 +192,7 @@
           name="name"
           v-model="form.name"
           :error="form.errors.name"
+          :disabled="readOnly"
           required
           autofocus
         />
@@ -189,6 +204,7 @@
           name="handle"
           v-model="form.handle"
           :error="form.errors.handle"
+          :disabled="readOnly"
           required
           @change="handleGenerator.markDirty()"
         />
@@ -200,6 +216,7 @@
           name="instructions"
           v-model="form.instructions"
           :error="form.errors.instructions"
+          :disabled="readOnly"
         />
 
         <CraftSwitch
@@ -207,6 +224,7 @@
           id="searchable"
           name="searchable"
           v-model="form.searchable"
+          :disabled="readOnly"
         />
 
         <CraftSelect
@@ -216,8 +234,9 @@
           name="type"
           v-model="form.type"
           :error="form.errors.type"
+          :disabled="readOnly"
         >
-          <select slot="input">
+          <select slot="input" :disabled="readOnly">
             <option
               v-for="option in fieldTypeOptions"
               :key="option.value"
@@ -232,6 +251,8 @@
           {{ t('Changing this may result in data loss.') }}
         </p>
 
+        <div v-if="missingFieldPlaceholder" v-html="missingFieldPlaceholder" />
+
         <template v-if="showTranslationSettings">
           <CraftSelect
             :label="t('Translation Method')"
@@ -240,8 +261,9 @@
             name="translationMethod"
             v-model="form.translationMethod"
             :error="form.errors.translationMethod"
+            :disabled="readOnly"
           >
-            <select slot="input">
+            <select slot="input" :disabled="readOnly">
               <option
                 v-for="option in translationMethodOptions"
                 :key="option.value"
@@ -264,6 +286,7 @@
             name="translationKeyFormat"
             v-model="form.translationKeyFormat"
             :error="form.errors.translationKeyFormat"
+            :disabled="readOnly"
             monospace
           />
         </template>
@@ -280,5 +303,10 @@
         </div>
       </craft-field-group>
     </Pane>
-  </AppLayout>
+    <div class="col-span-1" v-if="metadataHtml">
+      <div class="sticky top-4">
+        <DynamicHtmlRenderer :html="metadataHtml" />
+      </div>
+    </div>
+  </div>
 </template>
