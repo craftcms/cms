@@ -264,7 +264,9 @@ class CardDesigner
             'alignmentOptions' => [
                 [
                     'value' => 'start',
-                    'icon' => $orientation === 'ltr' ? Icons::resolveIconName('slideout-left') : Icons::resolveIconName('slideout-right'),
+                    // The family prefix is required for the client-side icon fetch;
+                    // these live in custom-icons/, not the default solid/ folder.
+                    'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-left' : 'custom-icons/slideout-right',
                     'attributes' => [
                         'aria' => [
                             'label' => $orientation == 'ltr' ? t('Left') : t('Right'),
@@ -273,7 +275,7 @@ class CardDesigner
                 ],
                 [
                     'value' => 'end',
-                    'icon' => $orientation === 'ltr' ? Icons::resolveIconName('slideout-right') : Icons::resolveIconName('slideout-left'),
+                    'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-right' : 'custom-icons/slideout-left',
                     'attributes' => [
                         'aria' => [
                             'label' => $orientation == 'ltr' ? t('Right') : t('Left'),
