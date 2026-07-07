@@ -11,6 +11,7 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Update\Data\Updates;
@@ -51,6 +52,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,
                     UserSettings::class,
+                    UserSignInProvidersViewModel::class,
                 ],
                 [
                     new EnumTransformer,

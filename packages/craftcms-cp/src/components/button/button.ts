@@ -40,10 +40,45 @@ export type ButtonAppearance =
  * @csspart label - The button's label slot.
  * @csspart suffix - The button's suffix slot.
  * @csspart spinner - Spinner that shows when the button is in a loading state.
+ * @csspart link - The anchor element rendered when the button has an href.
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
     return [...super.styles, variantsStyles, styles];
+  }
+
+  override connectedCallback() {
+    // Set link-appropriate host state *before* Lion runs, so it skips its
+    // role="button" assignment and (via type) its submit-helper wiring.
+    if (this.href && !this.disabled) {
+      this.type = 'button';
+      this.setAttribute('role', 'presentation');
+    }
+    super.connectedCallback();
+    this.syncLinkHostState();
+  }
+
+  override updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    if (changedProperties.has('href') || changedProperties.has('disabled')) {
+      this.syncLinkHostState();
+    }
+  }
+
+  private syncLinkHostState() {
+    if (this.isLink) {
+      this.setAttribute('role', 'presentation');
+      this.tabIndex = -1;
+      this.type = 'button';
+      this.linkHostStateApplied = true;
+    } else if (this.linkHostStateApplied) {
+      this.setAttribute('role', 'button');
+      this.type = 'submit';
+      if (!this.disabled) {
+        this.tabIndex = 0;
+      }
+      this.linkHostStateApplied = false;
+    }
   }
 
   override async firstUpdated(changedProperties: Map<string, any>) {
@@ -57,7 +92,13 @@ export default class CraftButton extends LionButtonSubmit {
     );
 
     if (!this.accessibleName) {
-      this.accessibleName = computeAccessibleName(this);
+      // In link mode the host is role="presentation" (name not computable on
+      // it); the real accessible element is the inner anchor.
+      const nameTarget = this.isLink
+        ? ((this.shadowRoot?.querySelector('a.link') as HTMLElement | null) ??
+          this)
+        : this;
+      this.accessibleName = computeAccessibleName(nameTarget);
     }
 
     this._hasAccessibilityError =
@@ -96,18 +137,45 @@ export default class CraftButton extends LionButtonSubmit {
   /** Set align-items for the content */
   @property() align: 'start' | 'end' | 'center' = 'center';
 
+  /** Icon to be rendered within the content. */
   @property() icon: string | null = null;
 
+  /** When set, the button renders as a link to this URL. */
+  @property({reflect: true}) href: string | null = null;
+
+  /** Anchor target (e.g. "_blank"). Forwarded to the rendered <a>. */
+  @property() target: string | null = null;
+
+  /** Anchor rel. Forwarded to the <a>; "noopener" is added for target="_blank". */
+  @property() rel: string | null = null;
+
+  /** Anchor download attribute. Forwarded to the <a>. */
+  @property() download: string | null = null;
+
+  /** Position of the icon. Defaults to "prefix" */
   @property({attribute: 'icon-position'}) iconPosition: 'prefix' | 'suffix' =
     'prefix';
 
   @state()
   private _hasAccessibilityError: boolean = false;
 
+  private linkHostStateApplied = false;
+
+  private get isLink(): boolean {
+    return !!this.href && !this.disabled;
+  }
+
+  private get computedRel(): string | null {
+    if (this.target === '_blank') {
+      const tokens = new Set((this.rel ?? '').split(/\s+/).filter(Boolean));
+      tokens.add('noopener');
+      return Array.from(tokens).join(' ');
+    }
+    return this.rel;
+  }
+
   override render() {
-    return html`
-      <!--@TODO need to figure this out-->
-      <!--<div role="status" class="sr-only"></div>-->
+    const content = html`
       <div
         class="${classMap({
           'button-content': true,
@@ -133,6 +201,22 @@ export default class CraftButton extends LionButtonSubmit {
         ? html`<craft-spinner part="spinner"></craft-spinner>`
         : nothing}
     `;
+
+    if (this.isLink) {
+      return html`
+        <a
+          class="link"
+          part="link"
+          href="${this.href}"
+          target="${this.target ?? nothing}"
+          rel="${this.computedRel ?? nothing}"
+          download="${this.download ?? nothing}"
+          >${content}</a
+        >
+      `;
+    }
+
+    return content;
   }
 }
 

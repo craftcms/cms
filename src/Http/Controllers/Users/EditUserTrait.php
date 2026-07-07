@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -34,6 +35,8 @@ trait EditUserTrait
     private const string SCREEN_PASSWORD = 'password';
 
     private const string SCREEN_PASSKEYS = 'passkeys';
+
+    private const string SCREEN_SIGN_IN_PROVIDERS = 'sign-in-providers';
 
     /**
      * Returns the user being edited.
@@ -91,6 +94,10 @@ trait EditUserTrait
             $screens[self::SCREEN_PASSKEYS] = ['label' => t('Passkeys')];
         }
 
+        if ($this->showSignInProvidersScreen($user)) {
+            $screens[self::SCREEN_SIGN_IN_PROVIDERS] = ['label' => t('Sign-in Providers')];
+        }
+
         abort_if(! isset($screens[$screen]), 403, 'User not authorized to perform this action.');
 
         $pageName = $screens[$screen]['label'];
@@ -115,7 +122,10 @@ trait EditUserTrait
         $currentSubnavItems = &$subnavItems;
 
         foreach ($screens as $s => $screenInfo) {
-            if ($s === self::SCREEN_PASSWORD) {
+            if (
+                $accountSecurityItem === null &&
+                in_array($s, [self::SCREEN_PASSWORD, self::SCREEN_SIGN_IN_PROVIDERS], true)
+            ) {
                 $sidebarItem = [
                     'heading' => t('Account Security'),
                     'nested' => [],
@@ -213,6 +223,11 @@ trait EditUserTrait
         }
 
         return $currentUser->can('viewPermissionsScreen', User::class);
+    }
+
+    private function showSignInProvidersScreen(User $user): bool
+    {
+        return $user->getIsCurrent() && app(OAuth::class)->getProviderDefinitions()->isNotEmpty();
     }
 
     private function editUserScreenUrl(User $user, string $screen): string
