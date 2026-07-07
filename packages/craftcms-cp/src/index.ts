@@ -1,5 +1,4 @@
 import '@github/relative-time-element';
-import {configureIcons} from './utilities/icons';
 
 // Types
 import './types/globals.js';
@@ -105,5 +104,3 @@ export {default as visuallyHiddenStyles} from './styles/visually-hidden.styles.j
 export * from './constants/variants';
 export * from './constants/appearances';
 export * from './constants/colors';
-
-configureIcons();

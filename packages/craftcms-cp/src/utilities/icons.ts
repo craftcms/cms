@@ -1,5 +1,3 @@
-import {registerIconLibrary} from '@awesome.me/webawesome/dist/webawesome.js';
-
 const LEGACY_NAMES: Record<string, string> = {
   alert: 'triangle-exclamation',
   asc: 'arrow-down-short-wide',
@@ -107,13 +105,4 @@ export function getIconUrl(
 
   // Use the default CDN
   return `/vendor/craft/icons/${folder}/${resolvedName}.svg`;
-}
-
-export function configureIcons() {
-  registerIconLibrary('default', {
-    resolver: (name: string, family = 'classic', variant = 'solid') => {
-      return getIconUrl(name, family, variant);
-    },
-    mutator: (svg) => svg.setAttribute('fill', 'currentColor'),
-  });
 }
