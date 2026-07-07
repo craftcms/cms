@@ -31,6 +31,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Flash;
@@ -90,11 +91,28 @@ class FieldsController
         ]);
     }
 
-    public function create(): CpScreenResponse
+    public function create(Request $request): CpScreenResponse
     {
-        $field = $this->fieldsService->createField(PlainText::class);
+        // "Save and add another" links back here with the last-saved type preselected
+        $type = $request->input('type');
 
-        return $this->cpScreenResponse($field);
+        if (
+            ! is_string($type) ||
+            ! ComponentHelper::validateComponentClass($type, FieldInterface::class) ||
+            ! $type::isSelectable()
+        ) {
+            $type = PlainText::class;
+        }
+
+        /** @var Field $field */
+        $field = $this->fieldsService->createField($type);
+
+        return new CpScreenResponse()
+            ->title(t('Create a new field'))
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Fields'), 'settings/fields')
+            ->redirectUrl('settings/fields')
+            ->inertiaPage('settings/fields/Edit', new FieldEditViewModel($field, $this->fieldsService));
     }
 
     public function edit(Request $request, ?FieldInterface $field = null, ?int $fieldId = null): CpScreenResponse
@@ -102,7 +120,7 @@ class FieldsController
         $fieldId ??= $field->id ?? $request->input('fieldId');
 
         if (is_null($fieldId)) {
-            return $this->create();
+            return $this->create($request);
         }
 
         abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
@@ -172,6 +190,7 @@ class FieldsController
             'searchable' => ['nullable', 'boolean'],
             'translationMethod' => ['nullable', 'string'],
             'translationKeyFormat' => ['nullable', 'string'],
+            'typeSettings' => ['nullable', 'string'],
         ]);
 
         $type = $request->input('type');
@@ -197,7 +216,7 @@ class FieldsController
             'searchable' => (bool) $request->input('searchable', true),
             'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
-            'settings' => $request->input('types', [])[Html::id($type)] ?? [],
+            'settings' => $this->typeSettingsFromRequest($request, $type),
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
@@ -217,6 +236,24 @@ class FieldsController
         return $this->asModelSuccess($field, t('Field saved.'), 'field', [
             'selectorHtml' => app(FieldLayoutDesigner::class)->layoutElementSelectorHtml(new CustomField($field), true),
         ], $redirect);
+    }
+
+    /**
+     * The Inertia edit screen posts the field type settings island as a
+     * URL-encoded string (`typeSettings`), since its inputs are server-rendered
+     * HTML rather than form state. The legacy Twig form posts a `types` array.
+     */
+    private function typeSettingsFromRequest(Request $request, string $type): array
+    {
+        $settingsStr = $request->input('typeSettings');
+
+        if (is_string($settingsStr) && $settingsStr !== '') {
+            parse_str($settingsStr, $postedSettings);
+
+            return $postedSettings['types'][Html::id($type)] ?? [];
+        }
+
+        return $request->input('types', [])[Html::id($type)] ?? [];
     }
 
     public function destroy(Request $request, int $fieldId): Response
