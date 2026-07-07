@@ -27,8 +27,6 @@ class UserFieldsController extends BaseUserSettingsController
         private readonly Users $users,
         private readonly FieldLayoutDesigner $fieldLayoutDesigner,
     ) {
-        parent::__construct();
-
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
