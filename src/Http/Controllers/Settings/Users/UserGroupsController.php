@@ -36,8 +36,6 @@ class UserGroupsController extends BaseUserSettingsController
         private readonly GeneralConfig $generalConfig,
         private readonly UserGroups $userGroups,
     ) {
-        parent::__construct();
-
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
 
@@ -50,6 +48,7 @@ class UserGroupsController extends BaseUserSettingsController
         return Inertia::render('settings/users/groups/Index', [
             'crumbs' => $this->crumbs(t('User Groups')),
             'title' => t('User Settings'),
+            'subnav' => $this->subnav(),
             'groups' => $this->userGroups->getAllGroups(),
         ]);
     }

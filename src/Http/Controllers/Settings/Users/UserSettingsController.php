@@ -27,9 +27,7 @@ class UserSettingsController extends BaseUserSettingsController
         private readonly ProjectConfig $projectConfig,
         private readonly Volumes $volumes,
         private readonly UserGroups $userGroups,
-    ) {
-        parent::__construct();
-    }
+    ) {}
 
     public function index(): CpScreenResponse
     {
@@ -39,6 +37,7 @@ class UserSettingsController extends BaseUserSettingsController
             ->title(t('User Settings'))
             ->crumbs($this->crumbs(t('User Settings')))
             ->inertiaPage('settings/users/Settings', [
+                'subnav' => $this->subnav(),
                 'settings' => $settings,
                 'canRequire2fa' => Edition::get()->supportsRequiring2FA(),
                 'canManagePublicRegistration' => Edition::get()->supportsPublicRegistration(),

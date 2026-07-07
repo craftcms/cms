@@ -2,7 +2,7 @@
   import {h, ref} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
+  import Pane from '@/common/components/Pane.vue';
   import {connect, destroy} from '@actions/Users/SignInProvidersController';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -128,7 +128,7 @@
 </script>
 
 <template>
-  <IndexLayout>
+  <Pane :padding="0" appearance="raised">
     <AdminTable :table="table" />
-  </IndexLayout>
+  </Pane>
 </template>
