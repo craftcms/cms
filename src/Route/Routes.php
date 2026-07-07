@@ -11,6 +11,7 @@ use CraftCms\Cms\Route\Events\RouteDeleted;
 use CraftCms\Cms\Route\Events\RouteDeleting;
 use CraftCms\Cms\Route\Events\RouteSaved;
 use CraftCms\Cms\Route\Events\RouteSaving;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Sites;
@@ -86,6 +87,21 @@ class Routes
         private readonly ProjectConfig $projectConfig,
         private readonly Sites $sites,
     ) {}
+
+    /**
+     * Returns the unique localized values of a GeneralConfig path setting across all sites,
+     * for settings that can be defined per site (a site handle keyed array or callable).
+     *
+     * @return Collection<int, non-empty-string>
+     */
+    public function localizedConfigPaths(string $getter): Collection
+    {
+        return $this->sites->getAllSites()
+            ->map(fn (Site $site) => Cms::config()->$getter($site->handle))
+            ->filter(fn (mixed $path) => is_string($path) && $path !== '')
+            ->unique()
+            ->values();
+    }
 
     /**
      * Returns the routes defined in the project config.

@@ -17,6 +17,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -242,6 +243,22 @@ test('attemptLogin accepts username when useEmailAsUsername is false', function 
 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->username,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    expect(Auth::check())->toBeTrue();
+});
+
+test('login routes are registered for localized loginPath values', function () {
+    Cms::config()->isSystemLive = true;
+    Cms::config()->loginPath = ['siteWithCustomPath' => 'aanmelden'];
+
+    Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
+
+    $user = User::findOne();
+
+    postJson('/aanmelden', [
+        'loginName' => $user->email,
         'password' => 'craftcms2018!!',
     ])->assertOk();
 
