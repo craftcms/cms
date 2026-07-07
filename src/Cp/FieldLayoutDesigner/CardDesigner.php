@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
 use CraftCms\Cms\Cp\Html\StatusHtml;
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
