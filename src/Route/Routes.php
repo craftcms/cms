@@ -92,7 +92,7 @@ class Routes
      * Returns the unique localized values of a GeneralConfig path setting across all sites,
      * for settings that can be defined per site (a site handle keyed array or callable).
      *
-     * @return Collection<int, string>
+     * @return Collection<int, non-empty-string>
      */
     public function localizedConfigPaths(string $getter): Collection
     {
