@@ -19,6 +19,7 @@ $routes = app(CraftRoutes::class);
 if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::config()->loginPath !== false) {
         Route::get(Cms::config()->loginPath, [LoginController::class, 'showLogin']);
+        Route::post(Cms::config()->loginPath, [LoginController::class, 'attemptLogin']);
         Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
     }
 
