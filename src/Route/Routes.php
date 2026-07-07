@@ -180,7 +180,7 @@ class Routes
         }
 
         event(new RouteDeleting(new Route(
-            uriParts: $route['uriParts'],
+            uriParts: $route['uriParts'] ?? [],
             template: $route['template'],
             siteUid: $route['siteUid'],
             uid: $routeUid,
@@ -192,7 +192,7 @@ class Routes
         );
 
         event(new RouteDeleted(new Route(
-            uriParts: $route['uriParts'],
+            uriParts: $route['uriParts'] ?? [],
             template: $route['template'],
             siteUid: $route['siteUid'],
             uid: $routeUid,
