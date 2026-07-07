@@ -14,6 +14,14 @@ const spinner = ora({text: '@craftcms/cp', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
 
 async function cleanup() {
+  // In develop mode, rebuild in place: the root Vite dev server starts
+  // alongside this watcher, and deleting dist would make its dependency scan
+  // fail while the initial rebuild runs.
+  if (isDeveloping) {
+    await mkdir(getDistDir(), {recursive: true});
+    return;
+  }
+
   spinner.start('Cleaning up dist');
 
   await deleteAsync(getDistDir());
