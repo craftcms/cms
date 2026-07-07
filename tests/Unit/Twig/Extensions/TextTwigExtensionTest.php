@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Twig\Extensions\TextTwigExtension;
-use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\Twig;
+use CraftCms\Cms\View\PageLifecycle;
 
 beforeEach(function () {
     $this->pageLifecycle = app(PageLifecycle::class);

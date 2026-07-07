@@ -10,23 +10,18 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Json;
+use DateTimeInterface;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 use Override;
 
 class DateTime extends ScalarType implements SingularTypeInterface
 {
-    /**
-     * @var string
-     */
     #[Override]
-    public $name = 'DateTime';
+    public string $name = 'DateTime';
 
-    /**
-     * @var string
-     */
     #[Override]
-    public $description = 'The `DateTime` scalar type represents a point in time.';
+    public ?string $description = 'The `DateTime` scalar type represents a point in time.';
 
     /**
      * @var bool Whether parsed dates should be set to the system time zone
@@ -46,7 +41,7 @@ class DateTime extends ScalarType implements SingularTypeInterface
     public function serialize($value)
     {
         // The value not being a datetime would indicate an already formatted date.
-        if ($value instanceof \DateTime) {
+        if ($value instanceof DateTimeInterface) {
             return $value->format(FormatDateTime::DEFAULT_FORMAT);
         }
 

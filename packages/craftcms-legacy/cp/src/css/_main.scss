@@ -1685,25 +1685,6 @@ td.right {
   }
 }
 
-.checkbox-select-item {
-  display: flex;
-  gap: var(--xs);
-  align-items: flex-start;
-  align-content: stretch;
-  padding-block: 4px;
-
-  .move {
-    margin-block-start: -4px;
-    margin-inline-end: var(--xs);
-    position: relative;
-    z-index: 1;
-  }
-
-  .action-btn {
-    margin-block: -4px;
-  }
-}
-
 ul.path {
   display: flex;
   flex-flow: row wrap;
@@ -3409,9 +3390,9 @@ table:not(.cp-table) {
 .card,
 .matrixblock {
   position: relative;
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
+    border-radius: var(--radius-lg);
     color: var(--custom-text-color, var(--text-color));
   }
 
@@ -3489,7 +3470,6 @@ table:not(.cp-table) {
   padding-block: 0;
   max-width: 100%;
   gap: var(--xs);
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
     padding-inline: var(--s);
@@ -4099,12 +4079,6 @@ table:not(.cp-table) {
     }
   }
 
-  .elements {
-    margin: calc(var(--pane-padding) * -1);
-    padding: var(--pane-padding);
-    overflow: auto;
-  }
-
   &.main {
     .source-path {
       margin-block: calc(var(--padding) * -1 + 2px) 24px;
@@ -4156,6 +4130,8 @@ table:not(.cp-table) {
   }
 
   &.pane {
+    overflow: auto;
+
     .toolbar {
       position: relative;
       z-index: 2;
@@ -4208,6 +4184,10 @@ table:not(.cp-table) {
 .elements {
   position: relative;
 
+  .update-spinner {
+    inset-block-start: 50%;
+  }
+
   &:not(.busy) {
     .update-spinner {
       display: none;
@@ -4223,7 +4203,10 @@ table:not(.cp-table) {
       font-size: 0;
       position: absolute;
       z-index: 100;
-      inset: var(--pane-padding);
+      inset-block-start: 0;
+      inset-inline-start: calc(var(--pane-padding, 24px) * -1);
+      width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
+      height: 100%;
       background: color.adjust(mixins.$white, $alpha: -0.25);
       border-radius: var(--radius-lg);
     }
@@ -6929,10 +6912,7 @@ $min2ColWidth: 400px;
         .element-index {
           border-color: var(--border-hairline-dark) !important;
           background-color: var(--white) !important;
-
-          .elements {
-            max-height: 220px;
-          }
+          max-height: 272px;
         }
       }
 
@@ -8158,29 +8138,29 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 }
 
 // Selects
-.select:not(.selectize),
-.select:not(.selectize) select {
+.select:not(.selectize):not(.cp-select),
+.select:not(.selectize):not(.cp-select) select {
   @include mixins.select-styles;
 }
 
-.select:not(.selectize) {
+.select:not(.selectize):not(.cp-select) {
   @include mixins.select-container-styles;
 }
 
-.select:not(.selectize)::after {
+.select:not(.selectize):not(.cp-select)::after {
   @include mixins.select-arrow-styles;
 }
 
-.select:not(.selectize) select {
+.select:not(.selectize):not(.cp-select) select {
   @include mixins.select-input-styles;
   white-space: pre;
 }
 
-.select:not(.selectize).fullwidth select {
+.select:not(.selectize):not(.cp-select).fullwidth select {
   @include mixins.select-input-fullwidth-styles;
 }
 
-.select:not(.selectize) select {
+.select:not(.selectize):not(.cp-select) select {
   &:hover:not(:disabled) {
     @include mixins.select-input-hovered-styles;
   }
@@ -8190,11 +8170,11 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
   }
 }
 
-.select:not(.selectize).small::after {
+.select:not(.selectize):not(.cp-select).small::after {
   inset-block-start: 9px;
 }
 
-.select:not(.selectize).small select {
+.select:not(.selectize):not(.cp-select).small select {
   padding-block: 4px !important;
   font-size: 11px;
 }
@@ -8493,13 +8473,12 @@ body {
 /* timepicker */
 .ui-timepicker-wrapper {
   z-index: 101;
+  overflow-y: auto;
+  max-height: 210px;
 }
 
 .ui-timepicker-list {
-  margin-inline-start: 1px;
-  overflow-y: auto;
   width: calc(14px + 6em);
-  height: 210px;
   z-index: 100;
 }
 

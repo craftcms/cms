@@ -15,9 +15,21 @@ import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetInde
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/ui/utilities/translate.ts.mjs';
+import {setUrlDefaults} from '@/wayfinder';
+import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
+import {createCpComponentRegistry} from './components.js';
 
 const queue = QueueService.getInstance();
+const components = createCpComponentRegistry();
 let hasBooted = false;
+
+function routeSegment(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return value.toString().replace(/^\/+|\/+$/g, '');
+}
 
 function booting(callback: (craft: any) => void) {
   (window.bootingCallbacks ||= []).push(callback);
@@ -32,6 +44,11 @@ function booted(callback: (craft: any) => void) {
 }
 
 function init() {
+  setUrlDefaults(() => ({
+    cpTrigger: routeSegment(window.Craft.cpTrigger),
+    actionTrigger: routeSegment(window.Craft.actionTrigger),
+  }));
+
   queue.initialize({
     runAutomatically: window.Craft.runQueueAutomatically ?? true,
     enabled: true,
@@ -39,7 +56,7 @@ function init() {
     canAccessQueueManager: window.Craft.canAccessQueueManager ?? false,
   });
 
-  setTranslations(window.Craft.translations);
+  setTranslations(window.Craft.translations ?? {});
 }
 
 async function start() {
@@ -55,9 +72,11 @@ async function start() {
   window.bootingCallbacks = [];
 
   await createInertiaApp({
-    pages: '../pages',
+    resolve: (name) => resolveInertiaPage(name),
     title: (title) => `${title} - ${window.Craft.systemName}`,
     withApp(app) {
+      app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+
       app.provide(Queue, queue);
       app.provide(Axios, axios);
 
@@ -73,6 +92,8 @@ async function start() {
       app.component('ProjectConfig', ProjectConfig);
       app.component('AssetIndexes', AssetIndexes);
       app.component('SystemMessages', SystemMessages);
+
+      components.install(app);
     },
   });
 
@@ -129,6 +150,8 @@ function handleNonInertiaRequests() {
 Object.assign(window.Craft, {
   $queue: queue,
   $axios: axios,
+  $inertia: inertiaPageRegistry,
+  $components: components,
   booting,
   booted,
   init,

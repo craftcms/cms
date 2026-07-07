@@ -101,6 +101,8 @@ readonly class JobProgress
         };
 
         return JobProgressModel::query()
+            // Ignore finished jobs
+            ->where('status', '!=', JobStatus::Done->value)
             // Failed jobs go last
             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END DESC', [JobStatus::Failed->value])
             // Reserved jobs go first

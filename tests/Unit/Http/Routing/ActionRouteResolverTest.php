@@ -36,6 +36,18 @@ it('resolves control panel action routes from the request path', function () {
         ->and($actionRoute->isCp)->toBeTrue();
 });
 
+it('resolves root control panel action routes from the request path', function () {
+    Cms::config()->cpTrigger = null;
+    $request = Request::create('/actions/users/login');
+
+    $actionRoute = app(ActionRouteResolver::class)->resolve($request);
+
+    expect($actionRoute)->toBeInstanceOf(ActionRoute::class)
+        ->and($actionRoute->segments)->toBe(['users', 'login'])
+        ->and($actionRoute->uri)->toBe('/actions/users/login')
+        ->and($actionRoute->isCp)->toBeTrue();
+});
+
 it('resolves action routes from the action param', function () {
     $request = Request::create('/admin/utilities/query', 'POST', [
         'action' => 'query/execute',
@@ -70,3 +82,12 @@ it('builds action uris from explicit segments', function () {
     expect(ActionRoute::uriForSegments(['users', 'login'], false))->toBe('/actions/users/login')
         ->and(ActionRoute::uriForSegments(['users', 'login'], true))->toBe('/admin/actions/users/login');
 });
+
+it('builds root control panel action uris from explicit segments', function (?string $cpTrigger) {
+    Cms::config()->cpTrigger = $cpTrigger;
+
+    expect(ActionRoute::uriForSegments(['users', 'login'], true))->toBe('/actions/users/login');
+})->with([
+    'null' => [null],
+    'slash' => ['/'],
+]);

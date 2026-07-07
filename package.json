@@ -13,18 +13,21 @@
     "dev": "vite",
     "lint:js": "eslint resources/js/",
     "lint:styles": "stylelint \"resources/**/*.css\"",
+    "generate:types": "./vendor/bin/testbench typescript:transform",
+    "generate:wayfinder": "./vendor/bin/testbench wayfinder:generate --path resources/js",
     "typecheck": "vue-tsc --noEmit",
     "lint": "npm run lint:js && npm run lint:styles && npm run typecheck",
     "build:bundles": "cd ./packages/craftcms-legacy && npm run build",
     "dev:bundles": "cd ./packages/craftcms-legacy && npm run dev",
     "serve:bundles": "cd ./packages/craftcms-legacy && npm run serve",
-    "dev:cp": "cd ./packages/craftcms-cp && npm run dev",
-    "build:cp": "cd ./packages/craftcms-cp && npm run build",
-    "test:cp": "cd ./packages/craftcms-cp && npm run test",
+    "dev:cp": "cd ./packages/craftcms-ui && npm run dev",
+    "build:cp": "cd ./packages/craftcms-ui && npm run build",
+    "build:garnish": "cd ./packages/craftcms-garnish && npm run build",
+    "test:cp": "cd ./packages/craftcms-ui && npm run test",
     "storybook": "storybook dev -p 6007",
     "build:storybook": "storybook build",
-    "storybook:cp": "cd ./packages/craftcms-cp && npm run storybook",
-    "build:all": "npm run build:cp && npm run build:bundles && npm run build"
+    "storybook:cp": "cd ./packages/craftcms-ui && npm run storybook",
+    "build:all": "npm run build:garnish && npm run build:cp && npm run build:bundles && npm run build"
   },
   "workspaces": [
     "packages/*"
@@ -35,6 +38,7 @@
   "devDependencies": {
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
+    "@craftcms/garnish": "file:packages/craftcms-garnish",
     "@laravel/vite-plugin-wayfinder": "^0.1.7",
     "@playwright/test": "^1.59.1",
     "@storybook/addon-a11y": "^10.4.1",
@@ -69,15 +73,17 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.8.1",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
+    "@craftcms/graphiql": "file:packages/craftcms-graphiql",
     "@craftcms/ui": "file:packages/craftcms-ui",
     "@headlessui/vue": "^1.7.23",
     "@inertiajs/vite": "^3.0.3",
     "@inertiajs/vue3": "^3.0.3",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^14.3.0",
-    "axios": "^1.15.2",
+    "axios": "^1.17.0",
     "laravel-vite-plugin": "^3.1.0",
     "lit": "^3.3.2",
+    "overtype": "^2.4.0",
     "tailwindcss": "^4.2.4",
     "vue": "^3.5.33"
   }

@@ -90,6 +90,15 @@ describe('isCpRequest', function () {
     it('returns false for site requests', function () {
         expect(Request::create('/news')->isCpRequest())->toBeFalse();
     });
+
+    it('returns true for root control panel requests', function (?string $cpTrigger) {
+        Cms::config()->cpTrigger = $cpTrigger;
+
+        expect(Request::create('/dashboard')->isCpRequest())->toBeTrue();
+    })->with([
+        'null' => [null],
+        'slash' => ['/'],
+    ]);
 });
 
 describe('getToken', function () {
@@ -209,6 +218,24 @@ describe('actionSegmentsToRoute', function () {
     it('returns an empty string when the current request is not an action request', function () {
         expect(Request::create('/news')->actionSegmentsToRoute())
             ->toBe('');
+    });
+});
+
+describe('previewParam', function () {
+    it('returns null when no preview param was provided', function () {
+        expect(Request::create('/news')->previewParam())->toBeNull();
+    });
+
+    it('returns a preview param via the x-craft-preview query string param', function () {
+        expect(Request::create('/news', parameters: ['x-craft-preview' => 'foobar'])->previewParam())->toBe('foobar');
+    });
+
+    it('returns a preview param via the x-craft-live-preview query string param', function () {
+        expect(Request::create('/news', parameters: ['x-craft-live-preview' => 'foobar'])->previewParam())->toBe('foobar');
+    });
+
+    it('returns a preview param via the X-Craft-Preview-Token header', function () {
+        expect(Request::create('/news', server: ['HTTP_X_CRAFT_PREVIEW_TOKEN' => ['foobar']])->previewParam())->toBe('foobar');
     });
 });
 

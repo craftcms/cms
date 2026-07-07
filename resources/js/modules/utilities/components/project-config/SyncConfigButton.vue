@@ -23,7 +23,7 @@
     <input type="hidden" name="force" value="1" v-if="force" />
     <craft-button
       type="submit"
-      variant="primary"
+      variant="accent"
       :loading="processing"
       v-bind="$attrs"
     >

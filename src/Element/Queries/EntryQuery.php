@@ -22,10 +22,11 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Override;
+
+use function CraftCms\Cms\currentUser;
 
 /**
  * @template T of Entry
@@ -43,6 +44,17 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     }
     use QueriesRef;
     use QueriesSections;
+
+    #[Override]
+    public bool $withStructure {
+        get {
+            if (! isset($this->withStructure)) {
+                $this->withStructure = true;
+            }
+
+            return $this->withStructure;
+        }
+    }
 
     #[Override]
     protected string $table = Table::ENTRIES;
@@ -123,7 +135,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         // Always consider “now” to be the current time @ 59 seconds into the minute.
         // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
-        $currentTime = Date::now()->endOfMinute()->setTimezone('UTC');
+        $currentTime = now()->endOfMinute()->setTimezone('UTC');
 
         return match ($status) {
             Entry::STATUS_LIVE => fn (Builder $query) => $query
@@ -227,7 +239,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return;
         }
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         if (! $user) {
             throw new QueryAbortedException;

@@ -59,8 +59,9 @@
     id: id,
     class: [
         'editable',
-        fullWidth ? 'fullwidth',
-        static ? 'static',
+        'cp-table cp-table--editable',
+        fullWidth ? 'w-full',
+        static ? 'static cp-table--static',
         totalRows == 0 ? 'hidden',
     ]|filter,
 } %}
@@ -78,7 +79,7 @@
     {%- endswitch %}
 {% endfor %}
 
-<span role="status" class="visually-hidden" data-status-message></span>
+<span role="status" class="sr-only" data-status-message></span>
 {% tag 'table' with tableAttributes %}
     {% for col in cols %}
         <col>
@@ -111,7 +112,7 @@
                     </th>
                 {% endfor %}
                 {% if (allowDelete or allowReorder) %}
-                    <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
+                    <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup"><span class="sr-only">{{ 'Row actions'|t('app') }}</span></th>
                 {% endif %}
                 {% if includeRowId %}
                     <th class="hidden">Row ID</th>
@@ -269,37 +270,24 @@
                 {% if allowReorder -%}
                     <td class="thin action">
                       <div class="flex flex-nowrap">
-                        <a class="move icon" title="{{ 'Reorder'|t('app') }}"></a>
-                        {{~ disclosureMenu(actionMenuItems, {
-                          buttonAttributes: {
-                            'aria-label': actionBtnLabel,
-                            class: ['action-btn'],
-                            title: 'Actions'|t('app'),
-                            data: {
-                              'disclosure-trigger': true,
-                            },
-                          },
-                        }) }}
+                        <craft-reorder-button aria-label="{{ 'Reorder'|t('app') }}"></craft-reorder-button>
                       </div>
                     </td>
                 {%- endif -%}
                 {%- if allowDelete -%}
                     <td class="thin action">
-                        {{ tag('button', {
-                            class: [
-                                'delete',
-                                'icon',
-                                minRows and totalRows <= minRows ? 'disabled' : null,
-                            ]|filter,
-                            type: 'button',
-                            disabled: minRows and totalRows <= minRows,
-                            title: 'Delete'|t('app'),
-                            aria: {
-                                label: 'Delete row {index}'|t('app', {
-                                    index: rowNumber,
-                                }),
-                            }
-                        }) }}
+                      <craft-button
+                        icon="x"
+                        size="small"
+                        appearance="plain"
+                        aria-label="{{ 'Delete row {index}'|t('app', {
+                          index: rowNumber,
+                        }) }}"
+                        variant="danger"
+                        command="--delete-row"
+                        {% if minRows and totalRows <= minRows %}disabled{% endif %}
+                      >
+                      </craft-button>
                     </td>
                 {%- endif -%}
                 {% for inputName, value in row.hiddenInputs ?? [] %}
@@ -314,8 +302,15 @@
 {% endtag %}
 
 {% if allowAdd %}
-    {% set buttonText = addRowLabel ?? "Add a row"|t('app') %}
-    <button type="button" class="btn dashed add icon" aria-label="{{ buttonText }}">{{ buttonText }}</button>
+  {% set buttonText = addRowLabel ?? "Add a row"|t('app') %}
+  <div
+    class="border border-dashed border-neutral-border-quiet rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1"
+  >
+    <craft-button type="button" appearance="plain" size="small" class="w-full" command="--add-row">
+      <craft-icon name="plus"></craft-icon>
+      {{ buttonText }}
+    </craft-button>
+  </div>
 {% endif %}
 
 {% if initJs %}

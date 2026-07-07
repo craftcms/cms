@@ -32,7 +32,9 @@ function serveResourcesLegacy() {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         if (!req.url?.startsWith('/legacy/')) return next();
-        const filePath = path.resolve('resources' + req.url.split('?')[0]);
+        const filePath = path.resolve(
+          'cms-assets/resources' + req.url.split('?')[0]
+        );
         if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
           const ext = path.extname(filePath);
           res.writeHead(200, {
@@ -94,21 +96,25 @@ function typescriptTransformer() {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const publicDirectory = 'cms-assets/resources';
 
-  const url = new URL(env.APP_URL || 'http://localhost');
-  const host = url.hostname;
+  let server = undefined;
+  if (env.APP_URL) {
+    const url = new URL(env.APP_URL || 'http://localhost');
+    const host = url.hostname;
 
-  const server = url.hostname.includes('.ddev.site')
-    ? {
-        host,
-        cors: url.toString(),
-        hmr: {host},
-        https: {
-          key: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_KEY),
-          cert: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_CERT),
-        },
-      }
-    : undefined;
+    server = url.hostname.includes('.ddev.site')
+      ? {
+          host,
+          cors: url.toString(),
+          hmr: {host},
+          https: {
+            key: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_KEY),
+            cert: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_CERT),
+          },
+        }
+      : undefined;
+  }
 
   return {
     base: './',
@@ -165,8 +171,8 @@ export default defineConfig(({mode}) => {
           'resources/js/legacy.ts',
           'resources/css/cp.css',
         ],
-        publicDirectory: 'resources',
-        hotFile: 'resources/hot',
+        publicDirectory,
+        hotFile: `${publicDirectory}/hot`,
         refresh: [
           // The defaults
           'resources/lang/**',

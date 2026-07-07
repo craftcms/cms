@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\Validation\Contracts\Validatable;
@@ -27,6 +28,15 @@ class TestPlugin extends Plugin
 
     /** @var class-string<Request> */
     public static string $settingsRequestClass = Request::class;
+
+    /** @var array<string, string> */
+    public static array $customPublishables = [];
+
+    /** @var array<string, string> */
+    public static array $customStyles = [];
+
+    /** @var array<string, string> */
+    public static array $customScripts = [];
 
     public ?string $basePathOverride = null;
 
@@ -141,6 +151,24 @@ class TestPlugin extends Plugin
             'standard',
             'pro',
         ];
+    }
+
+    #[Override]
+    public static function create(array $config): PluginInterface
+    {
+        if (self::$customPublishables !== []) {
+            $config['publishables'] = self::$customPublishables;
+        }
+
+        if (self::$customStyles !== []) {
+            $config['styles'] = self::$customStyles;
+        }
+
+        if (self::$customScripts !== []) {
+            $config['scripts'] = self::$customScripts;
+        }
+
+        return parent::create($config);
     }
 
     #[Override]

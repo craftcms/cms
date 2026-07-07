@@ -20,6 +20,7 @@ export const baseInputStyles = css`
   flex: 1 1 auto;
   background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
+  overflow: clip;
 
   /* Detect mobile devices and up the font size of inputs to avoid zoom on focus */
   @media (pointer: none), (pointer: coarse) {
@@ -28,7 +29,10 @@ export const baseInputStyles = css`
 `;
 
 export const baseFieldStyles = css`
-  :host(:not([label-sr-only])) .form-field__group-one {
+  :host(:not([label-sr-only]))
+    .form-field__group-one
+    .form-field__label
+    slot:not(:empty) {
     margin-block-end: var(--c-spacing-sm);
   }
 
@@ -58,6 +62,11 @@ export const baseFieldStyles = css`
 
 export const inputStyles = css`
   ${baseFieldStyles}
+
+  :host([monospace]) .input-group__container {
+    font-family: var(--c-font-mono);
+    font-size: 0.9em;
+  }
 
   ::slotted([slot='input']) {
     font: inherit;
@@ -91,5 +100,9 @@ export const inputStyles = css`
 
   :host([center]) ::slotted([slot='input']) {
     text-align: center;
+  }
+
+  ::slotted([slot='input']) {
+    width: 100%;
   }
 `;

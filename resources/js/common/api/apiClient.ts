@@ -6,7 +6,6 @@ import axios, {
 import {actionClient} from './actionClient';
 
 let loadingApiHeaders = false;
-let apiHeaderWaitlist: Promise<any>[] = [];
 let apiHeaders: Record<string, string> | null = null;
 
 /**
@@ -40,7 +39,7 @@ async function getApiHeaders(cancelToken?: CancelToken) {
     );
 
     return response.data;
-  } catch (error) {
+  } catch {
     // @TODO: I'm not sure we need a queue here
     // while (apiHeaderWaitlist.length) {
     //   apiHeaderWaitlist.shift()[1](error);

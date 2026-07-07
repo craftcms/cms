@@ -32,7 +32,6 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -61,8 +60,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
-use DateTime;
-use DateTimeZone;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -73,6 +71,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -80,6 +79,7 @@ use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -91,7 +91,7 @@ use function CraftCms\Cms\t;
  * @property string|null $friendlyName the user’s first name or username
  * @property-read Address[]|null $addresses the user’s addresses
  * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
- * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property-read DateTimeInterface|null $cooldownEndTime the time when the user will be over their cooldown period
  * @property-read array $preferences the user’s preferences
  * @property-read bool $isCredentialed whether the user account can be logged into
  * @property-read bool $isCurrent whether this is the current logged-in user
@@ -101,7 +101,9 @@ use function CraftCms\Cms\t;
 #[Ruleset(UserRules::class)]
 class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, MustVerifyEmailContract
 {
-    use Authenticatable;
+    use Authenticatable {
+        getAuthPassword as getAuthPasswordAuthenticatable;
+    }
     use Authorizable;
     use CanResetPassword, CraftUserTrait {
         CraftUserTrait::sendPasswordResetNotification insteadof CanResetPassword;
@@ -234,10 +236,10 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public ?int $affiliatedSiteId = null;
 
     /**
-     * @var DateTime|null Last login date
+     * @var DateTimeInterface|null Last login date
      */
     #[AllowedInSandbox]
-    public ?DateTime $lastLoginDate = null;
+    public ?DateTimeInterface $lastLoginDate = null;
 
     /**
      * @var int|null Invalid login count
@@ -245,14 +247,14 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public ?int $invalidLoginCount = null;
 
     /**
-     * @var DateTime|null Last invalid login date
+     * @var DateTimeInterface|null Last invalid login date
      */
-    public ?DateTime $lastInvalidLoginDate = null;
+    public ?DateTimeInterface $lastInvalidLoginDate = null;
 
     /**
-     * @var DateTime|null Lockout date
+     * @var DateTimeInterface|null Lockout date
      */
-    public ?DateTime $lockoutDate = null;
+    public ?DateTimeInterface $lockoutDate = null;
 
     /**
      * @var bool Whether the user has a dashboard
@@ -265,9 +267,9 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public bool $passwordResetRequired = false;
 
     /**
-     * @var DateTime|null Last password change date
+     * @var DateTimeInterface|null Last password change date
      */
-    public ?DateTime $lastPasswordChangeDate = null;
+    public ?DateTimeInterface $lastPasswordChangeDate = null;
 
     /**
      * @var string|null Unverified email
@@ -369,6 +371,29 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function getAuthIdentifierName(): string
     {
         return 'id';
+    }
+
+    public function getAuthPassword(): ?string
+    {
+        $password = $this->getAuthPasswordAuthenticatable();
+
+        if (is_null($password)) {
+            return null;
+        }
+
+        // Ensure the password starts with `$2y$` for BC with older passwords
+        // (h/t https://stackoverflow.com/a/79217475)
+        return Str::replaceStart('$2a$', '$2y$', $password);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[Override]
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        // Allow can() to be called from sandboxed templates
+        return strtolower($method) === 'can' || parent::methodAllowedInSandbox($method);
     }
 
     public function asElement(): self
@@ -697,7 +722,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'lastLoginDate' => [
                 'label' => t('Last Login'),
-                'placeholder' => fn () => (new DateTime)->sub(new DateInterval('P14D')),
+                'placeholder' => fn () => now()->subDays(14),
             ],
             'is2faEnabled' => [
                 'label' => t('Two-Step Verification'),
@@ -855,7 +880,18 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     public function setAttributesFromRequest($values): void
     {
-        unset($values['unverifiedEmail']);
+        unset(
+            $values['invalidLoginCount'],
+            $values['lastInvalidLoginDate'],
+            $values['lastLoginAttemptIp'],
+            $values['lastLoginDate'],
+            $values['lastPasswordChangeDate'],
+            $values['lockoutDate'],
+            $values['newPassword'],
+            $values['password'],
+            $values['unverifiedEmail'],
+            $values['verificationCodeIssuedDate'],
+        );
 
         if (isset($values['email'])) {
             $values['email'] = trim($values['email']);
@@ -1234,7 +1270,7 @@ XML;
             return false;
         }
 
-        return Auth::craftUser()?->getCraftUserId() === $this->id;
+        return currentUser()?->getCraftUserId() === $this->id;
     }
 
     /**
@@ -1252,7 +1288,7 @@ XML;
     /**
      * Returns the time when the user will be over their cooldown period.
      */
-    public function getCooldownEndTime(): ?DateTime
+    public function getCooldownEndTime(): ?DateTimeInterface
     {
         // There was an old bug where a user's lockoutDate could be null if they've
         // passed their cooldownDuration already, but their account status is still locked.
@@ -1260,11 +1296,10 @@ XML;
         if ($this->locked && $this->lockoutDate) {
             $generalConfig = Cms::config();
             $cooldownDuration = (int) $generalConfig->cooldownDuration;
-            $cooldownEnd = clone $this->lockoutDate;
+            $cooldownEnd = Date::instance($this->lockoutDate);
 
             if ($cooldownDuration !== 0) {
-                $sign = $cooldownDuration < 0 ? '-' : '+';
-                $cooldownEnd->modify(sprintf('%s%s seconds', $sign, abs($cooldownDuration)));
+                $cooldownEnd->addSeconds($cooldownDuration);
             }
 
             return $cooldownEnd;
@@ -1279,8 +1314,9 @@ XML;
     public function getRemainingCooldownTime(): ?DateInterval
     {
         if ($this->locked) {
-            $currentTime = DateTimeHelper::currentUTCDateTime();
-            $cooldownEnd = $this->getCooldownEndTime()?->setTimezone(new DateTimeZone('UTC'));
+            $currentTime = now('UTC');
+            $cooldownEnd = $this->getCooldownEndTime();
+            $cooldownEnd = $cooldownEnd ? Date::instance($cooldownEnd)->setTimezone('UTC') : null;
 
             if ($cooldownEnd && $currentTime < $cooldownEnd) {
                 return $currentTime->diff($cooldownEnd);
@@ -1310,7 +1346,7 @@ XML;
             return parent::safeActionMenuItems();
         }
 
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser instanceof CraftUser) {
             return parent::safeActionMenuItems();
@@ -1318,6 +1354,8 @@ XML;
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
+        $canActivate = Gate::check('activate', $this);
+        $canSendActivationEmail = Gate::check('sendActivationEmail', $this);
 
         $isCurrentUser = $this->getIsCurrent();
 
@@ -1345,7 +1383,7 @@ XML;
                 case self::STATUS_PENDING:
                     // Only provide activation actions if they have an email address
                     if ($this->email) {
-                        if ($this->pending || $canModerateUsers) {
+                        if ($canSendActivationEmail) {
                             $statusItems[] = [
                                 'icon' => 'paperplane',
                                 'label' => t('Send activation email'),
@@ -1355,7 +1393,7 @@ XML;
                                 ],
                             ];
                         }
-                        if ($canAdministrateUsers) {
+                        if ($canActivate) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (! $this->password) {
                                 $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'));
@@ -1508,13 +1546,13 @@ JS, [
             return parent::destructiveActionMenuItems();
         }
 
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         if (! $currentUser instanceof CraftUser) {
             return parent::destructiveActionMenuItems();
         }
 
-        $canAdministrateUsers = $currentUser->can('administrateUsers');
+        $currentUser->can('administrateUsers');
 
         $isCurrentUser = $this->getIsCurrent();
 
@@ -1534,19 +1572,16 @@ JS, [
                 }
             }
 
-            // Destructive actions that should only be performed on non-admins, unless the current user is also an admin
-            if (! $this->admin || $currentUser->isAdmin()) {
-                if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
-                    $items[] = [
-                        'icon' => 'disabled',
-                        'label' => t('Deactivate'),
-                        'action' => 'users/deactivate-user',
-                        'params' => [
-                            'userId' => $this->id,
-                        ],
-                        'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
-                    ];
-                }
+            if (Gate::check('deactivate', $this) && ($this->active || $this->pending)) {
+                $items[] = [
+                    'icon' => 'disabled',
+                    'label' => t('Deactivate'),
+                    'action' => 'users/deactivate-user',
+                    'params' => [
+                        'userId' => $this->id,
+                    ],
+                    'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                ];
             }
         }
 
@@ -1756,7 +1791,7 @@ JS, [
     #[Override]
     protected function htmlAttributes(string $context): array
     {
-        $currentUser = Auth::craftUser();
+        $currentUser = currentUser();
 
         return [
             'data' => [

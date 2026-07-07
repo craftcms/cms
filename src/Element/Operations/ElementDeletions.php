@@ -86,7 +86,7 @@ readonly class ElementDeletions
                         $query->unique();
                     }
 
-                    $query->each(function (ElementInterface $element) use ($prevailingElement, $mergedElement) {
+                    $query->cursor()->each(function (ElementInterface $element) use ($prevailingElement, $mergedElement) {
                         foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
                             $fieldValue = $element->getCustomFieldRawValue($field->handle);
                             if (
@@ -258,7 +258,7 @@ readonly class ElementDeletions
                     $this->setDraftAndRevisionDeletionState($element->id);
                 }
 
-                $element->dateDeleted = DateTimeHelper::now();
+                $element->dateDeleted = now();
                 $element->afterDelete();
 
                 if (! $element->hardDelete) {

@@ -3,7 +3,7 @@
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {computed, onMounted} from 'vue';
-  import type {ActionItem} from '@/common/components/ActionMenu.vue';
+  import type {ActionItem} from '@/common/types';
   import {
     disable,
     enable,

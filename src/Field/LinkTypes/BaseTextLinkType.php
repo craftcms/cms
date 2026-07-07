@@ -122,6 +122,17 @@ JS, [
         return $html.Html::hiddenInput($name, $value);
     }
 
+    #[\Override]
+    public function pickerConfig(): array
+    {
+        return array_merge(parent::pickerConfig(), [
+            'kind' => 'text',
+            'prefixes' => (array) $this->urlPrefix(),
+            'pattern' => $this->pattern(),
+            'inputAttributes' => $this->inputAttributes(),
+        ]);
+    }
+
     /**
      * Returns any additional attributes that should be set ot the text input.
      */

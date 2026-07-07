@@ -17,7 +17,6 @@ use craft\models\GqlToken as LegacyGqlToken;
 use craft\models\UserGroup as LegacyUserGroup;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Data\JsonData;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
@@ -103,13 +102,6 @@ test('legacy behavior mixins are applied to every discovered compatibility targe
 
     expect(array_values(array_diff($targetClasses, LegacyBehaviorCatalog::mixinTargets())))
         ->toBe([]);
-});
-
-test('sandbox allowed classes are not exposed to legacy behavior mixins', function() {
-    expect(collect(LegacyBehaviorCatalog::discoveredTargets())->pluck('targetClass'))
-        ->toContain(JsonData::class)
-        ->and(sandboxAllowedCompatibilityTargets())->toContain(JsonData::class)
-        ->and(array_intersect(sandboxAllowedCompatibilityTargets()->all(), LegacyBehaviorCatalog::mixinTargets()))->toBe([]);
 });
 
 test('discovered behavior targets resolve through their legacy aliases to their migrated classes', function() {

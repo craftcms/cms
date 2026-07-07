@@ -16,6 +16,11 @@
         :hint="option.data?.hint"
       >
         <div class="flex gap-2 items-center">
+          <craft-icon
+            v-if="option.data?.addOption"
+            name="plus"
+            class="size-3"
+          ></craft-icon>
           <template v-if="option.data?.indicator">
             <craft-indicator v-bind="option.data.indicator"></craft-indicator>
           </template>

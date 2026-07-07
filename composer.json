@@ -37,11 +37,13 @@
     "bacon/bacon-qr-code": "^3.0",
     "commerceguys/addressing": "^2.1.1",
     "composer/semver": "^3.3.2",
+    "craftcms/cms-assets": "self.version",
     "craftcms/laravel-aliases": "^2.0",
     "craftcms/laravel-dependency-aware-cache": "^1.2.3",
     "craftcms/laravel-ruleset-validation": "^1.1",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~6.0.0",
+    "craftcms/url-validator": "^1.0",
     "elvanto/litemoji": "^5.2.0",
     "enshrined/svg-sanitize": "~0.22.0",
     "guzzlehttp/guzzle": "^7.2.0",
@@ -53,7 +55,6 @@
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",
     "phpoffice/phpspreadsheet": "^5.3",
-    "pixelandtonic/graphql-php": "~14.11.10.1",
     "pixelandtonic/imagine": "~1.5.2.1",
     "pragmarx/google2fa": "^9.0",
     "pragmarx/recovery": "^0.2.1",
@@ -68,6 +69,7 @@
     "twig/twig": "~3.27.0",
     "voku/portable-ascii": "^2.0",
     "web-auth/webauthn-lib": "~5.2.4",
+    "webonyx/graphql-php": "~15.33.1",
     "yiisoft/arrays": "^3.2",
     "yiisoft/html": "^4.1",
     "yiisoft/translator": "^3.2",
@@ -94,6 +96,10 @@
     {
       "type": "path",
       "url": "./yii2-adapter"
+    },
+    {
+      "type": "path",
+      "url": "./cms-assets"
     }
   ],
   "suggest": {

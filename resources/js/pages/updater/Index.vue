@@ -7,6 +7,7 @@
     type UpdaterState,
     useUpdater,
   } from '@/modules/updater/composables/useUpdater';
+  import {getCpUrl} from '@/common/api/actionClient';
 
   const props = defineProps<{
     title: string;
@@ -41,7 +42,9 @@
   function handleFinish(): void {
     setTimeout(() => {
       window.location.href =
-        state.value.returnUrl || props.returnUrl || '/admin/dashboard';
+        state.value.returnUrl ||
+        props.returnUrl ||
+        getCpUrl('dashboard');
     }, 750);
   }
 
@@ -132,7 +135,7 @@
           v-else
           type="button"
           @click="handleOptionClick(option)"
-          :variant="option.submit ? 'primary' : 'default'"
+          :variant="option.submit ? 'accent' : 'neutral'"
           size="lg"
         >
           {{ option.label }}

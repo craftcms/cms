@@ -17,7 +17,6 @@ workbench:
   start: /admin
   install: false # We run the Craft install in DatabaseSeeder
   user: 1
-  guard: craft
   sync:
     - from: resources
       to: public/vendor/craft

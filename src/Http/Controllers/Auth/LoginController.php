@@ -10,6 +10,7 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Models\User;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Timebox;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -33,7 +35,7 @@ use function CraftCms\Cms\template;
 
 readonly class LoginController extends AuthenticationController
 {
-    public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods): Response|View|\Inertia\Response
+    public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods, OAuth $oauth): Response|View|\Inertia\Response
     {
         // see if they're already logged in
         if ($user = $request->craftUser()) {
@@ -45,10 +47,23 @@ readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return $this->renderViewWithFallback(cpTemplate: 'login', inertiaComponent: 'auth/Login', inertiaProps: [
-            'action' => action([LoginController::class, 'attemptLogin']),
-            'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
-        ]);
+        $oauthLoginButtons = array_map(
+            static fn (HtmlString $button): string => (string) $button,
+            $oauth->getLoginButtons(),
+        );
+
+        return $this->renderViewWithFallback(
+            cpTemplate: 'login',
+            data: [
+                'action' => action([self::class, 'attemptLogin']),
+                'oauthLoginButtons' => $oauthLoginButtons,
+            ],
+            inertiaComponent: 'auth/Login',
+            inertiaProps: [
+                'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
+                'oauthLoginButtons' => $oauthLoginButtons,
+            ],
+        );
     }
 
     /**
@@ -106,10 +121,8 @@ readonly class LoginController extends AuthenticationController
 
         /**
          * @var EloquentUserProvider $provider
-         *
-         * @phpstan-ignore method.notFound
          */
-        $provider = auth('craft')->getProvider();
+        $provider = auth()->getProvider();
 
         $user = $this->retrieveLoginUser($request->input('loginName'));
 
@@ -156,7 +169,7 @@ readonly class LoginController extends AuthenticationController
 
     public function logout(Request $request): Response
     {
-        auth('craft')->logout();
+        auth()->logout();
 
         if ($request->wantsJson()) {
             return $this->asSuccess();

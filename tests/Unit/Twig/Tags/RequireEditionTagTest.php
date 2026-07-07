@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 it('renders normally when the edition meets the requirement', function () {

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
@@ -56,8 +55,6 @@ use CraftCms\Cms\Http\Controllers\Entries\ReassignEntriesModalController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
-use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
-use CraftCms\Cms\Http\Controllers\Gql\TokensController as GqlTokensController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MatrixController;
@@ -72,10 +69,7 @@ use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
-use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
-use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
-use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
@@ -86,12 +80,9 @@ use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
-use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
-use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
-use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
@@ -108,21 +99,24 @@ use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
+use CraftCms\Cms\Route\Routes as CraftRoutes;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+$routes = app(CraftRoutes::class);
+$sharedActionRouteGroups = $routes->actionTriggerRoutePrefix() === $routes->cpActionTriggerRoutePrefix()
+    ? [[$routes->cpActionTriggerRoutePrefix(), ['craft.cp']]]
+    : [
+        [$routes->actionTriggerRoutePrefix(), ['craft.web']],
+        [$routes->cpActionTriggerRoutePrefix(), ['craft.cp']],
+    ];
+
 /**
  * Actions that are accessible both with and without CP can be registered here.
  */
-foreach ([
-    Cms::config()->actionTrigger => ['craft.web'],
-    implode('/', [
-        Cms::config()->cpTrigger,
-        Cms::config()->actionTrigger,
-    ]) => ['craft.cp'],
-] as $prefix => $middleware) {
+foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::prefix($prefix)->middleware($middleware)->group(function () use ($middleware) {
         // App
         Route::get('app/health-check', HealthCheckController::class);
@@ -159,10 +153,10 @@ foreach ([
 /**
  * Actions that are accessible without CP can be registered here.
  */
-Route::prefix(Cms::config()->actionTrigger)->group(function () {
+Route::prefix($routes->actionTriggerRoutePrefix())->group(function () {
     Route::post('migrate', MigrateController::class);
 
-    Route::middleware(['auth:craft'])->group(function () {
+    Route::middleware(['auth'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
         Route::post('users/save-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
         Route::post('users/delete-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
@@ -174,10 +168,7 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
     });
 });
 
-Route::prefix(implode('/', [
-    Cms::config()->cpTrigger,
-    Cms::config()->actionTrigger,
-]))->middleware(['craft.cp'])->group(function () {
+Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->group(function () {
     /**
      * Actions not needing auth
      */
@@ -210,10 +201,9 @@ Route::prefix(implode('/', [
     /**
      * Actions needing auth
      */
-    Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
+    Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
-        Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
 
         // App
         Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
@@ -223,6 +213,7 @@ Route::prefix(implode('/', [
         Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
         Route::post('app/render-elements', [RenderController::class, 'elements']);
         Route::post('app/render-components', [RenderController::class, 'components']);
+        Route::post('app/render-markdown', [RenderController::class, 'markdown']);
 
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
@@ -264,6 +255,8 @@ Route::prefix(implode('/', [
         Route::post('delete-elements/delete', [DeleteElementsController::class, 'destroy']);
         Route::any('delete-elements/replace-relations-modal', [DeleteElementsController::class, 'replaceRelationsModal']);
         Route::post('delete-elements/replace-relations', [DeleteElementsController::class, 'replaceRelations']);
+        Route::any('delete-elements/replace-references-modal', [DeleteElementsController::class, 'replaceReferencesModal']);
+        Route::post('delete-elements/replace-references', [DeleteElementsController::class, 'replaceReferences']);
 
         Route::post('elements/create', CreateElementController::class);
         Route::any('elements/edit', EditElementController::class);
@@ -339,24 +332,6 @@ Route::prefix(implode('/', [
         // FindAndReplace
         Route::post('utilities/find-and-replace-perform-action', FindAndReplaceController::class);
 
-        // GraphQL
-        Route::middleware([RequireAdmin::class])->group(function () {
-            Route::post('graphql/generate-token', [GqlTokensController::class, 'generate']);
-
-            Route::middleware('password.confirm')->group(function () {
-                Route::post('graphql/save-token', [GqlTokensController::class, 'store']);
-                Route::post('graphql/fetch-token', [GqlTokensController::class, 'fetch']);
-            });
-        });
-
-        Route::middleware([RequireAdminChanges::class])->group(function () {
-
-            Route::middleware('password.confirm')->group(function () {
-                Route::post('graphql/save-schema', [GqlSchemasController::class, 'save']);
-                Route::post('graphql/save-public-schema', [GqlSchemasController::class, 'savePublic']);
-            });
-        });
-
         // Matrix
         Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
         Route::post('matrix/create-entry', [MatrixController::class, 'createEntry']);
@@ -430,7 +405,6 @@ Route::prefix(implode('/', [
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('volumes/save-volume', [VolumesController::class, 'save']);
             Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
-            Route::post('image-transforms/save', [ImageTransformsController::class, 'save']);
         });
 
         // Plugins
@@ -463,13 +437,6 @@ Route::prefix(implode('/', [
             Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
             Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
-        });
-
-        // Routes
-        Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('routes/save-route', [RoutesController::class, 'store']);
-            Route::post('routes/delete-route', [RoutesController::class, 'destroy']);
-            Route::post('routes/update-route-order', [RoutesController::class, 'reorder']);
         });
 
         // Sections
@@ -513,22 +480,12 @@ Route::prefix(implode('/', [
             Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
         });
 
-        Route::post('users/save-permissions', [PermissionsController::class, 'store']);
-        Route::post('users/save-preferences', [PreferencesController::class, 'store']);
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
-        Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
-
-        // User settings
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('user-settings/save-user-settings', [UserSettingsController::class, 'store']);
-        });
 
         // Pluginstore
         Route::middleware([

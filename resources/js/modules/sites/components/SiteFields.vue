@@ -14,7 +14,7 @@
   }>();
 
   const page = usePage<{
-    isMultisite: boolean;
+    isMultiSite: boolean;
     site: Site;
     nameSuggestions?: Array<SelectItem>;
     languageOptions: Array<SelectItem>;
@@ -25,7 +25,7 @@
   const {readOnly} = useCraftData();
 
   const form = computed(() => props.inertiaForm);
-  const isMultisite = computed(() => page.props.isMultisite);
+  const isMultiSite = computed(() => page.props.isMultiSite);
   const groupOptions = computed(() => page.props.groupOptions);
   const nameSuggestions = computed(() => {
     return page.props.nameSuggestions;
@@ -66,7 +66,7 @@
     :help-text="t('Which group should this site belong to?')"
     name="group"
     id="group"
-    .model-value="form.group"
+    .modelValue="form.group"
     @model-value-changed="form.group = $event.target?.modelValue"
     :disabled="readOnly"
   >
@@ -84,7 +84,7 @@
       <li v-for="error in form.errors?.group" :key="error">{{ error }}</li>
     </ul>
 
-    <div slot="after" v-if="form?.id && isMultisite">
+    <div slot="after" v-if="form?.id && isMultiSite">
       <craft-callout
         variant="danger"
         appearance="plain"
@@ -169,7 +169,7 @@
     </template>
   </CraftCombobox>
 
-  <template v-if="isMultisite || !site.id">
+  <template v-if="isMultiSite || !site.id">
     <CraftCombobox
       :label="t('Status')"
       name="enabled"
@@ -211,7 +211,7 @@
     </CraftCombobox>
   </template>
 
-  <template v-if="(isMultisite || !site.id) && !site.primary">
+  <template v-if="(isMultiSite || !site.id) && !site.primary">
     <craft-switch
       :label="t('Make this the primary site')"
       :help-text="

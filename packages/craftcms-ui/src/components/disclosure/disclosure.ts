@@ -59,7 +59,11 @@ export default class CraftDisclosure extends HTMLElement {
 
     this.trigger.addEventListener('click', this.toggle.bind(this));
 
-    this.state === 'expanded' ? this.open() : this.close();
+    if (this.state === 'expanded') {
+      this.open();
+    } else {
+      this.close();
+    }
   }
 
   disconnectedCallback() {

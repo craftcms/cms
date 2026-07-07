@@ -119,7 +119,7 @@
     border-style: var(--c-pane-border-style);
     border-color: var(--c-pane-border-color);
     box-shadow: var(--c-pane-shadow);
-    overflow: hidden;
+    overflow: clip;
   }
 
   .cp-pane--raised {
@@ -148,6 +148,10 @@
     align-items: center;
     padding-inline: var(--_pane-spacing);
     padding-block: var(--_pane-spacing) 0;
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+    background-color: var(--_bg-color);
   }
 
   .cp-pane__body {
@@ -164,9 +168,7 @@
     padding-block: calc(var(--_pane-spacing) / 2);
     position: sticky;
     inset-block-end: 0;
-    //inset-inline: 0;
-    //inset-block-end: 0;
-    //z-index: 10;
+    z-index: 10;
   }
 
   .actions {

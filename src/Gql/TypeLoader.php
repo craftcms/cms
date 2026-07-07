@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql;
 
 use CraftCms\Cms\Gql\Exceptions\GqlException;
+use GraphQL\Type\Definition\NamedType;
 use GraphQL\Type\Definition\Type;
 
 class TypeLoader
@@ -15,6 +16,8 @@ class TypeLoader
     private static array $_typeLoaders = [];
 
     /**
+     * @phpstan-return NamedType&Type
+     *
      * @throws GqlException
      */
     public static function loadType(string $type): Type

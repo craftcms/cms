@@ -3,5 +3,5 @@
   "rules": {
     "no_empty_statement": false
   },
-  "exclude": ["yii2-adapter"]
+  "exclude": ["resources/translations", "yii2-adapter"]
 }

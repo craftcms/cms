@@ -181,7 +181,7 @@
     });
 
     router.post(
-      UpdaterController.index['/admin/actions/updater'](),
+      UpdaterController.index['/{cpTrigger?}/{actionTrigger?}/updater'](),
       {
         return: 'utilities/updates',
         install,
@@ -223,7 +223,7 @@
         <h1 class="text-2xl font-semibold">{{ headingText }}</h1>
         <craft-button
           type="button"
-          variant="primary"
+          variant="accent"
           :loading="isUpdatingAll"
           @click="startUpdateAll"
         >

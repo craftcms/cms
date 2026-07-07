@@ -116,10 +116,23 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
+            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+            if ($request->attributes->has('isCpRequest')) {
+                return (bool) $request->attributes->get('isCpRequest');
+            }
+
+            if ($request->routeIs('craft.cp.*')) {
+                return true;
+            }
+
+            if ($cpTrigger === '') {
+                return true;
+            }
 
             return $request->is(
-                Cms::config()->cpTrigger,
-                Cms::config()->cpTrigger.'/*',
+                $cpTrigger,
+                "$cpTrigger/*",
             );
         };
     }
@@ -233,6 +246,20 @@ class RequestMixin
         };
     }
 
+    public function previewParam(): Closure
+    {
+        return function (): ?string {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+
+            return $request->input('x-craft-preview') ?? $request->input('x-craft-live-preview') ?? $request->header('X-Craft-Preview-Token');
+        };
+    }
+
     public function isPreview(): Closure
     {
         return function (): bool {
@@ -242,7 +269,7 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
-            $previewParamValue = $request->input('x-craft-preview') ?? $request->input('x-craft-live-preview') ?? $request->header('X-Craft-Preview-Token');
+            $previewParamValue = $request->previewParam();
 
             if ($previewParamValue === null || $previewParamValue === '') {
                 return false;

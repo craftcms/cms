@@ -5,8 +5,9 @@
     "useDefineForClassFields": false,
     "paths": {
       "@/*": ["./resources/js/*"],
-      "@public/*": ["./resources/public/*"],
       "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
+      "@icons/*": ["./cms-assets/resources/icons/*"],
+      "@public/*": ["./resources/public/*"],
       "@routes/*": ["./resources/js/routes/craft/*"],
       "@craftcms/ui/vue/*": ["./node_modules/@craftcms/ui/dist/vue/*"]
     },

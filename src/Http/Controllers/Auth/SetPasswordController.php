@@ -19,6 +19,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password as PasswordFacade;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
+use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,7 +28,7 @@ use function CraftCms\Cms\t;
 
 readonly class SetPasswordController extends AuthenticationController
 {
-    public function show(Request $request, AuthMethods $auth): Response|View
+    public function show(Request $request, AuthMethods $auth): Response|View|InertiaResponse
     {
         if (! is_array($info = $this->processTokenRequest($request))) {
             return $info;
@@ -42,31 +44,35 @@ readonly class SetPasswordController extends AuthenticationController
         $auth->setRememberedUsername($user);
 
         // Send them to the set password template.
-        return $this->renderViewWithFallback('set-password', [
-            'code' => $code,
-            'id' => $uid,
-            'newUser' => ! $user->password,
-        ]);
+        return $this->renderViewWithFallback(
+            cpTemplate: 'set-password',
+            data: [
+                'code' => $code,
+                'uid' => $uid,
+                'newUser' => ! $user->password,
+            ],
+            inertiaComponent: 'auth/SetPassword',
+        );
     }
 
-    public function store(Request $request, Users $users, Elements $elements): Response|View
+    public function store(Request $request, Users $users, Elements $elements): Response|View|InertiaResponse
     {
         $request->validate([
             'code' => ['required'],
-            'id' => ['required'],
+            'uid' => ['required'],
             'newPassword' => ['required', Password::default()],
         ]);
 
         $user = User::find()
-            ->uid($request->input('id'))
+            ->uid($request->input('uid'))
             ->status(null)
             ->addSelect('users.password')
             ->first();
 
-        abort_if(is_null($user), 400, 'Invalid user UUID: '.$request->input('id'));
+        abort_if(is_null($user), 400, 'Invalid user UUID: '.$request->input('uid'));
 
         try {
-            $status = PasswordFacade::broker('craft')->reset(
+            $status = PasswordFacade::broker()->reset(
                 [
                     'token' => $request->input('code'),
                     'email' => $user->email,
@@ -98,11 +104,8 @@ readonly class SetPasswordController extends AuthenticationController
                 );
             }
 
-            return $this->renderViewWithFallback('set-password', [
-                'errors' => $user->errors()->get('newPassword'),
-                'code' => $request->input('code'),
-                'id' => $request->input('id'),
-                'newUser' => ! $user->password,
+            throw ValidationException::withMessages([
+                'newPassword' => $user->errors()->get('newPassword') ?: [t('Couldn’t update password.')],
             ]);
         }
 

@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Image\Data;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Image\ImageTransformHelper;
-use DateTime;
+use DateTimeInterface;
 
 class ImageTransformIndex extends Component
 {
@@ -28,11 +28,11 @@ class ImageTransformIndex extends Component
 
     public bool $error = false;
 
-    public ?DateTime $dateIndexed = null;
+    public ?DateTimeInterface $dateIndexed = null;
 
-    public ?DateTime $dateUpdated = null;
+    public ?DateTimeInterface $dateUpdated = null;
 
-    public ?DateTime $dateCreated = null;
+    public ?DateTimeInterface $dateCreated = null;
 
     public ?string $detectedFormat = null;
 

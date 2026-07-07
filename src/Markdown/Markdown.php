@@ -15,6 +15,16 @@ use League\CommonMark\MarkdownConverter;
 #[Singleton]
 class Markdown
 {
+    public const string FLAVOR_ORIGINAL = 'original';
+
+    public const string FLAVOR_PRE_ENCODED = 'pre-encoded';
+
+    public const string FLAVOR_GFM = 'gfm';
+
+    public const string FLAVOR_GFM_COMMENT = 'gfm-comment';
+
+    public const string FLAVOR_EXTRA = 'extra';
+
     /** @var array<string, Closure> */
     private array $flavors = [];
 
@@ -23,11 +33,11 @@ class Markdown
 
     public function __construct()
     {
-        $this->extend('original', new CommonMarkFlavor);
-        $this->extend('pre-encoded', new CommonMarkFlavor(preEncoded: true));
-        $this->extend('gfm', new GfmFlavor);
-        $this->extend('gfm-comment', new GfmFlavor("<br>\n"));
-        $this->extend('extra', new ExtraFlavor);
+        $this->extend(self::FLAVOR_ORIGINAL, new CommonMarkFlavor);
+        $this->extend(self::FLAVOR_PRE_ENCODED, new CommonMarkFlavor(preEncoded: true));
+        $this->extend(self::FLAVOR_GFM, new GfmFlavor);
+        $this->extend(self::FLAVOR_GFM_COMMENT, new GfmFlavor("<br>\n"));
+        $this->extend(self::FLAVOR_EXTRA, new ExtraFlavor);
     }
 
     public function extend(string $name, callable $flavor): void
@@ -44,6 +54,11 @@ class Markdown
     public function has(string $name): bool
     {
         return isset($this->flavors[$name]);
+    }
+
+    public function flavors(): array
+    {
+        return array_keys($this->flavors);
     }
 
     public function parse(string $markdown, ?string $flavor = null, bool $allowUnsafeLinks = false): string

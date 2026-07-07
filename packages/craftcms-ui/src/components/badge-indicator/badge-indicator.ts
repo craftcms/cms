@@ -1,4 +1,4 @@
-import {html, css, LitElement, nothing} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './badge-indicator.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -41,11 +41,11 @@ export default class CraftBadgeIndicator extends LitElement {
   private truncatedNumber() {
     if (!this.showCount) return;
 
-    // @ts-ignore we're already checking that badgeCount is not null in showCount
+    // @ts-expect-error we're already checking that badgeCount is not null in showCount
     if (this.badgeCount > 99) {
       return '99+';
     } else {
-      // @ts-ignore we're already checking that badgeCount is not null in showCount
+      // @ts-expect-error we're already checking that badgeCount is not null in showCount
       return this.badgeCount.toString();
     }
   }

@@ -113,7 +113,7 @@ class EntryRules extends ElementRules
                         foreach ($authors as $author) {
                             if (
                                 ! in_array($author->id, $this->subject->getOldAuthorIds()) &&
-                                ! $author->can(sprintf('viewEntries:%s', $this->subject->getSection()->uid))
+                                ! $author->can('author', $this->subject)
                             ) {
                                 $fail(t('This user doesn’t have permission to author entries in this section.'));
                                 break;

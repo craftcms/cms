@@ -13,7 +13,8 @@ module.exports = getConfig({
     output: {
       filename: 'js/app.js',
       chunkFilename: 'js/[name].js',
-      path: __dirname + '/../../../resources/legacy/pluginstore/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/pluginstore/dist',
     },
     module: {
       rules: [

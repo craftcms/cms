@@ -11,7 +11,7 @@ use Override;
  * @method static bool isCollectingCacheInfo()
  * @method static void startCollectingCacheInfo()
  * @method static void collectCacheTags(array $tags)
- * @method static void setCacheExpiryDate(\DateTime $expiryDate)
+ * @method static void setCacheExpiryDate(\DateTimeInterface $expiryDate)
  * @method static void collectCacheInfoForElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  * @method static array stopCollectingCacheInfo()
  * @method static array invalidateAll()

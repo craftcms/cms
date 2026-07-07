@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\StatusHtml;
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -43,43 +41,17 @@ class CardDesigner
         // sort the remaining attributes alphabetically, by label
         usort($remainingOptions, fn (array $a, array $b) => $a['label'] <=> $b['label']);
 
-        $checkboxSelect = FormFields::checkboxSelectFieldHtml([
-            'label' => t('Card Attributes'),
-            'id' => $config['id'],
-            'options' => [...$selectedOptions, ...$remainingOptions],
-            'values' => array_keys($selectedOptions),
-            'sortable' => true,
-            'disabled' => $config['disabled'],
-        ]);
-
         // js is initiated via Craft.FieldLayoutDesigner
         $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
-        $previewHtml = $this->previewHtml($fieldLayout, showThumb: $showThumb);
 
-        return
-            Html::beginTag('div', [
-                'id' => $config['id'].'-container',
-                'class' => 'card-view-designer',
-            ]).
-            Html::tag('h2', t('Card Layout Editor'), ['class' => 'visually-hidden']).
-            Html::beginTag('div', ['class' => 'cvd-container']).
-            Html::beginTag('div', ['class' => 'cvd-library']).
-            $checkboxSelect.
-            Html::endTag('div'). // .cvd-library
-            Html::beginTag('div', ['class' => 'cvd-preview-container']).
-            Html::beginTag('div', ['class' => 'cvd-preview']).
-            Html::tag('h3', t('Card Layout Preview'), [
-                'class' => 'visually-hidden',
-            ]).
-            Html::tag('p', t('The following content is for preview only.'), [
-                'class' => 'visually-hidden',
-            ]).
-            $previewHtml.
-            Html::endTag('div'). // .cvd-preview-container
-            Html::endTag('div'). // .cvd-preview
-            Html::endTag('div'). // .cvd-container
-            $this->thumbManagementHtml($fieldLayout, $config).
-            Html::endTag('div'); // .card-view-designer
+        return view('c::forms.fld.card-view-designer', [
+            'id' => $config['id'],
+            'disabled' => $config['disabled'],
+            'attributeOptions' => [...$selectedOptions, ...$remainingOptions],
+            'attributeValues' => array_keys($selectedOptions),
+            'previewHtml' => $this->previewHtml($fieldLayout, showThumb: $showThumb),
+            'thumbManagement' => $this->thumbManagementHtml($fieldLayout, $config),
+        ])->render();
     }
 
     /**
@@ -107,7 +79,7 @@ class CardDesigner
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
 
         // get heading
-        $heading = Html::tag('craft-element-label',
+        $headingHtml = Html::tag('craft-element-label',
             Html::tag('a', Html::tag('span', t('Title')), [
                 'class' => ['label-link'],
                 'href' => '#',
@@ -120,54 +92,40 @@ class CardDesigner
 
         // get status label placeholder
         $labels = [$fieldLayout->type::hasStatuses() ? app(StatusHtml::class)->componentStatusLabelHtml(new ($fieldLayout->type)()) : null];
-
-        $previewHtml =
-            Html::beginTag('div', [
-                'class' => array_filter([
-                    'element',
-                    'card',
-                    $showThumb ? "thumb-$thumbAlignment" : null,
-                ]),
-            ]);
-
-        $previewHtml .=
-            Html::tag('div', attributes: ['class' => 'card-titlebar']).
-            Html::beginTag('div', ['class' => 'card-main']).
-            Html::beginTag('div', ['class' => 'card-content']).
-            Html::tag('div', $heading, ['class' => 'card-heading']).
-            Html::beginTag('div', ['class' => 'card-body']);
+        $bodyHtml = Html::beginTag('div');
 
         // get body elements (fields and attributes)
         $cardElements = $fieldLayout->getCardBodyElements();
 
         foreach ($cardElements as $cardElement) {
-            $previewHtml .= Html::tag('div', $cardElement, [
+            $bodyHtml .= Html::tag('div', $cardElement, [
                 'class' => 'card-attribute-preview',
             ]);
         }
 
         if (! empty(array_filter($labels))) {
-            $previewHtml .= Html::ul()
+            $bodyHtml .= Html::ul()
                 ->items(...array_map(fn ($label) => Html::li($label)->encode(false), $labels))
                 ->class('flex', 'gap-xs')
                 ->render();
         }
 
-        $previewHtml .=
-            Html::endTag('div'). // .card-body
-            Html::endTag('div'); // .card-content
+        $bodyHtml .= Html::endTag('div');
 
         // get thumb placeholder
-        if ($showThumb) {
-            $previewThumb = Html::tag('div',
-                Html::tag('div', Icons::svg('image'), ['class' => 'cp-icon']),
-                ['class' => 'cvd-thumbnail']
-            );
+        $thumbnailHtml = $showThumb ? Html::tag('div',
+            Html::tag('craft-icon', '', ['name' => 'image']),
+        ) : '';
 
-            $previewHtml .= Html::tag('div', $previewThumb, ['class' => ['thumb']]);
-        } // .element.card
+        return view('c::forms.fld.card-preview', [
+            'cvd' => $this,
+            'headingHtml' => $headingHtml,
+            'bodyHtml' => $bodyHtml,
+            'showThumb' => $showThumb,
+            'thumbAlignment' => $thumbAlignment,
+            'thumbnailHtml' => $thumbnailHtml,
+        ])->render();
 
-        return $previewHtml.(Html::endTag('div').Html::tag('div', '', ['class' => 'spinner spinner-absolute']).Html::endTag('div'));
     }
 
     private function cardPreviewOptionsInternal(
@@ -291,54 +249,39 @@ class CardDesigner
         usort($thumbOptions, fn (array $a, array $b) => $a['label'] <=> $b['label']);
         array_push($options, ...$thumbOptions);
 
-        $thumbnailAlignment = $fieldLayout->getCardThumbAlignment();
-
-        $thumbHtml = Html::beginTag('div', ['class' => 'thumb-management']).
-            Html::tag('h2', t('Manage element thumbnails'), ['class' => 'visually-hidden']).
-            Html::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'items-start']]);
-
-        // dropdown field that contains all thumbable fields + 'None' option
-        $thumbHtml .= FormFields::selectFieldHtml([
-            'label' => t('Thumbnail Source'),
-            'id' => 'thumb-source',
-            'options' => $options,
-            'value' => $fieldLayout->thumbFieldKey,
-            'disabled' => $config['disabled'],
-        ]);
-
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = I18N::getLocale()->getOrientation();
         $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
-        $thumbHtml .= FormFields::buttonGroupFieldHtml([
-            'label' => t('Thumbnail Alignment'),
-            'id' => 'thumb-alignment',
-            'fieldClass' => $showThumb ? false : 'hidden',
-            'options' => [
+
+        return view('c::forms.fld.thumb-management', [
+            // dropdown field that contains all thumbable fields + the None/Default option
+            'options' => $options,
+            'thumbFieldKey' => $fieldLayout->thumbFieldKey,
+            'thumbAlignment' => $fieldLayout->getCardThumbAlignment(),
+            'showThumb' => $showThumb,
+            'disabled' => $config['disabled'],
+            'alignmentOptions' => [
                 [
-                    'icon' => $orientation == 'ltr' ? 'slideout-left' : 'slideout-right',
                     'value' => 'start',
+                    // The family prefix is required for the client-side icon fetch;
+                    // these live in custom-icons/, not the default solid/ folder.
+                    'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-left' : 'custom-icons/slideout-right',
                     'attributes' => [
-                        'title' => $orientation == 'ltr' ? t('Left') : t('Right'),
                         'aria' => [
                             'label' => $orientation == 'ltr' ? t('Left') : t('Right'),
                         ],
                     ],
                 ],
                 [
-                    'icon' => $orientation == 'ltr' ? 'slideout-right' : 'slideout-left',
                     'value' => 'end',
+                    'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-right' : 'custom-icons/slideout-left',
                     'attributes' => [
-                        'title' => $orientation == 'ltr' ? t('Right') : t('Left'),
                         'aria' => [
                             'label' => $orientation == 'ltr' ? t('Right') : t('Left'),
                         ],
                     ],
                 ],
             ],
-            'value' => $thumbnailAlignment,
-            'disabled' => $config['disabled'],
-        ]); // .thumb-management
-
-        return $thumbHtml.(Html::endTag('div').Html::endTag('div'));
+        ])->render();
     }
 }

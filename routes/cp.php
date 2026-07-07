@@ -24,6 +24,7 @@ use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
@@ -34,8 +35,9 @@ use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
-use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
-use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserFieldsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
@@ -43,6 +45,7 @@ use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
@@ -74,7 +77,7 @@ Route::middleware('craft.web')->group(function () {
 /**
  * Admin requests that require a login
  */
-Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
+Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -97,7 +100,8 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::post('system-messages', [SystemMessagesController::class, 'store']);
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
-        Route::view('settings/addresses', 'settings/addresses/_fields');
+        Route::get('settings/addresses', [AddressSettingsController::class, 'index']);
+        Route::post('settings/addresses', [AddressSettingsController::class, 'store']);
     });
 
     /**
@@ -142,9 +146,14 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('myaccount', [UsersController::class, 'edit']);
     Route::get('myaccount/addresses', [AddressesController::class, 'index']);
     Route::get('myaccount/permissions', [PermissionsController::class, 'index']);
+    Route::patch('myaccount/permissions', [PermissionsController::class, 'update']);
     Route::get('myaccount/passkeys', [PasskeysController::class, 'index']);
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
+    Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
+    Route::get('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
+    Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
 
     Route::middleware([
         RequireEdition::class.':'.Edition::Team->value,
@@ -152,7 +161,8 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('users/new', [UsersController::class, 'create']);
         Route::get('users/{userId}', [UsersController::class, 'edit'])->whereNumber('userId');
         Route::get('users/{userId}/addresses', [AddressesController::class, 'index'])->whereNumber('userId');
-        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index']);
+        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index'])->whereNumber('userId');
+        Route::patch('users/{userId}/permissions', [PermissionsController::class, 'update'])->whereNumber('userId');
     });
 
     Route::get('users/{slug?}', [UsersController::class, 'index']);
@@ -204,19 +214,35 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
 
         // GraphQL
         Route::get('graphql', GqlIndexController::class);
-        Route::get('graphiql', GraphiqlController::class);
-        Route::get('graphql/tokens', [TokensController::class, 'index']);
-        Route::get('graphql/tokens/new', [TokensController::class, 'create']);
-        Route::get('graphql/tokens/{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId');
+        Route::get('graphql/explore', GraphiqlController::class);
+
+        Route::prefix('graphql/tokens')->name('graphql.tokens.')->group(function () {
+            Route::get('/', [TokensController::class, 'index'])->name('index');
+            Route::get('new', [TokensController::class, 'create'])->name('create');
+            Route::get('{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId')->name('edit');
+            Route::post('generate', [TokensController::class, 'generate'])->name('generate');
+
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('/', [TokensController::class, 'store'])->name('store');
+                Route::patch('{tokenId}', [TokensController::class, 'update'])->whereNumber('tokenId')->name('update');
+                Route::post('{tokenId}/access-token', [TokensController::class, 'accessToken'])->whereNumber('tokenId')->name('accessToken');
+            });
+        });
 
         Route::middleware(RequireAdminChanges::class)->group(function () {
-            Route::get('graphql/schemas', [SchemasController::class, 'index']);
-            Route::get('graphql/schemas/new', [SchemasController::class, 'create']);
-            Route::get('graphql/schemas/public', [SchemasController::class, 'editPublic']);
-            Route::get('graphql/schemas/{schemaId}', [SchemasController::class, 'edit'])->whereNumber('schemaId');
-            Route::delete('graphql/schemas/{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId');
+            Route::prefix('graphql/schemas')->name('graphql.schemas.')->group(function () {
+                Route::get('/', [SchemasController::class, 'index'])->name('index');
+                Route::get('new', [SchemasController::class, 'create'])->name('create');
+                Route::get('{schemaId}', [SchemasController::class, 'edit'])->where('schemaId', 'public|\d+')->name('edit');
+                Route::delete('{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId')->name('destroy');
 
-            Route::delete('graphql/tokens/{tokenId}', [TokensController::class, 'destroy'])->whereNumber('tokenId');
+                Route::middleware('password.confirm')->group(function () {
+                    Route::post('/', [SchemasController::class, 'store'])->name('store');
+                    Route::patch('{schemaId}', [SchemasController::class, 'update'])->where('schemaId', 'public|\d+')->name('update');
+                });
+            });
+
+            Route::delete('graphql/tokens/{tokenId}', [TokensController::class, 'destroy'])->whereNumber('tokenId')->name('graphql.tokens.destroy');
         });
 
         // Plugins
@@ -237,7 +263,18 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         })->where('filename', '.*');
 
         // Routes
-        Route::get('settings/routes', [RoutesController::class, 'index']);
+        Route::prefix('settings/routes')->name('settings.routes.')->group(function () {
+            Route::get('/', [RoutesController::class, 'index'])->name('index');
+            Route::get('{uid}', [RoutesController::class, 'edit'])->name('edit');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [RoutesController::class, 'create'])->name('create');
+                Route::post('/', [RoutesController::class, 'store'])->name('store');
+                Route::patch('{uid}', [RoutesController::class, 'update'])->name('update');
+                Route::delete('{uid}', [RoutesController::class, 'destroy'])->name('destroy');
+                Route::post('reorder', [RoutesController::class, 'reorder'])->name('reorder');
+            });
+        });
 
         // Sections
         Route::get('settings/sections', [SectionsController::class, 'index'])
@@ -251,10 +288,19 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
         Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
         Route::middleware(RequireAdminChanges::class)->delete('settings/assets/volumes/{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
-        Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
-        Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/transforms/{transformId}', [ImageTransformsController::class, 'destroy']);
+
+        // Transforms
+        Route::prefix('settings/assets/transforms')->name('settings.assets.transforms.')->group(function () {
+            Route::get('/', [ImageTransformsController::class, 'index'])->name('index');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [ImageTransformsController::class, 'create'])->name('create');
+                Route::post('/', [ImageTransformsController::class, 'store']);
+                Route::delete('{transformId}', [ImageTransformsController::class, 'destroy'])->name('destroy');
+            });
+
+            Route::get('{transformHandle}', [ImageTransformsController::class, 'edit'])->name('edit');
+        });
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])
@@ -282,7 +328,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         } else {
             Route::get('settings/users', fn () => redirect(cp_url('settings/users/fields')));
         }
-        Route::view('settings/users/fields', 'settings/users/fields');
+        Route::get('settings/users/fields', [UserFieldsController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)
+            ->post('settings/users/fields', [UserFieldsController::class, 'store']);
 
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {
@@ -300,6 +348,8 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
 
         // User settings
         Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
+        Route::middleware(RequireAdminChanges::class)
+            ->post('settings/users/settings', [UserSettingsController::class, 'store']);
     });
 
     Route::prefix('settings/filesystems')->group(function () {

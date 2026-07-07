@@ -365,6 +365,30 @@ it('stores single-page source settings without page reordering', function () {
         ->and($projectConfig->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, TestSinglePageElementSourcesElement::class)))->toBeNull();
 });
 
+it('normalizes posted table attribute options to attribute keys', function () {
+    $projectConfig = app(ProjectConfig::class);
+
+    $response = postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => User::class,
+        'sourceOrder' => ['*'],
+        'sources' => [
+            '*' => [
+                'tableAttributes' => [
+                    '',
+                    'email',
+                    ['label' => 'Groups', 'value' => 'groups'],
+                ],
+                'enabled' => true,
+            ],
+        ],
+    ]);
+
+    $response->assertOk();
+
+    expect($projectConfig->get(sprintf('%s.%s.0.tableAttributes', ProjectConfig::PATH_ELEMENT_SOURCES, User::class)))
+        ->toBe(['email', 'groups']);
+});
+
 function normalizeConfig(mixed $value): mixed
 {
     if (! is_array($value)) {

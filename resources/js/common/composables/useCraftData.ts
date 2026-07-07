@@ -30,7 +30,7 @@ export interface CraftData {
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {
-    cpTrigger: string;
+    cpTrigger: string | null;
     actionTrigger: string | null;
     csrfTokenName: string | null;
     cpLogoUrl: string | null;
@@ -38,7 +38,7 @@ export interface CraftData {
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
   };
-  nav: any[];
+  nav: CraftCms.Cms.Cp.Data.NavItem[];
   [key: string]: any;
 }
 

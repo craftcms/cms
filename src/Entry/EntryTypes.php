@@ -11,6 +11,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
@@ -603,13 +604,13 @@ class EntryTypes
             }
             $chipCellContent .= Html::endTag('div');
 
-            $tableData[] = [
+            $tableData[] = new EntryTypeIndexData([
                 'id' => $entryType->id,
                 'title' => $label,
                 'chip' => $chipCellContent,
                 'handle' => $entryType->handle,
                 'usages' => app(PreviewHtml::class)->componentPreviewHtml($usages[$entryType->id] ?? [], ['hyperlink' => true]),
-            ];
+            ]);
         }
 
         $pagination = Arr::only($paginator->toArray(), [
@@ -703,8 +704,10 @@ class EntryTypes
         $searchQueries = [];
 
         if ($term !== '') {
+            $isPgqsl = DB::isPgsql();
+
             foreach ($searchParams as $param) {
-                $searchQueries[] = [$param, 'like', '%'.$term.'%'];
+                $searchQueries[] = [$param, $isPgqsl ? 'ilike' : 'like', '%'.$term.'%'];
             }
         }
 

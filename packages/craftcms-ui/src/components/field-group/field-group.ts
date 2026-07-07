@@ -1,17 +1,20 @@
 import {css, html, LitElement} from 'lit';
 
 export default class CraftFieldGroup extends LitElement {
-  static override styles = [
-    css`
-      :host {
-        display: grid;
-        gap: var(--c-spacing-md);
-      }
-    `,
-  ];
+  protected override render() {
+    return html`
+      <style>
+        craft-field-group {
+          display: grid;
+          gap: var(--gap, var(--c-spacing-lg));
+        }
+      </style>
+      <slot></slot>
+    `;
+  }
 
-  override render() {
-    return html`<slot></slot>`;
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
+    return this;
   }
 }
 

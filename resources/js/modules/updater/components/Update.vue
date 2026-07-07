@@ -99,7 +99,7 @@
             v-if="ctaUrl"
             :href="ctaUrl"
             target="_blank"
-            variant="primary"
+            variant="accent"
             appearance="button"
           >
             {{ ctaButtonText }}
@@ -107,7 +107,11 @@
           <!-- Update button -->
           <Form
             v-else
-            :action="UpdaterController.index['/admin/actions/updater']()"
+            :action="
+              UpdaterController.index[
+                '/{cpTrigger?}/{actionTrigger?}/updater'
+              ]()
+            "
             method="post"
             v-slot="{processing}"
           >
@@ -122,7 +126,7 @@
               :name="`packageNames[${handle}]`"
               :value="packageName"
             />
-            <craft-button type="submit" variant="primary" :loading="processing">
+            <craft-button type="submit" variant="accent" :loading="processing">
               {{ ctaButtonText }}
             </craft-button>
           </Form>
@@ -135,7 +139,7 @@
             v-if="altCtaUrl"
             :href="altCtaUrl"
             appearance="button"
-            variant="default"
+            variant="neutral"
           >
             {{ altCtaText }}
           </CpLink>

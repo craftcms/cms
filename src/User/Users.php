@@ -61,7 +61,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use DateTime;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Container\Attributes\Singleton;
@@ -257,7 +257,7 @@ class Users
      */
     public function sendPasswordResetEmail(User $user): bool
     {
-        return Password::broker('craft')->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
+        return Password::broker()->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
     }
 
     /**
@@ -890,9 +890,9 @@ class Users
      *
      * @param  int  $userId  The user’s ID.
      * @param  string  $message  The message to be shunned.
-     * @param  DateTime|null  $expiryDate  When the message should be un-shunned. Defaults to `null` (never un-shun).
+     * @param  DateTimeInterface|null  $expiryDate  When the message should be un-shunned. Defaults to `null` (never un-shun).
      */
-    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): void
+    public function shunMessageForUser(int $userId, string $message, ?DateTimeInterface $expiryDate = null): void
     {
         DB::table(Table::SHUNNEDMESSAGES)
             ->upsert([
@@ -951,7 +951,7 @@ class Users
         $userModel = UserModel::findOrFail($user->id);
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
+        $broker = Password::broker();
         $token = $broker->createToken($user);
 
         // Make sure they are set to pending, if not already active
@@ -1000,6 +1000,7 @@ class Users
                     ->whereColumn('password_reset_tokens.email', 'users.email')
                     ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->purgePendingUsersDuration));
             })
+            ->cursor()
             ->each(function (User $user) {
                 try {
                     $this->elements->deleteElement($user);
@@ -1259,7 +1260,7 @@ class Users
 
         $params = [
             'code' => $token,
-            'id' => $user->uid,
+            'uid' => $user->uid,
         ];
 
         $isCpRequest = request()->isCpRequest();

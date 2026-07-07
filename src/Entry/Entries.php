@@ -26,7 +26,6 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -233,17 +232,17 @@ class Entries
                         Structures::remove($oldSection->structureId, $entry);
 
                         // remove drafts and revisions from the structure, too
-                        $draftsQuery->each(function (Entry $draft) use ($oldSection) {
+                        $draftsQuery->cursor()->each(function (Entry $draft) use ($oldSection) {
                             if ($draft->lft) {
                                 Structures::remove($oldSection->structureId, $draft);
                             }
-                        }, 100);
+                        });
 
-                        $revisionsQuery->each(function (Entry $revision) use ($oldSection) {
+                        $revisionsQuery->cursor()->each(function (Entry $revision) use ($oldSection) {
                             if ($revision->lft) {
                                 Structures::remove($oldSection->structureId, $revision);
                             }
-                        }, 100);
+                        });
                     }
 
                     // if we're moving it to a Structure section, place it at the root
@@ -294,18 +293,14 @@ class Entries
      */
     public function reassignEntries(int|array $oldUserId, int $newUserId): int
     {
+        $oldUserIds = Arr::wrap($oldUserId);
+
         $count = DB::table(Table::ENTRIES_AUTHORS)
-            ->whereIn('authorId', Arr::wrap($oldUserId))
-            ->whereNotExists(function (Builder $query) use ($newUserId) {
-                $query->selectRaw('1')
-                    ->fromSub(
-                        DB::table(Table::ENTRIES_AUTHORS, 'ea2')
-                            ->select('ea2.entryId')
-                            ->where('ea2.authorId', $newUserId),
-                        'existingAuthor',
-                    )
-                    ->whereColumn('existingAuthor.entryId', Table::ENTRIES_AUTHORS.'.entryId');
-            })
+            ->whereIn('authorId', $oldUserIds)
+            ->whereNotIn('entryId', DB::table(Table::ENTRIES_AUTHORS)
+                ->where('authorId', $newUserId)
+                ->pluck('entryId')
+            )
             ->update([
                 'authorId' => $newUserId,
             ]);

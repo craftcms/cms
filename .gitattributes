@@ -27,6 +27,8 @@
 /package.json export-ignore
 /packages/ export-ignore
 /phpstan.neon export-ignore
+/resources/css/ export-ignore
+/resources/js/ export-ignore
 /scripts/ export-ignore
 /src/web/assets/**/src/ export-ignore
 /stubs/ export-ignore
@@ -37,6 +39,9 @@
 
 # Ignore exporting the adapter as it will be split off and released on its own.
 /yii2-adapter export-ignore
+
+# Workbench is only for development
+/workbench export-ignore
 
 # Identify generated files
 /resources/translations/a*/app.php linguist-generated=true
@@ -60,8 +65,8 @@
 /src/web/assets/**/dist/**/*.min.js linguist-generated=true
 /src/web/assets/**/dist/**/*.min.js.map linguist-generated=true
 
-# resources/build generated files
-/resources/build/**/* linguist-generated=true
+# Built CMS assets generated files
+/cms-assets/resources/**/* linguist-generated=true
 
 # Auto detect text files and perform LF normalization
 * text=auto

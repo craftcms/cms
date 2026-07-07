@@ -21,10 +21,10 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
-use DateTime;
-use DateTimeZone;
+use DateTimeInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Support\Facades\Date as DateFacade;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -50,7 +50,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|null', DateTime::class);
+        return sprintf('\\%s|null', DateTimeInterface::class);
     }
 
     #[Override]
@@ -87,14 +87,14 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public bool $showTimeZone = false;
 
     /**
-     * @var DateTime|null The minimum allowed date
+     * @var DateTimeInterface|null The minimum allowed date
      */
-    public ?DateTime $min = null;
+    public ?DateTimeInterface $min = null;
 
     /**
-     * @var DateTime|null The maximum allowed date
+     * @var DateTimeInterface|null The maximum allowed date
      */
-    public ?DateTime $max = null;
+    public ?DateTimeInterface $max = null;
 
     /**
      * @var int The number of minutes that the timepicker options should increment by
@@ -226,7 +226,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        /** @var DateTime|null $value */
+        /** @var DateTimeInterface|null $value */
         $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Cms::timezone();
 
         if ($value === null) {
@@ -286,11 +286,11 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         $rules = ['date'];
 
         if ($this->min) {
-            $rules[] = 'after_or_equal:'.$this->min->setTimezone(new DateTimeZone('UTC'))->setTime(0, 0)->format('Y-m-d H:i:s');
+            $rules[] = 'after_or_equal:'.DateFacade::instance($this->min)->setTimezone('UTC')->setTime(0, 0)->format('Y-m-d H:i:s');
         }
 
         if ($this->max) {
-            $rules[] = 'before_or_equal:'.$this->max->setTimezone(new DateTimeZone('UTC'))->setTime(0, 0)->format('Y-m-d H:i:s');
+            $rules[] = 'before_or_equal:'.DateFacade::instance($this->max)->setTimezone('UTC')->setTime(0, 0)->format('Y-m-d H:i:s');
         }
 
         return $rules;
@@ -305,7 +305,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var DateTime|null $value */
+        /** @var DateTimeInterface|null $value */
         if (! $value) {
             return '';
         }
@@ -336,7 +336,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
-            $value = new DateTime;
+            $value = now();
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry);
@@ -351,7 +351,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if ($value instanceof DateTime) {
+        if ($value instanceof DateTimeInterface) {
             return $value;
         }
 
@@ -377,7 +377,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         /** @phpstan-ignore-next-line */
         if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && ! empty($value['timezone'])))) {
             /** @phpstan-ignore-next-line */
-            $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
+            return DateFacade::instance($date)->setTimezone($timeZone ?? $value['timezone']);
         }
 
         return $date;
@@ -419,8 +419,8 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 $value = $source->getFieldValue($fieldName);
 
                 // Set the timezone, unless it has been already set by the field itself.
-                if (! $this->showTimeZone && $value instanceof DateTime) {
-                    $value->setTimeZone(new DateTimeZone(FormatDateTime::defaultTimezone()));
+                if (! $this->showTimeZone && $value instanceof DateTimeInterface) {
+                    $value = DateFacade::instance($value)->setTimezone(FormatDateTime::defaultTimezone());
                 }
 
                 return Gql::applyDirectives($source, $resolveInfo, $value);

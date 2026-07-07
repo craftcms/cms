@@ -29,7 +29,6 @@ use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\FallbackTransformer;
 use CraftCms\Cms\Image\ImageHelper;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Path;
@@ -40,7 +39,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
@@ -48,6 +46,7 @@ use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -95,7 +94,7 @@ class Assets
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
         $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
-        $asset->uploaderId = Auth::craftUser()?->getCraftUserId();
+        $asset->uploaderId = currentUser()?->getCraftUserId();
         $asset->avoidFilenameConflicts = true;
         $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
@@ -257,7 +256,7 @@ class Assets
         if (preg_match('/.*_\d{4}-\d{2}-\d{2}-\d{6}$/', $baseFileName, $matches)) {
             $base = $baseFileName;
         } else {
-            $timestamp = DateTimeHelper::currentUTCDateTime()->format('Y-m-d-His');
+            $timestamp = now('UTC')->format('Y-m-d-His');
             $base = $buildFilename($baseFileName, '_'.$timestamp);
         }
 
@@ -359,7 +358,7 @@ class Assets
         if ($user) {
             $folderName = "user_{$user->id}";
         } elseif (app()->runningInConsole()) {
-            $folderName = 'temp_'.sha1((string) time());
+            $folderName = 'temp_'.sha1((string) now()->getTimestamp());
         } else {
             $folderName = 'user_'.sha1(session()->id());
         }

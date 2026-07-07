@@ -7,15 +7,34 @@
   import CraftInputPassword from '@craftcms/ui/vue/CraftInputPassword.vue';
   import Select from '@/common/form/Select.vue';
 
+  type DbDriver = 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
+  type DbFormData = {
+    driver: DbDriver;
+    host?: string;
+    port?: number;
+    database?: string;
+    username?: string;
+    password?: string;
+    prefix?: string;
+  };
+  type DbDefaults = {
+    host?: string;
+    port?: string;
+    database: string;
+    username?: string;
+    prefix?: string;
+  };
+
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: any): void;
+    (e: 'update:modelValue', value: DbFormData): void;
   }>();
   const props = withDefaults(
     defineProps<{
-      modelValue?: any;
+      modelValue: DbFormData;
+      defaults: Record<DbDriver, DbDefaults>;
       errors?: Record<string, string>;
     }>(),
-    {modelValue: () => ({}), errors: () => ({})}
+    {errors: () => ({})}
   );
 
   const model = computed({
@@ -27,9 +46,15 @@
     },
   });
 
+  const selectedDriver = computed(() => model.value.driver);
+  const currentDefaults = computed(() => props.defaults[selectedDriver.value]);
+  const isSqlite = computed(() => selectedDriver.value === 'sqlite');
+
   const options = [
     {value: 'mysql', label: 'MySQL'},
+    {value: 'mariadb', label: 'MariaDB'},
     {value: 'pgsql', label: 'PostgreSQL'},
+    {value: 'sqlite', label: 'SQLite'},
   ];
 
   useFocusField('db-driver');
@@ -45,7 +70,7 @@
   </Callout>
 
   <div class="grid grid-cols-5 gap-2">
-    <div class="col-span-2">
+    <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
       <Select
         :label="t('Driver')"
         name="driver"
@@ -53,26 +78,29 @@
         v-model="model.driver"
         ref="db-driver"
         :options="options"
-        :error="errors?.drive"
+        :error="errors?.driver"
       />
     </div>
-    <div class="col-span-2">
+
+    <div class="col-span-2" v-if="!isSqlite">
       <CraftInput
         :label="t('Host')"
         name="host"
         id="db-host"
         v-model="model.host"
-        placeholder="127.0.0.1"
+        :placeholder="currentDefaults.host ?? undefined"
         :error="errors?.host"
       />
     </div>
-    <div>
+
+    <div v-if="!isSqlite">
       <CraftInput
         :label="t('Port')"
         name="port"
         id="db-port"
         v-model="model.port"
         size="7"
+        :placeholder="currentDefaults.port ?? undefined"
         :error="errors?.port"
       />
     </div>
@@ -82,14 +110,14 @@
     </ul>
   </div>
 
-  <div class="grid grid-cols-2 gap-2">
+  <div class="grid grid-cols-2 gap-2" v-if="!isSqlite">
     <div>
       <CraftInput
         :label="t('Username')"
         name="username"
         id="db-username"
         v-model="model.username"
-        placeholder="root"
+        :placeholder="currentDefaults.username ?? undefined"
         :error="errors?.username"
       />
     </div>
@@ -110,13 +138,14 @@
   </div>
 
   <div class="grid grid-cols-4 gap-2">
-    <div class="col-span-2">
+    <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
       <CraftInput
-        :label="t('Database Name')"
-        name="name"
+        :label="isSqlite ? t('Database File Path') : t('Database Name')"
+        name="database"
         id="db-database"
         v-model="model.database"
-        :errors="errors?.database"
+        :placeholder="currentDefaults.database"
+        :error="errors?.database"
       />
     </div>
 

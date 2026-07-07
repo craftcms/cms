@@ -6,6 +6,8 @@ use CraftCms\Cms\Address\Models\Address;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Asset\Volumes as VolumesService;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
@@ -178,11 +180,20 @@ it('filters users by group', function () {
 it('filters assets by volume', function () {
     $targetVolume = Volume::factory()->create(['handle' => 'images']);
     $otherVolume = Volume::factory()->create(['handle' => 'docs']);
-    $targetAsset = Asset::factory()->createElement(['volumeId' => $targetVolume->id]);
-    $otherAsset = Asset::factory()->createElement(['volumeId' => $otherVolume->id]);
+    $targetFolder = VolumeFolder::factory()->create(['volumeId' => $targetVolume->id]);
+    $otherFolder = VolumeFolder::factory()->create(['volumeId' => $otherVolume->id]);
+    $targetAsset = Asset::factory()->createElement([
+        'folderId' => $targetFolder->id,
+        'volumeId' => $targetVolume->id,
+    ]);
+    $otherAsset = Asset::factory()->createElement([
+        'folderId' => $otherFolder->id,
+        'volumeId' => $otherVolume->id,
+    ]);
 
     DB::table(Table::ASSETS)->where('id', $targetAsset->id)->update(['filename' => '']);
     DB::table(Table::ASSETS)->where('id', $otherAsset->id)->update(['filename' => '']);
+    app()->forgetInstance(VolumesService::class);
 
     $this->artisan('craft:resave:assets --volume=images --set=filename --to="=renamed.jpg" --if-empty')
         ->assertSuccessful();

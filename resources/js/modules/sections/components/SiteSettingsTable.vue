@@ -22,10 +22,10 @@
     defineProps<{
       modelValue: Record<string, Omit<SectionSiteSettingsData, 'handle'>>;
       selectedType?: string;
-      isMultisite?: boolean;
+      isMultiSite?: boolean;
       isHeadless?: boolean;
     }>(),
-    {isMultisite: false, isHeadless: false}
+    {isMultiSite: false, isHeadless: false}
   );
 
   const page = usePage<{
@@ -39,7 +39,7 @@
   const columnVisibility = computed(() => {
     return {
       name: true,
-      enabled: props.isMultisite,
+      enabled: props.isMultiSite,
       singleHomepage: props.selectedType === 'single',
       singleUri: props.selectedType === 'single',
       uriFormat: props.selectedType !== 'single',

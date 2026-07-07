@@ -83,7 +83,7 @@
             <div v-if="invert" class="buttons">
               <craft-button
                 type="button"
-                variant="secondary"
+                variant="neutral"
                 :loading="isDiscarding"
                 @click="discardChanges"
               >
@@ -96,7 +96,7 @@
             <div v-else class="buttons">
               <SyncConfigButton
                 :label="t('Apply changes only')"
-                variant="default"
+                variant="neutral"
               />
               <SyncConfigButton :force="true" />
 
@@ -133,7 +133,7 @@
             <Form :action="discard()" v-slot="{processing}">
               <craft-button
                 type="submit"
-                variant="secondary"
+                variant="neutral"
                 :loading="processing"
               >
                 {{ t('Generate') }}
@@ -165,7 +165,7 @@
             <div class="flex gap-2 items-center">
               <craft-button
                 type="submit"
-                variant="default"
+                variant="neutral"
                 :loading="processing"
               >
                 {{ t('Rebuild') }}

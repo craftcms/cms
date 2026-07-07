@@ -78,7 +78,7 @@
     :help-text="helpText"
     :disabled="disabled"
     :multiple="multiple"
-    .upload-response="uploadResponse"
+    .uploadResponse="uploadResponse"
     @file-removed="handleFileRemoved"
     @file-list-changed="handleListChange"
     :has-feedback-for="error ? 'error' : ''"

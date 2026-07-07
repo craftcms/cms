@@ -2,7 +2,8 @@ import axios, {type RawAxiosRequestHeaders} from 'axios';
 import {Csrf} from '@/common/services/Csrf';
 
 /**
- * Get the action URL for a given action path.
+ * Builds an action URL using the runtime-configured action base
+ * (`Url::actionUrl()`), so the CP trigger isn't hard-coded to `/admin`.
  */
 export function getActionUrl(action: string = '') {
   return window.Craft.getActionUrl(action);
@@ -16,7 +17,7 @@ export function getCpUrl(path: string = '', params?: object) {
 }
 
 export function actionHeaders(): RawAxiosRequestHeaders {
-  let headers: Record<string, string> = {
+  const headers: Record<string, string> = {
     'X-Registered-Asset-Bundles': [
       ...new Set(window.Craft.registeredAssetBundles),
     ].join(','),
@@ -33,8 +34,9 @@ export const actionClient = axios.create();
 const csrf = new Csrf();
 
 actionClient.interceptors.request.use(async (config) => {
-  // Set base URL lazily
-  config.baseURL ??= window.Craft.getActionUrl('');
+  // Resolve the base URL lazily so it reflects the runtime CP trigger. Config
+  // isn't guaranteed to be initialized when this module is first imported.
+  config.baseURL ??= getActionUrl();
 
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');

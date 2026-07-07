@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,11 +44,11 @@ class CpScreenResponse implements Responsable
     private ?string $inertiaPage = null;
 
     /**
-     * @var array Props to pass to the Inertia page component.
+     * @var array|Arrayable Props to pass to the Inertia page component.
      *
      * @see inertiaPage()
      */
-    private array $inertiaProps = [];
+    private array|Arrayable $inertiaProps = [];
 
     /**
      * @var callable|null Callable that will be called before other properties are added to the screen.
@@ -121,6 +122,13 @@ class CpScreenResponse implements Responsable
      * @see addTab()
      */
     public array $tabs = [];
+
+    /**
+     * @var array|null Secondary navigation items.
+     *
+     * @see subnav()
+     */
+    public ?array $subnav = null;
 
     /**
      * @var string|null Class that should be added to the slideout body.
@@ -401,6 +409,16 @@ class CpScreenResponse implements Responsable
     }
 
     /**
+     * Sets the secondary navigation items.
+     */
+    public function subnav(?array $value): self
+    {
+        $this->subnav = $value;
+
+        return $this;
+    }
+
+    /**
      * Adds a tab.
      *
      * @param  string|string[]|null  $class
@@ -629,7 +647,7 @@ class CpScreenResponse implements Responsable
      * When set, `toResponse()` will render an Inertia response instead of a Twig template.
      * The `title` and `crumbs` properties will be automatically included as props.
      */
-    public function inertiaPage(?string $value, array $props = []): self
+    public function inertiaPage(?string $value, array|Arrayable $props = []): self
     {
         $this->inertiaPage = $value;
         $this->inertiaProps = $props;
@@ -856,6 +874,7 @@ class CpScreenResponse implements Responsable
             }, $crumbs ?? []),
             'contextMenu' => $this->contextMenu(),
             'toolbar' => $toolbar,
+            'actionMenuItems' => $this->actionMenuItemProps(),
             'actionMenu' => $this->actionMenu(config: [
                 'hiddenLabel' => t('Actions'),
                 'buttonAttributes' => [
@@ -867,6 +886,7 @@ class CpScreenResponse implements Responsable
             'submitButtonLabel' => $this->submitButtonLabel,
             'additionalButtons' => $addlButtons,
             'tabs' => $this->tabs,
+            'subnav' => $this->subnav,
             'fullPageForm' => $isForm,
             'mainAttributes' => $this->mainAttributes,
             'mainFormAttributes' => $this->formAttributes,
@@ -887,10 +907,13 @@ class CpScreenResponse implements Responsable
         ];
 
         if ($this->inertiaPage) {
-            return Inertia::render($this->inertiaPage, [
-                ...$templateProps,
-                ...$this->inertiaProps,
-            ])->toResponse($request);
+            if ($this->subnav === null) {
+                unset($templateProps['subnav']);
+            }
+
+            return Inertia::render($this->inertiaPage, $this->inertiaProps)
+                ->with($templateProps)
+                ->toResponse($request);
         }
 
         // Render and return the template
@@ -913,22 +936,36 @@ class CpScreenResponse implements Responsable
 
     private function actionMenu(bool $withDestructive = true, array $config = [], ?string $namespace = null): ?string
     {
-        if ($this->actionMenuItems === null) {
-            return null;
-        }
+        $itemsFactory = $this->actionMenuItemsFactory($withDestructive);
 
-        if ($withDestructive) {
-            $itemsFactory = $this->actionMenuItems;
-        } else {
-            $itemsFactory = fn () => array_filter(
-                call_user_func($this->actionMenuItems),
-                fn (array $item) => ! ($item['destructive'] ?? false),
-            );
+        if ($itemsFactory === null) {
+            return null;
         }
 
         return $this->menu($itemsFactory, $config + [
             'id' => 'action-menu',
         ], $namespace);
+    }
+
+    private function actionMenuItemProps(bool $withDestructive = true): ?array
+    {
+        return $this->menuItems($this->actionMenuItemsFactory($withDestructive));
+    }
+
+    private function actionMenuItemsFactory(bool $withDestructive): ?callable
+    {
+        if ($this->actionMenuItems === null) {
+            return null;
+        }
+
+        if ($withDestructive) {
+            return $this->actionMenuItems;
+        }
+
+        return fn () => array_filter(
+            call_user_func($this->actionMenuItems),
+            fn (array $item) => ! ($item['destructive'] ?? false),
+        );
     }
 
     private function menu(?callable $itemsFactory, array $config, ?string $namespace): ?string
@@ -938,7 +975,7 @@ class CpScreenResponse implements Responsable
         }
 
         $render = function () use ($itemsFactory, $config): ?string {
-            $items = app(MenuHtml::class)->normalizeMenuItems($itemsFactory() ?? []);
+            $items = $this->menuItems($itemsFactory);
 
             if (empty($items)) {
                 return null;
@@ -952,5 +989,20 @@ class CpScreenResponse implements Responsable
         }
 
         return $render();
+    }
+
+    private function menuItems(?callable $itemsFactory): ?array
+    {
+        if ($itemsFactory === null) {
+            return null;
+        }
+
+        $items = app(MenuHtml::class)->disclosureMenuItems($itemsFactory() ?? []);
+
+        if (empty($items)) {
+            return null;
+        }
+
+        return $items;
     }
 }

@@ -1,48 +1,28 @@
 <script setup lang="ts">
-  import {t, type VariantKey} from '@craftcms/ui';
-  import {type Component, computed} from 'vue';
-
-  interface ActionItemHr {
-    type: 'hr';
-  }
+  import {t} from '@craftcms/ui';
+  import type {ActionMenuItem} from '@craftcms/ui';
+  import {
+    type Component,
+    computed,
+    createVNode,
+    getCurrentInstance,
+    onBeforeUnmount,
+    render as vueRender,
+  } from 'vue';
+  import type {ActionItem} from '@/common/types';
 
   interface ActionItemDisplay {
     type: 'display';
     is: Component;
   }
 
-  interface ActionItemButton {
-    type?: 'button';
-    label: string;
-    variant?: VariantKey | string;
-    icon?: string;
-    onClick?: () => void;
-    shortcut?: string | {alt?: boolean; shift?: boolean; key: string} | null;
-    [key: string]: unknown;
-  }
-
-  interface ActionItemLink {
-    type: 'link';
-    href: string;
-    label: string;
-    variant?: VariantKey | string;
-    onClick?: () => void;
-    [key: string]: unknown;
-  }
-
-  export type ActionItem =
-    | ActionItemDisplay
-    | ActionItemHr
-    | ActionItemButton
-    | ActionItemLink;
-
-  export type ActionItems = Array<ActionItem>;
+  export type ActionItems = Array<ActionItem | ActionItemDisplay>;
 
   const props = withDefaults(
     defineProps<{
       icon?: string;
       label?: string | null;
-      actions: Array<ActionItem & {onClick?: (event: Event) => void}>;
+      actions: ActionItems;
     }>(),
     {
       icon: 'ellipsis',
@@ -50,70 +30,91 @@
     }
   );
 
-  const normalizedActions = computed(
-    (): Array<ActionItem & {onClick?: (event: Event) => void}> => {
-      return props.actions.map(
-        (action): ActionItem & {onClick?: (event: Event) => void} => {
-          if (action.type === 'hr' || action.type === 'display') {
-            return action;
-          }
+  // Containers that host Vue-rendered `display` components. We keep references
+  // so we can tear down the Vue render trees on unmount / re-compute.
+  let displayContainers: HTMLElement[] = [];
+  const appContext = getCurrentInstance()?.appContext;
 
-          return {
-            ...action,
-            type:
-              action.type ??
-              ('href' in action && action.href ? 'link' : 'button'),
-          } as ActionItem & {onClick?: (event: Event) => void};
-        }
-      );
+  function clearDisplayContainers() {
+    for (const container of displayContainers) {
+      // Unmount the Vue subtree to avoid leaks.
+      vueRender(null, container);
     }
-  );
+    displayContainers = [];
+  }
 
-  const sortedActions = computed(() => {
-    return [...normalizedActions.value].sort((a, b) => {
-      const aDanger = 'variant' in a && a.variant === 'danger' ? 1 : 0;
-      const bDanger = 'variant' in b && b.variant === 'danger' ? 1 : 0;
-      return aDanger - bDanger;
+  /**
+   * Convert a Vue `display` component into a DOM node the web component can
+   * consume via its `{type: 'display', node}` contract. The normalize / sort /
+   * item-rendering logic itself lives ONLY in the web component — this adapter
+   * just bridges Vue components into DOM nodes.
+   */
+  function displayToNode(component: Component): Node {
+    const container = document.createElement('div');
+    container.style.display = 'contents';
+    const vnode = createVNode(component);
+    if (appContext) {
+      vnode.appContext = appContext;
+    }
+    vueRender(vnode, container);
+    displayContainers.push(container);
+    return container;
+  }
+
+  // Map the Vue-flavored action list onto the web component's `ActionMenuItem`
+  // descriptors. `display` items are the only ones needing conversion; every
+  // other shape passes straight through.
+  const wcActions = computed<ActionMenuItem[]>(() => {
+    clearDisplayContainers();
+
+    return props.actions.map((action): ActionMenuItem => {
+      if (action.type === 'display') {
+        return {
+          type: 'display',
+          node: displayToNode((action as ActionItemDisplay).is),
+        };
+      }
+
+      return action as unknown as ActionMenuItem;
     });
+  });
+
+  onBeforeUnmount(() => {
+    clearDisplayContainers();
   });
 </script>
 
 <template>
-  <craft-action-menu>
-    <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">
-      <craft-button
-        type="button"
-        slot="invoker"
-        icon
-        size="small"
-        variant="inherit"
-        appearance="plain"
-      >
-        <craft-icon :name="icon" :label="label"></craft-icon>
-      </craft-button>
-    </slot>
-
-    <div slot="content" class="m-sm">
-      <template v-for="(action, idx) in sortedActions" :key="idx">
-        <hr class="m-0" v-if="action.type === 'hr'" />
-        <component v-else-if="action.type === 'display'" :is="action.is" />
-        <craft-action-item
-          v-else-if="action.type === 'link'"
-          v-bind="action"
-          :href="action.href"
-        >
-          {{ action.label }}
-        </craft-action-item>
-        <craft-action-item v-else v-bind="action">{{
-          action.label
-        }}</craft-action-item>
-      </template>
-    </div>
+  <craft-action-menu
+    :actions="wcActions"
+    :icon="icon"
+    :label="label ?? undefined"
+  >
+    <!--
+      `v-once` is load-bearing, not an optimization. `craft-action-menu` (Lion
+      `OverlayMixin`) imperatively relocates/restructures its own light DOM. If Vue
+      keeps the invoker in its reactive patch path, a later re-render patches the
+      invoker's slot fragment against DOM the element moved and throws "Cannot read
+      properties of null (reading 'insertBefore')". A passive wrapper isn't enough:
+      Vue's block optimization flattens dynamic descendants and patches them with
+      `craft-action-menu` as the container, bypassing the wrapper. `v-once` renders
+      the invoker exactly once and removes it from the block's dynamic children, so
+      Vue never re-patches the overlay-managed DOM. Invokers are static triggers
+      (an icon / avatar), so freezing them is safe. `inline-flex` keeps the wrapper
+      sized to the invoker so the overlay positions against a real box.
+    -->
+    <span slot="invoker" style="display: inline-flex" v-once>
+      <slot
+        name="invoker"
+        :label="label"
+        :attributes="{slot: 'invoker'}"
+      ></slot>
+    </span>
   </craft-action-menu>
 </template>
 
 <style scoped lang="scss">
-  craft-action-item {
+  craft-action-menu :deep(craft-action-item) {
     min-width: 200px;
   }
 </style>

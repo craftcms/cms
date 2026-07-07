@@ -380,6 +380,7 @@ describe('store', function () {
                 'slug' => 'canonical-title',
             ]);
         app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+        actingAs(UserModel::findOrFail(auth()->id()));
 
         $elements = new class(app(ElementPlaceholders::class)) extends ElementsService
         {

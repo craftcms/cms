@@ -33,8 +33,8 @@ it('merges nested dependency payloads into the outer collection', function () {
 
 it('keeps the shortest expiry date in a collection', function () {
     $this->collector->begin($this->context);
-    $this->collector->setExpiryDate(DateTimeHelper::now()->modify('+2 minutes'));
-    $this->collector->setExpiryDate(DateTimeHelper::now()->modify('+1 minute'));
+    $this->collector->setExpiryDate(now()->add(2, 'minutes'));
+    $this->collector->setExpiryDate(now()->add(1, 'minute'));
 
     [, $duration] = $this->collector->stop();
 
@@ -47,7 +47,7 @@ it('applies cached dependency payloads into an active outer collection', functio
 
     $this->collector->apply([
         'tags' => ['cached-tag'],
-        'expiryDate' => DateTimeHelper::toIso8601(DateTimeHelper::now()->modify('+45 seconds')),
+        'expiryDate' => DateTimeHelper::toIso8601(now()->add(45, 'seconds')),
     ], $this->context);
 
     [$dependency, $duration] = $this->collector->stop();

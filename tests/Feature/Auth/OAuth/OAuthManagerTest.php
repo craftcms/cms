@@ -89,12 +89,28 @@ describe('provider configuration', function () {
     });
 
     test('invalid configured groups make the provider unavailable', function () {
+        config()->set('app.debug', false);
+
         configureOAuthManagerProvider([
             'groups' => ['missing-group'],
         ]);
 
         expect(app(OAuth::class)->getProviderDefinition('test'))->toBeNull()
             ->and(app(OAuth::class)->getLoginButtons())->toBe([]);
+    });
+
+    test('providers do not trust email fallback by default', function () {
+        configureOAuthManagerProvider();
+
+        expect(app(OAuth::class)->getProviderDefinition('test')->trustsEmail)->toBeFalse();
+    });
+
+    test('providers can trust email fallback when configured', function () {
+        configureOAuthManagerProvider([
+            'trustsEmail' => true,
+        ]);
+
+        expect(app(OAuth::class)->getProviderDefinition('test')->trustsEmail)->toBeTrue();
     });
 
     test('named driver shorthands can inherit credentials from services config', function (array $providers) {

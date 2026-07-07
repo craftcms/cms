@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Tag Groups"|t('yii2-adapter') %}
-{% set readOnly = not app.config.craft.general.allowAdminChanges %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
 
 {% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 

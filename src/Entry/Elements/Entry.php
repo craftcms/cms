@@ -64,7 +64,6 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -85,17 +84,17 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use DateInterval;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -136,6 +135,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               {{ entry.sectionId }}
      *               ```
      */
+    #[AllowedInSandbox]
     public ?int $sectionId = null;
 
     /**
@@ -144,34 +144,34 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public bool $collapsed = false;
 
     /**
-     * @var DateTime|null Post date
-     *                    ---
-     *                    ```php
-     *                    echo Craft::$app->formatter->asDate($entry->postDate, 'short');
-     *                    ```
-     *                    ```twig
-     *                    {{ entry.postDate|date('short') }}
-     *                    ```
+     * @var DateTimeInterface|null Post date
+     *                             ---
+     *                             ```php
+     *                             echo Craft::$app->formatter->asDate($entry->postDate, 'short');
+     *                             ```
+     *                             ```twig
+     *                             {{ entry.postDate|date('short') }}
+     *                             ```
      */
     #[AllowedInSandbox]
-    public ?DateTime $postDate = null;
+    public ?DateTimeInterface $postDate = null;
 
     /**
-     * @var DateTime|null Expiry date
-     *                    ---
-     *                    ```php
-     *                    if ($entry->expiryDate) {
-     *                    echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
-     *                    }
-     *                    ```
-     *                    ```twig
-     *                    {% if entry.expiryDate %}
-     *                    {{ entry.expiryDate|date('short') }}
-     *                    {% endif %}
-     *                    ```
+     * @var DateTimeInterface|null Expiry date
+     *                             ---
+     *                             ```php
+     *                             if ($entry->expiryDate) {
+     *                             echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
+     *                             }
+     *                             ```
+     *                             ```twig
+     *                             {% if entry.expiryDate %}
+     *                             {{ entry.expiryDate|date('short') }}
+     *                             {% endif %}
+     *                             ```
      */
     #[AllowedInSandbox]
-    public ?DateTime $expiryDate = null;
+    public ?DateTimeInterface $expiryDate = null;
 
     /**
      * @var self::STATUS_*|null The entry’s previous status, if it had one
@@ -408,7 +408,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             SectionType::Structure->value => t('Structures'),
         ];
 
-        $user = Auth::craftUser();
+        $user = currentUser();
 
         foreach ($sectionTypes as $type => $heading) {
             if (! empty($sectionsByType[$type])) {
@@ -435,7 +435,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     if ($type === SectionType::Structure->value) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $source['structureEditable'] = $user && $user->can("saveEntries:$section->uid");
+                        $structure = $section->structureId ? Structures::getStructureById($section->structureId) : null;
+                        $source['structureEditable'] = $user && $structure && $user->can('edit', $structure);
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -536,7 +537,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $actions = [];
 
         if ($section) {
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             if (
                 $section->type === SectionType::Structure &&
@@ -791,11 +792,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
             'postDate' => [
                 'label' => t('Post Date'),
-                'placeholder' => fn () => (new DateTime)->sub(new DateInterval('P15D')),
+                'placeholder' => fn () => now()->subDays(15),
             ],
             'expiryDate' => [
                 'label' => t('Expiry Date'),
-                'placeholder' => fn () => (new DateTime)->add(new DateInterval('P15D')),
+                'placeholder' => fn () => now()->addDays(15),
             ],
             'revisionNotes' => [
                 'label' => t('Revision Notes'),
@@ -1222,7 +1223,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if ($section->type === SectionType::Structure) {
-            $user = Auth::craftUser();
+            $user = currentUser();
 
             $ancestors = $this->getAncestors();
             if ($ancestors instanceof ElementQueryInterface) {
@@ -1392,7 +1393,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
     }
 
-    public function getExpiryDate(): ?DateTime
+    public function getExpiryDate(): ?DateTimeInterface
     {
         return $this->expiryDate;
     }
@@ -1410,6 +1411,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @throws RuntimeException if [[sectionId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getSection(): ?Section
     {
         if (! isset($this->sectionId)) {
@@ -1423,6 +1425,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $section;
     }
 
+    #[AllowedInSandbox]
     public function getTypeId(): int
     {
         return $this->getType()->id;
@@ -1477,6 +1480,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @throws RuntimeException if [[typeId]] is invalid, or the section has no entry types
      */
+    #[AllowedInSandbox]
     public function getType(): EntryType
     {
         if (isset($this->_type)) {
@@ -1703,7 +1707,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     private function _status(): string
     {
-        $now = DateTimeHelper::now();
+        $now = now();
 
         return match (true) {
             ! $this->postDate || $this->postDate > $now => self::STATUS_PENDING,
@@ -1812,7 +1816,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if (
             app(ElementRequest::class)->element === $this &&
-            Auth::craftUser()?->isAdmin() &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             // Entry type settings
@@ -2007,49 +2011,7 @@ JS, [
             return false;
         }
 
-        if (! $section = $this->getSection()) {
-            return false;
-        }
-
-        $userId = $user->getCraftUserId();
-
-        // disallow moving singles and trashed entries
-        if ($section->type === SectionType::Single || $this->trashed) {
-            return false;
-        }
-
-        // if there aren't any compatible sections, just don't bother with further checks
-        if (! $this->_moveCompatibleSectionsCount()) {
-            return false;
-        }
-
-        if ($this->getIsDraft()) {
-            return $this->draftCreatorId === $userId || $user->can("savePeerEntryDrafts:$section->uid");
-        }
-
-        if (! $user->can("saveEntries:$section->uid")) {
-            return false;
-        }
-
-        return ($userId !== null && in_array($userId, $this->getAuthorIds(), true)) || $user->can("savePeerEntries:$section->uid");
-    }
-
-    /**
-     * Get sections that this entry could be moved to - sections that use the exact same entry type.
-     */
-    private function _moveCompatibleSectionsCount(): int
-    {
-        // get entry type id
-        $entryTypeId = $this->getType()->id;
-
-        // get sections all editable sections without singles and without the section this entry belongs to
-        // get all entry types for them
-        return Sections::getEditableSections()
-            ->filter(fn (Section $s) => $s->type !== SectionType::Single && $s->id !== $this->sectionId)
-            ->map(fn (Section $s) => ['entryTypes' => $s->getEntryTypes()])
-            // get sections that use the same entry type as this entry
-            ->filter(fn (array $s) => collect($s['entryTypes'])->contains('id', $entryTypeId))
-            ->count();
+        return $user->can('move', $this);
     }
 
     #[Override]
@@ -2098,23 +2060,24 @@ JS, [
         // Parent
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
             $fields['parent'] = (function () use ($static, $section) {
+                $parentQuery = self::find()
+                    ->site('*')
+                    ->preferSites([$this->siteId])
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null);
+
                 if ($parentId = $this->getParentId()) {
-                    $parent = Entries::getEntryById($parentId, $this->siteId, [
-                        'drafts' => null,
-                        'draftOf' => false,
-                    ]);
+                    $parentQuery->id($parentId);
                 } else {
                     // If the entry already has structure data, use it. Otherwise, use its canonical entry
-                    /** @var self|null $parent */
-                    $parent = self::find()
-                        ->siteId($this->siteId)
+                    $parentQuery
                         ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
-                        ->ancestorDist(1)
-                        ->drafts(null)
-                        ->draftOf(false)
-                        ->status(null)
-                        ->one();
+                        ->ancestorDist(1);
                 }
+
+                /** @var self|null $parent */
+                $parent = $parentQuery->one();
 
                 return FormFields::elementSelectFieldHtml([
                     'label' => t('Parent'),
@@ -2124,6 +2087,7 @@ JS, [
                     'selectionLabel' => t('Choose'),
                     'sources' => ["section:$section->uid"],
                     'criteria' => $this->_parentOptionCriteria($section),
+                    'showSiteMenu' => true,
                     'limit' => 1,
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
@@ -2240,14 +2204,7 @@ JS;
             return false;
         }
 
-        $section = $this->getSection();
-        $authorIds = $this->getAuthorIds();
-        $userId = $user->getCraftUserId();
-
-        return
-            empty($authorIds) ||
-            ($userId !== null && in_array($userId, $authorIds, true)) ||
-            $user->can("changeAuthorForPeerEntries:$section->uid");
+        return $user->can('changeAuthor', $this);
     }
 
     #[Override]
@@ -2265,7 +2222,6 @@ JS;
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [
-            'siteId' => $this->siteId,
             'sectionId' => $section->id,
             'status' => null,
             'drafts' => null,
@@ -2446,13 +2402,12 @@ JS;
                 isset($this->fieldId)
             )
         ) {
-            // Default the post date to the current date/time
-            $this->postDate = new DateTime;
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            // Default the post date to the current date/time, without the seconds
+            $now = now();
+            $this->postDate = $now->setTimestamp($now->getTimestamp() - ($now->getTimestamp() % 60));
             // ...unless an expiry date is set in the past
             if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
-                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
+                $this->postDate = Date::instance($this->expiryDate)->subDay();
             }
         }
     }

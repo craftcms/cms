@@ -25,7 +25,7 @@
 
 {% set containerAttributes = {
     id,
-    class: ['checkbox-select']|merge((class ?? [])|explodeClass),
+    class: ['cp-checkbox-select']|merge((class ?? [])|explodeClass),
     data: {
       'storage-key': storageKey,
     },
@@ -35,12 +35,16 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
+{% if sortable %}
+  <craft-sortable-checkbox-select {% if disabled %}disabled{% endif %}>
+{% endif %}
+
 {% tag 'fieldset' with containerAttributes %}
     {%- if showAllOption %}
         <div>
             {% include "_includes/forms/checkbox" with {
                 describedBy: describedBy ?? false,
-                class: ['checkbox-select-item', 'all'],
+                class: ['cp-checkbox-select__item', 'all'],
                 label: raw("<b>#{allLabel}</b>"),
                 name: name ?? null,
                 value: allValue,
@@ -54,32 +58,21 @@
         {{- hiddenInput(name, '') }}
     {%- endif %}
     {%- for key, option in options %}
-        {% if not showAllOption or option.value is not defined or option.value != allValue %}
-            <div class="checkbox-select-item">
-                {% set selected = (showAllOption and allChecked) or (option.value is defined and option.value in values) %}
-                {% if sortable and not disabled %}
-                    {{ tag('a', {
-                        class: {
-                            move: true,
-                            icon: true,
-                            'draggable-handle': true,
-                            disabled: not selected,
-                        }|filter|keys,
-                    }) }}
-                {% endif %}
-                {% include "_includes/forms/checkbox" with {
-                    name: (name ?? false) ? "#{name}[]" : null,
-                    checked: selected,
-                    disabled: (showAllOption and allChecked) or disabled,
-                    targetPrefix: targetPrefix ?? null,
-                }|merge(option) only %}
-            </div>
-        {% endif %}
+        <div class="cp-checkbox-select__item">
+            {% set selected = (showAllOption and allChecked) or (option.value is defined and option.value in values) %}
+            {# The drag handle is the <craft-reorder-button> that
+                   Craft.SortableCheckboxSelect prepends to each item (it is both
+                   the drag handle and the Move up/down action menu). #}
+            {% include "_includes/forms/checkbox" with {
+                name: (name ?? false) ? "#{name}[]" : null,
+                checked: selected,
+                disabled: (showAllOption and allChecked) or disabled,
+                targetPrefix: targetPrefix ?? null,
+            }|merge(option) only %}
+        </div>
     {% endfor %}
 {% endtag %}
 
-{% if sortable and not disabled %}
-    {% js %}
-        new Craft.SortableCheckboxSelect($('#{{ id|namespaceInputId }}'));
-    {% endjs %}
+{% if sortable %}
+  </craft-sortable-checkbox-select>
 {% endif %}

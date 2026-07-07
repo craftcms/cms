@@ -32,18 +32,18 @@ it('is a singleton', function () {
 });
 
 it('can determine if its multisite', function () {
-    expect($this->sites->isMultisite())->toBeFalse();
+    expect($this->sites->isMultiSite())->toBeFalse();
 
     $site = Site::factory()->create();
     $this->sites->refreshSites();
 
-    expect($this->sites->isMultisite())->toBeTrue();
+    expect($this->sites->isMultiSite())->toBeTrue();
 
     $site->delete();
     $this->sites->refreshSites();
 
-    expect($this->sites->isMultisite())->toBeFalse();
-    expect($this->sites->isMultisite(refresh: true, withTrashed: true))->toBeTrue();
+    expect($this->sites->isMultiSite())->toBeFalse();
+    expect($this->sites->isMultiSite(refresh: true, withTrashed: true))->toBeTrue();
     expect($this->sites->isMultiSiteWithTrashed())->toBeTrue();
 });
 

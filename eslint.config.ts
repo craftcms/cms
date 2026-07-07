@@ -29,6 +29,9 @@ export default tseslint.config(
       },
     },
     rules: {
+      // TypeScript does this better
+      'no-undef': 'off',
+
       // Downgrade to warn — widespread in the codebase, address in follow-up
       '@typescript-eslint/no-explicit-any': 'off',
 
@@ -50,6 +53,11 @@ export default tseslint.config(
 
       // I don't find this useful when writing in typescript.
       'vue/require-default-prop': 'off',
+
+      // Lion/WebAwesome web components expose camelCase DOM properties (e.g.
+      // .choiceValue). Hyphenating them would bind the wrong property name, so
+      // camelCase prop bindings on custom elements are required, not optional.
+      'vue/attribute-hyphenation': 'off',
 
       // Formatting rules — Prettier handles these
       'vue/html-self-closing': 'off',

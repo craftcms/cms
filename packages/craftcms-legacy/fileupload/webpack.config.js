@@ -7,7 +7,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/fileupload/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/fileupload/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

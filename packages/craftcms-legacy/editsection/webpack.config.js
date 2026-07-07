@@ -7,7 +7,8 @@ module.exports = getConfig({
   config: {
     entry: {editsection: './editsection.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/editsection/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/editsection/dist',
     },
   },
 });

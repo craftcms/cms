@@ -29,7 +29,7 @@ class LicensesController
             $cookieName,
             Json::encode([
                 'hash' => $hash,
-                'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
+                'timestamp' => DateTimeHelper::toIso8601(now()),
                 'count' => ($data['count'] ?? 0) + 1,
             ]),
             CarbonInterval::year()->totalMinutes,

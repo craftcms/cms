@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -105,7 +106,7 @@ class QuickPost extends Widget
             if ($section->type === SectionType::Single) {
                 continue;
             }
-            if (! Auth::craftUser()->can('createEntries:'.$section->uid)) {
+            if (! currentUser()->can('createEntries:'.$section->uid)) {
                 continue;
             }
             $sections[] = $section;

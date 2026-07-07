@@ -7,7 +7,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/xregexp/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/xregexp/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

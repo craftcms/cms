@@ -7,7 +7,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/jquerypayment/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/jquerypayment/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

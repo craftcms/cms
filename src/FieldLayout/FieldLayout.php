@@ -967,6 +967,10 @@ class FieldLayout extends Component
         }
 
         if ($element) {
+            if (! $layoutElement->showInForm($element)) {
+                return null;
+            }
+
             return $layoutElement->previewHtml($element);
         }
 
@@ -1200,11 +1204,11 @@ class FieldLayout extends Component
                                 }
 
                                 $html = Html::modifyTagAttributes($html, [
-                                    'data' => [
+                                    'data' => array_filter([
                                         'layout-element' => $isConditional ? $layoutElement->uid : true,
                                         'error-key' => $errorKey,
                                         'static' => $isStatic,
-                                    ],
+                                    ]),
                                 ]);
 
                                 $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, $html, $isStatic);

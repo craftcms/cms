@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Contracts;
 
-use DateTime;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use DateTimeInterface;
 
 interface ExpirableElementInterface
 {
     /**
      * Returns the element’s expiration date/time.
      */
-    public function getExpiryDate(): ?DateTime;
+    #[AllowedInSandbox]
+    public function getExpiryDate(): ?DateTimeInterface;
 }

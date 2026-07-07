@@ -7,7 +7,7 @@
   import useCraftData from '@/common/composables/useCraftData';
   import {computed} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/components/ActionMenu.vue';
+  import type {ActionItem} from '@/common/types';
   import CurrentUser from '@/common/components/CurrentUser.vue';
   import UserThumbnail from '@/common/components/UserThumbnail.vue';
   import PasswordController from '@actions/Users/PasswordController';
@@ -22,11 +22,13 @@
       },
       {type: 'hr' as const},
       {
-        href: UsersController.edit['/admin/myaccount']().url,
+        href: UsersController.edit['/{cpTrigger?}/myaccount']().url,
         label: t('Profile'),
       },
       {
-        href: PermissionsController.index['/admin/myaccount/permissions']().url,
+        href: PermissionsController.index[
+          '/{cpTrigger?}/myaccount/permissions'
+        ]().url,
         label: t('Permissions'),
       },
       {

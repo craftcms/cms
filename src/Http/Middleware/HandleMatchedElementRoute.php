@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Route\ControllerRoute;
 use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Site\Sites;
@@ -32,6 +33,8 @@ readonly class HandleMatchedElementRoute
             return $next($request);
         }
 
+        $this->enforceOfflineAccess($request);
+
         $path = $this->sites->getRequestPath($request);
 
         if ($path === Element::HOMEPAGE_URI) {
@@ -50,6 +53,12 @@ readonly class HandleMatchedElementRoute
             return $next($request);
         }
 
+        if ($route instanceof ControllerRoute) {
+            MatchedElement::set($element, $route);
+
+            return $route->handle($request, $element);
+        }
+
         if (is_string($route)) {
             $route = [$route, []];
         }
@@ -57,8 +66,6 @@ readonly class HandleMatchedElementRoute
         $routeParams = is_array($route[1] ?? null) ? $route[1] : [];
 
         MatchedElement::set($element, $route);
-
-        $this->enforceOfflineAccess($request);
 
         return new DynamicRoute($route[0], $routeParams + ['publicOnly' => false])->handle($request);
     }

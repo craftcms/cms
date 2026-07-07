@@ -1,4 +1,4 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest';
+import {beforeEach, describe, expect, test, vi} from 'vitest';
 
 // Prevent happy-dom from making real network requests for CSS/JS files
 const happyDOM = (window as any).happyDOM;
@@ -32,18 +32,23 @@ describe('appendHeadHtml', () => {
     );
     const links = document.head.querySelectorAll('link');
     expect(links.length).toBe(1);
-    expect(links[0].getAttribute('rel')).toBe('stylesheet');
-    expect(links[0].getAttribute('href')).toBe('https://example.com/style.css');
+    expect(links[0]!.getAttribute('rel')).toBe('stylesheet');
+    expect(links[0]!.getAttribute('href')).toBe(
+      'https://example.com/style.css'
+    );
   });
 
   test('appends a script element to head', async () => {
     const {appendHeadHtml} = await freshImport();
-    await appendHeadHtml(
+    const append = appendHeadHtml(
       '<script src="https://example.com/script.js"></script>'
     );
+    document.head.querySelector('script')!.dispatchEvent(new Event('load'));
+    await append;
+
     const scripts = document.head.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].getAttribute('src')).toBe(
+    expect(scripts[0]!.getAttribute('src')).toBe(
       'https://example.com/script.js'
     );
   });
@@ -53,7 +58,7 @@ describe('appendHeadHtml', () => {
     await appendHeadHtml('<script>console.log("hello")</script>');
     const scripts = document.head.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].textContent).toBe('console.log("hello")');
+    expect(scripts[0]!.textContent).toBe('console.log("hello")');
   });
 
   test('appends arbitrary HTML to head', async () => {
@@ -61,7 +66,7 @@ describe('appendHeadHtml', () => {
     await appendHeadHtml('<meta name="description" content="test">');
     const metas = document.head.querySelectorAll('meta[name="description"]');
     expect(metas.length).toBe(1);
-    expect(metas[0].getAttribute('content')).toBe('test');
+    expect(metas[0]!.getAttribute('content')).toBe('test');
   });
 
   test('preserves link attributes when appending', async () => {
@@ -78,9 +83,12 @@ describe('appendHeadHtml', () => {
 
   test('preserves script attributes when appending', async () => {
     const {appendHeadHtml} = await freshImport();
-    await appendHeadHtml(
+    const append = appendHeadHtml(
       '<script src="https://example.com/b.js" type="module" defer></script>'
     );
+    document.head.querySelector('script')!.dispatchEvent(new Event('load'));
+    await append;
+
     const script = document.head.querySelector('script')!;
     expect(script.getAttribute('src')).toBe('https://example.com/b.js');
     expect(script.getAttribute('type')).toBe('module');
@@ -104,10 +112,28 @@ describe('appendBodyHtml', () => {
 
   test('appends script with src to body', async () => {
     const {appendBodyHtml} = await freshImport();
-    await appendBodyHtml('<script src="https://example.com/body.js"></script>');
+    const append = appendBodyHtml(
+      '<script src="https://example.com/body.js"></script>'
+    );
+    document.body.querySelector('script')!.dispatchEvent(new Event('load'));
+    await append;
+
     const scripts = document.body.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].getAttribute('src')).toBe('https://example.com/body.js');
+    expect(scripts[0]!.getAttribute('src')).toBe('https://example.com/body.js');
+  });
+
+  test('appends elements to a provided parent', async () => {
+    const {appendElementHtml} = await freshImport();
+    const parent = document.createElement('div');
+
+    const dispose = await appendElementHtml('<p id="child">Hello</p>', parent);
+
+    expect(parent.querySelector('#child')!.textContent).toBe('Hello');
+
+    dispose();
+
+    expect(parent.querySelector('#child')).toBeNull();
   });
 });
 
@@ -148,8 +174,12 @@ describe('JS deduplication', () => {
   test('does not add duplicate script src', async () => {
     const {appendBodyHtml} = await freshImport();
     const js = '<script src="https://example.com/dup.js"></script>';
+    const firstAppend = appendBodyHtml(js);
+    document.body.querySelector('script')!.dispatchEvent(new Event('load'));
+    await firstAppend;
+
     await appendBodyHtml(js);
-    await appendBodyHtml(js);
+
     const scripts = document.body.querySelectorAll('script');
     expect(scripts.length).toBe(1);
   });
@@ -161,5 +191,23 @@ describe('JS deduplication', () => {
     await appendBodyHtml(inline);
     const scripts = document.body.querySelectorAll('script');
     expect(scripts.length).toBe(2);
+  });
+
+  test('waits for external scripts before appending subsequent nodes', async () => {
+    const {appendElementHtml} = await freshImport();
+    const parent = document.createElement('div');
+    const append = appendElementHtml(
+      '<script src="https://example.com/ordered.js"></script><span id="after-script"></span>',
+      parent
+    );
+
+    await Promise.resolve();
+
+    expect(parent.querySelector('#after-script')).toBeNull();
+
+    parent.querySelector('script')!.dispatchEvent(new Event('load'));
+    await append;
+
+    expect(parent.querySelector('#after-script')).not.toBeNull();
   });
 });

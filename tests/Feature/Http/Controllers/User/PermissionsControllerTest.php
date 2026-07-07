@@ -1,19 +1,24 @@
 <?php
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
-use function Pest\Laravel\postJson;
+use function Pest\Laravel\patchJson;
 
 beforeEach(function () {
     actingAs(User::find()->one());
@@ -24,7 +29,8 @@ it('requires login', function () {
 
     get(cp_url('myaccount/permissions'))->assertRedirect();
     get(cp_url('users/1/permissions'))->assertRedirect();
-    postJson(action([PermissionsController::class, 'store']))->assertUnauthorized();
+    patchJson(cp_url('myaccount/permissions'))->assertUnauthorized();
+    patchJson(cp_url('users/1/permissions'))->assertUnauthorized();
 });
 
 test('index is forbidden when edition is not above team', function () {
@@ -43,14 +49,13 @@ it('can store permissions and groups', function () {
     $this->withoutExceptionHandling();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
     $group = UserGroup::factory()->create();
 
     expect(UserPermissions::doesUserHavePermission($user->id, 'accessCp'))->toBeFalse();
     expect(UserGroups::getGroupsByUserId($user->id))->toHaveCount(0);
 
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => $user->id,
+    patchJson(cp_url('myaccount/permissions'), [
         'admin' => false,
         'permissions' => [
             'accessCp',
@@ -64,31 +69,23 @@ it('can store permissions and groups', function () {
     expect(UserGroups::getGroupsByUserId($user->id))->toHaveCount(1);
 });
 
-test('store validates required userId', function () {
+test('update validates group ids', function () {
     Edition::set(Edition::Pro);
 
-    postJson(action([PermissionsController::class, 'store']), [])
-        ->assertJsonValidationErrors(['userId']);
-});
-
-test('store validates userId exists in database', function () {
-    Edition::set(Edition::Pro);
-
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => 99999,
-    ])->assertJsonValidationErrors(['userId']);
+    patchJson(cp_url('myaccount/permissions'), [
+        'groups' => [99999],
+    ])->assertJsonValidationErrors(['groups.0']);
 });
 
 test('store can assign multiple groups', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
     $group1 = UserGroup::factory()->create();
     $group2 = UserGroup::factory()->create();
 
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => $user->id,
+    patchJson(cp_url('myaccount/permissions'), [
         'groups' => [
             $group1->id,
             $group2->id,
@@ -102,17 +99,13 @@ test('store can remove all permissions', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
 
-    // First assign some permissions
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => $user->id,
+    patchJson(cp_url('myaccount/permissions'), [
         'permissions' => ['accessCp'],
     ])->assertOk();
 
-    // Then remove them
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => $user->id,
+    patchJson(cp_url('myaccount/permissions'), [
         'permissions' => [],
     ])->assertOk();
 
@@ -123,18 +116,14 @@ test('store can remove all groups', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
     $group = UserGroup::factory()->create();
 
-    // First assign a group
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => $user->id,
+    patchJson(cp_url('myaccount/permissions'), [
         'groups' => [$group->id],
     ])->assertOk();
 
-    // Then remove it
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => $user->id,
+    patchJson(cp_url('myaccount/permissions'), [
         'groups' => [],
     ])->assertOk();
 
@@ -144,30 +133,64 @@ test('store can remove all groups', function () {
 test('index shows permissions page for own account', function () {
     Edition::set(Edition::Pro);
 
+    $user = currentUser();
+    $group = UserGroup::factory()->create([
+        'name' => 'Editors',
+        'handle' => 'editors',
+        'description' => 'Can edit content.',
+    ]);
+
+    Users::assignUserToGroups($user->id, [$group->id]);
+    UserPermissions::saveGroupPermissions($group->id, ['accessCp']);
+    UserPermissions::saveUserPermissions($user->id, ['accessSiteWhenSystemIsOff']);
+
     $response = get(cp_url('myaccount/permissions'));
 
-    $response->assertOk();
+    $response
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Permissions')
+            ->where('user.isCurrent', true)
+            ->where('groups', fn ($groups) => collect($groups)->contains(
+                fn (array $option) => $option['id'] === $group->id &&
+                    $option['name'] === 'Editors' &&
+                    $option['handle'] === 'editors' &&
+                    $option['description'] === 'Can edit content.' &&
+                    collect($option['permissions'])->all() === ['accessCp'],
+            ))
+            ->where('currentGroupIds', fn ($groupIds) => collect($groupIds)->all() === [$group->id])
+            ->where('directPermissions', fn ($permissions) => collect($permissions)->all() === ['accessSiteWhenSystemIsOff'])
+            ->where('inheritedPermissions', fn ($permissions) => collect($permissions)->all() === ['accessCp'])
+            ->has('permissions')
+            ->has('subnav'));
 });
 
 test('index shows permissions page for other users', function () {
     Edition::set(Edition::Pro);
 
-    $otherUser = User::find()->one();
+    $otherUser = UserModel::factory()->create([
+        'active' => false,
+        'pending' => false,
+    ]);
 
     $response = get(cp_url("users/{$otherUser->id}/permissions"));
 
-    $response->assertOk();
+    $response
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Permissions')
+            ->where('user.id', $otherUser->id)
+            ->where('user.isCurrent', false)
+            ->where('can.canSendActivationEmail', true));
 });
 
 test('store returns success message', function () {
     session()->passwordConfirmed();
     Edition::set(Edition::Pro);
 
-    $user = Auth::craftUser();
+    $user = currentUser();
 
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => $user->id,
-    ])
+    patchJson(cp_url('myaccount/permissions'))
         ->assertOk()
         ->assertJsonStructure(['message']);
 });
@@ -182,11 +205,59 @@ test('store sends activation email and marks inactive user as pending', function
         'pending' => false,
     ]);
 
-    postJson(action([PermissionsController::class, 'store']), [
-        'userId' => $inactiveUser->id,
+    patchJson(cp_url("users/{$inactiveUser->id}/permissions"), [
         'admin' => true,
         'sendActivationEmail' => true,
     ])->assertOk();
 
     expect($inactiveUser->fresh()->pending)->toBeTrue();
+});
+
+test('store can send activation email through moderateUsers permission', function () {
+    Notification::fake();
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $user = UserModel::factory()
+        ->withPermissions(['accessCp', 'viewUsers', 'editUsers', 'assignUserPermissions', 'moderateUsers'])
+        ->create();
+    $inactiveUser = UserModel::factory()->create([
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    actingAs($user->asElement());
+
+    patchJson(cp_url("users/{$inactiveUser->id}/permissions"), [
+        'sendActivationEmail' => true,
+    ])->assertOk();
+
+    expect($inactiveUser->fresh()->pending)->toBeTrue();
+
+    Notification::assertSentTimes(ActivationNotification::class, 1);
+});
+
+test('update does not persist inherited group permissions as direct user permissions', function () {
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $user = currentUser();
+    $group = UserGroup::factory()->create();
+
+    UserPermissions::saveGroupPermissions($group->id, ['accessCp']);
+
+    patchJson(cp_url('myaccount/permissions'), [
+        'groups' => [$group->id],
+        'permissions' => [],
+    ])->assertOk();
+
+    $permissionIds = DB::table(Table::USERPERMISSIONS)
+        ->where('name', 'accessCp')
+        ->pluck('id');
+
+    expect(UserPermissions::doesUserHavePermission($user->id, 'accessCp'))->toBeTrue();
+    expect(DB::table(Table::USERPERMISSIONS_USERS)
+        ->where('userId', $user->id)
+        ->whereIn('permissionId', $permissionIds)
+        ->exists())->toBeFalse();
 });

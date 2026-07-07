@@ -36,6 +36,8 @@
     :overlay="overlay"
     @close="emit('close')"
     :width="width"
+    :height="height"
+    :max-height="maxHeight"
   >
     <form @submit.prevent="submitHandler">
       <Pane :title="title">
@@ -51,7 +53,7 @@
           </craft-button>
         </template>
         <template #primary-action>
-          <craft-button type="submit" variant="primary" :loading="loading">
+          <craft-button type="submit" variant="accent" :loading="loading">
             {{ submitLabel }}
           </craft-button>
         </template>

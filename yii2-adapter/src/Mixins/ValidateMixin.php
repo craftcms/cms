@@ -49,17 +49,19 @@ readonly class ValidateMixin
         };
     }
 
+    /** @return Closure(array<string, string|string[]>): void */
     public function addErrors(): Closure
     {
-        return function(string $attribute, string $error = ''): void {
-            Deprecator::log($this::class . '->addErrors', 'Calling `->addErrors` is deprecated. Use `->errors()->add($attribute, $message)` instead.');
+        return function(array $items): void {
+            Deprecator::log($this::class . '->addErrors', 'Calling `->addErrors` is deprecated. Use `->errors()->merge($items)` instead.');
 
             /**
              * @var Element|Field $this
              *
              * @phpstan-ignore-next-line
              */
-            $this->errors()->add($attribute, $error);
+            $items = array_map(static fn (mixed $messages) => Arr::wrap($messages), $items);
+            $this->errors()->merge($items);
         };
     }
 

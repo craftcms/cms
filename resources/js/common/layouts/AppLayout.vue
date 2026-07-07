@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import {t} from '@craftcms/ui/utilities/translate.ts.mjs';
-  import {computed, reactive, ref, useTemplateRef, watch} from 'vue';
+  import {computed, reactive, ref, useSlots, useTemplateRef, watch} from 'vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head, type InertiaForm, usePage} from '@inertiajs/vue3';
@@ -10,41 +10,49 @@
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import LiveRegion from '@/common/components/LiveRegion.vue';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
+  import {useActionRedirect} from '@/common/composables/useActionRedirect';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItem} from '@/common/components/ActionMenu.vue';
-  import type {ActionItemData} from '@/common/types';
+  import type {
+    ActionItem,
+    ActionItemButton,
+    FormSaveOptions,
+  } from '@/common/types';
   import {useFlash} from '@/common/composables/useFlash';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import UserMenu from '@/common/components/UserMenu.vue';
   import FlashMessages from '@/common/components/FlashMessages.vue';
+  import Pane from '@/common/components/Pane.vue';
 
-  interface SaveOptions {
-    redirect?: boolean;
-  }
+  type DefaultFormAction = 'saveAndContinueEditing';
 
   export interface AppLayoutProps {
     title?: string;
     debug?: any;
     fullWidth?: boolean;
     form?: InertiaForm<any> | null;
-    formActions?: Array<ActionItemData>;
+    defaultFormActions?: Array<DefaultFormAction>;
+    formActions?: Array<ActionItem>;
+    formAdditionalActions?: Array<ActionItem>;
+    formAdditionalButtons?: Array<ActionItemButton>;
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }
 
   const emit = defineEmits<{
-    (e: 'save', options?: Partial<SaveOptions>): void;
+    (e: 'save', options?: FormSaveOptions): void;
   }>();
   const props = withDefaults(defineProps<AppLayoutProps>(), {
     fullWidth: false,
     crumbs: () => [],
     form: null,
+    defaultFormActions: () => ['saveAndContinueEditing'],
+    formAdditionalButtons: () => [],
   });
 
   const page = usePage<{
     title: string;
-    readOnly: boolean;
+    readOnly?: boolean;
     crumbs?: Array<{
       url?: string;
       label: string;
@@ -52,19 +60,38 @@
   }>();
 
   const {errorFlash, successFlash} = useFlash();
+  const slots = useSlots();
   const crumbs = computed(() => page.props.crumbs ?? null);
+  const formActionItems = computed(() => [
+    ...props.defaultFormActions.map(defaultFormActionItem),
+    ...(props.formActions ?? []),
+  ]);
   const skipLinks = computed(() => [
     {label: t('Skip to main section'), url: '#main'},
     ...(props.additionalSkipLinks ?? []),
   ]);
-  const readOnly = computed(() => page.props.readOnly);
+  const readOnly = computed(() => Boolean(page.props.readOnly));
+  const hasDetails = computed(() => Boolean(slots.details));
   const sidebarToggle = useTemplateRef('sidebarToggle');
+  const primaryFormButton = 'primary';
+  const activeFormButton = ref<string | null>(null);
   const {announcement, announce} = useAnnouncer();
 
   watch(successFlash, (newMessage) => announce(newMessage));
   watch(errorFlash, (newMessage) => announce(newMessage));
+  watch(
+    () => props.form?.processing,
+    (processing) => {
+      if (!processing) {
+        activeFormButton.value = null;
+      }
+    }
+  );
 
   useAppendHtml();
+
+  // Bridge `@craftcms/ui` action redirects into Inertia SPA visits.
+  useActionRedirect();
 
   const state = reactive<{
     sidebar: {
@@ -112,6 +139,41 @@
   const sidebarIcon = computed(() => {
     return state.sidebar.visibility === 'visible' ? 'x' : 'bars';
   });
+
+  function defaultFormActionItem(action: DefaultFormAction): ActionItem {
+    if (action === 'saveAndContinueEditing') {
+      return {
+        label: t('Save and continue editing'),
+        onClick: () => save({redirect: false}),
+        shortcut: 'S',
+      };
+    }
+
+    throw new Error(`Unknown default form action: ${action}`);
+  }
+
+  function isFormButtonProcessing(key: string) {
+    return Boolean(props.form?.processing) && activeFormButton.value === key;
+  }
+
+  function activateFormButton(key: string) {
+    activeFormButton.value = key;
+    setTimeout(() => {
+      if (!props.form?.processing) {
+        activeFormButton.value = null;
+      }
+    });
+  }
+
+  function save(options?: FormSaveOptions) {
+    activateFormButton(primaryFormButton);
+    emit('save', options);
+  }
+
+  function handleAdditionalButtonClick(button: ActionItemButton, event: Event) {
+    activateFormButton(button.label);
+    button.onClick?.(event);
+  }
 
   const sidebarWidth = computed(() => {
     if (state.sidebar.mode === 'docked') {
@@ -180,7 +242,7 @@
           <component
             :is="form ? 'form' : 'div'"
             method="post"
-            @submit.prevent="emit('save')"
+            @submit.prevent="save()"
           >
             <slot name="header">
               <div :class="{container: true, 'container--full': fullWidth}">
@@ -199,43 +261,73 @@
                           :is-active="form.recentlySuccessful || form.hasErrors"
                         />
 
-                        <craft-button-group v-if="!readOnly">
+                        <div
+                          v-if="!readOnly"
+                          class="flex items-center justify-end gap-2"
+                        >
                           <craft-button
+                            v-for="button in formAdditionalButtons"
+                            :key="button.label"
+                            type="button"
+                            :variant="button.variant ?? 'neutral'"
+                            :loading="isFormButtonProcessing(button.label)"
+                            :disabled="form.processing || button.disabled"
+                            @click="handleAdditionalButtonClick(button, $event)"
+                          >
+                            <craft-icon
+                              v-if="button.icon"
+                              :name="button.icon"
+                              slot="prefix"
+                            ></craft-icon>
+                            {{ button.label }}
+                          </craft-button>
+
+                          <craft-button-group v-if="formActionItems.length">
+                            <craft-button
+                              type="submit"
+                              variant="accent"
+                              :loading="
+                                isFormButtonProcessing(primaryFormButton)
+                              "
+                              :disabled="form.processing"
+                            >
+                              {{ t('Save') }}
+                            </craft-button>
+                            <ActionMenu
+                              icon="chevron-down"
+                              :actions="formActionItems"
+                            >
+                              <template #invoker="{label}">
+                                <craft-button
+                                  slot="invoker"
+                                  variant="accent"
+                                  type="button"
+                                  icon
+                                >
+                                  <craft-icon
+                                    name="chevron-down"
+                                    :label="label"
+                                  ></craft-icon>
+                                </craft-button>
+                              </template>
+                            </ActionMenu>
+                          </craft-button-group>
+
+                          <craft-button
+                            v-else
                             type="submit"
-                            variant="primary"
-                            :loading="form.processing"
+                            variant="accent"
+                            :loading="isFormButtonProcessing(primaryFormButton)"
+                            :disabled="form.processing"
                           >
                             {{ t('Save') }}
                           </craft-button>
+
                           <ActionMenu
-                            icon="chevron-down"
-                            :actions="
-                              [
-                                {
-                                  label: t('Save and continue editing'),
-                                  onClick: () =>
-                                    emit('save', {redirect: false}),
-                                  shortcut: 'S',
-                                },
-                                ...(formActions ?? []),
-                              ] as ActionItem[]
-                            "
-                          >
-                            <template #invoker="{label}">
-                              <craft-button
-                                slot="invoker"
-                                variant="primary"
-                                type="button"
-                                icon
-                              >
-                                <craft-icon
-                                  name="chevron-down"
-                                  :label="label"
-                                ></craft-icon>
-                              </craft-button>
-                            </template>
-                          </ActionMenu>
-                        </craft-button-group>
+                            v-if="formAdditionalActions?.length"
+                            :actions="formAdditionalActions"
+                          />
+                        </div>
                       </template>
                     </slot>
                   </div>
@@ -250,7 +342,21 @@
               <template v-if="readOnly">
                 <CalloutReadOnly />
               </template>
-              <slot></slot>
+              <template v-if="hasDetails">
+                <div class="content-with-details">
+                  <div>
+                    <slot></slot>
+                  </div>
+                  <aside>
+                    <Pane appearance="raised">
+                      <div class="details">
+                        <slot name="details"></slot>
+                      </div>
+                    </Pane>
+                  </aside>
+                </div>
+              </template>
+              <slot v-else></slot>
             </div>
           </component>
         </main>
@@ -318,6 +424,21 @@
 
   .container--full {
     max-width: none;
+  }
+
+  .content-with-details {
+    display: grid;
+    gap: var(--c-spacing-md);
+
+    @container (width >= 768px) {
+      grid-template-columns: minmax(0, 1fr) clamp(12rem, 20%, 16rem);
+      align-items: start;
+    }
+  }
+
+  .details {
+    display: grid;
+    gap: var(--c-spacing-md);
   }
 
   @media screen and (min-width: 1024px) {

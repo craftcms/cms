@@ -41,6 +41,7 @@
                   <CpLink
                     :href="item.url || `${settingsIndex().url}/${handle}`"
                     class="settings-item"
+                    block
                   >
                     <div class="settings-content">
                       <div class="settings-icon">
@@ -110,8 +111,8 @@
   }
 
   .settings-item:hover {
-    background-color: var(--c-color-accent-fill-quiet);
-    color: var(--c-color-accent-on-quiet);
-    border: 1px solid var(--c-color-accent-border-quiet);
+    background-color: var(--c-color-info-fill-quiet);
+    color: var(--c-color-info-on-quiet);
+    border: 1px solid var(--c-color-info-border-quiet);
   }
 </style>

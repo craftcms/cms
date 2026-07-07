@@ -26,7 +26,7 @@
 
   /* ——— Text ——— */
   --color-text-default: var(--c-text-default);
-  --color-text-muted: var(--c-text-quiet);
+  --color-text-quiet: var(--c-text-quiet);
   --color-text-link: var(--c-text-link);
   --color-text-white: var(--c-text-white);
 
@@ -110,4 +110,20 @@
   --color-border-default: var(--c-color-neutral-border-normal);
   --color-border-strong: var(--c-color-neutral-border-loud);
   --color-border-form: var(--c-form-control-border-color);
+
+  /* ——— Fill utilities ——— */
+  --color-fill-quiet: var(
+    --c-color-fill-quiet,
+    var(--c-color-neutral-fill-quiet)
+  );
+  --color-fill-normal: var(
+    --c-color-fill-normal,
+    var(--c-color-neutral-fill-normal)
+  );
+  --color-fill-loud: var(--c-color-fill-loud, var(--c-color-neutral-fill-loud));
+
+  /* ——— Text utilities ——— */
+  --color-on-quiet: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+  --color-on-normal: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+  --color-on-loud: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
 }

@@ -26,6 +26,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
+use CraftCms\Cms\Field\Events\FieldElementDeletedForSite;
 use CraftCms\Cms\Field\Events\FieldElementDeleting;
 use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
@@ -56,11 +57,10 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -69,6 +69,7 @@ use RuntimeException;
 use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
@@ -155,8 +156,8 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /** @var string|null The field's UID */
     public ?string $uid = null;
 
-    /** @var DateTime|null The date that the field was trashed */
-    public ?DateTime $dateDeleted = null;
+    /** @var DateTimeInterface|null The date that the field was trashed */
+    public ?DateTimeInterface $dateDeleted = null;
 
     /** @var CustomField|null The field layout element */
     public ?CustomField $layoutElement = null;
@@ -450,7 +451,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 
@@ -474,7 +475,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return $items;
         }
 
-        if (! Auth::craftUser()?->isAdmin()) {
+        if (! currentUser()?->isAdmin()) {
             return $items;
         }
 
@@ -803,7 +804,7 @@ JS, [
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
             return DateTimeHelper::toIso8601($value);
         }
 
@@ -813,7 +814,7 @@ JS, [
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         // Dates should be stored in UTC w/o the time zone
-        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
             return Query::prepareDateForDb($value);
         }
 
@@ -1073,7 +1074,10 @@ JS, [
 
     public function afterElementDeleteForSite(ElementInterface $element): void
     {
-        // carry on
+        event(new FieldElementDeletedForSite(
+            field: $this,
+            element: $element,
+        ));
     }
 
     public function beforeElementRestore(ElementInterface $element): bool

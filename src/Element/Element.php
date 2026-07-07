@@ -18,10 +18,11 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Twig\AllowableInSandbox;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
@@ -38,7 +39,7 @@ use function CraftCms\Cms\t;
  * @property ElementRules $ruleset
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements ElementInterface
+abstract class Element extends Component implements AllowableInSandbox, ElementInterface
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -115,24 +116,24 @@ abstract class Element extends Component implements ElementInterface
     public ?string $slug = null;
 
     /**
-     * @var DateTime|null The date that the element was created
+     * @var DateTimeInterface|null The date that the element was created
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateCreated = null;
+    public ?DateTimeInterface $dateCreated = null;
 
     /**
-     * @var DateTime|null The date that the element was last updated
+     * @var DateTimeInterface|null The date that the element was last updated
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateUpdated = null;
+    public ?DateTimeInterface $dateUpdated = null;
 
     /**
-     * @var DateTime|null The date that the element was trashed
+     * @var DateTimeInterface|null The date that the element was trashed
      *
      * @since 3.2.0
      */
     #[AllowedInSandbox]
-    public ?DateTime $dateDeleted = null;
+    public ?DateTimeInterface $dateDeleted = null;
 
     /**
      * @var bool|null Whether the element was deleted along with its owner
@@ -389,6 +390,30 @@ abstract class Element extends Component implements ElementInterface
         } catch (BadMethodCallException) {
             return parent::__call($name, $params);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        // Allow field handles
+        if (
+            $this->hasEagerLoadedElements($property) ||
+            $this->fieldByHandle($property) !== null
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

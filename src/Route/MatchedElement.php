@@ -29,14 +29,18 @@ class MatchedElement
         return self::instance()->route;
     }
 
-    public static function set(ElementInterface|false|null $element, ?array $route = null): void
+    public static function set(ElementInterface|false|null $element, mixed $route = null): void
     {
         $matchedElement = false;
         $matchedRoute = false;
 
         if ($element instanceof ElementInterface && $route ??= $element->getRoute()) {
             $matchedElement = $element;
-            $matchedRoute = is_string($route) ? [$route, []] : $route;
+            $matchedRoute = match (true) {
+                is_string($route) => [$route, []],
+                is_array($route) => $route,
+                default => false,
+            };
         }
 
         $state = self::instance();

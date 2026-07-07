@@ -15,7 +15,6 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +22,7 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -97,7 +97,7 @@ readonly class Revisions
 
             if ($creatorId === null) {
                 // Default to the logged-in user ID if there is one
-                $creatorId = Auth::craftUser()?->getCraftUserId();
+                $creatorId = currentUser()?->getCraftUserId();
             }
 
             event($event = new RevisionCreating(

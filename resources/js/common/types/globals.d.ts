@@ -1,5 +1,7 @@
 import type {QueueService} from '@/common/services/Queue';
 import type {AxiosInstance} from 'axios';
+import type {CpComponentRegistry} from '@/bootstrap/components';
+import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 
 declare module '@tanstack/vue-table' {
   interface ColumnMeta {
@@ -64,12 +66,31 @@ interface SlideoutInstance {
   open(): void;
   close(): void;
   destroy(): void;
+  on<T = unknown>(event: string, callback: (event: T) => void): void;
+}
+
+interface ElementSelectorModalInstance {
+  show(): void;
   on(event: string, callback: () => void): void;
+}
+
+type FieldLayoutDesignerInstance = any;
+
+interface ElementSelectorModalSettings {
+  closeOtherModals?: boolean;
+  criteria?: Record<string, unknown>;
+  hideOnSelect?: boolean;
+  modalTitle?: string;
+  multiSelect?: boolean;
+  onSelect?: (elements: any[]) => void;
+  sources?: string[];
 }
 
 interface CraftStatic {
   $queue: QueueService;
   $axios: AxiosInstance;
+  $components: CpComponentRegistry;
+  $inertia: InertiaPageRegistry;
   booting(cb: (craft: CraftStatic) => void): void;
   booted(cb: (craft: CraftStatic) => void): void;
   init(): void;
@@ -92,6 +113,10 @@ interface CraftStatic {
   t(message: string, params?: object, category?: string): string;
   sendActionRequest(method: string, action: string, options?: object): Promise;
   initUiElements($container: JQuery): void;
+  createElementSelectorModal(
+    elementType: string,
+    settings?: ElementSelectorModalSettings
+  ): ElementSelectorModalInstance;
   expandPostArray(arr: object): any;
   escapeHtml(str: string);
   getUrl(path: string, params?: string | object, baseUrl?: string): string;
@@ -101,6 +126,7 @@ interface CraftStatic {
   Preview: any;
   setCookie(name: string, value: string): any;
   getCookie(name: string): any;
+  baseCpUrl: string;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;
@@ -134,6 +160,9 @@ interface CraftStatic {
   };
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
+  };
+  FieldLayoutDesigner: {
+    new (container: any, settings?: object): FieldLayoutDesignerInstance;
   };
 
   [key: string]: any;

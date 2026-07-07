@@ -3,27 +3,28 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\SetHeaders;
-use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 beforeEach(function () {
-    $this->renderer = app(TemplateRenderer::class);
+    $this->renderer = app(TwigRenderer::class);
 });
 
 function renderAndApplyExpiresHeaders(string $template): Response
 {
-    app(TemplateRenderer::class)->renderString($template);
+    app(TwigRenderer::class)->renderString($template);
 
     return app(SetHeaders::class)->handle(Request::create('foo'), fn () => new Response);
 }
 
 it('sets cache headers with duration', function () {
     $response = renderAndApplyExpiresHeaders('{% expires in 1 day %}');
+    $now = now();
+    $duration = (int) $now->diffInSeconds((clone $now)->add(1, 'day'));
 
     expect($response->headers->get('Cache-Control'))
-        ->toContain('max-age='.DateTimeHelper::relativeTimeToSeconds(1, 'day'));
+        ->toContain("max-age=$duration");
     expect($response->headers->get('Pragma'))->toBe('cache');
 });
 

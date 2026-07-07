@@ -24,10 +24,10 @@ readonly class ContentHtml
             if ($value !== false) {
                 $defs[] =
                     Html::beginTag('div', [
-                        'class' => 'data',
+                        'class' => 'cp-metadata-list__item',
                     ]).
-                    Html::tag('dt', Html::encode($label), ['class' => 'heading'])."\n".
-                    Html::tag('dd', $value, ['class' => 'value'])."\n".
+                    Html::tag('dt', Html::encode($label))."\n".
+                    Html::tag('dd', $value)."\n".
                     Html::endTag('div');
             }
         }
@@ -37,7 +37,7 @@ readonly class ContentHtml
         }
 
         return Html::tag('dl', implode("\n", $defs), [
-            'class' => ['meta', 'read-only'],
+            'class' => ['cp-metadata-list'],
         ]);
     }
 

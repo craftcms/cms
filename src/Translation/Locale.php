@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Translation;
 
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use DateTime;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use IntlDateFormatter;
 use NumberFormatter;
 use RuntimeException;
@@ -360,7 +360,7 @@ class Locale implements Stringable
             default => $formatter->setPattern($standAlone ? 'LLLL' : 'MMMM'),
         };
 
-        return $formatter->format(new DateTime('1970-'.sprintf('%02d', $month).'-01'));
+        return $formatter->format(Date::parse('1970-'.sprintf('%02d', $month).'-01'));
     }
 
     /**
@@ -413,7 +413,7 @@ class Locale implements Stringable
         // 1970-01-08 => Thursday (4 + 4)
         // 1970-01-09 => Friday (5 + 4)
         // 1970-01-10 => Saturday (6 + 4)
-        return $formatter->format(new DateTime('1970-01-'.sprintf('%02d', $day + 4)));
+        return $formatter->format(Date::parse('1970-01-'.sprintf('%02d', $day + 4)));
     }
 
     /**
@@ -435,7 +435,7 @@ class Locale implements Stringable
      */
     public function getAMName(): string
     {
-        return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
+        return $this->getFormatter()->asDate(Date::parse('00:00'), 'a');
     }
 
     /**
@@ -443,7 +443,7 @@ class Locale implements Stringable
      */
     public function getPMName(): string
     {
-        return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
+        return $this->getFormatter()->asDate(Date::parse('12:00'), 'a');
     }
 
     // Text Attributes and Symbols
