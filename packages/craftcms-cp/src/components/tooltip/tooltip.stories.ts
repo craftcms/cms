@@ -2,7 +2,6 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
 
-// import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import './tooltip.js';
 import '../button/button.js';
 

@@ -60,11 +60,9 @@ const LEGACY_NAMES: Record<string, string> = {
 };
 
 /**
- * This is mostly copied from font awesome directly because they don't seem to
- * give you a way to access the default library settings and extend them, only
- * overwrite them entirely.
- *
- * https://github.com/shoelace-style/webawesome/blob/da206a87873e3ab43ded7466a05005225aa50e69/packages/webawesome/src/components/icon/library.default.ts
+ * Resolves an icon name to its URL under the CP's published Font Awesome
+ * assets. The name/variant/family resolution rules mirror Font Awesome's
+ * default icon-library conventions so existing icon names keep working.
  */
 export function getIconUrl(
   name: string,
