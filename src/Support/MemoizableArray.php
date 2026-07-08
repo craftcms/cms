@@ -8,6 +8,7 @@ use ArrayIterator;
 use Countable;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
+use RuntimeException;
 
 use function CraftCms\Cms\enum_value;
 
@@ -37,6 +38,9 @@ class MemoizableArray implements Countable, IteratorAggregate
 
     /** @var array<string, mixed> Memoized array elements */
     private array $memoized = [];
+
+    /** @var array<int|string, true> Keys currently being normalized, for re-entrancy detection */
+    private array $normalizing = [];
 
     /**
      * @param  array<T>  $elements  The items to be memoized
@@ -194,7 +198,22 @@ class MemoizableArray implements Countable, IteratorAggregate
         }
 
         if (! isset($this->normalized[$key])) {
-            $this->normalized[$key] = call_user_func($this->normalizer, $this->elements[$key], $key);
+            if (isset($this->normalizing[$key])) {
+                throw new RuntimeException(sprintf(
+                    'MemoizableArray normalizer re-entered itself while normalizing key "%s". '
+                    .'The normalizer queried the array for a value that is still being normalized, '
+                    .'which would recurse infinitely.',
+                    $key,
+                ));
+            }
+
+            $this->normalizing[$key] = true;
+
+            try {
+                $this->normalized[$key] = call_user_func($this->normalizer, $this->elements[$key], $key);
+            } finally {
+                unset($this->normalizing[$key]);
+            }
         }
 
         return $this->normalized[$key];
