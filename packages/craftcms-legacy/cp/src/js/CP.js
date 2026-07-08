@@ -2,7 +2,7 @@
 // entry (`@craftcms/cp`) side-effect-registers WebAwesome components (e.g.
 // `wa-icon`); pulling that into this separately-webpacked legacy bundle causes
 // a duplicate custom-element registration when it loads alongside the Vite app.
-import {QueueService} from '@craftcms/cp/services/Queue.ts.mjs';
+import {QueueService} from '@craftcms/cp/services/Queue';
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */

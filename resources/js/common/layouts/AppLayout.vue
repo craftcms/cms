@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/cp/utilities/translate';
   import {computed, watch} from 'vue';
   import {Head, type InertiaForm, usePage} from '@inertiajs/vue3';
   import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
