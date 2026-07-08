@@ -1,0 +1,261 @@
+name: 'Storybook'
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 6.x
+      - feature/storybook-cloudflare # TEMPORARY: smoke-test pre-merge — remove before merging
+    paths:
+      - 'packages/craftcms-cp/**'
+      - 'packages/craftcms-garnish/**'
+      - 'resources/js/**'
+      - 'src/**/*.php'
+  pull_request:
+    paths:
+      - 'packages/craftcms-cp/**'
+      - 'packages/craftcms-garnish/**'
+      - 'resources/js/**'
+      - 'src/**/*.php'
+
+concurrency:
+  group: storybook-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PHP_VERSION: '8.5'
+
+permissions:
+  contents: read
+
+jobs:
+  # Gate: install deps, build the packages, and generate the TS/wayfinder
+  # output. The deploy jobs only run once this succeeds, so we never publish a
+  # Storybook built from assets that don't compile. Results are cached and
+  # restored by the parallel deploy jobs below.
+  build-assets:
+    name: 'Build assets'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.value }}
+      deploy-branch: ${{ steps.branch.outputs.value }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Compute cache key
+        id: cache-key
+        # Keep this in sync with .github/workflows/js-ci.yml so the built assets
+        # and generated files are shared between the two workflows.
+        run: |
+          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-cp/src/**', 'packages/craftcms-cp/tsconfig*.json', 'packages/craftcms-cp/vite.config.*', 'packages/craftcms-cp/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/tsdown.config.*', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore install + build + generated cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/craftcms-cp/dist
+            packages/craftcms-garnish/dist
+            vendor
+            resources/js/actions
+            resources/js/routes
+            resources/js/wayfinder
+            resources/js/generated
+          key: ${{ steps.cache-key.outputs.value }}
+
+      - name: Install Composer dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: composer install --no-interaction --no-progress
+
+      - name: Install npm dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
+      # Build the garnish package so its `dist/*.d.ts` exist — `vue-tsc` resolves
+      # `@craftcms/garnish` from `dist` (its `types`), and dist is gitignored.
+      - name: Build @craftcms/garnish
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm run build:garnish
+
+      - name: Build @craftcms/cp
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm run build:cp
+
+      - name: Generate TypeScript types
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm run generate:types
+
+      - name: Generate Wayfinder routes
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm run generate:wayfinder
+
+      - name: Determine deploy branch
+        id: branch
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "value=pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy-cp:
+    name: 'Deploy / craftcms-cp'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build-assets
+    outputs:
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore install + build + generated cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/craftcms-cp/dist
+            packages/craftcms-garnish/dist
+            vendor
+            resources/js/actions
+            resources/js/routes
+            resources/js/wayfinder
+            resources/js/generated
+          key: ${{ needs.build-assets.outputs.cache-key }}
+
+      - name: Build Storybook
+        run: npm run build:storybook --workspace=@craftcms/cp
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/craftcms-cp/storybook-static --project-name=craftcms-ui-storybook --branch=${{ needs.build-assets.outputs.deploy-branch }}
+
+  deploy-resources:
+    name: 'Deploy / resources'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build-assets
+    outputs:
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore install + build + generated cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/craftcms-cp/dist
+            packages/craftcms-garnish/dist
+            vendor
+            resources/js/actions
+            resources/js/routes
+            resources/js/wayfinder
+            resources/js/generated
+          key: ${{ needs.build-assets.outputs.cache-key }}
+
+      - name: Build Storybook
+        run: npm run build:storybook
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy storybook-static --project-name=craftcms-storybook --branch=${{ needs.build-assets.outputs.deploy-branch }}
+
+  # Single writer for the PR comment. Runs after both deploys (regardless of
+  # their result) and renders one comment covering both previews, so the two
+  # parallel jobs never race to create duplicate comments. Skipped entirely if
+  # the gate failed and neither deploy ran.
+  comment:
+    name: 'Comment preview URLs'
+    runs-on: ubuntu-latest
+    needs: [deploy-cp, deploy-resources]
+    if: ${{ always() && github.event_name == 'pull_request' && (needs.deploy-cp.result != 'skipped' || needs.deploy-resources.result != 'skipped') }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Create or update the preview comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- storybook-preview-comment -->';
+
+            // A link when the deploy succeeded and produced a URL, otherwise the
+            // job's result so a failed/cancelled deploy is visible in the comment.
+            const cell = (result, url) =>
+              result === 'success' && url ? `[Preview](${url})` : `⚠️ ${result}`;
+
+            const rows = [
+              ['@craftcms/cp', cell('${{ needs.deploy-cp.result }}', '${{ needs.deploy-cp.outputs.url }}')],
+              ['resources/js', cell('${{ needs.deploy-resources.result }}', '${{ needs.deploy-resources.outputs.url }}')],
+            ];
+
+            const body = [
+              marker,
+              '### 📚 Storybook previews',
+              '',
+              '| Storybook | Preview |',
+              '| --- | --- |',
+              ...rows.map(([name, value]) => `| ${name} | ${value} |`),
+            ].join('\n');
+
+            const {data: comments} = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
