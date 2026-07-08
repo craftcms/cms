@@ -14,13 +14,32 @@ import ProjectConfig from '@/modules/utilities/components/project-config/Project
 import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
-import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import {setTranslations} from '@craftcms/cp/utilities/translate';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
+import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
+
+/**
+ * Pages under these prefixes render outside the CP shell: auth screens wrap
+ * `<AuthBase/>` themselves and the installer is a standalone wizard.
+ */
+const shellLessPagePrefixes = ['auth/', 'install/'];
+
+/**
+ * The default Inertia layout. Pages that render `<AppLayout>` inline (to pass
+ * it props or fill its slots) opt out with `defineOptions({layout: []})`.
+ */
+function defaultPageLayout(name: string) {
+  if (shellLessPagePrefixes.some((prefix) => name.startsWith(prefix))) {
+    return null;
+  }
+
+  return AppLayout;
+}
 
 // Instantiate services
 const config = ConfigService.getInstance();
@@ -94,7 +113,7 @@ const Cp = {
 
     axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     axios.defaults.headers.common['X-CSRF-TOKEN'] =
-      this.$config.get('csrfToken');
+      this.$config.get('csrfTokenValue');
 
     console.groupCollapsed('Craft configuration');
     console.log(config.all().entries());
@@ -106,6 +125,7 @@ const Cp = {
 
     await createInertiaApp({
       resolve: (name) => resolveInertiaPage(name),
+      layout: defaultPageLayout,
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');

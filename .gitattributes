@@ -40,6 +40,9 @@
 # Ignore exporting the adapter as it will be split off and released on its own.
 /yii2-adapter export-ignore
 
+# Workbench is only for development
+/workbench export-ignore
+
 # Identify generated files
 /resources/translations/a*/app.php linguist-generated=true
 /resources/translations/c*/app.php linguist-generated=true

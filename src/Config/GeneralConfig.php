@@ -1617,13 +1617,14 @@ class GeneralConfig extends BaseConfig
      * - `enabled`: Whether the provider should be available. Defaults to `true`.
      * - `name`: A human-friendly provider name.
      * - `label`: The rendered button label.
+     * - `icon`: The control panel brand icon name.
      * - `scopes`: Additional Socialite scopes.
      * - `with`: Additional Socialite request parameters.
      * - `stateless`: Whether the provider should bypass Socialite state checks.
      * - `groups`: User group IDs, UIDs, or handles to assign to new users.
      * - `createsUsers`: Whether the provider may create new users when no existing account can be matched. Defaults to the public registration setting when `null` or omitted.
      * - `activatesUsers`: Whether matched or newly-created users should be activated automatically.
-     * - `trustsEmail`: Whether the provider is trusted to verify email ownership, allowing first-time matches to existing users by email. Defaults to `true` for known trusted providers and `false` otherwise.
+     * - `trustsEmail`: Whether the provider is trusted to verify email ownership, allowing first-time matches to existing users by email. Defaults to `false`.
      * - `identityResolver`: A custom identity resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
      * - `userResolver`: A custom linked-user resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
      * - `userPopulator`: A custom user populator class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\PopulatesOAuthUser`.

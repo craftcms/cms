@@ -4,7 +4,7 @@
   import {computed} from 'vue';
   import type {SelectItem, SelectOption, Site} from '@/common/types';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
-  import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
+  import {toHandle} from '@craftcms/cp/utilities/string';
   import useCraftData from '@/common/composables/useCraftData';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import {transformBooleanOptions} from '@/common/utils/transformBooleanOptions';

@@ -6,11 +6,12 @@
   import Text from '@/common/components/Text.vue';
   import {
     applyOverrideSettings,
+    create,
     renderOverrideSettings,
   } from '@actions/Settings/EntryTypesController';
   import type {SlideoutInstance} from '@/common/types/globals';
   import EntryTypeChip from '@/modules/entry-types/components/EntryTypeChip.vue';
-  import CreateEntryTypeButton from '@/modules/entry-types/components/CreateEntryTypeButton.vue';
+  import SlideoutButton from '@/common/components/SlideoutButton.vue';
   import {router} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
@@ -359,10 +360,14 @@
         </template>
       </div>
     </craft-action-menu>
-    <CreateEntryTypeButton
+    <SlideoutButton
       v-if="!readOnly"
+      :url="create['/{cpTrigger?}/settings/entry-types/new']().url"
       @success="router.reload({only: ['entryTypes']})"
-    />
+    >
+      <craft-icon name="plus" slot="prefix"></craft-icon>
+      {{ t('Create') }}
+    </SlideoutButton>
   </div>
 </template>
 

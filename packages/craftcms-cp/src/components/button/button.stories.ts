@@ -124,3 +124,35 @@ export const Loading: Story = {
     <craft-button ?loading="${args.loading}"> Submit </craft-button>
   `,
 };
+
+export const Links: Story = {
+  args: {},
+  render: () => html`
+    <div class="grid gap-4">
+      <div class="flex gap-2 items-center">
+        ${appearance.map(
+          (a) => html`
+            <craft-button appearance="${a}" href="#" variant="accent"
+              >${a} link</craft-button
+            >
+          `
+        )}
+      </div>
+      <div class="flex gap-2 items-center">
+        ${['zero', 'small', 'medium', 'large'].map(
+          (size) =>
+            html`<craft-button href="#" size="${size}">${size}</craft-button>`
+        )}
+      </div>
+      <div class="flex gap-2 items-center">
+        <craft-button href="https://craftcms.com" target="_blank"
+          >New tab</craft-button
+        >
+        <craft-button href="/file.zip" download="file.zip"
+          >Download</craft-button
+        >
+        <craft-button href="#" disabled>Disabled link</craft-button>
+      </div>
+    </div>
+  `,
+};
