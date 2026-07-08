@@ -211,51 +211,25 @@ jobs:
     needs: [deploy-cp, deploy-resources]
     if: ${{ always() && github.event_name == 'pull_request' && (needs.deploy-cp.result != 'skipped' || needs.deploy-resources.result != 'skipped') }}
     permissions:
+      contents: read
       pull-requests: write
     steps:
+      # Checkout so the comment script is on disk for github-script to require.
+      # Only the scripts directory is needed, so keep the checkout sparse.
+      - name: Checkout comment script
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
       - name: Create or update the preview comment
         uses: actions/github-script@v7
+        env:
+          CP_RESULT: ${{ needs.deploy-cp.result }}
+          CP_URL: ${{ needs.deploy-cp.outputs.url }}
+          RESOURCES_RESULT: ${{ needs.deploy-resources.result }}
+          RESOURCES_URL: ${{ needs.deploy-resources.outputs.url }}
         with:
           script: |
-            const marker = '<!-- storybook-preview-comment -->';
-
-            // A link when the deploy succeeded and produced a URL, otherwise the
-            // job's result so a failed/cancelled deploy is visible in the comment.
-            const cell = (result, url) =>
-              result === 'success' && url ? `[Preview](${url})` : `⚠️ ${result}`;
-
-            const rows = [
-              ['@craftcms/cp', cell('${{ needs.deploy-cp.result }}', '${{ needs.deploy-cp.outputs.url }}')],
-              ['resources/js', cell('${{ needs.deploy-resources.result }}', '${{ needs.deploy-resources.outputs.url }}')],
-            ];
-
-            const body = [
-              marker,
-              '### 📚 Storybook previews',
-              '',
-              '| Storybook | Preview |',
-              '| --- | --- |',
-              ...rows.map(([name, value]) => `| ${name} | ${value} |`),
-            ].join('\n');
-
-            const {data: comments} = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const existing = comments.find((c) => c.body.includes(marker));
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+            const run = require('./.github/scripts/storybook-preview-comment.cjs')
+            await run({github, context})

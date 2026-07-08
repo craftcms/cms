@@ -71,8 +71,7 @@
     "vue-tsc": "^3.2.7"
   },
   "optionalDependencies": {
-    "@awesome.me/kit-ddaed3f5c5": "^1.0.74",
-    "wrangler": "^4.108.0"
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.74"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.8.1",
