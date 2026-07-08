@@ -515,6 +515,66 @@ describe('enum comparison', function () {
     });
 });
 
+describe('re-entrancy', function () {
+    test('throws when a normalizer re-enters the array for the same key', function () {
+        $array = new MemoizableArray(
+            [['id' => 1]],
+            function (array $element) use (&$array) {
+                // Re-enters the same array for the same key while it is
+                // still being normalized
+                return $array->firstWhere('id', 1);
+            },
+        );
+
+        expect(fn () => $array->firstWhere('id', 1))->toThrow(
+            RuntimeException::class,
+            'normalizer re-entered itself while normalizing key "0"',
+        );
+    });
+
+    test('normalizer may re-enter the array for a different key', function () {
+        $array = new MemoizableArray(
+            [
+                ['id' => 1, 'partner' => 2],
+                ['id' => 2, 'partner' => 1],
+            ],
+            function (array $element) use (&$array) {
+                if ($element['id'] === 1) {
+                    $element['partnerName'] = 'resolved';
+                    // Looking up a different element mid-normalization is fine
+                    $array->count();
+                }
+
+                return $element;
+            },
+        );
+
+        $result = $array->firstWhere('id', 1);
+
+        expect($result['partnerName'])->toBe('resolved');
+    });
+
+    test('a key can be normalized again after its normalizer throws', function () {
+        $attempts = 0;
+        $array = new MemoizableArray(
+            [['id' => 1]],
+            function (array $element) use (&$attempts) {
+                $attempts++;
+
+                if ($attempts === 1) {
+                    throw new LogicException('first attempt fails');
+                }
+
+                return $element;
+            },
+        );
+
+        expect(fn () => $array->firstWhere('id', 1))->toThrow(LogicException::class);
+        expect($array->all())->toBe([['id' => 1]]);
+        expect($attempts)->toBe(2);
+    });
+});
+
 describe('edge cases', function () {
     test('empty array works with all operations', function () {
         $array = new MemoizableArray([]);
