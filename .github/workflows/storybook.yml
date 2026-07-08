@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 6.x
-      - feature/storybook-cloudflare # TEMPORARY: smoke-test pre-merge — remove before merging
     paths:
       - 'packages/craftcms-cp/**'
       - 'packages/craftcms-garnish/**'
