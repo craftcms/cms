@@ -1461,14 +1461,14 @@ class User extends Element implements IdentityInterface
             $keyValid = false;
         }
 
-        $updatedPublicKeyCredentialSource = Session::remove($authService->passkeyCredSourceParam);
+        $updatedCredentialRecord = Session::remove($authService->passkeyCredSourceParam);
 
         if (!$keyValid) {
             $this->handleInvalidLoginParam();
             return false;
         }
 
-        $authService->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedPublicKeyCredentialSource);
+        $authService->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedCredentialRecord);
 
         $this->authError = $this->_getAuthError();
         return !isset($this->authError);

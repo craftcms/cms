@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Updated web-auth/webauthn-lib to 5.3. ([#19226](https://github.com/craftcms/cms/issues/19226))
 - Fixed an error that could occur when running CLI commands. ([#19030](https://github.com/craftcms/cms/issues/19030))
 
 ## 5.10.9 - 2026-07-03
