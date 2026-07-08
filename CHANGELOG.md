@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where Laravel translation fallbacks weren’t applied when `translationDebugOutput` was enabled. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where custom plugin settings `FormRequest` classes could persist unvalidated settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where failed Craft API responses weren’t processing response headers. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where Craft plugin service providers could be skipped when the plugin’s Composer metadata also defined Laravel package discovery settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
+
 ## 6.0.0-alpha.11 - 2026-07-07
 
 - Users can now connect their accounts to one or more Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
