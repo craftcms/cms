@@ -1,6 +1,6 @@
 import {css} from 'lit';
-import {CraftInput} from '@src/index';
 import {property} from 'lit/decorators.js';
+import CraftInput from '@src/components/input/input.js';
 
 export default class CraftInputHandle extends CraftInput {
   static override get styles() {
