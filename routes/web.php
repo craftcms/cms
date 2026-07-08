@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 $routes = app(CraftRoutes::class);
 
 if (Edition::get()->registersFrontendUserRoutes()) {
-    if (Cms::config()->loginPath !== false) {
+    if (Cms::config()->getLoginPath() !== false) {
         Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
     }
 
