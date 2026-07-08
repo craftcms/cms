@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -114,7 +115,7 @@ readonly class TokensController extends GqlController
         }
 
         if (! $this->gql->saveToken($token)) {
-            return $this->asModelFailure($token, t('Couldn’t save token.'), 'token');
+            throw ValidationException::withMessages($token->errors()->getMessages());
         }
 
         return $this->asModelSuccess(
