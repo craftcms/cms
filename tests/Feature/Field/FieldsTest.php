@@ -6,6 +6,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Color;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
@@ -342,6 +343,100 @@ it('can hard delete a field layout by id', function () {
 
     expect(FieldLayoutModel::withTrashed()->find($layout->id))->toBeNull()
         ->and($this->fields->getLayoutById($layout->id))->toBeNull();
+});
+
+it('rejects saving a content block field whose nested layout references itself', function () {
+    // On a first save the field doesn't exist in the database yet, so the
+    // self-reference can't be caught by resolving the nested field by UID —
+    // the raw fieldUid has to be compared against the field's own uid.
+    $fieldUid = (string) Str::uuid();
+
+    $field = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Recursive Block',
+        'handle' => 'recursiveBlock',
+        'uid' => $fieldUid,
+        'settings' => [
+            'viewMode' => 'grouped',
+            'fieldLayouts' => [
+                (string) Str::uuid() => [
+                    'tabs' => [[
+                        'uid' => (string) Str::uuid(),
+                        'elements' => [[
+                            'type' => CustomFieldElement::class,
+                            'uid' => (string) Str::uuid(),
+                            'width' => 100,
+                            'required' => false,
+                            'fieldUid' => $fieldUid,
+                        ]],
+                    ]],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveField($field))->toBeFalse()
+        ->and($field->errors()->first('fieldLayout'))->toBe('Including a Content Block field recursively is not allowed.')
+        ->and(FieldModel::count())->toBe(0);
+});
+
+it('rejects re-saving a content block field with its own layout element added', function () {
+    $field = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Recursive Block',
+        'handle' => 'recursiveBlock',
+    ]);
+
+    expect($this->fields->saveField($field))->toBeTrue();
+
+    $field->setFieldLayouts([
+        (string) Str::uuid() => [
+            'tabs' => [[
+                'uid' => (string) Str::uuid(),
+                'elements' => [[
+                    'type' => CustomFieldElement::class,
+                    'uid' => (string) Str::uuid(),
+                    'fieldUid' => $field->uid,
+                ]],
+            ]],
+        ],
+    ]);
+
+    expect($this->fields->saveField($field))->toBeFalse()
+        ->and($field->errors()->first('fieldLayout'))->toBe('Including a Content Block field recursively is not allowed.');
+});
+
+it('allows nesting a different content block field', function () {
+    $innerField = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Inner Block',
+        'handle' => 'innerBlock',
+    ]);
+
+    expect($this->fields->saveField($innerField))->toBeTrue();
+
+    $outerField = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Outer Block',
+        'handle' => 'outerBlock',
+        'settings' => [
+            'fieldLayouts' => [
+                (string) Str::uuid() => [
+                    'tabs' => [[
+                        'uid' => (string) Str::uuid(),
+                        'elements' => [[
+                            'type' => CustomFieldElement::class,
+                            'uid' => (string) Str::uuid(),
+                            'fieldUid' => $innerField->uid,
+                        ]],
+                    ]],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveField($outerField))->toBeTrue()
+        ->and(FieldModel::count())->toBe(2);
 });
 
 it('can find field usages', function () {
