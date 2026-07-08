@@ -24,7 +24,7 @@
 <template>
   <AuthBase :title="title">
     <craft-set-password-form
-      :action="props.action"
+      :action="action"
       :uid="uid"
       :code="code"
       :initial-error="page.props.errors?.newPassword"

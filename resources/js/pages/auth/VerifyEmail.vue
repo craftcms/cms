@@ -5,7 +5,7 @@
   import AuthBase from '@/common/layouts/AuthBase.vue';
   import '@/modules/auth/components/verify-email/verify-email-form.js';
 
-  const props = defineProps<{
+  defineProps<{
     uid: string;
     code: string;
     action: string;
@@ -23,7 +23,7 @@
 <template>
   <AuthBase :title="t('Verify your email address')">
     <craft-verify-email-form
-      :action="props.action"
+      :action="action"
       :uid="uid"
       :code="code"
       :initial-error="initialError"

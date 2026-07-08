@@ -29,7 +29,7 @@
 <template>
   <AuthBase>
     <craft-login-form
-      :action="props.action"
+      :action="action"
       show-reset-password
       show-remember-me
       :username="page.props.username"
