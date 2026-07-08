@@ -45,10 +45,27 @@ async function sectionFor(preview, changed) {
   // A component "changed" if any changed file lives in the same directory as one
   // of this Storybook's story entries. Collapse the several entries per story
   // file down to one link per component, preferring the Docs page when present.
+  //
+  // Scope the changed-file matching to the relevant subtree so similarly-named
+  // directories elsewhere in the repo don't create false positives.
+  const baseDir =
+    preview.name === '@craftcms/cp'
+      ? 'packages/craftcms-cp'
+      : preview.name === 'resources/js'
+        ? 'resources/js'
+        : null;
+
+  const changedInScope = baseDir
+    ? changed
+        .filter((file) => file.startsWith(`${baseDir}/`))
+        .map((file) => file.slice(baseDir.length + 1))
+    : changed;
+
   const byImport = new Map();
   for (const entry of entries) {
+    if (!entry?.importPath) continue;
     const dir = dirOf(entry.importPath);
-    if (!dir || !changed.some((file) => file.includes(`${dir}/`))) continue;
+    if (!dir || !changedInScope.some((file) => file.startsWith(`${dir}/`))) continue;
     const current = byImport.get(entry.importPath);
     if (!current || (entry.type === 'docs' && current.type !== 'docs')) {
       byImport.set(entry.importPath, entry);
