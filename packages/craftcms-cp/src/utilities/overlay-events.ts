@@ -1,5 +1,7 @@
+// `opened` is `unknown` because Lion's JSDoc types it as the boxed `Boolean`;
+// runtime values are primitive booleans.
 type OverlayHost = HTMLElement & {
-  opened: boolean;
+  opened: unknown;
   updateComplete: Promise<boolean>;
 };
 
@@ -13,15 +15,16 @@ type OverlayHost = HTMLElement & {
  * root (e.g. `craft-info-icon` listening for its inner tooltip) receive them.
  */
 export function wireOverlayLifecycleEvents(host: OverlayHost): void {
-  let lastOpened = host.opened;
+  let lastOpened = Boolean(host.opened);
 
   host.addEventListener('opened-changed', () => {
-    if (host.opened === lastOpened) {
+    const opened = Boolean(host.opened);
+
+    if (opened === lastOpened) {
       return;
     }
 
-    lastOpened = host.opened;
-    const opened = host.opened;
+    lastOpened = opened;
 
     host.dispatchEvent(
       new CustomEvent(opened ? 'craft-show' : 'craft-hide', {

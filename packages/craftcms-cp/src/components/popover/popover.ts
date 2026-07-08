@@ -92,6 +92,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
 
   // Resolve the invoker: explicit anchor first, then `for`, then a slotted
   // `slot="invoker"` child.
+  // @ts-ignore Lion's JSDoc types this getter as always-defined.
   override get _overlayInvokerNode(): HTMLElement | undefined {
     if (this.anchor) {
       return this.anchor;

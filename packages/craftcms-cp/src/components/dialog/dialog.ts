@@ -96,8 +96,10 @@ export default class CraftDialog extends LionDialog {
     super();
     wireOverlayLifecycleEvents(this);
     this.addEventListener('opened-changed', () => {
-      if (this.openAttribute !== this.opened) {
-        this.openAttribute = this.opened;
+      // Lion's JSDoc types `opened` as boxed Boolean; coerce to primitive.
+      const opened = Boolean(this.opened);
+      if (this.openAttribute !== opened) {
+        this.openAttribute = opened;
       }
     });
   }

@@ -92,6 +92,7 @@ export default class CraftTooltip extends LionTooltip {
 
   // Resolve the external invoker via `for`, falling back to Lion's slotted
   // `slot="invoker"` child.
+  // @ts-ignore Lion's JSDoc types this getter as always-defined.
   override get _overlayInvokerNode(): HTMLElement | undefined {
     if (this.for) {
       // When disconnected, getRootNode() may return a root (the element
