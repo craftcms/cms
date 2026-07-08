@@ -20,7 +20,9 @@ use CraftCms\Cms\Http\Controllers\Assets\UploadController as AssetsUploadControl
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
+use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
+use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
@@ -131,6 +133,8 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);
+        Route::post('users/set-password', [SetPasswordController::class, 'store']);
+        Route::post('users/verify-email', [VerifyEmailController::class, 'store']);
         Route::any('users/session-info', [SessionInfoController::class, 'show'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);

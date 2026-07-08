@@ -3,13 +3,13 @@
   import {usePage} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
   import AuthBase from '@/common/layouts/AuthBase.vue';
-  import {attemptLogin} from '@actions/Auth/LoginController';
   import '@/modules/auth/components/login/login-form.js';
 
   const props = defineProps<{
     errors?: Record<string, string[]>;
     authFormData?: Record<string, string>;
     oauthLoginButtons?: string[];
+    action: string;
   }>();
 
   const oauthLoginButtonsHtml = computed(
@@ -29,7 +29,7 @@
 <template>
   <AuthBase>
     <craft-login-form
-      :action="attemptLogin().url"
+      :action="props.action"
       show-reset-password
       show-remember-me
       :username="page.props.username"
