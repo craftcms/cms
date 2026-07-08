@@ -211,3 +211,90 @@ describe('JS deduplication', () => {
     expect(parent.querySelector('#after-script')).not.toBeNull();
   });
 });
+
+describe('serializeFormInputs', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  test('serializes named inputs, selects, and textareas', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input name="a" value="1">
+        <textarea name="b">two</textarea>
+        <select name="c"><option value="3" selected>3</option></select>
+        <input value="no-name">
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'a=1&b=two&c=3'
+    );
+  });
+
+  test('reads live property values, not attributes', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `<div id="host"><input name="a" value="old"></div>`;
+    document.querySelector<HTMLInputElement>('[name=a]')!.value = 'new';
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe('a=new');
+  });
+
+  test('omits disabled controls and unchecked checkboxes/radios', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input name="a" value="1" disabled>
+        <input type="checkbox" name="b" value="1">
+        <input type="checkbox" name="c" value="1" checked>
+        <input type="radio" name="d" value="x">
+        <input type="radio" name="d" value="y" checked>
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'c=1&d=y'
+    );
+  });
+
+  test('omits buttons and file inputs', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input type="submit" name="a" value="Go">
+        <input type="button" name="b" value="Press">
+        <input type="file" name="c">
+        <input type="hidden" name="d" value="kept">
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'd=kept'
+    );
+  });
+
+  test('expands multi-selects into repeated params', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <select name="a[]" multiple>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+        </select>
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'a%5B%5D=1&a%5B%5D=3'
+    );
+  });
+
+  test('url-encodes namespaced names and values', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input name="types[PlainText][placeholder]" value="a b&c">
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'types%5BPlainText%5D%5Bplaceholder%5D=a+b%26c'
+    );
+  });
+});

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
-  import {actionClient, t, toHandle} from '@craftcms/cp';
+  import {actionClient, serializeFormInputs, t, toHandle} from '@craftcms/cp';
   import {computed, ref, watch} from 'vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
@@ -13,7 +13,6 @@
   import Pane from '@/common/components/Pane.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import {serializeFormInputs} from '@/common/utils/serializeFormInputs';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/FieldsController';
 
   interface FieldTypeOption {
