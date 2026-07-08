@@ -545,16 +545,6 @@ const ALL_COMPONENTS = [
     importPath: '../components/disclosure/disclosure',
   },
   {
-    tagName: 'craft-drawer',
-    className: 'CraftDrawer',
-    importPath: '../components/drawer/drawer',
-  },
-  {
-    tagName: 'craft-dropdown',
-    className: 'CraftDropdown',
-    importPath: '../components/dropdown/dropdown',
-  },
-  {
     tagName: 'craft-indicator',
     className: 'CraftIndicator',
     importPath: '../components/indicator/indicator',
