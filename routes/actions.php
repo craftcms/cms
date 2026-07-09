@@ -127,6 +127,7 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
             Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
         });
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
+        Route::post('users/login', [LoginController::class, 'attemptLogin']);
         Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);

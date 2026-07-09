@@ -31,6 +31,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\site_url;
 use function CraftCms\Cms\template;
 
 readonly class LoginController extends AuthenticationController
@@ -180,8 +181,6 @@ readonly class LoginController extends AuthenticationController
             return redirect(cp_url(CpAuthPath::Login->value));
         }
 
-        return $this->asSuccess(
-            redirect: $this->generalConfig->getPostLogoutRedirect(),
-        );
+        return redirect(site_url($this->generalConfig->getPostLogoutRedirect()));
     }
 }

@@ -69,7 +69,7 @@ class AuthServiceProvider extends ServiceProvider
                 return Cms::config()->cpTrigger.'/login';
             }
 
-            return Cms::config()->loginPath;
+            return Cms::config()->getLoginPath();
         });
 
         RedirectIfAuthenticated::redirectUsing(fn (Request $request) => URL::defaultReturnUrl());
