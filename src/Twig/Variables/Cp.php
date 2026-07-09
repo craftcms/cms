@@ -319,6 +319,14 @@ class Cp extends Component
         return FormFields::fieldHtml($input, $config);
     }
 
+    /**
+     * Renders a lightswitch's HTML from the legacy lightswitch variables.
+     */
+    public function lightswitch(array $config = []): string
+    {
+        return FormFields::lightswitchHtml($config);
+    }
+
     private function formatLegacySuggestions(array $options): array
     {
         return array_map(fn ($group) => [

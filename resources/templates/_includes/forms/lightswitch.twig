@@ -1,18 +1,12 @@
-{# Renders a <craft-switch> web component via the Lightswitch UI component,
-   accepting the legacy lightswitch variables:
+{# Renders a <craft-switch> web component from the legacy lightswitch
+   variables (`id`, `name`, `value`, `on`, `indeterminate`,
+   `indeterminateValue`, `small`, `disabled`, `label`, `onLabel`, `offLabel`,
+   `toggle`, `reverseToggle`, `labelledBy`/`labelId`, `describedBy`,
+   `containerAttributes` and an `attr` block).
 
-   - `id`, `name`, `value`, `on`, `indeterminate`, `indeterminateValue`
-   - `small`, `disabled`, `label`, `onLabel`, `offLabel`
-   - `toggle`, `reverseToggle` (Craft.FieldToggle target reveals)
-   - `labelledBy`/`labelId`, `describedBy`
-   - `containerAttributes` and an `attr` block (applied to the <craft-switch>
-     host; the legacy template applied them to the switch button)
-
-   Legacy semantics preserved: `label` is a fallback for `onLabel` (the
-   on-state label rendered beside the control), not a field label. The
-   visually-hidden state description ("Check for …. Uncheck for ….") is
-   rendered by the web component itself, so `descriptionId` is no longer
-   supported. #}
+   The legacy-to-component mapping lives in
+   FormFields::lightswitchFromConfig(); this template only handles the
+   Twig-specific concerns: the `attr` block and glue strictness. #}
 
 {# Glue strictness: legacy params that are no longer supported log a
    deprecation rather than being silently dropped. #}
@@ -25,20 +19,4 @@
   {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{{ ui('lightswitch', {
-  id: id ?? "lightswitch#{random()}",
-  on: on ?? false,
-  indeterminate: indeterminate ?? false,
-  value: value ?? '1',
-  indeterminateValue: indeterminateValue ?? '-',
-  size: (small ?? false) ? 'small' : null,
-  disabled: (disabled ?? false) ? true : false,
-  onLabel: onLabel ?? label ?? null,
-  offLabel: offLabel ?? null,
-  toggle: toggle ?? null,
-  reverseToggle: reverseToggle ?? null,
-  labelledBy: labelledBy ?? labelId ?? null,
-  describedBy: describedBy ?? null,
-  name: name ?? null,
-  attributes: containerAttributes,
-}) }}
+{{ craft.cp.lightswitch(_context)|raw }}
