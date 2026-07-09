@@ -327,6 +327,22 @@ class Cp extends Component
         return FormFields::lightswitchHtml($config);
     }
 
+    /**
+     * Renders a button's HTML from the legacy button variables.
+     */
+    public function button(array $config = []): string
+    {
+        return FormFields::buttonHtml($config);
+    }
+
+    /**
+     * Renders a button group's HTML from the legacy buttonGroup variables.
+     */
+    public function buttonGroup(array $config = []): string
+    {
+        return FormFields::buttonGroupHtml($config);
+    }
+
     private function formatLegacySuggestions(array $options): array
     {
         return array_map(fn ($group) => [

@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Cp;
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Enums\Size;
@@ -18,6 +20,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rules\RequiredIf;
@@ -148,12 +151,48 @@ readonly class FormFields
 
     public static function buttonHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/button', $config);
+        return self::buttonFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy button config surface onto the {@see Button} component.
+     * `spinner` is absorbed (the web component renders its own spinner when
+     * loading); the busy/failure/retry/success messages pass through as data
+     * attributes for the legacy submit JS.
+     */
+    private static function buttonFromConfig(array $config): Button
+    {
+        $label = $config['label'] ?? null;
+        $labelHtml = $config['labelHtml'] ?? null;
+        $readOnly = (bool) ($config['readOnly'] ?? false);
+
+        return Button::make()
+            ->id($config['id'] ?? null)
+            ->type($config['type'] ?? 'button')
+            ->label($labelHtml !== null ? new HtmlString((string) $labelHtml) : ($label !== null ? (string) $label : null))
+            ->icon($config['icon'] ?? null)
+            ->prefix(! isset($config['icon']) ? ($config['iconHtml'] ?? null) : null)
+            ->disabled((bool) ($config['disabled'] ?? $readOnly))
+            ->attributes(Arr::merge(
+                [
+                    'class' => array_merge(
+                        Html::explodeClass($config['class'] ?? []),
+                        array_filter([$readOnly ? 'read-only' : null]),
+                    ),
+                    'data' => array_filter([
+                        'busy-message' => $config['busyMessage'] ?? null,
+                        'failure-message' => $config['failureMessage'] ?? null,
+                        'retry-message' => $config['retryMessage'] ?? null,
+                        'success-message' => $config['successMessage'] ?? null,
+                    ]),
+                ],
+                $config['attributes'] ?? [],
+            ));
     }
 
     public static function buttonGroupHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/buttonGroup', $config);
+        return self::buttonGroupFromConfig($config)->toHtml();
     }
 
     public static function buttonGroupFieldHtml(array $config): string
@@ -161,7 +200,65 @@ readonly class FormFields
         $config['id'] ??= 'buttongroup'.mt_rand();
         $config['fieldset'] = true;
 
-        return self::fieldHtml('template:_includes/forms/buttonGroup', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::buttonGroupFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy buttonGroup config surface onto the {@see ButtonGroup}
+     * component, applying the group-level appearance/size defaults and the
+     * selected state to each option's button.
+     */
+    private static function buttonGroupFromConfig(array $config): ButtonGroup
+    {
+        $value = $config['value'] ?? null;
+        $appearance = $config['appearance'] ?? 'outline';
+        $size = $config['size'] ?? null;
+        $disabled = ($config['disabled'] ?? false) || ($config['static'] ?? false);
+
+        $buttons = [];
+
+        foreach (($config['options'] ?? []) as $key => $option) {
+            if (! is_array($option)) {
+                $option = ['label' => $option, 'value' => $key];
+            }
+
+            $optionValue = $option['value'] ?? null;
+            $selected = $optionValue !== null && $optionValue == $value;
+
+            $buttons[] = Button::make()
+                ->label(isset($option['labelHtml'])
+                    ? new HtmlString((string) $option['labelHtml'])
+                    : ($option['label'] ?? null))
+                ->icon($option['icon'] ?? null)
+                ->appearance($option['appearance'] ?? $appearance)
+                ->size($option['size'] ?? $size)
+                ->active($selected)
+                ->disabled($disabled)
+                ->attributes(Arr::merge(
+                    [
+                        'class' => Html::explodeClass($option['class'] ?? []),
+                        'value' => $optionValue,
+                        'data' => ['value' => $optionValue],
+                        'aria' => ['pressed' => $selected ? 'true' : 'false'],
+                    ],
+                    $option['attributes'] ?? [],
+                ));
+        }
+
+        return ButtonGroup::make()
+            ->id($config['id'] ?? 'button-group-'.mt_rand())
+            ->labelledBy($config['labelledBy'] ?? null)
+            ->name($config['name'] ?? null)
+            ->value($value !== null ? (string) $value : null)
+            ->disabled($disabled)
+            ->buttons($buttons)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     public static function checkboxFieldHtml(array $config): string
