@@ -70,10 +70,10 @@
         <div id="{{ $instructionsId }}" class="instructions">{!! $instructionsContent !!}</div>
     @endif
     @if ($tipContent)
-        @include('c::forms.field-notice', ['id' => $tipId, 'class' => 'notice', 'label' => t('Tip:'), 'content' => $tipContent])
+            @include('c::forms.field-notice', ['id' => $tipId, 'variant' => 'info', 'icon' => 'lightbulb', 'label' => t('Tip:'), 'content' => $tipContent])
     @endif
     @if ($warningContent)
-        @include('c::forms.field-notice', ['id' => $warningId, 'class' => 'warning', 'label' => t('Warning:'), 'content' => $warningContent])
+            @include('c::forms.field-notice', ['id' => $warningId, 'variant' => 'warning', 'icon' => '', 'label' => t('Warning:'), 'content' => $warningContent])
     @endif
     {!! $errorListHtml !!}
 </div>

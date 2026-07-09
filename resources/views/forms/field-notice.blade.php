@@ -7,9 +7,19 @@
      * output.
      *
      * @var string $id
-     * @var string $class 'notice' or 'warning'
+     * @var string $variant 'info' or 'warning'
+     * @var string $icon Icon to disply as a prefix
      * @var string $label Visually hidden prefix, e.g. t('Tip:')
      * @var string $content Pre-parsed markdown paragraph HTML
      */
 @endphp
-<p id="{{ $id }}" class="{{ $class }} has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">{!! $label !!} </span><span>{!! $content !!}</span></p>
+<craft-callout
+    id="{{ $id }}"
+    variant="{{ $variant }}"
+    @if($icon) icon="{{$icon}}" @endif
+    appearance="plain"
+    class="p-0 mt-1"
+>
+    <span class="visually-hidden">{!! $label !!} </span>
+    {!! $content !!}
+</craft-callout>
