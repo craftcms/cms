@@ -38,7 +38,7 @@ describe('attributes', function () {
             ->and($html)->toContain(' disabled');
     });
 
-    it('renders as a link with href, forcing the button type', function () {
+    it('renders as a link with href, dropping the type', function () {
         $html = Button::make()
             ->type('submit')
             ->href('https://craftcms.com', '_blank')
@@ -46,7 +46,7 @@ describe('attributes', function () {
 
         expect($html)->toContain('href="https://craftcms.com"')
             ->and($html)->toContain('target="_blank"')
-            ->and($html)->toContain('type="button"');
+            ->and($html)->not->toContain('type=');
     });
 
     it('renders the accessible name for icon-only buttons', function () {

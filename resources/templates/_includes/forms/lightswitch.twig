@@ -4,15 +4,9 @@
    `toggle`, `reverseToggle`, `labelledBy`/`labelId`, `describedBy`,
    `containerAttributes` and an `attr` block).
 
-   The legacy-to-component mapping lives in
-   FormFields::lightswitchFromConfig(); this template only handles the
-   Twig-specific concerns: the `attr` block and glue strictness. #}
-
-{# Glue strictness: legacy params that are no longer supported log a
-   deprecation rather than being silently dropped. #}
-{%- if descriptionId is defined %}
-  {% deprecated 'The `descriptionId` param of the lightswitch include is no longer supported. `<craft-switch>` renders and links its own state description.' %}
-{%- endif %}
+   The legacy-to-component mapping — and the deprecation of unsupported
+   legacy params — lives in FormFields::lightswitchFromConfig(); this
+   template only handles the `attr` block. #}
 
 {%- set containerAttributes = containerAttributes ?? {} %}
 {%- if block('attr') is defined %}

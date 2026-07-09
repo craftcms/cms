@@ -16,6 +16,7 @@ use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -150,6 +151,25 @@ readonly class FormFields
             ->toHtml();
     }
 
+    /**
+     * Logs deprecations for legacy config keys that the new UI components no
+     * longer support (or support with changed behavior). Keys that map
+     * faithfully onto the components don't warn.
+     *
+     * @param  array<string, string>  $messages  Key => what to use instead
+     */
+    private static function deprecateConfig(string $component, array $config, array $messages): void
+    {
+        foreach ($messages as $key => $message) {
+            if (array_key_exists($key, $config)) {
+                Deprecator::log(
+                    "$component-config-$key",
+                    "The `$key` $component config option $message",
+                );
+            }
+        }
+    }
+
     public static function buttonHtml(array $config): string
     {
         return self::buttonFromConfig($config)->toHtml();
@@ -163,6 +183,10 @@ readonly class FormFields
      */
     private static function buttonFromConfig(array $config): Button
     {
+        self::deprecateConfig('button', $config, [
+            'spinner' => 'has been deprecated. `<craft-button>` renders its own spinner while loading.',
+        ]);
+
         $label = $config['label'] ?? null;
         $labelHtml = $config['labelHtml'] ?? null;
         $readOnly = (bool) ($config['readOnly'] ?? false);
@@ -425,6 +449,10 @@ readonly class FormFields
      */
     private static function lightswitchFromConfig(array $config): Lightswitch
     {
+        self::deprecateConfig('lightswitch', $config, [
+            'descriptionId' => 'is no longer supported. `<craft-switch>` renders and links its own state description.',
+        ]);
+
         return Lightswitch::make()
             ->id($config['id'] ?? 'lightswitch'.mt_rand())
             ->on((bool) ($config['on'] ?? false))

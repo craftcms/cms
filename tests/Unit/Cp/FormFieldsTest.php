@@ -6,6 +6,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
@@ -97,6 +98,42 @@ describe('fieldHtml', function () {
     it('throws for invalid template paths', function () {
         expect(fn () => FormFields::fieldHtml('template:invalid/template.twig', []))
             ->toThrow(TemplateLoaderException::class);
+    });
+});
+
+describe('config deprecations', function () {
+    it('logs a deprecation for unsupported legacy config keys', function (string $method, array $config, string $needle) {
+        $logged = false;
+
+        $mock = Mockery::mock(Deprecator::class);
+        $mock->shouldReceive('log')
+            ->once()
+            ->withArgs(function (string $key, string $message) use (&$logged, $needle) {
+                $logged = true;
+
+                return str_contains($message, $needle);
+            });
+        app()->scoped(Deprecator::class, fn () => $mock);
+
+        FormFields::$method($config);
+
+        expect($logged)->toBeTrue();
+    })->with([
+        'lightswitch descriptionId' => ['lightswitchHtml', ['descriptionId' => 'custom'], 'descriptionId'],
+        'button spinner' => ['buttonHtml', ['label' => 'Save', 'spinner' => true], 'spinner'],
+    ]);
+
+    it('logs nothing for faithfully mapped configs', function () {
+        $mock = Mockery::mock(Deprecator::class);
+        $mock->shouldNotReceive('log');
+        app()->scoped(Deprecator::class, fn () => $mock);
+
+        FormFields::lightswitchHtml(['id' => 'ls', 'on' => true, 'label' => 'Enabled']);
+        FormFields::buttonHtml(['label' => 'Save', 'type' => 'submit', 'busyMessage' => 'Saving…']);
+        FormFields::checkboxHtml(['id' => 'cb', 'label' => 'Agree', 'checked' => true]);
+        FormFields::buttonGroupHtml(['options' => [['label' => 'A', 'value' => 'a']], 'static' => true]);
+
+        expect(true)->toBeTrue();
     });
 });
 
