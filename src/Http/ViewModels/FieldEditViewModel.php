@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Html\FieldHtml;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -33,7 +33,7 @@ class FieldEditViewModel extends ViewModel
      *     handle: string|null,
      *     instructions: string|null,
      *     searchable: bool,
-     *     type: class-string<Field>,
+     *     type: class-string<FieldInterface>,
      *     translationMethod: string,
      *     translationKeyFormat: string|null,
      * }
@@ -63,7 +63,7 @@ class FieldEditViewModel extends ViewModel
     }
 
     /** @return array<int, array{
-     *     value: class-string<Field>,
+     *     value: class-string<FieldInterface>,
      *     label: string,
      *     icon: string|null,
      *     id: string,
@@ -94,9 +94,7 @@ class FieldEditViewModel extends ViewModel
             $options[] = [
                 'value' => $class,
                 'label' => $name,
-                'icon' => $isCurrent && $this->field instanceof Iconic
-                    ? $this->field->getIcon()
-                    : $class::icon(),
+                'icon' => $isCurrent ? $this->field->getIcon() : $class::icon(),
                 'id' => Html::id($class),
                 'compatible' => $isCurrent || $compatibleFieldTypes->contains($class),
             ];
@@ -133,7 +131,7 @@ class FieldEditViewModel extends ViewModel
             : null;
     }
 
-    /** @return array<class-string<Field>, string[]> */
+    /** @return array<class-string<FieldInterface>, string[]> */
     public function supportedTranslationMethods(): array
     {
         $currentType = $this->typeClass();
@@ -181,8 +179,8 @@ class FieldEditViewModel extends ViewModel
     }
 
     /**
-     * @return class-string<Field> The type the field presents as — a missing
-     *                             field's expected type rather than MissingField itself.
+     * @return class-string<FieldInterface> The type the field presents as — a missing
+     *                                      field's expected type rather than MissingField itself.
      */
     private function typeClass(): string
     {
