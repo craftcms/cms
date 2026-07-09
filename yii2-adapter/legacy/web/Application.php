@@ -10,7 +10,6 @@ namespace craft\web;
 use craft\base\ApplicationTrait;
 use craft\errors\ExitException;
 use craft\helpers\App;
-use craft\helpers\FileHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -31,11 +30,8 @@ use IntlException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 use yii\base\Component;
-use yii\base\ErrorException;
-use yii\base\Exception;
 use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -90,10 +86,6 @@ class Application extends \yii\web\Application
         $this->_preInit();
 
         parent::init();
-
-        if (!app()->isEphemeral()) {
-            $this->ensureResourcePathExists();
-        }
 
         $this->_postInit();
 
@@ -378,24 +370,6 @@ class Application extends \yii\web\Application
         }
 
         return $component;
-    }
-
-    /**
-     * Ensures that the resources folder exists and is writable.
-     *
-     * @throws ErrorException
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
-    protected function ensureResourcePathExists(): void
-    {
-        $generalConfig = Cms::config();
-
-        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath);
-
-        if (!@FileHelper::createDirectory($resourceBasePath)) {
-            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
-        }
     }
 
     /**

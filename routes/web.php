@@ -17,26 +17,35 @@ use Illuminate\Support\Facades\Route;
 $routes = app(CraftRoutes::class);
 
 if (Edition::get()->registersFrontendUserRoutes()) {
-    if (Cms::config()->loginPath !== false) {
-        Route::get(Cms::config()->loginPath, [LoginController::class, 'showLogin']);
+    if (Cms::config()->getLoginPath() !== false) {
         Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
     }
 
-    if (Cms::config()->verifyEmailPath !== false) {
-        Route::get(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'show']);
-        Route::post(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'store']);
-    }
-
-    if (Cms::config()->setPasswordPath !== false) {
-        Route::get(Cms::config()->setPasswordPath, [SetPasswordController::class, 'show']);
-        Route::post(Cms::config()->setPasswordPath, [SetPasswordController::class, 'store']);
-    }
-
-    Route::middleware('auth')->group(function () {
-        if (Cms::config()->logoutPath !== false) {
-            Route::get(Cms::config()->logoutPath, [LoginController::class, 'logout']);
+    /*
+     * These paths can be localized per site, so a route is registered for every
+     * site's value. Changing them or the sites requires re-running `route:cache`
+     * on installs that cache routes.
+     */
+    if (Cms::isInstalled()) {
+        foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
+            Route::get($path, [LoginController::class, 'showLogin']);
+            Route::post($path, [LoginController::class, 'attemptLogin']);
         }
-    });
+
+        foreach ($routes->localizedConfigPaths('getVerifyEmailPath') as $path) {
+            Route::get($path, [VerifyEmailController::class, 'show']);
+            Route::post($path, [VerifyEmailController::class, 'store']);
+        }
+
+        foreach ($routes->localizedConfigPaths('getSetPasswordPath') as $path) {
+            Route::get($path, [SetPasswordController::class, 'show']);
+            Route::post($path, [SetPasswordController::class, 'store']);
+        }
+
+        foreach ($routes->localizedConfigPaths('getLogoutPath') as $path) {
+            Route::get($path, [LoginController::class, 'logout'])->middleware('auth');
+        }
+    }
 }
 
 if (OAuth::isAvailable()) {

@@ -13,10 +13,10 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Uid\Uuid;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAssertionResponseValidator;
+use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use Webauthn\PublicKeyCredentialSource;
 use Webauthn\TrustPath\EmptyTrustPath;
 
 use function Pest\Laravel\freezeSecond;
@@ -118,7 +118,7 @@ test('verifyPasskey persists the validated credential source', function () {
         rawId: 'test-credential-id',
         response: $authenticatorAssertionResponse,
     );
-    $publicKeyCredentialSource = PublicKeyCredentialSource::create(
+    $credentialRecord = CredentialRecord::create(
         publicKeyCredentialId: 'test-credential-id',
         type: 'public-key',
         transports: [],
@@ -147,18 +147,18 @@ test('verifyPasskey persists the validated credential source', function () {
         ->shouldReceive('findOneByCredentialId')
         ->once()
         ->with('test-credential-id', false)
-        ->andReturn($publicKeyCredentialSource);
+        ->andReturn($credentialRecord);
     $credentialRepository
         ->shouldReceive('saveCredentialSource')
         ->once()
-        ->with($publicKeyCredentialSource);
+        ->with($credentialRecord);
 
     $assertionResponseValidator = Mockery::mock(AuthenticatorAssertionResponseValidator::class);
     $assertionResponseValidator
         ->shouldReceive('check')
         ->once()
-        ->with($publicKeyCredentialSource, $authenticatorAssertionResponse, $requestOptions, 'localhost', $this->passkeys->passkeyUserEntity($this->user)->id)
-        ->andReturn($publicKeyCredentialSource);
+        ->with($credentialRecord, $authenticatorAssertionResponse, $requestOptions, 'localhost', $this->passkeys->passkeyUserEntity($this->user)->id)
+        ->andReturn($credentialRecord);
 
     $webauthnServer = Mockery::mock(WebauthnServer::class);
     $webauthnServer->shouldReceive('getSerializer')->andReturn($serializer);
