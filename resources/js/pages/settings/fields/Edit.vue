@@ -244,11 +244,18 @@
               {{ option.compatible ? option.label : `${option.label} ⚠` }}
             </option>
           </select>
-        </CraftSelect>
 
-        <p v-if="showTypeChangeWarning" class="warning with-icon">
-          {{ t('Changing this may result in data loss.') }}
-        </p>
+          <craft-callout
+            slot="after"
+            appearance="plain"
+            class="p-0"
+            icon="warning"
+            variant="danger"
+            v-if="showTypeChangeWarning"
+          >
+            {{ t('Changing this may result in data loss.') }}
+          </craft-callout>
+        </CraftSelect>
 
         <div v-if="missingFieldPlaceholder" v-html="missingFieldPlaceholder" />
 
