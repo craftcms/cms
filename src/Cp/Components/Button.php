@@ -156,7 +156,7 @@ class Button extends ViewComponent
 
         return [
             'id' => $this->getId(),
-            'type' => $this->evaluate($this->href) === null && $type !== 'button' ? $type : null,
+            'type' => $this->evaluate($this->href) === null ? $type : null,
             'variant' => $this->getVariant(),
             'appearance' => $this->getAppearance(),
             'size' => $this->getSize(),

@@ -24,8 +24,8 @@ describe('attributes', function () {
             ->and($html)->toContain('icon="trash"');
     });
 
-    it('omits the default button type and renders submit', function () {
-        expect(Button::make()->toHtml())->not->toContain('type=');
+    it('always renders an explicit type, since the web component defaults to submit', function () {
+        expect(Button::make()->toHtml())->toContain('type="button"');
 
         expect(Button::make()->type('submit')->toHtml())->toContain('type="submit"');
     });
@@ -38,7 +38,7 @@ describe('attributes', function () {
             ->and($html)->toContain(' disabled');
     });
 
-    it('renders as a link with href and drops the type', function () {
+    it('renders as a link with href, forcing the button type', function () {
         $html = Button::make()
             ->type('submit')
             ->href('https://craftcms.com', '_blank')
@@ -46,7 +46,7 @@ describe('attributes', function () {
 
         expect($html)->toContain('href="https://craftcms.com"')
             ->and($html)->toContain('target="_blank"')
-            ->and($html)->not->toContain('type=');
+            ->and($html)->toContain('type="button"');
     });
 
     it('renders the accessible name for icon-only buttons', function () {

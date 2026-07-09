@@ -36,6 +36,7 @@ it('renders the web component from the legacy buttonGroup variables', function (
 
     expect($html)->toContain('<craft-listbox>')
         ->and($html)->toContain('<craft-button-group id="bg" role="group">')
+        ->and(substr_count($html, 'type="button"'))->toBe(2)
         ->and($html)->toContain('appearance="outline"')
         ->and($html)->toContain('active="true"')
         ->and($html)->toContain('aria-pressed="true"')
