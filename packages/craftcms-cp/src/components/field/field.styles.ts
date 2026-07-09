@@ -1,0 +1,126 @@
+import {css} from 'lit';
+
+export default css`
+  :host {
+    position: relative;
+    display: block;
+  }
+
+  :host([hidden]) {
+    display: none;
+  }
+
+  /* Status badge (.field > .status-badge in the CP) */
+  .status-badge {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    width: 2px;
+    height: 100%;
+    cursor: help;
+    z-index: 1;
+    border-radius: 1px;
+  }
+
+  .status-badge.modified {
+    background-color: var(--blue-600, #2563eb);
+    box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
+  }
+
+  .status-badge.outdated {
+    background-color: var(--bg-pending, #c96a11);
+    box-shadow: 0 0 5px hsl(27deg 96% 61% / 15%);
+  }
+
+  /* Heading (.field > .heading in the CP) */
+  .heading {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    font-weight: bold;
+    margin-block-end: var(--c-spacing-xs, 0.25rem);
+  }
+
+  .heading .flex-grow {
+    flex: 1 0 0;
+  }
+
+  ::slotted([slot='label']) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .read-only-badge {
+    font-size: calc(11rem / 16);
+    font-weight: normal;
+    line-height: 1.45;
+    padding-block: 0;
+    padding-inline: 0.25em;
+    background-color: var(--gray-100, #e9ebec);
+    color: var(--gray-700, #3f4d5a);
+    border: 1px solid var(--border-hairline, hsl(211deg 20% 44% / 25%));
+    border-radius: var(--c-radius-sm, 3px);
+  }
+
+  /* Instructions (.field > .instructions in the CP) */
+  .form-field__help-text {
+    display: block;
+    margin-block-end: var(--c-spacing-xs, 0.3125rem);
+  }
+
+  .form-field__group-two .form-field__help-text {
+    margin-block: var(--c-spacing-xs, 0.3125rem) 0;
+  }
+
+  /* Input container (.field > .input in the CP) */
+  .input-group {
+    position: relative;
+  }
+
+  .input-group.ltr {
+    direction: ltr;
+  }
+
+  .input-group.rtl {
+    direction: rtl;
+  }
+
+  .input-group.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .input-group__container {
+    display: flex;
+  }
+
+  .input-group__input {
+    flex: 1;
+    display: flex;
+  }
+
+  .input-group__container > .input-group__input ::slotted(.form-control) {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: 100%;
+  }
+
+  /* Tip/warning notices (field-notice.blade.php renders these with p-0 mt-1) */
+  .field-notice {
+    padding: 0;
+    margin-block-start: var(--c-spacing-xs, 0.25rem);
+  }
+
+  /* Error styling hook, mirroring .field.has-errors / .input.errors */
+  :host([has-errors]) ::slotted([slot='input']) {
+    border-color: var(--c-color-danger-border-loud);
+  }
+
+  :host([has-errors]) .form-field__feedback {
+    color: var(--c-color-danger-on-normal);
+  }
+`;
