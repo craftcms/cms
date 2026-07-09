@@ -20,6 +20,7 @@ class ComponentRegistry
         'button' => Button::class,
         'button-group' => ButtonGroup::class,
         'callout' => Callout::class,
+        'checkbox' => Checkbox::class,
         'field' => Field::class,
         'field-group' => FieldGroup::class,
         'lightswitch' => Lightswitch::class,

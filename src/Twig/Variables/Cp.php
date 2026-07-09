@@ -343,6 +343,14 @@ class Cp extends Component
         return FormFields::buttonGroupHtml($config);
     }
 
+    /**
+     * Renders a checkbox's HTML from the legacy checkbox variables.
+     */
+    public function checkbox(array $config = []): string
+    {
+        return FormFields::checkboxHtml($config);
+    }
+
     private function formatLegacySuggestions(array $options): array
     {
         return array_map(fn ($group) => [

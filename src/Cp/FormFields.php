@@ -9,6 +9,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
+use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Enums\Size;
@@ -261,6 +262,11 @@ readonly class FormFields
             ));
     }
 
+    public static function checkboxHtml(array $config): string
+    {
+        return self::checkboxFromConfig($config)->toHtml();
+    }
+
     public static function checkboxFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkbox'.mt_rand();
@@ -272,7 +278,57 @@ readonly class FormFields
         // Don't pass along `label` since it's ambiguous
         unset($config['label']);
 
-        return self::fieldHtml('template:_includes/forms/checkbox', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::checkboxFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy checkbox config surface onto the {@see Checkbox}
+     * component. Legacy semantics preserved: `checkboxLabel` wins over
+     * `label`, aria-labelledby is suppressed when an `aria-label` is
+     * configured, and custom-option mode renders a text input for the value.
+     */
+    private static function checkboxFromConfig(array $config): Checkbox
+    {
+        $id = $config['id'] ?? 'checkbox'.mt_rand();
+        $labelId = $config['labelId'] ?? "$id-label";
+        $aria = Arr::merge($config['inputAttributes']['aria'] ?? [], $config['aria'] ?? []);
+        $custom = (bool) ($config['custom'] ?? false);
+
+        return Checkbox::make()
+            ->id($id)
+            ->labelId($labelId)
+            ->name($config['name'] ?? null)
+            ->value($config['value'] ?? 1)
+            ->checked((bool) ($config['checked'] ?? false))
+            ->autofocus((bool) ($config['autofocus'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->label($config['checkboxLabel'] ?? $config['label'] ?? null)
+            ->info($config['info'] ?? null)
+            ->icon($config['icon'] ?? null)
+            ->color($config['color'] ?? null)
+            ->custom($custom
+                ? self::textHtml([
+                    'value' => $config['value'] ?? null,
+                    'class' => 'small custom-option-input',
+                    'labelledBy' => $labelId,
+                ])
+                : null)
+            ->toggle($config['toggle'] ?? null)
+            ->reverseToggle($config['reverseToggle'] ?? null)
+            ->targetPrefix($config['targetPrefix'] ?? null)
+            ->labelledBy(empty($aria['label']) ? ($config['labelledBy'] ?? null) : null)
+            ->describedBy($config['describedBy'] ?? $aria['describedby'] ?? null)
+            ->inputAttributes(Arr::merge(
+                [
+                    'class' => Html::explodeClass($config['class'] ?? []),
+                    'aria' => $aria,
+                    'data' => $config['data'] ?? [],
+                ],
+                $config['inputAttributes'] ?? [],
+            ));
     }
 
     public static function checkboxSelectFieldHtml(array $config): string
