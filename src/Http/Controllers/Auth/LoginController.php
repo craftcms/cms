@@ -30,6 +30,7 @@ use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpFoundation\Response;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\site_url;
 use function CraftCms\Cms\template;
@@ -54,14 +55,14 @@ readonly class LoginController extends AuthenticationController
         );
 
         return $this->renderViewWithFallback(
-            cpTemplate: 'login',
-            data: [
-                'action' => action([self::class, 'attemptLogin']),
-                'oauthLoginButtons' => $oauthLoginButtons,
-            ],
             inertiaComponent: 'auth/Login',
             inertiaProps: [
                 'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
+                'oauthLoginButtons' => $oauthLoginButtons,
+                'action' => $request->isCpRequest() ? action([self::class, 'attemptLogin']) : action_url('users/login'),
+            ],
+            data: [
+                'action' => action([self::class, 'attemptLogin']),
                 'oauthLoginButtons' => $oauthLoginButtons,
             ],
         );
