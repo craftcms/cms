@@ -66,7 +66,7 @@ class Checkbox extends ViewComponent
 
     protected string|Closure|null $labelledBy = null;
 
-    protected string|Closure|null $describedBy = null;
+    protected string|Closure|bool|null $describedBy = null;
 
     /** @var array<string, mixed> Additional attributes for the native input. */
     protected array $inputAttributes = [];
@@ -187,7 +187,7 @@ class Checkbox extends ViewComponent
         return $this;
     }
 
-    public function describedBy(string|Closure|null $describedBy): static
+    public function describedBy(string|Closure|bool|null $describedBy): static
     {
         $this->describedBy = $describedBy;
 
@@ -291,11 +291,7 @@ class Checkbox extends ViewComponent
 
     protected function labelContentHtml(mixed $label): string
     {
-        $labelHtml = match (true) {
-            $label === null => '',
-            $label instanceof Htmlable => $label->toHtml(),
-            default => Html::encode((string) $label),
-        };
+        $labelHtml = $label === null ? '' : $this->renderContent($label);
 
         $icon = $this->evaluate($this->icon);
         $color = $this->evaluate($this->color);

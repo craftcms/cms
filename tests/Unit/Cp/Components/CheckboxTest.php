@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\Checkbox;
 use Illuminate\Support\HtmlString;
+use Twig\Markup;
 
 describe('input', function () {
     it('renders the slotted native input inside the web component', function () {
@@ -52,6 +53,12 @@ describe('label', function () {
         $html = Checkbox::make()->id('cb')->label('Tom & Jerry')->toHtml();
 
         expect($html)->toContain('<label slot="label" for="cb" id="cb-label">Tom &amp; Jerry</label>');
+    });
+
+    it('renders a Twig Markup label unencoded', function () {
+        $html = Checkbox::make()->id('cb')->label(new Markup('<b>All</b>', 'UTF-8'))->toHtml();
+
+        expect($html)->toContain('<label slot="label" for="cb" id="cb-label"><b>All</b></label>');
     });
 
     it('renders no label element without label content', function () {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Components\Field;
 use Illuminate\Support\HtmlString;
+use Twig\Markup;
 
 describe('attributes', function () {
     it('renders the tag with label and boolean attributes', function () {
@@ -99,6 +100,13 @@ describe('slots', function () {
         $html = Field::make()->label(new HtmlString('<span>Fancy</span>'))->toHtml();
 
         expect($html)->toContain('<span slot="label">Fancy</span>')
+            ->and($html)->not->toContain('label="');
+    });
+
+    it('renders a Twig Markup label into the label slot instead of the attribute', function () {
+        $html = Field::make()->label(new Markup('<b>All</b>', 'UTF-8'))->toHtml();
+
+        expect($html)->toContain('<b slot="label">All</b>')
             ->and($html)->not->toContain('label="');
     });
 

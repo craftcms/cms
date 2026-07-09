@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use Stringable;
+use Twig\Markup;
 
 use function CraftCms\Cms\t;
 
@@ -37,7 +38,7 @@ class Field extends ViewComponent
     use HasDisabled;
     use HasId;
 
-    protected string|Htmlable|ViewComponent|Closure|null $label = null;
+    protected string|Htmlable|Stringable|ViewComponent|Closure|null $label = null;
 
     protected string|Htmlable|Stringable|ViewComponent|Closure|null $input = null;
 
@@ -80,7 +81,7 @@ class Field extends ViewComponent
     }
 
     /** A string renders as the `label` attribute; markup or a component renders into the label slot. */
-    public function label(string|Htmlable|ViewComponent|Closure|null $label): static
+    public function label(string|Htmlable|Stringable|ViewComponent|Closure|null $label): static
     {
         $this->label = $label;
 
@@ -223,7 +224,8 @@ class Field extends ViewComponent
 
         return [
             'id' => $this->getId(),
-            'label' => is_string($label) || $label instanceof Stringable && ! $label instanceof Htmlable
+            'label' => is_string($label)
+            || ($label instanceof Stringable && ! $label instanceof Htmlable && ! $label instanceof Markup)
                 ? $label
                 : null,
             'required' => (bool) $this->evaluate($this->required),
@@ -250,7 +252,7 @@ class Field extends ViewComponent
         $errors = $this->evaluatedErrors();
 
         return implode('', array_filter([
-            $label instanceof Htmlable || $label instanceof ViewComponent
+            $label instanceof Htmlable || $label instanceof Markup || $label instanceof ViewComponent
                 ? $this->renderSlot('label', $label)
                 : '',
             $this->renderSlot('input', $this->trustedHtml($this->evaluate($this->input))),

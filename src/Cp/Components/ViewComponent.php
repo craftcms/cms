@@ -224,18 +224,27 @@ abstract class ViewComponent implements Htmlable, Stringable
             return $resolved->slot($name)->toHtml();
         }
 
-        // Twig `Markup` (e.g. `{% set %}` captures) is pre-escaped by Twig.
-        $rendered = match (true) {
-            $resolved instanceof Htmlable => $resolved->toHtml(),
-            $resolved instanceof Markup => (string) $resolved,
-            default => Html::encode((string) $resolved),
-        };
+        $rendered = $this->renderContent($resolved);
 
         if ($name === static::DEFAULT_SLOT) {
             return $rendered;
         }
 
         return $this->slotted($rendered, $name);
+    }
+
+    /**
+     * Renders a resolved content value to HTML: `Htmlable` passes through raw,
+     * Twig `Markup` (e.g. `{% set %}` captures) is pre-escaped by Twig, and
+     * anything else is treated as literal text and encoded.
+     */
+    protected function renderContent(mixed $resolved): string
+    {
+        return match (true) {
+            $resolved instanceof Htmlable => $resolved->toHtml(),
+            $resolved instanceof Markup => (string) $resolved,
+            default => Html::encode((string) $resolved),
+        };
     }
 
     /**
