@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where JSON fields weren’t JSON-decoding values saved via GraphQL mutations. ([#19230](https://github.com/craftcms/cms/issues/19230))
+
 ## 5.10.10 - 2026-07-08
 
 - Updated web-auth/webauthn-lib to 5.3. ([#19226](https://github.com/craftcms/cms/issues/19226))
