@@ -123,7 +123,7 @@ class GeneralMutationResolverTest extends TestCase
     public function testPopulatingElementWithData(array $contentFields, array $arguments): void
     {
         $entry = $this->make(Entry::class, [
-            'setFieldValue' => Expected::exactly(count($contentFields)),
+            'setFieldValueFromRequest' => Expected::exactly(count($contentFields)),
         ]);
 
         $this->resolver->setResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY, $contentFields);
