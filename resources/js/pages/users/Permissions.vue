@@ -87,80 +87,79 @@
     :value="form.permissions.join(',')"
   />
 
-  <Pane appearance="raised" :padding="0">
-    <div class="grid gap-6 p-4">
-      <section v-if="props.can.assignUserGroups" class="grid gap-3">
-        <h2 class="text-lg">{{ t('User Groups') }}</h2>
+  <Pane appearance="raised">
+    <craft-field-group v-if="props.can.assignUserGroups" class="grid gap-3">
+      <h2 class="text-lg m-0!">{{ t('User Groups') }}</h2>
 
-        <UserGroupSelect
-          :groups="props.groups"
-          :can-create="props.can.createGroups"
-          :error="form.errors.groups"
-          v-model="form.groups"
-        />
-      </section>
+      <UserGroupSelect
+        :groups="props.groups"
+        :can-create="props.can.createGroups"
+        :error="form.errors.groups"
+        v-model="form.groups"
+      />
+    </craft-field-group>
 
-      <hr
-        v-if="props.can.assignUserGroups && props.can.assignUserPermissions"
+    <hr
+      class="my-3"
+      v-if="props.can.assignUserGroups && props.can.assignUserPermissions"
+    />
+
+    <craft-field-group v-if="props.can.assignUserPermissions">
+      <h2 class="text-lg m-0!">{{ t('Permissions') }}</h2>
+
+      <CraftSwitch
+        v-if="props.showAdminSwitch"
+        :label="t('Admin')"
+        id="admin"
+        name="admin"
+        type="checkbox"
+        value="1"
+        v-model="form.admin"
+        :error="form.errors.admin"
       />
 
-      <section v-if="props.can.assignUserPermissions" class="grid gap-3">
-        <h2 class="text-lg">{{ t('Permissions') }}</h2>
-
-        <CraftSwitch
-          v-if="props.showAdminSwitch"
-          :label="t('Admin')"
-          id="admin"
-          name="admin"
-          type="checkbox"
-          value="1"
-          v-model="form.admin"
-          :error="form.errors.admin"
-        />
-
-        <craft-callout
-          v-if="props.teamPermissionsNotice && !form.admin"
-          data-color="info"
-        >
-          <template v-if="props.teamPermissionsNotice.allowAdminChanges">
-            {{ t('Team permissions can be managed from') }}
-            <CpLink
-              :href="props.teamPermissionsNotice.settingsUrl"
-              :inertia="false"
-            >
-              {{ t('User Permissions') }}
-            </CpLink>
-          </template>
-          <template v-else>
-            {{
-              t(
-                'Team permissions can be managed from {path} on a development environment.',
-                {
-                  path: props.teamPermissionsNotice.path.join(' -> '),
-                }
-              )
-            }}
-          </template>
-        </craft-callout>
-
-        <div v-if="!form.admin" class="grid gap-3">
-          <div
-            v-for="group in props.permissions"
-            :key="group.handle"
-            class="user-permissions"
+      <craft-callout
+        v-if="props.teamPermissionsNotice && !form.admin"
+        data-color="info"
+      >
+        <template v-if="props.teamPermissionsNotice.allowAdminChanges">
+          {{ t('Team permissions can be managed from') }}
+          <CpLink
+            :href="props.teamPermissionsNotice.settingsUrl"
+            :inertia="false"
           >
-            <PermissionList
-              :heading="group.heading"
-              :permissions="group.permissions"
-              :permission-keys="group.keys"
-              :locked-permissions="lockedPermissions"
-              :disabled="Boolean(props.teamPermissionsNotice)"
-              v-model="form.permissions"
-            />
-          </div>
+            {{ t('User Permissions') }}
+          </CpLink>
+        </template>
+        <template v-else>
+          {{
+            t(
+              'Team permissions can be managed from {path} on a development environment.',
+              {
+                path: props.teamPermissionsNotice.path.join(' -> '),
+              }
+            )
+          }}
+        </template>
+      </craft-callout>
+
+      <craft-field-group v-if="!form.admin">
+        <div
+          v-for="group in props.permissions"
+          :key="group.handle"
+          class="user-permissions"
+        >
+          <PermissionList
+            :heading="group.heading"
+            :permissions="group.permissions"
+            :permission-keys="group.keys"
+            :locked-permissions="lockedPermissions"
+            :disabled="Boolean(props.teamPermissionsNotice)"
+            v-model="form.permissions"
+          />
         </div>
-      </section>
-    </div>
+      </craft-field-group>
+    </craft-field-group>
   </Pane>
 
   <LayoutSlot v-if="props.details" name="details">

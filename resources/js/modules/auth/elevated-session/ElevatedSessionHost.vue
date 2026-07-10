@@ -2,16 +2,18 @@
   import {ConfigService} from '@craftcms/cp';
   import {releaseFocusWithin, trapFocusWithin} from '@craftcms/garnish';
   import {t} from '@craftcms/cp/utilities/translate';
-  import {nextTick, onBeforeUnmount, watch} from 'vue';
+  import {nextTick, onBeforeUnmount, useTemplateRef, watch} from 'vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import Modal from '@/common/components/Modal.vue';
   import Pane from '@/common/components/Pane.vue';
   import {elevatedSessionManager} from './manager';
   import '@/modules/auth/components/login/login-form.js';
+  import type CraftLoginForm from '@/modules/auth/components/login/login-form';
 
   const {state} = elevatedSessionManager;
   let previouslyFocused: HTMLElement | null = null;
   let dialog: Element | null = null;
+  const loginForm = useTemplateRef<CraftLoginForm | null>('loginForm');
 
   watch(
     () => state.active,
@@ -19,11 +21,7 @@
       if (active) {
         previouslyFocused = document.activeElement as HTMLElement | null;
         await nextTick();
-        document
-          .querySelector<HTMLElement>(
-            '[data-elevated-session-dialog] craft-login-form'
-          )
-          ?.focus();
+        loginForm.value?.focus();
       } else {
         if (dialog) {
           releaseFocusWithin(dialog);
@@ -59,36 +57,25 @@
 </script>
 
 <template>
-  <Modal :is-active="state.active" width="md" @close="close" @opened="opened">
+  <Modal :is-active="state.active" width="sm" @close="close" @opened="opened">
     <Pane
       data-elevated-session-dialog
       role="dialog"
       aria-modal="true"
       aria-labelledby="elevated-session-title"
       aria-describedby="elevated-session-description"
-      class="p-6"
     >
-      <div class="flex items-start gap-4 mb-5">
-        <div>
-          <h1 id="elevated-session-title" class="text-xl">
-            {{ t('Confirm your identity.') }}
-          </h1>
-          <p id="elevated-session-description">
-            {{ t('You must reverify your identity before proceeding.') }}
-          </p>
+      <div class="grid gap-2 mb-3">
+        <h1 id="elevated-session-title" class="m-0!">
+          {{ t('Confirm your identity.') }}
+        </h1>
+        <div id="elevated-session-description" class="text-md">
+          {{ t('You must reverify your identity before proceeding.') }}
         </div>
-        <craft-button
-          icon
-          appearance="plain"
-          type="button"
-          class="ml-auto"
-          @click="close"
-        >
-          <craft-icon name="xmark" :label="t('Cancel')"></craft-icon>
-        </craft-button>
       </div>
 
       <craft-login-form
+        ref="loginForm"
         tabindex="0"
         :action="ConfigService.getInstance().getCpUrl('login')"
         :static-email="state.loginName"
