@@ -61,7 +61,8 @@ import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/ElementTableSorter.js';
-import './js/ElevatedSessionForm.js';
+// ElevatedSessionForm ported to resources/js/modules/elevated-session (assigns
+// window.Craft.ElevatedSessionForm). The manager stays here.
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
 import './js/EntrySelectInput.js';

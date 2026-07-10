@@ -9,6 +9,7 @@
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import {useElevatedSession} from '@/common/composables/useElevatedSession';
   import {
     accessToken as revealAccessToken,
     generate,
@@ -58,6 +59,7 @@
     props.token.id ? update({tokenId: props.token.id}) : store();
 
   const {save} = useSettingsSave(form, routeAction);
+  const {requireElevatedSession} = useElevatedSession();
 
   useAppLayout({form, onSave: save});
 
@@ -72,11 +74,15 @@
     const tokenId = props.token.id;
 
     if (!visibleAccessToken.value && tokenId) {
-      (Craft as any).elevatedSessionManager.requireElevatedSession(async () => {
-        await revealToken(tokenId);
-        await nextTick();
-        await copyButton.value?.copyValue();
-      });
+      requireElevatedSession()
+        .then(async () => {
+          await revealToken(tokenId);
+          await nextTick();
+          await copyButton.value?.copyValue();
+        })
+        .catch(() => {
+          // Cancelled — leave the token hidden.
+        });
     }
   }
 

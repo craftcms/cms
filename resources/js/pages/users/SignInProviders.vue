@@ -8,6 +8,7 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Badge from '@/common/components/Badge.vue';
+  import {useElevatedSession} from '@/common/composables/useElevatedSession';
 
   defineOptions({
     inheritAttrs: false,
@@ -20,8 +21,13 @@
 
   const processingProvider = ref<string | null>(null);
 
+  const {requireElevatedSession: elevate} = useElevatedSession();
+
   function requireElevatedSession(onSuccess: () => void) {
-    (Craft as any).elevatedSessionManager.requireElevatedSession(onSuccess);
+    // Fire-and-forget: run the action once elevated, ignore a cancelled modal.
+    elevate()
+      .then(onSuccess)
+      .catch(() => {});
   }
 
   function connectProvider(provider: Provider) {

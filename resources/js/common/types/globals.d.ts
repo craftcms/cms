@@ -150,6 +150,17 @@ interface CraftStatic {
   FieldLayoutDesigner: {
     new (container: any, settings?: object): FieldLayoutDesignerInstance;
   };
+  ElevatedSessionForm: {
+    new (form: any, inputs?: string | string[]): unknown;
+  };
+  elevatedSessionManager: {
+    fetchingTimeout: boolean;
+    requireElevatedSession(
+      onSuccess: () => void,
+      onCancel?: () => void,
+      minSafeElevatedSessionTimeout?: number
+    ): void | Promise<void>;
+  };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

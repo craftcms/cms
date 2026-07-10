@@ -12,6 +12,7 @@ import './modules/listbox';
 import './modules/field-layout-designer';
 import './modules/editable-table';
 import './modules/generated-fields';
+import './modules/elevated-session';
 
 window.Cp = Cp;
 
