@@ -7,10 +7,11 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 
 /**
- * Radio group container — the PHP counterpart to the legacy
- * `_includes/forms/radioGroup` template. Renders {@see Radio} options, each
- * in its own wrapper; a single value posts under the shared name, so there is
- * no always-post hidden input.
+ * Radio group container — the PHP counterpart to the `<craft-radio-group>`
+ * web component (and to the legacy `_includes/forms/radioGroup` template).
+ * Renders {@see Radio} options, each in its own wrapper; a single value posts
+ * under the shared name, so there is no always-post hidden input. The web
+ * component adopts that shared name from the slotted radio inputs.
  *
  *     RadioGroup::make()
  *         ->id('mode')
@@ -27,7 +28,7 @@ class RadioGroup extends ChoiceGroup
 
     protected function tagName(): string
     {
-        return 'div';
+        return 'craft-radio-group';
     }
 
     /** Marks the group as a field toggle (reveals `{targetPrefix}{value}` containers). */

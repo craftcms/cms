@@ -12,9 +12,10 @@ it('renders radios from the legacy radioGroup variables', function () {
         templateMode: TemplateMode::Cp,
     );
 
-    expect($html)->toContain('class="radio-group"')
+    expect($html)->toContain('<craft-radio-group')
+        ->and($html)->toContain('class="radio-group"')
         ->and($html)->toContain('id="g"')
-        ->and(substr_count($html, '<craft-radio'))->toBe(2)
+        ->and(substr_count($html, '</craft-radio>'))->toBe(2)
         ->and(substr_count($html, ' checked'))->toBe(1) // input of the checked option
         ->and($html)->toContain('value="manual" checked')
         ->and($html)->not->toContain('type="hidden"');
