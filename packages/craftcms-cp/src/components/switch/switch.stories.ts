@@ -1,6 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {ifDefined} from 'lit/directives/if-defined.js';
 
 import './switch.js';
 
@@ -14,14 +15,31 @@ const meta = {
     disabled: false,
     checked: false,
     labelSrOnly: false,
+    onLabel: undefined,
+    offLabel: undefined,
   },
   argTypes: {
     size: {
       control: 'select',
       options: ['small', 'medium'],
     },
+    onLabel: {
+      control: 'text',
+    },
+    offLabel: {
+      control: 'text',
+    },
   },
-  render: ({label, helpText, size, disabled, checked, labelSrOnly}) => {
+  render: ({
+    label,
+    helpText,
+    size,
+    disabled,
+    checked,
+    labelSrOnly,
+    onLabel,
+    offLabel,
+  }) => {
     return html`<craft-switch
       label=${label}
       help-text=${helpText}
@@ -29,6 +47,8 @@ const meta = {
       ?disabled=${disabled}
       ?checked=${checked}
       ?label-sr-only=${labelSrOnly}
+      on-label=${ifDefined(onLabel || undefined)}
+      off-label=${ifDefined(offLabel || undefined)}
     ></craft-switch>`;
   },
 } satisfies Meta<any>;
@@ -78,4 +98,17 @@ export const LabelSrOnly: Story = {
   args: {
     labelSrOnly: true,
   },
+};
+
+export const MultipleLabels: Story = {
+  args: {
+    onLabel: 'On',
+    offLabel: 'Off',
+  },
+};
+
+export const Indeterminate: Story = {
+  render: () => html`
+    <craft-switch label="Mixed state" indeterminate></craft-switch>
+  `,
 };
