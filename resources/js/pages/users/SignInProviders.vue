@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {h, ref} from 'vue';
-  import {router, usePage} from '@inertiajs/vue3';
+  import {router, useHttp, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import Pane from '@/common/components/Pane.vue';
   import {connect, destroy} from '@actions/Users/SignInProvidersController';
@@ -8,7 +8,7 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Badge from '@/common/components/Badge.vue';
-  import {useElevatedSession} from '@/common/composables/useElevatedSession';
+  import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 
   defineOptions({
     inheritAttrs: false,
@@ -18,29 +18,36 @@
     usePage<CraftCms.Cms.Http.ViewModels.UserSignInProvidersViewModel>();
 
   type Provider = (typeof page.props.providers)[number];
+  type ConnectResponse = {url: string};
 
   const processingProvider = ref<string | null>(null);
+  const connectRequest = useHttp<Record<string, never>, ConnectResponse>({});
+  const disconnectRequest = useHttp<
+    Record<string, never>,
+    Record<string, unknown>
+  >({});
 
-  const {requireElevatedSession: elevate} = useElevatedSession();
-
-  function requireElevatedSession(onSuccess: () => void) {
-    // Fire-and-forget: run the action once elevated, ignore a cancelled modal.
-    elevate()
-      .then(onSuccess)
-      .catch(() => {});
-  }
-
-  function connectProvider(provider: Provider) {
+  async function connectProvider(provider: Provider) {
     if (!provider.canConnect) {
       return;
     }
 
-    requireElevatedSession(() => {
-      window.location.href = connect({provider: provider.handle}).url;
-    });
+    processingProvider.value = provider.handle;
+
+    try {
+      const response = await elevatedSessionManager.run(() =>
+        connectRequest.post(connect({provider: provider.handle}).url)
+      );
+
+      if (response) {
+        window.location.href = response.url;
+      }
+    } finally {
+      processingProvider.value = null;
+    }
   }
 
-  function disconnectProvider(provider: Provider) {
+  async function disconnectProvider(provider: Provider) {
     if (!provider.connected) {
       return;
     }
@@ -49,16 +56,19 @@
       return;
     }
 
-    requireElevatedSession(() => {
-      processingProvider.value = provider.handle;
+    processingProvider.value = provider.handle;
 
-      router.delete(destroy({provider: provider.handle}), {
-        preserveScroll: true,
-        onFinish: () => {
-          processingProvider.value = null;
-        },
-      });
-    });
+    try {
+      const response = await elevatedSessionManager.run(() =>
+        disconnectRequest.delete(destroy({provider: provider.handle}).url)
+      );
+
+      if (response) {
+        router.reload();
+      }
+    } finally {
+      processingProvider.value = null;
+    }
   }
 
   const columnHelper = createCraftColumnHelper<Provider>();
@@ -106,6 +116,7 @@
                   provider: row.original.name,
                 }),
                 disabled: !row.original.canConnect,
+                loading: processingProvider.value === row.original.handle,
                 onclick: () => connectProvider(row.original),
               },
               t('Connect')

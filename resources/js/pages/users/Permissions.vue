@@ -28,6 +28,9 @@
     groups: props.currentGroupIds,
     permissions: props.directPermissions,
   });
+  const initialAdmin = form.admin;
+  const initialGroups = new Set(form.groups);
+  const initialPermissions = new Set(form.permissions);
 
   const routeAction = () =>
     props.user.isCurrent
@@ -37,7 +40,14 @@
         });
 
   const {save} = useSettingsSave(form, routeAction, {
-    elevatedFields: ['admin', 'groups', 'permissions'],
+    passwordConfirmation: {
+      required: ({admin, groups, permissions}) =>
+        admin !== initialAdmin ||
+        groups.length !== initialGroups.size ||
+        groups.some((group) => !initialGroups.has(group)) ||
+        permissions.length !== initialPermissions.size ||
+        permissions.some((permission) => !initialPermissions.has(permission)),
+    },
   });
 
   const lockedPermissions = computed(() => [
@@ -77,26 +87,25 @@
     :value="form.permissions.join(',')"
   />
 
-  <Pane appearance="raised">
-    <section v-if="props.can.assignUserGroups">
-      <h2 class="text-lg">{{ t('User Groups') }}</h2>
+  <Pane appearance="raised" :padding="0">
+    <div class="grid gap-6 p-4">
+      <section v-if="props.can.assignUserGroups" class="grid gap-3">
+        <h2 class="text-lg">{{ t('User Groups') }}</h2>
 
-      <UserGroupSelect
-        :groups="props.groups"
-        :can-create="props.can.createGroups"
-        :error="form.errors.groups"
-        v-model="form.groups"
+        <UserGroupSelect
+          :groups="props.groups"
+          :can-create="props.can.createGroups"
+          :error="form.errors.groups"
+          v-model="form.groups"
+        />
+      </section>
+
+      <hr
+        v-if="props.can.assignUserGroups && props.can.assignUserPermissions"
       />
-    </section>
 
-    <hr
-      class="my-3"
-      v-if="props.can.assignUserGroups && props.can.assignUserPermissions"
-    />
-
-    <section v-if="props.can.assignUserPermissions">
-      <craft-field-group>
-        <h2 class="text-lg !m-0">{{ t('Permissions') }}</h2>
+      <section v-if="props.can.assignUserPermissions" class="grid gap-3">
+        <h2 class="text-lg">{{ t('Permissions') }}</h2>
 
         <CraftSwitch
           v-if="props.showAdminSwitch"
@@ -150,8 +159,8 @@
             />
           </div>
         </div>
-      </craft-field-group>
-    </section>
+      </section>
+    </div>
   </Pane>
 
   <LayoutSlot v-if="props.details" name="details">

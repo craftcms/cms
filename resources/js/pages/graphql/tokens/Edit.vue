@@ -9,7 +9,6 @@
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import {useElevatedSession} from '@/common/composables/useElevatedSession';
   import {
     accessToken as revealAccessToken,
     generate,
@@ -17,6 +16,7 @@
     update,
   } from '@actions/Gql/TokensController';
   import {useForm, useHttp} from '@inertiajs/vue3';
+  import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 
   type TokenData = Pick<
     CraftCms.Cms.Gql.Data.GqlToken,
@@ -58,8 +58,9 @@
   const routeAction = () =>
     props.token.id ? update({tokenId: props.token.id}) : store();
 
-  const {save} = useSettingsSave(form, routeAction);
-  const {requireElevatedSession} = useElevatedSession();
+  const {save} = useSettingsSave(form, routeAction, {
+    passwordConfirmation: {required: () => true},
+  });
 
   useAppLayout({form, onSave: save});
 
@@ -74,15 +75,11 @@
     const tokenId = props.token.id;
 
     if (!visibleAccessToken.value && tokenId) {
-      requireElevatedSession()
-        .then(async () => {
-          await revealToken(tokenId);
-          await nextTick();
-          await copyButton.value?.copyValue();
-        })
-        .catch(() => {
-          // Cancelled — leave the token hidden.
-        });
+      await elevatedSessionManager.run(async () => {
+        await revealToken(tokenId);
+        await nextTick();
+        await copyButton.value?.copyValue();
+      });
     }
   }
 

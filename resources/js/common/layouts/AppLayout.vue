@@ -15,6 +15,7 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import UserMenu from '@/common/components/UserMenu.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
+  import ElevatedSessionHost from '@/modules/auth/elevated-session/ElevatedSessionHost.vue';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
@@ -396,6 +397,7 @@
   </div>
 
   <DebugPanel v-if="debug" :data="debug" />
+  <ElevatedSessionHost />
 </template>
 
 <style scoped lang="css">
