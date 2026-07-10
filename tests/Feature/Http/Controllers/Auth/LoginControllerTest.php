@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Auth\Events\Failed;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -311,7 +313,10 @@ test('login routes are registered for localized loginPath values', function () {
 
     Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
 
+    $route = Route::getRoutes()->match(Request::create('/aanmelden', 'POST'));
     $user = User::findOne();
+
+    expect($route->middleware())->toContain('throttle:'.LoginRateLimiter::NAME);
 
     postJson('/aanmelden', [
         'loginName' => $user->email,

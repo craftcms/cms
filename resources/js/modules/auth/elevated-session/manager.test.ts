@@ -38,16 +38,30 @@ describe('ElevatedSessionManager', () => {
         resolveFirst = resolve;
       }
     );
+    let resolveSecond!: (response: {
+      confirmed: boolean;
+      timeout: number;
+    }) => void;
+    const secondResponse = new Promise<{confirmed: boolean; timeout: number}>(
+      (resolve) => {
+        resolveSecond = resolve;
+      }
+    );
     const request = vi
       .fn()
       .mockReturnValueOnce(firstResponse)
-      .mockResolvedValueOnce({confirmed: true, timeout: 30});
+      .mockReturnValueOnce(secondResponse);
     const manager = new ElevatedSessionManager(request);
 
     const first = manager.require({minimumRemainingSeconds: 10});
     await Promise.resolve();
     const second = manager.require({minimumRemainingSeconds: 30});
     resolveFirst({confirmed: true, timeout: 10});
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(manager.state.checking).toBe(true);
+    resolveSecond({confirmed: true, timeout: 30});
 
     await expect(Promise.all([first, second])).resolves.toEqual([true, true]);
     expect(request).toHaveBeenNthCalledWith(1, {

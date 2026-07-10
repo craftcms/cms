@@ -57,7 +57,10 @@
     passwordConfirmation: {
       required: ({permissions}) =>
         !props.brandNew &&
-        permissions.some((permission) => !initialPermissions.has(permission)),
+        (permissions.length !== initialPermissions.size ||
+          permissions.some(
+            (permission) => !initialPermissions.has(permission)
+          )),
     },
   });
 

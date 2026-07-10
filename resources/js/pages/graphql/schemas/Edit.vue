@@ -57,6 +57,7 @@
   const {save} = useSettingsSave(form, routeAction, {
     passwordConfirmation: {
       required: ({permissions}) =>
+        permissions.length !== initialPermissions.size ||
         permissions.some((permission) => !initialPermissions.has(permission)),
     },
   });

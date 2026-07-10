@@ -126,7 +126,7 @@ export class ElevatedSessionManager {
       }
 
       if (response.confirmed) {
-        return this.checkConfirmation();
+        return await this.checkConfirmation();
       }
 
       this.mutableState.loginName = response.loginName ?? '';

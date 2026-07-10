@@ -56,10 +56,6 @@
     dialog = element;
     trapFocusWithin(element);
   }
-
-  function initializeAlternativeLoginMethods(element: HTMLElement): void {
-    Craft.initUiElements(element);
-  }
 </script>
 
 <template>
@@ -105,7 +101,6 @@
           v-if="state.alternativeLoginMethods"
           slot="alternative-methods"
           :fragment="state.alternativeLoginMethods"
-          @rendered="initializeAlternativeLoginMethods"
         />
       </craft-login-form>
     </Pane>
