@@ -15,6 +15,12 @@ export default css`
     width: fit-content;
   }
 
+  /* Stop the input chrome from flexing back out to the available space. */
+  :host([has-maxlength]:not([width='full'])) .input-group__input,
+  :host([width='auto']) .input-group__input {
+    flex: 0 0 auto;
+  }
+
   :host([hidden]) {
     display: none;
   }
