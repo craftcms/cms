@@ -57,11 +57,11 @@ readonly class TemplateGlobals
             'language' => app()->getLocale(),
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
-            'loginUrl' => $this->generalConfig->loginPath !== false
-                ? Url::siteUrl($this->generalConfig->getLoginPath())
+            'loginUrl' => is_string($loginPath = $this->generalConfig->getLoginPath())
+                ? Url::siteUrl($loginPath)
                 : null,
-            'logoutUrl' => $this->generalConfig->logoutPath !== false
-                ? Url::siteUrl($this->generalConfig->getLogoutPath())
+            'logoutUrl' => is_string($logoutPath = $this->generalConfig->getLogoutPath())
+                ? Url::siteUrl($logoutPath)
                 : null,
             'setPasswordUrl' => $setPasswordRequestPath !== null ? Url::siteUrl($setPasswordRequestPath) : null,
             'now' => now(),

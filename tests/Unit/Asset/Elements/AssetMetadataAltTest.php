@@ -116,7 +116,7 @@ function createAssetMetadataAltJpegBytes(): string
     ob_start();
     imagejpeg($image);
 
-    return (string) ob_get_clean();
+    return ob_get_clean();
 }
 
 function createAssetMetadataAltTempJpeg(string $contents): string

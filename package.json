@@ -40,9 +40,9 @@
     "node": ">=22"
   },
   "devDependencies": {
+    "@craftcms/garnish": "file:packages/craftcms-garnish",
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
-    "@craftcms/garnish": "file:packages/craftcms-garnish",
     "@laravel/vite-plugin-wayfinder": "^0.1.7",
     "@playwright/test": "^1.59.1",
     "@storybook/addon-a11y": "^10.4.1",

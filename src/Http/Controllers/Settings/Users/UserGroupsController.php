@@ -17,6 +17,7 @@ use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -127,7 +128,7 @@ class UserGroupsController extends BaseUserSettingsController
         $isNewGroup = ! $group->id;
 
         if (! $this->userGroups->saveGroup($group)) {
-            return $this->asModelFailure($group, t('Couldn’t save group.'), 'group');
+            throw ValidationException::withMessages($group->errors()->getMessages());
         }
 
         $permissions = $request->array('permissions');

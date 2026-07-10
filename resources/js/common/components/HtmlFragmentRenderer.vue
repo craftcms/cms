@@ -94,6 +94,12 @@
       if (currentRunId === runId) {
         emit('rendered', element);
       }
+
+      // Upgrade legacy UI elements (lightswitches, field toggles, menus, …)
+      // the same way CpScreenSlideout does after injecting fragment content.
+      if (html) {
+        (window as any).Craft?.initUiElements?.(element);
+      }
     },
     {immediate: true}
   );

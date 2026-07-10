@@ -11,6 +11,9 @@ concurrency:
   group: laravel-ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   pint:
     name: 'Code Quality / Pint'
@@ -101,7 +104,7 @@ jobs:
 
       - name: Install composer dependencies
         uses: ramsey/composer-install@v3
-      
+
       - name: PHPStan Cache
         uses: actions/cache@v4
         with:

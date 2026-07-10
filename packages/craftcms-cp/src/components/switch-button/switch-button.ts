@@ -1,7 +1,27 @@
 import {LionSwitchButton} from '@lion/ui/switch.js';
-import {css} from 'lit';
+import {css, type PropertyValues} from 'lit';
+import {property} from 'lit/decorators.js';
 
 export default class CraftSwitchButton extends LionSwitchButton {
+  /**
+   * Display-only mixed state (thumb centered, `aria-checked="mixed"`).
+   * State transitions are managed by `craft-switch`.
+   */
+  @property({type: Boolean, reflect: true}) indeterminate = false;
+
+  override updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    if (
+      changedProperties.has('indeterminate') ||
+      changedProperties.has('checked')
+    ) {
+      this.setAttribute(
+        'aria-checked',
+        this.checked ? 'true' : this.indeterminate ? 'mixed' : 'false'
+      );
+    }
+  }
+
   static override get styles() {
     return [
       ...super.styles,
@@ -45,6 +65,11 @@ export default class CraftSwitchButton extends LionSwitchButton {
           background-color: var(--c-switch-thumb-fill, var(--c-surface-raised));
           inset-block-start: calc(var(--c-switch-thumb-offset) / 2);
           inset-inline-start: calc(var(--c-switch-thumb-offset) / 2);
+          inset-inline-end: auto;
+        }
+
+        :host([indeterminate]:not([checked])) .switch-button__thumb {
+          inset-inline-start: calc(50% - (var(--c-switch-thumb-height) / 2));
           inset-inline-end: auto;
         }
 
