@@ -145,6 +145,7 @@ readonly class FormFields
             ->headingSuffix($config['headingSuffix'] ?? null)
             ->labelExtra($labelExtra !== '' ? $labelExtra : null)
             ->input($input)
+            ->width($config['width'] ?? null)
             ->attributes(Arr::merge(
                 [
                     'class' => array_merge(array_filter([
@@ -204,6 +205,17 @@ readonly class FormFields
         $label = $config['label'] ?? null;
         $labelHtml = $config['labelHtml'] ?? null;
         $readOnly = (bool) ($config['readOnly'] ?? false);
+        $size = Size::tryFrom($config['size'] ?? '');
+        $classArray = Html::explodeClass($config['class'] ?? []);
+
+        if (! $size && in_array('small', $classArray)) {
+            $size = Size::Small;
+            // Remove the small class
+            Arr::forget($classArray, 'small');
+            self::deprecateConfig('button', $config, [
+                'class.small' => 'has been deprecated. Use size="small" instead.',
+            ]);
+        }
 
         return Button::make()
             ->id($config['id'] ?? null)
@@ -212,6 +224,8 @@ readonly class FormFields
             ->icon($config['icon'] ?? null)
             ->prefix(! isset($config['icon']) ? ($config['iconHtml'] ?? null) : null)
             ->disabled((bool) ($config['disabled'] ?? $readOnly))
+            ->size($size)
+            ->appearance($config['appearance'] ?? null)
             ->attributes(Arr::merge(
                 [
                     'class' => array_merge(
@@ -692,6 +706,7 @@ readonly class FormFields
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] ??= 'editabletable'.mt_rand();
+        $config['width'] ??= 'full';
 
         return self::fieldHtml('template:_includes/forms/editableTable', $config);
     }

@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Html;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -41,13 +42,15 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
     #[Override]
     public function getSettingsHtml(): string
     {
-        return parent::getSettingsHtml().
+        return Html::beginTag('craft-field-group').
+            parent::getSettingsHtml().
             FormFields::lightswitchFieldHtml([
                 'label' => t('Icons only'),
                 'instructions' => t('Whether buttons should only show their icons, hiding their text labels.'),
                 'name' => 'iconsOnly',
                 'on' => $this->iconsOnly,
-            ]);
+            ]).
+            Html::endTag('craft-field-group');
     }
 
     #[Override]

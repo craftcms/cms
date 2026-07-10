@@ -62,6 +62,8 @@ class Field extends ViewComponent
 
     protected bool|Closure $readOnly = false;
 
+    protected string|Closure|null $width = null;
+
     protected string|Htmlable|ViewComponent|Closure|null $headingPrefix = null;
 
     protected string|Htmlable|ViewComponent|Closure|null $headingSuffix = null;
@@ -217,6 +219,21 @@ class Field extends ViewComponent
         return $this;
     }
 
+    /**
+     * Overrides the inferred width behavior. By default the field spans its
+     * column, unless the slotted control declares a `maxlength` — which
+     * shrinks it to the control's width. `full` spans the column despite a
+     * `maxlength`; `auto` shrinks without one.
+     *
+     * @param  'full'|'auto'|Closure|null  $width
+     */
+    public function width(string|Closure|null $width): static
+    {
+        $this->width = $width;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -235,6 +252,7 @@ class Field extends ViewComponent
             'status' => $this->evaluate($this->status),
             'status-label' => $this->evaluate($this->statusLabel),
             'orientation' => $this->evaluate($this->orientation),
+            'width' => $this->evaluate($this->width),
             'readonly' => (bool) $this->evaluate($this->readOnly),
             'disabled' => $this->isDisabled(),
             'has-errors' => $this->evaluatedErrors() !== [],

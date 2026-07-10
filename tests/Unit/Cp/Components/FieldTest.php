@@ -41,6 +41,14 @@ describe('attributes', function () {
             ->and($html)->toContain('orientation="rtl"');
     });
 
+    it('only renders width when set', function () {
+        expect(Field::make()->toHtml())
+            ->not->toContain('width');
+
+        expect(Field::make()->width('auto')->toHtml())
+            ->toContain('width="auto"');
+    });
+
     it('only renders instructions-position when after', function () {
         expect(Field::make()->instructions('Hi')->toHtml())
             ->not->toContain('instructions-position');

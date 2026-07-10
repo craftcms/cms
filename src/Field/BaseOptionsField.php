@@ -328,7 +328,8 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $rows[] = $option;
         }
 
-        $html = FormFields::editableTableFieldHtml([
+        $html = Html::beginTag('craft-field-group');
+        $html .= FormFields::editableTableFieldHtml([
             'label' => $this->optionsSettingLabel(),
             'instructions' => t('Define the available options.'),
             'id' => 'options',
@@ -339,6 +340,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             'allowDelete' => true,
             'cols' => $cols,
             'rows' => $rows,
+            'width' => 'full',
             'errors' => $this->errors()->get('options'),
             'data' => ['error-key' => 'options'],
         ]);
@@ -352,7 +354,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             ]);
         }
 
-        return $html;
+        return $html.Html::endTag('craft-field-group');
     }
 
     #[Override]
