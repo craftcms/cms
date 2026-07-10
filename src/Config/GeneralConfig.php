@@ -2375,13 +2375,23 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether Craft should run pending queue jobs automatically when someone visits the control panel.
      *
-     * If disabled, an alternate queue worker *must* be set up separately, either as an
-     * [always-running daemon](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/worker.md), or a cron job that runs the
-     * `queue/run` command every minute:
+     * If disabled, a Laravel queue worker *must* be set up separately, usually as a long-running worker
+     * managed by Supervisor or systemd:
+     *
+     * ```shell
+     * php /path/to/project/craft queue:work
+     * ```
+     *
+     * If a long-running worker isn’t possible, schedule Laravel to process the queue every minute by running
+     * `queue:work --once` directly, or by running Laravel’s scheduler every minute and scheduling the same
+     * queue work there:
      *
      * ```cron
-     * * * * * * /path/to/project/craft queue/run
+     * * * * * php /path/to/project/craft queue:work --once
      * ```
+     *
+     * Include any custom queue names from `queueName()` and `lowPriorityQueueName()` in the worker’s `--queue`
+     * option.
      *
      * ::: tip
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
@@ -5671,13 +5681,23 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether Craft should run pending queue jobs automatically when someone visits the control panel.
      *
-     * If disabled, an alternate queue worker *must* be set up separately, either as an
-     * [always-running daemon](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/worker.md), or a cron job that runs the
-     * `queue/run` command every minute:
+     * If disabled, a Laravel queue worker *must* be set up separately, usually as a long-running worker
+     * managed by Supervisor or systemd:
+     *
+     * ```shell
+     * php /path/to/project/craft queue:work
+     * ```
+     *
+     * If a long-running worker isn’t possible, schedule Laravel to process the queue every minute by running
+     * `queue:work --once` directly, or by running Laravel’s scheduler every minute and scheduling the same
+     * queue work there:
      *
      * ```cron
-     * * * * * * /path/to/project/craft queue/run
+     * * * * * php /path/to/project/craft queue:work --once
      * ```
+     *
+     * Include any custom queue names from `queueName()` and `lowPriorityQueueName()` in the worker’s `--queue`
+     * option.
      *
      * ::: tip
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,

@@ -17,6 +17,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -145,6 +146,28 @@ test('logout logs the user out and redirects', function () {
     expect(Auth::check())->toBeFalse();
 });
 
+test('logout redirects to the post-logout redirect, not back to the previous page', function () {
+    Cms::config()->postLogoutRedirect = '';
+
+    actingAs(User::findOne());
+
+    // Even when arriving from a page, logout must not fall through to back().
+    $response = $this->from('https://localhost/members/dashboard')
+        ->get('/'.Cms::config()->getLogoutPath())
+        ->assertRedirect();
+
+    expect($response->headers->get('Location'))->toBe('https://localhost/');
+});
+
+test('logout honors a configured post-logout redirect', function () {
+    Cms::config()->postLogoutRedirect = 'goodbye';
+
+    actingAs(User::findOne());
+
+    $this->get('/'.Cms::config()->getLogoutPath())
+        ->assertRedirect('https://localhost/goodbye');
+});
+
 test('showLoginModal requires email parameter', function () {
     postJson(action([LoginController::class, 'showLoginModal']), [])
         ->assertJsonValidationErrors(['email']);
@@ -220,6 +243,22 @@ test('attemptLogin accepts username when useEmailAsUsername is false', function 
 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->username,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    expect(Auth::check())->toBeTrue();
+});
+
+test('login routes are registered for localized loginPath values', function () {
+    Cms::config()->isSystemLive = true;
+    Cms::config()->loginPath = ['siteWithCustomPath' => 'aanmelden'];
+
+    Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
+
+    $user = User::findOne();
+
+    postJson('/aanmelden', [
+        'loginName' => $user->email,
         'password' => 'craftcms2018!!',
     ])->assertOk();
 
