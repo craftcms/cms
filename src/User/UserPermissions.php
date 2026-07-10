@@ -106,7 +106,7 @@ class UserPermissions
 
         event($event = new UserPermissionsResolving($this->allPermissions));
 
-        return $event->permissions;
+        return $this->allPermissions = $event->permissions;
     }
 
     /**

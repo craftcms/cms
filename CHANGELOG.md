@@ -11,6 +11,7 @@
 - Fixed a bug where custom plugin settings `FormRequest` classes could persist unvalidated settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
 - Fixed a bug where failed Craft API responses weren’t processing response headers. ([#19228](https://github.com/craftcms/cms/pull/19228))
 - Fixed a bug where Craft plugin service providers could be skipped when the plugin’s Composer metadata also defined Laravel package discovery settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where event-registered user permissions weren’t getting saved. ([#19232](https://github.com/craftcms/cms/issues/19232))
 
 ## 6.0.0-alpha.11 - 2026-07-07
 
