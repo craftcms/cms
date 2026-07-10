@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 
 /**
@@ -84,6 +85,25 @@ class ButtonGroup extends ViewComponent
         ];
     }
 
+    /** @var array<string, mixed> Additional attributes for the hidden input. */
+    protected array $inputAttributes = [];
+
+    /**
+     * Merges additional HTML attributes onto the hidden input. These win
+     * over the computed defaults.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function inputAttributes(array $attributes): static
+    {
+        $this->inputAttributes = Arr::merge(
+            static::normalizeClasses($this->inputAttributes),
+            static::normalizeClasses($attributes),
+        );
+
+        return $this;
+    }
+
     /**
      * Wraps the group in the `<craft-listbox>` that owns selection behavior,
      * alongside the hidden input, mirroring the buttonGroup template.
@@ -97,9 +117,10 @@ class ButtonGroup extends ViewComponent
         return Html::tag(
             'craft-listbox',
             parent::renderMarkup().($name !== null
-                ? (string) Html::hiddenInput($name, (string) ($this->evaluate($this->value) ?? ''), [
-                    'id' => $id !== null ? "$id-input" : null,
-                ])
+                ? (string) Html::hiddenInput($name, (string) ($this->evaluate($this->value) ?? ''), Arr::merge(
+                    ['id' => $id !== null ? "$id-input" : null],
+                    $this->inputAttributes,
+                ))
                 : ''),
             [
                 'disabled' => $this->isDisabled(),

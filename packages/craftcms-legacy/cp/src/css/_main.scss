@@ -1174,10 +1174,6 @@ i em {
   }
 }
 
-input.checkbox + label.smalltext {
-  padding-block-start: 2px;
-}
-
 .required::after {
   content: 'asterisk';
   margin-inline: 5px 0;
@@ -2024,10 +2020,6 @@ ul.icons {
     .label {
       visibility: hidden;
     }
-  }
-
-  div.checkbox {
-    margin-block-start: 2px;
   }
 
   &.copyable {
@@ -7543,114 +7535,6 @@ textarea.text.fullwidth {
   .btn.add {
     max-width: calc(200rem / 16);
   }
-}
-
-input.checkbox {
-  opacity: 0;
-  position: absolute;
-  width: var(--checkbox-size);
-  height: var(--checkbox-size);
-
-  & + label:has(> .text) {
-    &::before {
-      inset-block-start: 6px;
-    }
-  }
-}
-
-input.checkbox + label,
-div.checkbox {
-  display: inline-block;
-  clear: none;
-  position: relative;
-  padding-inline-start: calc(var(--checkbox-size) + 0.35rem);
-  line-height: max(1rem, var(--checkbox-size));
-  min-height: max(1rem, var(--checkbox-size));
-  cursor: pointer;
-
-  &,
-  &::before {
-    // set the border radius on the container too, for (some) focus rings
-    border-radius: var(--input-border-radius);
-  }
-
-  &::before {
-    display: block;
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block-start: 0;
-    width: var(--checkbox-size) !important;
-    height: var(--checkbox-size);
-    box-sizing: border-box;
-    content: '';
-    font-size: 0;
-    background-color: hsl(212deg 50% 99%);
-    border: var(--input-border);
-    background-clip: padding-box;
-  }
-
-  &:empty {
-    padding-inline-start: var(--checkbox-size);
-
-    &::after {
-      content: '';
-      font-size: 0;
-    }
-  }
-
-  .info {
-    height: 17px;
-    margin-block-start: -1px;
-  }
-}
-
-input.checkbox:disabled + label,
-.disabled div.checkbox {
-  cursor: not-allowed;
-}
-
-input.checkbox:checked + label::before,
-div.checkbox.checked::before,
-.sel div.checkbox::before,
-input.checkbox:indeterminate + label::before,
-div.checkbox.indeterminate::before,
-.elementselectormodal
-  .body
-  .content
-  .main
-  .elements
-  .disabled
-  .checkbox::before {
-  @include mixins.icon;
-  line-height: var(--checkbox-size);
-  color: var(--gray-900);
-}
-
-input.checkbox:checked:not(:indeterminate) + label::before,
-div.checkbox.checked:not(.indeterminate)::before,
-.sel:not(.matrixblock) div.checkbox:not(.indeterminate)::before,
-.sel.matrixblock > .actions div.checkbox:not(.indeterminate)::before,
-.elementselectormodal
-  .body
-  .content
-  .main
-  .elements
-  .disabled
-  .checkbox::before {
-  content: 'check' / '';
-  font-size: calc(var(--checkbox-size) * 0.8);
-}
-
-input.checkbox:indeterminate + label::before,
-div.checkbox.indeterminate::before {
-  content: 'minus';
-  font-size: 7px;
-  text-align: center;
-}
-
-input.checkbox:focus-visible + label::before,
-div.checkbox:focus-visible > ::before {
-  @include mixins.input-focused-styles;
 }
 
 .checkbox-icon {

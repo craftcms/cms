@@ -1,7 +1,8 @@
 import {LionCheckbox} from '@lion/ui/checkbox-group.js';
 import {css} from 'lit';
+import {SsrChoiceInputMixin} from '../../mixins/SsrChoiceInputMixin.js';
 
-export default class CraftCheckbox extends LionCheckbox {
+export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
   static override get styles() {
     return [
       ...LionCheckbox.styles,

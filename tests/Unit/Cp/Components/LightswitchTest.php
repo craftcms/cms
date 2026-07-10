@@ -26,6 +26,17 @@ describe('host attributes', function () {
             ->and($html)->toContain('size="small"');
     });
 
+    it('merges extra button attributes over computed defaults', function () {
+        $html = Lightswitch::make()
+            ->id('ls')
+            ->buttonAttributes(['data-test' => '1', 'class' => 'extra', 'role' => 'other-role'])
+            ->toHtml();
+
+        expect($html)->toContain('data-test="1"')
+            ->and($html)->toContain('extra')
+            ->and($html)->toContain('role="other-role"');
+    });
+
     it('only renders on-label when it differs from the label', function () {
         $sameLabels = Lightswitch::make()->label('Enabled')->onLabel('Enabled')->toHtml();
         $distinctLabels = Lightswitch::make()->label('Status')->onLabel('Live')->offLabel('Draft')->toHtml();

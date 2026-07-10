@@ -34,6 +34,19 @@ it('posts the selected value through a hidden input when named', function () {
         ->and($html)->toContain('id="alignment-input"');
 });
 
+it('merges extra hidden-input attributes', function () {
+    $html = ButtonGroup::make()
+        ->id('alignment')
+        ->name('alignment')
+        ->buttons([Button::make()->label('Left')])
+        ->inputAttributes(['data-test' => '1', 'id' => 'custom-id'])
+        ->toHtml();
+
+    expect($html)->toContain('data-test="1"')
+        ->and($html)->toContain('id="custom-id"')
+        ->and($html)->not->toContain('id="alignment-input"');
+});
+
 it('renders no hidden input without a name', function () {
     expect(ButtonGroup::make()->buttons([Button::make()->label('One')])->toHtml())
         ->not->toContain('type="hidden"');

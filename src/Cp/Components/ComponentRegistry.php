@@ -21,9 +21,13 @@ class ComponentRegistry
         'button-group' => ButtonGroup::class,
         'callout' => Callout::class,
         'checkbox' => Checkbox::class,
+        'checkbox-group' => CheckboxGroup::class,
+        'checkbox-select' => CheckboxSelect::class,
         'field' => Field::class,
         'field-group' => FieldGroup::class,
         'lightswitch' => Lightswitch::class,
+        'radio' => Radio::class,
+        'radio-group' => RadioGroup::class,
     ];
 
     /**

@@ -54,3 +54,17 @@ export const WithSuffix: Story = {
     </craft-input>
   `,
 };
+
+/** \`width="full"\` spans the column even when a \`maxlength\` is set. */
+export const FullWidthOverride: Story = {
+  render: () => html`
+    <craft-input label="Port" maxlength="6" width="full"></craft-input>
+  `,
+};
+
+/** \`width="auto"\` shrinks the control without requiring a \`maxlength\`. */
+export const AutoWidth: Story = {
+  render: () => html`
+    <craft-input label="Handle" width="auto"></craft-input>
+  `,
+};

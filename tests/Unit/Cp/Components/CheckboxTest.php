@@ -25,6 +25,22 @@ describe('input', function () {
             ->and($html)->toContain('class="checkbox"');
     });
 
+    it('lets inputAttributes override computed defaults like type', function () {
+        $html = Checkbox::make()
+            ->id('cb')
+            ->name('n')
+            ->checked()
+            ->inputAttributes(['type' => 'other-type'])
+            ->toHtml();
+
+        // Only the type changed; the default class and state wiring survive.
+        expect($html)->toContain('type="other-type"')
+            ->and($html)->toContain('class="checkbox"')
+            ->and($html)->toContain('name="n"')
+            ->and($html)->toContain(' checked')
+            ->and($html)->toContain('slot="input"');
+    });
+
     it('skips the always-post hidden input for array names', function () {
         expect(Checkbox::make()->name('options[]')->toHtml())
             ->not->toContain('type="hidden"');

@@ -76,6 +76,27 @@ class Checkbox extends ViewComponent
         return 'craft-checkbox';
     }
 
+    /** Default attributes for the native input. */
+    protected function inputDefaults(): array
+    {
+        return [
+            'type' => 'checkbox',
+            'class' => ['checkbox'],
+        ];
+    }
+
+    /** Whether a scalar-named control gets an always-post hidden input. */
+    protected function rendersAlwaysPostInput(): bool
+    {
+        return true;
+    }
+
+    /** The label text shown in custom-option mode. */
+    protected function customLabelText(): string
+    {
+        return t('Custom:');
+    }
+
     public function name(string|Closure|null $name): static
     {
         $this->name = $name;
@@ -156,6 +177,12 @@ class Checkbox extends ViewComponent
         return $this;
     }
 
+    /** Whether the checkbox is in custom-option mode. */
+    public function hasCustomInput(): bool
+    {
+        return (bool) $this->evaluate($this->custom);
+    }
+
     /** Selector (or element id) of a container to reveal while checked. */
     public function toggle(string|Closure|null $toggle): static
     {
@@ -195,7 +222,15 @@ class Checkbox extends ViewComponent
     }
 
     /**
-     * Merges additional HTML attributes onto the native input element.
+     * Merges additional HTML attributes onto the native input element. These
+     * win over the computed defaults, so they can also override things like
+     * `type`:
+     *
+     *     Checkbox::make()->inputAttributes(['type' => 'other-type']);
+     *
+     * The component always renders a raw `<input>` tag — the web component
+     * adopts it as its form control, so it can never be another form-control
+     * component itself.
      *
      * @param  array<string, mixed>  $attributes
      */
@@ -223,7 +258,7 @@ class Checkbox extends ViewComponent
     protected function renderMarkup(): string
     {
         $name = $this->evaluate($this->name);
-        $alwaysPost = $name !== null && ! str_ends_with($name, '[]');
+        $alwaysPost = $this->rendersAlwaysPostInput() && $name !== null && ! str_ends_with($name, '[]');
 
         return implode('', array_filter([
             $alwaysPost ? (string) Html::hiddenInput($name, '') : '',
@@ -238,32 +273,31 @@ class Checkbox extends ViewComponent
         $reverseToggle = $this->evaluate($this->reverseToggle);
         $targetPrefix = $this->evaluate($this->targetPrefix);
 
-        return Html::tag('input', '', Arr::merge(
-            [
-                'slot' => 'input',
-                'type' => 'checkbox',
-                'id' => $this->getId(),
-                'name' => $this->evaluate($this->name),
-                'value' => $this->evaluate($this->value),
-                'checked' => (bool) $this->evaluate($this->checked),
-                'autofocus' => (bool) $this->evaluate($this->autofocus) && ! request()->isMobileBrowser(true),
-                'disabled' => $this->isDisabled(),
-                'class' => array_filter([
-                    'checkbox',
-                    ($targetPrefix ?? $toggle ?? $reverseToggle) !== null ? 'fieldtoggle' : null,
-                ]),
-                'aria' => [
-                    'labelledby' => $this->evaluate($this->labelledBy),
-                    'describedby' => $this->evaluate($this->describedBy),
-                ],
-                'data' => [
-                    'target-prefix' => $targetPrefix,
-                    'target' => $toggle,
-                    'reverse-target' => $reverseToggle,
-                ],
+        $attributes = Arr::merge(Arr::merge($this->inputDefaults(), [
+            'slot' => 'input',
+            'id' => $this->getId(),
+            'name' => $this->evaluate($this->name),
+            'value' => $this->evaluate($this->value),
+            'checked' => (bool) $this->evaluate($this->checked),
+            'autofocus' => (bool) $this->evaluate($this->autofocus) && ! request()->isMobileBrowser(true),
+            'disabled' => $this->isDisabled(),
+            'class' => array_filter([
+                ($targetPrefix ?? $toggle ?? $reverseToggle) !== null ? 'fieldtoggle' : null,
+            ]),
+            'aria' => [
+                'labelledby' => $this->evaluate($this->labelledBy),
+                'describedby' => $this->evaluate($this->describedBy),
             ],
+            'data' => [
+                'target-prefix' => $targetPrefix,
+                'target' => $toggle,
+                'reverse-target' => $reverseToggle,
+            ],
+        ]),
             $this->inputAttributes,
-        ));
+        );
+
+        return Html::tag('input', '', $attributes);
     }
 
     protected function labelHtml(): string
@@ -272,7 +306,7 @@ class Checkbox extends ViewComponent
         $info = (string) ($this->evaluate($this->info) ?? '');
 
         $content = implode('', array_filter([
-            (bool) $this->evaluate($this->custom) ? Html::encode(t('Custom:')) : $this->labelContentHtml($label),
+            (bool) $this->evaluate($this->custom) ? Html::encode($this->customLabelText()) : $this->labelContentHtml($label),
             $info !== ''
                 ? Html::tag('span', app(ContentHtml::class)->parseMarkdown($info), ['class' => 'info'])
                 : '',

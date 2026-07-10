@@ -76,6 +76,15 @@ export default class CraftField extends FormControlMixin(LitElement) {
   @property({attribute: 'instructions-position'})
   instructionsPosition: 'before' | 'after' = 'before';
 
+  /**
+   * Overrides the inferred width behavior. By default, the field spans its
+   * column, unless the slotted control declares a `maxlength` (reflected
+   * onto the host as `has-maxlength`) — which shrinks the field to the
+   * control's width. `full` spans the column despite a `maxlength`; `auto`
+   * shrinks without one.
+   */
+  @property({type: String, reflect: true}) width?: 'full' | 'auto';
+
   private __lightDomObserver = new MutationObserver(() =>
     this.__onLightDomChanged()
   );
@@ -84,6 +93,21 @@ export default class CraftField extends FormControlMixin(LitElement) {
     super.connectedCallback();
     this.__lightDomObserver.observe(this, {childList: true});
     this.__syncHasErrors();
+    this.__syncHasMaxlength();
+  }
+
+  /**
+   * Reflects whether the slotted control declares a `maxlength` onto the
+   * host, where the stylesheet can react to it — a shadow stylesheet can't
+   * observe light-DOM children via `:host(:has(…))`.
+   */
+  private __syncHasMaxlength(): void {
+    this.toggleAttribute(
+      'has-maxlength',
+      this.querySelector(':scope > [slot="input"]')?.hasAttribute(
+        'maxlength'
+      ) ?? false
+    );
   }
 
   override disconnectedCallback(): void {
@@ -297,6 +321,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
     this.__wireDescribedBy();
     this.__syncHasErrors();
     this.__syncLabelDecorations();
+    this.__syncHasMaxlength();
     // Conditional templates (tip/warning callouts, label-extra spacer) depend
     // on light DOM children.
     this.requestUpdate();

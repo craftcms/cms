@@ -6,6 +6,15 @@ export default css`
     display: block;
   }
 
+  /* A slotted control with a maxlength (reflected as has-maxlength) shrinks
+     the field to the control's width instead of spanning the column.
+     width="full" spans despite a maxlength; width="auto" shrinks without
+     one. */
+  :host([has-maxlength]:not([width='full'])),
+  :host([width='auto']) {
+    width: fit-content;
+  }
+
   :host([hidden]) {
     display: none;
   }

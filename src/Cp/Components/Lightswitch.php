@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\HtmlString;
 use Stringable;
@@ -43,6 +44,9 @@ class Lightswitch extends ViewComponent
     protected bool|Closure $indeterminate = false;
 
     protected string|Closure|null $name = null;
+
+    /** @var array<string, mixed> Additional attributes for the switch button. */
+    protected array $buttonAttributes = [];
 
     protected string|Closure $value = self::DEFAULT_VALUE;
 
@@ -209,6 +213,22 @@ class Lightswitch extends ViewComponent
         ]));
     }
 
+    /**
+     * Merges additional HTML attributes onto the `craft-switch-button`
+     * element. These win over the computed defaults.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function buttonAttributes(array $attributes): static
+    {
+        $this->buttonAttributes = Arr::merge(
+            static::normalizeClasses($this->buttonAttributes),
+            static::normalizeClasses($attributes),
+        );
+
+        return $this;
+    }
+
     protected function switchButtonHtml(): string
     {
         $on = (bool) $this->evaluate($this->on);
@@ -216,28 +236,31 @@ class Lightswitch extends ViewComponent
         $toggle = $this->evaluate($this->toggle);
         $reverseToggle = $this->evaluate($this->reverseToggle);
 
-        return Html::tag('craft-switch-button', '', [
-            'slot' => 'input',
-            'id' => $this->getId(),
-            'role' => 'switch',
-            'size' => $this->getSize() ?? 'medium',
-            'checked' => $on,
-            'indeterminate' => $indeterminate,
-            'disabled' => $this->isDisabled(),
-            'class' => array_filter([
-                $toggle || $reverseToggle ? 'fieldtoggle' : null,
-            ]),
-            'data' => [
-                'tag-name' => 'craft-switch-button',
-                'target' => $toggle ?: null,
-                'reverse-target' => $reverseToggle ?: null,
+        return Html::tag('craft-switch-button', '', Arr::merge(
+            [
+                'slot' => 'input',
+                'id' => $this->getId(),
+                'role' => 'switch',
+                'size' => $this->getSize() ?? 'medium',
+                'checked' => $on,
+                'indeterminate' => $indeterminate,
+                'disabled' => $this->isDisabled(),
+                'class' => array_filter([
+                    $toggle || $reverseToggle ? 'fieldtoggle' : null,
+                ]),
+                'data' => [
+                    'tag-name' => 'craft-switch-button',
+                    'target' => $toggle ?: null,
+                    'reverse-target' => $reverseToggle ?: null,
+                ],
+                'aria' => [
+                    'checked' => $on ? 'true' : ($indeterminate ? 'mixed' : 'false'),
+                    'labelledby' => $this->evaluate($this->labelledBy),
+                    'describedby' => $this->evaluate($this->describedBy),
+                ],
             ],
-            'aria' => [
-                'checked' => $on ? 'true' : ($indeterminate ? 'mixed' : 'false'),
-                'labelledby' => $this->evaluate($this->labelledBy),
-                'describedby' => $this->evaluate($this->describedBy),
-            ],
-        ]);
+            $this->buttonAttributes,
+        ));
     }
 
     protected function hiddenInputHtml(): string

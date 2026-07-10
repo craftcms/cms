@@ -351,6 +351,38 @@ class Cp extends Component
         return FormFields::checkboxHtml($config);
     }
 
+    /**
+     * Renders a checkbox group's HTML from the legacy checkboxGroup variables.
+     */
+    public function checkboxGroup(array $config = []): string
+    {
+        return FormFields::checkboxGroupHtml($config);
+    }
+
+    /**
+     * Renders a checkbox select's HTML from the legacy checkboxSelect variables.
+     */
+    public function checkboxSelect(array $config = []): string
+    {
+        return FormFields::checkboxSelectHtml($config);
+    }
+
+    /**
+     * Renders a radio's HTML from the legacy radio variables.
+     */
+    public function radio(array $config = []): string
+    {
+        return FormFields::radioHtml($config);
+    }
+
+    /**
+     * Renders a radio group's HTML from the legacy radioGroup variables.
+     */
+    public function radioGroup(array $config = []): string
+    {
+        return FormFields::radioGroupHtml($config);
+    }
+
     private function formatLegacySuggestions(array $options): array
     {
         return array_map(fn ($group) => [

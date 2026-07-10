@@ -1,7 +1,8 @@
 import {LionRadio} from '@lion/ui/radio-group.js';
 import {css} from 'lit';
+import {SsrChoiceInputMixin} from '../../mixins/SsrChoiceInputMixin.js';
 
-export default class CraftRadio extends LionRadio {
+export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
   static override get styles() {
     return [
       ...super.styles,

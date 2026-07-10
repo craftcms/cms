@@ -10,14 +10,20 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
+use CraftCms\Cms\Cp\Components\CheckboxGroup;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Lightswitch;
+use CraftCms\Cms\Cp\Components\Radio;
+use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -43,6 +49,15 @@ readonly class FormFields
      * only passed to input templates when explicitly configured.
      */
     public static function fieldHtml(string|Stringable|callable $input, array $config = []): string
+    {
+        return self::fieldFromConfig($input, $config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy field config surface onto the {@see Field} component —
+     * the PHP twin of the `_includes/forms/field` glue template.
+     */
+    private static function fieldFromConfig(string|Stringable|callable $input, array $config): Field
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] ??= 'field'.mt_rand();
@@ -147,8 +162,7 @@ readonly class FormFields
                     $config['inputContainerAttributes'] ?? [],
                     $config['fieldAttributes'] ?? [],
                 ),
-            ))
-            ->toHtml();
+            ));
     }
 
     /**
@@ -355,24 +369,287 @@ readonly class FormFields
             ));
     }
 
+    public static function checkboxSelectHtml(array $config): string
+    {
+        return self::checkboxSelectFromConfig($config)->toHtml();
+    }
+
     public static function checkboxSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxselect'.mt_rand();
         $config['fieldset'] = true;
 
-        return self::fieldHtml('template:_includes/forms/checkboxSelect', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::checkboxSelectFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy checkboxSelect config surface onto the
+     * {@see CheckboxSelect} component — the PHP twin of the
+     * `_includes/forms/checkboxSelect` glue template. Legacy semantics
+     * preserved: sortable pre-orders options by the `values` order, and a
+     * checked "All" option checks and disables every item.
+     */
+    private static function checkboxSelectFromConfig(array $config): CheckboxSelect
+    {
+        $id = $config['id'] ?? 'checkbox-select-'.mt_rand();
+        $name = $config['name'] ?? null;
+        $values = $config['values'] ?? [];
+        $disabled = (bool) ($config['disabled'] ?? false);
+        $sortable = (bool) ($config['sortable'] ?? false);
+
+        $options = collect($config['options'] ?? [])
+            ->map(fn ($option, $key) => is_array($option) ? $option : [
+                'label' => $option,
+                'value' => $key,
+            ])
+            ->values();
+
+        if ($sortable && is_array($values) && $values !== []) {
+            $options = $options
+                ->sortBy(function (array $option) use ($values): int {
+                    $index = array_search($option['value'] ?? null, $values);
+
+                    return $index === false ? PHP_INT_MAX : $index;
+                })
+                ->values();
+        }
+
+        $showAllOption = (bool) ($config['showAllOption'] ?? false);
+        $allChecked = false;
+        $allCheckbox = null;
+
+        if ($showAllOption) {
+            $allLabel = $config['allLabel'] ?? t('All');
+            $allValue = $config['allValue'] ?? '*';
+            $allChecked = $values == $allValue;
+
+            $allCheckbox = self::checkboxFromConfig([
+                'describedBy' => $config['describedBy'] ?? null,
+                'class' => ['cp-checkbox-select__item', 'all'],
+                'label' => new HtmlString("<b>$allLabel</b>"),
+                'name' => $name,
+                'value' => $allValue,
+                'checked' => $allChecked,
+                'autofocus' => $config['autofocus'] ?? false,
+                'targetPrefix' => $config['targetPrefix'] ?? null,
+                'disabled' => $disabled,
+            ]);
+        }
+
+        $checkboxes = $options
+            ->map(fn (array $option): Checkbox => self::checkboxFromConfig(array_merge([
+                'name' => $name !== null ? "{$name}[]" : null,
+                'checked' => ($showAllOption && $allChecked)
+                    || (isset($option['value']) && is_array($values) && in_array($option['value'], $values)),
+                'disabled' => ($showAllOption && $allChecked) || $disabled,
+                'targetPrefix' => $config['targetPrefix'] ?? null,
+            ], $option)))
+            ->all();
+
+        return CheckboxSelect::make()
+            ->id($id)
+            ->name($showAllOption ? null : $name)
+            ->allCheckbox($allCheckbox)
+            ->options($checkboxes)
+            ->sortable($sortable)
+            ->storageKey($config['storageKey'] ?? null)
+            ->disabled($disabled)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
+    }
+
+    public static function radioHtml(array $config): string
+    {
+        return self::radioFromConfig($config)->toHtml();
+    }
+
+    public static function radioGroupHtml(array $config): string
+    {
+        return self::radioGroupFromConfig($config)->toHtml();
+    }
+
+    public static function radioGroupFieldHtml(array $config): string
+    {
+        $config['id'] ??= 'radiogroup'.mt_rand();
+        $config['fieldset'] = true;
+
+        return self::fieldHtml(
+            fn (array $c): string => self::radioGroupFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy radio config surface onto the {@see Radio} component —
+     * the PHP twin of the `_includes/forms/radio` glue template. Legacy
+     * semantics preserved: `radioLabel` wins over `label`, and custom-option
+     * mode renders an "Other:" text input that syncs its value to the radio.
+     */
+    private static function radioFromConfig(array $config): Radio
+    {
+        $id = $config['id'] ?? 'radio'.mt_rand();
+        $labelId = $config['labelId'] ?? "$id-label";
+        $custom = (bool) ($config['custom'] ?? false);
+
+        if ($custom) {
+            HtmlStack::jsWithVars(fn ($radio, $text) => <<<JS
+                (() => {
+                  const \$radio = $($radio);
+                  const \$text = $($text);
+                  \$text.on('input', () => {
+                    \$radio.val(\$text.val());
+                  });
+                })();
+                JS, [
+                'radio' => '#'.InputNamespace::namespaceId($id),
+                'text' => '#'.InputNamespace::namespaceId("$id-text"),
+            ]);
+        }
+
+        return Radio::make()
+            ->id($id)
+            ->labelId($labelId)
+            ->name($config['name'] ?? null)
+            ->value($config['value'] ?? 1)
+            ->checked((bool) ($config['checked'] ?? false))
+            ->autofocus((bool) ($config['autofocus'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->label($config['radioLabel'] ?? $config['label'] ?? null)
+            ->icon($config['icon'] ?? null)
+            ->color($config['color'] ?? null)
+            ->custom($custom
+                ? self::textHtml([
+                    'id' => "$id-text",
+                    'value' => $config['value'] ?? null,
+                    'class' => 'small custom-option-input',
+                    'labelledBy' => $labelId,
+                ])
+                : null)
+            ->describedBy($config['describedBy'] ?? null)
+            ->inputAttributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['inputAttributes'] ?? [],
+            ))
+            ->attributes($config['containerAttributes'] ?? []);
+    }
+
+    /**
+     * Maps the legacy radioGroup config surface onto the {@see RadioGroup}
+     * component — the PHP twin of the `_includes/forms/radioGroup` glue
+     * template.
+     */
+    private static function radioGroupFromConfig(array $config): RadioGroup
+    {
+        $id = $config['id'] ?? 'radio-group-'.mt_rand();
+        $value = $config['value'] ?? null;
+        $disabled = (bool) ($config['disabled'] ?? false);
+
+        $radios = [];
+        $first = true;
+
+        foreach ($config['options'] ?? [] as $key => $option) {
+            if (! is_array($option)) {
+                $option = ['label' => $option, 'value' => $key];
+            }
+
+            $radios[] = self::radioFromConfig(array_merge([
+                'describedBy' => $config['describedBy'] ?? null,
+                'name' => $config['name'] ?? null,
+                'checked' => isset($option['value'])
+                    && $option['value'] == $value
+                    && ($option['value'] || ! ($option['custom'] ?? false)),
+                'autofocus' => $first && ($config['autofocus'] ?? false),
+                'disabled' => $disabled,
+            ], $option));
+
+            $first = false;
+        }
+
+        return RadioGroup::make()
+            ->id($id)
+            ->options($radios)
+            ->toggle((bool) ($config['toggle'] ?? false))
+            ->targetPrefix($config['targetPrefix'] ?? null)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     public static function checkboxGroupHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/checkboxGroup', $config);
+        return self::checkboxGroupFromConfig($config)->toHtml();
     }
 
     public static function checkboxGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxgroup'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/checkboxGroup', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::checkboxGroupFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy checkboxGroup config surface onto the
+     * {@see CheckboxGroup} component — the PHP twin of the
+     * `_includes/forms/checkboxGroup` glue template.
+     */
+    private static function checkboxGroupFromConfig(array $config): CheckboxGroup
+    {
+        $id = $config['id'] ?? 'checkbox-group-'.mt_rand();
+        $name = $config['name'] ?? null;
+        $optionName = $name !== null ? "{$name}[]" : null;
+        $values = $config['values'] ?? [];
+
+        $checkboxes = [];
+        $first = true;
+
+        foreach ($config['options'] ?? [] as $key => $option) {
+            if (! is_array($option)) {
+                $option = ['label' => $option, 'value' => $key];
+            }
+
+            $checkboxes[] = self::checkboxFromConfig(array_merge([
+                'describedBy' => $config['describedBy'] ?? null,
+                'name' => $optionName,
+                'checked' => isset($option['value']) && is_array($values) && in_array($option['value'], $values),
+                'autofocus' => $first && ($config['autofocus'] ?? false),
+            ], $option));
+
+            $first = false;
+        }
+
+        $customOptionTemplate = null;
+
+        if (($config['allowCustomOptions'] ?? false) && $optionName !== null) {
+            $customOptionTemplate = InputNamespace::namespaceInputs(Html::tag(
+                'div',
+                self::checkboxFromConfig([
+                    'id' => '__ID__',
+                    'label' => null,
+                    'value' => '',
+                    'describedBy' => $config['describedBy'] ?? null,
+                    'name' => $optionName,
+                    'checked' => true,
+                    'custom' => true,
+                ])->toHtml(),
+                ['data' => ['custom' => true]],
+            ), InputNamespace::get());
+        }
+
+        return CheckboxGroup::make()
+            ->id($id)
+            ->name($name)
+            ->options($checkboxes)
+            ->customOptionTemplate($customOptionTemplate)
+            ->attributes($config['containerAttributes'] ?? []);
     }
 
     public static function colorHtml(array $config): string
