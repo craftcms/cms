@@ -8,6 +8,7 @@
 - Fixed a bug where JSON fields weren’t JSON-decoding values saved via GraphQL mutations. ([#19230](https://github.com/craftcms/cms/issues/19230))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability.
 
 ## 5.10.10 - 2026-07-08
 
