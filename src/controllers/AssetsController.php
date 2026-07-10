@@ -711,6 +711,10 @@ class AssetsController extends Controller
 
             // If there's a conflicting asset, then merge and replace the file.
             if ($conflictingAsset) {
+                $this->requireVolumePermissionByAsset('deleteAssets', $conflictingAsset);
+                $this->requirePeerVolumePermissionByAsset('savePeerAssets', $conflictingAsset);
+                $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $conflictingAsset);
+
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
