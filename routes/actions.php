@@ -136,6 +136,9 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
+        Route::post('users/confirm-password', [SessionInfoController::class, 'confirmPassword'])
+            ->middleware(['auth', 'can:accessCp'])
+            ->block();
         Route::middleware(
             in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
         )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);

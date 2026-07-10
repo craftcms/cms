@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
+- Login attempts are now rate limited.
+
 ## 6.0.0-alpha.11 - 2026-07-07
 
 - Users can now connect their accounts to one or more Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))

@@ -11,6 +11,10 @@
     fragment?: CraftCms.Cms.View.HtmlFragment | null;
   }>();
 
+  const emit = defineEmits<{
+    rendered: [element: HTMLElement];
+  }>();
+
   const container = ref<HTMLElement | null>(null);
   const disposers: AppendHtmlDisposer[] = [];
   let lastKey = '';
@@ -85,6 +89,10 @@
         !(await remember(appendBodyHtml(bodyHtml), currentRunId))
       ) {
         return;
+      }
+
+      if (currentRunId === runId) {
+        emit('rendered', element);
       }
     },
     {immediate: true}

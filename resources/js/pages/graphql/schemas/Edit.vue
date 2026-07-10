@@ -42,6 +42,7 @@
     enabled: props.token?.enabled ?? true,
     expiryDate: props.token?.expiryDate ?? '',
   });
+  const initialPermissions = new Set(form.permissions);
 
   const routeAction = () => {
     if (!props.schema.id) {
@@ -53,7 +54,12 @@
     });
   };
 
-  const {save} = useSettingsSave(form, routeAction);
+  const {save} = useSettingsSave(form, routeAction, {
+    passwordConfirmation: {
+      required: ({permissions}) =>
+        permissions.some((permission) => !initialPermissions.has(permission)),
+    },
+  });
 
   useAppLayout({form, onSave: save});
 </script>

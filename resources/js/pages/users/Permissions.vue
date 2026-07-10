@@ -28,6 +28,9 @@
     groups: props.currentGroupIds,
     permissions: props.directPermissions,
   });
+  const initialAdmin = form.admin;
+  const initialGroups = new Set(form.groups);
+  const initialPermissions = new Set(form.permissions);
 
   const routeAction = () =>
     props.user.isCurrent
@@ -36,7 +39,16 @@
           userId: props.user.id,
         });
 
-  const {save} = useSettingsSave(form, routeAction);
+  const {save} = useSettingsSave(form, routeAction, {
+    passwordConfirmation: {
+      required: ({admin, groups, permissions}) =>
+        admin !== initialAdmin ||
+        groups.length !== initialGroups.size ||
+        groups.some((group) => !initialGroups.has(group)) ||
+        permissions.length !== initialPermissions.size ||
+        permissions.some((permission) => !initialPermissions.has(permission)),
+    },
+  });
 
   const lockedPermissions = computed(() => [
     ...new Set(

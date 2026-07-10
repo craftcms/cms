@@ -12,7 +12,6 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
@@ -43,19 +42,7 @@ readonly class PermissionsController
         }
 
         return $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS)
-            ->inertiaPage('users/Permissions', new UserPermissionsViewModel($user, $currentUser))
-            ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                HtmlStack::jsWithVars(
-                    fn ($containerId) => <<<JS
-                        new Craft.ElevatedSessionForm('#' + $containerId, [
-                            '[name="admin"]',
-                            '[data-user-groups-input]',
-                            '[data-user-permissions-input]'
-                        ]);
-                    JS,
-                    [$containerId],
-                );
-            });
+            ->inertiaPage('users/Permissions', new UserPermissionsViewModel($user, $currentUser));
     }
 
     public function update(Request $request, Elements $elements, ?int $userId = null): Response
