@@ -1,6 +1,8 @@
 import {createApp} from 'vue';
 import ElevatedSessionHost from './ElevatedSessionHost.vue';
 import {ElevatedSessionForm} from './elevated-session-form';
+import CraftElevatedSessionForm from './elevated-session-form.ce';
+import {defineElement} from '@/common/web-components';
 import {
   elevatedSessionManager,
   ElevatedSessionManager,
@@ -35,10 +37,18 @@ class LegacyElevatedSessionManager {
   }
 }
 
+// Assign onto the legacy `Craft` global so the Twig/PHP-emitted
+// `new Craft.ElevatedSessionForm(...)` (EmailField, _password/_team/_permissions
+// screens) and `Craft.elevatedSessionManager` keep working. The manager global is
+// a thin `LegacyElevatedSessionManager` shim over the modern reactive manager.
 const craft = (window as any).Craft ?? ((window as any).Craft = {});
 craft.ElevatedSessionManager = LegacyElevatedSessionManager;
 craft.elevatedSessionManager = new LegacyElevatedSessionManager();
 craft.ElevatedSessionForm = ElevatedSessionForm;
+
+// Register the declarative custom element, so Twig can emit
+// `<craft-elevated-session-form>` instead of the manual global constructor.
+defineElement('craft-elevated-session-form', CraftElevatedSessionForm);
 
 export function mountElevatedSessionHost(): void {
   if (document.querySelector('[data-elevated-session-host]')) {
@@ -64,6 +74,7 @@ export function usePasswordConfirmation() {
 
 export {
   ElevatedSessionForm,
+  CraftElevatedSessionForm,
   ElevatedSessionHost,
   elevatedSessionManager,
   ElevatedSessionManager,
