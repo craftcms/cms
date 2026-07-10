@@ -103,7 +103,7 @@
 
 <template>
   <div v-if="heading" class="flex gap-2 items-center">
-    <h3 class="text-base !m-0">
+    <h3 class="mb-1 text-base">
       {{ heading }}
     </h3>
 

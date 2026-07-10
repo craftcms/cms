@@ -26,13 +26,13 @@
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  background-color: var(--c-surface-default);
+  background-color: var(--c-bg-body);
   text-decoration: none;
   padding-block: var(--c-spacing-md);
   padding-inline: var(--c-spacing-lg);
   outline: none;
-  border: 1px dashed var(--c-form-control-border-color);
-  color: var(--c-text-default);
+  border: 1px dashed var(--c-form-control-border);
+  color: var(--c-fg-text);
   font-weight: var(--font-weight-medium);
   border-radius: var(--c-radius-md);
 
