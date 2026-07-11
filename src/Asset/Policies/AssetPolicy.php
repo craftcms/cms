@@ -84,6 +84,13 @@ class AssetPolicy extends ElementPolicy
             $this->hasPeerVolumePermission($user, $asset, 'deletePeerAssets');
     }
 
+    public function mergeFile(CraftUser $user, Asset $asset): bool
+    {
+        return $this->hasVolumePermission($user, $asset, 'deleteAssets') &&
+            $this->hasPeerVolumePermission($user, $asset, 'savePeerAssets') &&
+            $this->hasPeerVolumePermission($user, $asset, 'deletePeerAssets');
+    }
+
     public function viewFile(CraftUser $user, Asset $asset): bool
     {
         return $this->hasVolumePermission($user, $asset, 'viewAssets') &&

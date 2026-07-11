@@ -97,6 +97,8 @@ readonly class ActionController
                 ->one();
 
             if ($conflictingAsset) {
+                Gate::authorize('mergeFile', $conflictingAsset);
+
                 $elements->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
