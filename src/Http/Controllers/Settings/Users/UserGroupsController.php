@@ -18,6 +18,7 @@ use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -36,8 +37,6 @@ class UserGroupsController extends BaseUserSettingsController
         private readonly GeneralConfig $generalConfig,
         private readonly UserGroups $userGroups,
     ) {
-        parent::__construct();
-
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
 
@@ -50,6 +49,7 @@ class UserGroupsController extends BaseUserSettingsController
         return Inertia::render('settings/users/groups/Index', [
             'crumbs' => $this->crumbs(t('User Groups')),
             'title' => t('User Settings'),
+            'subnav' => $this->subnav(),
             'groups' => $this->userGroups->getAllGroups(),
         ]);
     }
@@ -139,7 +139,7 @@ class UserGroupsController extends BaseUserSettingsController
         $isNewGroup = ! $group->id;
 
         if (! $this->userGroups->saveGroup($group)) {
-            return $this->asModelFailure($group, t('Couldn’t save group.'), 'group');
+            throw ValidationException::withMessages($group->errors()->getMessages());
         }
 
         $permissions = $request->array('permissions');

@@ -4,13 +4,14 @@
   import {useForm} from '@inertiajs/vue3';
   import {store} from '@actions/Settings/Users/UserSettingsController';
   import {create as createVolume} from '@actions/Settings/VolumesController';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
+  import Pane from '@/common/components/Pane.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import Select from '@/common/form/Select.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import useCraftData from '@/common/composables/useCraftData';
   import type {BaseOption, SelectOption} from '@/common/types';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
 
   const createVolumeOptionValue = '__createVolume__';
 
@@ -109,6 +110,8 @@
     }),
   });
 
+  useAppLayout({fullWidth: true, form, defaultFormActions: [], onSave: save});
+
   function updateRequire2fa(event: CustomEvent) {
     const target = event.currentTarget as HTMLElement & {
       modelValue?: Array<string>;
@@ -144,7 +147,7 @@
 </script>
 
 <template>
-  <IndexLayout :form="form" :default-form-actions="[]" @save="save">
+  <Pane appearance="raised" :padding="0" class="@container">
     <div class="grid gap-6 p-4">
       <section class="grid gap-3">
         <h2 v-if="canRequire2fa" class="text-base">{{ t('User Photos') }}</h2>
@@ -329,5 +332,5 @@
         </section>
       </template>
     </div>
-  </IndexLayout>
+  </Pane>
 </template>

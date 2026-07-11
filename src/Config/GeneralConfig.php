@@ -1617,13 +1617,14 @@ class GeneralConfig extends BaseConfig
      * - `enabled`: Whether the provider should be available. Defaults to `true`.
      * - `name`: A human-friendly provider name.
      * - `label`: The rendered button label.
+     * - `icon`: The control panel brand icon name.
      * - `scopes`: Additional Socialite scopes.
      * - `with`: Additional Socialite request parameters.
      * - `stateless`: Whether the provider should bypass Socialite state checks.
      * - `groups`: User group IDs, UIDs, or handles to assign to new users.
      * - `createsUsers`: Whether the provider may create new users when no existing account can be matched. Defaults to the public registration setting when `null` or omitted.
      * - `activatesUsers`: Whether matched or newly-created users should be activated automatically.
-     * - `trustsEmail`: Whether the provider is trusted to verify email ownership, allowing first-time matches to existing users by email. Defaults to `true` for known trusted providers and `false` otherwise.
+     * - `trustsEmail`: Whether the provider is trusted to verify email ownership, allowing first-time matches to existing users by email. Defaults to `false`.
      * - `identityResolver`: A custom identity resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
      * - `userResolver`: A custom linked-user resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
      * - `userPopulator`: A custom user populator class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\PopulatesOAuthUser`.
@@ -2374,13 +2375,23 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether Craft should run pending queue jobs automatically when someone visits the control panel.
      *
-     * If disabled, an alternate queue worker *must* be set up separately, either as an
-     * [always-running daemon](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/worker.md), or a cron job that runs the
-     * `queue/run` command every minute:
+     * If disabled, a Laravel queue worker *must* be set up separately, usually as a long-running worker
+     * managed by Supervisor or systemd:
+     *
+     * ```shell
+     * php /path/to/project/craft queue:work
+     * ```
+     *
+     * If a long-running worker isn’t possible, schedule Laravel to process the queue every minute by running
+     * `queue:work --once` directly, or by running Laravel’s scheduler every minute and scheduling the same
+     * queue work there:
      *
      * ```cron
-     * * * * * * /path/to/project/craft queue/run
+     * * * * * php /path/to/project/craft queue:work --once
      * ```
+     *
+     * Include any custom queue names from `queueName()` and `lowPriorityQueueName()` in the worker’s `--queue`
+     * option.
      *
      * ::: tip
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
@@ -5670,13 +5681,23 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether Craft should run pending queue jobs automatically when someone visits the control panel.
      *
-     * If disabled, an alternate queue worker *must* be set up separately, either as an
-     * [always-running daemon](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/worker.md), or a cron job that runs the
-     * `queue/run` command every minute:
+     * If disabled, a Laravel queue worker *must* be set up separately, usually as a long-running worker
+     * managed by Supervisor or systemd:
+     *
+     * ```shell
+     * php /path/to/project/craft queue:work
+     * ```
+     *
+     * If a long-running worker isn’t possible, schedule Laravel to process the queue every minute by running
+     * `queue:work --once` directly, or by running Laravel’s scheduler every minute and scheduling the same
+     * queue work there:
      *
      * ```cron
-     * * * * * * /path/to/project/craft queue/run
+     * * * * * php /path/to/project/craft queue:work --once
      * ```
+     *
+     * Include any custom queue names from `queueName()` and `lowPriorityQueueName()` in the worker’s `--queue`
+     * option.
      *
      * ::: tip
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,

@@ -54,13 +54,14 @@ Each provider supports the following keys:
 - `clientSecret` optional for named drivers when already defined in Laravel's `services` config. Required for provider classes.
 - `name` optional. Human-friendly provider name.
 - `label` optional. Button label. Defaults to `Sign in with {name}`.
+- `icon` optional. Control panel brand icon name for the sign-in providers screen.
 - `scopes` optional. Array of scopes passed to Socialite.
 - `with` optional. Array of extra request parameters passed to the provider.
 - `stateless` optional. Set to `true` to bypass Socialite state validation.
 - `groups` optional. Array of user group IDs, UIDs, or handles to assign to newly-created users.
 - `createsUsers` optional. Defaults to `null`, which inherits Craft's public registration setting.
 - `activatesUsers` optional. Defaults to `false`.
-- `trustsEmail` optional. Defaults to `true` for known trusted providers (`google`, `github`, `apple`, `bitbucket`, `slack`, `slack-openid`, and `twitter-oauth-2`), and `false` otherwise. Set to `true` only when the provider is trusted to verify ownership of the returned email address; this allows first-time matching to existing Craft users by email.
+- `trustsEmail` optional. Defaults to `false`. Set to `true` only when the provider is trusted to verify ownership of the returned email address; this allows first-time matching to existing Craft users by email.
 - `identityResolver` optional. Class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
 - `userResolver` optional. Class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
 - `userPopulator` optional. Class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\PopulatesOAuthUser`.
@@ -83,6 +84,7 @@ return GeneralConfig::create()
             'clientId' => env('GITHUB_CLIENT_ID'),
             'clientSecret' => env('GITHUB_CLIENT_SECRET'),
             'label' => 'Continue with GitHub',
+            'icon' => 'github',
             'scopes' => ['read:user', 'user:email'],
             'groups' => ['members', 'editors'],
             'createsUsers' => true,

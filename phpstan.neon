@@ -30,3 +30,5 @@ parameters:
     configDirectories:
         - tests
     tmpDir: /tmp/phpstan
+    ignoreErrors:
+        - '#^Call to function class_exists\(\) with .* will always evaluate to false.$#'

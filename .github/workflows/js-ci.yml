@@ -15,6 +15,9 @@ env:
   NODE_VERSION: '22'
   PHP_VERSION: '8.5'
 
+permissions:
+  contents: read
+
 jobs:
   setup:
     name: 'Setup / Install + Build + Generate'
