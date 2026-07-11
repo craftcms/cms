@@ -1886,15 +1886,25 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
         }
 
+        if ($element->isProvisionalDraft) {
+            $canonical = $element->getCanonical();
+
+            if ($canonical->id === $element->id) {
+                $canonical = null;
+            }
+
+            if ($canonical && !$elementsService->canDeleteForSite($canonical)) {
+                throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
+            }
+        } else {
+            $canonical = null;
+        }
+
         $elementsService->deleteElementForSite($element);
 
-        if ($element->isProvisionalDraft) {
-            // see if the canonical element exists for this site
-            $canonical = $element->getCanonical();
-            if ($canonical->id !== $element->id) {
-                $element = $canonical;
-                $elementsService->deleteElementForSite($element);
-            }
+        if ($canonical) {
+            $elementsService->deleteElementForSite($canonical);
+            $element = $canonical;
         }
 
         return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
