@@ -242,7 +242,7 @@ class GeneralMutationResolverTest extends TestCase
 
         /// Setting values on an entry will store this for us.
         $entry = $this->make(Entry::class, [
-            'setFieldValue' => function($name, $value) use (&$values) {
+            'setFieldValueFromRequest' => function($name, $value) use (&$values) {
                 $values[$name] = $value;
             },
         ]);
