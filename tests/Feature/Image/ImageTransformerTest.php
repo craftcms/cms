@@ -10,8 +10,11 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\ImageTransformer;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     config()->set('filesystems.disks.test-disk', [
@@ -142,6 +145,75 @@ it('stores dateIndexed as a DB-compatible UTC datetime string', function () {
     expect($storedDateIndexed)->toBe('2026-05-17 13:32:16')
         ->and($storedDateIndexed)->not->toContain('T')
         ->and($storedDateIndexed)->not->toContain('+');
+});
+
+it('uses the transform filesystem URL policy', function () {
+    config()->set('filesystems.disks.transform-policy-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/image-transformer-test/transform-policy-source'),
+    ]);
+    config()->set('filesystems.disks.transform-policy-target', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/image-transformer-test/transform-policy-target'),
+        'url' => 'https://transforms.example.test',
+    ]);
+
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:transform-policy-source',
+        'transformFs' => 'disk:transform-policy-target',
+    ]);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'transform-policy.jpg',
+        'kind' => 'image',
+        'width' => 1200,
+        'height' => 800,
+        'dateModified' => now()->subMinute(),
+    ]);
+    $transform = new ImageTransform([
+        'width' => 100,
+        'height' => 100,
+        'mode' => 'crop',
+    ]);
+    $index = $this->transformer->getTransformIndex($asset, $transform);
+    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+
+    $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+    $index->fileExists = true;
+    $this->transformer->storeTransformIndexData($index);
+
+    expect($this->transformer->getTransformUrl($asset, $transform, true))
+        ->toStartWith('https://transforms.example.test/');
+});
+
+it('uses transform-disk-relative paths while preserving the deletion event path', function () {
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'transformSubpath' => 'transforms',
+    ]);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'scoped-transform.jpg',
+        'kind' => 'image',
+    ]);
+    $index = new ImageTransformIndex([
+        'assetId' => $asset->id,
+        'filename' => $asset->getFilename(),
+        'transformString' => '_100x100_crop_center-center_none',
+    ]);
+    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    Storage::disk('test-disk')->deleteDirectory('transforms');
+    $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+    Event::fake([DeletingTransformedImage::class]);
+
+    $this->transformer->deleteImageTransformFile($asset, $index);
+
+    expect($asset->getVolume()->transformDisk()->exists($path))->toBeFalse();
+    Event::assertDispatched(fn (DeletingTransformedImage $event): bool => $event->path === 'transforms/'.$path);
 });
 
 it('uses the provided asset when immediately generating transforms', function () {

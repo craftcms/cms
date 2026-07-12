@@ -145,11 +145,11 @@ class AssetsHelper
         $baseUrls = Collection::make();
         $volume = $asset->getVolume();
 
-        if ($volume->getFs()->hasUrls) {
+        if ($volume->sourceHasUrls()) {
             $baseUrls->push(self::diskBaseUrl($volume->sourceDisk()));
         }
 
-        if ($volume->getTransformFs()->hasUrls) {
+        if ($volume->transformHasUrls()) {
             $baseUrls->push(self::diskBaseUrl($volume->transformDisk()));
         }
 

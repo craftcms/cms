@@ -154,8 +154,8 @@ Form controls
   overflow: clip;
 }
 
-/**
-Select
- */
-.cp-form-control--select {
+.selectize-dropdown.cp-form-control {
+  position: absolute;
+  min-height: 0;
+  overflow: visible;
 }
