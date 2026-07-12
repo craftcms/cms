@@ -53,7 +53,7 @@ use function CraftCms\Cms\t;
 #[Scoped]
 class Assets
 {
-    /** @var array<string, VolumeFolder> */
+    /** @var array<int|string, VolumeFolder> */
     private array $userTempFolders = [];
 
     public function __construct(
