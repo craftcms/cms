@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed lifecycle leaks where asset, GraphQL, route token, user, and user permission state could persist in long-running application processes.
 - Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
 - Fixed a bug where site routes weren't being registered for each localized site value.
 - Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
