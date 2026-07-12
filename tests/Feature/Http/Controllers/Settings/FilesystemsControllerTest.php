@@ -7,6 +7,7 @@ use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -167,7 +168,7 @@ test('save creates filesystem with valid data', function () {
     expect($fs)->not()->toBeNull();
     expect($fs->name)->toBe('New Test Filesystem');
     expect($fs->getSettings())->toBe([
-        'path' => sys_get_temp_dir().'/test-uploads',
+        'path' => File::normalizePath(sys_get_temp_dir().'/test-uploads', '/'),
     ]);
 });
 

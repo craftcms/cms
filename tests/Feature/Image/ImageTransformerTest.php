@@ -213,7 +213,7 @@ it('uses transform-disk-relative paths while preserving the deletion event path'
     $this->transformer->deleteImageTransformFile($asset, $index);
 
     expect($asset->getVolume()->transformDisk()->exists($path))->toBeFalse();
-    Event::assertDispatched(fn (DeletingTransformedImage $event): bool => $event->path === 'transforms/'.$path);
+    Event::assertDispatched(fn (DeletingTransformedImage $event): bool => $event->path === 'transforms'.DIRECTORY_SEPARATOR.$path);
 });
 
 it('uses the provided asset when immediately generating transforms', function () {
