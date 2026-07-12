@@ -13,7 +13,6 @@ use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
-use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
@@ -25,7 +24,6 @@ use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
-use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
@@ -160,9 +158,7 @@ class RouteServiceProvider extends ServiceProvider
             AddLogContext::class,
             ResolveSite::class,
             UpdateLocale::class,
-            CheckSchemaVersion::class,
             CheckForUpdates::class,
-            SendPoweredByHeader::class,
             Enforce2fa::class,
             SetHeaders::class,
             ShowBrokenImage::class,

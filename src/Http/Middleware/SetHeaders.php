@@ -9,6 +9,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class SetHeaders
 {
@@ -49,6 +50,10 @@ class SetHeaders
         $response = $next($request);
 
         if (! $response instanceof Response) {
+            if ($response instanceof SymfonyResponse) {
+                $this->setPoweredByHeader($response);
+            }
+
             return $response;
         }
 
@@ -91,6 +96,7 @@ class SetHeaders
             $response->header($header['header'], $header['value'], $header['replace'] ?? true);
         }
 
+        $this->setPoweredByHeader($response);
         self::reset();
 
         return $response;
@@ -102,5 +108,23 @@ class SetHeaders
         self::$duration = null;
         self::$replace = true;
         self::$headers = [];
+    }
+
+    private function setPoweredByHeader(SymfonyResponse $response): void
+    {
+        if (! $this->generalConfig->sendPoweredByHeader) {
+            $response->headers->remove('X-Powered-By');
+
+            return;
+        }
+
+        $header = str($response->headers->get('X-Powered-By', ''))
+            ->explode(',')
+            ->add('Craft CMS')
+            ->unique()
+            ->filter()
+            ->join(',');
+
+        $response->headers->set('X-Powered-By', $header);
     }
 }

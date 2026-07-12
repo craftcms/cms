@@ -124,3 +124,27 @@ it('does not set security headers for site requests', function () {
     expect($response->headers->has('X-Frame-Options'))->toBeFalse();
     expect($response->headers->has('X-Content-Type-Options'))->toBeFalse();
 });
+
+it('removes the powered-by header when disabled', function () {
+    $this->generalConfig->sendPoweredByHeader(false);
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response(headers: ['X-Powered-By' => 'Foo']));
+
+    expect($response->headers->has('X-Powered-By'))->toBeFalse();
+});
+
+it('adds the powered-by header when enabled', function () {
+    $this->generalConfig->sendPoweredByHeader();
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->get('X-Powered-By'))->toBe('Craft CMS');
+});
+
+it('appends the powered-by header to existing values', function () {
+    $this->generalConfig->sendPoweredByHeader();
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response(headers: ['X-Powered-By' => 'Foo']));
+
+    expect($response->headers->get('X-Powered-By'))->toBe('Foo,Craft CMS');
+});
