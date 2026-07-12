@@ -9,10 +9,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Route\ControllerRoute;
 use CraftCms\Cms\Route\MatchedElement;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
@@ -29,7 +29,6 @@ use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     Cms::config()->isSystemLive = true;
-    $this->middleware = app(HandleMatchedElementRoute::class);
     TemplateMode::set(TemplateMode::Site);
     Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
 
@@ -37,88 +36,11 @@ beforeEach(function () {
         $event->roots[''] = dirname(__DIR__, 3).'/Support/templates';
     });
 
-    Route::middleware(['web', 'craft'])->any('actions/custom/route', fn () => new JsonResponse([
-        'matchedElementId' => MatchedElement::get()->id,
-    ]));
-
-    Route::middleware(['web', 'craft', 'craft.web'])->any('{path?}', fn () => new JsonResponse([
-        'fallback' => true,
-        'path' => request()->path(),
-    ]))->where('path', '.*');
 });
 
 afterEach(function () {
     Cms::config()->isSystemLive = null;
     Context::forgetHidden(HandleTokenRequest::HAD_TOKEN_KEY);
-});
-
-it('does nothing when no element matches the request uri', function () {
-    $request = Request::create('/missing');
-    app()->instance('request', $request);
-
-    $response = $this->middleware->handle($request, fn () => response('next'));
-
-    expect($response->getContent())->toBe('next');
-});
-
-it('renders matched element template routes directly', function () {
-    $entry = createRoutableEntry('test-entry', 'entries/show');
-
-    $request = Request::create('/test-entry');
-    app()->instance('request', $request);
-
-    $response = $this->middleware->handle($request, fn () => response('next'));
-
-    expect($response->getStatusCode())->toBe(200)
-        ->and(trim((string) $response->getContent()))->toBe("entry-template:{$entry->id}:test-entry")
-        ->and(MatchedElement::get()->id)->toBe($entry->id);
-});
-
-it('dispatches matched element string routes through an action request', function () {
-    $entry = createRoutableEntry('custom-route-entry', 'entries/show');
-
-    Event::listen(function (SetRoute $event) use ($entry) {
-        if ($event->element->id !== $entry->id) {
-            return;
-        }
-
-        $event->route = 'custom/route';
-        $event->handled = true;
-    });
-
-    $request = Request::create('/custom-route-entry');
-    app()->instance('request', $request);
-
-    $response = $this->middleware->handle($request, fn () => response('next'));
-
-    expect($response->getStatusCode())->toBe(200)
-        ->and(json_decode((string) $response->getContent(), true))->toMatchArray([
-            'matchedElementId' => $entry->id,
-        ]);
-});
-
-it('dispatches matched element controller routes from the set route event', function () {
-    $entry = createRoutableEntry('controller-route-entry', 'entries/show');
-
-    Event::listen(function (SetRoute $event) {
-        $event->route = new ControllerRoute([MatchedElementRouteTestController::class, 'show'], [
-            'extra' => 'custom-param',
-        ]);
-        $event->handled = true;
-    });
-
-    $request = Request::create('/controller-route-entry');
-    app()->instance('request', $request);
-
-    $response = $this->middleware->handle($request, fn () => response('next'));
-
-    expect($response->getStatusCode())->toBe(200)
-        ->and(json_decode((string) $response->getContent(), true))->toMatchArray([
-            'elementId' => $entry->id,
-            'matchedElementId' => $entry->id,
-            'path' => 'controller-route-entry',
-            'extra' => 'custom-param',
-        ]);
 });
 
 it('dispatches matched element invokable controller routes from the set route event', function () {
@@ -129,16 +51,30 @@ it('dispatches matched element invokable controller routes from the set route ev
         $event->handled = true;
     });
 
-    $request = Request::create('/invokable-controller-route-entry');
-    app()->instance('request', $request);
+    $this->get('/invokable-controller-route-entry')
+        ->assertOk()
+        ->assertJsonPath('elementId', $entry->id)
+        ->assertJsonPath('path', 'invokable-controller-route-entry');
+});
 
-    $response = $this->middleware->handle($request, fn () => response('next'));
+it('dispatches matched element controller routes through the site fallback', function () {
+    $entry = createRoutableEntry('fallback-controller-route-entry', 'entries/show');
 
-    expect($response->getStatusCode())->toBe(200)
-        ->and(json_decode((string) $response->getContent(), true))->toMatchArray([
-            'elementId' => $entry->id,
-            'path' => 'invokable-controller-route-entry',
+    Event::listen(function (SetRoute $event) use ($entry) {
+        if ($event->element->id !== $entry->id) {
+            return;
+        }
+
+        $event->route = new ControllerRoute([MatchedElementRouteTestController::class, 'show'], [
+            'extra' => 'fallback-param',
         ]);
+        $event->handled = true;
+    });
+
+    $this->get('/fallback-controller-route-entry')
+        ->assertOk()
+        ->assertJsonPath('elementId', $entry->id)
+        ->assertJsonPath('extra', 'fallback-param');
 });
 
 it('renders matched element template routes for a full request', function () {
@@ -149,16 +85,23 @@ it('renders matched element template routes for a full request', function () {
         ->assertSeeText("entry-template:{$entry->id}:full-request-entry", escape: false);
 });
 
+it('prefers fixed routes over matched elements', function () {
+    createRoutableEntry('fixed-route-entry', 'entries/show');
+
+    Route::middleware(['web', 'craft', 'craft.web'])
+        ->get('fixed-route-entry', fn () => response('fixed-route'));
+
+    $this->get('/fixed-route-entry')
+        ->assertOk()
+        ->assertSeeText('fixed-route');
+});
+
 it('keeps matched element state out of dehydrated queue context', function () {
     $entry = createRoutableEntry('dehydrated-context-entry', 'entries/show');
 
-    $request = Request::create('/dehydrated-context-entry');
-    app()->instance('request', $request);
+    $this->get('/dehydrated-context-entry')->assertOk();
 
-    $response = $this->middleware->handle($request, fn () => response('next'));
-
-    expect($response->getStatusCode())->toBe(200)
-        ->and(MatchedElement::get()->id)->toBe($entry->id)
+    expect(MatchedElement::get()->id)->toBe($entry->id)
         ->and(fn () => Context::dehydrate())->not->toThrow(Throwable::class);
 });
 
@@ -195,15 +138,11 @@ it('allows matched element template routes with a valid route token when the sys
 
     $entry = createRoutableEntry('offline-route-token-entry', 'entries/show');
 
-    Context::addHidden(HandleTokenRequest::HAD_TOKEN_KEY, true);
+    $token = app(RouteTokens::class)->createToken('/offline-route-token-entry');
 
-    $request = Request::create('/offline-route-token-entry');
-    app()->instance('request', $request);
-
-    $response = $this->middleware->handle($request, fn () => response('next'));
-
-    expect($response->getStatusCode())->toBe(200)
-        ->and(trim((string) $response->getContent()))->toBe("entry-template:{$entry->id}:offline-route-token-entry");
+    $this->get("/offline-route-token-entry?token={$token}")
+        ->assertOk()
+        ->assertSeeText("entry-template:{$entry->id}:offline-route-token-entry", escape: false);
 });
 
 it('denies matched element template routes for users without offline site access', function () {

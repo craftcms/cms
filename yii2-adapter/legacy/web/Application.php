@@ -15,13 +15,13 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Route\DynamicRoute;
+use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Web\Response as IlluminateBridgeResponse;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request as IlluminateRequest;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -265,9 +265,11 @@ class Application extends \yii\web\Application
 
     private function runTemplateRoute(array $params = []): BaseResponse
     {
-        $laravelResponse = new DynamicRoute('templates/render', $params + [
-            'publicOnly' => false,
-        ])->handle(request());
+        $laravelResponse = new TemplateRoute(
+            $params['template'],
+            $params['variables'] ?? [],
+            publicOnly: false,
+        )->handle(request());
 
         $response = $this->getResponse();
 
@@ -314,7 +316,7 @@ class Application extends \yii\web\Application
         }
 
         /** @var SymfonyResponse $laravelResponse */
-        $laravelResponse = app(Kernel::class)->handle($internalRequest);
+        $laravelResponse = app(Router::class)->dispatch($internalRequest);
 
         $response = $this->getResponse();
 
@@ -341,10 +343,10 @@ class Application extends \yii\web\Application
             ? app(Sites::class)->getRequestPath($originalRequest)
             : $originalRequest->craftPath();
 
-        $laravelResponse = new DynamicRoute('templates/render', [
-            'template' => $template,
-            'variables' => $this->getUrlManager()->getRouteParams() ?? [],
-        ])->handle($originalRequest);
+        $laravelResponse = new TemplateRoute(
+            $template,
+            $this->getUrlManager()->getRouteParams() ?? [],
+        )->handle($originalRequest);
 
         $response = $this->getResponse();
 
