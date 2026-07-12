@@ -77,6 +77,16 @@ it('returns the response of the token route', function () {
     expect($result)->toBe('token/route');
 });
 
+it('rebinds the request after resolving a token route', function () {
+    $token = app(RouteTokens::class)->createToken('token/route');
+
+    $rebound = $this->middleware->handle(Request::create('foo', parameters: [
+        Cms::config()->tokenParam => $token,
+    ]), fn (Request $request) => request() === $request);
+
+    expect($rebound)->toBeTrue();
+});
+
 it('does not let a hidden action parameter override a resolved token route', function () {
     $token = app(RouteTokens::class)->createToken('token/route');
 

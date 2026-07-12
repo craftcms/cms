@@ -47,59 +47,62 @@ class SetHeaders
 
     public function handle(Request $request, Closure $next): mixed
     {
-        $response = $next($request);
+        try {
+            $response = $next($request);
 
-        if (! $response instanceof Response) {
-            if ($response instanceof SymfonyResponse) {
-                $this->setPoweredByHeader($response);
+            if (! $response instanceof Response) {
+                if ($response instanceof SymfonyResponse) {
+                    $this->setPoweredByHeader($response);
+                }
+
+                return $response;
             }
+
+            $hasPreviewParam = $request->previewParam() !== null;
+
+            if ($request->isCpRequest() || $request->isActionRequest() || $hasPreviewParam || self::$noCache) {
+                $response->setNoCacheHeaders();
+            } elseif (! is_null(self::$duration)) {
+                if (self::$duration <= 0) {
+                    $response->setNoCacheHeaders();
+                } else {
+                    $response
+                        ->setExpires(now()->addSeconds(self::$duration))
+                        ->header('Pragma', 'cache', self::$replace)
+                        ->setPublic()
+                        ->setMaxAge(self::$duration);
+                }
+            }
+
+            // Tell bots not to index/follow control panel and tokenized pages
+            if (
+                $this->generalConfig->disallowRobots ||
+                $request->isCpRequest() ||
+                $request->has(HandleTokenRequest::TOKEN_KEY) ||
+                $request->hasHeader(HandleTokenRequest::TOKEN_HEADER) ||
+                $hasPreviewParam ||
+                ($request->isActionRequest() && ! ($request->route()?->getActionName() === LoginController::class && $request->isMethod('GET')))
+            ) {
+                $response->headers->set('X-Robots-Tag', 'none');
+            }
+
+            // Prevent some possible XSS attack vectors
+            if ($request->isCpRequest()) {
+                $response->headers->set('Content-Security-Policy', "frame-ancestors 'self'", replace: false);
+                $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+                $response->headers->set('X-Content-Type-Options', 'nosniff');
+            }
+
+            foreach (self::$headers as $header) {
+                $response->header($header['header'], $header['value'], $header['replace'] ?? true);
+            }
+
+            $this->setPoweredByHeader($response);
 
             return $response;
+        } finally {
+            self::reset();
         }
-
-        $hasPreviewParam = $request->previewParam() !== null;
-
-        if ($request->isCpRequest() || $request->isActionRequest() || $hasPreviewParam || self::$noCache) {
-            $response->setNoCacheHeaders();
-        } elseif (! is_null(self::$duration)) {
-            if (self::$duration <= 0) {
-                $response->setNoCacheHeaders();
-            } else {
-                $response
-                    ->setExpires(now()->addSeconds(self::$duration))
-                    ->header('Pragma', 'cache', self::$replace)
-                    ->setPublic()
-                    ->setMaxAge(self::$duration);
-            }
-        }
-
-        // Tell bots not to index/follow control panel and tokenized pages
-        if (
-            $this->generalConfig->disallowRobots ||
-            $request->isCpRequest() ||
-            $request->has(HandleTokenRequest::TOKEN_KEY) ||
-            $request->hasHeader(HandleTokenRequest::TOKEN_HEADER) ||
-            $hasPreviewParam ||
-            ($request->isActionRequest() && ! ($request->route()?->getActionName() === LoginController::class && $request->isMethod('GET')))
-        ) {
-            $response->headers->set('X-Robots-Tag', 'none');
-        }
-
-        // Prevent some possible XSS attack vectors
-        if ($request->isCpRequest()) {
-            $response->headers->set('Content-Security-Policy', "frame-ancestors 'self'", replace: false);
-            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
-            $response->headers->set('X-Content-Type-Options', 'nosniff');
-        }
-
-        foreach (self::$headers as $header) {
-            $response->header($header['header'], $header['value'], $header['replace'] ?? true);
-        }
-
-        $this->setPoweredByHeader($response);
-        self::reset();
-
-        return $response;
     }
 
     public static function reset(): void

@@ -30,7 +30,7 @@ readonly class HandleYiiSiteRouteFallback
             $element = MatchedElement::get();
             $params = is_array($elementRoute[1] ?? null) ? $elementRoute[1] : [];
 
-            return $this->run($elementRoute[0], $params + compact('element'));
+            return $this->run($elementRoute[0], compact('element') + $params);
         }
 
         $route = Craft::$app->getUrlManager()->parseRequest(Craft::$app->getRequest());

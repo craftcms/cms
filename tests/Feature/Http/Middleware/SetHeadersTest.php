@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 beforeEach(function () {
     $this->generalConfig = Cms::config();
@@ -147,4 +148,13 @@ it('appends the powered-by header to existing values', function () {
     $response = $this->middleware->handle(Request::create('/'), fn () => new Response(headers: ['X-Powered-By' => 'Foo']));
 
     expect($response->headers->get('X-Powered-By'))->toBe('Foo,Craft CMS');
+});
+
+it('resets header state after Symfony responses', function () {
+    SetHeaders::add('X-Test', 'value');
+
+    $this->middleware->handle(Request::create('/'), fn () => new JsonResponse);
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->has('X-Test'))->toBeFalse();
 });
