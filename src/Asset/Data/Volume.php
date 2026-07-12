@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\VolumeRules;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -477,7 +478,18 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     public function isTemporary(): bool
     {
-        return $this->_temporary;
+        if ($this->_temporary) {
+            return true;
+        }
+
+        $tempUploadTarget = Env::parse(Cms::config()->tempAssetUploadFs);
+        if (! is_string($tempUploadTarget)) {
+            return false;
+        }
+
+        $tempUploadDisk = Filesystems::resolveDiskName($tempUploadTarget);
+
+        return $tempUploadDisk !== null && $this->resolveStorageTargetKey($this->_fsHandle) === $tempUploadDisk;
     }
 
     public function markAsTemporary(): void
