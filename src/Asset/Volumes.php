@@ -108,6 +108,7 @@ class Volumes
 
         $fs = app(Assets::class)->getTempAssetUploadFs();
         $volume->setFs($fs);
+        $volume->markAsTemporary();
 
         return $volume;
     }

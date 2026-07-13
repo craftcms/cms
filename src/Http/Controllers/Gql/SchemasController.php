@@ -10,7 +10,6 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -156,17 +155,7 @@ readonly class SchemasController extends GqlController
                     'expiryDate' => $token->expiryDate?->format('Y-m-d\TH:i'),
                 ] : null,
                 'permissions' => $this->schemaPermissionGroups(),
-            ])
-            ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                HtmlStack::jsWithVars(
-                    fn ($containerId) => <<<JS
-                        new Craft.ElevatedSessionForm('#' + $containerId, [
-                            '.user-permissions input[type="checkbox"]:not(:checked)'
-                        ]);
-                    JS,
-                    [$containerId],
-                );
-            });
+            ]);
     }
 
     /** @return Collection<int, PermissionGroup> */

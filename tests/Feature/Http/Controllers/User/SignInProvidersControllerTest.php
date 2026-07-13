@@ -19,6 +19,7 @@ use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\delete;
 use function Pest\Laravel\get;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
@@ -117,7 +118,7 @@ it('requires login', function () {
     Auth::logout();
 
     get(cp_url('myaccount/sign-in-providers'))->assertRedirect();
-    get(cp_url('myaccount/sign-in-providers/test/connect'))->assertRedirect();
+    postJson(cp_url('myaccount/sign-in-providers/test/connect'))->assertUnauthorized();
     delete(cp_url('myaccount/sign-in-providers/test'))->assertRedirect();
 });
 
@@ -201,7 +202,7 @@ it('requires an elevated session to connect a provider', function () {
     configureSignInProvider();
     Session::forget('auth.password_confirmed_at');
 
-    get(cp_url('myaccount/sign-in-providers/test/connect'))->assertForbidden();
+    postJson(cp_url('myaccount/sign-in-providers/test/connect'))->assertStatus(423);
 
     expect(session()->has(OAuth::CONNECT_SESSION_KEY))->toBeFalse();
 });
@@ -211,9 +212,8 @@ it('does not connect stateless providers', function () {
         'stateless' => true,
     ]);
 
-    get(cp_url('myaccount/sign-in-providers/test/connect'))
-        ->assertRedirect(cp_url('myaccount/sign-in-providers'))
-        ->assertSessionHas('error');
+    postJson(cp_url('myaccount/sign-in-providers/test/connect'))
+        ->assertUnprocessable();
 
     expect(session()->has(OAuth::CONNECT_SESSION_KEY))->toBeFalse();
 });
@@ -222,8 +222,9 @@ it('connects a provider to the current user', function () {
     configureSignInProvider();
     $user = signInProviderUser();
 
-    get(cp_url('myaccount/sign-in-providers/test/connect'))
-        ->assertRedirect('https://provider.test/oauth/authorize');
+    postJson(cp_url('myaccount/sign-in-providers/test/connect'))
+        ->assertOk()
+        ->assertJsonPath('url', 'https://provider.test/oauth/authorize');
 
     signInProviderCallback([
         'id' => 'provider-user-1',
@@ -241,7 +242,7 @@ it('does not duplicate an already connected provider identity', function () {
     $user = signInProviderUser();
     app(OAuth::class)->linkIdentity($user, signInProviderDefinition(), 'provider-user-1');
 
-    get(cp_url('myaccount/sign-in-providers/test/connect'));
+    postJson(cp_url('myaccount/sign-in-providers/test/connect'));
 
     signInProviderCallback([
         'id' => 'provider-user-1',
@@ -263,7 +264,7 @@ it('does not connect an identity that belongs to another user', function () {
 
     app(OAuth::class)->linkIdentity($otherUser, signInProviderDefinition(), 'provider-user-1');
 
-    get(cp_url('myaccount/sign-in-providers/test/connect'));
+    postJson(cp_url('myaccount/sign-in-providers/test/connect'));
 
     signInProviderCallback([
         'id' => 'provider-user-1',
@@ -281,7 +282,7 @@ it('does not replace a different identity for the same provider', function () {
     $user = signInProviderUser();
     app(OAuth::class)->linkIdentity($user, signInProviderDefinition(), 'provider-user-1');
 
-    get(cp_url('myaccount/sign-in-providers/test/connect'));
+    postJson(cp_url('myaccount/sign-in-providers/test/connect'));
 
     signInProviderCallback([
         'id' => 'provider-user-2',
@@ -300,7 +301,7 @@ it('requires an elevated session to disconnect a provider', function () {
     app(OAuth::class)->linkIdentity($user, signInProviderDefinition(), 'provider-user-1');
     Session::forget('auth.password_confirmed_at');
 
-    delete(cp_url('myaccount/sign-in-providers/test'))->assertForbidden();
+    delete(cp_url('myaccount/sign-in-providers/test'))->assertStatus(423);
 
     expect(signInProviderHasIdentity('provider-user-1', $user->id))->toBeTrue();
 });

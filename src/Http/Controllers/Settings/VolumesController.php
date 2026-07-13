@@ -16,6 +16,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
@@ -243,10 +244,6 @@ class VolumesController
             return null;
         }
 
-        if (str_starts_with($value, 'disk:')) {
-            return $value;
-        }
-
-        return "fs:{$value}";
+        return Filesystems::resolveDiskName($value);
     }
 }
