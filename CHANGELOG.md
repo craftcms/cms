@@ -5,7 +5,6 @@
 - Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
 - Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
 - Login attempts are now rate limited.
-- Fixed lifecycle leaks where asset, GraphQL, route token, user, and user permission state could persist in long-running application processes.
 - Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
 - Fixed a bug where site routes weren't being registered for each localized site value.
 - Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
@@ -16,6 +15,7 @@
 - Fixed a bug where failed Craft API responses weren’t processing response headers. ([#19228](https://github.com/craftcms/cms/pull/19228))
 - Fixed a bug where Craft plugin service providers could be skipped when the plugin’s Composer metadata also defined Laravel package discovery settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
 - Fixed a bug where event-registered user permissions weren’t getting saved. ([#19232](https://github.com/craftcms/cms/issues/19232))
+- Fixed lifecycle leaks where asset, GraphQL, route token, user, and user permission state could persist in long-running application processes. ([#19242](https://github.com/craftcms/cms/pull/19242))
 
 ## 6.0.0-alpha.11 - 2026-07-07
 
