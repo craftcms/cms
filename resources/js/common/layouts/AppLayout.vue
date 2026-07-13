@@ -250,11 +250,7 @@
           </div>
         </slot>
         <main id="main" tabindex="-1">
-          <component
-            :is="form ? 'form' : 'div'"
-            method="post"
-            @submit.prevent="save()"
-          >
+          <form method="post" @submit.prevent="form && save()">
             <slot name="header">
               <div :class="{container: true, 'container--full': fullWidth}">
                 <div class="index-grid index-grid--header">
@@ -380,7 +376,7 @@
                 </aside>
               </div>
             </div>
-          </component>
+          </form>
         </main>
       </slot>
     </div>
