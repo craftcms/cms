@@ -152,7 +152,6 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         return [
             'handle' => t('Handle'),
             'name' => t('Name'),
-            'url' => t('URL'),
             'fsHandle' => t('Asset Filesystem'),
             'subpath' => t('Subpath'),
             'transformFsHandle' => t('Transform Filesystem'),
