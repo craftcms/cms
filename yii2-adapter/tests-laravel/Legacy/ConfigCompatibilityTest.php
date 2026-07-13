@@ -5,10 +5,7 @@ declare(strict_types=1);
 use craft\config\GeneralConfig;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
-use CraftCms\Yii2Adapter\Tests\TestCase;
 use Illuminate\Support\Facades\Config;
-
-uses(TestCase::class);
 
 it('preserves callable config values', function(): void {
     $originalConfigPath = $this->app->configPath();
