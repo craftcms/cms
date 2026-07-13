@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Controllers\Auth\OAuthController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\SiteRouteController;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Cms\Site\Sites;
@@ -71,6 +72,4 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
     });
 }
 
-Route::fallback(function () {
-    abort(404);
-});
+Route::fallback(SiteRouteController::class)->name('siteFallback');

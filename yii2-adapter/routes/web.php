@@ -1,21 +1,17 @@
 <?php
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Yii2Adapter\Http\ExcludeCsrfValidationForLegacyController;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use Illuminate\Support\Facades\Route;
 
+$routes = app(CraftRoutes::class);
+
 /**
- * Register catch-all routes that boot up the Yii-based Craft for any
- * request the CMS package didn't match. These are intentionally not
- * fallback() routes: Laravel keeps the first matching fallback, so the
- * CMS package's own Route::fallback(abort(404)) (registered during
- * RouteServiceProvider::boot()) would otherwise win. As regular routes
- * registered after the CMS routes via Yii2ServiceProvider's booted()
- * callback, they're tried after all CMS specific routes but before any
- * fallback — so unmatched paths reach the legacy Yii application, where
- * UrlManager::EVENT_REGISTER_CP_URL_RULES / EVENT_REGISTER_SITE_URL_RULES
- * rules are honored.
+ * Register the remaining legacy CP and action routes after the CMS package's
+ * fixed routes. Site URL rules are resolved by the adapter's site fallback
+ * middleware.
  *
  * The CP catch-all is registered inside the `craft.cp` middleware group
  * with a `craft.cp.*` route name so HandleTemplateRequest will fall back
@@ -37,5 +33,7 @@ Route::middleware([
     ->where('any', '.*');
 
 Route::middleware(['craft', ExcludeCsrfValidationForLegacyController::class, 'craft.web', LegacyMiddleware::class])
+    ->name('craft.legacy.action')
+    ->prefix($routes->actionTriggerRoutePrefix())
     ->any('{any}', fn() => abort(404))
     ->where('any', '.*');

@@ -173,7 +173,6 @@ Route::prefix($routes->actionTriggerRoutePrefix())->group(function () {
     });
 
     Route::middleware([RequireToken::class])->group(function () {
-        Route::any('preview/preview', [PreviewController::class, 'preview'])->name('preview');
         Route::any('users/impersonate-with-token', [ImpersonationController::class, 'withToken']);
     });
 });

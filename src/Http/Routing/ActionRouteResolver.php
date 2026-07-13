@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Routing;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use Illuminate\Http\Request;
 
 readonly class ActionRouteResolver
@@ -17,7 +18,11 @@ readonly class ActionRouteResolver
             return $cached;
         }
 
-        $segments = $this->segmentsFromPath($request) ?? $this->segmentsFromActionParam($request);
+        $segments = $this->segmentsFromPath($request);
+
+        if ($segments === null && ! $request->attributes->get(HandleTokenRequest::ROUTE_RESOLVED_ATTRIBUTE, false)) {
+            $segments = $this->segmentsFromActionParam($request);
+        }
 
         if ($segments === null) {
             return null;

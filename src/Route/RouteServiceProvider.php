@@ -14,22 +14,18 @@ use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
-use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
-use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
-use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
-use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
@@ -64,7 +60,6 @@ class RouteServiceProvider extends ServiceProvider
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
             HandleTokenRequest::class,
-            HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
@@ -93,7 +88,8 @@ class RouteServiceProvider extends ServiceProvider
         }
 
         $this->app->booted(function () use ($routes, $router): void {
-            if (! Cms::isInstalled()) {
+            // Project routes are registered at runtime so cached routes cannot retain stale project config.
+            if (! Cms::isInstalled() || $this->app->runningConsoleCommand('route:cache')) {
                 return;
             }
 
@@ -136,7 +132,6 @@ class RouteServiceProvider extends ServiceProvider
          */
         PreventRequestForgery::except(collect([
             'graphql/api',
-            'preview/preview',
         ])->flatMap(fn (string $route) => [
             $route,
             app(Routes::class)->actionTriggerUriPrefix().Str::start($route, '/'),
@@ -173,9 +168,7 @@ class RouteServiceProvider extends ServiceProvider
             AddLogContext::class,
             ResolveSite::class,
             UpdateLocale::class,
-            CheckSchemaVersion::class,
             CheckForUpdates::class,
-            SendPoweredByHeader::class,
             Enforce2fa::class,
             SetHeaders::class,
             ShowBrokenImage::class,
@@ -193,7 +186,6 @@ class RouteServiceProvider extends ServiceProvider
             'web',
             AuthenticateSession::class,
             RunQueue::class,
-            HandleMatchedElementRoute::class,
             HandleTemplateRequest::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }

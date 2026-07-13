@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\InstallController;
-use CraftCms\Cms\Route\DynamicRoute;
+use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Http\Request;
@@ -29,6 +29,10 @@ readonly class HandleTemplateRequest
         }
 
         if ($request->isActionRequest()) {
+            return $response;
+        }
+
+        if ($request->isSiteRequest() && ! $request->routeIs('craft.siteFallback')) {
             return $response;
         }
 
@@ -56,7 +60,7 @@ readonly class HandleTemplateRequest
             return $response;
         }
 
-        return new DynamicRoute('templates/render', ['template' => $path])->handle($request);
+        return new TemplateRoute($path)->handle($request);
     }
 
     private function isPublicTemplatePath(Request $request, string $path): bool

@@ -1,8 +1,12 @@
 <?php
 
+use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
+use CraftCms\Yii2Adapter\Http\HandleYiiSiteRouteFallback;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use yii\base\Application;
 
 it('can restore empty strings', function() {
@@ -72,6 +76,30 @@ it('can restore nested empty strings', function() {
     }
 
     expect($request->get('foo')['bar']['baz'])->toBe('');
+});
+
+it('normalizes legacy path parameters without re-entering the application', function() {
+    $request = Request::create('/index.php?p=legacy/path&site=en', 'POST', [
+        'foo' => 'bar',
+    ]);
+
+    $normalized = app(NormalizeLegacyPath::class)->handle($request, fn(Request $request) => $request);
+
+    expect($normalized->path())->toBe('legacy/path')
+        ->and($normalized->query('site'))->toBe('en')
+        ->and($normalized->query('p'))->toBeNull()
+        ->and($normalized->input('foo'))->toBe('bar')
+        ->and(request())->toBe($normalized);
+});
+
+it('runs Yii site routes before the public template fallback', function() {
+    $middleware = app(Router::class)->getMiddlewareGroups()['craft.web'];
+    $templateFallback = array_search(HandleTemplateRequest::class, $middleware, true);
+    $yiiFallback = array_search(HandleYiiSiteRouteFallback::class, $middleware, true);
+
+    expect($templateFallback)->toBeInt()
+        ->and($yiiFallback)->toBeInt()
+        ->and($yiiFallback)->toBeGreaterThan($templateFallback);
 });
 
 it('triggers after request callbacks when Laravel terminates a request', function() {
