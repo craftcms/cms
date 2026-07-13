@@ -40,6 +40,7 @@
     description: props.group.description ?? '',
     permissions: props.group.permissions ?? [],
   });
+  const initialPermissions = new Set(form.permissions);
 
   // Auto-generate handle from name for new sections
   const handleGenerator = useInputGenerator(
@@ -52,7 +53,16 @@
     handleGenerator.stop();
   }
 
-  const {save} = useSettingsSave(form, store);
+  const {save} = useSettingsSave(form, store, {
+    passwordConfirmation: {
+      required: ({permissions}) =>
+        !props.brandNew &&
+        (permissions.length !== initialPermissions.size ||
+          permissions.some(
+            (permission) => !initialPermissions.has(permission)
+          )),
+    },
+  });
 
   const actions = computed(() => {
     if (props.readOnly || !props.group.id) {

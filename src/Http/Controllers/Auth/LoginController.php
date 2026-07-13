@@ -10,6 +10,7 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -109,7 +110,7 @@ readonly class LoginController extends AuthenticationController
         ]);
     }
 
-    public function attemptLogin(Request $request, Impersonation $impersonation): Response
+    public function attemptLogin(Request $request, Impersonation $impersonation, LoginRateLimiter $loginRateLimiter): Response
     {
         $request->validate([
             'loginName' => [
@@ -128,7 +129,7 @@ readonly class LoginController extends AuthenticationController
 
         $user = $this->retrieveLoginUser($request->input('loginName'));
 
-        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation) {
+        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation, $loginRateLimiter) {
             if (! $user || $user->getAuthPassword() === null) {
                 return $this->handleLoginFailure($request, AuthError::InvalidCredentials);
             }
@@ -138,6 +139,8 @@ readonly class LoginController extends AuthenticationController
             }
 
             // Valid credentials
+            $loginRateLimiter->clear($request);
+
             if (config('hashing.rehash_on_login', true) && $user instanceof Model) {
                 $provider->rehashPasswordIfRequired($user, ['password' => $request->input('password')]);
             }

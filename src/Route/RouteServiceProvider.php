@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route;
 
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
@@ -40,6 +42,7 @@ use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
@@ -118,6 +121,11 @@ class RouteServiceProvider extends ServiceProvider
             // Throttle to prevent enumeration attacks
             return Limit::perMinute(1)->by($request->ip());
         });
+
+        RateLimiter::for(
+            LoginRateLimiter::NAME,
+            fn (Request $request) => app(LoginRateLimiter::class)->limit($request),
+        );
     }
 
     private function bootRequestForgeryExceptions(): void
@@ -157,6 +165,8 @@ class RouteServiceProvider extends ServiceProvider
 
     private function bootMiddleware(Router $router): void
     {
+        $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
+
         collect([
             ForgetTriggerParameters::class,
             EnsureInstalled::class,

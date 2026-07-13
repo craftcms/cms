@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -29,7 +30,8 @@ if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::isInstalled()) {
         foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
             Route::get($path, [LoginController::class, 'showLogin']);
-            Route::post($path, [LoginController::class, 'attemptLogin']);
+            Route::post($path, [LoginController::class, 'attemptLogin'])
+                ->middleware('throttle:'.LoginRateLimiter::NAME);
         }
 
         foreach ($routes->localizedConfigPaths('getVerifyEmailPath') as $path) {
