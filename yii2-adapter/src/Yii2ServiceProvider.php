@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
+use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -57,6 +58,12 @@ class Yii2ServiceProvider extends ServiceProvider
     {
         new ClassAliases()->register();
         new MultiEnvironmentConfigCompatibility()->register($this->app);
+
+        $appType = $this->app->runningInConsole() ? 'console' : 'web';
+        Config::set('craft.general', new GeneralConfigCompatibility()->convert(
+            Config::get('craft.general', []),
+            Config::get("craft.general.{$appType}"),
+        ));
 
         $this->registerConstants();
 

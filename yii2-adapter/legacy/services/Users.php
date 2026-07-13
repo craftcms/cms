@@ -15,7 +15,6 @@ use craft\events\UserGroupsAssignEvent;
 use craft\events\UserPhotoEvent;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -305,7 +304,7 @@ class Users extends Component
         }
 
         // Make sure the verification code isn't expired
-        $minCodeIssueDate = now()->subSeconds(Cms::config()->verificationCodeDuration)->toDateTime();
+        $minCodeIssueDate = now()->subSeconds((int) config('auth.passwords.craft.expire'))->toDateTime();
 
         // Make sure it’s not expired
         if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
