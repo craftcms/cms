@@ -304,7 +304,7 @@ class Users extends Component
         }
 
         // Make sure the verification code isn't expired
-        $minCodeIssueDate = now()->subSeconds((int) config('auth.passwords.craft.expire'))->toDateTime();
+        $minCodeIssueDate = now()->subMinutes((int) config('auth.passwords.craft.expire', 1440))->toDateTime();
 
         // Make sure it’s not expired
         if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {

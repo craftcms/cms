@@ -682,9 +682,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
 
-        app()->booted(function() {
+        app()->booting(function() {
             Deprecator::log('generalConfig.verificationCodeDuration', 'Calling verificationCodeDuration() is deprecated. Configure `auth.passwords.craft.expire` instead.');
-            ConfigFacade::set('auth.passwords.craft.expire', $this->verificationCodeDuration);
+            ConfigFacade::set('auth.passwords.craft.expire', floor($this->verificationCodeDuration / 60));
         });
 
         return $this;
