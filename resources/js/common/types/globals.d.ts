@@ -97,7 +97,7 @@ interface CraftStatic {
   IntervalManager: IntervalManagerInterface;
   t(message: string, params?: object, category?: string): string;
   sendActionRequest(method: string, action: string, options?: object): Promise;
-  initUiElements($container: JQuery): void;
+  initUiElements(container: Element | JQuery): void;
   createElementSelectorModal(
     elementType: string,
     settings?: ElementSelectorModalSettings
@@ -149,6 +149,17 @@ interface CraftStatic {
   };
   FieldLayoutDesigner: {
     new (container: any, settings?: object): FieldLayoutDesignerInstance;
+  };
+  ElevatedSessionForm: {
+    new (form: any, inputs?: string | string[]): unknown;
+  };
+  elevatedSessionManager: {
+    fetchingTimeout: boolean;
+    requireElevatedSession(
+      onSuccess: () => void,
+      onCancel?: () => void,
+      minSafeElevatedSessionTimeout?: number
+    ): void | Promise<void>;
   };
 }
 

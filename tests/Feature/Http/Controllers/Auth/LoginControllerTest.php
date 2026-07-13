@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Auth\Events\Failed;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -23,6 +25,7 @@ use Inertia\Testing\AssertableInertia;
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 test('showLogin redirects already authenticated users', function () {
@@ -86,6 +89,61 @@ test('attemptLogin fails with wrong password', function () {
     ])->assertStatus(400);
 
     Event::assertDispatched(Failed::class);
+});
+
+test('attemptLogin is limited to five failed attempts per minute', function () {
+    $user = User::findOne();
+
+    foreach (range(1, 5) as $attempt) {
+        postJson(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => $attempt % 2 === 0 ? mb_strtoupper($user->email) : $user->email,
+            'password' => 'wrongpassword',
+        ])->assertStatus(400);
+    }
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertTooManyRequests();
+});
+
+test('attemptLogin limits full-page login failures', function () {
+    $user = User::findOne();
+
+    foreach (range(1, 5) as $attempt) {
+        post(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => $user->email,
+            'password' => 'wrongpassword',
+        ])->assertRedirect();
+    }
+
+    post(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertTooManyRequests();
+});
+
+test('attemptLogin clears failed attempts after valid credentials', function () {
+    $user = User::findOne();
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertStatus(400);
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    Auth::logout();
+
+    foreach (range(1, 5) as $attempt) {
+        postJson(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => $user->email,
+            'password' => 'wrongpassword',
+        ])->assertStatus(400);
+    }
 });
 
 test('attemptLogin succeeds with valid credentials', function () {
@@ -255,7 +313,10 @@ test('login routes are registered for localized loginPath values', function () {
 
     Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
 
+    $route = Route::getRoutes()->match(Request::create('/aanmelden', 'POST'));
     $user = User::findOne();
+
+    expect($route->middleware())->toContain('throttle:'.LoginRateLimiter::NAME);
 
     postJson('/aanmelden', [
         'loginName' => $user->email,

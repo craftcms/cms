@@ -9,7 +9,7 @@ use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
-use CraftCms\Cms\Support\Flash;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -39,7 +39,7 @@ readonly class SignInProvidersController
             ->inertiaPage('users/SignInProviders', new UserSignInProvidersViewModel($user, $this->oauth));
     }
 
-    public function connect(Request $request, string $provider): Response
+    public function connect(Request $request, string $provider): JsonResponse
     {
         $this->requireConfirmedPassword(t('An elevated session is required to connect a sign-in provider.'));
 
@@ -50,11 +50,7 @@ readonly class SignInProvidersController
         abort_if(! $definition = $this->oauth->getProviderDefinition($provider), 404);
 
         if ($definition->stateless) {
-            $message = t('This OAuth provider cannot be connected to an account.');
-
-            Flash::error($message);
-
-            return to_action([self::class, 'index'])->with('error', $message);
+            abort(422, t('This OAuth provider cannot be connected to an account.'));
         }
 
         $request->session()->put(OAuth::CONNECT_SESSION_KEY, [
@@ -62,7 +58,9 @@ readonly class SignInProvidersController
             'userId' => $currentUser->getCraftUserId(),
         ]);
 
-        return $this->oauth->buildProvider($definition, true)->redirect();
+        return new JsonResponse([
+            'url' => $this->oauth->buildProvider($definition, true)->redirect()->getTargetUrl(),
+        ]);
     }
 
     public function destroy(Request $request, string $provider): Response

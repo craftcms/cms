@@ -42,7 +42,7 @@ describe('creationOptions', function () {
         Session::forget('auth.password_confirmed_at');
 
         postJson(action([PasskeysController::class, 'creationOptions']))
-            ->assertForbidden();
+            ->assertStatus(423);
     });
 
     it('returns passkey creation options', function () {
@@ -75,7 +75,7 @@ describe('verifyCreation', function () {
         Session::forget('auth.password_confirmed_at');
 
         postJson(action([PasskeysController::class, 'verifyCreation']))
-            ->assertForbidden();
+            ->assertStatus(423);
     });
 
     it('validates credentials parameter is required', function () {
