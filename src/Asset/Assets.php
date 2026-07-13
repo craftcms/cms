@@ -37,7 +37,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -49,10 +49,10 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 class Assets
 {
-    /** @var VolumeFolder[] */
+    /** @var array<int|string, VolumeFolder> */
     private array $userTempFolders = [];
 
     public function __construct(
