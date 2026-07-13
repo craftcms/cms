@@ -6,12 +6,7 @@ import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
 import '../shortcut/shortcut.js';
-import {
-  type ActionFeedback,
-  type BaseAction,
-  type FeedbackData,
-  runAction,
-} from '@src/actions';
+import {type ActionFeedback, type BaseAction, type FeedbackData, runAction,} from '@src/actions';
 import {Variant, type VariantKey} from '@src/constants/variants';
 
 /**
@@ -19,6 +14,17 @@ import {Variant, type VariantKey} from '@src/constants/variants';
  */
 export default class CraftActionItem extends LitElement {
   static override styles = [variantsStyles, styles];
+
+  /**
+   * Delegate focus into the shadow root, so `host.focus()` (used by
+   * `craft-action-menu`'s keyboard navigation) lands on the internal
+   * button/anchor and native Enter/Space activation keeps working.
+   */
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   @property() icon: string | null = null;
   /**
    * Optional Craft color name used to tint the item's icon. The icon renders

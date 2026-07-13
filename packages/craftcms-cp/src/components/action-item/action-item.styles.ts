@@ -5,6 +5,10 @@ export default css`
     display: contents;
   }
 
+  :host([hidden]) {
+    display: none;
+  }
+
   .action-item {
     border-color: var(--c-color-border-quiet, transparent);
     color: var(--c-color-on-quiet, inherit);

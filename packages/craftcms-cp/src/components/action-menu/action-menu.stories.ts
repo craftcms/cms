@@ -4,6 +4,8 @@ import {html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 
 import '../action-item/action-item.js';
+import '../button/button.js';
+import '../icon/icon.js';
 import './action-menu.js';
 import type CraftActionMenu from './action-menu.js';
 import type {ActionMenuItem} from './action-menu.types.js';
@@ -109,6 +111,103 @@ export const DataDrivenWithCustomInvoker: Story = {
       <craft-button type="button" slot="invoker" appearance="secondary">
         Custom invoker
       </craft-button>
+    </craft-action-menu>`,
+};
+
+/**
+ * `searchable` adds a filter input to the top of the menu (slot-based mode).
+ * Items match on their visible text plus a `data-keywords` attribute — the
+ * channel for hidden search terms. Try typing "plainText": it matches the
+ * "Plain Text" item by its handle even though the visible label doesn't
+ * contain it.
+ */
+export const Searchable: Story = {
+  render: () =>
+    html`<craft-action-menu searchable>
+      <craft-button type="button" slot="invoker" appearance="secondary">
+        Add a field
+      </craft-button>
+
+      <div slot="content">
+        <craft-action-item icon="pen" data-keywords="plainText">
+          Plain Text
+        </craft-action-item>
+        <craft-action-item icon="caret-down" data-keywords="dropdown optedList">
+          Dropdown
+        </craft-action-item>
+        <craft-action-item icon="calendar" data-keywords="dateTime">
+          Date
+        </craft-action-item>
+        <craft-action-item icon="lightbulb" data-keywords="lightswitch boolean">
+          Lightswitch
+        </craft-action-item>
+        <craft-action-item icon="image" data-keywords="assets">
+          Assets
+        </craft-action-item>
+      </div>
+    </craft-action-menu>`,
+};
+
+/**
+ * `searchable` in data-driven mode: the `keywords` descriptor field is
+ * rendered onto the generated `craft-action-item` as `data-keywords`, so
+ * hidden terms (e.g. handles) match identically in both modes.
+ */
+export const SearchableDataDriven: Story = {
+  render: () => {
+    const actions: ActionMenuItem[] = [
+      {label: 'Plain Text', icon: 'pen', keywords: 'plainText'},
+      {label: 'Dropdown', icon: 'caret-down', keywords: 'dropdown optedList'},
+      {label: 'Date', icon: 'calendar', keywords: 'dateTime'},
+      {
+        label: 'Lightswitch',
+        icon: 'lightbulb',
+        keywords: 'lightswitch boolean',
+      },
+      {label: 'Assets', icon: 'image', keywords: 'assets'},
+    ];
+
+    return html`<craft-action-menu
+      searchable
+      .actions="${actions}"
+      label="Add a field"
+    ></craft-action-menu>`;
+  },
+};
+
+/**
+ * Search never overrides consumer-controlled visibility: items hidden with the
+ * `hidden` attribute stay hidden even when they match the query (filtering
+ * uses a separate `data-search-hidden` mechanism). This is how a consumer like
+ * component-select keeps already-selected options out of the menu while the
+ * user searches. "Dropdown" below is consumer-hidden — searching for it (or
+ * its keywords) never reveals it.
+ */
+export const SearchableWithHiddenItems: Story = {
+  render: () =>
+    html`<craft-action-menu searchable>
+      <craft-button type="button" slot="invoker" appearance="secondary">
+        Add a field
+      </craft-button>
+
+      <div slot="content">
+        <craft-action-item icon="pen" data-keywords="plainText">
+          Plain Text
+        </craft-action-item>
+        <craft-action-item
+          icon="caret-down"
+          data-keywords="dropdown optedList"
+          hidden
+        >
+          Dropdown
+        </craft-action-item>
+        <craft-action-item icon="calendar" data-keywords="dateTime">
+          Date
+        </craft-action-item>
+        <craft-action-item icon="image" data-keywords="assets">
+          Assets
+        </craft-action-item>
+      </div>
     </craft-action-menu>`,
 };
 

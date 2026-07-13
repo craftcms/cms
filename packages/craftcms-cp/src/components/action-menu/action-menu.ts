@@ -1,4 +1,4 @@
-import {css, html, LitElement, render, type PropertyValues} from 'lit';
+import {css, html, LitElement, type PropertyValues, render} from 'lit';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 import {property, queryAssignedElements} from 'lit/decorators.js';
 import type CraftActionItem from '@src/components/action-item/action-item';
@@ -43,6 +43,14 @@ export type {
  * `slot="invoker"`/`slot="content"`) and the existing aria wiring continue to
  * work unchanged. A consumer-slotted invoker always takes precedence over the
  * generated default.
+ *
+ * Keyboard support follows the WAI-ARIA APG menu-button pattern (adapted —
+ * see `_onContentKeydown` and `_setupContent` for the roving-focus and ARIA
+ * trade-offs): on open, focus moves to the search input (`searchable`) or the
+ * first item; ArrowDown/ArrowUp move through the items (wrapping) and, from
+ * the search input, jump to the first/last item; Home/End jump to the ends;
+ * typing while an item is focused returns to the search input; Escape clears
+ * the filter first, then closes.
  *
  * @slot - Items to be rendered in the menu.
  * @slot invoker - Element that triggers the menu.
@@ -94,6 +102,16 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
    */
   @property({type: Boolean}) disabled = false;
 
+  /**
+   * Adds a search input to the top of the menu content that filters items as
+   * the user types. Works in both slot-based and data-driven modes. Items are
+   * matched case-insensitively against their text content plus an optional
+   * `data-keywords` attribute (the channel for hidden search terms such as
+   * handles; populated from the `keywords` descriptor field in data-driven
+   * mode). Defaults to `false`.
+   */
+  @property({type: Boolean, reflect: true}) searchable = false;
+
   @queryAssignedElements({selector: 'craft-action-item'})
   actionItems!: CraftActionItem[];
 
@@ -117,6 +135,18 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
 
   /** Generated light-DOM content container (data-driven mode only). */
   private _generatedContent: HTMLElement | null = null;
+
+  /** Generated light-DOM search container (only when `searchable`). */
+  private _searchContainer: HTMLElement | null = null;
+
+  /** The search input inside {@link _searchContainer}. */
+  private _searchInput: HTMLInputElement | null = null;
+
+  /**
+   * Whether the next Escape keyup should be swallowed because the matching
+   * keydown cleared the search filter (see {@link _onSearchKeydown}).
+   */
+  private _swallowNextEscUp = false;
 
   // @ts-ignore
   _defineOverlayConfig() {
@@ -148,18 +178,36 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     const firstContent = this.contentNodes[0];
     if (firstContent) {
       firstContent.setAttribute('id', `content-${this.uid}`);
+      // Deliberately NOT `role="menu"`/`role="menuitem"` (WAI-ARIA APG menu
+      // pattern): each `craft-action-item` is its own shadow host, so a
+      // `menu` container here couldn't own `menuitem` children across the
+      // shadow boundaries without nesting them inside the items' internal
+      // (already interactive) buttons/links — and a search input isn't valid
+      // inside a `menu` either. Native button/link semantics are the
+      // semantically-safe fallback; the *keyboard behaviour* still follows
+      // the APG menu pattern (see `_onContentKeydown`).
       firstContent.setAttribute('role', 'none');
     }
+    this._wireContentKeydown();
   }
 
   override _setupOverlayCtrl() {
     super._setupOverlayCtrl();
+    // The controller dispatches `show` once the overlay is fully visible —
+    // the earliest point the search input can reliably receive focus.
+    this._overlayCtrl.addEventListener('show', this._onOverlayShow);
     this._setupInvoker();
     this._setupContent();
   }
 
+  override _teardownOverlayCtrl() {
+    this._overlayCtrl?.removeEventListener('show', this._onOverlayShow);
+    super._teardownOverlayCtrl();
+  }
+
   override firstUpdated() {
     this._addEventListeners();
+    this._syncSearchInput();
   }
 
   /**
@@ -207,6 +255,15 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
    */
   protected override updated(changed: PropertyValues): void {
     super.updated(changed);
+
+    if (changed.has('opened') && !this.opened && changed.get('opened')) {
+      // The menu just closed — clear the search filter for the next open.
+      this._resetSearchFilter();
+    }
+
+    if (changed.has('searchable')) {
+      this._syncSearchInput();
+    }
 
     if (this.actions === undefined) {
       return;
@@ -312,7 +369,7 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     el: CraftActionItem,
     action: ActionMenuItemButton | ActionMenuItemLink
   ): void {
-    const reserved = new Set(['type', 'label', 'onClick', 'href']);
+    const reserved = new Set(['type', 'label', 'onClick', 'href', 'keywords']);
     for (const [key, value] of Object.entries(action)) {
       if (reserved.has(key) || value === undefined) {
         continue;
@@ -349,6 +406,12 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     }
 
     this._applyItemProps(item, action);
+
+    // Hidden search terms for the `searchable` filter (same channel consumers
+    // use directly in slot-based mode).
+    if (action.keywords) {
+      item.setAttribute('data-keywords', action.keywords);
+    }
 
     if (action.label) {
       item.textContent = action.label;
@@ -437,7 +500,365 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
         content.appendChild(node);
       }
     }
+
+    // `replaceChildren()` dropped the search input — re-insert it.
+    this._syncSearchInput();
   }
+
+  /** Selector matching the items the search filter considers. */
+  private static readonly _filterableItemsSelector =
+    'craft-action-item, li, button';
+
+  /** The current light-DOM content container (generated or consumer-slotted). */
+  private _getContentNode(): HTMLElement | null {
+    if (this._generatedContent) {
+      return this._generatedContent;
+    }
+    // Once Lion's overlay controller is set up, the slotted content node is
+    // moved inside its content wrapper (a <dialog>) and loses its `slot`
+    // attribute — so prefer the node Lion has already resolved and cached.
+    if (this._cachedOverlayContentNode) {
+      return this._cachedOverlayContentNode;
+    }
+    return (
+      (Array.from(this.children).find((child) => child.slot === 'content') as
+        | HTMLElement
+        | undefined) ?? null
+    );
+  }
+
+  /**
+   * Ensure the search input is (or isn't) the first child of the current
+   * content node. The input lives in the *light-DOM* content container —
+   * mirroring how `_renderDataDrivenMenu` manages generated nodes — so Lion's
+   * overlay content handling keeps working in both modes.
+   */
+  private _syncSearchInput(): void {
+    const content = this._getContentNode();
+
+    // Keyboard navigation applies with or without the search input.
+    this._wireContentKeydown();
+
+    if (!this.searchable || !content) {
+      if (this._searchContainer?.isConnected) {
+        this._searchContainer.remove();
+      }
+      // Un-hide anything a previous filter hid.
+      if (content) {
+        this._clearFilterAttributes(content);
+      }
+      return;
+    }
+
+    if (!this._searchContainer) {
+      this._searchContainer = this._buildSearchContainer();
+    }
+
+    if (content.firstElementChild !== this._searchContainer) {
+      content.prepend(this._searchContainer);
+    }
+  }
+
+  /** Build the light-DOM search container (input + scoped style rules). */
+  private _buildSearchContainer(): HTMLElement {
+    const container = document.createElement('div');
+    container.className = 'action-menu__search';
+
+    // The container lives in light DOM (inside the slotted content node), so
+    // the shadow `::slotted()` selector can't reach it — ship the input
+    // styling and the `data-search-hidden` rule in a light-DOM <style>.
+    const style = document.createElement('style');
+    style.textContent = `
+      craft-action-menu [data-search-hidden] {
+        display: none !important;
+      }
+      craft-action-menu .action-menu__search input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: var(--c-spacing-xs);
+        border: 1px solid var(--c-border-form);
+        border-radius: var(--c-radius-sm);
+        background-color: var(--c-surface-form);
+        font: inherit;
+      }
+    `;
+    container.appendChild(style);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.setAttribute('inputmode', 'search');
+    input.autocomplete = 'off';
+    input.placeholder = t('Search');
+    input.setAttribute('aria-label', t('Search'));
+    input.addEventListener('input', () => {
+      this._applySearchFilter(input.value);
+    });
+    input.addEventListener('keydown', this._onSearchKeydown);
+    input.addEventListener('keyup', this._onSearchKeyup);
+    container.appendChild(input);
+
+    this._searchInput = input;
+    return container;
+  }
+
+  private _onSearchKeydown = (event: KeyboardEvent): void => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      // Move from the search input into the items (Down → first navigable
+      // item, Up → last). Other keys are left alone so typing keeps
+      // filtering.
+      const items = this._getNavigableItems();
+      if (items.length) {
+        event.preventDefault();
+        (event.key === 'ArrowDown'
+          ? items[0]
+          : items[items.length - 1]
+        )?.focus();
+      }
+      return;
+    }
+
+    if (event.key === 'Escape' && this._searchInput?.value) {
+      // Clear the filter instead of closing the menu (parity with the legacy
+      // disclosure menu). Lion's hides-on-esc handler listens on the content
+      // node, so stop both the keydown and the trailing keyup.
+      event.stopPropagation();
+      this._swallowNextEscUp = true;
+      this._searchInput.value = '';
+      this._applySearchFilter('');
+    } else if (event.key === 'Enter') {
+      // Don't submit a surrounding form from the search input.
+      event.preventDefault();
+    }
+  };
+
+  private _onSearchKeyup = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape' && this._swallowNextEscUp) {
+      event.stopPropagation();
+      this._swallowNextEscUp = false;
+    }
+  };
+
+  /** The filterable items in the content node (excluding the search UI). */
+  private _getFilterableItems(content: HTMLElement): HTMLElement[] {
+    return Array.from(
+      content.querySelectorAll<HTMLElement>(
+        CraftActionMenu._filterableItemsSelector
+      )
+    ).filter((el) => {
+      if (this._searchContainer?.contains(el)) {
+        return false;
+      }
+      // Only top-level items — e.g. skip a button nested inside a matched <li>.
+      const ancestor = el.parentElement?.closest(
+        CraftActionMenu._filterableItemsSelector
+      );
+      return !ancestor || !content.contains(ancestor);
+    });
+  }
+
+  /**
+   * Case-insensitively substring-match `value` against the item's text content
+   * plus its optional `data-keywords` attribute (the channel for hidden search
+   * terms such as handles).
+   */
+  private _itemMatchesSearch(item: HTMLElement, value: string): boolean {
+    const haystack = `${item.textContent ?? ''} ${
+      item.getAttribute('data-keywords') ?? ''
+    }`.toLowerCase();
+    return haystack.includes(value);
+  }
+
+  /**
+   * Toggle `data-search-hidden` on non-matching items. A dedicated attribute
+   * (hidden via the light-DOM style rule) is used instead of `hidden` or a
+   * class so the filter never clobbers consumer-controlled visibility — items
+   * the consumer has hidden stay hidden regardless of the filter.
+   */
+  private _applySearchFilter(rawValue: string): void {
+    const content = this._getContentNode();
+    if (!content) {
+      return;
+    }
+
+    const value = rawValue.trim().toLowerCase();
+    for (const item of this._getFilterableItems(content)) {
+      if (!value || this._itemMatchesSearch(item, value)) {
+        item.removeAttribute('data-search-hidden');
+      } else {
+        item.setAttribute('data-search-hidden', '');
+      }
+    }
+  }
+
+  private _clearFilterAttributes(content: HTMLElement): void {
+    content
+      .querySelectorAll('[data-search-hidden]')
+      .forEach((el) => el.removeAttribute('data-search-hidden'));
+  }
+
+  /** Clear the search input and un-hide all items (runs when the menu closes). */
+  private _resetSearchFilter(): void {
+    if (this._searchInput) {
+      this._searchInput.value = '';
+    }
+    const content = this._getContentNode();
+    if (content) {
+      this._clearFilterAttributes(content);
+    }
+  }
+
+  /**
+   * Initial focus once the overlay is fully shown: the search input when
+   * `searchable`, otherwise the first navigable item (APG menu-button
+   * pattern). Escape/outside-click closing restores focus to the invoker via
+   * Lion's `elementToFocusAfterHide` (which defaults to the invoker node).
+   */
+  private _onOverlayShow = (): void => {
+    if (!this.opened) {
+      return;
+    }
+    if (this.searchable) {
+      this._searchInput?.focus();
+    } else {
+      this._getNavigableItems()[0]?.focus();
+    }
+  };
+
+  /**
+   * The keyboard-navigable items: `craft-action-item` elements that are not
+   * consumer-hidden (`hidden`), not filtered out (`data-search-hidden`), and
+   * not disabled. Recomputed on every keystroke, since the search filter
+   * changes the set.
+   */
+  private _getNavigableItems(): CraftActionItem[] {
+    const content = this._getContentNode();
+    if (!content) {
+      return [];
+    }
+    return Array.from(
+      content.querySelectorAll<CraftActionItem>('craft-action-item')
+    ).filter(
+      (item) =>
+        !item.hasAttribute('hidden') &&
+        !item.hasAttribute('data-search-hidden') &&
+        !(item.disabled || item.hasAttribute('disabled'))
+    );
+  }
+
+  /**
+   * Attach the keyboard-navigation handler to the current content node.
+   * Idempotent — `addEventListener` dedupes an identical listener — so it is
+   * safe to call from every content (re)wiring path.
+   */
+  private _wireContentKeydown(): void {
+    this._getContentNode()?.addEventListener('keydown', this._onContentKeydown);
+  }
+
+  /**
+   * Keyboard navigation between items (WAI-ARIA APG menu pattern, adapted):
+   *
+   * - ArrowDown/ArrowUp move to the next/previous navigable item and *wrap*
+   *   at the ends (the APG-recommended behaviour).
+   * - Home/End jump to the first/last navigable item.
+   * - In searchable mode, printable characters and Backspace return focus to
+   *   the search input and apply the keystroke there, so filtering continues
+   *   seamlessly (this includes Space — a search query may contain one).
+   * - Enter/Space activation is otherwise left to the item's internal native
+   *   button; Space on *link* items is wired manually since links don't
+   *   activate on Space.
+   * - Escape bubbles to Lion's `hidesOnEsc` handler on the content node,
+   *   which closes the menu and restores focus to the invoker.
+   *
+   * Keydown events from inside an item's shadow root are composed and
+   * retarget to the `craft-action-item` host, so a single listener on the
+   * light-DOM content container sees every item's keys.
+   */
+  private _onContentKeydown = (event: KeyboardEvent): void => {
+    // The search input has its own keydown handling.
+    if (this._searchContainer?.contains(event.target as Node)) {
+      return;
+    }
+
+    const items = this._getNavigableItems();
+    const currentItem =
+      (event.target as HTMLElement | null)?.closest?.('craft-action-item') ??
+      null;
+    const currentIndex = currentItem ? items.indexOf(currentItem) : -1;
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (!items.length) {
+        return;
+      }
+      event.preventDefault();
+      let next: number;
+      if (event.key === 'ArrowDown') {
+        next = currentIndex === -1 ? 0 : (currentIndex + 1) % items.length;
+      } else {
+        next =
+          currentIndex === -1
+            ? items.length - 1
+            : (currentIndex - 1 + items.length) % items.length;
+      }
+      items[next]?.focus();
+      return;
+    }
+
+    if (event.key === 'Home' || event.key === 'End') {
+      if (!items.length) {
+        return;
+      }
+      event.preventDefault();
+      (event.key === 'Home' ? items[0] : items[items.length - 1])?.focus();
+      return;
+    }
+
+    if (event.key === ' ' && !this.searchable && currentItem?.href) {
+      // Links don't activate on Space natively; APG menus do.
+      event.preventDefault();
+      currentItem.click();
+      return;
+    }
+
+    if (currentItem) {
+      this._redirectTypingToSearch(event);
+    }
+  };
+
+  /**
+   * In searchable mode, typing while an item is focused returns focus to the
+   * search input and applies the keystroke there (append a printable
+   * character, or delete the last one on Backspace).
+   */
+  private _redirectTypingToSearch(event: KeyboardEvent): void {
+    if (!this.searchable || !this._searchInput) {
+      return;
+    }
+    const printable =
+      event.key.length === 1 &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey;
+    if (!printable && event.key !== 'Backspace') {
+      return;
+    }
+
+    event.preventDefault();
+    const input = this._searchInput;
+    input.focus();
+    input.value =
+      event.key === 'Backspace'
+        ? input.value.slice(0, -1)
+        : input.value + event.key;
+    this._applySearchFilter(input.value);
+  }
+
+  /**
+   * (Re)insert the search input when consumer-slotted content arrives or
+   * changes after first render (slot-based mode).
+   */
+  private _onContentSlotChange = (): void => {
+    this._syncSearchInput();
+  };
 
   /**
    * When a consumer-slotted invoker arrives (or leaves) after `actions` was
@@ -465,7 +886,7 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     return html`
       <slot name="invoker" @slotchange="${this._onInvokerSlotChange}"></slot>
       <slot name="backdrop"></slot>
-      <slot name="content"></slot>
+      <slot name="content" @slotchange="${this._onContentSlotChange}"></slot>
     `;
   }
 }
