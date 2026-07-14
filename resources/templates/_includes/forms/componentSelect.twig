@@ -52,10 +52,15 @@
      inputs (which also pass `name` through raw). Pre-namespacing here would
      double-apply the namespace, so the JS would render new chips with an
      over-nested `types[…][types][…]…` input name. #}
+  {# `selectable` defaults on (legacy `Craft.ComponentSelectInput` default),
+     independent of the chips' `checkbox` affordance below (which stays off by
+     default) — matching the legacy split where JS selection was always on but
+     chips rendered no checkbox unless a caller opted in. #}
   {% set containerAttributes = containerAttributes|merge({
     name: (name ?? false) ? name : false,
     limit: limit ?: false,
     sortable: sortable ? true : 'false',
+    selectable: (selectable ?? true) ? true : 'false',
     'show-handles': showHandles ? true : 'false',
     'show-description': showDescription ? true : 'false',
     'show-action-menus': showActionMenus ? true : 'false',

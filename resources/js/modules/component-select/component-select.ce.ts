@@ -151,6 +151,7 @@ export default class CraftComponentSelect extends ControllerElement<ComponentSel
       name: this.getAttribute('name'),
       limit,
       sortable: this.#boolAttr('sortable', true),
+      selectable: this.#boolAttr('selectable', true),
       showHandles: this.#boolAttr('show-handles', false),
       showDescription: this.#boolAttr('show-description', false),
       showActionMenus: this.#boolAttr('show-action-menus', true),

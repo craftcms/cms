@@ -114,11 +114,49 @@ stay jQuery event wiring (`$(chip).on(...)`, `$createBtn.on('activate', ...)`).
   the controller, the settings/event types, and `componentSelectData`.
   Imported (for its side effect) from `resources/js/cp.ts`.
 
+## Chip selection (`selectable`)
+
+Restored on top of the modern **`@craftcms/garnish` `Select`** (the jQuery-free
+port of `Garnish.Select`), mirroring how `DragSort` is used. When `selectable`
+is on, `ComponentSelect` builds a `Select` over the chips (`component-select.ts`,
+`#initSelect`) so a chip can be **clicked / shift-clicked / ⌘-clicked** to build
+a selection (`multi` follows `sortable`, legacy `multi: this.settings.sortable`),
+and:
+
+- **Backspace/Delete** on a selected chip removes the whole selection
+  (`#initChipRemovalShortcut` → `#removeSelected`), matching the legacy
+  `addComponents` keydown handler.
+- **Dragging a chip that's part of the selection** drags the whole group — the
+  `DragSort` `filter` (`#draggeeFilter`) returns every selected chip's `li` when
+  the grabbed chip is selected, else just the grabbed `li` (legacy
+  `initComponentSort`'s filter).
+- A window `mousedown` outside the container clears the selection (legacy
+  deselect-on-outside-click); `Select`'s own container-click also deselects.
+
+Selection membership is (re-)added in `init` + the list observer (and removed on
+chip removal / observer-remove), the same lifecycle as `DragSort` membership, so
+it survives a disconnect/reconnect and chip adoption across selects.
+
+### Default: on, but no checkbox
+
+The `selectable` attribute defaults to **`true`**, matching the legacy
+`Craft.ComponentSelectInput` default (`selectable: true`) — the task's "keep
+behavior identical to legacy defaults." Legacy achieved this via a *split* the
+template preserves: the JS class defaulted `selectable: true` (selection always
+on) while the Twig rendered chips with **no** checkbox affordance by default
+(`checkbox: selectable ?? false`, with the Twig `selectable` var undefined). The
+template reproduces both from the one caller-facing `selectable` var by reading
+it with two different fallbacks — `selectable ?? true` for the element's
+`selectable` attribute, `selectable ?? false` for the chip `checkbox` — so an
+explicit value drives both, while absence gives selection-on + checkbox-off.
+Pass `selectable: false` to the Twig (or `selectable="false"` on the element) to
+turn selection off; pass `selectable: true` to also render chip checkboxes.
+
+The legacy `addItemsToActionMenus` setting stays folded into always-on.
+
 ## Deferred
 
-- **Multi-select (`selectable`).** Dropped from this port along with the
-  legacy `addItemsToActionMenus` setting (folded into always-on). Returns in a
-  later phase.
-- Behavioral/browser verification (add/remove/reorder chips, the Choose menu,
-  the Create-button slideout, limit handling, and the
-  `<craft-entry-type-manager>` integration) is left to manual testing.
+- Behavioral/browser verification (add/remove/reorder chips, chip selection +
+  Backspace/Delete + multi-drag, the Choose menu, the Create-button slideout,
+  limit handling, and the `<craft-entry-type-manager>` integration) is left to
+  manual testing.

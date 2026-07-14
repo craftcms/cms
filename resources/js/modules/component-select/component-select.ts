@@ -1,6 +1,7 @@
 import {
   Base,
   DragSort,
+  Select,
   Y_AXIS,
   closestRegistered,
   prefersReducedMotion,
@@ -48,8 +49,7 @@ export interface DefineChipActionsEventDetail {
 
 /**
  * Attribute-driven configuration, replacing the legacy `{% js %}` settings boot.
- * Defaults match `Craft.ComponentSelectInput.defaults`, except `selectable`
- * (dropped from this port — multi-select returns in a later phase) and
+ * Defaults match `Craft.ComponentSelectInput.defaults`, except
  * `addItemsToActionMenus` (folded into always-on for now). Fully resolved
  * (attributes + defaults) by `<craft-component-select>` before the controller
  * is constructed — see `component-select.ce.ts`'s `#parseSettings`.
@@ -61,6 +61,13 @@ export interface ComponentSelectSettings extends GarnishBaseSettings {
   limit: number | null;
   /** Whether the chips can be reordered. Forced off when `limit` is 1. */
   sortable: boolean;
+  /**
+   * Whether chips can be selected (click / shift-click / ⌘-click), which enables
+   * Backspace/Delete removal of the selection and dragging a multi-selection as
+   * a group. Matches the legacy `Craft.ComponentSelectInput` default of `true`;
+   * multi-selection itself follows {@link sortable} (legacy `multi: sortable`).
+   */
+  selectable: boolean;
   /** Whether newly-rendered chips should show component handles. */
   showHandles: boolean;
   /** Whether newly-rendered chips should show component descriptions. */
@@ -122,6 +129,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   #menu: CraftActionMenu | null = null;
 
   #dragSort: any = null;
+  #select: Select | null = null;
   #listObserver: MutationObserver | null = null;
 
   /** jQuery-wrapped Create button the activate handler is bound to. */
@@ -154,8 +162,12 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     }
 
     this.#list = list;
-    this.#addBtn = this.container.querySelector<HTMLElement>('[command="--choose-item"]');
-    this.#createBtn = this.container.querySelector<HTMLElement>('[command="--create-item"]');
+    this.#addBtn = this.container.querySelector<HTMLElement>(
+      '[command="--choose-item"]'
+    );
+    this.#createBtn = this.container.querySelector<HTMLElement>(
+      '[command="--create-item"]'
+    );
     // The Choose menu hosts the add button as its slotted invoker. (Chips
     // never contain a light-DOM craft-action-menu, so resolving through the
     // invoker just guards against future markup around it.)
@@ -172,16 +184,20 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       return;
     }
 
+    this.#initSelect();
     this.#initDragSort();
 
     for (const chip of this.#chips()) {
       this.#initChip(chip);
-      // Sorter membership is (re-)added here rather than in #initChip so a
-      // disconnect/reconnect — which builds a fresh DragSort but keeps the
-      // chips' one-time wiring — still repopulates the sorter.
+      // Sorter/selection membership is (re-)added here rather than in #initChip
+      // so a disconnect/reconnect — which builds a fresh DragSort + Select but
+      // keeps the chips' one-time wiring — still repopulates both.
       const li = chip.closest('li');
       if (li && this.settings.sortable) {
         this.#dragSort?.addItems(li);
+      }
+      if (this.settings.selectable) {
+        this.#select?.addItems(chip);
       }
     }
 
@@ -214,6 +230,9 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     this.#dragSort?.destroy?.();
     this.#dragSort = null;
+
+    this.#select?.destroy();
+    this.#select = null;
 
     this.#menu?.removeEventListener('click', this.#handleMenuClick);
     this.#menu = null;
@@ -380,6 +399,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     this.#showOption(chip.dataset.id);
     wiredChips.delete(chip);
+    this.#select?.removeItems(chip);
 
     li.dataset.removing = '';
     this.#dragSort?.removeItems(li);
@@ -503,6 +523,38 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     this.#addChipActions(chip);
     this.#initChipEditShortcut(chip);
+
+    if (this.settings.selectable) {
+      this.#initChipRemovalShortcut(chip);
+    }
+  }
+
+  /**
+   * Backspace/Delete while a chip (or a focusable inside it) is focused removes
+   * the whole current selection (legacy `addComponents` keydown handler). Like
+   * the other chip handlers this lives on the chip and needs no teardown — it
+   * goes away with the chip — and resolves the chip's owning select at event
+   * time, since a chip can be adopted by a different select.
+   */
+  #initChipRemovalShortcut(chip: HTMLElement): void {
+    chip.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Backspace' || ev.key === 'Delete') {
+        ev.stopPropagation();
+        ev.preventDefault();
+        (
+          closestRegistered(chip, componentSelectData) ?? this
+        ).#removeSelected();
+      }
+    });
+  }
+
+  /** Remove every currently-selected chip (the Backspace/Delete path). */
+  #removeSelected(): void {
+    // Snapshot: removeComponent mutates the selection as each chip leaves.
+    const selected = this.#select?.getSelectedItems() ?? [];
+    for (const chip of selected) {
+      this.removeComponent(chip);
+    }
   }
 
   /**
@@ -648,12 +700,48 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   // --- Sorting ---------------------------------------------------------------------
 
   /**
+   * Chip selection (legacy `initComponentSelect`): a `@craftcms/garnish`
+   * `Select` over the chips, enabling click / shift-click / ⌘-click selection.
+   * `multi` follows `sortable` (legacy `multi: this.settings.sortable`); the
+   * filter keeps clicks on a chip's own links/buttons (its label link, action
+   * menu, reorder button) from selecting it. `makeFocusable` is off — selection
+   * exists for Backspace/Delete removal and group drag, not keyboard roving.
+   *
+   * A window `mousedown` outside the container clears the selection, mirroring
+   * the legacy deselect-on-outside-click. Bound via garnish `addListener`, so
+   * `Base.destroy` (via {@link destroy}'s `super.destroy()`) tears it down.
+   */
+  #initSelect(): void {
+    if (!this.settings.selectable) {
+      return;
+    }
+
+    this.#select = new Select({
+      multi: this.settings.sortable,
+      filter: (target: EventTarget | null) =>
+        !(target instanceof Element
+          ? target.closest('a[href],button,[role=button]')
+          : null),
+      makeFocusable: false,
+    });
+
+    this.addListener(window, 'mousedown', (ev: any) => {
+      const target = ev.target as Node | null;
+      if (target !== this.container && !this.container.contains(target)) {
+        this.#select?.deselectAll();
+      }
+    });
+  }
+
+  /**
    * Drag-to-sort on the chips list, mirroring the sortable-checkbox-select
    * setup: the `<craft-reorder-button>` is the handle, and membership is kept
    * in sync by {@link init} and the list observer. Vertical lists sort on the
    * y axis; `inline-chips` lists are unrestricted (legacy
    * `getComponentSortAxis`). On touch there's no sorter — the reorder button's
-   * menu handles reordering.
+   * menu handles reordering. When `selectable`, a `filter` drags the whole
+   * selection as a group whenever the grabbed chip is part of it (legacy
+   * `initComponentSort`'s filter).
    */
   #initDragSort(): void {
     if (
@@ -668,11 +756,35 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       container: this.#list,
       handle: 'craft-reorder-button',
       axis: this.#list?.classList.contains('inline-chips') ? null : Y_AXIS,
+      filter: this.settings.selectable ? () => this.#draggeeFilter() : null,
       collapseDraggees: true,
       magnetStrength: 4,
       helperLagBase: 1.5,
     });
     this.#dragSort.on('sortChange', () => this.#onChange());
+  }
+
+  /**
+   * The `li`s a drag should move: the whole selection (each selected chip's
+   * `li`) when the grabbed chip is selected, otherwise just the grabbed `li`
+   * (legacy `initComponentSort` filter, which keyed off the target chip's `sel`
+   * class). Runs at drag start off the sorter's current `$targetItem`.
+   */
+  #draggeeFilter(): HTMLElement[] {
+    const targetLi = this.#dragSort?.$targetItem as HTMLElement | null;
+    if (!targetLi) {
+      return [];
+    }
+
+    const chip = targetLi.querySelector<HTMLElement>(':scope > craft-chip');
+    if (chip && this.#select?.isSelected(chip)) {
+      return this.#select
+        .getSelectedItems()
+        .map((selectedChip: HTMLElement) => selectedChip.closest('li'))
+        .filter((li: HTMLLIElement | null): li is HTMLLIElement => li !== null);
+    }
+
+    return [targetLi];
   }
 
   /**
@@ -740,6 +852,9 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
               if (this.settings.sortable) {
                 this.#dragSort?.addItems(node); // no-op if already registered
               }
+              if (this.settings.selectable) {
+                this.#select?.addItems(chip); // no-op if already registered
+              }
               changed = true;
             }
           }
@@ -748,6 +863,14 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
         for (const node of mutation.removedNodes) {
           if (node instanceof HTMLElement && node.matches('li')) {
             this.#dragSort?.removeItems(node);
+            if (this.settings.selectable) {
+              const chip = node.querySelector<HTMLElement>(
+                ':scope > craft-chip'
+              );
+              if (chip) {
+                this.#select?.removeItems(chip);
+              }
+            }
             changed = true;
           }
         }
@@ -992,6 +1115,10 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * DOM `CustomEvent` on `<craft-component-select>`.
    */
   #onChange(): void {
+    // Re-sync the selection's cached item order after add/remove/reorder/drag
+    // (legacy `onChange`'s `componentSelect?.resetItemOrder()`).
+    this.#select?.resetItemOrder();
+
     this.#updateButtons();
     this.#updateReorderPositions();
 
