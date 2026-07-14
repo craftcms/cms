@@ -4503,6 +4503,15 @@ table:not(.cp-table) {
   }
 }
 
+// Each chip's `<craft-chip>` box is `inline-flex`, so in a block list item it
+// lays out in a line box and picks up baseline leading — and the flex baseline
+// shifts with the prefix, so a chip with no icon/status renders ~11px taller
+// than one with. Making the `li` a flex container blockifies the chip (no line
+// box, no baseline), keeping every chip the same height.
+.componentselect .chips > li {
+  display: flex;
+}
+
 /* element select fields */
 .elementselect {
   position: relative;
