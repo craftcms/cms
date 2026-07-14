@@ -21,12 +21,24 @@ that replaced the legacy `Craft.ComponentSelectInput` chain.
   Those now ride `craft-component-select`'s public seams: the bubbling `change`
   event (cross-group option sync in `refresh()`), the bubbling
   `define-chip-actions` event ("Move to previous/next group" items), the
-  `getInputValue` hook (group-aware chip input JSON), and `adoptChip()` (menu
-  moves between groups).
+  `getInputValue` hook (group-aware chip input JSON), `adoptChip()` (menu
+  moves between groups), and `releaseSort()` (each select hands its chip
+  `DragSort` to the manager's cross-group one — see below).
 - **Titlebar controls.** The legacy jQuery menubtn + `.move` handle →
   a data-driven `craft-action-menu` (Rename / Remove) plus a horizontal
   `<craft-reorder-button>` that is both the group's `DragSort` handle and its
   Move forward/backward menu (replacing the legacy menu's move items).
+- **Cross-group chip drag.** One manager-level `DragSort` (`initChipSort` /
+  `syncChipSort`) spans every group's `ul.components` so a chip can be *dragged*
+  between groups — a per-select sorter can't drop into a sibling's list. Each
+  child select `releaseSort()`s its own chip sorter (legacy
+  `GroupedEntryTypeSelectInput.initComponentSort` no-op'd for the same reason);
+  the manager registers every chip `li` plus a per-group
+  `entry-type-group--caboose` sentinel `li` (the end-of-list / empty-group drop
+  target, gated out of `canInsertAfter`). On drop, `refresh()` rewrites the
+  moved chip's `{group}` JSON (`Group.refresh`) and re-syncs. On touch there's
+  no `DragSort` at all — the reorder menu's "Move to previous/next group" items
+  handle it.
 - **`.data()` → WeakMap.** `$container.data('entryTypeManager')` /
   `.data('entryTypeGroup')` → module-level WeakMaps
   (`support.ts`'s `groupedEntryTypeManagerData`, and an internal `groupData`).
@@ -74,11 +86,6 @@ deferred boot, so chips wired by earlier-booting selects still get their items.
 
 ## Deferred
 
-- **Cross-group chip drag.** The legacy manager ran one `DragSort` across every
-  group's chip list (with `entry-type-group--caboose` sentinels) so a chip
-  could be dragged between groups. That conflicts with each select's own
-  DragSort, so chips drag-sort within their group and move between groups via
-  their action-menu items. See the `TODO(cross-group chip drag)` in the class
-  doc.
 - Behavioral/browser verification (add/rename/remove/reorder groups, chip
-  moves, option sync, default-columns rebuild) is left to manual testing.
+  moves — menu *and* cross-group drag, option sync, default-columns rebuild) is
+  left to manual testing.

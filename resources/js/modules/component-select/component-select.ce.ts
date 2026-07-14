@@ -99,6 +99,11 @@ export default class CraftComponentSelect extends ControllerElement<ComponentSel
     this.instance?.adoptChip(li);
   }
 
+  /** Hand chip drag-sorting to an outer coordinator. No-op before boot. */
+  releaseSort(): void {
+    this.instance?.releaseSort();
+  }
+
   /** Render + append a chip for the given component. Resolves immediately, before boot. */
   async addComponent(
     type: string,

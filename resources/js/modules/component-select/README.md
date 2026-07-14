@@ -24,15 +24,25 @@ Unlike a plain garnish port, this module splits into two files the way
 The twist here, relative to the other two ports: **the element stays the
 public API**, not the controller. `<craft-entry-type-manager>`'s `Group` class
 (and any other consumer) calls `.chips`, `.selectedIds`, `.addComponent()`,
-`.adoptChip()`, `.showOption()`/`.hideOption()`, `.openChooseMenu()`, and sets
+`.adoptChip()`, `.releaseSort()`, `.showOption()`/`.hideOption()`,
+`.openChooseMenu()`, and sets
 `.getInputValue` directly on the `<craft-component-select>` DOM element — the
 same surface the pre-split single-file version exposed. `component-select.ce.ts`
 re-exposes each of those as a forwarding member: the getters
 (`initialized`/`selectedIds`/`chips`) fall back to `false`/`[]` before boot,
 and the action methods (`addComponent`, `removeComponent`, `showOption`,
-`hideOption`, `openChooseMenu`, `adoptChip`, `moveComponent`) no-op via
-`this.instance?.method(...)` until `ControllerElement`'s retrying boot resolves
-the controller.
+`hideOption`, `openChooseMenu`, `adoptChip`, `releaseSort`, `moveComponent`)
+no-op via `this.instance?.method(...)` until `ControllerElement`'s retrying
+boot resolves the controller.
+
+`releaseSort()` is the seam the grouped entry type manager uses for cross-group
+chip drag: it destroys this select's own chip `DragSort` (and blocks its
+recreation) so one manager-level sorter can span every group's list — a
+per-select sorter can't drop into a sibling's list. The chips'
+`<craft-reorder-button>`s stay (they're the outer sorter's handles and still
+drive the touch move menu); the manager owns registering the chip `li`s with
+its sorter. Legacy `GroupedEntryTypeSelectInput.initComponentSort` no-op'd for
+the same reason.
 
 Why keep the element as the facade instead of exporting the controller as the
 API and having consumers reach through it? Two of the seams are

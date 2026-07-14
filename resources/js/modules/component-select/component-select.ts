@@ -132,6 +132,13 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   #select: Select | null = null;
   #listObserver: MutationObserver | null = null;
 
+  /**
+   * When set, an outer coordinator owns chip drag-sorting (the grouped entry
+   * type manager runs one `DragSort` across every group), so this select never
+   * builds its own — see {@link releaseSort}.
+   */
+  #sortManagedExternally = false;
+
   /** jQuery-wrapped Create button the activate handler is bound to. */
   #$createBtn: any = null;
 
@@ -311,6 +318,23 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    */
   adoptChip(li: HTMLElement): void {
     this.#list?.append(li);
+  }
+
+  /**
+   * Hand chip drag-sorting to an outer coordinator (the
+   * `<craft-entry-type-manager>` runs one `DragSort` across all groups so a
+   * chip can be dragged *between* them — one sorter can't drop into a sibling
+   * select's list). Destroys this select's own `DragSort` and stops it from
+   * being recreated; the legacy `GroupedEntryTypeSelectInput.initComponentSort`
+   * no-op'd for the same reason. The chips' `<craft-reorder-button>`s stay —
+   * they are the outer sorter's drag handles and still drive the touch move
+   * menu — and the caller owns registering the chip `li`s with its sorter.
+   * Idempotent, so the manager can call it again after any re-boot.
+   */
+  releaseSort(): void {
+    this.#sortManagedExternally = true;
+    this.#dragSort?.destroy?.();
+    this.#dragSort = null;
   }
 
   /**
@@ -746,6 +770,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   #initDragSort(): void {
     if (
       this.#dragSort ||
+      this.#sortManagedExternally ||
       !this.settings.sortable ||
       !Craft.hasMousePointerEvents()
     ) {
@@ -898,11 +923,12 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       return;
     }
 
-    const lis = Array.from(
-      this.#list.querySelectorAll<HTMLElement>(
-        ':scope > li:not([data-removing])'
-      )
-    );
+    // Chip `li`s only — a grouped select's list can also hold a manager-owned
+    // `entry-type-group--caboose` sentinel `li` (no chip), which must not count
+    // toward the reorder count or it'd wrongly enable a lone chip's button.
+    const lis = this.#chips()
+      .map((chip) => chip.closest<HTMLElement>('li'))
+      .filter((li): li is HTMLElement => li !== null);
 
     lis.forEach((li, index) => {
       const btn = li.querySelector('craft-reorder-button');

@@ -62,6 +62,15 @@ const chipActionsAttached = new WeakSet<Element>();
 /** The `.entry-type-group` selector, shared by the sibling-group lookups. */
 const GROUP_SELECTOR = 'li.entry-type-group';
 
+/**
+ * Class of the empty sentinel `<li>` appended to each group's chip list. It is
+ * a valid drop target for the cross-group {@link GroupedEntryTypeManager.chipSort}
+ * — giving an end-of-list, and crucially an *empty group*, somewhere to drop —
+ * but is gated out of `canInsertAfter` so a chip can only land *before* it
+ * (legacy `entry-type-group--caboose`).
+ */
+const CABOOSE_CLASS = 'entry-type-group--caboose';
+
 /** The adjacent `.entry-type-group` in the given direction, or `null`. */
 function siblingGroup(
   group: HTMLElement,
@@ -166,19 +175,23 @@ export function attachChipMoveActions(container: Element): void {
  * each with a `.entry-type-group--titlebar` (`span` heading) and a select of
  * entry-type chips; each group gets a {@link Group}. Manager-level behavior:
  * the Add Group button, the group `DragSort` (each titlebar's
- * `<craft-reorder-button>` is the handle), cross-group Choose-menu option sync
- * (an entry type selected in ANY group is hidden in EVERY group's menu —
- * driven from the selects' bubbling `change` events rather than a select
- * subclass), per-chip "Move to previous/next group" actions (see
- * {@link attachChipMoveActions}), group-aware `{id, group}` hidden-input
- * values (each select's `getInputValue` hook), and the Default Table Columns
- * rebuild on membership changes.
+ * `<craft-reorder-button>` is the handle), the cross-group chip `DragSort`
+ * (see {@link initChipSort}), cross-group Choose-menu option sync (an entry
+ * type selected in ANY group is hidden in EVERY group's menu — driven from the
+ * selects' bubbling `change` events rather than a select subclass), per-chip
+ * "Move to previous/next group" actions (see {@link attachChipMoveActions}),
+ * group-aware `{id, group}` hidden-input values (each select's `getInputValue`
+ * hook), and the Default Table Columns rebuild on membership changes.
  *
- * TODO(cross-group chip drag): the legacy manager ran one `DragSort` across
- * every group's chip list (with `entry-type-group--caboose` sentinels) so a
- * chip could be *dragged* between groups. That conflicts with each
- * `craft-component-select`'s own DragSort, so it is deferred: chips drag-sort
- * within their group, and move between groups via their action-menu items.
+ * Cross-group chip drag (legacy `Craft.GroupedEntryTypeSelectInput` +
+ * `entry-type-group--caboose`): a chip can be *dragged* from one group into
+ * another. Each `craft-component-select` runs its own chip `DragSort`, and one
+ * per-select sorter can't drop into a sibling's list, so the manager takes
+ * ownership — each child select {@link CraftComponentSelect.releaseSort
+ * releases its sorter} and the manager runs a single {@link chipSort} across
+ * every group's `ul.components` (see {@link initChipSort} /
+ * {@link syncChipSort}). The menu-based moves stay for touch, where there is
+ * no `DragSort` at all.
  */
 export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSettings> {
   container: HTMLElement | null = null;
@@ -186,6 +199,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
   groupsList: HTMLUListElement | null = null;
   addGroupBtn: HTMLElement | null = null;
   groupSort: any = null;
+  chipSort: any = null;
 
   constructor(container?: any, settings?: any) {
     super();
@@ -227,6 +241,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
 
     this.initAddGroupBtn();
     this.initGroupSort();
+    this.initChipSort();
 
     for (const el of this.groupEls()) {
       this.initGroup(el);
@@ -251,6 +266,9 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
 
     this.groupSort?.destroy?.();
     this.groupSort = null;
+
+    this.chipSort?.destroy?.();
+    this.chipSort = null;
 
     if (this.container) {
       groupedEntryTypeManagerData.delete(this.container);
@@ -346,6 +364,35 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
       helperLagBase: 1.5,
     });
     this.groupSort.on('sortChange', () => this.refresh());
+  }
+
+  /**
+   * One `DragSort` spanning every group's chip list (legacy `entryTypeSort`),
+   * so a chip can be dragged between groups. The chips' `<craft-reorder-button>`
+   * is the handle — matching each `craft-component-select`'s own chip sort,
+   * whose ownership the manager takes over ({@link syncChipSort} calls
+   * {@link CraftComponentSelect.releaseSort} on each). No axis lock: groups flow
+   * horizontally while chips stack vertically, so drops are 2-D. The
+   * `entry-type-group--caboose` sentinels are valid drop targets but never
+   * insert-after (so a chip lands *before* them, i.e. inside the group). On
+   * touch there's no sorter; the reorder button's menu handles moving. Items
+   * are (un)registered lazily in {@link syncChipSort}.
+   */
+  initChipSort(): void {
+    if (this.chipSort || !Craft.hasMousePointerEvents()) {
+      return;
+    }
+
+    this.chipSort = new DragSort({
+      container: this.groupsList,
+      handle: 'craft-reorder-button',
+      collapseDraggees: true,
+      magnetStrength: 4,
+      helperLagBase: 1.5,
+      canInsertAfter: (item: HTMLElement) =>
+        !item.classList.contains(CABOOSE_CLASS),
+    });
+    this.chipSort.on('sortChange', () => this.refresh());
   }
 
   /** Add Group (legacy `addGroup`): prompt for a name, clone the select template. */
@@ -446,6 +493,10 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
     const groups = this.groups;
     groups.forEach((group, index) => group.refresh(index, groups.length));
 
+    // Keep the cross-group chip sorter's items + cabooses in step with the
+    // current DOM (new/removed chips, added/removed groups).
+    this.syncChipSort();
+
     // Choose-menu options: hidden iff selected in any group. Option ids are
     // enumerated from the select's light DOM (the Choose menu's
     // `craft-action-item[data-id]`s — items inside chips' action menus don't
@@ -468,6 +519,82 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
         }
       }
     }
+  }
+
+  /**
+   * Bring {@link chipSort} in line with the current DOM: take sort ownership
+   * from each child select (they defer to this manager-level sorter, like the
+   * legacy `GroupedEntryTypeSelectInput.initComponentSort` no-op), make sure
+   * every group's list ends in a caboose drop-target sentinel, and register
+   * every chip `li` + caboose as a sort item — dropping any that have gone away
+   * (removed chips, a caboose whose group is gone). `$items` is re-sorted into
+   * DOM order afterward so the sorter's prev/next walk stays correct across the
+   * separate group lists. No-op on touch, where {@link chipSort} is `null`.
+   */
+  syncChipSort(): void {
+    if (!this.chipSort) {
+      return;
+    }
+
+    const wanted: HTMLElement[] = [];
+
+    for (const group of this.groups) {
+      const select = group.select;
+      const list = select?.querySelector<HTMLElement>(':scope > ul');
+      if (!select || !list) {
+        continue;
+      }
+
+      // Hand chip sorting to this manager (idempotent — safe every refresh,
+      // and re-releases a select that re-booted its own sorter).
+      select.releaseSort();
+
+      for (const chip of group.chips()) {
+        const li = chip.closest<HTMLElement>('li');
+        if (li) {
+          wanted.push(li);
+        }
+      }
+
+      wanted.push(this.ensureCaboose(list));
+    }
+
+    // Drop stale items first (so a released select's handles are free), then
+    // register newcomers; both calls are idempotent.
+    const keep = new Set(wanted);
+    for (const item of [...(this.chipSort.$items as HTMLElement[])]) {
+      if (!keep.has(item)) {
+        this.chipSort.removeItems(item);
+      }
+    }
+    this.chipSort.addItems(wanted);
+
+    // `addItems` appends newcomers, so re-sort into DOM order for the prev/next
+    // walk (the sorter only re-sorts once a drag actually moves something).
+    (this.chipSort.$items as HTMLElement[]).sort((a, b) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    );
+  }
+
+  /**
+   * Ensure `list` (a group's `ul.components`) ends in a
+   * {@link CABOOSE_CLASS} sentinel `<li>`, creating it if missing and keeping
+   * it last (a Choose-menu add appends the new chip after it). Returns the
+   * caboose so {@link syncChipSort} can register it as a drop target.
+   */
+  ensureCaboose(list: HTMLElement): HTMLElement {
+    let caboose = list.querySelector<HTMLElement>(
+      `:scope > li.${CABOOSE_CLASS}`
+    );
+    if (!caboose) {
+      caboose = document.createElement('li');
+      caboose.className = CABOOSE_CLASS;
+      caboose.setAttribute('aria-hidden', 'true');
+    }
+    if (caboose !== list.lastElementChild) {
+      list.append(caboose);
+    }
+    return caboose;
   }
 
   /**
@@ -724,8 +851,10 @@ export class Group extends Base {
 
   /**
    * Recompute this group's position-dependent state: the reorder button's
-   * `position`/`disabled`, and the chips' "Move to previous/next group" item
-   * visibility (hidden at the ends).
+   * `position`/`disabled`, the chips' `{group}` hidden-input value (so a chip
+   * dragged in from another group picks up this group's name — legacy
+   * `refresh`), and the chips' "Move to previous/next group" item visibility
+   * (hidden at the ends).
    */
   refresh(index: number, total: number): void {
     const btn = this.container.querySelector(
@@ -738,6 +867,7 @@ export class Group extends Base {
     );
 
     for (const chip of this.chips()) {
+      setChipGroupValue(chip, this.name);
       chip
         .querySelector('[data-move-to-previous-group]')
         ?.toggleAttribute('hidden', index === 0);
