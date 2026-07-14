@@ -10,7 +10,7 @@ async function createFixture(
   button.textContent = 'Trigger';
   document.body.append(button);
 
-  const tooltip = document.createElement('c-tooltip') as CraftTooltip;
+  const tooltip = document.createElement('craft-tooltip') as CraftTooltip;
   tooltip.setAttribute('for', 'trigger');
   for (const [name, value] of Object.entries(tooltipAttrs)) {
     tooltip.setAttribute(name, value);
@@ -28,7 +28,7 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-describe('c-tooltip', () => {
+describe('craft-tooltip', () => {
   it('wraps default-slot content into a slot="content" child', async () => {
     const {tooltip} = await createFixture();
     const content = tooltip.querySelector('[slot="content"]');

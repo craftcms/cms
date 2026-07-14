@@ -27,7 +27,7 @@ export default class CraftInfoIcon extends LitElement {
 
   @state() status = '';
 
-  @query('c-tooltip') tooltip!: HTMLElement;
+  @query('craft-tooltip') tooltip!: HTMLElement;
 
   #eventController = new AbortController();
 
@@ -54,7 +54,7 @@ export default class CraftInfoIcon extends LitElement {
         ) {
           const otherTooltip =
             CraftInfoIcon.#openInstance.renderRoot.querySelector<CraftTooltip>(
-              'c-tooltip'
+              'craft-tooltip'
             );
           otherTooltip?.hide();
         }
@@ -111,7 +111,9 @@ export default class CraftInfoIcon extends LitElement {
           <craft-icon name="${this.icon}" label="${this.label}"></craft-icon>
         </craft-button>
 
-        <c-tooltip trigger="click" for="${this.id}"><slot></slot></c-tooltip>
+        <craft-tooltip trigger="click" for="${this.id}"
+          ><slot></slot
+        ></craft-tooltip>
       </div>
     `;
   }

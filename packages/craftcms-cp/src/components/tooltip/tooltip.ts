@@ -4,10 +4,10 @@ import {LionTooltip} from '@lion/ui/tooltip.js';
 import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
 
 /**
- * craft-tooltip (registered as `c-tooltip`) shows contextual text for an
- * external trigger element referenced by id.
+ * craft-tooltip shows contextual text for an external trigger element
+ * referenced by id.
  *
- * @example <c-tooltip for="my-button" placement="right-start">Help text</c-tooltip>
+ * @example <craft-tooltip for="my-button" placement="right-start">Help text</craft-tooltip>
  *
  * Emits `craft-show`/`craft-after-show`/`craft-hide`/`craft-after-hide`.
  */
@@ -164,16 +164,12 @@ export default class CraftTooltip extends LionTooltip {
   }
 }
 
-/**
- * @TODO rename this once I figure out what to do with the existing `craft-tooltip`
- */
-if (!customElements.get('c-tooltip')) {
-  customElements.define('c-tooltip', CraftTooltip);
+if (!customElements.get('craft-tooltip')) {
+  customElements.define('craft-tooltip', CraftTooltip);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'c-tooltip': CraftTooltip;
     'craft-tooltip': CraftTooltip;
   }
 }

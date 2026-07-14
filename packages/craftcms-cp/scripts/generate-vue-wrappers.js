@@ -610,7 +610,7 @@ const ALL_COMPONENTS = [
     importPath: '../components/input-file/selected-file-list',
   },
   {
-    tagName: 'c-tooltip',
+    tagName: 'craft-tooltip',
     className: 'CraftTooltip',
     importPath: '../components/tooltip/tooltip',
   },
