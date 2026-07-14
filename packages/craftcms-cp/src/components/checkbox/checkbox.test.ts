@@ -95,6 +95,52 @@ describe('SSR hydration', () => {
     expect(input.checked).toBe(true);
   });
 
+  it('mirrors a direct input.checked write (no change event) onto the host', async () => {
+    // The legacy checkbox-select "All" handler flips options via jQuery
+    // `.prop('checked', …)`, which sets the property without firing an event.
+    const element = await createFromMarkup(`
+      <craft-checkbox>
+        <input slot="input" type="checkbox" name="sources[]" value="one">
+      </craft-checkbox>
+    `);
+    const input = element.querySelector('input')!;
+
+    input.checked = true;
+    expect(element.checked).toBe(true);
+
+    input.checked = false;
+    expect(element.checked).toBe(false);
+  });
+
+  it('mirrors a direct input.disabled write and allows selecting afterwards', async () => {
+    // The legacy "All" handler re-enables options via `.prop({checked, disabled})`
+    // with no events; a stale host `disabled` would make Lion swallow the
+    // next user toggle.
+    const element = await createFromMarkup(`
+      <craft-checkbox>
+        <input slot="input" type="checkbox" name="allowedKinds[]" value="image" checked disabled>
+      </craft-checkbox>
+    `);
+    const input = element.querySelector('input')!;
+
+    expect(element.disabled).toBe(true);
+
+    // "All" unchecked: options reset + re-enabled, properties only
+    input.checked = false;
+    input.disabled = false;
+    await element.updateComplete;
+
+    expect(element.disabled).toBe(false);
+    expect(element.checked).toBe(false);
+
+    // the user can now select the option
+    input.click();
+    await element.updateComplete;
+
+    expect(element.checked).toBe(true);
+    expect(input.checked).toBe(true);
+  });
+
   it('remains client-drivable without slotted content', async () => {
     const element = await createFromMarkup(
       '<craft-checkbox name="agree" checked></craft-checkbox>'
