@@ -16,9 +16,15 @@ Craft.EntryTypeSelectInput = Craft.ComponentSelectInput.extend(
 
     addComponentInternal: function ($component) {
       if (this.settings.allowOverrides) {
+        // Works against either action-menu shape: `getDisclosureMenu()`
+        // returns either the real `Garnish.DisclosureMenu` (legacy markup)
+        // or a shim exposing a functional `hideItem()` for the modern
+        // `<craft-action-menu>` shape (sets the `hidden` attribute).
         const disclosureMenu = this.getDisclosureMenu($component);
-        const $editBtn = disclosureMenu.$container.find('[data-edit-action]');
-        if ($editBtn.length) {
+        const $editBtn = disclosureMenu?.$container.find(
+          '[data-edit-action]'
+        );
+        if ($editBtn?.length) {
           disclosureMenu.hideItem($editBtn[0]);
         }
         if (this.settings.addItemsToActionMenus) {
@@ -28,11 +34,15 @@ Craft.EntryTypeSelectInput = Craft.ComponentSelectInput.extend(
               {
                 icon: async () => await Craft.ui.icon('gear'),
                 label: Craft.t('app', 'Settings'),
-                onActivate: (el) => {
-                  $(el)
-                    .closest('.menu')
-                    .data('disclosureMenu')
-                    .$trigger.closest('.componentselect')
+                onActivate: () => {
+                  // Resolve from `$component` (the chip), not `this` — see
+                  // `ComponentSelectInput.defineComponentActions()`'s
+                  // Move-forward comment. `$component` stays put even when
+                  // the menu it's opened from gets relocated in the DOM
+                  // (both the legacy disclosure menu and Lion's overlay,
+                  // which backs `craft-action-menu`, do this).
+                  $component
+                    .closest('.componentselect')
                     .data('componentSelect')
                     .createSettings($component);
                 },
