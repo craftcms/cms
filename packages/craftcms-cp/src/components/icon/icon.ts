@@ -1,34 +1,13 @@
-import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
+import {
+  css,
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import {property, state} from 'lit/decorators.js';
-import {getIconUrl} from '../../utilities/icons.js';
-
-/**
- * Module-level cache of icon fetches, keyed by URL. Failed fetches are
- * evicted so they can retry on the next request.
- */
-const iconCache = new Map<string, Promise<SVGElement | null>>();
-
-async function requestIcon(url: string): Promise<SVGElement | null> {
-  try {
-    const response = await fetch(url, {mode: 'cors'});
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const container = document.createElement('div');
-    container.innerHTML = await response.text();
-    const svg = container.firstElementChild;
-
-    if (svg?.tagName?.toLowerCase() !== 'svg') {
-      return null;
-    }
-
-    return svg as SVGElement;
-  } catch {
-    return null;
-  }
-}
+import {resolveIcon} from '../../utilities/icons.js';
 
 /**
  * craft-icon renders an SVG icon fetched from the CP's published icon assets
@@ -55,7 +34,7 @@ export default class CraftIcon extends LitElement {
 
   @property({reflect: true}) appearance?: 'plain' | 'badge' = 'plain';
 
-  @state() private _svg: SVGElement | null = null;
+  @state() private _svg: TemplateResult | typeof nothing = nothing;
 
   @state() private _hasSlottedContent = false;
 
@@ -71,54 +50,51 @@ export default class CraftIcon extends LitElement {
     this._hasSlottedContent = this.childElementCount > 0;
   }
 
-  #iconUrl(): string | null {
+  #iconParams(): {name: string; family: string; variant: string} | null {
     if (!this.name) {
       return null;
     }
 
     // 'classic'/'solid' mirror the defaults the Web Awesome-era icon library
     // resolver applied; getIconUrl's own defaults differ for direct callers.
-    return getIconUrl(
-      this.name,
-      this.family ?? 'classic',
-      this.variant ?? 'solid'
-    );
+    return {
+      name: this.name,
+      family: this.family ?? 'classic',
+      variant: this.variant ?? 'solid',
+    };
   }
 
   async #loadIcon() {
-    const url = this.#iconUrl();
+    const icon = this.#iconParams();
 
-    if (url === null) {
-      this._svg = null;
+    if (icon === null) {
+      this._svg = nothing;
       return;
     }
 
-    let request = iconCache.get(url);
-    if (!request) {
-      request = requestIcon(url);
-      iconCache.set(url, request);
+    let svg: TemplateResult | typeof nothing;
+
+    try {
+      svg = await resolveIcon(icon.name, icon.family, icon.variant);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      svg = nothing;
     }
 
-    const svg = await request;
-
-    if (svg === null) {
-      iconCache.delete(url);
-    }
+    const currentIcon = this.#iconParams();
 
     // The icon may have changed while the fetch was in flight.
-    if (url !== this.#iconUrl()) {
+    if (
+      currentIcon === null ||
+      icon.name !== currentIcon.name ||
+      icon.family !== currentIcon.family ||
+      icon.variant !== currentIcon.variant
+    ) {
       return;
     }
 
-    if (svg === null) {
-      this._svg = null;
-      return;
-    }
-
-    const clone = svg.cloneNode(true) as SVGElement;
-    clone.setAttribute('fill', 'currentColor');
-    clone.setAttribute('part', 'svg');
-    this._svg = clone;
+    this._svg = svg;
   }
 
   #applyLabel() {

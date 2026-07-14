@@ -1,6 +1,8 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {html} from 'lit';
 import type CraftIcon from './icon.js';
 import './icon.js';
+import {defaultIconResolver, setIconResolver} from '../../utilities/icons.js';
 
 const SVG_BODY =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 0h448v512H0z"/></svg>';
@@ -35,6 +37,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  setIconResolver(defaultIconResolver);
 });
 
 describe('craft-icon', () => {
@@ -43,15 +46,6 @@ describe('craft-icon', () => {
     await createIcon({name: 'pencil'});
     expect(fetchMock).toHaveBeenCalledWith(
       '/vendor/craft/icons/solid/pencil.svg',
-      {mode: 'cors'}
-    );
-  });
-
-  it('maps legacy names', async () => {
-    const fetchMock = stubFetch();
-    await createIcon({name: 'newstamp'});
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/vendor/craft/icons/solid/certificate.svg',
       {mode: 'cors'}
     );
   });
@@ -71,6 +65,31 @@ describe('craft-icon', () => {
     const svg = element.shadowRoot!.querySelector('svg');
     expect(svg).not.toBeNull();
     expect(svg!.getAttribute('fill')).toBe('currentColor');
+  });
+
+  it('resolves icons through the configured Lion icon resolver', async () => {
+    const fetchMock = stubFetch();
+    setIconResolver(
+      (name, family, variant) => html`
+        <svg
+          data-name=${name}
+          data-family=${family}
+          data-variant=${variant}
+        ></svg>
+      `
+    );
+
+    const element = await createIcon({
+      name: 'github',
+      family: 'brands',
+      variant: 'regular',
+    });
+    const svg = element.shadowRoot!.querySelector('svg');
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(svg!.dataset.name).toBe('github');
+    expect(svg!.dataset.family).toBe('brands');
+    expect(svg!.dataset.variant).toBe('regular');
   });
 
   it('only fetches once per URL', async () => {

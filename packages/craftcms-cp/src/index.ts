@@ -67,6 +67,7 @@ export {default as CraftVisuallyHidden} from './components/visually-hidden/visua
 export * from './utilities/cookies.js';
 export * from './utilities/translate.js';
 export * from './utilities/format.js';
+export * from './utilities/icons.js';
 export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
 export * from './utilities/string.js';
