@@ -155,6 +155,11 @@ class FieldLayout extends Component
         }
     }
 
+    public static function defaultTabName(): string
+    {
+        return t('Content');
+    }
+
     /**
      * @param  class-string<ElementInterface>  $type
      */
@@ -166,7 +171,7 @@ class FieldLayout extends Component
     /**
      * Creates or modifies a tab by name.
      *
-     * Mandatory fields may create a translated `Content` tab, so `tab('Content')` only reuses it when its translated name is `Content`.
+     * Use {@see defaultTabName()} to target the tab created for mandatory fields.
      *
      * @param  Closure(FieldLayoutTab): mixed  $closure
      */
@@ -892,7 +897,7 @@ class FieldLayout extends Component
             $this->_tabs[] = $tab = new FieldLayoutTab([
                 'layout' => $this,
                 'layoutId' => $this->id,
-                'name' => t('Content'),
+                'name' => static::defaultTabName(),
                 'sortOrder' => 1,
                 'elements' => [],
             ]);

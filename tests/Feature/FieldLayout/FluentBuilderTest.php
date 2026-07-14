@@ -35,7 +35,7 @@ it('rejects unknown field handles', function () {
 
 it('removes fields by handle and rejects unknown handles', function () {
     $layout = new FieldLayout;
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(CustomField::for('body')));
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomField::for('body')));
 
     expect($layout->removeField('body'))->toBe($layout)
         ->and($layout->getCustomFields())->toBeEmpty()

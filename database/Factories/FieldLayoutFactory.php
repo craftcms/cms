@@ -27,11 +27,11 @@ class FieldLayoutFactory extends Factory
     }
 
     /** @param  FieldLayoutElement[]  $elements */
-    public function withContentTab(array $elements = [], string $name = 'Content'): self
+    public function withContentTab(array $elements = [], ?string $name = null): self
     {
         return $this->state(function (array $attributes) use ($elements, $name) {
             $layout = FieldLayoutConfig::create($attributes['type']);
-            $layout->tab($name, fn (FieldLayoutTab $tab) => $tab->add(...$elements));
+            $layout->tab($name ?? FieldLayoutConfig::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(...$elements));
 
             return ['config' => $layout->getConfig()];
         });

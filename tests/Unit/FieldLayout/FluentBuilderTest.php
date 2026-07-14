@@ -16,6 +16,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -34,15 +35,36 @@ it('creates a layout for an element type', function () {
     expect(FieldLayout::create(Entry::class)->type)->toBe(Entry::class);
 });
 
+it('uses the translated default tab name', function () {
+    Event::listen(NativeFieldsResolving::class, function (NativeFieldsResolving $event) {
+        $event->fields[] = new TextField([
+            'attribute' => 'title',
+            'mandatory' => true,
+        ]);
+    });
+
+    I18N::withLocale('de', null, function () {
+        $layout = new FieldLayout;
+        $name = FieldLayout::defaultTabName();
+        $tab = $layout->getTab($name);
+
+        $layout->tab($name, fn (FieldLayoutTab $tab) => $tab->add(new Heading('Metadata')));
+
+        expect($name)->toBe('Inhalt')
+            ->and($layout->getTabs())->toBe([$tab])
+            ->and($tab->getElements())->toHaveCount(2);
+    });
+});
+
 it('creates and reuses attached tabs', function () {
     $layout = new FieldLayout;
     $content = new Heading('Content');
     $metadata = new Heading('Metadata');
 
-    expect($layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add($content)))->toBe($layout);
+    expect($layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add($content)))->toBe($layout);
 
-    $tab = $layout->getTab('Content');
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add($metadata));
+    $tab = $layout->getTab(FieldLayout::defaultTabName());
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add($metadata));
 
     expect($tab->getLayout())->toBe($layout)
         ->and($layout->getTabs())->toBe([$tab])
@@ -57,8 +79,8 @@ it('rejects unknown tab names', function () {
 it('adds elements with back references and dates', function () {
     $layout = new FieldLayout;
     $element = CustomField::for(fluentField());
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add($element));
-    $tab = $layout->getTab('Content');
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add($element));
+    $tab = $layout->getTab(FieldLayout::defaultTabName());
 
     expect($tab->getElements())->toBe([$element])
         ->and($element->getLayout())->toBe($layout)
@@ -75,13 +97,13 @@ it('rejects duplicate single-instance fields including within one batch', functi
         }
     };
     $layout = new FieldLayout;
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field)));
-    $tab = $layout->getTab('Content');
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field)));
+    $tab = $layout->getTab(FieldLayout::defaultTabName());
     $batchLayout = new FieldLayout;
 
     expect(fn () => $tab->add(CustomField::for($field)))
         ->toThrow(InvalidArgumentException::class)
-        ->and(fn () => $batchLayout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field), CustomField::for($field))))
+        ->and(fn () => $batchLayout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field), CustomField::for($field))))
         ->toThrow(InvalidArgumentException::class);
 });
 
@@ -91,12 +113,12 @@ it('allows duplicate multi-instance fields', function () {
     $body = CustomField::for($field);
     $secondaryBody = CustomField::for($field)->handle('secondaryBody');
 
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(
         $body,
         $secondaryBody,
     ));
 
-    expect($layout->getTab('Content')->getElements())->toBe([$body, $secondaryBody]);
+    expect($layout->getTab(FieldLayout::defaultTabName())->getElements())->toBe([$body, $secondaryBody]);
 });
 
 it('configures field elements fluently', function () {
@@ -133,7 +155,7 @@ it('keeps custom field overrides synchronized', function () {
         ->label('Teaser')
         ->instructions('Short copy');
 
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add($field));
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add($field));
 
     expect($field->attribute())->toBe('teaser')
         ->and($field->getField()->name)->toBe('Teaser')
@@ -172,7 +194,7 @@ it('invalidates field caches when fields are added and removed', function () {
 
     expect($layout->getCustomFields())->toBeEmpty();
 
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field)));
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field)));
 
     expect($layout->getCustomFields())->toHaveCount(1);
 
@@ -184,7 +206,7 @@ it('invalidates field caches when fields are added and removed', function () {
 it('removes a field from every tab', function () {
     $layout = new FieldLayout;
     $field = fluentField();
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field)));
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field)));
     $layout->tab('SEO', fn (FieldLayoutTab $tab) => $tab->add(CustomField::for($field)->handle('seoBody')));
 
     $layout->removeField($field);
@@ -203,7 +225,7 @@ it('removes tabs and rehomes mandatory fields', function () {
     $layout = new FieldLayout;
     $layout->tab('Legacy', fn (FieldLayoutTab $tab) => $tab->add(new Heading('Legacy')));
 
-    $layout->removeTab('Content');
+    $layout->removeTab(FieldLayout::defaultTabName());
 
     $mandatoryField = array_find(
         $layout->getTab('Legacy')->getElements(),
@@ -216,7 +238,7 @@ it('removes tabs and rehomes mandatory fields', function () {
 
 it('round trips config without changing generated uids', function () {
     $layout = new FieldLayout;
-    $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(
         CustomField::for(fluentField())->required(),
         new Heading('Metadata'),
     ));
