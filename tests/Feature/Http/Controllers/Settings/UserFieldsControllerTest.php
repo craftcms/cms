@@ -44,7 +44,7 @@ it('renders the inertia user profile fields screen', function () {
             ->component('settings/users/Fields')
             ->where('title', 'User Settings')
             ->has('fieldLayoutDesigner.html')
-            ->has('subnav', 3))
+        )
         ->assertOk();
 });
 

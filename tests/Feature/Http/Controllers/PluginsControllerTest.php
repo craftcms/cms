@@ -142,10 +142,13 @@ test('saveSettings returns 404 for non-existent plugin', function () {
 test('saveSettings persists plugin settings', function () {
     postJson(action([PluginsController::class, 'saveSettings']), [
         'pluginHandle' => 'test-plugin',
-        'settings' => ['foo' => 'bar'],
+        'settings' => ['foo' => 'bar', 'bar' => 'baz'],
     ])->assertOk();
 
-    expect(app(Plugins::class)->getPlugin('test-plugin')->getSettings()->foo)->toBe('bar');
+    $settings = app(Plugins::class)->getPlugin('test-plugin')->getSettings();
+
+    expect($settings->foo)->toBe('bar');
+    expect($settings->bar)->toBe('baz');
 });
 
 test('saveSettings uses plugin form request validation', function () {
@@ -160,10 +163,13 @@ test('saveSettings uses plugin form request validation', function () {
 
     postJson(action([PluginsController::class, 'saveSettings']), [
         'pluginHandle' => 'test-plugin',
-        'settings' => ['foo' => 'via-form-request'],
+        'settings' => ['foo' => 'via-form-request', 'bar' => 'raw-only'],
     ])->assertOk();
 
-    expect(app(Plugins::class)->getPlugin('test-plugin')->getSettings()->foo)->toBe('via-form-request');
+    $settings = app(Plugins::class)->getPlugin('test-plugin')->getSettings();
+
+    expect($settings->foo)->toBe('via-form-request');
+    expect($settings->bar)->toBeNull();
 });
 
 test('respects read-only mode for install', function () {

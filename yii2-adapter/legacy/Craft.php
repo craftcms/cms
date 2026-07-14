@@ -214,7 +214,7 @@ class Craft extends Yii
             }
 
             self::$_baseCookieConfig = [
-                'domain' => $generalConfig->defaultCookieDomain,
+                'domain' => config('session.domain'),
                 'secure' => $generalConfig->useSecureCookies,
                 'httpOnly' => true,
                 'sameSite' => $generalConfig->sameSiteCookieValue,

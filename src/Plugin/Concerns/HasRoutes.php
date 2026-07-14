@@ -17,6 +17,10 @@ trait HasRoutes
 {
     public function bootHasRoutes(): void
     {
+        if ($this->app->routesAreCached()) {
+            return;
+        }
+
         $directory = dirname(self::getInstance()->getBasePath());
 
         foreach (['web', 'cp', 'actions'] as $type) {
@@ -74,6 +78,7 @@ trait HasRoutes
         $this->app['router']
             ->middleware(['craft', 'craft.web'])
             ->prefix($siteActionPrefix)
+            ->name("craft.plugin.$handle.site.")
             ->group($routes);
     }
 }

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Password;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
 readonly class VerifyEmailController extends AuthenticationController
@@ -35,12 +36,16 @@ readonly class VerifyEmailController extends AuthenticationController
 
         // Send them to the set verify-email template
         return $this->renderViewWithFallback(
-            cpTemplate: 'verify-email',
+            inertiaComponent: 'auth/VerifyEmail',
+            inertiaProps: [
+                'uid' => $uid,
+                'code' => $code,
+                'action' => $request->isCpRequest() ? action([self::class, 'store']) : action_url('users/verify-email'),
+            ],
             data: [
                 'uid' => $uid,
                 'code' => $code,
             ],
-            inertiaComponent: 'auth/VerifyEmail',
         );
     }
 

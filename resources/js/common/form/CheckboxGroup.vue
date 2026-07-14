@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {t} from '@craftcms/cp';
-  import type CraftCheckbox from '@craftcms/cp/components/checkbox/checkbox.ts.mjs';
+  import type CraftCheckbox from '@craftcms/cp/components/checkbox/checkbox';
   import type {CheckboxOption} from '@/common/types';
   import CheckboxGroupItem from '@/common/form/CheckboxGroupItem.vue';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';

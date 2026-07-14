@@ -8,9 +8,14 @@ use CraftCms\Cms\Support\File;
 
 trait HasConfig
 {
-    /** @var bool Whether the config file should be automatically registered */
+    /** @var bool Whether the plugin's override-only Craft settings config should be publishable */
     public bool $config = true;
 
+    /**
+     * Registers `config/craft/{handle}.php` for publishing.
+     *
+     * Published values override stored plugin settings; they are not merged as Laravel package defaults.
+     */
     public function bootHasConfig(): void
     {
         if (! $this->config) {

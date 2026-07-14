@@ -76,8 +76,13 @@ describe('fieldHtml', function () {
 
         expect($withInstructions)->toContain('id="inst-id"')
             ->and($withInstructions)->toContain('<p><strong>Test</strong></p>')
-            ->and($withTip)->toContain('<p id="tip" class="notice has-icon">')
-            ->and($withWarning)->toContain('<p id="warning" class="warning has-icon">')
+            ->and($withTip)->toContain('<craft-callout')
+            ->and($withTip)->toContain('id="tip"')
+            ->and($withTip)->toContain('variant="info"')
+            ->and($withTip)->toContain('icon="lightbulb"')
+            ->and($withTip)->toContain('<strong>Test</strong>')
+            ->and($withWarning)->toContain('id="warning"')
+            ->and($withWarning)->toContain('variant="warning"')
             ->and($withErrors)->toContain('has-errors')
             ->and((bool) preg_match('/<ul id="[\w\-]+" class="errors">/', $withErrors))->toBeTrue();
     });
@@ -88,7 +93,8 @@ describe('fieldHtml', function () {
             'warning' => new Markup('Config warning', 'UTF-8'),
         ]);
 
-        expect($html)->toContain('<p id="warning" class="warning has-icon">')
+        expect($html)->toContain('id="warning"')
+            ->and($html)->toContain('variant="warning"')
             ->and($html)->toContain('Config warning');
     });
 

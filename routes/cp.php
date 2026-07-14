@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
@@ -67,7 +68,7 @@ Route::get('install', [InstallController::class, 'index']);
 
 Route::middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin']);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
     Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
@@ -156,7 +157,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
     Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
-    Route::get('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
+    Route::post('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
 
     Route::middleware([

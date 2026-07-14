@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {h} from 'vue';
   import {t} from '@craftcms/cp';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import Pane from '@/common/components/Pane.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
@@ -11,6 +10,7 @@
   import {router} from '@inertiajs/vue3';
   import {create, destroy, edit} from '@actions/Gql/TokensController';
   import Empty from '@/common/components/Empty.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   export interface TokenData {
     id: number;
@@ -90,26 +90,24 @@
 </script>
 
 <template>
-  <AppLayout>
-    <template #actions>
-      <CpLink
-        :href="create().url"
-        icon="plus"
-        appearance="button"
-        variant="accent"
-        >{{ t('New token') }}</CpLink
-      >
-    </template>
-    <Pane :padding="0" appearance="raised">
-      <AdminTable :table="table">
-        <template #empty-row>
-          <Empty :label="t('No GraphQL tokens exist yet.')">
-            <CpLink :href="create().url" icon="plus" appearance="button">{{
-              t('New token')
-            }}</CpLink>
-          </Empty>
-        </template>
-      </AdminTable>
-    </Pane>
-  </AppLayout>
+  <LayoutSlot name="actions">
+    <CpLink
+      :href="create().url"
+      icon="plus"
+      appearance="button"
+      variant="accent"
+      >{{ t('New token') }}</CpLink
+    >
+  </LayoutSlot>
+  <Pane :padding="0" appearance="raised">
+    <AdminTable :table="table">
+      <template #empty-row>
+        <Empty :label="t('No GraphQL tokens exist yet.')">
+          <CpLink :href="create().url" icon="plus" appearance="button">{{
+            t('New token')
+          }}</CpLink>
+        </Empty>
+      </template>
+    </AdminTable>
+  </Pane>
 </template>

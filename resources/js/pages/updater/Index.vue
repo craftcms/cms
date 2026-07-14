@@ -9,6 +9,8 @@
   } from '@/modules/updater/composables/useUpdater';
   import {ConfigService} from '@craftcms/cp';
 
+  defineOptions({layout: []});
+
   const props = defineProps<{
     title: string;
     initialState: UpdaterState;

@@ -17,13 +17,13 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\CredentialRecord;
 use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 
 #[Scoped]
@@ -97,7 +97,7 @@ class Passkeys
         $credentialRepository = $this->webauthnServer()->getCredentialRepository();
 
         $excludeCredentials = array_map(
-            fn (PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+            fn (CredentialRecord $credential) => $credential->getPublicKeyCredentialDescriptor(),
             $credentialRepository->findAllForUserEntity($userEntity),
         );
 
@@ -150,7 +150,7 @@ class Passkeys
         }
 
         try {
-            $publicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAttestationResponseValidator()->check(
+            $credentialRecord = $this->webauthnServer()->getAuthenticatorAttestationResponseValidator()->check(
                 $authenticatorAttestationResponse,
                 $publicKeyCredentialCreationOptions,
                 request()->host(),
@@ -162,7 +162,7 @@ class Passkeys
         }
 
         $credentialRepository = $this->webauthnServer()->getCredentialRepository();
-        $credentialRepository->savedNamedCredentialSource($publicKeyCredentialSource, $credentialName);
+        $credentialRepository->savedNamedCredentialSource($credentialRecord, $credentialName);
 
         return true;
     }
@@ -212,30 +212,30 @@ class Passkeys
             return false;
         }
 
-        $publicKeyCredentialSource = $this->webauthnServer()->getCredentialRepository()->findOneByCredentialId(
+        $credentialRecord = $this->webauthnServer()->getCredentialRepository()->findOneByCredentialId(
             $publicKeyCredential->rawId,
             $checkOldUserHandle,
         );
 
-        if ($publicKeyCredentialSource === null) {
+        if ($credentialRecord === null) {
             Log::warning('No publicKeyCredential source was found.');
 
             return false;
         }
 
         try {
-            $updatedPublicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
-                $publicKeyCredentialSource,
+            $updatedCredentialRecord = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
+                $credentialRecord,
                 $authenticatorAssertionResponse,
                 $requestOptions,
                 request()->host(),
                 $userEntity->id,
             );
 
-            // we can't save the updated public key credential source to db here as in User::authenticateWithPasskey()
-            // we might need to call this method (Auth::verifyPasskey()) again, with checkOldUserHandle set to true;
-            // so, we're going to store it in the session and then save from the User::authenticateWithPasskey() method
-            Session::put($this->passkeyCredSourceParam, $updatedPublicKeyCredentialSource);
+            // we can't save the updated credential record to db here as in AuthMethods::authenticateWithPasskey()
+            // we might need to call this method (Passkeys::verifyPasskey()) again, with checkOldUserHandle set to true;
+            // so, we're going to store it in the session and then save from the AuthMethods::authenticateWithPasskey() method
+            Session::put($this->passkeyCredSourceParam, $updatedCredentialRecord);
         } catch (InvalidUserHandleException $exception) {
             throw $exception;
         } catch (Throwable $e) {
@@ -244,7 +244,7 @@ class Passkeys
             return false;
         }
 
-        $this->webauthnServer()->getCredentialRepository()->saveCredentialSource($publicKeyCredentialSource);
+        $this->webauthnServer()->getCredentialRepository()->saveCredentialSource($credentialRecord);
 
         return true;
     }
@@ -287,6 +287,8 @@ class Passkeys
      */
     private function passkeyRpEntity(): PublicKeyCredentialRpEntity
     {
+        // note: `name` is deprecated in webauthn-lib as of 5.3, but the browser's WebAuthn API still requires
+        // `rp.name` to be present per spec, so it can't just be omitted (see https://github.com/w3c/webauthn/issues/2050)
         return PublicKeyCredentialRpEntity::create(
             name: Cms::systemName(),
             id: request()->host(),

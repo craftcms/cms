@@ -7131,17 +7131,6 @@ textarea.text.fullwidth {
   }
 }
 
-.field,
-fieldset {
-  position: relative;
-  margin-block: 24px;
-  margin-inline: 0;
-
-  .flex > & {
-    margin-block: 0;
-  }
-}
-
 .status-badge {
   position: absolute;
   inset-block-start: 0;

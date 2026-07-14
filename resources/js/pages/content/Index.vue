@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ElementSources from '@/modules/elements/ElementSources.vue';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
@@ -203,33 +204,34 @@
     ...paginationConfig,
     enableMultiSort: false,
   });
+
+  useAppLayout({fullWidth: true});
 </script>
 
 <template>
-  <IndexLayout>
-    <template #actions>
-      <NewEntryButton
-        :sources="sources"
-        :source="source"
-        :publishable-sections="publishableSections"
-        :element-display-name="elementDisplayName"
-      />
-    </template>
-    <template #interior-nav>
-      <nav aria-labelledby="source-heading">
-        <h2 id="source-heading" class="sr-only">
-          {{ t('Sources') }}
-        </h2>
-        <ElementSources
-          :sources="sources"
-          :route="route"
-          :active-source="source?.key"
-          :view-mode="viewState.mode !== 'table' ? viewState.mode : null"
-        />
-      </nav>
-    </template>
+  <LayoutSlot name="actions">
+    <NewEntryButton
+      :sources="sources"
+      :source="source"
+      :publishable-sections="publishableSections"
+      :element-display-name="elementDisplayName"
+    />
+  </LayoutSlot>
 
-    <template #subnav-actions>
+  <LayoutSlot name="sidebar">
+    <nav aria-labelledby="source-heading">
+      <h2 id="source-heading" class="sr-only">
+        {{ t('Sources') }}
+      </h2>
+      <ElementSources
+        :sources="sources"
+        :route="route"
+        :active-source="source?.key"
+        :view-mode="viewState.mode !== 'table' ? viewState.mode : null"
+      />
+    </nav>
+
+    <div class="mt-4">
       <ActionMenu
         :actions="[
           {
@@ -238,8 +240,10 @@
           },
         ]"
       />
-    </template>
+    </div>
+  </LayoutSlot>
 
+  <craft-pane size="none">
     <BaseElementIndex
       :table="elementTable"
       :selectable="true"
@@ -289,7 +293,7 @@
         />
       </template>
     </BaseElementIndex>
-  </IndexLayout>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss"></style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/cp/utilities/translate';
   import {Form, useForm} from '@inertiajs/vue3';
   import {
     clearCaches,

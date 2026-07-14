@@ -423,6 +423,7 @@ function createAssetTestAssetWithTempFs(
     $mockVolume->name = $volume->name;
     $mockVolume->handle = $volume->handle;
     $mockVolume->mockFs = $tempFs;
+    $mockVolume->markAsTemporary();
 
     $asset = new class extends Asset
     {

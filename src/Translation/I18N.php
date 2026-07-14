@@ -368,16 +368,6 @@ class I18N
 
         $translation = $this->translator->translate($message, $parameters, $category, $locale);
 
-        if (Cms::config()->translationDebugOutput) {
-            $char = match ($category) {
-                'site' => '$',
-                'app' => '@',
-                default => '%',
-            };
-
-            $translation = $char.$translation.$char;
-        }
-
         /**
          * If we don't have a translation for the message.
          * Translate it using Laravel's translations.
@@ -386,11 +376,19 @@ class I18N
             $result = __($message, $parameters, $locale);
 
             // We're dealing with a message that's equal to a translation file (for example 'site')
-            if (is_array($result)) {
-                return $translation;
+            if (! is_array($result)) {
+                $translation = $result;
             }
+        }
 
-            return $result;
+        if (Cms::config()->translationDebugOutput) {
+            $char = match ($category) {
+                'site' => '$',
+                'app' => '@',
+                default => '%',
+            };
+
+            $translation = $char.$translation.$char;
         }
 
         return $translation;

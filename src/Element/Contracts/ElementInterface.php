@@ -1525,10 +1525,10 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns any attributes that should be included in the element’s chips and cards.
      *
-     * The attribute HTML will be rendered with [[\yii\helpers\BaseHtml::renderTagAttributes()]].
+     * The attribute HTML will be rendered with [[\CraftCms\Cms\Support\Html::renderTagAttributes()]].
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::htmlAttributes()]]
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override [[\CraftCms\Cms\Element\Element::htmlAttributes()]]
      * instead of this method.
      * :::
      *

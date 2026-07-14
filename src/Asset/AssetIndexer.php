@@ -66,8 +66,6 @@ class AssetIndexer
             return;
         }
 
-        $fsSubpath = $volume->getSubpath();
-
         try {
             foreach ($fileList as $listing) {
                 if (! $listing instanceof StorageAttributes) {
@@ -92,7 +90,7 @@ class AssetIndexer
                     'fileSize' => ! $listing->isDir() && method_exists($listing, 'fileSize') ? $listing->fileSize() : null,
                 ]);
 
-                $path = $listing->getAdjustedUri($fsSubpath);
+                $path = $listing->getUri();
                 $segments = preg_split('/\\\\|\//', $path);
                 $lastSegmentIndex = count($segments) - 1;
 
@@ -211,7 +209,6 @@ class AssetIndexer
     public function storeIndexList(Generator $indexList, int $sessionId, Volume $volume): int
     {
         $values = [];
-        $fsSubpath = $volume->getSubpath();
         $now = now();
 
         /** @var FsListing $volumeListing */
@@ -226,7 +223,7 @@ class AssetIndexer
             $values[] = [
                 'volumeId' => $volume->id,
                 'sessionId' => $sessionId,
-                'uri' => $volumeListing->getAdjustedUri($fsSubpath),
+                'uri' => $volumeListing->getUri(),
                 'size' => $volumeListing->getFileSize(),
                 'timestamp' => $timestamp,
                 'isDir' => $volumeListing->getIsDir(),
@@ -513,7 +510,7 @@ class AssetIndexer
         $indexEntry = new AssetIndexEntry([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
-            'uri' => $listing->getAdjustedUri($volume->getSubpath()),
+            'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
@@ -541,7 +538,7 @@ class AssetIndexer
         $indexEntry = new AssetIndexEntry([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
-            'uri' => $listing->getAdjustedUri($volume->getSubpath()),
+            'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),

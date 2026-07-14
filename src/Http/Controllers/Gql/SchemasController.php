@@ -10,12 +10,12 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -87,9 +87,7 @@ readonly class SchemasController extends GqlController
         $schema->scope = is_array($permissions) ? $permissions : [$permissions];
 
         if (! $this->gql->saveSchema($schema)) {
-            return $this->asModelFailure($schema, t('Couldn’t save schema.'), 'schema', array_filter([
-                'token' => $token?->toArray(),
-            ]));
+            throw ValidationException::withMessages($schema->errors()->getMessages());
         }
 
         if (! $token) {
@@ -109,9 +107,7 @@ readonly class SchemasController extends GqlController
         }
 
         if (! $this->gql->saveToken($token)) {
-            return $this->asModelFailure($token, t('Couldn’t save public schema settings.'), 'token', [
-                'schema' => $schema->toArray(),
-            ]);
+            throw ValidationException::withMessages($token->errors()->getMessages());
         }
 
         return $this->asSuccess(t('Schema saved.'));
@@ -159,17 +155,7 @@ readonly class SchemasController extends GqlController
                     'expiryDate' => $token->expiryDate?->format('Y-m-d\TH:i'),
                 ] : null,
                 'permissions' => $this->schemaPermissionGroups(),
-            ])
-            ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                HtmlStack::jsWithVars(
-                    fn ($containerId) => <<<JS
-                        new Craft.ElevatedSessionForm('#' + $containerId, [
-                            '.user-permissions input[type="checkbox"]:not(:checked)'
-                        ]);
-                    JS,
-                    [$containerId],
-                );
-            });
+            ]);
     }
 
     /** @return Collection<int, PermissionGroup> */

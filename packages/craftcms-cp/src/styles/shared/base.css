@@ -85,7 +85,7 @@ hr {
   border: 0;
   height: 0;
   border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-  margin-block: var(--c-spacing-lg);
+  margin-block: 0;
   margin-inline: 0;
   color: transparent;
 }
