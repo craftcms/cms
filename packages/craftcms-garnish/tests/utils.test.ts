@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 
 import {getDist, within, isString, isTextNode} from '../src/utils/misc';
 import {getInputPostVal, getPostData, findInputs} from '../src/utils/forms';
-import {hasAttr} from '../src/utils/dom';
+import {hasAttr, nearestSibling, closestRegistered} from '../src/utils/dom';
 
 describe('misc utils', () => {
   it('getDist computes Euclidean distance', () => {
@@ -29,6 +29,34 @@ describe('dom utils', () => {
     expect(hasAttr(el, 'href')).toBe(false);
     el.setAttribute('href', '/x');
     expect(hasAttr(el, 'href')).toBe(true);
+  });
+
+  it('nearestSibling skips non-matching siblings in each direction', () => {
+    const ul = document.createElement('ul');
+    ul.innerHTML =
+      '<li class="g" id="a"></li><li class="sep"></li><li class="g" id="b"></li><span></span><li class="g" id="c"></li>';
+    const b = ul.querySelector<HTMLElement>('#b')!;
+    expect(nearestSibling(b, 'li.g', 'previous')?.id).toBe('a');
+    expect(nearestSibling(b, 'li.g', 'next')?.id).toBe('c');
+    expect(
+      nearestSibling(ul.querySelector('#a')!, 'li.g', 'previous')
+    ).toBeNull();
+    expect(nearestSibling(ul.querySelector('#c')!, 'li.g', 'next')).toBeNull();
+  });
+
+  it('closestRegistered returns the nearest registered ancestor (self excluded)', () => {
+    const registry = new WeakMap<Element, string>();
+    const outer = document.createElement('div');
+    const inner = document.createElement('div');
+    const leaf = document.createElement('span');
+    outer.appendChild(inner);
+    inner.appendChild(leaf);
+    registry.set(outer, 'outer');
+    registry.set(inner, 'inner');
+    expect(closestRegistered(leaf, registry)).toBe('inner');
+    registry.set(leaf, 'leaf');
+    expect(closestRegistered(leaf, registry)).toBe('inner');
+    expect(closestRegistered(document.createElement('p'), registry)).toBeNull();
   });
 });
 

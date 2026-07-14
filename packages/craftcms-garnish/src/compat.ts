@@ -135,6 +135,8 @@ export function toJq(value: unknown): JQueryCollection {
  *
  * @param value - The (possibly jQuery) value.
  * @returns The native element, or the value unchanged.
+ *
+ * @TODO replace instances of this with `toHtmlElement`
  */
 export function unwrapJq(value: unknown): unknown {
   if (value == null) {
@@ -145,6 +147,20 @@ export function unwrapJq(value: unknown): unknown {
     return coll.length ? coll[0] : null;
   }
   return value;
+}
+
+/**
+ * Unwrap a jQuery collection (truthy `.jquery`) to its first native element,
+ * pass a native `Element` through, and return `null` for anything else.
+ *
+ * This has some overlap with `unwrapJq` but the types are better here.
+ */
+export function toHtmlElement(value: unknown): HTMLElement | null {
+  if (isJquery(value)) {
+    return value.length && value[0] instanceof HTMLElement ? value[0] : null;
+  }
+
+  return value instanceof HTMLElement ? value : null;
 }
 
 /* ------------------------------------------------------------------------- *
