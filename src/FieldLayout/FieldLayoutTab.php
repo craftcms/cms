@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
+use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
+use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
+use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
+use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
+use CraftCms\Cms\FieldLayout\LayoutElements\Template;
+use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -321,6 +329,78 @@ class FieldLayoutTab extends FieldLayoutComponent
         $this->setElements([...$this->getElements(), ...$elements]);
 
         return $this;
+    }
+
+    /** @param (Closure(CustomField): mixed)|null $configure */
+    public function field(FieldInterface|string $field, ?Closure $configure = null): static
+    {
+        $element = CustomField::for($field);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Heading): mixed)|null $configure */
+    public function heading(string $heading, ?Closure $configure = null): static
+    {
+        $element = new Heading($heading);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Tip): mixed)|null $configure */
+    public function tip(string $tip, ?Closure $configure = null): static
+    {
+        $element = new Tip($tip);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Tip): mixed)|null $configure */
+    public function warning(string $warning, ?Closure $configure = null): static
+    {
+        $element = new Tip($warning)->warning();
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Markdown): mixed)|null $configure */
+    public function markdown(string $content, ?Closure $configure = null): static
+    {
+        $element = new Markdown($content);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Template): mixed)|null $configure */
+    public function template(string $template, ?Closure $configure = null): static
+    {
+        $element = new Template($template);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(HorizontalRule): mixed)|null $configure */
+    public function horizontalRule(?Closure $configure = null): static
+    {
+        $element = new HorizontalRule;
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(LineBreak): mixed)|null $configure */
+    public function lineBreak(?Closure $configure = null): static
+    {
+        $element = new LineBreak;
+        $configure?->__invoke($element);
+
+        return $this->add($element);
     }
 
     public function getHtmlId(): string

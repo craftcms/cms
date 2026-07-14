@@ -28,6 +28,18 @@ it('resolves custom fields by handle', function () {
         ->and($element->attribute())->toBe('body');
 });
 
+it('adds custom fields by handle', function () {
+    $layout = new FieldLayout;
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab
+        ->field('body', fn (CustomField $field) => $field->required()));
+
+    $element = $layout->getTab(FieldLayout::defaultTabName())->getElements()[0];
+
+    expect($element)->toBeInstanceOf(CustomField::class)
+        ->and($element->getFieldUid())->toBe($this->field->uid)
+        ->and($element->required)->toBeTrue();
+});
+
 it('rejects unknown field handles', function () {
     expect(fn () => CustomField::for('missing'))
         ->toThrow(InvalidArgumentException::class);

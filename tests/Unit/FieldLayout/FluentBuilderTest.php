@@ -188,6 +188,34 @@ it('builds UI elements fluently', function () {
         ->and(new LineBreak)->toBeInstanceOf(LineBreak::class);
 });
 
+it('adds elements with tab helpers', function () {
+    $layout = new FieldLayout;
+
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab
+        ->field(fluentField(), fn (CustomField $field) => $field->required())
+        ->heading('Metadata')
+        ->tip('Keep this concise.', fn (Tip $tip) => $tip->dismissible())
+        ->warning('This is required.')
+        ->markdown('## Details')
+        ->template('_includes/card')
+        ->horizontalRule()
+        ->lineBreak());
+
+    $elements = $layout
+        ->getTab(FieldLayout::defaultTabName())
+        ->getElements();
+
+    expect($elements)->toHaveCount(8)
+        ->and(array_any($elements, fn ($element) => $element instanceof CustomField && $element->required))->toBeTrue()
+        ->and(array_any($elements, fn ($element) => $element instanceof Heading && $element->heading === 'Metadata'))->toBeTrue()
+        ->and(array_any($elements, fn ($element) => $element instanceof Tip && $element->dismissible))->toBeTrue()
+        ->and(array_any($elements, fn ($element) => $element instanceof Tip && $element->style === Tip::STYLE_WARNING))->toBeTrue()
+        ->and(array_any($elements, fn ($element) => $element instanceof Markdown))->toBeTrue()
+        ->and(array_any($elements, fn ($element) => $element instanceof Template))->toBeTrue()
+        ->and(array_any($elements, fn ($element) => $element instanceof HorizontalRule))->toBeTrue()
+        ->and(array_any($elements, fn ($element) => $element instanceof LineBreak))->toBeTrue();
+});
+
 it('invalidates field caches when fields are added and removed', function () {
     $layout = new FieldLayout;
     $field = fluentField();
