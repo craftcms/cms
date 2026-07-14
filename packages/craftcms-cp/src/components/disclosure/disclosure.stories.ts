@@ -61,3 +61,21 @@ export const Persistant: Story = {
     cookieName: 'persistent-disclosure',
   },
 };
+
+// Without a slotted invoker, a default `craft-button` is rendered from the
+// `label` attribute.
+export const DefaultInvoker: Story = {
+  render: () => html`
+    <craft-disclosure label="Advanced settings">
+      <div slot="content" data-testid="target">This will toggle</div>
+    </craft-disclosure>
+  `,
+  play: async ({canvas, userEvent}) => {
+    const button = canvas
+      .getByText('Advanced settings')
+      .closest('craft-button') as HTMLElement;
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(button);
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+  },
+};

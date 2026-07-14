@@ -1,129 +1,54 @@
-import type {WindowWithCraft} from '@src/types/globals';
+import {LionCollapsible} from '@lion/ui/collapsible.js';
+import type {PropertyValues} from 'lit';
+import {property} from 'lit/decorators.js';
+import '../button/button.js';
 
 /**
  * Very simple disclosure trigger.
  *
  * Allows you to wrap a button[type="button"] and target an element to toggle the `data-state` attribute on.
  * Set `aria-expanded` on the button
+ *
+ * Without a slotted invoker, renders a default one from the `label`
+ * attribute:
+ *
+ *     <craft-button type="button" appearance="plain" icon="chevron-down">${label}</craft-button>
  */
-export default class CraftDisclosure extends HTMLElement {
-  static observedAttributes = ['state'];
-  private cookieName: string | null = null;
-  private state: string = 'collapsed';
-  private expanded: boolean = false;
+export default class CraftDisclosure extends LionCollapsible {
+  /** Text for the default invoker button (ignored when an invoker is slotted). */
+  @property() label = '';
 
-  get trigger() {
-    return this.querySelector('button[type="button"]');
+  private __defaultInvoker: HTMLElement | null = null;
+
+  override connectedCallback() {
+    // Lion wires the click listener and aria state onto the slotted invoker
+    // during connect, so the default one has to exist in the light DOM first.
+    this.__ensureDefaultInvoker();
+    super.connectedCallback();
   }
 
-  get target() {
-    if (!this.trigger) {
-      console.warn('No trigger found for disclosure.');
-      return null;
-    }
+  protected override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
 
-    const targetSelector = this.trigger.getAttribute('aria-controls');
-    if (!targetSelector) {
-      console.warn('No target selector found for disclosure.');
-      return null;
+    if (changedProperties.has('label') && this.__defaultInvoker) {
+      this.__defaultInvoker.textContent = this.label;
     }
-
-    return document.getElementById(targetSelector);
   }
 
-  connectedCallback() {
-    if (!this.trigger) {
-      console.error(`craft-disclosure elements must include a button`, this);
+  private __ensureDefaultInvoker() {
+    if (this._invokerNode) {
       return;
     }
 
-    if (!this.target) {
-      console.error(
-        `No target with id ${this.trigger.getAttribute(
-          'aria-controls'
-        )} found for disclosure. `,
-        this.trigger
-      );
-      return;
-    }
+    const button = document.createElement('craft-button');
+    button.slot = 'invoker';
+    button.setAttribute('type', 'button');
+    button.setAttribute('appearance', 'plain');
+    button.setAttribute('icon', 'chevron-down');
+    button.textContent = this.label;
 
-    this.cookieName = this.getAttribute('cookie-name');
-    this.state = this.getAttribute('state') ?? 'expanded';
-
-    this.trigger.setAttribute(
-      'aria-expanded',
-      this.state === 'expanded' ? 'true' : 'false'
-    );
-
-    this.trigger.addEventListener('click', this.toggle.bind(this));
-
-    if (this.state === 'expanded') {
-      this.open();
-    } else {
-      this.close();
-    }
-  }
-
-  disconnectedCallback() {
-    this.open();
-    this.trigger?.removeEventListener('click', this.toggle.bind(this));
-  }
-
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-    if (name === 'state') {
-      if (newValue === 'expanded') {
-        this.handleOpen();
-      } else {
-        this.handleClose();
-      }
-    }
-  }
-
-  toggle() {
-    if (this.expanded) {
-      this.close();
-    } else {
-      this.open();
-    }
-  }
-
-  handleOpen = () => {
-    this.trigger?.setAttribute('aria-expanded', 'true');
-    this.expanded = true;
-    this.dispatchEvent(new CustomEvent('open'));
-
-    if (this.target) {
-      this.target.dataset.state = 'expanded';
-    }
-
-    if (this.cookieName) {
-      (window as WindowWithCraft).Craft?.setCookie(this.cookieName, 'expanded');
-    }
-  };
-
-  open() {
-    this.setAttribute('state', 'expanded');
-  }
-
-  handleClose = () => {
-    this.trigger?.setAttribute('aria-expanded', 'false');
-    this.expanded = false;
-    this.dispatchEvent(new CustomEvent('close'));
-
-    if (this.target) {
-      this.target.dataset.state = 'collapsed';
-    }
-
-    if (this.cookieName) {
-      (window as WindowWithCraft).Craft?.setCookie(
-        this.cookieName,
-        'collapsed'
-      );
-    }
-  };
-
-  close() {
-    this.setAttribute('state', 'collapsed');
+    this.__defaultInvoker = button;
+    this.prepend(button);
   }
 }
 
