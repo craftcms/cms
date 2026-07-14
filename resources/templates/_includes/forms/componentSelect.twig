@@ -19,11 +19,12 @@
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set registerJs = registerJs ?? true %}
 
-{# Legacy escape hatch: callers that pass an explicit jsClass (entryTypeSelect.twig
-   always does; plugins with Craft.ComponentSelectInput subclasses might) get the
-   original disclosure-menu markup + `{% js %}` boot below. Everyone else gets the
-   self-booting `<craft-component-select>` element, configured via attributes, with
-   a `craft-action-menu` Choose menu and no registered JS. #}
+{# Legacy escape hatch: callers that pass an explicit jsClass (e.g. plugins with
+   Craft.ComponentSelectInput subclasses) get the original disclosure-menu markup
+   + `{% js %}` boot below. Everyone else — including entryTypeSelect.twig, which
+   now defaults to the web-component path — gets the self-booting
+   `<craft-component-select>` element, configured via attributes, with a
+   `craft-action-menu` Choose menu and no registered JS. #}
 {% set jsClass = jsClass ?? null %}
 {% set legacy = jsClass is not empty %}
 
