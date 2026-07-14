@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -266,14 +268,19 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
         $html .=
             Html::tag('hr').
-            Html::button(t('Advanced'), attributes: [
-                'class' => 'fieldtoggle',
-                'data' => ['target' => 'advanced'],
-            ]).
+            Html::beginTag('craft-disclosure').
+            Button::make()
+                ->label(t('Advanced'))
+                ->icon('chevron-down')
+                ->appearance(Appearance::Plain)
+                ->attributes([
+                    'slot' => 'invoker',
+                    'class' => 'justify-self-start',
+                ]).
             Html::beginTag('div', [
-                'id' => 'advanced',
-                'class' => 'hidden',
+                'slot' => 'content',
             ]).
+            Html::beginTag('craft-field-group').
             FormFields::textFieldHtml([
                 'label' => t('Max Length'),
                 'instructions' => t('The maximum length (in bytes) the field can hold.'),
@@ -303,7 +310,10 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ]);
         }
 
-        return $html.Html::endTag('div');
+        $html .= Html::endTag('craft-field-group');
+        $html .= Html::endTag('div');
+
+        return $html.Html::endTag('craft-disclosure');
     }
 
     private function prepareLegacyAdvancedFieldConfig(array $config): array

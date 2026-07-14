@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -117,7 +119,8 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
     private function settingsHtml(bool $readOnly): string
     {
-        $html = FormFields::lightswitchFieldHtml([
+        $html = Html::beginTag('craft-field-group');
+        $html .= FormFields::lightswitchFieldHtml([
             'label' => t('Include Pro icons'),
             'instructions' => t('Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
                 'url' => 'https://fontawesome.com/plans',
@@ -129,14 +132,22 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
         if (Cms::config()->enableGql) {
             $html .= Html::tag('hr').
-            Html::button(t('Advanced'), attributes: [
-                'class' => 'fieldtoggle',
-                'data' => ['target' => 'advanced'],
-            ]).
-            Html::beginTag('div', [
-                'id' => 'advanced',
-                'class' => 'hidden',
-            ]);
+                Html::beginTag('craft-disclosure').
+                Button::make()
+                    ->label(t('Advanced'))
+                    ->appearance(Appearance::Plain)
+                    ->icon('chevron-down')
+                    ->attributes([
+                        'slot' => 'invoker',
+                        'class' => 'fieldtoggle',
+                        'data' => ['target' => 'advanced'],
+                        'aria-controls' => 'advanced',
+                    ])
+                    ->toHtml().
+                Html::beginTag('div', [
+                    'id' => 'advanced',
+                    'slot' => 'content',
+                ]);
 
             $html .=
                 FormFields::selectFieldHtml([
@@ -152,9 +163,10 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ]);
 
             $html .= Html::endTag('div');
+            $html .= Html::endTag('craft-disclosure');
         }
 
-        return $html;
+        return $html.Html::endTag('craft-field-group');
     }
 
     #[Override]

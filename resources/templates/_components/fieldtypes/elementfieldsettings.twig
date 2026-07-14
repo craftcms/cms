@@ -151,8 +151,11 @@
     {% block advancedSettings %}
         <hr>
 
-        <button type="button" class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</button>
-        <div id="advanced" class="hidden">
+        <craft-disclosure>
+
+
+        <craft-button appearance="plain" icon="chevron-down" type="button" class="fieldtoggle" slot="invoker">{{ "Advanced"|t('app') }}</craft-button>
+        <div slot="content">
 
             {{ forms.lightswitchField({
                 label: 'Allow self relations'|t('app'),
@@ -170,6 +173,7 @@
             {% endif %}
 
         </div>
+        </craft-disclosure>
     {% endblock %}
 {% endblock %}
 

@@ -95,7 +95,7 @@ export default css`
   /*
   Icon
    */
-  :host([icon]) {
+  :host([icon=""]) {
     aspect-ratio: 1;
     padding-inline: 0;
     padding-block: 0;

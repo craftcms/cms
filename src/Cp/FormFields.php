@@ -217,6 +217,8 @@ readonly class FormFields
             ]);
         }
 
+        $attributes = $config['attributes'] ?? [];
+
         return Button::make()
             ->id($config['id'] ?? null)
             ->type($config['type'] ?? 'button')
@@ -226,6 +228,7 @@ readonly class FormFields
             ->disabled((bool) ($config['disabled'] ?? $readOnly))
             ->size($size)
             ->appearance($config['appearance'] ?? null)
+            ->command($config['command'] ?? null)
             ->attributes(Arr::merge(
                 [
                     'class' => array_merge(
@@ -239,7 +242,7 @@ readonly class FormFields
                         'success-message' => $config['successMessage'] ?? null,
                     ]),
                 ],
-                $config['attributes'] ?? [],
+                $attributes
             ));
     }
 

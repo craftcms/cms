@@ -64,7 +64,5 @@ export const FullWidthOverride: Story = {
 
 /** \`width="auto"\` shrinks the control without requiring a \`maxlength\`. */
 export const AutoWidth: Story = {
-  render: () => html`
-    <craft-input label="Handle" width="auto"></craft-input>
-  `,
+  render: () => html`<craft-input label="Handle" width="auto"></craft-input>`,
 };
