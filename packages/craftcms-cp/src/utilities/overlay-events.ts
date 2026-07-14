@@ -33,12 +33,20 @@ export function wireOverlayLifecycleEvents(host: OverlayHost): void {
       })
     );
 
+    const expectedOpened = opened;
     void host.updateComplete.then(() => {
+      if (Boolean(host.opened) !== expectedOpened) {
+        return;
+      }
+
       host.dispatchEvent(
-        new CustomEvent(opened ? 'craft-after-show' : 'craft-after-hide', {
-          bubbles: true,
-          composed: true,
-        })
+        new CustomEvent(
+          expectedOpened ? 'craft-after-show' : 'craft-after-hide',
+          {
+            bubbles: true,
+            composed: true,
+          }
+        )
       );
     });
   });
