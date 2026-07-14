@@ -15,6 +15,7 @@ import type {
   CraftComponentSelect,
   DefineChipActionsEventDetail,
 } from '@/modules/component-select';
+import {editEntryTypeOverrides} from './entry-type-override-settings';
 import {groupedEntryTypeManagerData} from './support';
 
 // `Craft` and `$` (jQuery) remain page globals; the manager leans on the same
@@ -51,6 +52,13 @@ export interface GroupedEntryTypeManagerSettings extends GarnishBaseSettings {
    * yet when the manager boots.
    */
   defaultColumnsContainer?: Element | (() => Element | null) | null;
+  /**
+   * Whether entry-type chips get the per-field override editor (legacy
+   * `EntryTypeSelectInput` `allowOverrides`). Drives the chip "Settings" action
+   * — see {@link handleDefineChipActions}. Set from the `allow-overrides`
+   * attribute on `<craft-entry-type-manager>`.
+   */
+  allowOverrides?: boolean;
 }
 
 /** Group `li` → its {@link Group} instance (latest boot wins). */
@@ -82,6 +90,21 @@ function siblingGroup(
 /** The manager owning an element, resolved through the `support.ts` registry. */
 function managerFor(el: Element): GroupedEntryTypeManager | null {
   return closestRegistered(el, groupedEntryTypeManagerData);
+}
+
+/**
+ * Whether a chip's entry type may be overridden per-field. Read statelessly —
+ * chips are wired by their select's own boot, which can run before the manager
+ * boots (see {@link attachChipMoveActions}) — so it prefers the
+ * `<craft-entry-type-manager>` element's `allow-overrides` attribute (always in
+ * the DOM), falling back to the manager's setting for standalone construction.
+ */
+function overridesAllowed(chip: HTMLElement): boolean {
+  const el = chip.closest<HTMLElement>('craft-entry-type-manager');
+  if (el) {
+    return el.hasAttribute('allow-overrides');
+  }
+  return !!managerFor(chip)?.settings.allowOverrides;
 }
 
 /** Rewrite the `group` key in a chip's hidden-input JSON value. */
@@ -116,6 +139,20 @@ function handleDefineChipActions(
   const group = chip.closest<HTMLElement>('li.entry-type-group');
   if (!group) {
     return;
+  }
+
+  if (overridesAllowed(chip)) {
+    // The chip's server-rendered "Entry type settings" item edits the *shared*
+    // entry type globally; when per-field overrides are on it's replaced with a
+    // Settings action scoped to this field (legacy
+    // `EntryTypeSelectInput.addComponentInternal`'s `allowOverrides` branch,
+    // which likewise hid `[data-edit-action]`).
+    chip.querySelector('[data-edit-action]')?.setAttribute('hidden', '');
+    actions.push({
+      icon: 'gear',
+      label: Craft.t('app', 'Settings'),
+      onActivate: () => void editEntryTypeOverrides(chip),
+    });
   }
 
   const ltr = Craft.orientation !== 'rtl';
@@ -217,6 +254,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
       defaultColumnsContainer:
         settings?.defaultColumnsContainer ??
         toHtmlElement(settings?.$defaultColumnsContainer),
+      allowOverrides: settings?.allowOverrides ?? false,
     };
 
     if (!this.container) {

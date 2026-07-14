@@ -22,6 +22,7 @@
         slot="input"
         namespace="{{ InputNamespace.get() ?: false }}"
         default-columns-id="{{ 'default-table-columns-input'|namespaceInputId }}"
+        {% if entryTypeSelectConfig.allowOverrides ?? false %}allow-overrides{% endif %}
         {% if readOnly %}disabled{% endif %}
       >
         <ul class="entry-type-groups mb-s">

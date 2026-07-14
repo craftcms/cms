@@ -20,10 +20,22 @@ that replaced the legacy `Craft.ComponentSelectInput` chain.
   option visibility, inject chip actions, and stamp `{id, group}` input values.
   Those now ride `craft-component-select`'s public seams: the bubbling `change`
   event (cross-group option sync in `refresh()`), the bubbling
-  `define-chip-actions` event ("Move to previous/next group" items), the
+  `define-chip-actions` event ("Move to previous/next group" items, plus the
+  per-field override "Settings" item when `allow-overrides` is set), the
   `getInputValue` hook (group-aware chip input JSON), `adoptChip()` (menu
   moves between groups), and `releaseSort()` (each select hands its chip
   `DragSort` to the manager's cross-group one — see below).
+- **Per-field entry-type overrides.** When `<craft-entry-type-manager>` carries
+  `allow-overrides` (the Matrix field always sets it), each entry-type chip
+  gets a gear "Settings" action — replacing its default "Entry type settings"
+  item (which edits the shared entry type globally) — that opens a
+  `Craft.Slideout` to override the entry type's name/handle/description *for
+  this field*. This ports `Craft.EntryTypeSelectInput`'s
+  `createSettings`/`applySettings` (never carried over when Matrix moved to the
+  web-component select) into `entry-type-override-settings.ts`, wired from
+  `handleDefineChipActions`. Applying writes the override config into the chip's
+  `{id, group, …}` hidden-input JSON (preserving the group) and refreshes the
+  chip label + override indicators.
 - **Titlebar controls.** The legacy jQuery menubtn + `.move` handle →
   a data-driven `craft-action-menu` (Rename / Remove) plus a horizontal
   `<craft-reorder-button>` that is both the group's `DragSort` handle and its
@@ -76,6 +88,8 @@ deferred boot, so chips wired by earlier-booting selects still get their items.
 
 - `grouped-entry-type-manager.ts` — the `GroupedEntryTypeManager` and `Group`
   classes, plus `attachChipMoveActions`.
+- `entry-type-override-settings.ts` — `editEntryTypeOverrides(chip)`, the
+  per-field override slideout flow (render → `Craft.Slideout` → apply).
 - `grouped-entry-type-manager.ce.ts` — `<craft-entry-type-manager>`, the
   self-booting custom element (a `ControllerElement`).
 - `support.ts` — the `.data()`-replacement WeakMap.
@@ -86,6 +100,11 @@ deferred boot, so chips wired by earlier-booting selects still get their items.
 
 ## Deferred
 
+- **Overrides on newly-added chips.** A chip added from the Choose menu carries
+  only `{id, group}` until its "Settings" action is used (which writes the
+  overrides directly). Threading override fields through the `getInputValue`
+  hook / `app/render-components` payload so a freshly-added chip can be rendered
+  *with* overrides is a separate follow-up.
 - Behavioral/browser verification (add/rename/remove/reorder groups, chip
-  moves — menu *and* cross-group drag, option sync, default-columns rebuild) is
-  left to manual testing.
+  moves — menu *and* cross-group drag — option sync, default-columns rebuild,
+  and the override editor) is left to manual testing.

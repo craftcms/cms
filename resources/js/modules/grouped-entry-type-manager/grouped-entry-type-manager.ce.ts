@@ -15,6 +15,8 @@ import {ControllerElement} from '@/common/web-components';
  * - `default-columns-id` — id of the container the Default Table Columns
  *   select is rebuilt into (it lives outside this element, so it's resolved
  *   lazily at rebuild time).
+ * - `allow-overrides` — whether entry-type chips get the per-field override
+ *   editor (the gear "Settings" chip action).
  * - `disabled` — read-only settings; the element stays inert (no boot),
  *   matching the legacy `{% if not readOnly %}` guard.
  *
@@ -42,6 +44,7 @@ export default class CraftEntryTypeManager extends ControllerElement<GroupedEntr
   protected create(root: HTMLElement): GroupedEntryTypeManager {
     return new GroupedEntryTypeManager(this, {
       namespace: this.getAttribute('namespace'),
+      allowOverrides: this.hasAttribute('allow-overrides'),
       entryTypeSelectHtml: (root as HTMLTemplateElement).innerHTML,
       defaultColumnsContainer: () => {
         const id = this.getAttribute('default-columns-id');
