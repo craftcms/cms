@@ -159,7 +159,7 @@ function handleDefineChipActions(
 
   actions.push(
     {
-      icon: async () => await Craft.ui.icon(ltr ? 'arrow-left' : 'arrow-right'),
+      icon: ltr ? 'arrow-left' : 'arrow-right',
       label: Craft.t('app', 'Move to previous group'),
       onActivate: () => managerFor(chip)?.moveChipToGroup(chip, 'previous'),
       attributes: {
@@ -168,7 +168,7 @@ function handleDefineChipActions(
       },
     },
     {
-      icon: async () => await Craft.ui.icon(ltr ? 'arrow-right' : 'arrow-left'),
+      icon: ltr ? 'arrow-right' : 'arrow-left',
       label: Craft.t('app', 'Move to next group'),
       onActivate: () => managerFor(chip)?.moveChipToGroup(chip, 'next'),
       attributes: {
