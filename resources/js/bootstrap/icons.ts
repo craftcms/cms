@@ -72,7 +72,6 @@ function normalizeIconName(name: string): string {
     return `${variant}/${LEGACY_NAMES[resolvedIconName] ?? resolvedIconName}${suffix}`;
   }
 
-  console.log('heyyyyyyyyyyyyyyyyy');
   return `${LEGACY_NAMES[baseName] ?? baseName}${suffix}`;
 }
 
