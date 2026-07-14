@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where JSON fields weren’t JSON-decoding values saved via GraphQL mutations. ([#19230](https://github.com/craftcms/cms/issues/19230))
+- Fixed an error that could occur when reassigning entries to a new author when deleting a user. ([#19154](https://github.com/craftcms/cms/issues/19154))
 
 ## 5.10.10 - 2026-07-08
 
