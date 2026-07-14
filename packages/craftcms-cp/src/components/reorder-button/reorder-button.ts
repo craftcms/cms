@@ -9,10 +9,12 @@ import '../icon/icon.js';
 
 export type ReorderPosition = 'first' | 'middle' | 'last';
 export type ReorderDirection = 'up' | 'down';
+export type ReorderOrientation = 'vertical' | 'horizontal';
 
 /**
  * @summary A drag handle that also exposes "Move up"/"Move down" actions via a
- * menu, for reordering an item within a list.
+ * menu, for reordering an item within a list. Horizontal lists get "Move
+ * forward"/"Move backward" instead (see `orientation`).
  * @since 1.0
  *
  * @dependency craft-action-menu
@@ -21,8 +23,9 @@ export type ReorderDirection = 'up' | 'down';
  * @dependency craft-icon
  *
  * @fires {CustomEvent<{direction: ReorderDirection}>} reorder - Emitted when the
- *   user chooses "Move up" or "Move down". `event.detail.direction` is `'up'` or
- *   `'down'`.
+ *   user chooses a move action. `event.detail.direction` is `'up'` or `'down'`
+ *   regardless of orientation: `'up'` always means toward the start of the list
+ *   ("Move forward" when horizontal) and `'down'` toward the end.
  */
 export default class CraftReorderButton extends LitElement {
   static override styles = [styles];
@@ -35,6 +38,16 @@ export default class CraftReorderButton extends LitElement {
    * "Move down" at `last`.
    */
   @property({reflect: true}) position: ReorderPosition = 'middle';
+
+  /**
+   * The list's flow direction. `vertical` (default) renders Move up/down;
+   * `horizontal` renders Move forward/backward, with left/right arrows that
+   * honor the closest writing direction (`dir` attribute, falling back to the
+   * document direction) so "forward" always points toward the start of the
+   * list. `position` semantics are unchanged: `first` disables the
+   * up/forward action, `last` the down/backward one.
+   */
+  @property({reflect: true}) orientation: ReorderOrientation = 'vertical';
 
   /** Theme variant forwarded to the underlying invoker button. */
   @property({reflect: true}) variant: string = 'neutral';
@@ -76,8 +89,32 @@ export default class CraftReorderButton extends LitElement {
     );
   }
 
+  /** Whether the closest writing direction is RTL (same lookup as `craft-field`). */
+  private _isRtl(): boolean {
+    const dir =
+      (this.closest('[dir]') as HTMLElement | null)?.getAttribute('dir') ??
+      document.documentElement.getAttribute('dir');
+    return dir?.toLowerCase() === 'rtl';
+  }
+
   override render() {
     const label = this.label ?? t('Reorder');
+    const horizontal = this.orientation === 'horizontal';
+    const rtl = horizontal && this._isRtl();
+    // "up" = toward the start of the list; on horizontal lists that's the
+    // inline-start side, so the arrows flip with the writing direction.
+    const upIcon = horizontal
+      ? rtl
+        ? 'arrow-right'
+        : 'arrow-left'
+      : 'arrow-up';
+    const downIcon = horizontal
+      ? rtl
+        ? 'arrow-left'
+        : 'arrow-right'
+      : 'arrow-down';
+    const upLabel = horizontal ? t('Move forward') : t('Move up');
+    const downLabel = horizontal ? t('Move backward') : t('Move down');
 
     return html`
       <craft-action-menu>
@@ -101,20 +138,20 @@ export default class CraftReorderButton extends LitElement {
 
         <div slot="content">
           <craft-action-item
-            icon="arrow-up"
+            icon="${upIcon}"
             ?disabled="${this.position === 'first'}"
             @click="${() => this._reorder('up')}"
             data-action="moveUp"
             command="--move-up"
-            >${t('Move up')}</craft-action-item
+            >${upLabel}</craft-action-item
           >
           <craft-action-item
-            icon="arrow-down"
+            icon="${downIcon}"
             ?disabled="${this.position === 'last'}"
             @click="${() => this._reorder('down')}"
             data-action="moveDown"
             command="--move-down"
-            >${t('Move down')}</craft-action-item
+            >${downLabel}</craft-action-item
           >
         </div>
       </craft-action-menu>
