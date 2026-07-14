@@ -342,9 +342,9 @@ abstract class BaseField extends FieldLayoutElement
         $showStatus = $this->showStatus();
         $statusClass = $showStatus ? $this->statusClass($element, $static) : null;
         $label = $this->showLabel() ? $this->label() : null;
-        $instructions = $this->instructions($element, $static);
-        $tip = $this->tip($element, $static);
-        $warning = $this->warning($element, $static);
+        $instructions = $this->instructionsText($element, $static);
+        $tip = $this->tipText($element, $static);
+        $warning = $this->warningText($element, $static);
         $translatable = $this->translatable($element, $static);
         $actionMenuItems = $this->actionMenuItems($element, $static);
 
@@ -530,9 +530,9 @@ abstract class BaseField extends FieldLayoutElement
         $ids = array_filter([
             (! $static && $this->fieldErrors($element)) ? $this->errorsId() : null,
             $this->statusClass($element, $static) ? $this->statusId() : null,
-            $this->instructions($element, $static) ? $this->instructionsId() : null,
-            $this->tip($element, $static) ? $this->tipId() : null,
-            $this->warning($element, $static) ? $this->warningId() : null,
+            $this->instructionsText($element, $static) ? $this->instructionsId() : null,
+            $this->tipText($element, $static) ? $this->tipId() : null,
+            $this->warningText($element, $static) ? $this->warningId() : null,
         ]);
 
         return $ids ? implode(' ', $ids) : null;
@@ -588,15 +588,54 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
-     * Returns the field’s label.
+     * Returns or sets the field’s label.
      */
-    public function label(): ?string
+    public function label(?string $label = null): static|string|null
     {
+        if (func_num_args() !== 0) {
+            $this->label = $label;
+
+            return $this;
+        }
+
         if (isset($this->label) && $this->label !== '' && $this->label !== '__blank__') {
             return t($this->label, category: 'site');
         }
 
         return $this->defaultLabel();
+    }
+
+    public function instructions(?string $instructions): static
+    {
+        $this->instructions = $instructions;
+
+        return $this;
+    }
+
+    public function tip(?string $tip): static
+    {
+        $this->tip = $tip;
+
+        return $this;
+    }
+
+    public function warning(?string $warning): static
+    {
+        $this->warning = $warning;
+
+        return $this;
+    }
+
+    public function required(bool $required = true): static
+    {
+        $this->required = $required;
+
+        return $this;
+    }
+
+    public function labelHidden(bool $labelHidden = true): static
+    {
+        return $this->label($labelHidden ? '__blank__' : null);
     }
 
     /**
@@ -662,7 +701,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
-    protected function instructions(?ElementInterface $element = null, bool $static = false): ?string
+    protected function instructionsText(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->instructions ? t($this->instructions, category: 'site') : $this->defaultInstructions($element, $static);
     }
@@ -692,7 +731,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
-    protected function tip(?ElementInterface $element = null, bool $static = false): ?string
+    protected function tipText(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->tip ? t($this->tip, category: 'site') : null;
     }
@@ -703,7 +742,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
-    protected function warning(?ElementInterface $element = null, bool $static = false): ?string
+    protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->warning ? t($this->warning, category: 'site') : null;
     }

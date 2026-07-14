@@ -21,6 +21,11 @@ class Heading extends BaseUiElement
      */
     public string $heading = '';
 
+    public function __construct(string|array|object $config = [])
+    {
+        parent::__construct(is_string($config) ? ['heading' => $config] : $config);
+    }
+
     protected function selectorLabel(): string
     {
         return $this->heading ?: t('Heading');

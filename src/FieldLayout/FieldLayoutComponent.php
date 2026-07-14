@@ -127,6 +127,13 @@ abstract class FieldLayoutComponent extends Component
         $this->_userCondition = $userCondition;
     }
 
+    public function userCondition(mixed $userCondition): static
+    {
+        $this->setUserCondition($userCondition);
+
+        return $this;
+    }
+
     public function getElementCondition(): ?ElementConditionInterface
     {
         if (isset($this->_elementCondition) && ! $this->_elementCondition instanceof ElementConditionInterface) {
@@ -153,6 +160,13 @@ abstract class FieldLayoutComponent extends Component
     public function setElementCondition(mixed $elementCondition): void
     {
         $this->_elementCondition = $elementCondition;
+    }
+
+    public function elementCondition(mixed $elementCondition): static
+    {
+        $this->setElementCondition($elementCondition);
+
+        return $this;
     }
 
     /**

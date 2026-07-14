@@ -25,6 +25,18 @@ class Markdown extends BaseUiElement
      */
     public bool $displayInPane = true;
 
+    public function __construct(string|array|object $config = [])
+    {
+        parent::__construct(is_string($config) ? ['content' => $config] : $config);
+    }
+
+    public function displayInPane(bool $displayInPane = true): static
+    {
+        $this->displayInPane = $displayInPane;
+
+        return $this;
+    }
+
     protected function selectorLabel(): string
     {
         return Str::firstLine($this->content) ?: 'Markdown';

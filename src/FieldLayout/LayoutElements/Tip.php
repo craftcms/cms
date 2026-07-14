@@ -32,6 +32,25 @@ class Tip extends BaseUiElement
      */
     public string $style = self::STYLE_TIP;
 
+    public function __construct(string|array|object $config = [])
+    {
+        parent::__construct(is_string($config) ? ['tip' => $config] : $config);
+    }
+
+    public function dismissible(bool $dismissible = true): static
+    {
+        $this->dismissible = $dismissible;
+
+        return $this;
+    }
+
+    public function warning(bool $warning = true): static
+    {
+        $this->style = $warning ? self::STYLE_WARNING : self::STYLE_TIP;
+
+        return $this;
+    }
+
     protected function selectorLabel(): string
     {
         $tip = trim($this->tip);

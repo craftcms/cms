@@ -43,6 +43,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
+/** @phpstan-consistent-constructor */
 class FieldLayout extends Component
 {
     use LegacyConstants;
@@ -152,6 +153,80 @@ class FieldLayout extends Component
         if (! isset($this->_cardThumbAlignment)) {
             $this->setCardThumbAlignment();
         }
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $type
+     */
+    public static function create(string $type): static
+    {
+        return new static(['type' => $type]);
+    }
+
+    /**
+     * Creates or modifies a tab by name.
+     *
+     * Mandatory fields may create a translated `Content` tab, so `tab('Content')` only reuses it when its translated name is `Content`.
+     *
+     * @param  Closure(FieldLayoutTab): mixed  $closure
+     */
+    public function tab(string $name, Closure $closure): static
+    {
+        $tab = array_find($this->getTabs(), fn (FieldLayoutTab $tab) => $tab->name === $name);
+
+        if ($tab === null) {
+            $tab = new FieldLayoutTab([
+                'layout' => $this,
+                'name' => $name,
+                'elements' => [],
+            ]);
+            $this->setTabs([...$this->getTabs(), $tab]);
+        }
+
+        $closure($tab);
+
+        return $this;
+    }
+
+    public function getTab(string $name): FieldLayoutTab
+    {
+        return array_find($this->getTabs(), fn (FieldLayoutTab $tab) => $tab->name === $name)
+            ?? throw new InvalidArgumentException(sprintf('Unknown tab: %s', $name));
+    }
+
+    public function removeField(FieldInterface|string $field): static
+    {
+        if (is_string($field)) {
+            $field = Fields::getFieldByHandle($field)
+                ?? throw new InvalidArgumentException(sprintf('Unknown field handle: %s', $field));
+        }
+
+        foreach ($this->getTabs() as $tab) {
+            $elements = array_filter(
+                $tab->getElements(),
+                fn (FieldLayoutElement $element) => ! $element instanceof CustomField || $element->getFieldUid() !== $field->uid,
+            );
+
+            if (count($elements) !== count($tab->getElements())) {
+                $tab->setElements(array_values($elements));
+            }
+        }
+
+        return $this;
+    }
+
+    public function removeTab(string $name): static
+    {
+        $tabs = array_values(array_filter(
+            $this->getTabs(),
+            fn (FieldLayoutTab $tab) => $tab->name !== $name,
+        ));
+
+        if (count($tabs) !== count($this->getTabs())) {
+            $this->setTabs($tabs);
+        }
+
+        return $this;
     }
 
     /**

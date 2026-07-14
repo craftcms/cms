@@ -287,6 +287,42 @@ class FieldLayoutTab extends FieldLayoutComponent
         }
     }
 
+    /**
+     * Adds elements to the tab.
+     *
+     * Multi-instance custom fields need a unique handle override when included more than once.
+     */
+    public function add(FieldLayoutElement ...$elements): static
+    {
+        $fieldUids = array_fill_keys(array_map(
+            fn (CustomField $element) => $element->getFieldUid(),
+            $this->getLayout()->getElementsByType(CustomField::class),
+        ), true);
+
+        foreach ($elements as $element) {
+            if ($element instanceof CustomField) {
+                $fieldUid = $element->getFieldUid();
+
+                if (isset($fieldUids[$fieldUid]) && ! $element->isMultiInstance()) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The field "%s" is already included in this field layout.',
+                        $element->attribute(),
+                    ));
+                }
+
+                $fieldUids[$fieldUid] = true;
+            }
+        }
+
+        foreach ($elements as $element) {
+            $element->dateAdded ??= now();
+        }
+
+        $this->setElements([...$this->getElements(), ...$elements]);
+
+        return $this;
+    }
+
     public function getHtmlId(): string
     {
         $asciiName = isset($this->name) ? Str::kebab(Str::ascii($this->name)) : '';

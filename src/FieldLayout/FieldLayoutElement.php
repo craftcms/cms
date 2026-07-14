@@ -51,6 +51,13 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
         return false;
     }
 
+    public function width(int $width): static
+    {
+        $this->width = $width;
+
+        return $this;
+    }
+
     /**
      * Returns the selector HTML that should be displayed within field layout designers.
      */

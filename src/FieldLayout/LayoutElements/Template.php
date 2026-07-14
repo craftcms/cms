@@ -45,6 +45,18 @@ class Template extends BaseUiElement
      */
     public string $templateMode = TemplateMode::Site->value;
 
+    public function __construct(string|array|object $config = [])
+    {
+        parent::__construct(is_string($config) ? ['template' => $config] : $config);
+    }
+
+    public function templateMode(TemplateMode|string $templateMode): static
+    {
+        $this->templateMode = $templateMode instanceof TemplateMode ? $templateMode->value : $templateMode;
+
+        return $this;
+    }
+
     protected function selectorLabel(): string
     {
         return $this->template ?: t('Template');
