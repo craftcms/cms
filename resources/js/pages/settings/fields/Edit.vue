@@ -304,7 +304,7 @@
             <div v-if="settingsLoading" class="flex justify-center p-4">
               <craft-spinner></craft-spinner>
             </div>
-            <HtmlFragmentRenderer :fragment="settingsFragment" />
+            <HtmlFragmentRenderer as="craft-field-group" :fragment="settingsFragment" />
           </div>
         </div>
       </craft-field-group>
