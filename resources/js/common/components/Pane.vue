@@ -74,7 +74,7 @@
     <slot name="header" v-if="showHeader">
       <div class="cp-pane__header">
         <slot name="title">
-          <h1 v-if="title" class="text-lg">
+          <h1 v-if="title" class="text-lg m-0!">
             {{ title }}
           </h1>
         </slot>

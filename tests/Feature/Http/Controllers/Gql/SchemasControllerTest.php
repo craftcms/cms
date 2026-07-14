@@ -156,6 +156,12 @@ it('redirects to the schema index when saving normally', function () {
     ])->assertRedirect(Url::cpUrl('graphql/schemas'));
 });
 
+it('returns inertia validation errors for schema save failures', function () {
+    post(action([SchemasController::class, 'store']), [
+        'permissions' => schemaControllerScope(),
+    ])->assertSessionHasErrors('name');
+});
+
 it('returns not found when updating an unknown schema id', function () {
     patchJson(action([SchemasController::class, 'update'], ['schemaId' => 999999]), [
         'name' => 'Missing Schema',

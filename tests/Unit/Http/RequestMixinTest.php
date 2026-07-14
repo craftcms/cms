@@ -114,8 +114,8 @@ describe('getToken', function () {
 });
 
 describe('getHadToken', function () {
-    it('returns true when the current request has a token', function () {
-        expect(Request::create('/news?token=query-token')->getHadToken())->toBeTrue();
+    it('returns false when the current request has an unvalidated token', function () {
+        expect(Request::create('/news?token=query-token')->getHadToken())->toBeFalse();
     });
 
     it('returns true when a token was previously handled', function () {

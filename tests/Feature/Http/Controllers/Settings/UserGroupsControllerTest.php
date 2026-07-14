@@ -15,6 +15,7 @@ use Inertia\Testing\AssertableInertia;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -93,12 +94,11 @@ test('store validates on unique handle and name', function () {
         'handle' => 'anewgroup',
     ]);
 
-    postJson(action([UserGroupsController::class, 'store']), [
+    post(action([UserGroupsController::class, 'store']), [
         'name' => 'A new group',
         'handle' => 'anewgroup',
     ])
-        ->assertJsonValidationErrorFor('name')
-        ->assertJsonValidationErrorFor('handle');
+        ->assertSessionHasErrors(['name', 'handle']);
 
     // Existing doesn't trigger unique validation
     postJson(action([UserGroupsController::class, 'store']), [

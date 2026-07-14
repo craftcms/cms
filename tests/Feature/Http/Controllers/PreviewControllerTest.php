@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\PreviewController;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -71,9 +72,9 @@ it('redirects when a redirect is passed', function () {
     ])->assertRedirect('https://example.com');
 });
 
-test('preview requires a valid token', function () {
-    get(route('craft.actions.preview'))
-        ->assertUnauthorized();
+test('preview token targets are not directly routable', function () {
+    get(ActionRoute::uriForSegments(['preview', 'preview'], false))
+        ->assertNotFound();
 });
 
 test('it can preview elements', function () {

@@ -87,33 +87,30 @@ interface AuthMethodInterface extends ComponentInterface
      * ```
      *
      * The class should send a request to a controller action, which collects the form data and passes it to
-     * [[\craft\services\Auth::verify()]]. That in turn will call your [[verify()]] method, passing it
+     * [[\CraftCms\Cms\Auth\AuthMethods::verifyMethod()]]. That in turn will call your [[verify()]] method, passing it
      * the same arguments.
      *
-     * If your [[verify()]] method returns `true`, [[\craft\services\Auth::verify()]] will log the user in
+     * If your [[verify()]] method returns `true`, [[\CraftCms\Cms\Auth\AuthMethods::verifyMethod()]] will log the user in
      * before returning the result.
      *
      * ```php
-     * use Craft;
-     * use yii\web\Response;
+     * use CraftCms\Cms\Auth\AuthMethods;
+     * use Illuminate\Http\JsonResponse;
+     * use Illuminate\Http\Request;
      *
-     * protected array|bool|int $allowAnonymous = [
-     *     'verify-voice' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-     * ];
-     *
-     * public function actionVerifyVoice(): Response
+     * public function verifyVoice(Request $request, AuthMethods $authMethods): JsonResponse
      * {
-     *     $this->requirePostRequest();
-     *     $this->requireAcceptsJson();
+     *     $data = $request->validate([
+     *         'voiceSignature' => ['required', 'string'],
+     *     ]);
      *
-     *     $voiceSignature = $this->request->getRequiredBodyParam('voiceSignature');
-     *     $success = Craft::$app->auth->verify(VoiceAuth::class, $voiceSignature);
+     *     $success = $authMethods->verifyMethod(VoiceAuth::class, $data['voiceSignature']);
      *
-     *     if (!$success) {
-     *         return $this->asFailure('Voice verification failed.');
+     *     if (! $success) {
+     *         return response()->json(['message' => 'Voice verification failed.'], 422);
      *     }
      *
-     *     return $this->asSuccess('Voice verification successful.');
+     *     return response()->json(['message' => 'Voice verification successful.']);
      * }
      * ```
      */

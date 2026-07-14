@@ -67,7 +67,7 @@ readonly class Cp
                 'cpTrigger' => $generalConfig->cpTrigger,
                 'baseCpUrl' => Url::cpUrl(),
                 'defaultCpLocale' => $generalConfig->defaultCpLocale,
-                'rememberedUserSessionDuration' => $generalConfig->rememberedUserSessionDuration,
+                'rememberedUserSessionDuration' => (int) config('auth.guards.craft.remember', 20160) * 60,
                 'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             ]);
     }

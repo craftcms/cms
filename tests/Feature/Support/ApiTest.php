@@ -7,6 +7,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
@@ -54,4 +55,17 @@ it('can get license info', function () {
     expect(app(Api::class)->getLicenseInfo())->toBe([
         'id' => 1234,
     ]);
+});
+
+it('processes response headers from failed API responses', function () {
+    Cache::forget('licensedDomain');
+
+    Http::fake([
+        Api::craftApiEndpoint().'/updates' => Http::response([], 418, [
+            'X-Craft-License-Domain' => 'failed.cloud',
+        ]),
+    ]);
+
+    expect(fn () => $this->api->request('GET', 'updates'))->toThrow(RequestException::class);
+    expect(Cache::get('licensedDomain'))->toBe('failed.cloud');
 });

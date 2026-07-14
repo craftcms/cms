@@ -31,20 +31,6 @@ class LegacyMiddleware
     {
         app()->instance('request', $request);
 
-        if ($request->uri()->path() === 'index.php' && $request->has('p')) {
-            $internal = Request::create(
-                uri: $request->get('p'),
-                method: $request->method(),
-                parameters: $request->except('p'),
-                cookies: $request->cookies->all(),
-                files: $request->allFiles(),
-                server: $request->server->all(),
-                content: $request->getContent(),
-            );
-
-            return $this->app->handle($internal);
-        }
-
         /**
          * Laravel applies \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull
          * globally, which causes issues in the legacy codebase. Here we restore all the

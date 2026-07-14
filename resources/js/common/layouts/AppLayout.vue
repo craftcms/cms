@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/cp/utilities/translate';
   import {computed, watch} from 'vue';
   import {Head, type InertiaForm, usePage} from '@inertiajs/vue3';
   import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
@@ -15,6 +15,7 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import UserMenu from '@/common/components/UserMenu.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
+  import ElevatedSessionHost from '@/modules/auth/elevated-session/ElevatedSessionHost.vue';
   import {useActionRedirect} from '@/common/composables/useActionRedirect';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
@@ -396,6 +397,7 @@
   </div>
 
   <DebugPanel v-if="debug" :data="debug" />
+  <ElevatedSessionHost />
 </template>
 
 <style scoped lang="css">

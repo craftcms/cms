@@ -14,7 +14,7 @@ import ProjectConfig from '@/modules/utilities/components/project-config/Project
 import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
-import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import {setTranslations} from '@craftcms/cp/utilities/translate';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
