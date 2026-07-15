@@ -25,6 +25,7 @@ export {default as CraftCopyAttribute} from './components/copy-attribute/copy-at
 export {default as CraftCopyButton} from './components/copy-button/copy-button.js';
 export {default as CraftDialog} from './components/dialog/dialog.js';
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
+export {default as CraftField} from './components/field/field.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export {default as CraftIcon} from './components/icon/icon.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';

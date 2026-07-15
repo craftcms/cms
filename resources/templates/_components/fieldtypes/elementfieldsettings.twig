@@ -151,27 +151,21 @@
     {% block advancedSettings %}
         <hr>
 
-        <craft-disclosure>
-
-
-        <craft-button appearance="plain" icon="chevron-down" type="button" class="fieldtoggle" slot="invoker">{{ "Advanced"|t('app') }}</craft-button>
+      <craft-disclosure label="{{ "Advanced"|t('app') }}">
         <div slot="content">
+          {{ forms.lightswitchField({
+            label: 'Allow self relations'|t('app'),
+            instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
+            id: 'allow-self-relations',
+            name: 'allowSelfRelations',
+            on: field.allowSelfRelations,
+          }) }}
 
-            {{ forms.lightswitchField({
-                label: 'Allow self relations'|t('app'),
-                instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
-                id: 'allow-self-relations',
-                name: 'allowSelfRelations',
-                on: field.allowSelfRelations,
-            }) }}
-
-            {% if Sites.isMultiSite() %}
-
-                {% block targetSiteField %}
-                    {{ field.getTargetSiteFieldHtml()|raw }}
-                {% endblock %}
-            {% endif %}
-
+          {% if Sites.isMultiSite() %}
+            {% block targetSiteField %}
+              {{ field.getTargetSiteFieldHtml()|raw }}
+            {% endblock %}
+          {% endif %}
         </div>
         </craft-disclosure>
     {% endblock %}

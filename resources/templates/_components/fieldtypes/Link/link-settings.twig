@@ -26,13 +26,10 @@
 
   {% for typeId, settings in linkTypeSettings %}
     <hr />
-    <craft-disclosure>
-      <craft-button type="button" slot="invoker" icon="chevron-down" appearance="plain" variant="plain" class="justify-self-start">
-        {{ settings.label }}
-      </craft-button>
-      <craft-field-group id="types-{{ typeId }}-settings" slot="content">
+    <craft-disclosure label="{{ settings.label }}" class="inline-block justify-self-start">
+      <div id="types-{{ typeId }}-settings" slot="content">
         {{ settings.html|raw }}
-      </craft-field-group>
+      </div>
     </craft-disclosure>
   {% endfor %}
 

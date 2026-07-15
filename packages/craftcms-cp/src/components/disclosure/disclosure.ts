@@ -1,5 +1,5 @@
 import {LionCollapsible} from '@lion/ui/collapsible.js';
-import type {PropertyValues} from 'lit';
+import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import '../button/button.js';
 
@@ -15,7 +15,18 @@ import '../button/button.js';
  *     <craft-button type="button" appearance="plain" icon="chevron-down">${label}</craft-button>
  */
 export default class CraftDisclosure extends LionCollapsible {
-  /** Text for the default invoker button (ignored when an invoker is slotted). */
+  static override get styles() {
+    return [
+      ...super.styles,
+      css`
+        ::slotted([slot='content']) {
+          margin-block-start: var(--c-spacing-lg);
+        }
+      `,
+    ];
+  }
+
+  /** Text for the default invoker button (). */
   @property() label = '';
 
   private __defaultInvoker: HTMLElement | null = null;

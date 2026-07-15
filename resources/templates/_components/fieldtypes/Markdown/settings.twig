@@ -112,14 +112,10 @@
 
   <hr>
 
-  <craft-disclosure>
-    <craft-button
-      type="button"
-      appearance="plain"
-      class="justify-self-start"
-      icon="chevron-down"
-      slot="invoker"
-    >{{ 'Links'|t('app') }}</craft-button>
+  <craft-disclosure
+    label="{{ 'Links'|t('app') }}"
+    class="justify-self-start"
+  >
     <div slot="content">
       {% include '_components/fieldtypes/Link/link-settings' with linkSettings only %}
     </div>
@@ -127,17 +123,8 @@
 
   <hr>
 
-  <craft-disclosure>
-
-    <craft-button
-      type="button"
-      appearance="plain"
-      class="justify-self-start"
-      icon="chevron-down"
-      slot="invoker"
-    >{{ 'Assets'|t('app') }}</craft-button>
+  <craft-disclosure label="{{ 'Assets'|t('app') }}" class="justify-self-start">
     <craft-field-group slot="content">
-
       {% if volumeOptions|length %}
         {{ forms.checkboxSelectField({
           label: 'Available Volumes'|t('app'),

@@ -13,7 +13,10 @@
   import Pane from '@/common/components/Pane.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import {store} from '@/actions/CraftCms/Cms/Http/Controllers/FieldsController';
+  import {
+    renderSettings,
+    store,
+  } from '@/actions/CraftCms/Cms/Http/Controllers/FieldsController';
 
   interface FieldTypeOption {
     value: string;
@@ -95,7 +98,7 @@
       settingsFragment.value = null;
 
       try {
-        const {data} = await actionClient.post('fields/render-settings', {
+        const {data} = await actionClient.post(renderSettings().url, {
           type,
           oldType,
           settings,
