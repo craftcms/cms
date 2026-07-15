@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Added `craft\gql\base\MutationResolver::requireAllowedSite()`.
 - Fixed a bug where JSON fields weren’t JSON-decoding values saved via GraphQL mutations. ([#19230](https://github.com/craftcms/cms/issues/19230))
 - Fixed an error that could occur when reassigning entries to a new author when deleting a user. ([#19154](https://github.com/craftcms/cms/issues/19154))
 - Fixed a bug where `craft\web\twig\variables\CraftVariable::$rebrand` was getting defined for Craft Team installs. ([#19249](https://github.com/craftcms/cms/issues/19249))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities.
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability.
 - Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities.
