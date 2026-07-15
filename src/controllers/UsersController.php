@@ -774,6 +774,10 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
+        if ($user->admin) {
+            $this->requireAdmin(false);
+        }
+
         try {
             $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
         } catch (InvalidElementException $e) {
