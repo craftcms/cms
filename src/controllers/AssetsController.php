@@ -471,6 +471,11 @@ class AssetsController extends Controller
                     ->folderId($sourceAsset->folderId)
                     ->filename(Db::escapeParam($targetFilename))
                     ->one();
+
+                if ($assetToReplace) {
+                    $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace);
+                    $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace);
+                }
             }
 
             // If we have an actual asset for which to replace the file, just do it.
