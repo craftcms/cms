@@ -73,7 +73,7 @@ abstract class ElementMutationResolver extends MutationResolver
                 if (! $normalized) {
                     $value = $this->normalizeValue($argument, $value);
                 }
-                $element->setFieldValue($argument, $value);
+                $element->setFieldValueFromRequest($argument, $value);
             } elseif ($element->canSetProperty($argument)) {
                 $element->{$argument} = $value;
             }

@@ -9,6 +9,9 @@ on:
       - feature/split-packages
     tags: '*'
 
+permissions:
+  contents: read
+
 jobs:
   split-monorepo:
     runs-on: ubuntu-latest

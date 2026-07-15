@@ -36,9 +36,26 @@ test('it can mark a password as confirmed', function () {
 });
 
 test('it can require password to be confirmed', function () {
-    $this->expectException(HttpException::class);
+    try {
+        new TestConfirmsPasswords()->requireConfirmedPassword();
+    } catch (HttpException $exception) {
+        expect($exception->getStatusCode())->toBe(423);
 
-    new TestConfirmsPasswords()->requireConfirmedPassword();
+        return;
+    }
+
+    $this->fail('Password confirmation should have been required.');
+});
+
+test('password confirmation uses the same default duration everywhere', function () {
+    $authConfig = config('auth');
+    unset($authConfig['password_timeout']);
+    config()->set('auth', $authConfig);
+
+    new TestConfirmsPasswords()->confirmPassword();
+
+    expect(new TestConfirmsPasswords()->confirmedPasswordTimeout())->toBe(300)
+        ->and(new TestConfirmsPasswords()->isPasswordConfirmed())->toBeTrue();
 });
 
 test('timeout returns seconds until confirmation is required', function () {

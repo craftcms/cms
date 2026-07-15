@@ -9,8 +9,8 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import Pane from '@/common/components/Pane.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   interface FileSystemData {
     name: string;
@@ -31,7 +31,7 @@
   }
 
   const props = defineProps<{
-    filesystems: Array<FileSystemData>;
+    filesystems: {data: Array<FileSystemData>};
     readOnly: boolean;
   }>();
 
@@ -85,7 +85,7 @@
   ]);
   const table = useVueTable<FileSystemData>({
     get data() {
-      return props.filesystems;
+      return props.filesystems.data;
     },
     get columns() {
       return columns.value;
@@ -101,30 +101,25 @@
 </script>
 
 <template>
-  <AppLayout>
-    <template #actions>
-      <CpLink
-        variant="accent"
-        appearance="button"
-        :href="create().url"
-        :inertia="false"
-        >{{ t('New filesystem') }}</CpLink
-      >
-    </template>
+  <LayoutSlot name="actions">
+    <CpLink
+      variant="accent"
+      appearance="button"
+      :href="create().url"
+      :inertia="false"
+      >{{ t('New filesystem') }}</CpLink
+    >
+  </LayoutSlot>
 
-    <Pane :padding="0" appearance="raised">
-      <AdminTable :table="table" :reorderable="false">
-        <template #empty-row>
-          <Empty
-            :label="t('No filesystems exist yet.')"
-            icon="light/folder-open"
-          >
-            <CpLink appearance="button" :href="create().url" :inertia="false">{{
-              t('New filesystem')
-            }}</CpLink>
-          </Empty>
-        </template>
-      </AdminTable>
-    </Pane>
-  </AppLayout>
+  <Pane :padding="0" appearance="raised">
+    <AdminTable :table="table" :reorderable="false">
+      <template #empty-row>
+        <Empty :label="t('No filesystems exist yet.')" icon="light/folder-open">
+          <CpLink appearance="button" :href="create().url" :inertia="false">{{
+            t('New filesystem')
+          }}</CpLink>
+        </Empty>
+      </template>
+    </AdminTable>
+  </Pane>
 </template>

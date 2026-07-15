@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\I18N as I18NService;
 use CraftCms\Cms\Translation\Locale;
+use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Collection;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\MessageReaderInterface;
@@ -214,6 +215,20 @@ test('defaultCpLanguage is included in app locale IDs', function () {
 
     expect(I18N::getAppLocaleIds())->toContain('pt-BR');
     expect(I18N::validateAppLocaleId('pt-BR'))->toBeTrue();
+});
+
+test('translate applies Laravel fallback before debug wrapping', function () {
+    Cms::config()->translationDebugOutput();
+
+    app(Translator::class)->addLines([
+        'fallback.message' => 'Laravel says :name',
+        'fallback.array' => [
+            'value' => 'Laravel array',
+        ],
+    ], 'nl');
+
+    expect(I18N::translate('fallback.message', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Laravel says Rias@')
+        ->and(I18N::translate('fallback.array', category: 'app', locale: 'nl'))->toBe('@fallback.array@');
 });
 
 test('getAllTranslationsForLocale returns translations for registered categories', function () {

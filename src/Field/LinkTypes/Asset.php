@@ -88,7 +88,7 @@ class Asset extends BaseElementLinkType
     protected function availableSourceKeys(): array
     {
         $volumes = Volumes::getAllVolumes()
-            ->filter(fn (Volume $volume) => $volume->getFs()->hasUrls);
+            ->filter(fn (Volume $volume) => $volume->sourceHasUrls());
 
         if (! $this->showUnpermittedVolumes) {
             $volumes = $volumes->filter(fn (Volume $volume) => Gate::check("viewAssets:$volume->uid"));

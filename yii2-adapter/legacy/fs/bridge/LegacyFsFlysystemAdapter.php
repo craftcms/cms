@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -19,15 +21,18 @@ use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToDeleteFile;
+use League\Flysystem\UnableToGeneratePublicUrl;
 use League\Flysystem\UnableToListContents;
 use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\UnableToReadFile;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
+use League\Flysystem\UrlGeneration\PublicUrlGenerator;
 use Throwable;
+use UnexpectedValueException;
 
-class LegacyFsFlysystemAdapter implements FilesystemAdapter
+class LegacyFsFlysystemAdapter implements FilesystemAdapter, PublicUrlGenerator
 {
     public const string DISK_DRIVER = 'craft-fs-bridge';
 
@@ -168,13 +173,19 @@ class LegacyFsFlysystemAdapter implements FilesystemAdapter
         try {
             foreach ($this->filesystem->getFileList($path, $deep) as $item) {
                 if (!$item instanceof FsListing) {
-                    continue;
+                    throw new UnexpectedValueException(sprintf(
+                        '%s::getFileList() must yield %s instances, %s yielded.',
+                        $this->filesystem::class,
+                        FsListing::class,
+                        get_debug_type($item),
+                    ));
                 }
 
                 $uri = $item->getUri();
 
                 if ($item->getIsDir()) {
                     yield new DirectoryAttributes($uri, lastModified: $item->getDateModified());
+
                     continue;
                 }
 
@@ -187,6 +198,21 @@ class LegacyFsFlysystemAdapter implements FilesystemAdapter
         } catch (Throwable $e) {
             throw UnableToListContents::atLocation($path, $deep, $e);
         }
+    }
+
+    public function publicUrl(string $path, Config $config): string
+    {
+        $rootUrl = $this->filesystem->getRootUrl();
+        if (!is_string($rootUrl) || $rootUrl === '') {
+            throw UnableToGeneratePublicUrl::noGeneratorConfigured($path);
+        }
+
+        return rtrim($rootUrl, '/') . '/' . ltrim($path, '/');
+    }
+
+    public function getUrl(string $path): string
+    {
+        return $this->publicUrl($path, new Config());
     }
 
     public function move(string $source, string $destination, Config $config): void

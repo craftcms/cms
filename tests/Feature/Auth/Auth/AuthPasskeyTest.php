@@ -14,7 +14,7 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\Uid\Uuid;
-use Webauthn\PublicKeyCredentialSource;
+use Webauthn\CredentialRecord;
 use Webauthn\TrustPath\EmptyTrustPath;
 
 beforeEach(function () {
@@ -152,9 +152,9 @@ function mockAuthPasskeys(): Passkeys
     return $passkeys;
 }
 
-function authPasskeyCredentialSource(string $credentialId): PublicKeyCredentialSource
+function authPasskeyCredentialSource(string $credentialId): CredentialRecord
 {
-    return PublicKeyCredentialSource::create(
+    return CredentialRecord::create(
         publicKeyCredentialId: $credentialId,
         type: 'public-key',
         transports: [],

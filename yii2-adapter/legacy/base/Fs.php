@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,8 +19,11 @@ use yii\base\InvalidConfigException;
  * Field is the base class for classes representing filesystems in terms of objects.
  *
  * @property-read null|string $rootUrl
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
+ * @deprecated 6.0.0
  */
 abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
 {

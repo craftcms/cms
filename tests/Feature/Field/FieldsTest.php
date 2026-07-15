@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Color;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
@@ -20,6 +23,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -341,10 +345,149 @@ it('can hard delete a field layout by id', function () {
         ->and($this->fields->getLayoutById($layout->id))->toBeNull();
 });
 
+it('rejects saving a content block field whose nested layout references itself', function () {
+    // On a first save the field doesn't exist in the database yet, so the
+    // self-reference can't be caught by resolving the nested field by UID —
+    // the raw fieldUid has to be compared against the field's own uid.
+    $fieldUid = (string) Str::uuid();
+
+    $field = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Recursive Block',
+        'handle' => 'recursiveBlock',
+        'uid' => $fieldUid,
+        'settings' => [
+            'viewMode' => 'grouped',
+            'fieldLayouts' => [
+                (string) Str::uuid() => [
+                    'tabs' => [[
+                        'uid' => (string) Str::uuid(),
+                        'elements' => [[
+                            'type' => CustomFieldElement::class,
+                            'uid' => (string) Str::uuid(),
+                            'width' => 100,
+                            'required' => false,
+                            'fieldUid' => $fieldUid,
+                        ]],
+                    ]],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveField($field))->toBeFalse()
+        ->and($field->errors()->first('fieldLayout'))->toBe('Including a Content Block field recursively is not allowed.')
+        ->and(FieldModel::count())->toBe(0);
+});
+
+it('rejects re-saving a content block field with its own layout element added', function () {
+    $field = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Recursive Block',
+        'handle' => 'recursiveBlock',
+    ]);
+
+    expect($this->fields->saveField($field))->toBeTrue();
+
+    $field->setFieldLayouts([
+        (string) Str::uuid() => [
+            'tabs' => [[
+                'uid' => (string) Str::uuid(),
+                'elements' => [[
+                    'type' => CustomFieldElement::class,
+                    'uid' => (string) Str::uuid(),
+                    'fieldUid' => $field->uid,
+                ]],
+            ]],
+        ],
+    ]);
+
+    expect($this->fields->saveField($field))->toBeFalse()
+        ->and($field->errors()->first('fieldLayout'))->toBe('Including a Content Block field recursively is not allowed.');
+});
+
+it('allows nesting a different content block field', function () {
+    $innerField = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Inner Block',
+        'handle' => 'innerBlock',
+    ]);
+
+    expect($this->fields->saveField($innerField))->toBeTrue();
+
+    $outerField = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Outer Block',
+        'handle' => 'outerBlock',
+        'settings' => [
+            'fieldLayouts' => [
+                (string) Str::uuid() => [
+                    'tabs' => [[
+                        'uid' => (string) Str::uuid(),
+                        'elements' => [[
+                            'type' => CustomFieldElement::class,
+                            'uid' => (string) Str::uuid(),
+                            'fieldUid' => $innerField->uid,
+                        ]],
+                    ]],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveField($outerField))->toBeTrue()
+        ->and(FieldModel::count())->toBe(2);
+});
+
 it('can find field usages', function () {
     expect($this->fields->findFieldUsages(new PlainText))->toBeEmpty();
 
     $this->markTestIncomplete('Add test with field usage');
+});
+
+it('can merge fields', function () {
+    $this->fields->saveField($this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Persisting Text',
+        'handle' => 'persistingText',
+    ]));
+
+    $this->fields->saveField($this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Outgoing Text',
+        'handle' => 'outgoingText',
+    ]));
+
+    $persistingField = $this->fields->getFieldByHandle('persistingText');
+    $outgoingField = $this->fields->getFieldByHandle('outgoingText');
+
+    $layoutModel = FieldLayoutModel::factory()
+        ->forField(FieldModel::firstWhere('handle', 'outgoingText'))
+        ->create();
+
+    EntryType::factory()->create([
+        'fieldLayoutId' => $layoutModel->id,
+    ]);
+
+    $migrationPath = null;
+
+    try {
+        $result = $this->fields->merge($persistingField, $outgoingField);
+        $migrationPath = $result->migrationPath;
+
+        $layout = $this->fields->getLayoutById($layoutModel->id);
+        $layoutElement = $layout->getCustomFieldElements()[0];
+
+        expect($result->updatedLayouts)->toBe(1)
+            ->and($this->fields->getFieldByHandle('outgoingText'))->toBeNull()
+            ->and($layoutElement->getFieldUid())->toBe($persistingField->uid)
+            ->and($migrationPath)->toBeFile()
+            ->and(DB::table(Table::MIGRATIONS)->where('migration', basename((string) $migrationPath, '.php'))->exists())->toBeTrue();
+    } finally {
+        if ($migrationPath) {
+            @unlink($migrationPath);
+        }
+    }
 });
 
 it('returns laravel-style pagination metadata for table data', function () {

@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "strictPropertyInitialization": false,
     "outDir": "./dist",
     "rootDir": ".",

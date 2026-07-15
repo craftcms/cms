@@ -6,23 +6,27 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\PreviewRequestPreparer;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
 
 readonly class HandleTokenRequest
 {
     public const string TOKEN_KEY = 'craft.token';
 
-    public const string ORIGINAL_URI_KEY = 'craft.token.originalUri';
-
     public const string HAD_TOKEN_KEY = 'craft.token.hadToken';
 
     public const string TOKEN_HEADER = 'X-Craft-Token';
 
+    public const string ROUTE_RESOLVED_ATTRIBUTE = 'craft.token.routeResolved';
+
     public function __construct(
         private GeneralConfig $generalConfig,
         private RouteTokens $tokens,
+        private PreviewRequestPreparer $previews,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
@@ -44,14 +48,37 @@ readonly class HandleTokenRequest
         Context::addHidden(self::TOKEN_KEY, $token);
         Context::addHidden(self::HAD_TOKEN_KEY, true);
 
-        Context::addHidden(self::ORIGINAL_URI_KEY, $request->uri()->withoutQuery([
-            'token',
+        $originalUri = $request->uri()->withoutQuery([
+            $this->generalConfig->tokenParam,
             'x-craft-preview',
             'x-craft-live-preview',
-        ]));
+        ]);
+
+        if ($this->isPreviewRoute((string) $tokenRoute[0])) {
+            $this->previews->prepare((array) ($tokenRoute[1] ?? []));
+
+            $previewRequest = $request->duplicateWithUri(
+                $originalUri->value(),
+                $originalUri->query()->all(),
+            );
+            app()->instance('request', $previewRequest);
+
+            $response = $next($previewRequest);
+
+            return $response instanceof Response
+                ? $response->setNoCacheHeaders()
+                : $response;
+        }
 
         $newRequest = $request->duplicateWithUri((string) $tokenRoute[0], $tokenRoute[1] ?? []);
+        $newRequest->attributes->set(self::ROUTE_RESOLVED_ATTRIBUTE, true);
+        app()->instance('request', $newRequest);
 
         return $next($newRequest);
+    }
+
+    private function isPreviewRoute(string $route): bool
+    {
+        return '/'.trim($route, '/') === ActionRoute::uriForSegments(['preview', 'preview'], false);
     }
 }
