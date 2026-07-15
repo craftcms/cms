@@ -101,7 +101,11 @@ it('provides a description', function () {
 });
 
 it('can execute on entries', function () {
-    Entry::factory()->create();
+    $entries = Entry::factory()->count(2)->create();
+
+    DB::table(Table::SEARCHINDEX)
+        ->whereIn('elementId', $entries->pluck('id'))
+        ->delete();
 
     $job = new UpdateSearchIndex(
         elementType: EntryElement::class,
@@ -109,7 +113,10 @@ it('can execute on entries', function () {
 
     $job->handle();
 
-    expect(true)->toBeTrue();
+    expect(DB::table(Table::SEARCHINDEX)
+        ->whereIn('elementId', $entries->pluck('id'))
+        ->distinct()
+        ->count('elementId'))->toBe($entries->count());
 });
 
 it('can execute queued updates on the sync queue', function () {
