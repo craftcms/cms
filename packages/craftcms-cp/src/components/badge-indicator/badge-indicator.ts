@@ -14,13 +14,13 @@ export default class CraftBadgeIndicator extends LitElement {
   static override styles = [styles];
 
   /** Alternative text if the badge is not decorative */
-  @property() altText: string | null = null;
+  @property({attribute: 'alt-text'}) altText: string | null = null;
 
   /** Displays a number on the badge. If using `badgeCount`, the `badgeCountSuffix` should also be used to describe what the number represents. */
-  @property() badgeCount: number | null = null;
+  @property({attribute: 'badge-count'}) badgeCount: number | null = null;
 
   /** Visually hidden text that comes after the count to provide additional context. */
-  @property() badgeCountSuffix: string | null = null;
+  @property({attribute: 'badge-count-suffix'}) badgeCountSuffix: string | null = null;
 
   /** Theme variant of the badge indicator. Defaults to "primary" */
   @property() variant: 'primary' | 'secondary' | 'inverse' = 'primary';

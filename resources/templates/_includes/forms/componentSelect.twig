@@ -165,7 +165,7 @@
                matches against textContent + `data-keywords`. #}
             {% tag 'craft-action-item' with {
               icon: component is instance of('craft\\base\\Iconic') ? (component.getIcon() ?: false) : false,
-              iconcolor: component is instance of('craft\\base\\Colorable') ? (component.getColor().value ?? false) : false,
+              'icon-color': component is instance of('craft\\base\\Colorable') ? (component.getColor().value ?? false) : false,
               hidden: component.getId() in valueIds,
               data: {
                 type: className(component),

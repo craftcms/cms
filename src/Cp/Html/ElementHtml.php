@@ -802,7 +802,7 @@ JS, [
      *
      * - `label`/`html`, `handle`, `description` → slotted content (mirrors
      *   `_includes/forms/componentSelect.twig`'s option markup).
-     * - `icon` + `color` → `icon` + `iconcolor` attributes.
+     * - `icon` + `color` → `icon` + `icon-color` attributes.
      * - `url` (link items) → `href`.
      * - `destructive` → `variant="danger"`.
      * - `disabled`, `hidden` → same-named boolean attributes.
@@ -879,7 +879,7 @@ JS, [
             // here too would double it up.
             'id' => $item['id'] ?? sprintf('menu-item-%s', mt_rand()),
             'icon' => $item['icon'] ?? false,
-            'iconcolor' => $color ?: false,
+            'icon-color' => $color ?: false,
             'href' => $type === MenuItemType::Link->value ? Url::url((string) ($item['url'] ?? '')) : false,
             'disabled' => $item['disabled'] ?? false,
             'hidden' => $item['hidden'] ?? false,

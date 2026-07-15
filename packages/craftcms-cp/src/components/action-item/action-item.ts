@@ -31,7 +31,7 @@ export default class CraftActionItem extends LitElement {
    * with `currentColor`, so we set the icon element's `color` to a matching
    * `--c-color-*` token.
    */
-  @property() iconColor: string | null = null;
+  @property({attribute: 'icon-color'}) iconColor: string | null = null;
   @property() href: string | null = null;
   @property({type: Boolean}) disabled: boolean = false;
   @property({reflect: true}) variant: VariantKey = Variant.Neutral;
@@ -40,7 +40,7 @@ export default class CraftActionItem extends LitElement {
   @property() type: 'button' | 'checkbox' = 'button';
   @property({type: Object}) action: BaseAction | null = null;
   @property({type: Object}) feedback: ActionFeedback | null = null;
-  @property({type: Number}) feedbackDuration: number = 1000;
+  @property({type: Number, attribute: 'feedback-duration'}) feedbackDuration: number = 1000;
   @property() confirm: string | null = null;
 
   @state() private state: AsyncState = AsyncStates.Idle;
