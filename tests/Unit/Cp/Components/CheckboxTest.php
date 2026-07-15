@@ -41,6 +41,12 @@ describe('input', function () {
             ->and($html)->toContain('slot="input"');
     });
 
+    it('stringifies numeric values', function () {
+        $html = Checkbox::make()->id('cb')->value(1.78)->toHtml();
+
+        expect($html)->toContain('value="1.78"');
+    });
+
     it('skips the always-post hidden input for array names', function () {
         expect(Checkbox::make()->name('options[]')->toHtml())
             ->not->toContain('type="hidden"');

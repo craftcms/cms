@@ -97,9 +97,9 @@ class Lightswitch extends ViewComponent
     }
 
     /** The value posted when the switch is on. */
-    public function value(string|int|Closure $value): static
+    public function value(string|int|float|Closure $value): static
     {
-        $this->value = (string) $value;
+        $this->value = is_int($value) || is_float($value) ? (string) $value : $value;
 
         return $this;
     }

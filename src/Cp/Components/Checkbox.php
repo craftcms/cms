@@ -105,9 +105,9 @@ class Checkbox extends ViewComponent
     }
 
     /** The value posted when checked. */
-    public function value(string|int|Closure $value): static
+    public function value(string|int|float|Closure $value): static
     {
-        $this->value = is_int($value) ? (string) $value : $value;
+        $this->value = is_int($value) || is_float($value) ? (string) $value : $value;
 
         return $this;
     }
