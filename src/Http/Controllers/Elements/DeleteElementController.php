@@ -55,17 +55,25 @@ class DeleteElementController
 
         Gate::authorize('deleteForSite', $element);
 
-        $this->elements->deleteElementForSite($element);
-
         if ($element->isProvisionalDraft) {
-            // see if the canonical element exists for this site
             $canonical = $element->getCanonical();
 
-            if ($canonical->id !== $element->id) {
-                $element = $canonical;
-
-                $this->elements->deleteElementForSite($element);
+            if ($canonical->id === $element->id) {
+                $canonical = null;
             }
+
+            if ($canonical) {
+                Gate::authorize('deleteForSite', $canonical);
+            }
+        } else {
+            $canonical = null;
+        }
+
+        $this->elements->deleteElementForSite($element);
+
+        if ($canonical) {
+            $this->elements->deleteElementForSite($canonical);
+            $element = $canonical;
         }
 
         return new ElementResponse()->success($element, t('{type} deleted for site.', [
