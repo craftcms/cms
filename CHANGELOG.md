@@ -2,10 +2,24 @@
 
 ## Unreleased
 
+- Prevented duplicate image transform jobs from being queued for the same transform.
+- Improved field reference cleanup performance.
+- Updated the project testing guidelines to emphasize behavior-focused tests.
+- Fixed a bug where GraphQL asset mutations weren’t executing HTTP requests for remote asset URLs.
+- Removed duplicate Control Panel icon alias registrations.
+- Updated Control Panel configuration serialization to use `Illuminate\Support\Js::from()`.
+- Improved numeric element reference resolution performance.
+- Fixed a bug where failed relation writes could leave partial relation changes persisted.
+- Fixed a bug where element merge replacement jobs could be dispatched before their database transaction was committed.
+- Fixed a bug where section project-config jobs could be dispatched before their database transaction was committed.
 - Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
 - Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
 - Login attempts are now rate limited.
 - Updated logout routes to require CSRF-protected POST requests.
+- Fixed a bug where passkey login attempts weren’t rate limited.
+- Fixed a bug where relation localization could not be retried safely after a failed run.
+- Improved element merge performance by avoiding per-relation and per-structure queries.
+- Improved search indexing memory use when indexing many elements.
 - Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
 - Fixed a bug where site routes weren't being registered for each localized site value.
 - Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
