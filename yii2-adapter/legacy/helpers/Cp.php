@@ -459,7 +459,7 @@ class Cp
      */
     public static function buttonGroupHtml(array $config): string
     {
-        return FormFields::buttonGroupHtml(config: $config);
+        return FormFields::buttonGroupFromConfig(config: $config)->toHtml();
     }
 
     /**
@@ -491,7 +491,7 @@ class Cp
      */
     public static function checkboxGroupHtml(array $config): string
     {
-        return FormFields::checkboxGroupHtml(config: $config);
+        return FormFields::checkboxGroupFromConfig(config: $config)->toHtml();
     }
 
     /**
@@ -563,7 +563,7 @@ class Cp
      */
     public static function lightswitchHtml(array $config): string
     {
-        return FormFields::lightswitchHtml(config: $config);
+        return FormFields::lightswitchFromConfig(config: $config)->toHtml();
     }
 
     /**

@@ -89,12 +89,12 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
             }
         }
 
-        return FormFields::buttonGroupHtml([
+        return FormFields::buttonGroupFromConfig([
             'id' => $id,
             'name' => $this->handle,
             'static' => $static,
             'options' => $options,
             'value' => $this->encodeValue($value),
-        ]);
+        ])->toHtml();
     }
 }

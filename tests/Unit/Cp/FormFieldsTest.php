@@ -119,7 +119,7 @@ describe('config deprecations', function () {
 
         expect($logged)->toBeTrue();
     })->with([
-        'lightswitch descriptionId' => ['lightswitchHtml', ['descriptionId' => 'custom'], 'descriptionId'],
+        'lightswitch descriptionId' => ['lightswitchFromConfig', ['descriptionId' => 'custom'], 'descriptionId'],
         'button spinner' => ['buttonFromConfig', ['label' => 'Save', 'spinner' => true], 'spinner'],
     ]);
 
@@ -128,10 +128,10 @@ describe('config deprecations', function () {
         $mock->shouldNotReceive('log');
         app()->scoped(Deprecator::class, fn () => $mock);
 
-        FormFields::lightswitchHtml(['id' => 'ls', 'on' => true, 'label' => 'Enabled']);
+        FormFields::lightswitchFromConfig(['id' => 'ls', 'on' => true, 'label' => 'Enabled']);
         FormFields::buttonFromConfig(['label' => 'Save', 'type' => 'submit', 'busyMessage' => 'Saving…']);
-        FormFields::checkboxHtml(['id' => 'cb', 'label' => 'Agree', 'checked' => true]);
-        FormFields::buttonGroupHtml(['options' => [['label' => 'A', 'value' => 'a']], 'static' => true]);
+        FormFields::checkboxFromConfig(['id' => 'cb', 'label' => 'Agree', 'checked' => true]);
+        FormFields::buttonGroupFromConfig(['options' => [['label' => 'A', 'value' => 'a']], 'static' => true]);
 
         expect(true)->toBeTrue();
     });

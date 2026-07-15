@@ -242,11 +242,6 @@ readonly class FormFields
             ));
     }
 
-    public static function buttonGroupHtml(array $config): string
-    {
-        return self::buttonGroupFromConfig($config)->toHtml();
-    }
-
     public static function buttonGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'buttongroup'.mt_rand();
@@ -263,7 +258,7 @@ readonly class FormFields
      * component, applying the group-level appearance/size defaults and the
      * selected state to each option's button.
      */
-    private static function buttonGroupFromConfig(array $config): ButtonGroup
+    public static function buttonGroupFromConfig(array $config): ButtonGroup
     {
         $value = $config['value'] ?? null;
         $appearance = $config['appearance'] ?? 'outline';
@@ -313,11 +308,6 @@ readonly class FormFields
             ));
     }
 
-    public static function checkboxHtml(array $config): string
-    {
-        return self::checkboxFromConfig($config)->toHtml();
-    }
-
     public static function checkboxFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkbox'.mt_rand();
@@ -341,7 +331,7 @@ readonly class FormFields
      * `label`, aria-labelledby is suppressed when an `aria-label` is
      * configured, and custom-option mode renders a text input for the value.
      */
-    private static function checkboxFromConfig(array $config): Checkbox
+    public static function checkboxFromConfig(array $config): Checkbox
     {
         $id = $config['id'] ?? 'checkbox'.mt_rand();
         $labelId = $config['labelId'] ?? "$id-label";
@@ -382,11 +372,6 @@ readonly class FormFields
             ));
     }
 
-    public static function checkboxSelectHtml(array $config): string
-    {
-        return self::checkboxSelectFromConfig($config)->toHtml();
-    }
-
     public static function checkboxSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxselect'.mt_rand();
@@ -405,7 +390,7 @@ readonly class FormFields
      * preserved: sortable pre-orders options by the `values` order, and a
      * checked "All" option checks and disables every item.
      */
-    private static function checkboxSelectFromConfig(array $config): CheckboxSelect
+    public static function checkboxSelectFromConfig(array $config): CheckboxSelect
     {
         $id = $config['id'] ?? 'checkbox-select-'.mt_rand();
         $name = $config['name'] ?? null;
@@ -476,16 +461,6 @@ readonly class FormFields
             ));
     }
 
-    public static function radioHtml(array $config): string
-    {
-        return self::radioFromConfig($config)->toHtml();
-    }
-
-    public static function radioGroupHtml(array $config): string
-    {
-        return self::radioGroupFromConfig($config)->toHtml();
-    }
-
     public static function radioGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'radiogroup'.mt_rand();
@@ -503,7 +478,7 @@ readonly class FormFields
      * semantics preserved: `radioLabel` wins over `label`, and custom-option
      * mode renders an "Other:" text input that syncs its value to the radio.
      */
-    private static function radioFromConfig(array $config): Radio
+    public static function radioFromConfig(array $config): Radio
     {
         $id = $config['id'] ?? 'radio'.mt_rand();
         $labelId = $config['labelId'] ?? "$id-label";
@@ -556,7 +531,7 @@ readonly class FormFields
      * component — the PHP twin of the `_includes/forms/radioGroup` glue
      * template.
      */
-    private static function radioGroupFromConfig(array $config): RadioGroup
+    public static function radioGroupFromConfig(array $config): RadioGroup
     {
         $id = $config['id'] ?? 'radio-group-'.mt_rand();
         $value = $config['value'] ?? null;
@@ -594,11 +569,6 @@ readonly class FormFields
             ));
     }
 
-    public static function checkboxGroupHtml(array $config): string
-    {
-        return self::checkboxGroupFromConfig($config)->toHtml();
-    }
-
     public static function checkboxGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxgroup'.mt_rand();
@@ -614,7 +584,7 @@ readonly class FormFields
      * {@see CheckboxGroup} component — the PHP twin of the
      * `_includes/forms/checkboxGroup` glue template.
      */
-    private static function checkboxGroupFromConfig(array $config): CheckboxGroup
+    public static function checkboxGroupFromConfig(array $config): CheckboxGroup
     {
         $id = $config['id'] ?? 'checkbox-group-'.mt_rand();
         $name = $config['name'] ?? null;
@@ -710,11 +680,6 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/editableTable', $config);
     }
 
-    public static function lightswitchHtml(array $config): string
-    {
-        return self::lightswitchFromConfig($config)->toHtml();
-    }
-
     public static function lightswitchFieldHtml(array $config): string
     {
         $config['id'] ??= 'lightswitch'.mt_rand();
@@ -738,7 +703,7 @@ readonly class FormFields
      * template. Legacy semantics preserved: `label` is an `onLabel` fallback,
      * not a field label.
      */
-    private static function lightswitchFromConfig(array $config): Lightswitch
+    public static function lightswitchFromConfig(array $config): Lightswitch
     {
         self::deprecateConfig('lightswitch', $config, [
             'descriptionId' => 'is no longer supported. `<craft-switch>` renders and links its own state description.',

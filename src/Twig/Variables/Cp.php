@@ -324,7 +324,7 @@ class Cp extends Component
      */
     public function lightswitch(array $config = []): string
     {
-        return FormFields::lightswitchHtml($config);
+        return FormFields::lightswitchFromConfig($config)->toHtml();
     }
 
     /**
@@ -340,7 +340,7 @@ class Cp extends Component
      */
     public function buttonGroup(array $config = []): string
     {
-        return FormFields::buttonGroupHtml($config);
+        return FormFields::buttonGroupFromConfig($config)->toHtml();
     }
 
     /**
@@ -348,7 +348,7 @@ class Cp extends Component
      */
     public function checkbox(array $config = []): string
     {
-        return FormFields::checkboxHtml($config);
+        return FormFields::checkboxFromConfig($config)->toHtml();
     }
 
     /**
@@ -356,7 +356,7 @@ class Cp extends Component
      */
     public function checkboxGroup(array $config = []): string
     {
-        return FormFields::checkboxGroupHtml($config);
+        return FormFields::checkboxGroupFromConfig($config)->toHtml();
     }
 
     /**
@@ -364,7 +364,7 @@ class Cp extends Component
      */
     public function checkboxSelect(array $config = []): string
     {
-        return FormFields::checkboxSelectHtml($config);
+        return FormFields::checkboxSelectFromConfig($config)->toHtml();
     }
 
     /**
@@ -372,7 +372,7 @@ class Cp extends Component
      */
     public function radio(array $config = []): string
     {
-        return FormFields::radioHtml($config);
+        return FormFields::radioFromConfig($config)->toHtml();
     }
 
     /**
@@ -380,7 +380,7 @@ class Cp extends Component
      */
     public function radioGroup(array $config = []): string
     {
-        return FormFields::radioGroupHtml($config);
+        return FormFields::radioGroupFromConfig($config)->toHtml();
     }
 
     private function formatLegacySuggestions(array $options): array

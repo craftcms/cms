@@ -34,12 +34,12 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
                 'id' => $labelId,
             ]).
             Html::tag('div',
-                FormFields::lightswitchHtml([
+                FormFields::lightswitchFromConfig([
                     'id' => $lightswitchId,
                     'on' => $this->value,
                     'name' => 'value',
                     'labelledBy' => $labelId,
-                ])
+                ])->toHtml()
             );
     }
 
