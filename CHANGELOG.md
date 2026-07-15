@@ -2,25 +2,36 @@
 
 ## Unreleased
 
-- Prevented duplicate image transform jobs from being queued for the same transform.
-- Improved field reference cleanup performance.
-- Updated the project testing guidelines to emphasize behavior-focused tests.
-- Fixed a bug where GraphQL asset mutations weren’t executing HTTP requests for remote asset URLs.
-- Removed duplicate Control Panel icon alias registrations.
+- Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Login attempts are now rate limited.
+- Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
+- Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
+- Updated logout routes to require CSRF-protected POST requests.
 - Updated Control Panel configuration serialization to use `Illuminate\Support\Js::from()`.
+- Updated the project testing guidelines to emphasize behavior-focused tests.
+- Updated queue connection retry windows to exceed Craft’s maximum job timeout.
+- Updated core queue jobs to resolve their dependencies through Laravel’s service container.
+- Updated automatic garbage collection to run as a unique queue job.
+- Updated two-factor authentication recovery codes to be encrypted at rest.
+- Improved field reference cleanup performance.
 - Improved numeric element reference resolution performance.
+- Improved element merge performance by avoiding per-relation and per-structure queries.
+- Improved search indexing memory use when indexing many elements.
+- Improved asset indexing performance when finding missing and empty folders.
+- Prevented duplicate image transform jobs from being queued for the same transform.
+- Removed duplicate Control Panel icon alias registrations.
+- Fixed a bug where GraphQL asset mutations weren’t executing HTTP requests for remote asset URLs.
 - Fixed a bug where failed relation writes could leave partial relation changes persisted.
 - Fixed a bug where element merge replacement jobs could be dispatched before their database transaction was committed.
 - Fixed a bug where section project-config jobs could be dispatched before their database transaction was committed.
-- Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
-- Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
-- Login attempts are now rate limited.
-- Updated logout routes to require CSRF-protected POST requests.
 - Fixed a bug where passkey login attempts weren’t rate limited.
 - Fixed a bug where relation localization could not be retried safely after a failed run.
-- Improved element merge performance by avoiding per-relation and per-structure queries.
-- Improved search indexing memory use when indexing many elements.
-- Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where project config mutex cleanup could release a lock owned by another process.
+- Fixed a bug where nested structure operations could release their mutex lock before the outer operation completed.
+- Fixed a bug where two-factor authentication verification attempts weren’t rate limited.
+- Fixed a bug where user photo uploads could exceed the configured maximum upload size.
+- Fixed a bug where unsafe filenames could be used for Craft support attachments.
+- Fixed a bug where a failed legacy field type migration could leave project config events muted.
 - Fixed a bug where site routes weren't being registered for each localized site value.
 - Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
 - Fixed a bug where users were redirected to the previous page on logout. ([#19220](https://github.com/craftcms/cms/pull/19220))
