@@ -93,6 +93,7 @@ class GqlHelperTest extends TestCase
         self::assertTrue(GqlHelper::canQueryEntries());
         self::assertTrue(GqlHelper::canQueryGlobalSets());
         self::assertTrue(GqlHelper::canQueryUsers());
+        self::assertTrue(GqlHelper::canQueryAllUsers());
         self::assertFalse(GqlHelper::canQueryAssets());
         self::assertFalse(GqlHelper::canQueryCategories());
         self::assertFalse(GqlHelper::canQueryTags());
