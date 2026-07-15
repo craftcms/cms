@@ -1,77 +1,81 @@
-import {registerIconLibrary} from '@awesome.me/webawesome/dist/webawesome.js';
+import {icons} from '@lion/ui/icon.js';
+import {html, nothing, type TemplateResult} from 'lit';
+import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 
-const LEGACY_NAMES: Record<string, string> = {
-  alert: 'triangle-exclamation',
-  asc: 'arrow-down-short-wide',
-  asset: 'image',
-  assets: 'image',
-  circleuarr: 'circle-arrow-up',
-  collapse: 'down-left-and-up-right-to-center',
-  condition: 'diamond',
-  darr: 'arrow-down',
-  date: 'calendar',
-  desc: 'arrow-down-wide-short',
-  disabled: 'circle-dashed',
-  done: 'circle-check',
-  downangle: 'angle-down',
-  draft: 'scribble',
-  edit: 'pencil',
-  enabled: 'circle',
-  expand: 'up-right-and-down-left-from-center',
-  external: 'arrow-up-right-from-square',
-  field: 'pen-to-square',
-  help: 'circle-question',
-  home: 'house',
-  info: 'circle-info',
-  insecure: 'unlock',
-  larr: 'arrow-left',
-  layout: 'table-layout',
-  leftangle: 'angle-left',
-  listrtl: 'list-flip',
-  location: 'location-dot',
-  mail: 'envelope',
-  menu: 'bars',
-  move: 'grip-dots',
-  newstamp: 'certificate',
-  paperplane: 'paper-plane',
-  plugin: 'plug',
-  rarr: 'arrow-right',
-  refresh: 'arrows-rotate',
-  remove: 'xmark',
-  rightangle: 'angle-right',
-  rotate: 'rotate-left',
-  routes: 'signs-post',
-  search: 'magnifying-glass',
-  secure: 'lock',
-  settings: 'gear',
-  shareleft: 'share-flip',
-  shuteye: 'eye-slash',
-  'sidebar-left': 'sidebar',
-  'sidebar-right': 'sidebar-flip',
-  'sidebar-start': 'sidebar', // Note: Was conditional based on $orientation (ltr: 'sidebar', rtl: 'sidebar-flip')
-  'sidebar-end': 'sidebar-flip', // Note: Was conditional based on $orientation (ltr: 'sidebar-flip', rtl: 'sidebar')
-  structure: 'list-tree',
-  structurertl: 'list-tree-flip',
-  template: 'file-code',
-  time: 'clock',
-  tool: 'wrench',
-  uarr: 'arrow-up',
-  upangle: 'angle-up',
-  view: 'eye',
-  wand: 'wand-magic-sparkles',
-};
+export const CRAFT_ICON_NAMESPACE = 'craft';
+
+type ResolvedIcon = TemplateResult | typeof nothing;
+type LionIconResolver = (
+  iconset: string,
+  icon: string
+) =>
+  | TemplateResult
+  | Promise<TemplateResult>
+  | typeof nothing
+  | Promise<typeof nothing>;
+
+export type CraftIconResolver = (
+  name: string,
+  family: string,
+  variant: string
+) => ResolvedIcon | Promise<ResolvedIcon>;
+
+export type CraftIconUrlResolver = (
+  name: string,
+  family: string,
+  variant: string
+) => string | null;
 
 /**
- * This is mostly copied from font awesome directly because they don't seem to
- * give you a way to access the default library settings and extend them, only
- * overwrite them entirely.
- *
- * https://github.com/shoelace-style/webawesome/blob/da206a87873e3ab43ded7466a05005225aa50e69/packages/webawesome/src/components/icon/library.default.ts
+ * Module-level cache of icon fetches, keyed by URL. Failed fetches are
+ * evicted so they can retry on the next request.
+ */
+const iconCache = new Map<string, Promise<ResolvedIcon>>();
+
+function getIconset(family: string, variant: string): string {
+  return `${family}/${variant}`;
+}
+
+function parseIconset(iconset: string): {family: string; variant: string} {
+  const [family = 'classic', variant = 'regular'] = iconset.split('/');
+
+  return {family, variant};
+}
+
+async function requestIcon(url: string): Promise<ResolvedIcon> {
+  try {
+    const response = await fetch(url, {mode: 'cors'});
+
+    if (!response.ok) {
+      return nothing;
+    }
+
+    const container = document.createElement('div');
+    container.innerHTML = await response.text();
+    const svg = container.firstElementChild;
+
+    if (svg?.tagName?.toLowerCase() !== 'svg') {
+      return nothing;
+    }
+
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('part', 'svg');
+
+    return html`${unsafeSVG(svg.outerHTML)}`;
+  } catch {
+    return nothing;
+  }
+}
+
+/**
+ * Resolves an icon name to its URL under the CP's published Font Awesome
+ * assets.
  */
 export function getIconUrl(
   name: string,
   family: string = 'classic',
-  variant: string = 'regular'
+  variant: string = 'regular',
+  baseUrl: string = '/vendor/craft/icons'
 ) {
   let folder = 'solid';
   let resolvedVariant = variant;
@@ -103,17 +107,58 @@ export function getIconUrl(
     folder = 'custom-icons';
   }
 
-  resolvedName = LEGACY_NAMES[resolvedName] ?? resolvedName;
-
-  // Use the default CDN
-  return `/vendor/craft/icons/${folder}/${resolvedName}.svg`;
+  return `${baseUrl}/${folder}/${resolvedName}.svg`;
 }
 
-export function configureIcons() {
-  registerIconLibrary('default', {
-    resolver: (name: string, family = 'classic', variant = 'solid') => {
-      return getIconUrl(name, family, variant);
-    },
-    mutator: (svg) => svg.setAttribute('fill', 'currentColor'),
-  });
+export function createUrlIconResolver(
+  resolveUrl: CraftIconUrlResolver
+): CraftIconResolver {
+  return (name, family, variant) => {
+    const url = resolveUrl(name, family, variant);
+
+    if (url === null) {
+      return nothing;
+    }
+
+    let request = iconCache.get(url);
+
+    if (!request) {
+      request = requestIcon(url);
+      iconCache.set(url, request);
+    }
+
+    return request.then((icon) => {
+      if (icon === nothing) {
+        iconCache.delete(url);
+      }
+
+      return icon;
+    });
+  };
 }
+
+export const defaultIconResolver: CraftIconResolver =
+  createUrlIconResolver(getIconUrl);
+
+export function setIconResolver(resolver: CraftIconResolver) {
+  icons.removeIconResolver(CRAFT_ICON_NAMESPACE);
+  const lionResolver: LionIconResolver = (iconset, icon) => {
+    const {family, variant} = parseIconset(iconset);
+
+    return resolver(icon, family, variant) as ReturnType<LionIconResolver>;
+  };
+
+  icons.addIconResolver(CRAFT_ICON_NAMESPACE, lionResolver);
+}
+
+export function resolveIcon(
+  name: string,
+  family: string = 'classic',
+  variant: string = 'regular'
+): Promise<ResolvedIcon> {
+  return Promise.resolve(
+    icons.resolveIcon(CRAFT_ICON_NAMESPACE, getIconset(family, variant), name)
+  ) as Promise<ResolvedIcon>;
+}
+
+setIconResolver(defaultIconResolver);

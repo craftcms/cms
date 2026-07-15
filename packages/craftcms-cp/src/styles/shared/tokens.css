@@ -203,15 +203,4 @@
   --c-modal-shadow:
     0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
     0 25px 100px hsl(from var(--color-gray-900) h s l / 50%);
-
-  /**
-  Web Awesome
-   */
-  --wa-panel-border-style: solid;
-  --wa-panel-border-width: 1px;
-  --wa-color-surface-border: var(--c-color-neutral-border-quiet);
-  --wa-panel-border-color: var(--c-color-neutral-border-quiet);
-  --wa-panel-border-radius: var(--c-radius-md);
-  --wa-color-surface-raised: var(--c-surface-raised);
-  --wa-shadow-l: var(--c-shadow-lg);
 }

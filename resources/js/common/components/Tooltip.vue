@@ -27,9 +27,9 @@
     </slot>
   </craft-button>
 
-  <c-tooltip :placement="placement" :for="id">
+  <craft-tooltip :placement="placement" :for="id">
     <slot></slot>
-  </c-tooltip>
+  </craft-tooltip>
 </template>
 
 <style scoped lang="scss"></style>

@@ -39,6 +39,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use stdClass;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -118,6 +119,7 @@ readonly class Cp
             'datepickerOptions' => self::datepickerOptions($formattingLocale, $locale),
             'defaultCookieOptions' => self::defaultCookieOptions(),
             'fileKinds' => AssetsHelper::getFileKinds(),
+            'iconBaseUrl' => craftAsset('icons'),
             'language' => app()->getLocale(),
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'maxPasswordLength' => AppServiceProvider::$maxPasswordLength,
