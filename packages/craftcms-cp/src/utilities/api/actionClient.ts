@@ -65,7 +65,7 @@ actionClient.interceptors.request.use(async (config) => {
   // }
 
   return config;
-};);
+});
 
 actionClient.interceptors.response.use(
   (response) => response,
