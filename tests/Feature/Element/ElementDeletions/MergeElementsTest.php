@@ -219,10 +219,12 @@ test('dispatches find and replace jobs for entry reference tags', function () {
     app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     Queue::assertPushed(FindAndReplace::class, fn (FindAndReplace $job) => $job->find === '{entry:'.$this->mergedEntry->id.':'
-        && $job->replace === '{entry:'.$this->prevailingEntry->id.':');
+        && $job->replace === '{entry:'.$this->prevailingEntry->id.':'
+        && $job->afterCommit === true);
 
     Queue::assertPushed(FindAndReplace::class, fn (FindAndReplace $job) => $job->find === '{entry:'.$this->mergedEntry->id.'}'
-        && $job->replace === '{entry:'.$this->prevailingEntry->id.'}');
+        && $job->replace === '{entry:'.$this->prevailingEntry->id.'}'
+        && $job->afterCommit === true);
 
     Queue::assertPushed(FindAndReplace::class, 2);
 });

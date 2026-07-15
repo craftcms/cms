@@ -165,13 +165,13 @@ readonly class ElementDeletions
                     find: $refTagPrefix.$mergedElement->id.':',
                     replace: $refTagPrefix.$prevailingElement->id.':',
                     description: I18N::prep('Updating element references'),
-                ));
+                ))->afterCommit();
 
                 dispatch(new FindAndReplace(
                     find: $refTagPrefix.$mergedElement->id.'}',
                     replace: $refTagPrefix.$prevailingElement->id.'}',
                     description: $refTagPrefix.$prevailingElement->id.'}',
-                ));
+                ))->afterCommit();
             }
 
             event(new ElementsMerged($mergedElement->id, $prevailingElement->id));
