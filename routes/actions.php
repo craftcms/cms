@@ -132,7 +132,8 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
         Route::post('users/login', [LoginController::class, 'attemptLogin'])
             ->middleware('throttle:'.LoginRateLimiter::NAME);
-        Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
+        Route::post('users/login-with-passkey', [PasskeyController::class, 'login'])
+            ->middleware('throttle:'.LoginRateLimiter::NAME);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);
         Route::post('users/set-password', [SetPasswordController::class, 'store']);
