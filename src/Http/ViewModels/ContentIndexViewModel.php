@@ -287,11 +287,9 @@ class ContentIndexViewModel extends ViewModel
         return $this->resolvedSort = [['field' => 'dateCreated', 'direction' => 'desc']];
     }
 
-    public function publishableSections()
+    public function publishableSections(): array
     {
-        return SectionResource::collection(Sections::getPublishableSections())
-            ->values()
-            ->all();
+        return SectionResource::collection(Sections::getPublishableSections())->resolve();
     }
 
     /**

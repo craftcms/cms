@@ -277,17 +277,6 @@ class Sections
      * covariant under static analysis, so branch-narrowed member types stay
      * assignable — Collection's TValue is invariant and rejects them.
      *
-     * @return array<int, array{
-     *     entryTypes: array<int, array{handle: string|null, id: int, name: string, icon: string|null}>,
-     *     handle: string|null,
-     *     id: int,
-     *     name: string,
-     *     sites: array<int>,
-     *     type: SectionType|null,
-     *     uid: string|null,
-     *     canSave: bool,
-     * }>
-     *
      * @throws AuthenticationException
      */
     public function getPublishableSections(): Collection
