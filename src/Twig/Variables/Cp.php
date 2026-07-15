@@ -332,7 +332,7 @@ class Cp extends Component
      */
     public function button(array $config = []): string
     {
-        return FormFields::buttonHtml($config);
+        return FormFields::buttonFromConfig($config)->toHtml();
     }
 
     /**

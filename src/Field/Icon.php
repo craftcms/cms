@@ -137,13 +137,12 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                     ->label(t('Advanced'))
                     ->appearance(Appearance::Plain)
                     ->icon('chevron-down')
+                    ->slot('invoker')
                     ->attributes([
-                        'slot' => 'invoker',
-                        'class' => 'fieldtoggle',
+                        'class' => 'fieldtoggle justify-self-start',
                         'data' => ['target' => 'advanced'],
                         'aria-controls' => 'advanced',
-                    ])
-                    ->toHtml().
+                    ]).
                 Html::beginTag('div', [
                     'id' => 'advanced',
                     'slot' => 'content',

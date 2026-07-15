@@ -14,9 +14,9 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
+use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -208,18 +208,17 @@ readonly class ElementHtml
             $html .= $this->componentActionMenu($component);
         }
         if ($config['sortable']) {
-            $html .= FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'move-btn'],
-                'icon' => 'move',
-                'attributes' => [
+            $html .= Button::make()
+                ->icon('move')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'move-btn'],
                     'title' => t('Reorder'),
                     'aria' => [
                         'label' => t('Reorder'),
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
-                ],
-            ]);
+                ]);
         }
         $html .= Html::endTag('div'); // slot=suffix
 
@@ -508,10 +507,10 @@ JS, [
             Html::beginTag('div', ['class' => 'card-actions-container']).
             Html::beginTag('div', ['class' => 'card-actions']).
             ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
-            ($showEditButton ? FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'edit-btn'],
-                'icon' => 'edit',
-                'attributes' => [
+            ($showEditButton ? Button::make()
+                ->icon('edit')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'edit-btn'],
                     'id' => $editId,
                     'title' => mb_ucfirst(t('Edit {type}', [
                         'type' => $element::lowerDisplayName(),
@@ -521,21 +520,19 @@ JS, [
                             'type' => $element::lowerDisplayName(),
                         ])),
                     ],
-                ],
-            ]) : '').
+                ]) : '').
             ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton) : '').
-            ($config['sortable'] ? FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'move-btn'],
-                'icon' => 'move',
-                'attributes' => [
+            ($config['sortable'] ? Button::make()
+                ->icon('move')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'move-btn'],
                     'title' => t('Reorder'),
                     'aria' => [
                         'label' => t('Reorder'),
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
-                ],
-            ]) : '').
+                ]) : '').
             Html::endTag('div'). // .card-actions
             Html::endTag('div'). // .card-actions-container
             Html::endTag('div'). // .card-titlebar

@@ -120,7 +120,7 @@ describe('config deprecations', function () {
         expect($logged)->toBeTrue();
     })->with([
         'lightswitch descriptionId' => ['lightswitchHtml', ['descriptionId' => 'custom'], 'descriptionId'],
-        'button spinner' => ['buttonHtml', ['label' => 'Save', 'spinner' => true], 'spinner'],
+        'button spinner' => ['buttonFromConfig', ['label' => 'Save', 'spinner' => true], 'spinner'],
     ]);
 
     it('logs nothing for faithfully mapped configs', function () {
@@ -129,7 +129,7 @@ describe('config deprecations', function () {
         app()->scoped(Deprecator::class, fn () => $mock);
 
         FormFields::lightswitchHtml(['id' => 'ls', 'on' => true, 'label' => 'Enabled']);
-        FormFields::buttonHtml(['label' => 'Save', 'type' => 'submit', 'busyMessage' => 'Saving…']);
+        FormFields::buttonFromConfig(['label' => 'Save', 'type' => 'submit', 'busyMessage' => 'Saving…']);
         FormFields::checkboxHtml(['id' => 'cb', 'label' => 'Agree', 'checked' => true]);
         FormFields::buttonGroupHtml(['options' => [['label' => 'A', 'value' => 'a']], 'static' => true]);
 

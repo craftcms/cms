@@ -185,18 +185,14 @@ readonly class FormFields
         }
     }
 
-    public static function buttonHtml(array $config): string
-    {
-        return self::buttonFromConfig($config)->toHtml();
-    }
-
     /**
-     * Maps the legacy button config surface onto the {@see Button} component.
-     * `spinner` is absorbed (the web component renders its own spinner when
-     * loading); the busy/failure/retry/success messages pass through as data
-     * attributes for the legacy submit JS.
+     * Maps the legacy button config surface onto the {@see Button} component,
+     * the translation layer between the legacy Twig config array and the
+     * component. `spinner` is absorbed (the web component renders its own
+     * spinner when loading); the busy/failure/retry/success messages pass
+     * through as data attributes for the legacy submit JS.
      */
-    private static function buttonFromConfig(array $config): Button
+    public static function buttonFromConfig(array $config): Button
     {
         self::deprecateConfig('button', $config, [
             'spinner' => 'has been deprecated. `<craft-button>` renders its own spinner while loading.',

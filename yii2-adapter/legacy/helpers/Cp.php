@@ -32,14 +32,15 @@ use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
+
 use function CraftCms\Cms\template;
 
 /**
@@ -106,11 +107,8 @@ class Cp
     /**
      * Renders a control panel template.
      *
-     * @param string $template
-     * @param array $variables
      *
-     * @return string
-     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException if `$template` is an invalid template path
+     * @throws TemplateLoaderException if `$template` is an invalid template path
      */
     public static function renderTemplate(string $template, array $variables = []): string
     {
@@ -180,8 +178,8 @@ class Cp
     /**
      * Renders a component's chip HTML.
      *
-     * @param Chippable $component The component that the chip represents
-     * @param array $config Chip configuration
+     * @param  Chippable  $component  The component that the chip represents
+     * @param  array  $config  Chip configuration
      *
      * @since 5.0.0
      */
@@ -308,7 +306,7 @@ class Cp
     /**
      * Returns element preview HTML, for a list of elements.
      *
-     * @param ElementInterface[] $elements The elements
+     * @param  ElementInterface[]  $elements  The elements
      *
      * @since 3.6.3
      */
@@ -333,7 +331,7 @@ class Cp
     /**
      * Returns component preview HTML, for a list of components.
      *
-     * @param Chippable[] $components The components
+     * @param  Chippable[]  $components  The components
      *
      * @since 5.4.0
      */
@@ -345,7 +343,7 @@ class Cp
     /**
      * Returns the HTML for an element index.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param  class-string<ElementInterface>  $elementType
      *
      * @since 5.0.0
      */
@@ -357,7 +355,7 @@ class Cp
     /**
      * Returns a metadata component's HTML.
      *
-     * @param array $data The data, with keys representing the labels.
+     * @param  array  $data  The data, with keys representing the labels.
      */
     public static function metadataHtml(array $data): string
     {
@@ -367,7 +365,7 @@ class Cp
     /**
      * Returns a disclosure menu's HTML.
      *
-     * @param array $items The menu items.
+     * @param  array  $items  The menu items.
      *
      * @since 5.0.0
      */
@@ -389,7 +387,6 @@ class Cp
     /**
      * Normalizes menu items.
      *
-     * @return array
      *
      * @since 5.0.0
      */
@@ -401,7 +398,7 @@ class Cp
     /**
      * Returns a menu item array for the given sites.
      *
-     * @param array<int,Site|array{site:Site,status?:string}> $sites
+     * @param  array<int,Site|array{site:Site,status?:string}>  $sites
      *
      * @since 5.0.0
      */
@@ -437,11 +434,9 @@ class Cp
     /**
      * Renders a field's HTML, for the given input HTML or a template.
      *
-     * @param string|callable $input The input HTML or template path.
-     * @param array $config
+     * @param  string|callable  $input  The input HTML or template path.
      *
-     * @return string
-     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
+     * @throws TemplateLoaderException
      * @throws \InvalidArgumentException
      *
      * @since 3.5.8
@@ -456,7 +451,7 @@ class Cp
      */
     public static function buttonHtml(array $config): string
     {
-        return FormFields::buttonHtml(config: $config);
+        return FormFields::buttonFromConfig(config: $config)->toHtml();
     }
 
     /**
