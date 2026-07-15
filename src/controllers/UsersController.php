@@ -774,6 +774,10 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
+        if ($user->admin) {
+            $this->requireAdmin(false);
+        }
+
         try {
             $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
         } catch (InvalidElementException $e) {
@@ -1633,6 +1637,11 @@ JS);
                         ->email(Db::escapeParam($newEmail))
                         ->status(User::STATUS_INACTIVE)
                         ->one();
+
+                    if ($user) {
+                        // ignore their previous admin status, if they had it
+                        $user->admin = false;
+                    }
                 }
             }
 

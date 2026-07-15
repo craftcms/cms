@@ -2058,7 +2058,7 @@ XML;
                         }
                         if ($canAdministrateUsers) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
-                            if (!$this->password) {
+                            if (!$this->password && (!$this->admin || $currentUser->admin)) {
                                 $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy activation URL…'), $view);
                             }
                             $statusItems[] = [
@@ -2114,7 +2114,7 @@ XML;
                                 'userId' => $this->id,
                             ],
                         ];
-                        if ($canAdministrateUsers) {
+                        if ($canAdministrateUsers && (!$this->admin || $currentUser->admin)) {
                             $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy password reset URL…'), $view);
                         }
                     }
