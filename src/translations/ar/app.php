@@ -114,7 +114,7 @@ return [
     'Ancestors' => 'الأصول',
     'Announcements' => 'الإعلانات',
     'Any changes will be lost if you leave this page.' => 'سيتم فقدان أي تغييرات إذا غادرت هذه الصفحة.',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => 'أي شيء تم تخزينه مؤقتًا باستخدام {method}',
     'Application Info' => 'معلومات التطبيق',
     'Applied new migrations successfully.' => 'تم تطبيق الترحيلات الجديدة بنجاح.',
     'Applied “{name}”' => 'تم تطبيق "{name}"',

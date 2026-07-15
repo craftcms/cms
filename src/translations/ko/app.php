@@ -114,7 +114,7 @@ return [
     'Ancestors' => '상위 항목',
     'Announcements' => '알림',
     'Any changes will be lost if you leave this page.' => '이 페이지를 나가면 모든 변경 사항이 손실됩니다.',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => '{method}에서 캐시된 모든 항목',
     'Application Info' => '응용 프로그램 정보',
     'Applied new migrations successfully.' => '새 마이그레이션을 적용하였습니다.',
     'Applied “{name}”' => '“{name}” 적용됨',

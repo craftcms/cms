@@ -114,7 +114,7 @@ return [
     'Ancestors' => 'Överordnade objekt',
     'Announcements' => 'Tillkännagivanden',
     'Any changes will be lost if you leave this page.' => 'Ändringar kommer att gå förlorade om du lämnar sidan.',
-    'Anything cached with {method}' => 'Anything cached with {method}',
+    'Anything cached with {method}' => 'Allt cachat med {method}',
     'Application Info' => 'Programinfo',
     'Applied new migrations successfully.' => 'Har tillämpats för nya migreringar.',
     'Applied “{name}”' => 'Använt “{name}”',
