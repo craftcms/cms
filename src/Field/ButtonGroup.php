@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Components\ButtonGroup as ButtonGroupComponent;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
 use Override;
@@ -87,14 +90,36 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
                     unset($option['label']);
                 }
             }
+            unset($option);
         }
 
-        return FormFields::buttonGroupFromConfig([
-            'id' => $id,
-            'name' => $this->handle,
-            'static' => $static,
-            'options' => $options,
-            'value' => $this->encodeValue($value),
-        ])->toHtml();
+        $selectedValue = $this->encodeValue($value);
+
+        $buttons = [];
+        foreach ($options as $option) {
+            $optionValue = $option['value'] ?? null;
+            $selected = $optionValue !== null && $optionValue == $selectedValue;
+
+            $buttons[] = Button::make()
+                ->label($option['label'] ?? null)
+                ->icon($option['icon'] ?? null)
+                ->appearance('outline')
+                ->active($selected)
+                ->disabled($static)
+                ->attributes(Arr::merge([
+                    'class' => Html::explodeClass($option['class'] ?? []),
+                    'value' => $optionValue,
+                    'data' => ['value' => $optionValue],
+                    'aria' => ['pressed' => $selected ? 'true' : 'false'],
+                ], $option['attributes'] ?? []));
+        }
+
+        return ButtonGroupComponent::make()
+            ->id($id)
+            ->name($this->handle)
+            ->value($selectedValue !== null ? (string) $selectedValue : null)
+            ->disabled($static)
+            ->buttons($buttons)
+            ->toHtml();
     }
 }
