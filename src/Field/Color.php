@@ -203,7 +203,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 'on' => $this->allowCustomColors,
                 'disabled' => $readOnly,
             ]).
-            Html::endTag('cms-field-group');
+            Html::endTag('craft-field-group');
     }
 
     #[Override]
