@@ -1565,6 +1565,23 @@ class AssetsController extends Controller
                 ['id' => $assetIds],
                 ['folderId' => array_unique($folderIds)],
             ]);
+
+        // make sure the user has permission to move each of these assets
+        $volumeIds = (clone $query)
+            ->select(['volumeId'])
+            ->groupBy(['volumeId'])
+            ->column();
+
+        $volumesService = Craft::$app->getVolumes();
+
+        foreach ($volumeIds as $volumeId) {
+            $volume = $volumesService->getVolumeById($volumeId);
+            if ($volume) {
+                $this->requireVolumePermission('savePeerAssets', $volume->uid);
+                $this->requireVolumePermission('deletePeerAssets', $volume->uid);
+            }
+        }
+
         $count = (int)$query->count();
         $totalSize = (int)$query->sum('[[size]]');
 
