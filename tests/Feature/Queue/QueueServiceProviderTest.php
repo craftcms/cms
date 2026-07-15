@@ -10,6 +10,20 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Event;
 
+it('keeps retry windows safely above Craft job timeouts', function () {
+    config()->set('queue.connections', [
+        'database' => ['driver' => 'database', 'retry_after' => 90],
+        'redis' => ['driver' => 'redis', 'retry_after' => 600],
+        'sqs' => ['driver' => 'sqs'],
+    ]);
+
+    app()->register(QueueServiceProvider::class, force: true);
+
+    expect(config('queue.connections.database.retry_after'))->toBe(360)
+        ->and(config('queue.connections.redis.retry_after'))->toBe(600)
+        ->and(config('queue.connections.sqs'))->not->toHaveKey('retry_after');
+});
+
 it('registers JobProgressService as singleton', function () {
     $service1 = app(JobProgress::class);
     $service2 = app(JobProgress::class);
