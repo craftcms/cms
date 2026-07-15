@@ -8,8 +8,10 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\UnableToListContents;
 
 it('resolves legacy bridge disks after Laravel rebinds the driver creator', function() {
     $filesystem = new LegacyFilesystemCompatibilityTestFs([
@@ -17,24 +19,7 @@ it('resolves legacy bridge disks after Laravel rebinds the driver creator', func
         'handle' => 'legacy-compatibility',
     ]);
 
-    app()->instance(FilesystemsService::class, new class($filesystem) extends FilesystemsService {
-        public function __construct(
-            private readonly FsInterface $filesystem,
-        ) {
-        }
-
-        public function getFilesystemByHandle(string $handle): ?FsInterface
-        {
-            return $handle === $this->filesystem->handle ? $this->filesystem : null;
-        }
-    });
-
-    new FilesystemCompatibility()->register(app());
-
-    config()->set('filesystems.disks.legacy-compatibility', [
-        'driver' => 'craft-fs-bridge',
-        'fsHandle' => 'legacy-compatibility',
-    ]);
+    $filesystem->register();
 
     $disk = Storage::disk('legacy-compatibility');
 
@@ -42,9 +27,87 @@ it('resolves legacy bridge disks after Laravel rebinds the driver creator', func
         ->and($disk->get('legacy.txt'))->toBe('legacy');
 });
 
+it('generates permanent URLs with the scoped prefix once', function() {
+    $filesystem = new LegacyFilesystemCompatibilityTestFs([
+        'name' => 'Legacy Compatibility',
+        'handle' => 'legacy-compatibility',
+        'hasUrls' => true,
+        'url' => 'https://assets.example.test/root/',
+    ]);
+    $filesystem->register();
+
+    $disk = Storage::build([
+        'driver' => 'scoped',
+        'disk' => 'legacy-compatibility',
+        'prefix' => 'volume',
+    ]);
+
+    expect($disk->url('images/photo.jpg'))
+        ->toBe('https://assets.example.test/root/volume/images/photo.jpg');
+});
+
+it('fails when legacy listings contain invalid values', function() {
+    $filesystem = new LegacyFilesystemCompatibilityTestFs([
+        'name' => 'Legacy Compatibility',
+        'handle' => 'legacy-compatibility',
+    ]);
+    $filesystem->listingValues = ['invalid'];
+    $filesystem->register();
+
+    expect(fn() => Storage::disk('legacy-compatibility')->listContents('', true)->toArray())
+        ->toThrow(UnableToListContents::class);
+});
+
+it('logs one actionable deprecation per concrete legacy filesystem class', function() {
+    $filesystem = new LegacyFilesystemCompatibilityTestFs([
+        'name' => 'Legacy Compatibility',
+        'handle' => 'legacy-compatibility',
+    ]);
+    $filesystem->register();
+    config()->set('filesystems.disks.legacy-compatibility-copy', [
+        'driver' => 'craft-fs-bridge',
+        'fsHandle' => 'legacy-compatibility',
+    ]);
+
+    Storage::disk('legacy-compatibility');
+    Storage::disk('legacy-compatibility-copy');
+
+    $logs = collect(Deprecator::getRequestLogs())
+        ->where('key', 'filesystem-bridge:' . LegacyFilesystemCompatibilityTestFs::class)
+        ->values();
+
+    expect($logs)->toHaveCount(1)
+        ->and($logs[0]->message)
+        ->toContain('getDiskConfig()');
+});
+
 class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsInterface
 {
     private array $files = [];
+
+    public array $listingValues = [];
+
+    public function register(): void
+    {
+        app()->instance(FilesystemsService::class, new class($this) extends FilesystemsService {
+            public function __construct(
+                private readonly FsInterface $filesystem,
+            ) {
+            }
+
+            public function getFilesystemByHandle(string $handle): ?FsInterface
+            {
+                return $handle === $this->filesystem->handle ? $this->filesystem : null;
+            }
+        });
+
+        new FilesystemCompatibility()->register(app());
+
+        config()->set('filesystems.disks.' . $this->handle, [
+            'driver' => 'craft-fs-bridge',
+            'fsHandle' => $this->handle,
+        ]);
+    }
 
     public function getDiskConfig(): array
     {
@@ -54,8 +117,12 @@ class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsIn
         ];
     }
 
-    public function getFileList(string $directory = '', bool $recursive = true): \Generator
+    public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
+        foreach ($this->listingValues as $value) {
+            yield $value;
+        }
+
         foreach ($this->files as $path => $contents) {
             yield new FsListing([
                 'dirname' => dirname($path) === '.' ? '' : dirname($path),

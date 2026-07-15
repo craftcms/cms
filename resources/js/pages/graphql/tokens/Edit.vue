@@ -16,6 +16,7 @@
     update,
   } from '@actions/Gql/TokensController';
   import {useForm, useHttp} from '@inertiajs/vue3';
+  import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 
   type TokenData = Pick<
     CraftCms.Cms.Gql.Data.GqlToken,
@@ -57,7 +58,9 @@
   const routeAction = () =>
     props.token.id ? update({tokenId: props.token.id}) : store();
 
-  const {save} = useSettingsSave(form, routeAction);
+  const {save} = useSettingsSave(form, routeAction, {
+    passwordConfirmation: {required: () => true},
+  });
 
   useAppLayout({form, onSave: save});
 
@@ -72,7 +75,7 @@
     const tokenId = props.token.id;
 
     if (!visibleAccessToken.value && tokenId) {
-      (Craft as any).elevatedSessionManager.requireElevatedSession(async () => {
+      await elevatedSessionManager.run(async () => {
         await revealToken(tokenId);
         await nextTick();
         await copyButton.value?.copyValue();

@@ -31,7 +31,7 @@
   }
 
   const props = defineProps<{
-    filesystems: Array<FileSystemData>;
+    filesystems: {data: Array<FileSystemData>};
     readOnly: boolean;
   }>();
 
@@ -85,7 +85,7 @@
   ]);
   const table = useVueTable<FileSystemData>({
     get data() {
-      return props.filesystems;
+      return props.filesystems.data;
     },
     get columns() {
       return columns.value;

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
@@ -129,7 +130,8 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
             Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
         });
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
-        Route::post('users/login', [LoginController::class, 'attemptLogin']);
+        Route::post('users/login', [LoginController::class, 'attemptLogin'])
+            ->middleware('throttle:'.LoginRateLimiter::NAME);
         Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);
@@ -141,6 +143,9 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
+        Route::post('users/confirm-password', [SessionInfoController::class, 'confirmPassword'])
+            ->middleware(['auth', 'can:accessCp'])
+            ->block();
         Route::middleware(
             in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
         )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
@@ -168,7 +173,6 @@ Route::prefix($routes->actionTriggerRoutePrefix())->group(function () {
     });
 
     Route::middleware([RequireToken::class])->group(function () {
-        Route::any('preview/preview', [PreviewController::class, 'preview'])->name('preview');
         Route::any('users/impersonate-with-token', [ImpersonationController::class, 'withToken']);
     });
 });

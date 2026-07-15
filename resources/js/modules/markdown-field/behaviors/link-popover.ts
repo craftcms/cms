@@ -81,7 +81,7 @@ export function createLinkPopoverController(
       suspend as EventListener
     );
     linkField.addEventListener('element-select-end', resume);
-    popover.addEventListener('wa-after-hide', handlePopoverAfterHide);
+    popover.addEventListener('craft-after-hide', handlePopoverAfterHide);
 
     setDisclosureState(trigger, false);
     void showPopover(popover);
@@ -237,7 +237,7 @@ export function createLinkPopoverController(
     }
 
     currentPopover?.removeEventListener(
-      'wa-after-hide',
+      'craft-after-hide',
       handlePopoverAfterHide
     );
     currentPopover?.remove();

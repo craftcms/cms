@@ -83,6 +83,29 @@ describe('generateFallback', function () {
             ->assertStatus(400);
     });
 
+    it('serves originals from within the volume subpath', function () {
+        $volume = Volume::factory()->create([
+            'fs' => 'disk:test-disk',
+            'subpath' => 'assets',
+        ]);
+        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => 'subpath-original.jpg',
+            'kind' => 'image',
+        ]);
+        $sourceDisk = $asset->getVolume()->sourceDisk();
+        $sourceDisk->put($asset->getPath(), 'original-bytes');
+        $transform = Crypt::encrypt($asset->id.',original');
+
+        $response = get(action([TransformController::class, 'generateFallback'], ['transform' => $transform]))
+            ->assertOk();
+
+        expect($response->baseResponse->getFile()->getRealPath())
+            ->toBe(realpath($sourceDisk->path($asset->getPath())));
+    });
+
     it('serves fallback transform files for valid encrypted transforms', function () {
         $asset = AssetModel::factory()->create([
             'volumeId' => test()->volume->id,

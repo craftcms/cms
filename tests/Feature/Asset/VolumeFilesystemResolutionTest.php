@@ -261,7 +261,7 @@ it('supports macro-backed legacy methods and property assignment', function () {
 
     expect($volume->getFsHandle(false))->toBe('disk:macro-disk')
         ->and($volume->getTransformFsHandle(false))->toBe('disk:macro-disk')
-        ->and($volume->getResolvedFsTarget())->toBe('disk:macro-disk')
+        ->and($volume->getResolvedFsTarget())->toBe('macro-disk')
         ->and($volume->getSubpath())->toBe('initial/')
         ->and($volume->getFs())->toBeInstanceOf(DiskFilesystem::class);
 

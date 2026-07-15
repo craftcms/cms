@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -9,6 +10,7 @@ use CraftCms\Cms\Http\Controllers\Auth\OAuthController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\SiteRouteController;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Cms\Site\Sites;
@@ -29,7 +31,8 @@ if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::isInstalled()) {
         foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
             Route::get($path, [LoginController::class, 'showLogin']);
-            Route::post($path, [LoginController::class, 'attemptLogin']);
+            Route::post($path, [LoginController::class, 'attemptLogin'])
+                ->middleware('throttle:'.LoginRateLimiter::NAME);
         }
 
         foreach ($routes->localizedConfigPaths('getVerifyEmailPath') as $path) {
@@ -69,6 +72,4 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
     });
 }
 
-Route::fallback(function () {
-    abort(404);
-});
+Route::fallback(SiteRouteController::class)->name('siteFallback');
