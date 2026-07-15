@@ -59,4 +59,20 @@ abstract class MutationResolver extends Component
             throw new Error('Unable to perform the action.');
         }
     }
+
+    /**
+     * Check if the schema has access to the given site and throw an exception if not.
+     *
+     * @throws Error
+     */
+    protected function requireAllowedSite(int $siteId): void
+    {
+        foreach (GqlHelper::getAllowedSites() as $site) {
+            if ($siteId === $site->id) {
+                return;
+            }
+        }
+
+        throw new Error('Unable to perform the action.');
+    }
 }

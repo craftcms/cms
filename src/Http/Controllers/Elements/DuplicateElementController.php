@@ -81,7 +81,7 @@ readonly class DuplicateElementController
 
         // If the original element is a provisional draft,
         // delete the draft as the changes are likely no longer wanted.
-        if ($this->request->boolean('deleteProvisionalDraft') && $element->isProvisionalDraft) {
+        if ($this->request->boolean('deleteProvisionalDraft') && $element->isProvisionalDraft && Gate::check('delete', $element)) {
             $this->elements->deleteElement($element);
         }
 
