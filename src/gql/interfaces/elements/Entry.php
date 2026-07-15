@@ -267,13 +267,13 @@ class Entry extends Structure
         }
 
         if (Gql::canQueryDrafts()) {
-            $fields = array_merge($fields, array_filter([
-                'draftCreator' => Gql::canQueryUsers() ? [
+            $fields = array_merge($fields, [
+                'draftCreator' => [
                     'name' => 'draftCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given draft.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ] : null,
+                ],
                 'drafts' => [
                     'name' => 'drafts',
                     'args' => $sectionFieldArguments,
@@ -281,17 +281,17 @@ class Entry extends Structure
                     'description' => 'The drafts for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
-            ]));
+            ]);
         }
 
         if (Gql::canQueryRevisions()) {
-            $fields = array_merge($fields, array_filter([
-                'revisionCreator' => Gql::canQueryUsers() ? [
+            $fields = array_merge($fields, [
+                'revisionCreator' => [
                     'name' => 'revisionCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given revision.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ] : null,
+                ],
                 'currentRevision' => [
                     'name' => 'currentRevision',
                     'type' => EntryInterface::getType(),
@@ -305,7 +305,7 @@ class Entry extends Structure
                     'description' => 'The revisions for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
-            ]));
+            ]);
         }
         return $fields;
     }
