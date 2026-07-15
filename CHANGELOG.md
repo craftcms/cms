@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.18.5 - 2026-07-15
 
 - `craft\services\Sites::getGroupById()` now has a `$withTrashed` argument.
 - Fixed an error that could occur when applying project config changes, if a site group was deleted. ([#19076](https://github.com/craftcms/cms/issues/19076))
