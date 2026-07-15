@@ -2,60 +2,61 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http\Middleware;
+namespace CraftCms\Cms\Http\Controllers;
 
-use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\ControllerRoute;
-use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Route\MatchedElement;
+use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 use function CraftCms\Cms\t;
 
-readonly class HandleMatchedElementRoute
+readonly class SiteRouteController
 {
     public function __construct(
         private Elements $elements,
         private Sites $sites,
     ) {}
 
-    public function handle(Request $request, Closure $next): mixed
+    public function __invoke(Request $request): Response
     {
+        $request->route()?->forgetParameter('fallbackPlaceholder');
+
         if (! Cms::isInstalled() || ! $request->isSiteRequest() || $request->isActionRequest() || Cms::config()->headlessMode) {
-            return $next($request);
+            return response(status: 404);
         }
 
         $this->enforceOfflineAccess($request);
-
         $path = $this->sites->getRequestPath($request);
 
+        return $this->matchElement($request, $path) ?? response(status: 404);
+    }
+
+    private function matchElement(Request $request, string $path): ?Response
+    {
         if ($path === Element::HOMEPAGE_URI) {
-            return $next($request);
+            return null;
         }
 
         $element = $this->elements->getElementByUri($path, $this->sites->getCurrentSite()->id, true);
 
-        if (! $element) {
-            return $next($request);
+        if (! $element || ! $route = $element->getRoute()) {
+            return null;
         }
 
-        $route = $element->getRoute();
-
-        if (! $route) {
-            return $next($request);
-        }
+        MatchedElement::set($element, $route);
 
         if ($route instanceof ControllerRoute) {
-            MatchedElement::set($element, $route);
-
             return $route->handle($request, $element);
         }
 
@@ -63,11 +64,25 @@ readonly class HandleMatchedElementRoute
             $route = [$route, []];
         }
 
-        $routeParams = is_array($route[1] ?? null) ? $route[1] : [];
+        $params = Arr::get($route, 1, []);
+        $params = is_array($params) ? $params : [];
 
-        MatchedElement::set($element, $route);
+        if (Arr::get($route, 0) === 'templates/render') {
+            $variables = Arr::get($params, 'variables', []);
+            $template = Arr::get($params, 'template');
 
-        return new DynamicRoute($route[0], $routeParams + ['publicOnly' => false])->handle($request);
+            if (! is_string($template) || $template === '') {
+                return null;
+            }
+
+            return new TemplateRoute(
+                $template,
+                is_array($variables) ? $variables : [],
+                publicOnly: false,
+            )->handle($request);
+        }
+
+        return response(status: 404);
     }
 
     private function enforceOfflineAccess(Request $request): void

@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Uri;
 
 beforeEach(function () {
     $this->middleware = app(HandleTokenRequest::class);
@@ -37,6 +37,8 @@ it('adds the token to the context', function () {
     expect(Context::getHidden(HandleTokenRequest::TOKEN_KEY))
         ->not()
         ->toBeNull();
+
+    expect(Request::create('foo')->getHadToken())->toBeTrue();
 });
 
 it('does nothing more when the token does not return a route', function () {
@@ -46,7 +48,7 @@ it('does nothing more when the token does not return a route', function () {
 
     expect($result)->toBe('bar');
     expect(Context::getHidden(HandleTokenRequest::TOKEN_KEY))->toBeNull();
-    expect(Context::getHidden(HandleTokenRequest::ORIGINAL_URI_KEY))->toBeNull();
+    expect(Request::create('foo')->getHadToken())->toBeFalse();
 });
 
 it('does not let an unknown token satisfy token-required routes', function () {
@@ -73,10 +75,28 @@ it('returns the response of the token route', function () {
     });
 
     expect($result)->toBe('token/route');
+});
 
-    /** @var ?Uri $originalUri */
-    $originalUri = Context::getHidden(HandleTokenRequest::ORIGINAL_URI_KEY);
+it('rebinds the request after resolving a token route', function () {
+    $token = app(RouteTokens::class)->createToken('token/route');
 
-    expect($originalUri)->not()->toBeNull();
-    expect($originalUri->value())->toBe(url('foo'));
+    $rebound = $this->middleware->handle(Request::create('foo', parameters: [
+        Cms::config()->tokenParam => $token,
+    ]), fn (Request $request) => request() === $request);
+
+    expect($rebound)->toBeTrue();
+});
+
+it('does not let a hidden action parameter override a resolved token route', function () {
+    $token = app(RouteTokens::class)->createToken('token/route');
+
+    $path = $this->middleware->handle(Request::create('foo', 'POST', [
+        Cms::config()->tokenParam => $token,
+        'action' => 'users/save-user',
+    ]), fn (Request $request) => app(HandleActionRequest::class)->handle(
+        $request,
+        fn (Request $request) => $request->path(),
+    ));
+
+    expect($path)->toBe('token/route');
 });

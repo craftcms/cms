@@ -20,7 +20,8 @@ export default class CraftBadgeIndicator extends LitElement {
   @property({attribute: 'badge-count'}) badgeCount: number | null = null;
 
   /** Visually hidden text that comes after the count to provide additional context. */
-  @property({attribute: 'badge-count-suffix'}) badgeCountSuffix: string | null = null;
+  @property({attribute: 'badge-count-suffix'}) badgeCountSuffix: string | null =
+    null;
 
   /** Theme variant of the badge indicator. Defaults to "primary" */
   @property() variant: 'primary' | 'secondary' | 'inverse' = 'primary';

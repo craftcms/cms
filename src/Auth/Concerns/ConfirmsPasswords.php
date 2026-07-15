@@ -20,14 +20,14 @@ trait ConfirmsPasswords
     {
         abort_unless(
             $this->isPasswordConfirmed(),
-            403,
+            423,
             $message ?? t('This action may only be performed with an elevated session.')
         );
     }
 
     protected function isPasswordConfirmed(): bool
     {
-        $maximumSecondsSinceConfirmation = config('auth.password_timeout', 900);
+        $maximumSecondsSinceConfirmation = $this->passwordConfirmationDuration();
 
         if ($maximumSecondsSinceConfirmation === -1) {
             return true;
@@ -39,7 +39,7 @@ trait ConfirmsPasswords
     protected function confirmedPasswordTimeout(): int|false
     {
         if (Auth::check()) {
-            $maximumSecondsSinceConfirmation = config('auth.password_timeout', 300);
+            $maximumSecondsSinceConfirmation = $this->passwordConfirmationDuration();
             $confirmedAt = Session::get('auth.password_confirmed_at');
 
             if ($confirmedAt !== null) {
@@ -53,10 +53,15 @@ trait ConfirmsPasswords
         }
 
         // If it has been disabled, return false.
-        if (config('auth.password_timeout') === -1) {
+        if ($this->passwordConfirmationDuration() === -1) {
             return false;
         }
 
         return 0;
+    }
+
+    private function passwordConfirmationDuration(): int
+    {
+        return (int) config('auth.password_timeout', 300);
     }
 }

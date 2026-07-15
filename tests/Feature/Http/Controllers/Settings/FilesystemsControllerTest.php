@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
@@ -49,9 +52,21 @@ test('requires authentication for delete', function () {
 });
 
 test('index lists all filesystems', function () {
+    $fs = Filesystems::createFilesystem([
+        'type' => Local::class,
+        'name' => 'Indexed Filesystem',
+        'handle' => 'indexedFilesystem',
+        'settings' => [
+            'path' => sys_get_temp_dir().'/indexed-filesystem',
+        ],
+    ]);
+    Filesystems::saveFilesystem($fs);
+
     get(action([FilesystemsController::class, 'index']))
         ->assertOk()
-        ->assertSee(t('Filesystems'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('filesystems.data', 1)
+            ->where('filesystems.data.0.handle', 'indexedFilesystem'));
 });
 
 test('index shows read-only flag when allowAdminChanges is false', function () {
@@ -136,12 +151,12 @@ test('edit loads filesystem and shows actions when not in read-only mode', funct
 
 test('save creates filesystem with valid data', function () {
     $response = postJson(action([FilesystemsController::class, 'save']), [
-        'type' => 'craft\fs\Local',
+        'type' => Local::class,
         'name' => 'New Test Filesystem',
         'handle' => 'newTestFilesystem',
         'types' => [
-            'craft-fs-Local' => [
-                'path' => '@webroot/test-uploads',
+            Html::id(Local::class) => [
+                'path' => sys_get_temp_dir().'/test-uploads',
             ],
         ],
     ]);
@@ -152,6 +167,9 @@ test('save creates filesystem with valid data', function () {
     $fs = Filesystems::getFilesystemByHandle('newTestFilesystem');
     expect($fs)->not()->toBeNull();
     expect($fs->name)->toBe('New Test Filesystem');
+    expect($fs->getSettings())->toBe([
+        'path' => File::normalizePath(sys_get_temp_dir().'/test-uploads', '/'),
+    ]);
 });
 
 test('save ignores null transient filesystem settings', function () {

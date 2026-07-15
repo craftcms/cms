@@ -33,7 +33,7 @@ class CpModalResponse implements Responsable
     /**
      * @var array Custom attributes to add to the `<form>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
      * @see formAttributes()
      */

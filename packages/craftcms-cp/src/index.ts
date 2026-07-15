@@ -1,5 +1,4 @@
 import '@github/relative-time-element';
-import {configureIcons} from './utilities/icons';
 
 // Types
 import './types/globals.js';
@@ -26,9 +25,6 @@ export {default as CraftCopyAttribute} from './components/copy-attribute/copy-at
 export {default as CraftCopyButton} from './components/copy-button/copy-button.js';
 export {default as CraftDialog} from './components/dialog/dialog.js';
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
-export {default as CraftDrawer} from './components/drawer/drawer.js';
-export {default as CraftDropdown} from './components/dropdown/dropdown.js';
-export {default as CraftField} from './components/field/field.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export {default as CraftIcon} from './components/icon/icon.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';
@@ -72,6 +68,7 @@ export {default as CraftVisuallyHidden} from './components/visually-hidden/visua
 export * from './utilities/cookies.js';
 export * from './utilities/translate.js';
 export * from './utilities/format.js';
+export * from './utilities/icons.js';
 export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
 export * from './utilities/string.js';
@@ -107,5 +104,3 @@ export {default as visuallyHiddenStyles} from './styles/visually-hidden.styles.j
 export * from './constants/variants';
 export * from './constants/appearances';
 export * from './constants/colors';
-
-configureIcons();

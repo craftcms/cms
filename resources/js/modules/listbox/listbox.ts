@@ -246,8 +246,6 @@ export class Listbox extends Base<ListboxSettings> {
   }
 }
 
-
-
 function isPlainObject(val: unknown): val is Record<string, unknown> {
   return (
     typeof val === 'object' &&

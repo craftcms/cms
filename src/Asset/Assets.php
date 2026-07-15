@@ -25,22 +25,21 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\FallbackTransformer;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
-use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
@@ -50,10 +49,10 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 class Assets
 {
-    /** @var VolumeFolder[] */
+    /** @var array<int|string, VolumeFolder> */
     private array $userTempFolders = [];
 
     public function __construct(
@@ -184,7 +183,7 @@ class Assets
 
         if (
             ! $isWebSafe ||
-            ! $asset->getVolume()->getFs()->hasUrls ||
+            ! $asset->getVolume()->sourceHasUrls() ||
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
@@ -309,7 +308,9 @@ class Assets
         $handle = Env::parse(Cms::config()->tempAssetUploadFs);
 
         if (! $handle) {
-            return new Temp;
+            return new Temp([
+                'handle' => 'disk:'.FilesystemsService::TEMP_ASSET_DISK,
+            ]);
         }
 
         return Filesystems::resolve($handle)
@@ -323,17 +324,7 @@ class Assets
     {
         $handle = Env::parse(Cms::config()->tempAssetUploadFs);
 
-        if (! $handle) {
-            return Storage::build([ // @phpstan-ignore return.type
-                'driver' => 'local',
-                'root' => Path::tempAssetUploads(),
-            ]);
-        }
-
-        return Storage::disk(
-            Filesystems::resolveDiskName($handle)
-                ?? throw new RuntimeException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle")
-        );
+        return Filesystems::disk($handle ?: 'disk:'.FilesystemsService::TEMP_ASSET_DISK);
     }
 
     public function createTempAssetQuery(): AssetQuery

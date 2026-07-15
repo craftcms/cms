@@ -149,7 +149,7 @@ export default class CraftCopyButton extends LitElement {
 
   override render() {
     return html`
-      <c-tooltip for="${this.id}">${this.tooltipLabel}</c-tooltip>
+      <craft-tooltip for="${this.id}">${this.tooltipLabel}</craft-tooltip>
       <button
         type="button"
         id="${this.id}"

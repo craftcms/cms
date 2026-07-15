@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Url;
 use Deprecated;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -206,7 +207,7 @@ readonly class SectionsController
         $section->setSiteSettings($allSiteSettings);
 
         if (! $sections->saveSection($section)) {
-            return $this->asModelFailure($section, t('Couldn’t save section.'), 'section');
+            throw ValidationException::withMessages($section->errors()->getMessages());
         }
 
         return $this->asSuccess(t('Section saved.'));

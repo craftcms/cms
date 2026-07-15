@@ -227,7 +227,7 @@ interface PluginInterface
     /**
      * Returns the settings page response.
      *
-     * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
+     * @return mixed The response returned by [[\CraftCms\Cms\Http\Controllers\PluginsController::editSettings()]]
      */
     public function getSettingsResponse(): mixed;
 
@@ -236,7 +236,7 @@ interface PluginInterface
      *
      * This method is called when admin changes are disallowed, if [[$hasReadOnlyCpSettings]] is `true`.
      *
-     * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
+     * @return mixed The response returned by [[\CraftCms\Cms\Http\Controllers\PluginsController::editSettings()]]
      */
     public function getReadOnlySettingsResponse(): mixed;
 

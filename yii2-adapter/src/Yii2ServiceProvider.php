@@ -11,9 +11,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
+use CraftCms\Cms\Http\Middleware\HandleActionRequest;
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
+use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -28,7 +31,9 @@ use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
+use CraftCms\Yii2Adapter\Http\HandleYiiSiteRouteFallback;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
@@ -57,6 +62,12 @@ class Yii2ServiceProvider extends ServiceProvider
     {
         new ClassAliases()->register();
         new MultiEnvironmentConfigCompatibility()->register($this->app);
+
+        $appType = $this->app->runningInConsole() ? 'console' : 'web';
+        Config::set('craft.general', new GeneralConfigCompatibility()->convert(
+            Config::get('craft.general', []),
+            Config::get("craft.general.{$appType}"),
+        ));
 
         $this->registerConstants();
 
@@ -187,8 +198,22 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->app->make(HttpKernel::class)->prependMiddleware(CaptureOriginalActionRequestUri::class);
+        $kernel = $this->app->make(HttpKernel::class);
+        $middleware = array_values(array_filter(
+            $kernel->getGlobalMiddleware(),
+            fn(string $middleware) => $middleware !== HandleActionRequest::class,
+        ));
+        $tokenIndex = array_search(HandleTokenRequest::class, $middleware, true);
+
+        array_splice($middleware, $tokenIndex === false ? 0 : $tokenIndex + 1, 0, [
+            NormalizeLegacyPath::class,
+            HandleActionRequest::class,
+        ]);
+
+        $kernel->setGlobalMiddleware($middleware);
+        $kernel->prependMiddleware(CaptureOriginalActionRequestUri::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft', PrepareLegacyCraftApp::class);
+        $this->app->make(Router::class)->pushMiddlewareToGroup('craft.web', HandleYiiSiteRouteFallback::class);
 
         $this->commands([
             AddCategoriesSupportCommand::class,

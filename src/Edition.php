@@ -112,12 +112,7 @@ enum Edition: int implements Arrayable
 
         $cacheKey = sprintf('editionTestableDomain@%s', Request::host());
 
-        if (! Cache::has($cacheKey)) {
-            // err on the side of allowing it
-            return true;
-        }
-
-        return (bool) Cache::get($cacheKey);
+        return (bool) Cache::get($cacheKey, true);
     }
 
     public static function canUpgrade(): bool

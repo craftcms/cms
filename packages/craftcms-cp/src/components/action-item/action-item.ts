@@ -6,7 +6,12 @@ import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
 import '../shortcut/shortcut.js';
-import {type ActionFeedback, type BaseAction, type FeedbackData, runAction,} from '@src/actions';
+import {
+  type ActionFeedback,
+  type BaseAction,
+  type FeedbackData,
+  runAction,
+} from '@src/actions';
 import {Variant, type VariantKey} from '@src/constants/variants';
 
 /**
@@ -40,7 +45,8 @@ export default class CraftActionItem extends LitElement {
   @property() type: 'button' | 'checkbox' = 'button';
   @property({type: Object}) action: BaseAction | null = null;
   @property({type: Object}) feedback: ActionFeedback | null = null;
-  @property({type: Number, attribute: 'feedback-duration'}) feedbackDuration: number = 1000;
+  @property({type: Number, attribute: 'feedback-duration'})
+  feedbackDuration: number = 1000;
   @property() confirm: string | null = null;
 
   @state() private state: AsyncState = AsyncStates.Idle;

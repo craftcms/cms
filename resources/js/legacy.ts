@@ -7,16 +7,19 @@ import './modules/auth/components/set-password/set-password-form.js';
 import './modules/auth/components/verify-email/verify-email-form.js';
 import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
+import {mountElevatedSessionHost} from './modules/auth/elevated-session';
 
 import './modules/listbox/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
 import './modules/editable-table/index';
-import './modules/grouped-entry-type-manager/index'
+import './modules/grouped-entry-type-manager/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
 window.Cp = Cp;
+
+mountElevatedSessionHost();
 
 /**
  * Components - dynamically imported after Craft is initialized

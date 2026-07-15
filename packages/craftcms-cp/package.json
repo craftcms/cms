@@ -25,7 +25,9 @@
     "check:format": "prettier --check ./src",
     "check:exports": "attw --pack .",
     "check:types": "tsc --noEmit",
+    "prestorybook": "npm run build:manifest",
     "storybook": "storybook dev -p 6006",
+    "prebuild:storybook": "npm run build:manifest",
     "build:storybook": "storybook build",
     "build:manifest": "custom-elements-manifest analyze --litelement --outdir dist",
     "generate:vue-wrappers": "node ./scripts/generate-vue-wrappers.js",
@@ -68,14 +70,12 @@
   },
   "homepage": "https://github.com/craftcms/npm-packages#readme",
   "peerDependencies": {
-    "@awesome.me/webawesome": "^3.0.0",
     "@lion/ui": "0.x",
     "lit": "3.x"
   },
   "devDependencies": {
     "@adobe/leonardo-contrast-colors": "^1.1.0",
     "@arethetypeswrong/cli": "^0.18.2",
-    "@awesome.me/webawesome": "^3.6.0",
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@lion/ui": "^0.16.1",
     "@shoelace-style/shoelace": "^2.20.1",

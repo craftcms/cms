@@ -68,6 +68,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
@@ -99,7 +100,7 @@ use function CraftCms\Cms\t;
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  */
 #[Ruleset(UserRules::class)]
-class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, MustVerifyEmailContract
+class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, MustVerifyEmailContract
 {
     use Authenticatable {
         getAuthPassword as getAuthPasswordAuthenticatable;
@@ -1646,6 +1647,11 @@ JS, [
     public function getPreferredLanguage(): ?string
     {
         return $this->_validateLocale($this->getPreference('language'), false);
+    }
+
+    public function preferredLocale(): ?string
+    {
+        return $this->getPreferredLanguage();
     }
 
     /**

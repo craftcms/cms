@@ -671,7 +671,7 @@ class Assets extends BaseRelationField
 
                     $volume = Volumes::getVolumeByUid($volumeUid);
 
-                    return $volume?->getFs() instanceof Temp;
+                    return $volume?->isTemporary() ?? false;
                 })
                 ->values()
                 ->all();
@@ -686,13 +686,11 @@ class Assets extends BaseRelationField
         $variables = parent::inputTemplateVariables($value, $element);
 
         $uploadVolume = $this->_uploadVolume();
-        $uploadFs = $uploadVolume?->getFs();
-        $variables['fsType'] = $uploadFs::class;
+        $variables['fsType'] = $uploadVolume?->sourceFilesystemType();
         $variables['showFolders'] = ! $this->restrictLocation || $this->allowSubfolders;
         $variables['canUpload'] = (
             $this->allowUploads &&
             $uploadVolume &&
-            $uploadFs &&
             Gate::check("saveAssets:$uploadVolume->uid")
         );
         $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;

@@ -222,20 +222,14 @@ it('redirects to the saved token edit page when saving and continuing', function
     $response->assertRedirect(Url::cpUrl("graphql/tokens/$token->id"));
 });
 
-it('returns model errors for json validation failures', function () {
+it('returns inertia validation errors for token save failures', function () {
     $schema = createSchemaForTokensControllerTest();
 
-    postJson(action([TokensController::class, 'store']), [
+    post(action([TokensController::class, 'store']), [
         'accessToken' => 'missing-name-token-json',
         'enabled' => true,
         'schema' => $schema->id,
-    ])->assertStatus(400)
-        ->assertJsonStructure([
-            'modelName',
-            'modelClass',
-            'token',
-            'errors' => ['name'],
-        ]);
+    ])->assertSessionHasErrors('name');
 });
 
 it('requires a tokenId before deletion', function () {

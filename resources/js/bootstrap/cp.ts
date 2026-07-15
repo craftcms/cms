@@ -19,6 +19,7 @@ import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
+import {configureIcons} from './icons.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -92,6 +93,7 @@ const Cp = {
 
   init() {
     config.initialize(this.initialConfig);
+    configureIcons(config.get('iconBaseUrl', '/vendor/craft/icons'));
 
     setUrlDefaults(() => ({
       cpTrigger: routeSegment(config.get('cpTrigger')),
