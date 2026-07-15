@@ -198,7 +198,7 @@ test('logout logs the user out and redirects', function () {
 
     expect(Auth::check())->toBeTrue();
 
-    get(action([LoginController::class, 'logout']))
+    post(action([LoginController::class, 'logout']))
         ->assertRedirect();
 
     expect(Auth::check())->toBeFalse();
@@ -211,7 +211,7 @@ test('logout redirects to the post-logout redirect, not back to the previous pag
 
     // Even when arriving from a page, logout must not fall through to back().
     $response = $this->from('https://localhost/members/dashboard')
-        ->get('/'.Cms::config()->getLogoutPath())
+        ->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect();
 
     expect($response->headers->get('Location'))->toBe('https://localhost/');
@@ -222,9 +222,21 @@ test('logout honors a configured post-logout redirect', function () {
 
     actingAs(User::findOne());
 
-    $this->get('/'.Cms::config()->getLogoutPath())
+    $this->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect('https://localhost/goodbye');
 });
+
+test('logout does not log the user out for a GET request', function (Closure $url) {
+    actingAs(User::findOne());
+
+    get($url())
+        ->assertNotFound();
+
+    expect(Auth::check())->toBeTrue();
+})->with([
+    'control panel' => fn (): string => cp_url(CpAuthPath::Logout->value),
+    'site' => fn (): string => '/'.Cms::config()->getLogoutPath(),
+]);
 
 test('showLoginModal requires email parameter', function () {
     postJson(action([LoginController::class, 'showLoginModal']), [])
