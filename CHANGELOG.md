@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where JSON fields weren’t JSON-decoding values saved via GraphQL mutations. ([#19230](https://github.com/craftcms/cms/issues/19230))
+- Fixed an error that could occur when reassigning entries to a new author when deleting a user. ([#19154](https://github.com/craftcms/cms/issues/19154))
+- Fixed a bug where `craft\web\twig\variables\CraftVariable::$rebrand` was getting defined for Craft Team installs. ([#19249](https://github.com/craftcms/cms/issues/19249))
+
+## 5.10.10 - 2026-07-08
+
+- Updated web-auth/webauthn-lib to 5.3. ([#19226](https://github.com/craftcms/cms/issues/19226))
+- Fixed an error that could occur when running CLI commands. ([#19030](https://github.com/craftcms/cms/issues/19030))
+
 ## 5.10.9 - 2026-07-03
 
 - Added `craft\services\Security::isRestrictedDir()`. ([#19179](https://github.com/craftcms/cms/pull/19179))
