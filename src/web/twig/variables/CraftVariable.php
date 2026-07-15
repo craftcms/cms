@@ -70,7 +70,7 @@ class CraftVariable extends ServiceLocator
             'routes' => Routes::class,
         ];
 
-        if (Craft::$app->edition !== CmsEdition::Solo) {
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $components = array_merge($components, [
                 'rebrand' => Rebrand::class,
             ]);
