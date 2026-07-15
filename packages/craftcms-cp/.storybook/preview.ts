@@ -4,12 +4,15 @@ import type {
 } from '@storybook/web-components-vite';
 import '../src/styles/cp.css';
 import './preview.css';
-import {icons} from '@lion/ui/icon.js';
-import {html} from 'lit';
 import {withThemeByDataAttribute} from '@storybook/addon-themes';
 import {setCustomElementsManifest} from '@storybook/web-components';
 import manifest from '../dist/custom-elements.json' with {type: 'json'};
 import {setStorybookHelpersConfig} from '@wc-toolkit/storybook-helpers';
+import {
+  createUrlIconResolver,
+  getIconUrl,
+  setIconResolver,
+} from '../src/utilities/icons.js';
 
 setStorybookHelpersConfig({
   /** hides the `arg ref` label on each control */
@@ -24,9 +27,18 @@ setStorybookHelpersConfig({
 
 setCustomElementsManifest(manifest);
 
-icons.addIconResolver('craft', (iconSet: string, name: string) => {
-  return html`<div>${iconSet} - ${name}</div>`;
-});
+const FONT_AWESOME_CDN_URL =
+  'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.0.0/svgs';
+
+setIconResolver(
+  createUrlIconResolver((name, family, variant) => {
+    if (family === 'custom-icons' || variant === 'custom-icons') {
+      return null;
+    }
+
+    return getIconUrl(name, family, variant, FONT_AWESOME_CDN_URL);
+  })
+);
 
 const preview: Preview = {
   parameters: {

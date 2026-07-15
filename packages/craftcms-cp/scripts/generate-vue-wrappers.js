@@ -607,14 +607,9 @@ const ALL_COMPONENTS = [
     importPath: '../components/dialog/dialog',
   },
   {
-    tagName: 'craft-drawer',
-    className: 'CraftDrawer',
-    importPath: '../components/drawer/drawer',
-  },
-  {
-    tagName: 'craft-dropdown',
-    className: 'CraftDropdown',
-    importPath: '../components/dropdown/dropdown',
+    tagName: 'craft-disclosure',
+    className: 'CraftDisclosure',
+    importPath: '../components/disclosure/disclosure',
   },
   {
     tagName: 'craft-indicator',
@@ -682,7 +677,7 @@ const ALL_COMPONENTS = [
     importPath: '../components/input-file/selected-file-list',
   },
   {
-    tagName: 'c-tooltip',
+    tagName: 'craft-tooltip',
     className: 'CraftTooltip',
     importPath: '../components/tooltip/tooltip',
   },

@@ -103,9 +103,9 @@ export default class CraftNavItem extends LitElement {
       >
         ${this.renderPrefix()} ${this.renderSuffix(showToggle)}
       </a>
-      <c-tooltip for="${itemId}" placement="right-start"
+      <craft-tooltip for="${itemId}" placement="right-start"
         ><slot></slot
-      ></c-tooltip>
+      ></craft-tooltip>
     `;
   }
 

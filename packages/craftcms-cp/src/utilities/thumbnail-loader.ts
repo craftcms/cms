@@ -53,7 +53,9 @@ export class ThumbnailLoader {
     });
   }
 
-  retryAll() {
+  // Static because callers (`Preview`, `LivePreview`) retry thumbs queued by
+  // whichever loader instances registered them, without holding a reference.
+  static retryAll() {
     for (const key in ThumbnailLoader.invisibleThumbs) {
       const entry = ThumbnailLoader.invisibleThumbs[key];
       if (!entry) continue;
