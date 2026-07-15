@@ -1396,7 +1396,7 @@ XML;
                         }
                         if ($canActivate) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
-                            if (! $this->password) {
+                            if (! $this->password && (! $this->admin || $currentUser->isAdmin())) {
                                 $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'));
                             }
                             $statusItems[] = [
@@ -1452,7 +1452,7 @@ XML;
                                 'userId' => $this->id,
                             ],
                         ];
-                        if ($canAdministrateUsers) {
+                        if ($canAdministrateUsers && (! $this->admin || $currentUser->isAdmin())) {
                             $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy password reset URL…'));
                         }
                     }

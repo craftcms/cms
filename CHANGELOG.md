@@ -17,6 +17,7 @@
 - Fixed a bug where event-registered user permissions weren’t getting saved. ([#19232](https://github.com/craftcms/cms/issues/19232))
 - Fixed lifecycle leaks where asset, GraphQL, route token, user, and user permission state could persist in long-running application processes. ([#19242](https://github.com/craftcms/cms/pull/19242))
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability.
 
 ## 6.0.0-alpha.11 - 2026-07-07
