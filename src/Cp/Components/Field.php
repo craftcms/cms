@@ -270,7 +270,7 @@ class Field extends ViewComponent
         $errors = $this->evaluatedErrors();
 
         return implode('', array_filter([
-            $label instanceof Htmlable || $label instanceof Markup || $label instanceof ViewComponent
+            $label instanceof Htmlable || $label instanceof Markup
                 ? $this->renderSlot('label', $label)
                 : '',
             $this->renderSlot('input', $this->trustedHtml($this->evaluate($this->input))),
