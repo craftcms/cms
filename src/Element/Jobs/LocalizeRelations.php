@@ -28,29 +28,43 @@ class LocalizeRelations extends Job
         $relations = DB::table(Table::RELATIONS)
             ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
             ->where('fieldId', $this->fieldId)
-            ->whereNull('sourceSiteId')
-            ->get();
+            ->whereNull('sourceSiteId');
 
-        $totalRelations = count($relations);
-        $allSiteIds = Sites::getAllSiteIds()->all();
-        $primarySiteId = array_shift($allSiteIds);
+        $totalRelations = $relations->count();
+        $primarySiteId = Sites::getPrimarySite()->id;
+        $otherSiteIds = Sites::getAllSiteIds()
+            ->reject(fn (int $siteId) => $siteId === $primarySiteId)
+            ->all();
 
         $now = now();
 
-        foreach ($relations as $i => $relation) {
+        foreach ($relations->lazyById() as $i => $relation) {
             $this->setProgress((int) (($i / max($totalRelations, 1)) * 100));
 
-            // Set the existing relation to the primary site
-            DB::table(Table::RELATIONS)
-                ->where('id', $relation->id)
-                ->update([
-                    'sourceSiteId' => $primarySiteId,
-                    'dateUpdated' => $now,
-                ]);
+            DB::transaction(function () use ($relation, $primarySiteId, $otherSiteIds, $now): void {
+                $relation = DB::table(Table::RELATIONS)
+                    ->select(['id', 'sourceId', 'targetId', 'sortOrder'])
+                    ->where('id', $relation->id)
+                    ->whereNull('sourceSiteId')
+                    ->lockForUpdate()
+                    ->first();
 
-            // Duplicate it for the other sites
-            foreach ($allSiteIds as $siteId) {
-                DB::table(Table::RELATIONS)->insert([
+                if ($relation === null) {
+                    return;
+                }
+
+                DB::table(Table::RELATIONS)
+                    ->where('id', $relation->id)
+                    ->update([
+                        'sourceSiteId' => $primarySiteId,
+                        'dateUpdated' => $now,
+                    ]);
+
+                if ($otherSiteIds === []) {
+                    return;
+                }
+
+                DB::table(Table::RELATIONS)->insert(array_map(fn (int $siteId) => [
                     'fieldId' => $this->fieldId,
                     'sourceId' => $relation->sourceId,
                     'sourceSiteId' => $siteId,
@@ -59,8 +73,8 @@ class LocalizeRelations extends Job
                     'uid' => Str::uuid(),
                     'dateCreated' => $now,
                     'dateUpdated' => $now,
-                ]);
-            }
+                ], $otherSiteIds));
+            });
         }
     }
 
