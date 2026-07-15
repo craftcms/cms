@@ -604,6 +604,10 @@ class ElementIndexesController extends BaseElementsController
 
             $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
 
+            if (!$elementsService->canSave($element, $user)) {
+                throw new ForbiddenHttpException('User not authorized to save this element.');
+            }
+
             if ($element->getIsUnpublishedDraft()) {
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
             } elseif ($element->enabled && $element->getEnabledForSite()) {
