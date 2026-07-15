@@ -117,17 +117,22 @@ readonly class ElementDeletions
                 ->where('targetId', $mergedElement->id)
                 ->get();
 
-            foreach ($relations as $relation) {
-                $persistingElementIsRelatedToo = DB::table(Table::RELATIONS)
-                    ->where('fieldId', $relation->fieldId)
-                    ->where('sourceId', $relation->sourceId)
-                    ->where('sourceSiteId', $relation->sourceSiteId)
+            if ($relations->isNotEmpty()) {
+                $relationKey = fn (object $relation) => "{$relation->fieldId}:{$relation->sourceId}:{$relation->sourceSiteId}";
+                $prevailingRelations = DB::table(Table::RELATIONS)
+                    ->select(['fieldId', 'sourceId', 'sourceSiteId'])
                     ->where('targetId', $prevailingElement->id)
-                    ->exists();
+                    ->whereIn('fieldId', $relations->pluck('fieldId'))
+                    ->whereIn('sourceId', $relations->pluck('sourceId'))
+                    ->get()
+                    ->keyBy($relationKey);
+                $relationIds = $relations
+                    ->reject(fn (object $relation) => $prevailingRelations->has($relationKey($relation)))
+                    ->pluck('id');
 
-                if (! $persistingElementIsRelatedToo) {
+                if ($relationIds->isNotEmpty()) {
                     DB::table(Table::RELATIONS)
-                        ->where('id', $relation->id)
+                        ->whereIn('id', $relationIds)
                         ->update([
                             'targetId' => $prevailingElement->id,
                             'dateUpdated' => now(),
@@ -140,15 +145,18 @@ readonly class ElementDeletions
                 ->where('elementId', $mergedElement->id)
                 ->get();
 
-            foreach ($structureElements as $structureElement) {
-                $persistingElementIsInStructureToo = DB::table(Table::STRUCTUREELEMENTS)
-                    ->where('structureId', $structureElement->structureId)
+            if ($structureElements->isNotEmpty()) {
+                $prevailingStructureIds = DB::table(Table::STRUCTUREELEMENTS)
                     ->where('elementId', $prevailingElement->id)
-                    ->exists();
+                    ->whereIn('structureId', $structureElements->pluck('structureId'))
+                    ->pluck('structureId', 'structureId');
+                $structureElementIds = $structureElements
+                    ->reject(fn (object $structureElement) => $prevailingStructureIds->has($structureElement->structureId))
+                    ->pluck('id');
 
-                if (! $persistingElementIsInStructureToo) {
+                if ($structureElementIds->isNotEmpty()) {
                     DB::table(Table::STRUCTUREELEMENTS)
-                        ->where('id', $structureElement->id)
+                        ->whereIn('id', $structureElementIds)
                         ->update([
                             'elementId' => $prevailingElement->id,
                             'dateUpdated' => now(),
