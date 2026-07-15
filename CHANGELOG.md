@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.12 - 2026-07-15
 
 - Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
 - Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
