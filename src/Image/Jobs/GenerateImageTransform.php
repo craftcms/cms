@@ -22,9 +22,8 @@ class GenerateImageTransform extends Job implements ShouldBeUnique
         parent::__construct();
     }
 
-    public function handle(): void
+    public function handle(ImageTransformer $transformer): void
     {
-        $transformer = new ImageTransformer;
         $index = $transformer->getTransformIndexModelById($this->transformId);
 
         if (! $index) {

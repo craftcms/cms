@@ -55,7 +55,7 @@ it('handles non-existent transform id gracefully', function () {
         transformId: 999999,
     );
 
-    $job->handle();
+    app()->call($job->handle(...));
 
     expect(true)->toBeTrue();
 });
@@ -65,7 +65,7 @@ it('handles zero transform id gracefully', function () {
         transformId: 0,
     );
 
-    $job->handle();
+    app()->call($job->handle(...));
 
     expect(true)->toBeTrue();
 });
