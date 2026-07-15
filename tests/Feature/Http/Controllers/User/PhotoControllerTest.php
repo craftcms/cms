@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -114,6 +115,15 @@ test('upload', function () {
     ]);
 
     expect(User::findOne(auth()->id())->getPhoto())->not->toBeNull();
+});
+
+test('upload rejects photos larger than the configured upload limit', function () {
+    Cms::config()->maxUploadFileSize = 10;
+
+    postJson(action([PhotoController::class, 'upload']), [
+        'userId' => auth()->id(),
+        'photo' => UploadedFile::fake()->createWithContent('avatar.jpg', str_repeat('a', 11)),
+    ])->assertJsonValidationErrorFor('photo');
 });
 
 test('destroy', function () {
