@@ -152,6 +152,14 @@ class GqlHelper
     }
 
     /**
+     * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
+     */
+    public static function canQueryAllUsers(?GqlSchema $schema = null): bool
+    {
+        return self::canSchema('usergroups.everyone', schema: $schema);
+    }
+
+    /**
      * @param  string  $typeName  The union type name.
      * @param  array  $includedTypes  The type the union should include
      * @param  callable|null  $resolveFunction  The resolver function to use to resolve a specific type. If not provided,

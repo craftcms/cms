@@ -219,7 +219,7 @@ class Entry extends Structure
     private static function getConditionalFields(array $sectionFieldArguments): array
     {
         $fields = [];
-        if (GqlHelper::canQueryUsers()) {
+        if (GqlHelper::canQueryAllUsers()) {
             $fields = array_merge($fields, [
                 'authorId' => [
                     'name' => 'authorId',
@@ -248,7 +248,7 @@ class Entry extends Structure
 
         if (GqlHelper::canQueryDrafts()) {
             $fields = array_merge($fields, array_filter([
-                'draftCreator' => GqlHelper::canQueryUsers() ? [
+                'draftCreator' => GqlHelper::canQueryAllUsers() ? [
                     'name' => 'draftCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given draft.',
@@ -266,7 +266,7 @@ class Entry extends Structure
 
         if (GqlHelper::canQueryRevisions()) {
             return array_merge($fields, array_filter([
-                'revisionCreator' => GqlHelper::canQueryUsers() ? [
+                'revisionCreator' => GqlHelper::canQueryAllUsers() ? [
                     'name' => 'revisionCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given revision.',
