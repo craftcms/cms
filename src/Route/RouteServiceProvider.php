@@ -29,6 +29,7 @@ use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
+use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -163,6 +164,7 @@ class RouteServiceProvider extends ServiceProvider
         $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
 
         collect([
+            UseWriteConnection::class,
             ForgetTriggerParameters::class,
             EnsureInstalled::class,
             AddLogContext::class,
