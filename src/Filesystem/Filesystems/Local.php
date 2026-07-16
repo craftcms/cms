@@ -116,6 +116,12 @@ class Local extends Filesystem
     }
 
     #[Override]
+    public function hasLegacySettingsHtml(): bool
+    {
+        return false;
+    }
+
+    #[Override]
     public function getSettingsHtml(): ?string
     {
         return $this->settingsHtml(false);

@@ -6,14 +6,12 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
-use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Resources\FsResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -65,65 +63,20 @@ class FilesystemsController
             abort_if(is_null($filesystem), 404, 'Filesystem not found');
         }
 
-        $allFsTypes = $this->filesystems->getAllFilesystemTypes();
-
-        $fsInstances = [];
-        $fsOptions = [];
-
-        foreach ($allFsTypes as $fsType) {
-            /** @var FsInterface $fsInstance */
-            $fsInstance = app()->make($fsType);
-
-            if ($filesystem === null) {
-                $filesystem = $fsInstance;
-            }
-
-            $fsInstances[$fsType] = [
-                ...$fsInstance->toArray(),
-                'type' => $filesystem::class,
-                'settingsHtml' => $this->readOnly ? $filesystem->getReadOnlySettingsHtml() : $filesystem->getSettingsHtml(),
-                'showHasUrlSetting' => $fsInstance->getShowHasUrlSetting(),
-                'showUrlSetting' => $fsInstance->getShowUrlSetting(),
-            ];
-
-            $fsOptions[] = [
-                'value' => $fsType,
-                'label' => $fsInstance::displayName(),
-            ];
-        }
-
-        // Sort them by name
-        $fsOptions = Arr::sort($fsOptions, 'label');
-
-        if ($handle && $this->filesystems->getFilesystemByHandle($handle)) {
-            $title = trim((string) $filesystem->name ?: t('Edit Filesystem'));
-        } else {
-            $title = t('Create a new filesystem');
-        }
-
-        $isValidUrl = fn ($value) => Str::isUrl($value);
+        $title = $filesystem !== null
+            ? trim((string) $filesystem->name ?: t('Edit Filesystem'))
+            : t('Create a new filesystem');
 
         return new CpScreenResponse()
             ->title($title)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Filesystems'), 'settings/filesystems')
-            ->inertiaPage('settings/filesystems/Edit', [
-                'oldHandle' => $handle,
-                'filesystem' => [
-                    ...$filesystem->toArray(),
-                    'type' => $filesystem::class,
-                    'settingsHtml' => $this->readOnly ? $filesystem->getReadOnlySettingsHtml() : $filesystem->getSettingsHtml(),
-                    'showHasUrlSetting' => $filesystem->getShowHasUrlSetting(),
-                    'showUrlSetting' => $filesystem->getShowUrlSetting(),
-                ],
-                'fsOptions' => $fsOptions,
-                'fsInstances' => $fsInstances,
-                'fsTypes' => $allFsTypes,
-
-                // @TODO this should probably be its own item on SelectOptions
-                'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, $isValidUrl),
-                'basePathSuggestions' => SelectOptions::getEnvSuggestions(true),
-            ])
+            ->inertiaPage('settings/filesystems/Edit', new FilesystemsEditViewModel(
+                $filesystem,
+                $this->filesystems,
+                oldHandle: $handle,
+                readOnly: $this->readOnly,
+            ))
             ->unless(
                 $this->readOnly,
                 function (CpScreenResponse $response) {
