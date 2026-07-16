@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Asset\PreviewHandlers\Image as ImagePreview;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -20,7 +20,6 @@ use function CraftCms\Cms\t;
 
 readonly class PreviewController
 {
-    use EnforcesVolumePermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -40,8 +39,7 @@ readonly class PreviewController
 
         abort_if(! $asset, 400, 'Invalid asset ID: '.$request->integer('assetId'));
 
-        $this->requireVolumePermissionByAsset('editImages', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+        Gate::authorize('editImage', $asset);
 
         return new JsonResponse([
             'img' => $asset->getPreviewThumbImg($request->integer('width'), $request->integer('height')),
@@ -65,19 +63,17 @@ readonly class PreviewController
             return $this->asFailure(t('Asset not found with that id'));
         }
 
-        $this->requireVolumePermissionByAsset('viewAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+        Gate::authorize('viewFile', $asset);
 
         $previewHtml = null;
         $previewHandler = $this->assets->getAssetPreviewHandler($asset);
         $variables = [];
 
-        if (($previewHandler instanceof ImagePreview) && $asset->id !== $request->user()->photoId) {
+        if (($previewHandler instanceof ImagePreview) && $asset->id !== $request->craftUser()?->asElement()->photoId) {
             $variables['editFocal'] = true;
 
             try {
-                $this->requireVolumePermissionByAsset('editImages', $asset);
-                $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+                Gate::authorize('editImage', $asset);
             } catch (HttpException) {
                 $variables['editFocal'] = false;
             }

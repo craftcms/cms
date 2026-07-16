@@ -30,13 +30,17 @@ class PluginPackageManifest extends PackageManifest
         $this->write(new Collection($packages)->mapWithKeys(function ($package) {
             $laravelConfig = $package['extra']['laravel'] ?? [];
 
-            if (! $laravelConfig && $package['type'] === 'craft-plugin') {
+            if (($package['type'] ?? null) === 'craft-plugin') {
                 $pluginClass = $this->determinePluginClass($package);
 
-                if (is_subclass_of($pluginClass, ServiceProvider::class)) {
-                    return [$this->format($package['name']) => [
-                        'providers' => [$pluginClass],
-                    ]];
+                if ($pluginClass !== null && is_subclass_of($pluginClass, ServiceProvider::class)) {
+                    $providers = array_values(array_unique((array) ($laravelConfig['providers'] ?? [])));
+
+                    if (! in_array($pluginClass, $providers, true)) {
+                        $providers[] = $pluginClass;
+                    }
+
+                    $laravelConfig['providers'] = $providers;
                 }
             }
 

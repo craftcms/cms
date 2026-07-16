@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Matrix;
@@ -63,7 +64,7 @@ readonly class MatrixController
             'fieldId' => ['required'],
             'entryTypeId' => ['required'],
             'ownerId' => ['required'],
-            'ownerElementType' => ['required'],
+            'ownerElementType' => ['required', 'string', new ElementTypeRule],
             'siteId' => ['required'],
             'namespace' => ['required'],
             'staticEntries' => ['nullable', 'boolean'],
@@ -140,7 +141,7 @@ readonly class MatrixController
 
             $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
-            if (! $this->drafts->saveElementAsDraft($entry, $request->user()->id, markAsSaved: false)) {
+            if (! $this->drafts->saveElementAsDraft($entry, $request->craftUser()?->getCraftUserId(), markAsSaved: false)) {
                 return $this->asFailure(mb_ucfirst(t('Couldn’t create {type}.', [
                     'type' => Entry::lowerDisplayName(),
                 ])));

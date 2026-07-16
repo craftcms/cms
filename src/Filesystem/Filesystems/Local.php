@@ -94,6 +94,12 @@ class Local extends Filesystem
     }
 
     #[Override]
+    public function settingsAttributes(): array
+    {
+        return array_values(array_diff(parent::settingsAttributes(), ['rootPath', 'settingsHtml']));
+    }
+
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

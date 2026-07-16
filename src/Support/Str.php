@@ -223,6 +223,10 @@ class Str extends \Illuminate\Support\Str
      */
     public static function escapeShortcodes(string $str): string
     {
+        if (! str_contains($str, ':')) {
+            return $str;
+        }
+
         $map = self::shortcodeEscapeMap();
 
         return str_replace(array_keys($map), $map, $str);
@@ -458,6 +462,10 @@ class Str extends \Illuminate\Support\Str
      */
     public static function shortcodesToEmoji(string $str): string
     {
+        if (! str_contains($str, ':')) {
+            return $str;
+        }
+
         return LitEmoji::shortcodeToUnicode($str);
     }
 
@@ -572,6 +580,10 @@ class Str extends \Illuminate\Support\Str
      */
     public static function unescapeShortcodes(string $str): string
     {
+        if (! str_contains($str, ':')) {
+            return $str;
+        }
+
         $map = self::shortcodeEscapeMap();
 
         return str_replace($map, array_keys($map), $str);

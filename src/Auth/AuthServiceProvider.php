@@ -6,8 +6,10 @@ namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Policies\AddressPolicy;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
+use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
@@ -17,24 +19,23 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Policies\ContentBlockPolicy;
+use CraftCms\Cms\Structure\Data\Structure;
+use CraftCms\Cms\Structure\Policies\StructurePolicy;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use CraftCms\Cms\User\UserPermissions;
-use CraftCms\Cms\User\Users;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
-use Illuminate\Contracts\Auth\Access\Authorizable;
-use Illuminate\Contracts\Hashing\Hasher;
-use Illuminate\Foundation\Application;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth as AuthFacade;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
@@ -47,7 +48,10 @@ class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        $this->registerGuard();
+        if (! class_exists($this->app->make(Repository::class)->get('auth.providers.users.model'))) {
+            $this->app->make(Repository::class)->set('auth.providers.users.model', User::class);
+        }
+
         $this->registerPermissions();
         $this->registerEvents();
     }
@@ -65,43 +69,10 @@ class AuthServiceProvider extends ServiceProvider
                 return Cms::config()->cpTrigger.'/login';
             }
 
-            return Cms::config()->loginPath;
+            return Cms::config()->getLoginPath();
         });
 
         RedirectIfAuthenticated::redirectUsing(fn (Request $request) => URL::defaultReturnUrl());
-    }
-
-    private function registerGuard(): void
-    {
-        AuthFacade::provider('craft', fn (Application $app) => new UserProvider(
-            $app->make(Hasher::class),
-            $app->make(Users::class),
-            $app->make(AuthMethods::class),
-        ));
-
-        if (! Config::has('auth.guards.craft')) {
-            Config::set('auth.guards.craft', [
-                'driver' => 'session',
-                'provider' => 'craft',
-                'remember' => floor(Cms::config()->rememberedUserSessionDuration / 60),
-            ]);
-        }
-
-        if (! Config::has('auth.providers.craft')) {
-            Config::set('auth.providers.craft', [
-                'driver' => 'craft',
-                'model' => User::class,
-            ]);
-        }
-
-        if (! Config::has('auth.passwords.craft')) {
-            Config::set('auth.passwords.craft', [
-                'provider' => 'craft',
-                'table' => 'password_reset_tokens',
-                'expire' => Cms::config()->verificationCodeDuration,
-                'throttle' => 60,
-            ]);
-        }
     }
 
     private function registerPermissions(): void
@@ -110,11 +81,7 @@ class AuthServiceProvider extends ServiceProvider
          * This hooks our permission system into
          * Laravel's Gate authorization system
          */
-        Gate::after(function (Authorizable $user, string $ability, ?bool $result) {
-            if (! $user instanceof User) {
-                return null;
-            }
-
+        Gate::after(function (CraftUser $user, string $ability, ?bool $result) {
             /**
              * Only check our permissions when the
              * result was not explicitly set.
@@ -124,17 +91,19 @@ class AuthServiceProvider extends ServiceProvider
             }
 
             if (
-                $user->admin ||
+                $user->isAdmin() ||
                 Edition::get() === Edition::Solo
             ) {
                 return true;
             }
 
-            if (! isset($user->id)) {
+            $userId = $user->getCraftUserId();
+
+            if (! $userId) {
                 return null;
             }
 
-            if (! app(UserPermissions::class)->doesUserHavePermission($user->id, $ability)) {
+            if (! app(UserPermissions::class)->doesUserHavePermission($userId, $ability)) {
                 return null;
             }
 
@@ -150,23 +119,27 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Event::listen(Login::class, function (Login $event) {
-            if (! $event->user instanceof User) {
+            $user = $event->user instanceof CraftUser ? $event->user->asElement() : null;
+
+            if (! $user) {
                 return;
             }
 
-            UsersFacade::handleValidLogin($event->user);
+            UsersFacade::handleValidLogin($user);
 
-            app(AuthMethods::class)->setRememberedUsername($event->user);
+            app(AuthMethods::class)->setRememberedUsername($user);
 
             Session::passwordConfirmed();
         });
 
         Event::listen(Failed::class, function (Failed $event) {
-            if (! $event->user instanceof User) {
+            $user = $event->user instanceof CraftUser ? $event->user->asElement() : null;
+
+            if (! $user) {
                 return;
             }
 
-            UsersFacade::handleInvalidLogin($event->user);
+            UsersFacade::handleInvalidLogin($user);
         });
 
         Event::listen(Logout::class, function () {
@@ -179,8 +152,10 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Element::class, ElementPolicy::class);
         Gate::policy(Address::class, AddressPolicy::class);
         Gate::policy(Asset::class, AssetPolicy::class);
+        Gate::policy(VolumeFolder::class, VolumeFolderPolicy::class);
         Gate::policy(ContentBlock::class, ContentBlockPolicy::class);
         Gate::policy(Entry::class, EntryPolicy::class);
-        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Structure::class, StructurePolicy::class);
+        Gate::policy(UserElement::class, UserPolicy::class);
     }
 }

@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use RuntimeException;
@@ -67,7 +67,7 @@ class TimeRule implements DataAwareRule, ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! $value instanceof DateTime) {
+        if (! $value instanceof DateTimeInterface) {
             $value = DateTimeHelper::toDateTime(['time' => $value], true);
         }
 

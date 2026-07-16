@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -48,6 +49,7 @@ readonly class SitesController
         $sites = isset($group)
             ? $this->sites->getSitesByGroupId($groupId)
             : $this->sites->getAllSites()->values();
+        $groups = $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values();
 
         $crumbs = array_filter([
             ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
@@ -55,12 +57,20 @@ readonly class SitesController
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
-        return Inertia::render('SettingsSitesIndex', [
+        return Inertia::render('settings/sites/Index', [
             'crumbs' => $crumbs,
             'newSiteUrl' => Url::cpUrl('settings/sites/new'),
             'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
             'group' => $group ?? null,
-            'groups' => $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values(),
+            'groups' => $groups,
+            'subnav' => [
+                new NavItem()->label(t('All Sites'))->url(Url::cpUrl('settings/sites'))->selected(! isset($group)),
+                ...$groups->map(fn ($siteGroup) => new NavItem()
+                    ->label($siteGroup->name)
+                    ->url(Url::cpUrl('settings/sites', ['groupId' => $siteGroup->id]))
+                    ->selected(isset($group) && $siteGroup->id === $group->id)
+                )->all(),
+            ],
             'sites' => $sites->toArray(),
             'readOnly' => $this->readOnly,
             'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
@@ -96,7 +106,7 @@ readonly class SitesController
                     'active' => true,
                 ],
             ])
-            ->inertiaPage('SettingsSitesEdit', [
+            ->inertiaPage('settings/sites/Edit', [
                 ...$this->getViewData(),
                 'site' => new Site([
                     'name' => '',
@@ -144,7 +154,7 @@ readonly class SitesController
 
             ])
             ->redirectUrl('settings/sites')
-            ->inertiaPage('SettingsSitesEdit', [
+            ->inertiaPage('settings/sites/Edit', [
                 ...$this->getViewData(),
                 'site' => $siteData,
                 'groupId' => $siteData->groupId,

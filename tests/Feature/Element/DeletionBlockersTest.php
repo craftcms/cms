@@ -6,6 +6,7 @@ use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
+use CraftCms\Cms\Element\DeletionBlockers\FieldReferencesDeletionBlocker;
 use CraftCms\Cms\Element\DeletionBlockers\RelationDeletionBlocker;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Events\DefineDeletionBlockers;
@@ -37,23 +38,31 @@ it('dispatches deletion blocker events with the default relation blocker', funct
         expect($event->elementType)->toBe(Entry::class)
             ->and($event->elements->ids()->all())->toBe([$entry->id])
             ->and($event->hardDelete)->toBeTrue()
-            ->and($event->blockers)->toHaveCount(1)
-            ->and($event->blockers[0])->toBeInstanceOf(RelationDeletionBlocker::class);
+            ->and($event->blockers)->toHaveCount(2);
+
+        $blockerClasses = collect($event->blockers)->map(fn (object $blocker) => $blocker::class);
+
+        expect($blockerClasses)
+            ->toContain(RelationDeletionBlocker::class)
+            ->toContain(FieldReferencesDeletionBlocker::class);
 
         $event->blockers[] = new TestDeletionBlocker(active: true);
     });
 
     $blockers = Entry::deletionBlockers(ElementCollection::make([$entry]), true);
+    $blockerClasses = collect($blockers)->map(fn (object $blocker) => $blocker::class);
 
-    expect($blockers)->toHaveCount(2)
-        ->and($blockers[0])->toBeInstanceOf(RelationDeletionBlocker::class)
-        ->and($blockers[1])->toBeInstanceOf(TestDeletionBlocker::class);
+    expect($blockers)->toHaveCount(3)
+        ->and($blockerClasses)
+        ->toContain(RelationDeletionBlocker::class)
+        ->toContain(FieldReferencesDeletionBlocker::class)
+        ->toContain(TestDeletionBlocker::class);
 });
 
 it('reports entry author blockers with details and actions', function () {
     $author = UserModel::factory()->createElement();
     $entry = EntryModel::factory()
-        ->hasAttached(UserModel::find($author->id), ['sortOrder' => 0], 'authors')
+        ->hasAttached(UserModel::query()->find($author->id), ['sortOrder' => 0], 'authors')
         ->create();
 
     $this->mock(ElementIndexHtml::class, function (MockInterface $mock) use ($author) {

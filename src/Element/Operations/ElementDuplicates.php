@@ -19,13 +19,13 @@ use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use UnitEnum;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /** @internal */
@@ -112,7 +112,7 @@ readonly class ElementDuplicates
             $mainClone->setCanonicalId($element->getCanonicalId());
             $mainClone->draftId = $this->drafts->insertDraftRow(
                 name: $mainClone->draftName,
-                creatorId: Auth::user()->id,
+                creatorId: currentUser()?->getCraftUserId(),
                 canonicalId: $element->getCanonicalId(),
                 trackChanges: $mainClone->trackDraftChanges,
             );
@@ -124,7 +124,7 @@ readonly class ElementDuplicates
             $mainClone->setCanonicalId(null);
             $mainClone->draftId = $this->drafts->insertDraftRow(
                 name: $mainClone->draftName,
-                creatorId: Auth::user()->id,
+                creatorId: currentUser()?->getCraftUserId(),
                 trackChanges: $mainClone->trackDraftChanges,
             );
         }
@@ -327,7 +327,7 @@ readonly class ElementDuplicates
         $modifiedAttributes = array_unique($modifiedAttributes);
         $modifiedFields = array_unique($modifiedFields);
 
-        $userId = Auth::user()?->id;
+        $userId = currentUser()?->getCraftUserId();
 
         if (! empty($modifiedAttributes)) {
             $data = [];

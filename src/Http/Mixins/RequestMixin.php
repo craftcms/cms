@@ -7,6 +7,10 @@ namespace CraftCms\Cms\Http\Mixins;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Routing\ActionRoute;
+use CraftCms\Cms\Http\Routing\ActionRouteResolver;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -14,6 +18,28 @@ use Illuminate\Support\Facades\Crypt;
 
 class RequestMixin
 {
+    public function craftUser(): Closure
+    {
+        return function (): ?CraftUser {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+            $user = $request->user();
+
+            if ($user === null || $user instanceof CraftUser) {
+                return $user;
+            }
+
+            throw new AuthenticationException(sprintf(
+                'The request user must implement %s to be used by Craft.',
+                CraftUser::class,
+            ));
+        };
+    }
+
     public function isMobileBrowser(): Closure
     {
         return function (bool $detectTablets = false): bool {
@@ -90,10 +116,23 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
+            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+            if ($request->attributes->has('isCpRequest')) {
+                return (bool) $request->attributes->get('isCpRequest');
+            }
+
+            if ($request->routeIs('craft.cp.*')) {
+                return true;
+            }
+
+            if ($cpTrigger === '') {
+                return true;
+            }
 
             return $request->is(
-                Cms::config()->cpTrigger,
-                Cms::config()->cpTrigger.'/*',
+                $cpTrigger,
+                "$cpTrigger/*",
             );
         };
     }
@@ -114,19 +153,7 @@ class RequestMixin
 
     public function getHadToken(): Closure
     {
-        return function (): bool {
-            /**
-             * @var Request $request
-             *
-             * @phpstan-ignore-next-line
-             */
-            $request = $this;
-            if ($request->getToken() !== null) {
-                return true;
-            }
-
-            return Context::hasHidden(HandleTokenRequest::HAD_TOKEN_KEY);
-        };
+        return fn (): bool => Context::getHidden(HandleTokenRequest::HAD_TOKEN_KEY) === true;
     }
 
     public function siteToken(): Closure
@@ -167,7 +194,7 @@ class RequestMixin
              */
             $request = $this;
 
-            return $request->actionSegments() !== [];
+            return app(ActionRouteResolver::class)->resolve($request) !== null;
         };
     }
 
@@ -207,6 +234,20 @@ class RequestMixin
         };
     }
 
+    public function previewParam(): Closure
+    {
+        return function (): ?string {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+
+            return $request->input('x-craft-preview') ?? $request->input('x-craft-live-preview') ?? $request->header('X-Craft-Preview-Token');
+        };
+    }
+
     public function isPreview(): Closure
     {
         return function (): bool {
@@ -216,7 +257,7 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
-            $previewParamValue = $request->input('x-craft-preview') ?? $request->input('x-craft-live-preview') ?? $request->header('X-Craft-Preview-Token');
+            $previewParamValue = $request->previewParam();
 
             if ($previewParamValue === null || $previewParamValue === '') {
                 return false;
@@ -241,30 +282,14 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
-            $actionTrigger = Cms::config()->actionTrigger;
-            $segmentIndex = $request->isCpRequest() ? 2 : 1;
 
-            if ($request->segment($segmentIndex) === $actionTrigger && count($request->segments()) > $segmentIndex) {
-                return array_slice($request->segments(), $segmentIndex);
-            }
-
-            $actionParam = $request->input('action');
-
-            if ($actionParam !== null) {
-                if (! is_string($actionParam)) {
-                    abort(400, 'Invalid action param');
-                }
-
-                return array_values(array_filter(explode('/', $actionParam)));
-            }
-
-            return [];
+            return app(ActionRouteResolver::class)->resolve($request)->segments ?? [];
         };
     }
 
     public function actionSegmentsToRoute(): Closure
     {
-        return function (?array $actionSegments = null): string {
+        return function (): string {
             /**
              * @var Request $request
              *
@@ -272,14 +297,7 @@ class RequestMixin
              */
             $request = $this;
 
-            $actionSegments ??= $request->actionSegments();
-
-            return implode('/', array_filter([
-                '',
-                $request->isCpRequest() ? Cms::config()->cpTrigger : null,
-                Cms::config()->actionTrigger,
-                ...$actionSegments,
-            ], fn ($value) => $value !== null));
+            return app(ActionRouteResolver::class)->resolve($request)->uri ?? '';
         };
     }
 
@@ -303,6 +321,8 @@ class RequestMixin
             if ($request->hasSession()) {
                 $duplicatedRequest->setLaravelSession($request->session());
             }
+
+            $duplicatedRequest->attributes->remove(ActionRoute::class);
 
             return $duplicatedRequest;
         };

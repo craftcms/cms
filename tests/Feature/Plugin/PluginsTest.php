@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
-use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
+use CraftCms\Cms\Plugin\Events\PluginsRegistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateMode;
@@ -28,8 +29,48 @@ beforeEach(function () {
 });
 
 afterEach(function () {
+    File::deleteDirectory(storage_path('framework/testing/test-plugin-assets'));
+    File::deleteDirectory(public_path('vendor/craftcms/test-plugin'));
+    TestPlugin::$customPublishables = [];
+    TestPlugin::$customStyles = [];
+    TestPlugin::$customScripts = [];
+
     app()->forgetInstance(Plugins::class);
 });
+
+function configureTestPluginAssets(): array
+{
+    $sourcePath = storage_path('framework/testing/test-plugin-assets');
+    $targetPath = public_path('vendor/craftcms/test-plugin');
+
+    File::deleteDirectory($sourcePath);
+    File::deleteDirectory($targetPath);
+    File::ensureDirectoryExists("{$sourcePath}/css");
+    File::ensureDirectoryExists("{$sourcePath}/js");
+    File::ensureDirectoryExists("{$sourcePath}/docs");
+
+    File::put("{$sourcePath}/css/test.css", 'body { color: red; }');
+    File::put("{$sourcePath}/js/test.js", 'window.testPlugin = true;');
+    File::put("{$sourcePath}/docs/readme.txt", 'Test plugin readme');
+
+    TestPlugin::$customPublishables = [
+        "{$sourcePath}/docs/readme.txt" => 'docs/readme.txt',
+    ];
+
+    TestPlugin::$customStyles = [
+        "{$sourcePath}/css/test.css" => 'css/test.css',
+    ];
+
+    TestPlugin::$customScripts = [
+        "{$sourcePath}/js/test.js" => 'js/test.js',
+    ];
+
+    return [
+        "{$targetPath}/css/test.css",
+        "{$targetPath}/js/test.js",
+        "{$targetPath}/docs/readme.txt",
+    ];
+}
 
 it('can load plugins', function () {
     app()->forgetInstance(Plugins::class);
@@ -47,25 +88,25 @@ test('plugins are singletons', function () {
         ->toBe(TestPlugin::getInstance());
 });
 
-it('dispatches a loading event', function () {
+it('dispatches plugin lifecycle events', function () {
     app()->forgetInstance(Plugins::class);
     $this->plugins = app(Plugins::class);
 
-    $triggeredLoading = false;
-    $triggeredLoaded = false;
+    $events = [];
 
-    Event::listen(PluginsLoading::class, function () use (&$triggeredLoading) {
-        $triggeredLoading = true;
+    Event::listen(PluginsLoading::class, function (PluginsLoading $event) use (&$events) {
+        $events[] = PluginsLoading::class;
     });
-
-    Event::listen(PluginsLoaded::class, function () use (&$triggeredLoaded) {
-        $triggeredLoaded = true;
+    Event::listen(PluginsRegistered::class, function (PluginsRegistered $event) use (&$events) {
+        $events[] = PluginsRegistered::class;
     });
 
     $this->plugins->loadPlugins();
 
-    expect($triggeredLoading)->toBeTrue('PluginsLoading not triggered');
-    expect($triggeredLoaded)->toBeTrue('PluginsLoaded not triggered');
+    expect($events)->toBe([
+        PluginsLoading::class,
+        PluginsRegistered::class,
+    ]);
 });
 
 it('can get a plugin by handle', function () {
@@ -111,6 +152,33 @@ it('can uninstall and install a plugin', function () {
 
     expect($this->plugins->isPluginInstalled('test-plugin'))->toBeTrue();
     expect($this->plugins->isPluginEnabled('test-plugin'))->toBeTrue();
+});
+
+it('publishes configured files when enabling a plugin', function () {
+    $paths = configureTestPluginAssets();
+
+    TestPlugin::getInstance()->register();
+
+    $this->plugins->enablePlugin('test-plugin');
+
+    foreach ($paths as $path) {
+        expect(File::exists($path))->toBeTrue();
+    }
+});
+
+it('publishes configured files when installing a plugin', function () {
+    $this->plugins->enablePlugin('test-plugin');
+    $this->plugins->uninstallPlugin('test-plugin');
+
+    $paths = configureTestPluginAssets();
+
+    TestPlugin::getInstance()->register();
+
+    $this->plugins->installPlugin('test-plugin');
+
+    foreach ($paths as $path) {
+        expect(File::exists($path))->toBeTrue();
+    }
 });
 
 it('ignores missing transaction exceptions during uninstall commits', function () {

@@ -22,7 +22,6 @@ use Stringable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
  */
-#[AllowedInSandbox]
 class ColorData implements Serializable, Stringable
 {
     /**
@@ -51,6 +50,7 @@ class ColorData implements Serializable, Stringable
     /**
      * Returns the color as a hex.
      */
+    #[AllowedInSandbox]
     public function getHex(): string
     {
         return $this->_hex;
@@ -59,6 +59,7 @@ class ColorData implements Serializable, Stringable
     /**
      * Returns the color in `rgb()` syntax.
      */
+    #[AllowedInSandbox]
     public function getRgb(): string
     {
         return "rgb({$this->getRed()},{$this->getGreen()},{$this->getBlue()})";
@@ -67,6 +68,7 @@ class ColorData implements Serializable, Stringable
     /**
      * Returns the color in `hsl()` syntax.
      */
+    #[AllowedInSandbox]
     public function getHsl(): string
     {
         [$h, $s, $l] = $this->_hsl();
@@ -74,61 +76,73 @@ class ColorData implements Serializable, Stringable
         return "hsl($h,$s%,$l%)";
     }
 
+    #[AllowedInSandbox]
     public function getRed(): int
     {
         return hexdec(substr($this->_hex, 1, 2));
     }
 
+    #[AllowedInSandbox]
     public function getR(): int
     {
         return $this->getRed();
     }
 
+    #[AllowedInSandbox]
     public function getGreen(): int
     {
         return hexdec(substr($this->_hex, 3, 2));
     }
 
+    #[AllowedInSandbox]
     public function getG(): int
     {
         return $this->getGreen();
     }
 
+    #[AllowedInSandbox]
     public function getBlue(): int
     {
         return hexdec(substr($this->_hex, 5, 2));
     }
 
+    #[AllowedInSandbox]
     public function getB(): int
     {
         return $this->getBlue();
     }
 
+    #[AllowedInSandbox]
     public function getHue(): int
     {
         return $this->_hsl()[0];
     }
 
+    #[AllowedInSandbox]
     public function getH(): int
     {
         return $this->getHue();
     }
 
+    #[AllowedInSandbox]
     public function getSaturation(): int
     {
         return $this->_hsl()[1];
     }
 
+    #[AllowedInSandbox]
     public function getS(): int
     {
         return $this->getSaturation();
     }
 
+    #[AllowedInSandbox]
     public function getLightness(): int
     {
         return $this->_hsl()[2];
     }
 
+    #[AllowedInSandbox]
     public function getL(): int
     {
         return $this->getLightness();
@@ -183,6 +197,7 @@ class ColorData implements Serializable, Stringable
      * @see http://stackoverflow.com/a/12228906/1136822 Stack Overflow answer.
      * @see https://en.wikipedia.org/wiki/Luma_(video) Luma
      */
+    #[AllowedInSandbox]
     public function getLuma(): float
     {
         return (0.2126 * $this->getRed() + 0.7152 * $this->getGreen() + 0.0722 * $this->getBlue()) / 255;

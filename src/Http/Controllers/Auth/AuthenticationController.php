@@ -10,8 +10,9 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\InvalidUserToken;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\UserEmailVerifying;
@@ -20,6 +21,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
@@ -36,29 +38,30 @@ abstract readonly class AuthenticationController
         protected AuthMethods $auth,
     ) {}
 
-    protected function completeLogin(Request $request, User $user, bool $remember): Response
+    protected function completeLogin(Request $request, CraftUser $user, bool $remember): Response
     {
-        auth('craft')->login($user, $remember);
+        auth()->loginUsingId($user->getAuthIdentifier(), $remember);
 
         return $this->handleSuccessfulLogin($request, $user);
     }
 
-    protected function handleSuccessfulLogin(Request $request, User $user): Response
+    protected function handleSuccessfulLogin(Request $request, CraftUser $user): Response
     {
         $returnUrl = URL::returnUrl();
+        $userElement = $user->asElement();
 
         if ($request->wantsJson()) {
-            return $this->asModelSuccess($user, modelName: 'user', data: [
+            return $this->asModelSuccess($userElement, modelName: 'user', data: [
                 'returnUrl' => $returnUrl,
             ]);
         }
 
-        return $this->redirectToPostedUrl($user, $returnUrl);
+        return $this->redirectToPostedUrl($userElement, $returnUrl);
     }
 
     protected function finalizeLogin(
         Request $request,
-        User $user,
+        CraftUser $user,
         bool $remember,
         bool $skipTwoFactor = false,
     ): Response {
@@ -83,12 +86,12 @@ abstract readonly class AuthenticationController
         return $this->completeLogin($request, $user, $remember);
     }
 
-    protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?User $user = null): Response
+    protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?CraftUser $user = null): Response
     {
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
         event(new Failed(
-            guard: 'craft',
+            guard: Auth::getDefaultDriver(),
             user: $user,
             credentials: $request->only('loginName', 'password'),
         ));
@@ -96,31 +99,41 @@ abstract readonly class AuthenticationController
         return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
-    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = []): View|InertiaResponse
+    protected function renderViewWithFallback(string $inertiaComponent, ?array $inertiaProps = null, array $data = []): View|InertiaResponse|Response
     {
-        if (view()->exists(request()->craftPath())) {
-            return view(request()->craftPath(), $data);
-        }
+        $request = request();
 
-        if ($inertiaComponent !== null && request()->isCpRequest()) {
-            return Inertia::render($inertiaComponent, $inertiaProps ?? $data);
+        // if this is a front-end request and a template exists for the requested path, render it
+        if (! $request->isCpRequest() && view()->exists($request->craftPath())) {
+            return view($request->craftPath(), $data);
         }
 
         TemplateMode::set(TemplateMode::Cp);
 
-        return view('craftcms::'.Str::start($cpTemplate, ''), $data);
+        if ($request->isCpRequest()) {
+            return Inertia::render($inertiaComponent, $inertiaProps ?? $data);
+        }
+
+        // Front-end requests don't run through the `craft.cp` middleware group, so
+        // `HandleInertiaRequests` never gets a chance to prep the Inertia root view
+        // (headHtml/bodyHtml, shared props, etc). Invoke it manually since we're
+        // falling back to an Inertia-rendered response.
+        return app(HandleInertiaRequests::class)->handle(
+            $request,
+            fn (Request $request): Response => Inertia::render($inertiaComponent, $inertiaProps ?? $data)->toResponse($request),
+        );
     }
 
     protected function processTokenRequest(Request $request): Response|array
     {
         $request->validate([
-            'id' => ['required'],
+            'uid' => ['required'],
             'code' => ['required'],
         ]);
 
         /** @var User|null $user */
         $user = User::find()
-            ->uid($request->input('id'))
+            ->uid($request->input('uid'))
             ->status(null)
             ->addSelect(['users.password'])
             ->one();
@@ -130,21 +143,21 @@ abstract readonly class AuthenticationController
         }
 
         // If someone is logged in and it’s not this person, log them out
-        if ($request->user() && $request->user()->id !== $user->id) {
-            auth('craft')->logout();
+        if ($request->craftUser() && $request->craftUser()->getCraftUserId() !== $user->id) {
+            auth()->logout();
         }
 
         event(new UserEmailVerifying($user));
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
+        $broker = Password::broker();
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }
 
         event(new EmailVerified($user));
 
-        return [$user, $request->input('id'), $request->input('code')];
+        return [$user, $request->input('uid'), $request->input('code')];
     }
 
     protected function processInvalidToken(Request $request, ?User $user = null): Response
@@ -156,7 +169,7 @@ abstract readonly class AuthenticationController
         }
 
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
-        if ($user && ! auth('craft')->guest()) {
+        if ($user && ! auth()->guest()) {
             return redirect(URL::returnUrl());
         }
 
@@ -187,9 +200,7 @@ abstract readonly class AuthenticationController
             return false;
         }
 
-        auth('craft')->login($user);
-
-        return true;
+        return (bool) auth()->loginUsingId($user->id);
     }
 
     protected function redirectUserToCp(User $user): ?Response

@@ -5,16 +5,23 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
+use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Image\Enums\ImageTransformPosition;
+use CraftCms\Cms\Image\Enums\ImageTransformQuality;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -69,7 +76,7 @@ it('requires authentication', function () {
     get(action([ImageTransformsController::class, 'index']))->assertRedirect();
     get(action([ImageTransformsController::class, 'create']))->assertRedirect();
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))->assertRedirect();
-    postJson(action([ImageTransformsController::class, 'save']))->assertUnauthorized();
+    postJson(action([ImageTransformsController::class, 'store']))->assertUnauthorized();
     deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertUnauthorized();
 });
 
@@ -80,31 +87,42 @@ it('requires admin changes', function () {
     get(action([ImageTransformsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
-        ->assertOk()
-        ->assertSee(t("Changes to these settings aren\u{2019}t permitted in this environment."));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/Edit')
+            ->where('readOnly', true));
 
     get(action([ImageTransformsController::class, 'create']))->assertForbidden();
-    postJson(action([ImageTransformsController::class, 'save']), validTransformData())->assertForbidden();
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData())->assertForbidden();
     deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertForbidden();
 });
 
 it('renders index', function () {
     get(action([ImageTransformsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsImageTransformsIndexPage'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/assets/transforms/Index'));
 });
 
 it('renders create', function () {
     get(action([ImageTransformsController::class, 'create']))
-        ->assertOk()
-        ->assertSee(t('Create a new image transform'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/Edit')
+            ->where('title', t('Create a new image transform'))
+            ->where('transform.id', null)
+            ->has('modeOptions', count(ImageTransformMode::cases()))
+            ->has('positionOptions', count(ImageTransformPosition::cases()))
+            ->has('interlaceOptions', count(ImageTransformInterlace::cases()))
+            ->has('qualityOptions', count(ImageTransformQuality::cases())));
 });
 
 it('renders edit for an existing transform', function () {
     $transform = createTestTransform();
 
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
-        ->assertOk()
-        ->assertSee($transform->name);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/Edit')
+            ->where('title', $transform->name)
+            ->where('transform.id', $transform->id)
+            ->where('transform.name', $transform->name)
+            ->where('transform.handle', $transform->handle));
 });
 
 it('returns 404 for a missing transform handle', function () {
@@ -117,7 +135,7 @@ it('saves a new transform', function () {
 
     $payload = validTransformData();
 
-    postJson(action([ImageTransformsController::class, 'save']), $payload)
+    postJson(action([ImageTransformsController::class, 'store']), $payload)
         ->assertOk()
         ->assertJsonPath('modelName', 'transform');
 
@@ -131,6 +149,27 @@ it('saves a new transform', function () {
         ->and($transform->name)->toBe($payload['name']);
 });
 
+it('redirects to the saved transform edit page when saving and continuing', function () {
+    $payload = validTransformData([
+        'handle' => 'continuedTransform',
+    ]);
+
+    post(action([ImageTransformsController::class, 'store']), $payload)
+        ->assertRedirect(Url::cpUrl('settings/assets/transforms/continuedTransform'))
+        ->assertSessionHas('success', t('Transform saved.'));
+});
+
+it('redirects to the posted redirect when saving normally', function () {
+    $payload = validTransformData([
+        'handle' => 'normallySavedTransform',
+        'redirect' => Crypt::encrypt('settings/assets/transforms'),
+    ]);
+
+    post(action([ImageTransformsController::class, 'store']), $payload)
+        ->assertRedirect(Url::cpUrl('settings/assets/transforms'))
+        ->assertSessionHas('success', t('Transform saved.'));
+});
+
 it('updates an existing transform', function () {
     $transform = createTestTransform([
         'name' => 'Original Name',
@@ -138,7 +177,7 @@ it('updates an existing transform', function () {
         'width' => 100,
     ]);
 
-    postJson(action([ImageTransformsController::class, 'save']), validTransformData([
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
         'transformId' => $transform->id,
         'name' => 'Updated Name',
         'handle' => $transform->handle,
@@ -157,13 +196,11 @@ it('updates an existing transform', function () {
 });
 
 it('rejects save when both width and height are missing', function () {
-    postJson(action([ImageTransformsController::class, 'save']), validTransformData([
+    post(action([ImageTransformsController::class, 'store']), validTransformData([
         'width' => '',
         'height' => '',
     ]))
-        ->assertStatus(400)
-        ->assertJsonPath('modelName', 'transform')
-        ->assertJsonPath('errors.width.0', t('You must set at least one of the dimensions.'));
+        ->assertSessionHasErrors('width');
 });
 
 it('normalizes letterbox fill color on save', function () {
@@ -173,7 +210,7 @@ it('normalizes letterbox fill color on save', function () {
         'fill' => 'abc',
     ]);
 
-    postJson(action([ImageTransformsController::class, 'save']), $payload)->assertOk();
+    postJson(action([ImageTransformsController::class, 'store']), $payload)->assertOk();
 
     $service = app(ImageTransforms::class);
     $service->reset();

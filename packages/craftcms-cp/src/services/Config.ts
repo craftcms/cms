@@ -30,7 +30,7 @@ export class ConfigService {
   }
 
   getCpUrl(path: string) {
-    return this.#buildUrl(this.#config.get('cpUrl'), path);
+    return this.#buildUrl(this.#config.get('baseCpUrl'), path);
   }
 
   getActionUrl(path: string) {

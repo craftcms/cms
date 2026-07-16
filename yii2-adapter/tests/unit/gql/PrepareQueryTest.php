@@ -27,12 +27,18 @@ use craft\services\Entries;
 use craft\test\TestCase;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
+use CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery;
+use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
 use Illuminate\Support\Facades\DB;
 use UnitTester;
 
@@ -155,21 +161,28 @@ class PrepareQueryTest extends TestCase
                 AssetResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], fn($result) => $result === ['foo', 'bar'],
             ],
             [
-                AssetResolver::class, [null, ['volumeId' => 2, 'folderId' => 5]], fn($result) => $result->volumeId == 2 && $result->folderId == 5,
+                AssetResolver::class, [null, ['volumeId' => 2, 'folderId' => 5]], fn(AssetQuery $result) => $result->volumeId == 2 && $result->folderId == 5,
             ],
-            /*[
-                AssetResolver::class, [null, []], fn($result) => $result->where[0] === 'in' && !empty($result->where[2]),
-            ],*/
+            [
+                AssetResolver::class, [null, []], fn(AssetQuery $result) => (
+                    $result->getQuery()->wheres[0]['type'] === 'In' &&
+                    $result->getQuery()->wheres[0]['column'] === 'assets.volumeId' &&
+                    $result->getQuery()->wheres[0]['values'] === []
+                ),
+            ],
 
             // Category
             [
                 CategoryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], fn($result) => $result === ['foo', 'bar'],
             ],
             [
-                CategoryResolver::class, [null, ['groupId' => 2]], fn($result) => $result->groupId == 2,
+                CategoryResolver::class, [null, ['groupId' => 2]], fn(CategoryQuery $result) => $result->groupId == 2,
             ],
             [
-                CategoryResolver::class, [null, []], fn($result) => $result->where[0] === 'in' && !empty($result->where[2]),
+                CategoryResolver::class, [null, []], fn(CategoryQuery $result) => (
+                    $result->getQuery()->wheres[0]['type'] === 'raw' &&
+                    str_contains($result->getQuery()->wheres[0]['sql'], 'groupId')
+                ),
             ],
 
             // Entries
@@ -177,21 +190,29 @@ class PrepareQueryTest extends TestCase
                 EntryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], fn($result) => $result === ['foo', 'bar'],
             ],
             [
-                EntryResolver::class, [null, ['sectionId' => 2, 'typeId' => 5]], fn($result) => $result->sectionId == 2 && $result->typeId == 5,
+                EntryResolver::class, [null, ['sectionId' => 2, 'typeId' => 5]], fn(EntryQuery $result) => $result->sectionId == 2 && $result->typeId == 5,
             ],
-            /*[
-                EntryResolver::class, [null, []], function($result) {
+            [
+                EntryResolver::class, [null, []], function(EntryQuery $result) {
                     $section = Sections::getSectionByUid(self::SECTION_UID);
-                    return $result->where === ['or', ['in', 'entries.sectionId', [$section->id]]];
+                    return (
+                        $result->getQuery()->wheres[0]['type'] === 'Nested' &&
+                        $result->getQuery()->wheres[0]['query']->wheres[0]['type'] === 'In' &&
+                        $result->getQuery()->wheres[0]['query']->wheres[0]['column'] === 'entries.sectionId' &&
+                        $result->getQuery()->wheres[0]['query']->wheres[0]['values'] === [$section->id]
+                    );
                 },
-            ],*/
+            ],
 
             // Global Sets
             [
-                GlobalSetResolver::class, [null, ['handle' => 'foo']], fn($result) => $result->handle == 'foo',
+                GlobalSetResolver::class, [null, ['handle' => 'foo']], fn(GlobalSetQuery $result) => $result->handle == 'foo',
             ],
             [
-                GlobalSetResolver::class, [null, []], fn($result) => $result->where[0] === 'in' && !empty($result->where[2]),
+                GlobalSetResolver::class, [null, []], fn(GlobalSetQuery $result) => (
+                    $result->getQuery()->wheres[0]['type'] === 'raw' &&
+                    str_contains($result->getQuery()->wheres[0]['sql'], 'uid')
+                ),
             ],
 
             // Tags
@@ -199,10 +220,13 @@ class PrepareQueryTest extends TestCase
                 TagResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], fn($result) => $result === ['foo', 'bar'],
             ],
             [
-                TagResolver::class, [null, ['groupId' => 2]], fn($result) => $result->groupId == 2,
+                TagResolver::class, [null, ['groupId' => 2]], fn(TagQuery $result) => $result->groupId == 2,
             ],
             [
-                TagResolver::class, [null, []], fn($result) => $result->where[0] === 'in' && !empty($result->where[2]),
+                TagResolver::class, [null, []], fn(TagQuery $result) => (
+                    $result->getQuery()->wheres[0]['type'] === 'raw' &&
+                    str_contains($result->getQuery()->wheres[0]['sql'], 'groupId')
+                ),
             ],
 
             // Users
@@ -210,7 +234,7 @@ class PrepareQueryTest extends TestCase
                 UserResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], fn($result) => $result === ['foo', 'bar'],
             ],
             [
-                UserResolver::class, [null, []], fn($result) => !empty($result->groupId),
+                UserResolver::class, [null, []], fn(UserQuery $result) => !empty($result->groupId),
             ],
         ];
     }

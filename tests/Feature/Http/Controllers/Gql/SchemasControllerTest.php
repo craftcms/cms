@@ -8,17 +8,21 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Session;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
-use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
+use function Pest\Laravel\patch;
+use function Pest\Laravel\patchJson;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -48,12 +52,12 @@ it('requires admin access for schema pages and actions', function () {
     get(cp_url('graphql/schemas/public'))->assertForbidden();
     get(action([SchemasController::class, 'edit'], ['schemaId' => $schema->id]))->assertForbidden();
 
-    postJson(cp_url('actions/graphql/save-schema'), [
+    postJson(action([SchemasController::class, 'store']), [
         'name' => 'Protected Schema',
         'permissions' => schemaControllerScope(),
     ])->assertForbidden();
 
-    postJson(cp_url('actions/graphql/save-public-schema'), [
+    patchJson(action([SchemasController::class, 'update'], ['schemaId' => 'public']), [
         'permissions' => schemaControllerScope(),
         'enabled' => true,
     ])->assertForbidden();
@@ -68,41 +72,57 @@ it('forbids schema pages when admin changes are disabled', function () {
     get(action([SchemasController::class, 'index']))->assertForbidden();
     get(action([SchemasController::class, 'create']))->assertForbidden();
     get(action([SchemasController::class, 'edit'], ['schemaId' => $schema->id]))->assertForbidden();
-    get(action([SchemasController::class, 'editPublic']))->assertForbidden();
+    get(action([SchemasController::class, 'edit'], ['schemaId' => 'public']))->assertForbidden();
 });
 
 it('renders the schema index, create, edit, and public edit screens', function () {
-    $schema = createSchemaForSchemasControllerTest();
+    $schema = createSchemaForSchemasControllerTest([
+        'scope' => ['directive:parseRefs'],
+    ]);
 
     get(action([SchemasController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('GraphQlSchemasPage'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('graphql/schemas/Index'));
 
     get(action([SchemasController::class, 'create']))
-        ->assertOk()
-        ->assertViewIs('graphql.schemas._edit')
-        ->assertViewHas('schema')
-        ->assertViewHas('title', t('Create a new GraphQL Schema'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('graphql/schemas/Edit')
+            ->where('schema.id', null)
+            ->where('title', 'Create a new GraphQL Schema')
+            ->where('permissions', fn ($permissions) => collect($permissions)
+                ->pluck('permissions')
+                ->contains(fn (array $groupPermissions) => array_key_exists('directive:parseRefs', $groupPermissions))));
 
     get(action([SchemasController::class, 'edit'], ['schemaId' => $schema->id]))
-        ->assertOk()
-        ->assertViewIs('graphql.schemas._edit')
-        ->assertViewHas('schema', fn ($viewSchema) => $viewSchema->id === $schema->id)
-        ->assertViewHas('title', $schema->name);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('graphql/schemas/Edit')
+            ->where('schema.id', $schema->id)
+            ->where('schema.scope', ['directive:parseRefs'])
+            ->where('title', $schema->name));
 
-    get(action([SchemasController::class, 'editPublic']))
-        ->assertOk()
-        ->assertViewIs('graphql.schemas._edit')
-        ->assertViewHas('schema')
-        ->assertViewHas('token')
-        ->assertViewHas('title', t('Edit the public GraphQL schema'));
+    get(action([SchemasController::class, 'edit'], ['schemaId' => 'public']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('graphql/schemas/Edit')
+            ->where('schema.isPublic', true)
+            ->has('token')
+            ->where('title', 'Edit the public GraphQL schema'));
 });
 
-it('updates an existing schema via the save action', function () {
-    $schema = createSchemaForSchemasControllerTest();
-    $updatedScope = schemaControllerScope();
+it('creates and updates schemas', function () {
+    $scope = schemaControllerScope();
 
-    postJson(action([SchemasController::class, 'save']), [
-        'schemaId' => $schema->id,
+    postJson(action([SchemasController::class, 'store']), [
+        'name' => 'Created Schema',
+        'permissions' => $scope,
+    ])->assertOk();
+
+    $schema = collect(Gql::getSchemas())->first(fn (GqlSchema $schema) => $schema->name === 'Created Schema');
+
+    expect($schema)->not->toBeNull()
+        ->and($schema?->scope)->toBe($scope);
+
+    $updatedScope = ['directive:parseRefs'];
+
+    patchJson(action([SchemasController::class, 'update'], ['schemaId' => $schema->id]), [
         'name' => 'Renamed Schema',
         'permissions' => $updatedScope,
     ])->assertOk();
@@ -113,9 +133,37 @@ it('updates an existing schema via the save action', function () {
         ->and($updatedSchema?->scope)->toBe($updatedScope);
 });
 
-it('returns not found when saving an unknown schema id', function () {
-    postJson(action([SchemasController::class, 'save']), [
-        'schemaId' => 999999,
+it('redirects to the saved schema edit page when saving and continuing', function () {
+    $response = post(action([SchemasController::class, 'store']), [
+        'name' => 'Continued Schema',
+        'permissions' => schemaControllerScope(),
+    ]);
+
+    $schema = collect(Gql::getSchemas())->first(fn (GqlSchema $schema) => $schema->name === 'Continued Schema');
+
+    expect($schema)->not->toBeNull();
+
+    $response->assertRedirect(Url::cpUrl("graphql/schemas/$schema->id"));
+});
+
+it('redirects to the schema index when saving normally', function () {
+    $schema = createSchemaForSchemasControllerTest();
+
+    patch(action([SchemasController::class, 'update'], ['schemaId' => $schema->id]), [
+        'name' => 'Normally Saved Schema',
+        'permissions' => schemaControllerScope(),
+        'redirect' => Crypt::encrypt('graphql/schemas'),
+    ])->assertRedirect(Url::cpUrl('graphql/schemas'));
+});
+
+it('returns inertia validation errors for schema save failures', function () {
+    post(action([SchemasController::class, 'store']), [
+        'permissions' => schemaControllerScope(),
+    ])->assertSessionHasErrors('name');
+});
+
+it('returns not found when updating an unknown schema id', function () {
+    patchJson(action([SchemasController::class, 'update'], ['schemaId' => 999999]), [
         'name' => 'Missing Schema',
         'permissions' => schemaControllerScope(),
     ])->assertNotFound();
@@ -125,7 +173,7 @@ it('updates the public schema token settings and scope', function () {
     $expiryDate = '2026-12-31 15:30';
     $expectedExpiryDate = DateTimeHelper::toDateTime($expiryDate);
 
-    postJson(action([SchemasController::class, 'savePublic']), [
+    patchJson(action([SchemasController::class, 'update'], ['schemaId' => 'public']), [
         'permissions' => schemaControllerScope(),
         'enabled' => true,
         'expiryDate' => $expiryDate,
@@ -139,15 +187,22 @@ it('updates the public schema token settings and scope', function () {
         ->and($publicToken?->expiryDate?->getTimestamp())->toBe($expectedExpiryDate?->getTimestamp());
 });
 
-it('requires password confirmation for save-schema and save-public-schema', function () {
+it('requires password confirmation for schema mutations', function () {
+    $schema = createSchemaForSchemasControllerTest();
+
     Session::forget('auth.password_confirmed_at');
 
-    postJson(cp_url('actions/graphql/save-schema'), [
+    postJson(action([SchemasController::class, 'store']), [
         'name' => 'Protected Schema',
         'permissions' => schemaControllerScope(),
     ])->assertStatus(423);
 
-    postJson(cp_url('actions/graphql/save-public-schema'), [
+    patchJson(action([SchemasController::class, 'update'], ['schemaId' => $schema->id]), [
+        'name' => 'Protected Schema',
+        'permissions' => schemaControllerScope(),
+    ])->assertStatus(423);
+
+    patchJson(action([SchemasController::class, 'update'], ['schemaId' => 'public']), [
         'permissions' => schemaControllerScope(),
         'enabled' => true,
     ])->assertStatus(423);

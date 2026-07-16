@@ -1,7 +1,12 @@
 import type {StorybookConfig} from '@storybook/vue3-vite';
+import {createRequire} from 'module';
 import {dirname, join} from 'path';
+import {fileURLToPath} from 'url';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
+
+const require = createRequire(import.meta.url);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * This function is used to resolve the absolute path of a package.

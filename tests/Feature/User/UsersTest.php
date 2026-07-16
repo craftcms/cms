@@ -14,10 +14,13 @@ use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Users;
 use Illuminate\Notifications\Channels\MailChannel;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification as LaravelNotification;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 
@@ -451,7 +454,7 @@ test('setVerificationCodeOnUser creates a valid broker token', function () {
     $user = UserModel::factory()->createElement();
     $token = $this->users->setVerificationCodeOnUser($user);
 
-    expect(Password::broker('craft')->tokenExists($user, $token))->toBeTrue();
+    expect(Password::broker()->tokenExists($user, $token))->toBeTrue();
 });
 
 test('sendActivationEmail', function () {
@@ -469,6 +472,41 @@ test('sendActivationEmail', function () {
         ActivationNotification::class,
         fn ($notification, $channels) => in_array(MailChannel::class, $channels)
     );
+});
+
+test('mail notifications use the user preferred language as the Laravel locale', function () {
+    Mail::fake();
+
+    $originalLocale = app()->getLocale();
+    $capturedLocale = null;
+
+    $user = UserModel::factory()->createElement();
+    $this->users->saveUserPreferences($user, [
+        'language' => 'de',
+        'locale' => 'fr-BE',
+    ]);
+
+    $user->notifyNow(new class(function (string $locale) use (&$capturedLocale): void {
+        $capturedLocale = $locale;
+    }) extends LaravelNotification {
+        public function __construct(private readonly Closure $captureLocale) {}
+
+        public function via(mixed $notifiable): array
+        {
+            return [MailChannel::class];
+        }
+
+        public function toMail(mixed $notifiable): MailMessage
+        {
+            ($this->captureLocale)(app()->getLocale());
+
+            return (new MailMessage)->line('Test');
+        }
+    });
+
+    expect($capturedLocale)
+        ->toBe('de')
+        ->and(app()->getLocale())->toBe($originalLocale);
 });
 
 test('canImpersonate', function () {

@@ -144,7 +144,6 @@ JS,
 
         foreach ($users as $user) {
             if (Gate::check('delete', $user)) {
-                /** @phpstan-ignore-next-line */
                 $user->inheritorOnDelete = $transferContentTo;
                 if (Elements::deleteElement($user, $this->hard)) {
                     $deletedCount++;

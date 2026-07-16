@@ -24,7 +24,6 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -33,6 +32,8 @@ use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
+
+use function CraftCms\Cms\currentUser;
 
 #[Singleton]
 readonly class Dashboard
@@ -123,7 +124,7 @@ readonly class Dashboard
     {
         $result = Models\Widget::query()
             ->where('id', $id)
-            ->where('userId', Auth::user()->getAuthIdentifier())
+            ->where('userId', currentUser()->getAuthIdentifier())
             ->firstOrFail();
 
         return Widget::fromConfig($result);
@@ -174,7 +175,7 @@ readonly class Dashboard
             if ($isNewWidget) {
                 // Set the sortOrder
                 $maxSortOrder = Models\Widget::query()
-                    ->where('userId', Auth::user()->getAuthIdentifier())
+                    ->where('userId', currentUser()->getAuthIdentifier())
                     ->max('sortOrder');
 
                 $widgetModel->sortOrder = $maxSortOrder + 1;
@@ -289,7 +290,7 @@ readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        $user = Auth::user();
+        $user = currentUser();
 
         // Recent Entries widget
         $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
@@ -313,16 +314,14 @@ readonly class Dashboard
             ],
         ]));
 
-        User::where('id', $user->id)->update([
+        User::where('id', $user->getCraftUserId())->update([
             'hasDashboard' => true,
         ]);
-
-        $user->hasDashboard = true;
     }
 
     private function getUserWidgetModelById(?int $widgetId = null): Models\Widget
     {
-        $userId = Auth::user()->getAuthIdentifier();
+        $userId = currentUser()->getAuthIdentifier();
 
         if ($widgetId !== null) {
             return Models\Widget::query()
@@ -346,19 +345,18 @@ readonly class Dashboard
      */
     private function getUserWidgets(): Collection|false
     {
-        /** @var User $user */
-        $user = Auth::user();
+        $user = currentUser();
 
         if (! $user) {
             throw new Exception('No logged-in user');
         }
 
-        if (! $user->hasDashboard) {
+        if (! User::where('id', $user->getCraftUserId())->value('hasDashboard')) {
             return false;
         }
 
         return once(fn () => Models\Widget::query()
-            ->where('userId', $user->id)
+            ->where('userId', $user->getCraftUserId())
             ->orderBy('sortOrder')
             ->get()
             ->map(fn (Models\Widget $widget) => Widget::fromConfig($widget)));

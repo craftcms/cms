@@ -1,7 +1,7 @@
 <?php
 
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\Twig\Variables\CraftVariable as LaravelCraftVariable;
 use yii\base\Event;
 
@@ -21,5 +21,5 @@ it('registers custom Twig variables from the legacy init event', function() {
         });
     });
 
-    expect(app(TemplateRenderer::class)->renderString('{{ craft.testVariable.value }}'))->toBe('registered');
+    expect(app(TwigRenderer::class)->renderString('{{ craft.testVariable.value }}'))->toBe('registered');
 });

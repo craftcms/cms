@@ -9,13 +9,15 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\Variables\Cp;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\Utility\Utilities;
-use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
+    Cms::setIsInstalled();
+
     Cms::config()
         ->cpTrigger('admin')
         ->enableGql(true)
@@ -24,28 +26,9 @@ beforeEach(function () {
     Sections::shouldReceive('getTotalEditableSections')->andReturn(0);
     Volumes::shouldReceive('getTotalViewableVolumes')->andReturn(0);
 
-    $user = new class implements Authorizable
-    {
-        public function isAdmin(): bool
-        {
-            return true;
-        }
-
-        public function can($abilities, $arguments = []): bool
-        {
-            return true;
-        }
-
-        public function cant($abilities, $arguments = []): bool
-        {
-            return false;
-        }
-
-        public function cannot($abilities, $arguments = []): bool
-        {
-            return false;
-        }
-    };
+    $user = Mockery::mock(CraftUser::class);
+    $user->shouldReceive('isAdmin')->andReturnTrue();
+    $user->shouldReceive('can')->andReturnTrue();
 
     Auth::shouldReceive('user')->andReturn($user);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
@@ -63,8 +46,8 @@ it('selects nav items from paths with the cp trigger', function () {
 
     $settingsItem = collect($navigation->getItems())->firstWhere('label', 'Settings');
 
-    expect($settingsItem['sel'])->toBeTrue()
-        ->and($settingsItem['linkAttributes']['aria']['current'])->toBe('true');
+    expect($settingsItem->selected)->toBeTrue()
+        ->and($settingsItem->linkAttributes['aria']['current'])->toBe('true');
 });
 
 it('selects parent nav items when a subnav item matches the cp path', function () {
@@ -78,12 +61,12 @@ it('selects parent nav items when a subnav item matches the cp path', function (
     );
 
     $graphqlItem = collect($navigation->getItems())->firstWhere('label', 'GraphQL');
-    $tokensItem = collect($graphqlItem['subnav'])->firstWhere('label', 'Tokens');
+    $tokensItem = collect($graphqlItem->subnav)->firstWhere('label', 'Tokens');
 
-    expect($graphqlItem['sel'])->toBeTrue()
-        ->and($graphqlItem['linkAttributes']['aria']['current'])->toBe('true')
-        ->and($tokensItem['sel'])->toBeTrue()
-        ->and($tokensItem['linkAttributes']['aria']['current'])->toBe('page');
+    expect($graphqlItem->selected)->toBeTrue()
+        ->and($graphqlItem->linkAttributes['aria']['current'])->toBe('true')
+        ->and($tokensItem->selected)->toBeTrue()
+        ->and($tokensItem->linkAttributes['aria']['current'])->toBe('page');
 });
 
 it('uses the cp navigation service for the twig variable', function () {

@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -15,6 +16,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
@@ -52,13 +54,18 @@ class VolumesController
             default => SORT_ASC,
         };
 
-        return Inertia::render('SettingsVolumesIndexPage', [
+        return Inertia::render('settings/assets/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Assets')],
+                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets')],
+                ['label' => t('Volumes')],
             ],
             'sort' => $sort,
-            'title' => t('Asset Settings'),
+            'subnav' => [
+                new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets'))->selected(true),
+                new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms')),
+            ],
+            'title' => t('Volume Settings'),
             'volumes' => $volumes->getAllVolumes(...),
         ]);
     }
@@ -237,10 +244,6 @@ class VolumesController
             return null;
         }
 
-        if (str_starts_with($value, 'disk:')) {
-            return $value;
-        }
-
-        return "fs:{$value}";
+        return Filesystems::resolveDiskName($value);
     }
 }

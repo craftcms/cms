@@ -31,20 +31,6 @@ class LegacyMiddleware
     {
         app()->instance('request', $request);
 
-        if ($request->uri()->path() === 'index.php' && $request->has('p')) {
-            $internal = Request::create(
-                uri: $request->get('p'),
-                method: $request->method(),
-                parameters: $request->except('p'),
-                cookies: $request->cookies->all(),
-                files: $request->allFiles(),
-                server: $request->server->all(),
-                content: $request->getContent(),
-            );
-
-            return $this->app->handle($internal);
-        }
-
         /**
          * Laravel applies \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull
          * globally, which causes issues in the legacy codebase. Here we restore all the
@@ -53,6 +39,8 @@ class LegacyMiddleware
         $this->restoreEmptyStrings($request);
 
         try {
+            $this->ensureCraftApp();
+
             /** @var \craft\web\Request $yiiRequest */
             $yiiRequest = Craft::createObject(App::webRequestConfig());
             $yiiRequest->csrfCookie = Craft::cookieConfig([], $yiiRequest);
@@ -126,6 +114,19 @@ class LegacyMiddleware
             Craft::$app = null;
             app()->forgetInstance('Craft');
         });
+    }
+
+    private function ensureCraftApp(): void
+    {
+        if (class_exists(Craft::class, false) && Craft::$app) {
+            return;
+        }
+
+        $craftApp = $this->app->make('Craft');
+
+        if (!Craft::$app) {
+            Craft::$app = $craftApp;
+        }
     }
 
     private function restoreEmptyStrings(Request $request): void

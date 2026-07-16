@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Contracts;
 
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
@@ -226,7 +227,7 @@ interface PluginInterface
     /**
      * Returns the settings page response.
      *
-     * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
+     * @return mixed The response returned by [[\CraftCms\Cms\Http\Controllers\PluginsController::editSettings()]]
      */
     public function getSettingsResponse(): mixed;
 
@@ -235,14 +236,14 @@ interface PluginInterface
      *
      * This method is called when admin changes are disallowed, if [[$hasReadOnlyCpSettings]] is `true`.
      *
-     * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
+     * @return mixed The response returned by [[\CraftCms\Cms\Http\Controllers\PluginsController::editSettings()]]
      */
     public function getReadOnlySettingsResponse(): mixed;
 
     /**
      * Returns the control panel nav item definition for this plugin, if it has a section in the control panel.
      *
-     * The returned array should contain the following keys:
+     * The returned array should contain the following keys or be objects of NavItem:
      *
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to
@@ -260,14 +261,17 @@ interface PluginInterface
      * For example:
      *
      * ```php
-     * return [
-     *     'label' => 'Commerce',
-     *     'url' => 'commerce',
-     *     'subnav' => [
-     *         'orders' => ['label' => 'Orders', 'url' => 'commerce/orders',
-     *         'discounts' => ['label' => 'Discounts', 'url' => 'commerce/discounts',
-     *     ],
-     * ];
+     * return new NavItem()
+     *     ->label('Commerce')
+     *     ->url('commerce')
+     *     ->subnav([
+     *         'orders' => new NavItem()
+     *             ->label('Orders')
+     *             ->url('commerce/orders'),
+     *         'discounts' => new NavItem()
+     *             ->label('Discounts')
+     *             ->url('commerce/discounts'),
+     *     ]);
      * ```
      *
      * Control panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
@@ -279,7 +283,7 @@ interface PluginInterface
      * @see PluginTrait::$hasCpSection
      * @see Navigation::getItems()
      */
-    public function getCpNavItem(): ?array;
+    public function getCpNavItem(): NavItem|array|null;
 
     // Editions
     // -------------------------------------------------------------------------

@@ -9,7 +9,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     output: {
-      path: __dirname + '/../../../resources/legacy/d3/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/d3/dist',
     },
     plugins: [
       new CopyWebpackPlugin({

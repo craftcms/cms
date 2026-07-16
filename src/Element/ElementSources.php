@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving;
 use CraftCms\Cms\Element\Events\ElementSourceTableAttributesResolving;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
@@ -25,9 +26,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -410,7 +411,7 @@ class ElementSources
             return true;
         }
 
-        $user = Auth::user();
+        $user = currentUserElement();
 
         if (! $user) {
             return false;
@@ -691,11 +692,13 @@ class ElementSources
      */
     public function getTableAttributesForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
-        $user = Auth::user();
+        $user = currentUserElement();
 
         $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
+        /** @var CustomField[] $groupedContentBlocks */
+        $groupedContentBlocks = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
@@ -715,22 +718,35 @@ class ElementSources
                         continue;
                     }
 
-                    if (
-                        $field instanceof PreviewableFieldInterface &&
-                        (! $user || $user->isAdmin() || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
-                    ) {
-                        if ($layoutElement->handle === null) {
-                            // The handle wasn't overridden, so combine it with any other instances (from other layouts)
-                            // where the handle also wasn't overridden
-                            $groupedFieldElements[$field->id][] = $layoutElement;
-                        } else {
-                            // The handle was overridden, so it gets its own table attribute
-                            $attributes["fieldInstance:$layoutElement->uid"] = [
-                                'label' => t($layoutElement->label(), category: 'site'),
-                            ];
+                    if (! $user || $user->isAdmin() || ($layoutElement->getUserCondition()?->matchElement($user) ?? true)) {
+                        if ($field instanceof ContentBlock) {
+                            // Combine it with any other instances of the same Content Block field
+                            // (from other layouts) that share the same handle, so its nested fields
+                            // are only listed once
+                            $key = $field->uid.' - '.($layoutElement->handle ?? $field->handle);
+                            $groupedContentBlocks[$key] ??= $layoutElement;
+                        } elseif ($field instanceof PreviewableFieldInterface) {
+                            if ($layoutElement->handle === null) {
+                                // The handle wasn't overridden, so combine it with any other instances (from other layouts)
+                                // where the handle also wasn't overridden
+                                $groupedFieldElements[$field->id][] = $layoutElement;
+                            } else {
+                                // The handle was overridden, so it gets its own table attribute
+                                $attributes["fieldInstance:$layoutElement->uid"] = [
+                                    'label' => t($layoutElement->label(), category: 'site'),
+                                ];
+                            }
                         }
                     }
                 }
+            }
+        }
+
+        foreach ($groupedContentBlocks as $layoutElement) {
+            /** @var ContentBlock $field */
+            $field = $layoutElement->getField();
+            foreach ($this->getTableAttributesForFieldLayouts([$field->getFieldLayout()]) as $key => $attribute) {
+                $attributes["contentBlock:$layoutElement->uid.$key"] = $attribute;
             }
         }
 

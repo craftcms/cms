@@ -13,7 +13,6 @@ use RectorLaravel\Rector\FuncCall\AppToResolveRector;
 use RectorLaravel\Rector\MethodCall\ResponseHelperCallToJsonResponseRector;
 use RectorLaravel\Rector\MethodCall\UseComponentPropertyWithinCommandsRector;
 use RectorLaravel\Set\LaravelSetList;
-use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -27,8 +26,6 @@ return RectorConfig::configure()
         cacheClass: FileCacheStorage::class
     )
     ->withSkip([
-        __DIR__.'/resources/icons/index.php',
-        __DIR__.'/resources/icons/aliases.php',
         AnonymousMigrationsRector::class => [
             __DIR__.'/src/Database/Migrations/BaseContentRefactorMigration.php',
             __DIR__.'/src/Database/Migrations/BaseEntryTypeMergeMigration.php',
@@ -46,9 +43,8 @@ return RectorConfig::configure()
             __DIR__.'/src/Console/PromptTask.php',
         ],
     ])
-    ->withSetProviders(LaravelSetProvider::class)
-    ->withComposerBased(laravel: true)
     ->withSets([
+        LaravelSetList::LARAVEL_130_WITHOUT_ATTRIBUTES,
         LaravelSetList::LARAVEL_ARRAYACCESS_TO_METHOD_CALL,
         LaravelSetList::LARAVEL_ARRAY_STR_FUNCTION_TO_STATIC_CALL,
         LaravelSetList::LARAVEL_CODE_QUALITY,

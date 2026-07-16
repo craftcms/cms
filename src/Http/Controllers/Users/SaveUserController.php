@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Http\Request;
@@ -100,7 +101,7 @@ readonly class SaveUserController
             Edition::require(Edition::Team);
 
             // Is someone logged in?
-            if ($request->user()) {
+            if ($request->craftUser()) {
                 // Make sure they have permission to register users
                 $this->requirePermission('registerUsers');
             } else {
@@ -117,6 +118,11 @@ readonly class SaveUserController
                         ->email(Query::escapeParam($newEmail))
                         ->status(User::STATUS_INACTIVE)
                         ->one();
+
+                    if ($user) {
+                        // ignore their previous admin status, if they had it
+                        $user->admin = false;
+                    }
                 }
             }
 
@@ -211,7 +217,7 @@ readonly class SaveUserController
         // Is the site set to use email addresses as usernames?
         if ($this->generalConfig->useEmailAsUsername) {
             $user->username = $user->email;
-        } elseif ($isNewUser || $request->user()->admin || $isCurrentUser) {
+        } elseif ($isNewUser || $request->craftUser()?->isAdmin() || $isCurrentUser) {
             $user->username = $request->input('username', ($user->username ?: $user->email));
         }
 
@@ -439,7 +445,7 @@ readonly class SaveUserController
             return false;
         }
 
-        auth('craft')->login($user);
+        auth()->login(UserModel::findOrFail($user->id));
 
         return true;
     }

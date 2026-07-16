@@ -22,12 +22,14 @@ use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
+
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 
 #[Singleton]
 readonly class UserGroups
@@ -67,28 +69,30 @@ readonly class UserGroups
      */
     public function getAssignableGroups(?User $user = null): Collection
     {
-        $currentUser = Auth::user();
+        $currentUser = currentUser();
 
         if (! $currentUser && ! $user) {
             return collect();
         }
 
-        // If either user is an admin, all groups are fair game
-        if (($currentUser !== null && $currentUser->admin) || ($user !== null && $user->admin)) {
+        if (($currentUser !== null && $currentUser->isAdmin()) || ($user !== null && $user->admin)) {
             return $this->getAllGroups();
         }
 
-        return $this->getAllGroups()->filter(function (UserGroup $group) use ($currentUser, $user) {
-            if ($currentUser !== null && $currentUser->can("assignUserGroup:$group->uid")) {
-                return true;
-            }
+        $recipient = $user ?? currentUserElement();
 
-            if ($user !== null && $user->isInGroup($group)) {
-                return true;
-            }
+        return $this->getAllGroups()
+            ->filter(function (UserGroup $group) use ($currentUser, $recipient, $user) {
+                if (
+                    $currentUser !== null &&
+                    $recipient !== null &&
+                    $currentUser->can('assignUserGroup', [$recipient, $group])
+                ) {
+                    return true;
+                }
 
-            return false;
-        });
+                return $user !== null && $user->isInGroup($group);
+            });
     }
 
     public function getGroupById(int $groupId): ?UserGroup

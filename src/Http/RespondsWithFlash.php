@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderObjectTemplate;
 
 trait RespondsWithFlash
@@ -45,29 +46,35 @@ trait RespondsWithFlash
 
     public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = []): Response
     {
-        if (request()->expectsJson()) {
-            return $this->asJsonSuccess($message, $data);
-        }
+        $redirect ??= $this->getPostedRedirectUrl();
 
         $message = Flash::success($message, $notificationSettings);
 
-        $redirect ??= $this->getPostedRedirectUrl();
-
-        if ($redirect) {
-            return redirect($redirect)
-                ->with('success', $message)
-                ->with('success', $message)->with($data);
+        // Set the Inertia shared flash (HandleInertiaRequests reads it from the
+        // session `success` key) on every branch. The JSON branch needs it too:
+        // a client-driven navigation (e.g. runAction performing an Inertia visit
+        // after a DELETE) renders the flash on the *next* request, so the message
+        // must be in the session regardless of the response type.
+        if ($message !== null) {
+            session()->flash('success', $message);
         }
 
-        return back()
-            ->with('success', $message)
-            ->with($data);
+        if (request()->expectsJson()) {
+            return $this->asJsonSuccess($message, $data, $redirect);
+        }
+
+        if ($redirect) {
+            return redirect($redirect)->with($data);
+        }
+
+        return back()->with($data);
     }
 
-    public function asJsonSuccess(?string $message = null, array $data = []): JsonResponse
+    public function asJsonSuccess(?string $message = null, array $data = [], ?string $redirect = null): JsonResponse
     {
         return new JsonResponse($data + array_filter([
             'message' => $message,
+            'redirect' => $redirect,
         ]), 200);
     }
 
@@ -98,10 +105,16 @@ trait RespondsWithFlash
         ?string $redirect = null,
     ): Response {
         $modelName ??= 'model';
+        $modelData = Arr::toArray($model);
+
+        if (! request()->isCpRequest() && ! currentUser()?->can('accessCp')) {
+            unset($modelData['cpEditUrl']);
+        }
+
         $data += [
             'modelName' => $modelName,
             'modelClass' => $model::class,
-            $modelName => Arr::toArray($model),
+            $modelName => $modelData,
         ];
 
         if ($model instanceof Identifiable) {

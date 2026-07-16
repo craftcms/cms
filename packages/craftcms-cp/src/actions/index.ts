@@ -1,4 +1,4 @@
-import type {VariantKey} from '@src/types';
+import type {VariantKey} from '@src/constants/variants';
 
 export type BaseAction =
   | {type: 'clipboard'; value: string}
@@ -61,7 +61,7 @@ export async function runAction(action: BaseAction): Promise<void> {
       await navigator.clipboard.writeText(action.value);
       break;
 
-    case 'http':
+    case 'http': {
       if (action.confirm) {
         if (!confirm(action.confirm)) {
           return;
@@ -70,16 +70,28 @@ export async function runAction(action: BaseAction): Promise<void> {
 
       const response = await fetch(action.url, {
         method: action.method || 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          // Ask for a JSON response so the server returns a redirect URL in the
+          // body rather than a 302 (which `fetch` would silently follow without
+          // navigating the browser).
+          Accept: 'application/json',
+        },
         body: action.body ? JSON.stringify(action.body) : undefined,
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
         throw new Error(data.message ?? 'Request failed');
       }
 
+      if (typeof data.redirect === 'string' && data.redirect) {
+        navigateTo(data.redirect);
+      }
+
       break;
+    }
 
     case 'event':
       if (action.confirm) {
@@ -93,16 +105,33 @@ export async function runAction(action: BaseAction): Promise<void> {
       );
       break;
 
-    case 'download':
+    case 'download': {
       const a = document.createElement('a');
       a.href = action.url;
       a.download = action.filename ?? '';
       a.click();
       break;
+    }
 
     default: {
       const unhandled: never = action;
       throw new Error(`Unknown action type: ${(unhandled as BaseAction).type}`);
     }
+  }
+}
+
+/**
+ * Navigate to `url` after an action. Framework-agnostic: dispatches a cancelable
+ * `action:redirect` event so a host (e.g. an Inertia/SPA layer) can
+ * `preventDefault()` and route its own way. If nothing handles it, falls back to
+ * a full-page `window.location` navigation — so this works with no host wiring.
+ */
+function navigateTo(url: string): void {
+  const proceed = window.dispatchEvent(
+    new CustomEvent('action:redirect', {cancelable: true, detail: {url}})
+  );
+
+  if (proceed) {
+    window.location.assign(url);
   }
 }

@@ -11,7 +11,7 @@ module.exports = getConfig({
       cp: './Craft.js',
     },
     output: {
-      path: __dirname + '/../../../resources/legacy/cp/dist',
+      path: __dirname + '/../../../cms-assets/resources/legacy/cp/dist',
     },
     plugins: [
       new Ttf2Woff2Plugin(),

@@ -15,16 +15,18 @@ it('requires login', function () {
 });
 
 it('caches data under the key of the url', function () {
-    actingAs(User::find()->one());
+    $user = User::find()->one();
+    actingAs($user);
+    $key = sprintf('feed:%s:https://craftcms.com/news.rss', $user->id);
 
-    expect(Cache::has('feed:https://craftcms.com/news.rss'))->toBeFalse();
+    expect(Cache::has($key))->toBeFalse();
 
     postJson(action([FeedController::class, 'cacheData']), [
         'url' => 'https://craftcms.com/news.rss',
         'data' => 'just some data',
     ])->assertOk();
 
-    expect(Cache::get('feed:https://craftcms.com/news.rss'))->toBe('just some data');
+    expect(Cache::get($key))->toBe('just some data');
 });
 
 it('requires a valid url', function () {

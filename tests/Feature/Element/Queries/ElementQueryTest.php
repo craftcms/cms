@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -92,6 +93,32 @@ it('sources concrete element queries from their element tables first', function 
     'addresses' => [fn () => new AddressQuery()->getQuery(), 'addresses'],
     'contentblocks' => [fn () => new ContentBlockQuery()->getQuery(), 'contentblocks'],
 ]);
+
+it('does not duplicate pending before query callbacks when cloned while preparing', function () {
+    $query = new ElementQuery;
+    $clone = null;
+
+    $query->beforeQuery(function (ElementQuery $query) use (&$clone) {
+        if ($clone === null) {
+            $clone = clone $query;
+        }
+    });
+
+    $query->beforeQuery(function (ElementQuery $query) {
+        $query->getQuery()->leftJoin(new Alias('search_marker', 'search_marker'), 'search_marker.id', '=', 'elements.id');
+    });
+
+    $query->applyBeforeQueryCallbacks();
+
+    expect($clone)->toBeInstanceOf(ElementQuery::class);
+
+    $clone->applyBeforeQueryCallbacks();
+
+    $markerJoins = collect($clone->getQuery()->joins)
+        ->filter(fn (JoinClause $join) => normalizeJoinAlias($join) === 'search_marker as search_marker');
+
+    expect($markerJoins)->toHaveCount(1);
+});
 
 function normalizeJoinAlias(JoinClause $join): string
 {

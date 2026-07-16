@@ -46,7 +46,7 @@ final readonly class Backups
         $systemName = File::sanitizeFilename(Cms::systemName(), ['asciiOnly' => true]);
         $systemName = str_replace(['\'', '"'], '', strtolower($systemName));
         $version = Info::fetch()->version ?? Cms::VERSION;
-        $filename = ($systemName ? "$systemName--" : '').gmdate('Y-m-d-His')."--v$version";
+        $filename = ($systemName ? "$systemName--" : '').now('UTC')->format('Y-m-d-His')."--v$version";
         $backupPath = Path::dbBackup();
         $path = $backupPath.DIRECTORY_SEPARATOR.$filename.$this->dumpExtension($connection, $backupFormat);
 

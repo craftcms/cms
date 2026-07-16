@@ -13,8 +13,8 @@ use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\Events\TemplateGlobalsResolving;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Auth;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -50,18 +50,18 @@ readonly class TemplateGlobals
         $globals = [
             'craft' => $this->craftVariable,
             'currentSite' => $currentSite,
-            'currentUser' => Auth::user(),
+            'currentUser' => currentUserElement(),
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
             'language' => app()->getLocale(),
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
-            'loginUrl' => $this->generalConfig->loginPath !== false
-                ? Url::siteUrl($this->generalConfig->getLoginPath())
+            'loginUrl' => is_string($loginPath = $this->generalConfig->getLoginPath())
+                ? Url::siteUrl($loginPath)
                 : null,
-            'logoutUrl' => $this->generalConfig->logoutPath !== false
-                ? Url::siteUrl($this->generalConfig->getLogoutPath())
+            'logoutUrl' => is_string($logoutPath = $this->generalConfig->getLogoutPath())
+                ? Url::siteUrl($logoutPath)
                 : null,
             'setPasswordUrl' => $setPasswordRequestPath !== null ? Url::siteUrl($setPasswordRequestPath) : null,
             'now' => now(),

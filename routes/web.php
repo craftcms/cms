@@ -1,41 +1,62 @@
 <?php
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\OAuthController;
+use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\SiteRouteController;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
+use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Route;
 
+$routes = app(CraftRoutes::class);
+
 if (Edition::get()->registersFrontendUserRoutes()) {
-    if (Cms::config()->loginPath !== false) {
-        Route::get(Cms::config()->loginPath, [LoginController::class, 'showLogin']);
+    if (Cms::config()->getLoginPath() !== false) {
         Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
     }
 
-    if (Cms::config()->verifyEmailPath !== false) {
-        Route::get(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'show']);
-        Route::post(Cms::config()->verifyEmailPath, [VerifyEmailController::class, 'store']);
-    }
-
-    Route::middleware('auth:craft')->group(function () {
-        if (Cms::config()->logoutPath !== false) {
-            Route::get(Cms::config()->logoutPath, [LoginController::class, 'logout']);
+    /*
+     * These paths can be localized per site, so a route is registered for every
+     * site's value. Changing them or the sites requires re-running `route:cache`
+     * on installs that cache routes.
+     */
+    if (Cms::isInstalled()) {
+        foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
+            Route::get($path, [LoginController::class, 'showLogin']);
+            Route::post($path, [LoginController::class, 'attemptLogin'])
+                ->middleware('throttle:'.LoginRateLimiter::NAME);
         }
-    });
+
+        foreach ($routes->localizedConfigPaths('getVerifyEmailPath') as $path) {
+            Route::get($path, [VerifyEmailController::class, 'show']);
+            Route::post($path, [VerifyEmailController::class, 'store']);
+        }
+
+        foreach ($routes->localizedConfigPaths('getSetPasswordPath') as $path) {
+            Route::get($path, [SetPasswordController::class, 'show']);
+            Route::post($path, [SetPasswordController::class, 'store']);
+        }
+
+        foreach ($routes->localizedConfigPaths('getLogoutPath') as $path) {
+            Route::get($path, [LoginController::class, 'logout'])->middleware('auth');
+        }
+    }
 }
 
 if (OAuth::isAvailable()) {
-    Route::middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () {
+    Route::middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () use ($routes) {
         Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
         Route::get('oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
-        Route::prefix(Cms::config()->cpTrigger)->middleware('craft.cp')->group(function () {
+        Route::prefix($routes->cpTriggerRoutePrefix())->middleware('craft.cp')->group(function () {
             Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect']);
         });
     });
@@ -51,6 +72,4 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
     });
 }
 
-Route::fallback(function () {
-    abort(404);
-});
+Route::fallback(SiteRouteController::class)->name('siteFallback');

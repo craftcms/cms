@@ -27,3 +27,14 @@ database/*.sqlite
 resources/js/actions
 resources/js/routes
 resources/js/wayfinder
+
+# TypeScript transformer generated files
+resources/js/generated/*
+!resources/js/generated/.gitkeep
+
+# Built CMS assets
+cms-assets/resources/build
+cms-assets/resources/hot
+cms-assets/resources/legacy
+cms-assets/resources/icons/*
+!cms-assets/resources/icons/custom-icons

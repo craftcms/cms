@@ -18,7 +18,6 @@ use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use InvalidArgumentException;
 use RuntimeException;
-use Throwable;
 use yii\base\Component;
 
 /**
@@ -159,13 +158,10 @@ class Config extends Component
             foreach ($envConfig as $name => $value) {
                 // Use the fluent methods when possible, in case it has any value normalization logic
                 if (method_exists($config, $name)) {
-                    try {
-                        $config->$name($value);
-                        continue;
-                    } catch (Throwable) {
-                    }
-                    $config->$name = $value;
+                    $config->$name($value);
+                    continue;
                 }
+                $config->$name = $value;
             }
 
             return $config;

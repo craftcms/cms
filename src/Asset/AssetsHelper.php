@@ -28,7 +28,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use DateTime;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -84,9 +84,9 @@ class AssetsHelper
      * Generates the URL for an asset.
      *
      * @param  string|null  $uri  Asset URI to use. Defaults to the filename.
-     * @param  DateTime|null  $dateUpdated  last datetime the target of the url was updated, if known
+     * @param  DateTimeInterface|null  $dateUpdated  last datetime the target of the url was updated, if known
      */
-    public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTimeInterface $dateUpdated = null): string
     {
         $volume = $asset->getVolume();
         $pathParts = explode('/', $asset->folderPath.($uri ?? $asset->getFilename()));
@@ -103,11 +103,15 @@ class AssetsHelper
     /**
      * Returns revision query parameters that should be appended to as asset URL.
      */
-    public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
+    public static function revParams(Asset $asset, ?DateTimeInterface $dateUpdated = null): array
     {
         $v = [];
 
-        $dateModified = max($asset->dateModified, $dateUpdated);
+        $dateModified = $asset->dateModified;
+
+        if ($dateUpdated && (! $dateModified || $dateUpdated->getTimestamp() > $dateModified->getTimestamp())) {
+            $dateModified = $dateUpdated;
+        }
 
         if ($dateModified) {
             $v[] = $dateModified->getTimestamp();
@@ -129,7 +133,7 @@ class AssetsHelper
      *
      * @param  bool  $fsOnly  Only append a revision param if the URL begins with the asset’s filesystem URL
      */
-    public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null, bool $fsOnly = false): string
+    public static function revUrl(string $url, Asset $asset, ?DateTimeInterface $dateUpdated = null, bool $fsOnly = false): string
     {
         $revParams = static::revParams($asset, $dateUpdated);
 
@@ -141,11 +145,11 @@ class AssetsHelper
         $baseUrls = Collection::make();
         $volume = $asset->getVolume();
 
-        if ($volume->getFs()->hasUrls) {
+        if ($volume->sourceHasUrls()) {
             $baseUrls->push(self::diskBaseUrl($volume->sourceDisk()));
         }
 
-        if ($volume->getTransformFs()->hasUrls) {
+        if ($volume->transformHasUrls()) {
             $baseUrls->push(self::diskBaseUrl($volume->transformDisk()));
         }
 

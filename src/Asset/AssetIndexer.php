@@ -28,7 +28,6 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use DateTime;
 use Generator;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -37,6 +36,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use League\Flysystem\StorageAttributes;
@@ -66,8 +66,6 @@ class AssetIndexer
             return;
         }
 
-        $fsSubpath = $volume->getSubpath();
-
         try {
             foreach ($fileList as $listing) {
                 if (! $listing instanceof StorageAttributes) {
@@ -92,7 +90,7 @@ class AssetIndexer
                     'fileSize' => ! $listing->isDir() && method_exists($listing, 'fileSize') ? $listing->fileSize() : null,
                 ]);
 
-                $path = $listing->getAdjustedUri($fsSubpath);
+                $path = $listing->getUri();
                 $segments = preg_split('/\\\\|\//', $path);
                 $lastSegmentIndex = count($segments) - 1;
 
@@ -211,7 +209,6 @@ class AssetIndexer
     public function storeIndexList(Generator $indexList, int $sessionId, Volume $volume): int
     {
         $values = [];
-        $fsSubpath = $volume->getSubpath();
         $now = now();
 
         /** @var FsListing $volumeListing */
@@ -220,13 +217,13 @@ class AssetIndexer
                 $timestamp = null;
             } else {
                 $dateModified = $volumeListing->getDateModified();
-                $timestamp = $dateModified !== null ? new DateTime('@'.$dateModified) : $now;
+                $timestamp = $dateModified !== null ? Date::createFromTimestampUTC($dateModified) : $now;
             }
 
             $values[] = [
                 'volumeId' => $volume->id,
                 'sessionId' => $sessionId,
-                'uri' => $volumeListing->getAdjustedUri($fsSubpath),
+                'uri' => $volumeListing->getUri(),
                 'size' => $volumeListing->getFileSize(),
                 'timestamp' => $timestamp,
                 'isDir' => $volumeListing->getIsDir(),
@@ -513,7 +510,7 @@ class AssetIndexer
         $indexEntry = new AssetIndexEntry([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
-            'uri' => $listing->getAdjustedUri($volume->getSubpath()),
+            'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
@@ -541,7 +538,7 @@ class AssetIndexer
         $indexEntry = new AssetIndexEntry([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
-            'uri' => $listing->getAdjustedUri($volume->getSubpath()),
+            'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),

@@ -34,7 +34,6 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -56,6 +55,7 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -496,7 +496,7 @@ class ProjectConfig
 
         if ($updateTimestamp && ! $this->_timestampUpdated && $valueHasChanged) {
             $this->_timestampUpdated = true;
-            $this->_setInternal(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(),
+            $this->_setInternal(self::PATH_DATE_MODIFIED, now()->getTimestamp(),
                 'Update timestamp for project config', false, false);
         }
 
@@ -790,7 +790,7 @@ class ProjectConfig
 
         if (! empty($deltaChanges)) {
             $this->storeYamlHistory([
-                'dateApplied' => date('Y-m-d H:i:s'),
+                'dateApplied' => now()->format('Y-m-d H:i:s'),
                 'changes' => $deltaChanges,
             ]);
         }
@@ -1107,7 +1107,7 @@ class ProjectConfig
         unset($config[self::PATH_META]);
 
         $config[self::PATH_ADDRESSES] = $this->_getAddressesData();
-        $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
+        $config[self::PATH_DATE_MODIFIED] = now()->getTimestamp();
         $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
         $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
         $config[self::PATH_FIELDS] = $this->_getFieldData();
@@ -1507,8 +1507,12 @@ class ProjectConfig
 
             if (! empty($projectConfigNames)) {
                 foreach ($projectConfigNames as $uid => $name) {
-                    $uids[] = '/^(.*'.preg_quote((string) $uid).'.*)$/mi';
-                    $replacements[] = '$1 # '.$name;
+                    $name = trim((string) $name);
+
+                    if ($name !== '') {
+                        $uids[] = sprintf('/^.*\b%s\b.*$/m', preg_quote((string) $uid));
+                        $replacements[] = "$0 # $name";
+                    }
                 }
             }
 

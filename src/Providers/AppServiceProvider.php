@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Providers;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
@@ -12,6 +13,7 @@ use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
@@ -19,7 +21,9 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;
 use GuzzleHttp\Utils;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
@@ -31,6 +35,7 @@ use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
+use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +43,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Override;
@@ -51,9 +55,9 @@ use function CraftCms\Cms\t;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public static int $minPasswordLength = 8;
+    public static int $minPasswordLength = UserPasswordRule::MIN_PASSWORD_LENGTH;
 
-    public static int $maxPasswordLength = 160;
+    public static int $maxPasswordLength = UserPasswordRule::MAX_PASSWORD_LENGTH;
 
     private string $root = __DIR__.'/../..';
 
@@ -67,6 +71,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        AuthenticationException::redirectUsing(function () {
+            $loginPath = Cms::config()->getLoginPath();
+
+            if (! request()->isCpRequest() && $loginPath !== false) {
+                return Url::siteUrl($loginPath);
+            }
+
+            return Url::cpUrl(CpAuthPath::Login->value);
+        });
 
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(
@@ -85,6 +98,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->setNamespace();
         $this->bootAliases();
+        Cms::setDefaultTimezone();
 
         $this->app->booted(function () {
             /**
@@ -101,19 +115,13 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        $iconsDir = (string) realpath("{$this->root}/resources/icons");
-        $icons = [];
-
-        if ($iconsDir) {
-            foreach (array_merge(glob("{$iconsDir}/*.svg") ?: [], glob("{$iconsDir}/*/*.svg") ?: []) as $path) {
-                $icons[$path] = public_path('vendor/craft/icons/'.substr($path, strlen($iconsDir) + 1));
-            }
+        if (! $this->app->runningInConsole()) {
+            return;
         }
 
-        $this->publishes($icons, ['craftcms', 'craftcms-assets', 'craftcms-icons']);
         $this->publishes([
-            "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
-            "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
+            CmsAssets::resourcesPath('build') => public_path('vendor/craft/build'),
+            CmsAssets::resourcesPath('legacy') => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
     }
 
@@ -151,7 +159,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Request::mixin(new RequestMixin);
-        Session::mixin(new SessionMixin);
+        SessionStore::mixin(new SessionMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);
@@ -170,7 +178,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
-            $defaultUrl ??= Auth::guard('craft')->guest()
+            $defaultUrl ??= Auth::guest()
                 ? action_url('users/redirect')
                 : $this->defaultReturnUrl();
 
@@ -240,6 +248,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
         Aliases::set('@craftcms', File::normalizePath($this->root));
+        Aliases::set('@cmsAssets', CmsAssets::packagePath());
         Aliases::set('@package', '@craftcms/src');
         Aliases::set('@resources', "{$this->root}/resources");
         Aliases::set('@vendor', '@root/vendor');

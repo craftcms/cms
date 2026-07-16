@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Cp;
 
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 
-#[Singleton]
+#[Scoped]
 class RequestedSite
 {
     private Site|false|null $requestedSite = null;

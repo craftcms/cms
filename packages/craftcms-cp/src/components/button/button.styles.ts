@@ -1,6 +1,12 @@
 import {css} from 'lit';
 export default css`
   :host {
+    /* Necessary to use variables here to override the default active style specificity */
+    --_active-background-color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)) h s
+        calc(l - 10)
+    );
+    --_active-color: var(--c-color-on-loud);
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -17,11 +23,11 @@ export default css`
     min-height: var(--c-button-height, var(--c-size-control-md));
     min-width: var(--c-button-width, var(--c-size-control-md));
     white-space: nowrap;
+    border-width: var(--c-button-border-width, 1px);
+    border-style: var(--c-button-border-style, solid);
 
     /* Colorable styles */
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
-    border-width: var(--c-button-border-width, 1px);
-    border-style: var(--c-button-border-style, solid);
     border-color: var(
       --c-color-border-loud,
       var(--c-color-neutral-border-loud)
@@ -34,22 +40,17 @@ export default css`
 
   @media (hover: hover) {
     :host(:hover) {
-      background-color: color-mix(
-        in oklab,
-        var(--c-color-fill-loud, var(--c-button-default-fill)),
-        var(--c-color-mix-hover)
+      background-color: hsl(
+        from var(--c-color-fill-loud, var(--c-button-default-fill)) h s
+          calc(l - 5)
       );
       color: var(--c-color-on-loud);
     }
   }
 
   :host(:not(:disabled):not(.loading):active) {
-    color: var(--c-color-on-loud);
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)),
-      var(--c-color-mix-active)
-    );
+    color: var(--_active-color);
+    background-color: var(--_active-background-color);
   }
 
   /*
@@ -151,25 +152,39 @@ export default css`
     );
   }
 
-  /* None */
-  :host([appearance~='none']),
-  :host([appearance~='none']:hover),
-  :host([appearance~='none']:not(:disabled):not(.loading):active) {
+  /* Plain & Outline (Shared) */
+  :host([appearance~='plain']),
+  :host([appearance~='outline']) {
     background-color: transparent;
-    border-color: transparent;
-    color: inherit;
-    padding: 0;
-    min-height: auto;
-    min-width: auto;
+    color: var(--c-color-on-quiet);
+  }
 
-    &:before {
-      display: none;
-    }
+  :host([appearance~='plain']:hover),
+  :host([appearance~='outline']:hover) {
+    background-color: hsl(
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
+        calc(l - 5)
+    );
+  }
+
+  :host([appearance~='plain']:active),
+  :host([appearance~='outline']:active) {
+    --_active-background-color: hsl(
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
+        calc(l - 8)
+    );
+    --_active-color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+  }
+
+  :host([appearance~='plain'][active]),
+  :host([appearance~='outline'][active]) {
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
+    border-color: var(--c-color-border-loud);
   }
 
   /* Plain */
   :host([appearance~='plain']) {
-    background-color: transparent;
     border-color: transparent;
     color: inherit;
 
@@ -197,75 +212,52 @@ export default css`
   }
 
   /* Filled */
-  :host([appearance~='filled']) {
+  :host([appearance~='solid']) {
     background-color: var(
-      --c-color-fill-normal,
-      var(--c-color-neutral-fill-normal)
+      --c-color-fill-loud,
+      var(--c-color-neutral-fill-loud)
     );
     border-color: transparent;
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  :host([appearance='filled']:not(:disabled):not(.loading):hover) {
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
-      var(--c-color-mix-hover)
+  :host([appearance='solid']:hover) {
+    background-color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
+        calc(l - 5)
     );
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  :host([appearance='filled']:not(:disabled):not(.loading):active) {
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-active)
+  :host([appearance='solid']:active) {
+    --_active-background-color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
+        calc(l - 10)
     );
+    --_active-color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  /* Dashed */
-  :host([appearance~='dashed']) {
-    background-color: transparent;
-    border-color: var(--c-color-border-normal);
-    border-style: dashed;
-    color: var(--c-color-on-quiet);
-  }
-
-  :host([appearance='dashed']:not(:disabled):not(.loading):hover) {
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-quiet, var(--c-button-default-fill)),
-      var(--c-color-mix-hover)
-    );
-    color: var(--c-color-on-quiet);
-  }
-
-  :host([appearance='dashed']:not(:disabled):not(.loading):active) {
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-active)
-    );
+  /* Outline */
+  :host([appearance='outline']) {
+    border-color: var(--c-color-border-loud);
   }
 
   /*
   Variants (aka fill colors) 
    */
-  :host([variant~='primary']) {
-    --c-color-fill-loud: var(--c-color-brand-fill-loud);
-    --c-color-fill-normal: var(--c-color-brand-fill-normal);
-    --c-color-fill-quiet: var(--c-color-brand-fill-quiet);
-    --c-color-border-loud: var(--c-color-brand-border-loud);
-    --c-color-border-normal: var(--c-color-brand-border-normal);
-    --c-color-border-quiet: var(--c-color-brand-border-quiet);
-    --c-color-on-loud: var(--c-color-brand-on-loud);
-    --c-color-on-normal: var(--c-color-brand-on-normal);
-    --c-color-on-quiet: var(--c-color-brand-on-quiet);
+  :host([variant~='accent']) {
+    --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
+    --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-on-loud: var(--c-color-accent-on-loud);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
   }
 
-  :host([variant='default']) {
+  :host([variant='neutral']) {
     --c-color-fill-loud: var(--c-color-neutral-fill-loud);
     --c-color-fill-normal: var(--c-color-neutral-fill-normal);
     --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
@@ -339,5 +331,68 @@ export default css`
       color: white;
       transform: translateX(-100%);
     }
+  }
+
+  /*
+  Link mode: the inner <a> is the full interactive surface.
+  Move inline padding from :host to the anchor so the whole button is clickable.
+   */
+  :host([href]:not([disabled])) {
+    padding-inline: 0;
+
+    /* Lion's minimum-click-target overlay is positioned, so it paints above
+       the (non-positioned) anchor and swallows every pointer click before it
+       can activate the link. Recreate the overlay on the anchor instead, so
+       the full target navigates. */
+    &::before {
+      display: none;
+    }
+  }
+
+  .link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: inherit;
+    gap: inherit;
+    inline-size: 100%;
+    /* Stretch to the host's full cross size so the whole button (including
+       block padding) is the clickable link. The host's height is indefinite
+       (min-height), so a percentage min-block-size would not resolve. */
+    align-self: stretch;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    padding-inline: var(
+      --c-button-spacing-inline,
+      var(--c-form-control-spacing-inline)
+    );
+
+    /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
+       part of the anchor so clicks on it follow the link. */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-height: 44px;
+      min-width: 44px;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  :host([href][size~='small']:not([disabled])) .link {
+    padding-inline: var(--c-spacing-sm);
+  }
+
+  :host([href][size~='large']:not([disabled])) .link {
+    padding-inline: var(--c-spacing-lg);
+  }
+
+  :host([href][size~='zero']:not([disabled])) .link,
+  :host([href][icon]:not([disabled])) .link {
+    padding-inline: 0;
   }
 `;

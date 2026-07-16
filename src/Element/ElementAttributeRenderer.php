@@ -23,7 +23,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Stringable;
@@ -125,7 +125,7 @@ readonly class ElementAttributeRenderer
 
     public function attributeHtml(mixed $value): string
     {
-        if ($value instanceof DateTime) {
+        if ($value instanceof DateTimeInterface) {
             $formatter = I18N::getFormatter();
 
             return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
@@ -354,23 +354,80 @@ readonly class ElementAttributeRenderer
     {
         $parts = explode('.', $attribute);
         $uid = Str::after(array_shift($parts), 'contentBlock:');
-        $layoutElement = $element->getFieldLayout()?->getElementByUid($uid);
 
-        if (! $layoutElement instanceof CustomField) {
-            return '';
+        $field = null;
+        $layoutElement = $element->getFieldLayout()?->getElementByUid($uid);
+        if ($layoutElement instanceof CustomField) {
+            try {
+                $field = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+            }
         }
 
-        try {
-            $field = $layoutElement->getField();
-        } catch (FieldNotFoundException) {
-            return '';
+        if (! $field instanceof ContentBlockField) {
+            $field = $this->contentBlockFieldFromLayoutElementUid($element, $uid);
         }
 
         if (! $field instanceof ContentBlockField) {
             return '';
         }
 
-        return $element->getFieldValue($field->handle)->getAttributeHtml(implode('.', $parts));
+        $block = $element->getFieldValue($field->handle);
+
+        return $block?->getAttributeHtml(implode('.', $parts)) ?? '';
+    }
+
+    /**
+     * Returns the Content Block field referenced by a table attribute key.
+     *
+     * Content Block table attributes are deduplicated across the layouts of an element source (see
+     * [[\CraftCms\Cms\Element\ElementSources::getTableAttributesForFieldLayouts()]]), so the layout
+     * element UID in the key may belong to a different entry type's layout than this element's. This
+     * resolves it to the matching instance — by field UID and effective handle — in this element's own
+     * layout.
+     *
+     * (Separate from [[getFieldFromAlternativeLayouts()]], which matches on the raw handle override and
+     * so can't resolve Content Blocks that keep their default handle.)
+     */
+    private function contentBlockFieldFromLayoutElementUid(ElementInterface $element, string $layoutElementUid): ?ContentBlockField
+    {
+        // Find the Content Block field + effective handle that the UID refers to,
+        // in any of this element type's layouts
+        $fieldUid = null;
+        $handle = null;
+        foreach ($this->fields->getLayoutsByType($element::class) as $fieldLayout) {
+            $layoutElement = $fieldLayout->getElementByUid($layoutElementUid);
+            if (! $layoutElement instanceof CustomField) {
+                continue;
+            }
+            try {
+                $field = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                continue;
+            }
+            if ($field instanceof ContentBlockField) {
+                $fieldUid = $field->uid;
+                $handle = $field->handle;
+            }
+            break;
+        }
+
+        if ($fieldUid === null) {
+            return null;
+        }
+
+        // Return the matching Content Block instance in this element's own layout
+        foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if (
+                $field instanceof ContentBlockField &&
+                $field->uid === $fieldUid &&
+                $field->handle === $handle
+            ) {
+                return $field;
+            }
+        }
+
+        return null;
     }
 
     private function renderGeneratedFieldAttribute(ElementInterface $element, string $attribute): string

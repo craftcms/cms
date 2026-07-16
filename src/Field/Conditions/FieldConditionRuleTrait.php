@@ -8,9 +8,9 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use RuntimeException;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -178,7 +178,7 @@ trait FieldConditionRuleTrait
 
     public function showLabelHint(): bool
     {
-        return Auth::user()?->getPreference('showFieldHandles') ?? false;
+        return currentUser()?->getPreference('showFieldHandles') ?? false;
     }
 
     public function getExclusiveQueryParams(): array

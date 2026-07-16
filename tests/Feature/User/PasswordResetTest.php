@@ -23,7 +23,7 @@ test('sendPasswordResetEmail dispatches ResetPasswordNotification', function () 
     Users::sendPasswordResetEmail($user);
 
     Notification::assertSentTo(
-        $user,
+        UserModel::findOrFail($user->id),
         ResetPasswordNotification::class,
         fn ($notification, $channels) => in_array(MailChannel::class, $channels)
     );
@@ -33,16 +33,20 @@ test('isVerificationCodeValidForUser handles Laravel tokens', function () {
     $user = UserModel::factory()->createElement();
     $user = User::find()->id($user->id)->one();
 
-    $token = Password::broker('craft')->createToken($user);
+    $token = Password::broker()->createToken($user);
 
-    expect(Password::broker('craft')->tokenExists($user, $token))->toBeTrue();
+    expect(Password::broker()->tokenExists($user, $token))->toBeTrue();
 });
 
 test('reset password notification uses the broker token', function () {
     $user = UserModel::factory()->createElement();
-    $token = Password::broker('craft')->createToken($user);
+    $token = Password::broker()->createToken($user);
     $mailable = new ResetPasswordNotification($token)->toMail($user);
+    parse_str(parse_url((string) $mailable->variables['link'], PHP_URL_QUERY), $query);
 
-    expect((string) $mailable->variables['link'])->toContain('setpassword?code='.$token)
-        ->and(Password::broker('craft')->tokenExists($user, $token))->toBeTrue();
+    expect($query)->toMatchArray([
+        'code' => $token,
+        'uid' => $user->uid,
+    ])
+        ->and(Password::broker()->tokenExists($user, $token))->toBeTrue();
 });

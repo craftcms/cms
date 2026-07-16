@@ -1,4 +1,4 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest';
+import {beforeEach, describe, expect, test, vi} from 'vitest';
 
 // Prevent happy-dom from making real network requests for CSS/JS files
 const happyDOM = (window as any).happyDOM;
@@ -32,18 +32,23 @@ describe('appendHeadHtml', () => {
     );
     const links = document.head.querySelectorAll('link');
     expect(links.length).toBe(1);
-    expect(links[0].getAttribute('rel')).toBe('stylesheet');
-    expect(links[0].getAttribute('href')).toBe('https://example.com/style.css');
+    expect(links[0]!.getAttribute('rel')).toBe('stylesheet');
+    expect(links[0]!.getAttribute('href')).toBe(
+      'https://example.com/style.css'
+    );
   });
 
   test('appends a script element to head', async () => {
     const {appendHeadHtml} = await freshImport();
-    await appendHeadHtml(
+    const append = appendHeadHtml(
       '<script src="https://example.com/script.js"></script>'
     );
+    document.head.querySelector('script')!.dispatchEvent(new Event('load'));
+    await append;
+
     const scripts = document.head.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].getAttribute('src')).toBe(
+    expect(scripts[0]!.getAttribute('src')).toBe(
       'https://example.com/script.js'
     );
   });
@@ -53,7 +58,7 @@ describe('appendHeadHtml', () => {
     await appendHeadHtml('<script>console.log("hello")</script>');
     const scripts = document.head.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].textContent).toBe('console.log("hello")');
+    expect(scripts[0]!.textContent).toBe('console.log("hello")');
   });
 
   test('appends arbitrary HTML to head', async () => {
@@ -61,7 +66,7 @@ describe('appendHeadHtml', () => {
     await appendHeadHtml('<meta name="description" content="test">');
     const metas = document.head.querySelectorAll('meta[name="description"]');
     expect(metas.length).toBe(1);
-    expect(metas[0].getAttribute('content')).toBe('test');
+    expect(metas[0]!.getAttribute('content')).toBe('test');
   });
 
   test('preserves link attributes when appending', async () => {
@@ -78,9 +83,12 @@ describe('appendHeadHtml', () => {
 
   test('preserves script attributes when appending', async () => {
     const {appendHeadHtml} = await freshImport();
-    await appendHeadHtml(
+    const append = appendHeadHtml(
       '<script src="https://example.com/b.js" type="module" defer></script>'
     );
+    document.head.querySelector('script')!.dispatchEvent(new Event('load'));
+    await append;
+
     const script = document.head.querySelector('script')!;
     expect(script.getAttribute('src')).toBe('https://example.com/b.js');
     expect(script.getAttribute('type')).toBe('module');
@@ -104,10 +112,28 @@ describe('appendBodyHtml', () => {
 
   test('appends script with src to body', async () => {
     const {appendBodyHtml} = await freshImport();
-    await appendBodyHtml('<script src="https://example.com/body.js"></script>');
+    const append = appendBodyHtml(
+      '<script src="https://example.com/body.js"></script>'
+    );
+    document.body.querySelector('script')!.dispatchEvent(new Event('load'));
+    await append;
+
     const scripts = document.body.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].getAttribute('src')).toBe('https://example.com/body.js');
+    expect(scripts[0]!.getAttribute('src')).toBe('https://example.com/body.js');
+  });
+
+  test('appends elements to a provided parent', async () => {
+    const {appendElementHtml} = await freshImport();
+    const parent = document.createElement('div');
+
+    const dispose = await appendElementHtml('<p id="child">Hello</p>', parent);
+
+    expect(parent.querySelector('#child')!.textContent).toBe('Hello');
+
+    dispose();
+
+    expect(parent.querySelector('#child')).toBeNull();
   });
 });
 
@@ -148,8 +174,12 @@ describe('JS deduplication', () => {
   test('does not add duplicate script src', async () => {
     const {appendBodyHtml} = await freshImport();
     const js = '<script src="https://example.com/dup.js"></script>';
+    const firstAppend = appendBodyHtml(js);
+    document.body.querySelector('script')!.dispatchEvent(new Event('load'));
+    await firstAppend;
+
     await appendBodyHtml(js);
-    await appendBodyHtml(js);
+
     const scripts = document.body.querySelectorAll('script');
     expect(scripts.length).toBe(1);
   });
@@ -161,5 +191,110 @@ describe('JS deduplication', () => {
     await appendBodyHtml(inline);
     const scripts = document.body.querySelectorAll('script');
     expect(scripts.length).toBe(2);
+  });
+
+  test('waits for external scripts before appending subsequent nodes', async () => {
+    const {appendElementHtml} = await freshImport();
+    const parent = document.createElement('div');
+    const append = appendElementHtml(
+      '<script src="https://example.com/ordered.js"></script><span id="after-script"></span>',
+      parent
+    );
+
+    await Promise.resolve();
+
+    expect(parent.querySelector('#after-script')).toBeNull();
+
+    parent.querySelector('script')!.dispatchEvent(new Event('load'));
+    await append;
+
+    expect(parent.querySelector('#after-script')).not.toBeNull();
+  });
+});
+
+describe('serializeFormInputs', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  test('serializes named inputs, selects, and textareas', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input name="a" value="1">
+        <textarea name="b">two</textarea>
+        <select name="c"><option value="3" selected>3</option></select>
+        <input value="no-name">
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'a=1&b=two&c=3'
+    );
+  });
+
+  test('reads live property values, not attributes', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `<div id="host"><input name="a" value="old"></div>`;
+    document.querySelector<HTMLInputElement>('[name=a]')!.value = 'new';
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe('a=new');
+  });
+
+  test('omits disabled controls and unchecked checkboxes/radios', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input name="a" value="1" disabled>
+        <input type="checkbox" name="b" value="1">
+        <input type="checkbox" name="c" value="1" checked>
+        <input type="radio" name="d" value="x">
+        <input type="radio" name="d" value="y" checked>
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'c=1&d=y'
+    );
+  });
+
+  test('omits buttons and file inputs', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input type="submit" name="a" value="Go">
+        <input type="button" name="b" value="Press">
+        <input type="file" name="c">
+        <input type="hidden" name="d" value="kept">
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'd=kept'
+    );
+  });
+
+  test('expands multi-selects into repeated params', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <select name="a[]" multiple>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+        </select>
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'a%5B%5D=1&a%5B%5D=3'
+    );
+  });
+
+  test('url-encodes namespaced names and values', async () => {
+    const {serializeFormInputs} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input name="types[PlainText][placeholder]" value="a b&c">
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'types%5BPlainText%5D%5Bplaceholder%5D=a+b%26c'
+    );
   });
 });

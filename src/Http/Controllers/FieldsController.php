@@ -4,32 +4,29 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Component\Contracts\Chippable;
-use CraftCms\Cms\Component\Contracts\Colorable;
-use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\FieldHtml;
 use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
-use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
-use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Flash;
@@ -40,8 +37,10 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use ReflectionException;
@@ -59,53 +58,64 @@ class FieldsController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private HtmlStack $HtmlStack,
+        private readonly HtmlStack $HtmlStack,
         private readonly Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request)
+    public function index(TableRequest $request)
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
+        [$pagination, $tableData] = $this->fieldsService->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
+        );
 
-        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
-            ['field' => 'name', 'direction' => 'asc'],
-        ];
-
-        $orderBy = match (Arr::get($sort, '0.field')) {
-            'handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-
-        $sortDir = match (Arr::get($sort, '0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        [$pagination, $tableData] = $this->fieldsService->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
-
-        return Inertia::render('SettingsFieldsIndexPage', [
+        return Inertia::render('settings/fields/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Fields')],
             ],
             'title' => t('Fields'),
-            'sort' => $sort,
+            'sort' => $request->sort(),
             'data' => fn () => $tableData,
             'pagination' => fn () => $pagination,
-            'searchTerm' => $searchTerm,
+            'searchTerm' => $request->search(),
         ]);
     }
 
-    public function create(): CpScreenResponse
+    public function create(Request $request): CpScreenResponse
     {
-        $field = $this->fieldsService->createField(PlainText::class);
+        // Slideouts (`new Craft.CpScreenSlideout('fields/edit-field')` with no
+        // field ID, e.g. the field layout designer's "New field" button) still
+        // consume the legacy Twig screen as JSON.
+        if ($request->wantsJson()) {
+            return $this->cpScreenResponse($this->fieldsService->createField(PlainText::class), $request);
+        }
 
-        return $this->cpScreenResponse($field);
+        // "Save and add another" links back here with the last-saved type preselected
+        $type = $request->input('type');
+
+        if (
+            ! is_string($type) ||
+            ! ComponentHelper::validateComponentClass($type, FieldInterface::class) ||
+            ! $type::isSelectable()
+        ) {
+            $type = PlainText::class;
+        }
+
+        /** @var Field $field */
+        $field = $this->fieldsService->createField($type);
+
+        return new CpScreenResponse()
+            ->title(t('Create a new field'))
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Fields'), 'settings/fields')
+            ->redirectUrl('settings/fields')
+            ->inertiaPage('settings/fields/Edit', new FieldEditViewModel($field, $this->fieldsService));
     }
 
     public function edit(Request $request, ?FieldInterface $field = null, ?int $fieldId = null): CpScreenResponse
@@ -113,7 +123,7 @@ class FieldsController
         $fieldId ??= $field->id ?? $request->input('fieldId');
 
         if (is_null($fieldId)) {
-            return $this->create();
+            return $this->create($request);
         }
 
         abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
@@ -122,7 +132,51 @@ class FieldsController
             $field = $found;
         }
 
-        return $this->cpScreenResponse($field, $request);
+        if ($request->wantsJson()) {
+            return $this->cpScreenResponse($field, $request);
+        }
+
+        return $this->editScreenResponse($field);
+    }
+
+    private function editScreenResponse(FieldInterface $field): CpScreenResponse
+    {
+        // If the field's type class exists again (e.g. a plugin was reinstalled),
+        // swap the missing-field placeholder for a fresh instance of it
+        if (
+            $field instanceof MissingField &&
+            $this->fieldsService->getAllFieldTypes()->contains($field->expectedType)
+        ) {
+            $field = $this->fieldsService->createField($field->expectedType);
+        }
+
+        /** @var Field $field */
+        $response = new CpScreenResponse()
+            ->title(trim((string) $field->name) ?: t('Edit Field'))
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Fields'), 'settings/fields')
+            ->redirectUrl('settings/fields')
+            ->editUrl("settings/fields/edit/$field->id")
+            ->inertiaPage('settings/fields/Edit', new FieldEditViewModel($field, $this->fieldsService, $this->readOnly));
+
+        if (! $this->readOnly) {
+            $response->addAltAction(t('Delete'), [
+                'variant' => 'danger',
+                'confirm' => t('Are you sure you want to delete “{name}”?', [
+                    'name' => $field->name,
+                ]),
+                'action' => [
+                    'type' => 'http',
+                    'method' => 'DELETE',
+                    'url' => action([self::class, 'destroy'], ['fieldId' => $field->id]),
+                    'body' => [
+                        'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                    ],
+                ],
+            ]);
+        }
+
+        return $response;
     }
 
     public function renderSettings(Request $request): JsonResponse
@@ -183,6 +237,7 @@ class FieldsController
             'searchable' => ['nullable', 'boolean'],
             'translationMethod' => ['nullable', 'string'],
             'translationKeyFormat' => ['nullable', 'string'],
+            'typeSettings' => ['nullable', 'string'],
         ]);
 
         $type = $request->input('type');
@@ -208,7 +263,7 @@ class FieldsController
             'searchable' => (bool) $request->input('searchable', true),
             'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
-            'settings' => $request->input('types', [])[Html::id($type)] ?? [],
+            'settings' => $this->typeSettingsFromRequest($request, $type),
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
@@ -228,6 +283,24 @@ class FieldsController
         return $this->asModelSuccess($field, t('Field saved.'), 'field', [
             'selectorHtml' => app(FieldLayoutDesigner::class)->layoutElementSelectorHtml(new CustomField($field), true),
         ], $redirect);
+    }
+
+    /**
+     * The Inertia edit screen posts the field type settings island as a
+     * URL-encoded string (`typeSettings`), since its inputs are server-rendered
+     * HTML rather than form state. The legacy Twig form posts a `types` array.
+     */
+    private function typeSettingsFromRequest(Request $request, string $type): array
+    {
+        $settingsStr = $request->input('typeSettings');
+
+        if (is_string($settingsStr) && $settingsStr !== '') {
+            parse_str($settingsStr, $postedSettings);
+
+            return $postedSettings['types'][Html::id($type)] ?? [];
+        }
+
+        return $request->input('types', [])[Html::id($type)] ?? [];
     }
 
     public function destroy(Request $request, int $fieldId): Response
@@ -327,23 +400,16 @@ class FieldsController
         ]);
     }
 
-    #[\Deprecated(message: 'in 6.0. Use `settings/fields` instead.')]
-    public function tableData(Request $request): Response
+    #[Deprecated(message: 'in 6.0. Use `settings/fields` instead.')]
+    public function tableData(TableRequest $request): Response
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
-        $orderBy = match ($request->input('sort.0.field')) {
-            '__slot:handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-        $sortDir = match ($request->input('sort.0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        [$pagination, $tableData] = $this->fieldsService->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
+        [$pagination, $tableData] = $this->fieldsService->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
+        );
 
         return $this->asSuccess(data: [
             'pagination' => $pagination,
@@ -355,7 +421,7 @@ class FieldsController
     {
         $request->validate([
             'uid' => ['required', 'string'],
-            'elementType' => ['required', 'string'],
+            'elementType' => ['required', 'string', new ElementTypeRule],
             'layoutConfig' => ['required', 'array'],
             'config' => ['nullable', 'array'],
             'settings' => ['nullable', 'string'],
@@ -574,92 +640,7 @@ JS, [
                     ]);
             }
             $response
-                ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml([
-                    t('ID') => $field->id,
-                    t('Used by') => function () use ($field) {
-                        $layouts = $this->fieldsService->findFieldUsages($field);
-
-                        if ($layouts->isEmpty()) {
-                            return Html::tag('i', t('No usages'));
-                        }
-
-                        /** @var FieldLayout[][] $layoutsByType */
-                        $layoutsByType = $layouts
-                            ->keyBy('uid')
-                            ->groupBy(fn (FieldLayout $layout) => $layout->type ?? '__UNKNOWN__')
-                            ->all();
-
-                        /** @var FieldLayout[] $unknownLayouts */
-                        $unknownLayouts = Arr::pull($layoutsByType, '__UNKNOWN__');
-                        /** @var FieldLayout[] $layoutsWithProviders */
-                        $layoutsWithProviders = [];
-
-                        // re-fetch as many of these as we can from the element types,
-                        // so they have a chance to supply the layout providers
-                        foreach ($layoutsByType as $type => &$typeLayouts) {
-                            /** @var class-string<ElementInterface> $type */
-                            /** @phpstan-ignore-next-line */
-                            foreach ($type::fieldLayouts(null) as $layout) {
-                                if (isset($typeLayouts[$layout->uid]) && $layout->provider instanceof Chippable) {
-                                    $layoutsWithProviders[] = $layout;
-                                    unset($typeLayouts[$layout->uid]);
-                                }
-                            }
-                        }
-                        unset($typeLayouts);
-
-                        $labels = [];
-                        $items = array_map(function (FieldLayout $layout) use (&$labels) {
-                            /** @var FieldLayoutProviderInterface&Chippable $provider */
-                            $provider = $layout->provider;
-                            $label = $labels[] = $provider->getUiLabel();
-                            $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
-                            $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
-
-                            $labelHtml = Html::beginTag('span', [
-                                'class' => ['flex', 'flex-nowrap', 'gap-s'],
-                            ]);
-                            if ($icon) {
-                                $labelHtml .= Html::tag('div', Icons::svg($icon), [
-                                    'class' => array_filter([
-                                        'cp-icon',
-                                        'small',
-                                        $provider instanceof Colorable ? $provider->getColor()?->value : null,
-                                    ]),
-                                ]);
-                            }
-                            $labelHtml .= Html::tag('span', Html::encode($label)).
-                                Html::endTag('span');
-
-                            return $url ? Html::a($labelHtml, $url) : $labelHtml;
-                        }, $layoutsWithProviders);
-
-                        // sort by label
-                        array_multisort($labels, SORT_ASC, $items);
-
-                        foreach ($layoutsByType as $type => $typeLayouts) {
-                            // any remaining layouts for this type?
-                            if (! empty($typeLayouts)) {
-                                /** @var class-string<ElementInterface> $type */
-                                $items[] = t('{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
-                                    'total' => count($typeLayouts),
-                                    'type' => $type::lowerDisplayName(),
-                                ]);
-                            }
-                        }
-
-                        if (! empty($unknownLayouts)) {
-                            $items[] = t('{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
-                                'total' => count($unknownLayouts),
-                                'type' => t('unknown'),
-                            ]);
-                        }
-
-                        $items = array_map(fn ($item) => Html::li($item)->encode(false), $items);
-
-                        return Html::ul()->items(...$items)->render();
-                    },
-                ]));
+                ->metaSidebarHtml(app(FieldHtml::class)->metadataHtml($field));
         }
 
         return $response;

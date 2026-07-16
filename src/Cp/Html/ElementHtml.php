@@ -29,11 +29,11 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -115,7 +115,12 @@ readonly class ElementHtml
         $html = Html::beginTag('craft-chip', $attributes);
 
         if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
-            $html .= Html::beginTag('div', ['slot' => 'prefix']);
+            $html .= Html::beginTag('div', ['slot' => 'prefix', 'class' => 'flex items-center gap-1']);
+        }
+
+        if ($config['showStatus']) {
+            /** @var Chippable&Statusable $component */
+            $html .= $this->statusHtml->componentStatusIndicatorHtml($component) ?? '';
         }
 
         if ($config['showThumb']) {
@@ -133,11 +138,6 @@ readonly class ElementHtml
 
         if ($config['selectable']) {
             $html .= $this->componentCheckboxHtml(sprintf('%s-label', $config['id']));
-        }
-
-        if ($config['showStatus']) {
-            /** @var Chippable&Statusable $component */
-            $html .= $this->statusHtml->componentStatusIndicatorHtml($component) ?? '';
         }
 
         if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
@@ -570,7 +570,7 @@ JS, [
 
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
-        $user = Auth::user();
+        $user = currentUser();
         $editable = $user && $user->can('view', $element);
 
         return Arr::merge(
@@ -665,9 +665,11 @@ JS, [
         // show the draft name?
         if (($config['showDraftName'] ?? true) && $element->getIsDraft() && ! $element->isProvisionalDraft && ! $element->getIsUnpublishedDraft()) {
             /** @var ElementInterface $element */
-            $content .= Html::tag('span', $element->draftName ?: t('Draft'), [
-                'class' => 'context-label',
-            ]);
+            $content .= Html::tag(
+                'span',
+                $element->draftName ? Html::encode($element->draftName) : t('Draft'),
+                ['class' => 'context-label'],
+            );
         }
 
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)

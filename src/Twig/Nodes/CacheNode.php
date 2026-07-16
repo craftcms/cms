@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateCaches;
 use Override;
@@ -75,20 +74,16 @@ class CacheNode extends Node
             ->indent()
             ->write("\$cacheService->endTemplateCache(\$cacheKey_$n, $global, ");
 
+        $compiler->raw('null, ');
+
         if ($this->hasNode('durationNum')) {
             $durationUnit = $this->getAttribute('durationUnit');
 
             $compiler
-                ->raw(sprintf('%s::relativeTimeStatement(', DateTimeHelper::class))
+                ->raw('now()->add((int) (')
                 ->subcompile($this->getNode('durationNum'))
-                ->raw(", '$durationUnit')");
-        } else {
-            $compiler->raw('null');
-        }
-
-        $compiler->raw(', ');
-
-        if ($this->hasNode('expiration')) {
+                ->raw("), '$durationUnit')");
+        } elseif ($this->hasNode('expiration')) {
             $compiler->subcompile($this->getNode('expiration'));
         } else {
             $compiler->raw('null');

@@ -6,9 +6,10 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Uri;
 use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
@@ -28,13 +30,14 @@ use function CraftCms\Cms\t;
 
 readonly class ActionController
 {
-    use EnforcesVolumePermissions;
+    use EnforcesPermissions;
     use RespondsWithFlash;
 
     public function __construct(
         private Assets $assets,
         private Elements $elements,
         private Folders $folders,
+        private Volumes $volumes,
     ) {}
 
     public function deleteAsset(Request $request): Response
@@ -47,8 +50,7 @@ readonly class ActionController
 
         abort_if(! $asset, 400, "Invalid asset ID: $assetId");
 
-        $this->requireVolumePermissionByAsset('deleteAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
+        Gate::authorize('deleteFile', $asset);
 
         $success = $this->elements->deleteElement($asset);
 
@@ -88,10 +90,7 @@ readonly class ActionController
 
         $filename = $request->input('filename') ?? $asset->getFilename();
 
-        $this->requireVolumePermissionByFolder('saveAssets', $folder);
-        $this->requireVolumePermissionByAsset('deleteAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('savePeerAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
+        Gate::authorize('moveFile', [$asset, $folder]);
 
         if ($request->boolean('force')) {
             /** @var Asset|null $conflictingAsset */
@@ -102,6 +101,8 @@ readonly class ActionController
                 ->one();
 
             if ($conflictingAsset) {
+                Gate::authorize('mergeFile', $conflictingAsset);
+
                 $elements->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
@@ -140,8 +141,7 @@ readonly class ActionController
         abort_if(empty($assets), 400, t('The asset you’re trying to download does not exist.'));
 
         foreach ($assets as $asset) {
-            $this->requireVolumePermissionByAsset('viewAssets', $asset);
-            $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+            Gate::authorize('viewFile', $asset);
         }
 
         // If only one asset was selected, send it back unzipped
@@ -189,8 +189,7 @@ readonly class ActionController
 
         abort_if($asset === null, 400, "Invalid asset ID: $assetId");
 
-        $this->requireVolumePermissionByAsset('viewAssets', $asset);
-        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+        Gate::authorize('viewFile', $asset);
 
         $folder = $asset->getFolder();
         $sourcePath[] = $folder->getSourcePathInfo();
@@ -235,6 +234,20 @@ readonly class ActionController
         $query = DB::table(Table::ASSETS)
             ->whereIn('id', $assetIds)
             ->orWhereIn('folderId', array_unique($folderIds));
+
+        // make sure the user has permission to move each of these assets
+        $volumeIds = (clone $query)
+            ->select('volumeId')
+            ->distinct()
+            ->pluck('volumeId')
+            ->filter();
+
+        foreach ($volumeIds as $volumeId) {
+            if ($volume = $this->volumes->getVolumeById($volumeId)) {
+                $this->requirePermission("savePeerAssets:$volume->uid");
+                $this->requirePermission("deletePeerAssets:$volume->uid");
+            }
+        }
 
         $count = $query->count();
         $totalSize = (int) $query->sum('size');

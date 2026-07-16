@@ -10,7 +10,6 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Request;
@@ -113,17 +112,12 @@ enum Edition: int implements Arrayable
 
         $cacheKey = sprintf('editionTestableDomain@%s', Request::host());
 
-        if (! Cache::has($cacheKey)) {
-            // err on the side of allowing it
-            return true;
-        }
-
-        return (bool) Cache::get($cacheKey);
+        return (bool) Cache::get($cacheKey, true);
     }
 
     public static function canUpgrade(): bool
     {
-        if (! Auth::user()?->isAdmin()) {
+        if (! currentUser()?->isAdmin()) {
             return false;
         }
 
@@ -181,6 +175,16 @@ enum Edition: int implements Arrayable
     public function supportsOAuth(): bool
     {
         return $this->value >= self::Pro->value;
+    }
+
+    public function supportsRequiring2FA(): bool
+    {
+        return self::isAtLeast(self::Team);
+    }
+
+    public function supportsPublicRegistration(): bool
+    {
+        return self::isAtLeast(self::Pro);
     }
 
     public function toArray(): array

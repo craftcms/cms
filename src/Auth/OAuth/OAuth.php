@@ -24,6 +24,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -50,7 +51,30 @@ use function CraftCms\Cms\t;
 #[Scoped]
 class OAuth
 {
+    public const string CONNECT_SESSION_KEY = 'craft.oauth.connect';
+
     private const string CP_CONTEXT_VALUE = 'cp';
+
+    public const array DRIVER_ICONS = [
+        'apple' => 'apple',
+        'azure' => 'microsoft',
+        'azure-ad' => 'microsoft',
+        'bitbucket' => 'bitbucket',
+        'discord' => 'discord',
+        'facebook' => 'facebook',
+        'github' => 'github',
+        'gitlab' => 'gitlab',
+        'google' => 'google',
+        'linkedin' => 'linkedin',
+        'linkedin-openid' => 'linkedin',
+        'microsoft' => 'microsoft',
+        'slack' => 'slack',
+        'slack-openid' => 'slack',
+        'twitter' => 'twitter',
+        'twitter-oauth-2' => 'x-twitter',
+        'x' => 'x-twitter',
+        'x-twitter' => 'x-twitter',
+    ];
 
     /** @var Collection<string, ProviderDefinition>|null */
     private ?Collection $providerDefinitions = null;
@@ -91,8 +115,11 @@ class OAuth
                     [$handle, $config] = $this->normalizeProviderConfigEntry($handle, $config);
                     $definition = $this->normalizeProvider($handle, $config);
                 } catch (ProviderConfigurationException $e) {
+                    if (app()->hasDebugModeEnabled()) {
+                        throw $e;
+                    }
+
                     report($e);
-                    Log::error($e->getMessage(), [__METHOD__]);
 
                     return [];
                 }
@@ -236,9 +263,57 @@ class OAuth
         return $userId ? User::findOne($userId) : null;
     }
 
+    public function linkedUserId(ProviderDefinition $provider, string $identity): ?int
+    {
+        $userId = SsoIdentity::query()
+            ->where('provider', $provider->handle)
+            ->where('identityId', $identity)
+            ->orderByDesc('dateUpdated')
+            ->value('userId');
+
+        return is_numeric($userId) ? (int) $userId : null;
+    }
+
+    public function identityFor(User $user, ProviderDefinition $provider): ?string
+    {
+        $identity = SsoIdentity::query()
+            ->where('userId', $user->id)
+            ->where('provider', $provider->handle)
+            ->orderByDesc('dateUpdated')
+            ->value('identityId');
+
+        return is_string($identity) ? $identity : null;
+    }
+
+    public function findUserByEmail(string $email): ?User
+    {
+        $email = trim($email);
+
+        if ($email === '') {
+            return null;
+        }
+
+        return User::find()
+            ->addSelect([
+                'users.password as password',
+                'users.passwordResetRequired as passwordResetRequired',
+            ])
+            ->email(Query::escapeParam($email))
+            ->status(null)
+            ->first();
+    }
+
     public function hasIdentity(int $userId): bool
     {
         return SsoIdentity::query()->where('userId', $userId)->exists();
+    }
+
+    public function unlinkIdentity(User $user, ProviderDefinition $provider): void
+    {
+        SsoIdentity::query()
+            ->where('userId', $user->id)
+            ->where('provider', $provider->handle)
+            ->delete();
     }
 
     /**
@@ -323,6 +398,7 @@ class OAuth
         $providerClass = $this->resolveProviderClass($handle, $driver);
         $name = ($config['name'] ?? null) ?: Str::headline($handle);
         $label = ($config['label'] ?? null) ?: t('Sign in with {name}', ['name' => $name]);
+        $icon = $config['icon'] ?? self::DRIVER_ICONS[$driver] ?? null;
 
         $definition = new ProviderDefinition(
             handle: $handle,
@@ -332,11 +408,13 @@ class OAuth
             label: $label,
             clientId: $clientId !== null ? (string) $clientId : null,
             clientSecret: $clientSecret !== null ? (string) $clientSecret : null,
+            icon: $icon,
             stateless: (bool) ($config['stateless'] ?? false),
             createsUsers: array_key_exists('createsUsers', $config)
                 ? ($config['createsUsers'] === null ? null : (bool) $config['createsUsers'])
                 : null,
             activatesUsers: (bool) ($config['activatesUsers'] ?? false),
+            trustsEmail: array_key_exists('trustsEmail', $config) && (bool) $config['trustsEmail'],
             scopes: array_values($config['scopes'] ?? []),
             with: $config['with'] ?? [],
             groupIds: $this->resolveConfiguredGroups($handle, $config['groups'] ?? []),
@@ -366,6 +444,7 @@ class OAuth
                 'clientSecret' => ['sometimes', 'nullable', 'string', 'filled'],
                 'name' => ['sometimes', 'nullable', 'string', 'filled'],
                 'label' => ['sometimes', 'nullable', 'string', 'filled'],
+                'icon' => ['sometimes', 'nullable', 'string', 'filled'],
                 'scopes' => ['sometimes', 'array'],
                 'scopes.*' => ['string', 'filled'],
                 'with' => ['sometimes', 'array'],
@@ -373,6 +452,7 @@ class OAuth
                 'groups' => ['sometimes'],
                 'createsUsers' => ['sometimes', 'nullable', 'boolean'],
                 'activatesUsers' => ['sometimes', 'boolean'],
+                'trustsEmail' => ['sometimes', 'boolean'],
                 'identityResolver' => ['sometimes', 'string'],
                 'userResolver' => ['sometimes', 'string'],
                 'userPopulator' => ['sometimes', 'string'],

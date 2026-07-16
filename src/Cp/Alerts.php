@@ -20,9 +20,9 @@ use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Uri;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -42,7 +42,7 @@ readonly class Alerts
     public function get(?string $path = null, bool $fetch = false): array
     {
         $alerts = [];
-        $user = Auth::user();
+        $user = currentUser();
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
 
         if (! $user) {
@@ -114,7 +114,7 @@ readonly class Alerts
         }
 
         if (
-            $user->admin &&
+            $user->isAdmin() &&
             $this->generalConfig->allowAdminChanges &&
             $this->projectConfig->getHadFileWriteIssues()
         ) {

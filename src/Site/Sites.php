@@ -43,6 +43,7 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\maxPowerCaptain;
 
 #[Scoped]
@@ -279,7 +280,7 @@ class Sites
             return $this->editableSiteIds;
         }
 
-        $user = Auth::user();
+        $user = currentUser();
 
         return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $user?->can("editSite:$site->uid"))->pluck('id')->values();
     }

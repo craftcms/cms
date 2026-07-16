@@ -19,6 +19,7 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Http\Request;
@@ -28,6 +29,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -124,9 +126,9 @@ describe('ensure', function () {
             ->once()
             ->with([], true)
             ->andReturn($entry);
-        $request->shouldReceive('user')
+        $request->shouldReceive('craftUser')
             ->once()
-            ->andReturn(auth()->user());
+            ->andReturn(currentUser());
 
         app()->instance('request', Request::create('/actions/elements/ensure-draft', 'POST', [], [], [], [
             'HTTP_ACCEPT' => 'application/json',
@@ -227,7 +229,7 @@ describe('store', function () {
                 ->where('canonicalId', $entry->id)
                 ->where('draftName', 'Ported Draft')
                 ->where('draftNotes', 'Ported draft notes')
-                ->where('creator', auth()->user()->getName())
+                ->where('creator', currentUser()->asElement()->getName())
                 ->etc()
             );
 
@@ -464,7 +466,7 @@ describe('store', function () {
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
         ]);
-        $request->setUserResolver(fn () => auth()->user());
+        $request->setUserResolver(fn () => currentUser());
         app()->instance('request', $request);
 
         $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class)) extends ElementDraftsController
@@ -473,7 +475,7 @@ describe('store', function () {
 
             protected function applyParamsToElement(ElementInterface $element): void {}
 
-            protected function canSave(ElementInterface $element, User $user): bool
+            protected function canSave(ElementInterface $element, CraftUser $user): bool
             {
                 return ++$this->canSaveCalls === 1;
             }

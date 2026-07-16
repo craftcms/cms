@@ -10,9 +10,14 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\Twig\TwigRenderer as TwigTemplateRenderer;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateRenderer;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Stringable;
 use UnitEnum;
@@ -69,6 +74,29 @@ function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool 
 function debugbar()
 {
     return app()->bound('debugbar') ? app('debugbar') : optional();
+}
+
+function currentUser(): ?CraftUser
+{
+    if (! Cms::isInstalled()) {
+        return null;
+    }
+
+    $user = Auth::user();
+
+    if ($user === null || $user instanceof CraftUser) {
+        return $user;
+    }
+
+    throw new AuthenticationException(sprintf(
+        'The authenticated user must implement %s to be used by Craft.',
+        CraftUser::class,
+    ));
+}
+
+function currentUserElement(): ?UserElement
+{
+    return currentUser()?->asElement();
 }
 
 /**
@@ -183,7 +211,7 @@ function template(string $template, array $variables = [], ?TemplateMode $templa
 
 function sandboxedTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
 {
-    return app(TemplateRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode);
+    return app(TwigTemplateRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode);
 }
 
 function pageTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
@@ -193,22 +221,22 @@ function pageTemplate(string $template, array $variables = [], ?TemplateMode $te
 
 function renderString(string $template, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, bool $escapeHtml = false): string
 {
-    return app(TemplateRenderer::class)->renderString($template, $variables, $templateMode, $escapeHtml);
+    return app(TwigTemplateRenderer::class)->renderString($template, $variables, $templateMode, $escapeHtml);
 }
 
 function renderSandboxedString(string $template, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, bool $escapeHtml = false): string
 {
-    return app(TemplateRenderer::class)->renderSandboxedString($template, $variables, $templateMode, $escapeHtml);
+    return app(TwigTemplateRenderer::class)->renderSandboxedString($template, $variables, $templateMode, $escapeHtml);
 }
 
 function renderObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
 {
-    return app(TemplateRenderer::class)->renderObjectTemplate($template, $object, $variables, $templateMode);
+    return app(TwigTemplateRenderer::class)->renderObjectTemplate($template, $object, $variables, $templateMode);
 }
 
 function renderSandboxedObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
 {
-    return app(TemplateRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, $templateMode);
+    return app(TwigTemplateRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, $templateMode);
 }
 
 /**

@@ -9,6 +9,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomIdentityResolver;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomUserGroupResolver;
@@ -64,9 +65,15 @@ function oauthControllerCallbackUrl(bool $isCpRequest = false, string $provider 
 
 function oauthControllerLoginUrl(bool $isCpRequest): string
 {
-    return $isCpRequest
-        ? cp_url('login')
-        : Url::siteUrl(app(GeneralConfig::class)->getLoginPath());
+    if (! $isCpRequest) {
+        $loginPath = app(GeneralConfig::class)->getLoginPath();
+
+        if ($loginPath !== false) {
+            return Url::siteUrl($loginPath);
+        }
+    }
+
+    return cp_url('login');
 }
 
 function completeOAuthControllerCallback(
@@ -201,7 +208,9 @@ describe('callback flow', function () {
             'username' => 'existing-no-registration',
         ]);
 
-        configureOAuthControllerProvider();
+        configureOAuthControllerProvider([
+            'trustsEmail' => true,
+        ]);
 
         completeOAuthControllerCallback([
             'id' => 'provider-user-existing-no-registration',
@@ -212,13 +221,15 @@ describe('callback flow', function () {
             ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-existing-no-registration', $user->id))->toBeTrue();
     });
 
-    test('callback links an existing user by email fallback', function () {
+    test('callback links an existing user by email fallback for trusted providers', function () {
         $user = UserModel::factory()->active()->createElement([
             'email' => 'existing@example.com',
             'username' => 'existing-user',
         ]);
 
-        configureOAuthControllerProvider();
+        configureOAuthControllerProvider([
+            'trustsEmail' => true,
+        ]);
 
         completeOAuthControllerCallback([
             'id' => 'provider-user-2',
@@ -227,6 +238,24 @@ describe('callback flow', function () {
 
         expect(Auth::id())->toBe($user->id)
             ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-2', $user->id))->toBeTrue();
+    });
+
+    test('callback does not link an existing user by email fallback for untrusted providers', function () {
+        $user = UserModel::factory()->active()->createElement([
+            'email' => 'existing-untrusted@example.com',
+            'username' => 'existing-untrusted-user',
+        ]);
+
+        configureOAuthControllerProvider();
+
+        completeOAuthControllerCallback([
+            'id' => 'provider-user-untrusted-email',
+            'email' => 'existing-untrusted@example.com',
+        ])->assertRedirect();
+
+        expect(Auth::check())->toBeFalse()
+            ->and(User::find()->email(Query::escapeParam('existing-untrusted@example.com'))->status(null)->count())->toBe(1)
+            ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-untrusted-email', $user->id))->toBeFalse();
     });
 
     test('auth context determines whether a non-cp user can sign in', function (
@@ -240,7 +269,9 @@ describe('callback flow', function () {
             'admin' => false,
         ]);
 
-        configureOAuthControllerProvider();
+        configureOAuthControllerProvider([
+            'trustsEmail' => true,
+        ]);
 
         $response = completeOAuthControllerCallback([
             'id' => 'provider-user-context',
@@ -271,7 +302,9 @@ describe('callback flow', function () {
             'auth2faSecret' => 'secret',
         ]);
 
-        configureOAuthControllerProvider();
+        configureOAuthControllerProvider([
+            'trustsEmail' => true,
+        ]);
 
         completeOAuthControllerCallback([
             'id' => 'provider-user-5',

@@ -53,6 +53,7 @@ use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Events\CpDataResolving;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\Field\Events\FieldTypesResolving;
@@ -67,10 +68,16 @@ use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Yii2Adapter\Database\DeprecatedTable;
+use CraftCms\Yii2Adapter\Policies\CategoryPolicy;
+use CraftCms\Yii2Adapter\Policies\GlobalSetPolicy;
+use CraftCms\Yii2Adapter\Policies\TagPolicy;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use PDOException;
 
@@ -86,24 +93,24 @@ class DeprecatedConcepts
 
     public static function supportsCategories(): bool
     {
-        return self::$supportsCategories ??= self::supports('categories');
+        return self::$supportsCategories ??= self::supports(DeprecatedTable::CATEGORIES);
     }
 
     public static function supportsGlobalSets(): bool
     {
-        return self::$supportsGlobalSets ??= self::supports('globalsets');
+        return self::$supportsGlobalSets ??= self::supports(DeprecatedTable::GLOBALSETS);
     }
 
     public static function supportsTags(): bool
     {
-        return self::$supportsTags ??= self::supports('tags');
+        return self::$supportsTags ??= self::supports(DeprecatedTable::TAGS);
     }
 
     private static function supports(string $table): bool
     {
         try {
             return Schema::hasTable($table);
-        } catch (PDOException $e) {
+        } catch (PDOException) {
             return false;
         }
     }
@@ -135,6 +142,16 @@ class DeprecatedConcepts
 
     public function boot(): void
     {
+        if (DeprecatedConcepts::supportsCategories()) {
+            Gate::policy(Category::class, CategoryPolicy::class);
+        }
+        if (DeprecatedConcepts::supportsGlobalSets()) {
+            Gate::policy(GlobalSet::class, GlobalSetPolicy::class);
+        }
+        if (DeprecatedConcepts::supportsTags()) {
+            Gate::policy(Tag::class, TagPolicy::class);
+        }
+
         Event::listen(FieldTypesResolving::class, function(FieldTypesResolving $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->types->add(CategoriesField::class);
@@ -154,16 +171,16 @@ class DeprecatedConcepts
             $event->garbageCollection->runActions(array_filter([
                 [HardDelete::class, [
                     'tables' => array_filter([
-                        'categorygroups',
-                        'taggroups',
+                        DeprecatedTable::CATEGORYGROUPS,
+                        DeprecatedTable::TAGGROUPS,
                     ], fn(string $table) => Schema::hasTable($table)),
                 ]],
-                DeprecatedConcepts::supportsCategories() ? [DeletePartialElements::class, ['elementType' => Category::class, 'table' => 'categories']] : null,
-                DeprecatedConcepts::supportsGlobalSets() ? [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']] : null,
-                DeprecatedConcepts::supportsTags() ? [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => 'tags']] : null,
-                DeprecatedConcepts::supportsCategories() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => 'categorygroups']] : null,
-                DeprecatedConcepts::supportsGlobalSets() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => 'globalsets']] : null,
-                DeprecatedConcepts::supportsTags() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => 'taggroups']] : null,
+                DeprecatedConcepts::supportsCategories() ? [DeletePartialElements::class, ['elementType' => Category::class, 'table' => DeprecatedTable::CATEGORIES]] : null,
+                DeprecatedConcepts::supportsGlobalSets() ? [DeletePartialElements::class, ['elementType' => GlobalSet::class, 'table' => DeprecatedTable::GLOBALSETS]] : null,
+                DeprecatedConcepts::supportsTags() ? [DeletePartialElements::class, ['elementType' => Tag::class, 'table' => DeprecatedTable::TAGS]] : null,
+                DeprecatedConcepts::supportsCategories() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Category::class, 'table' => DeprecatedTable::CATEGORYGROUPS]] : null,
+                DeprecatedConcepts::supportsGlobalSets() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => GlobalSet::class, 'table' => DeprecatedTable::GLOBALSETS]] : null,
+                DeprecatedConcepts::supportsTags() ? [DeleteOrphanedFieldLayouts::class, ['elementType' => Tag::class, 'table' => DeprecatedTable::TAGGROUPS]] : null,
             ]));
         });
 
@@ -446,24 +463,39 @@ class DeprecatedConcepts
                 $label = t('Content');
                 if (DeprecatedConcepts::supportsGlobalSets()) {
                     $event->settings[$label]['globals'] = [
-                        'iconMask' => '@craftcms/resources/icons/light/globe.svg',
+                        'iconName' => 'light/globe',
                         'label' => t('Globals', category: 'yii2-adapter'),
                     ];
                 }
                 if (DeprecatedConcepts::supportsCategories()) {
                     $event->settings[$label]['categories'] = [
-                        'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
+                        'iconName' => 'light/sitemap',
                         'label' => t('Categories'),
                     ];
                 }
                 if (DeprecatedConcepts::supportsTags()) {
                     $event->settings[$label]['tags'] = [
-                        'iconMask' => '@craftcms/resources/icons/light/tags.svg',
+                        'iconName' => 'light/tags',
                         'label' => t('Tags', category: 'yii2-adapter'),
                     ];
                 }
             },
         );
+
+        Event::listen(CpDataResolving::class, function(CpDataResolving $event) {
+            $upToDate = Cms::isInstalled() && !app(Updates::class)->areMigrationsPending();
+
+            if ($upToDate && DeprecatedConcepts::supportsCategories()) {
+                $event->data['editableCategoryGroups'] = collect(Craft::$app->getCategories()->getEditableGroups())
+                    ->map(fn(CategoryGroup $group) => [
+                        'handle' => $group->handle,
+                        'id' => (int)$group->id,
+                        'name' => Craft::t('site', $group->name),
+                        'uid' => $group->uid,
+                    ])
+                    ->all();
+            }
+        });
 
         YiiEvent::on(
             UrlManager::class,

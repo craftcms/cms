@@ -8,11 +8,20 @@ import {getDistDir, getRootDir, resolveFrom} from './utils.js';
 import {join} from 'path';
 import {deleteAsync} from 'del';
 import createVueWrappers from './generate-vue-wrappers.js';
+import createColors from './generate-colors.js';
 
 const spinner = ora({text: '@craftcms/cp', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
 
 async function cleanup() {
+  // In develop mode, rebuild in place: the root Vite dev server starts
+  // alongside this watcher, and deleting dist would make its dependency scan
+  // fail while the initial rebuild runs.
+  if (isDeveloping) {
+    await mkdir(getDistDir(), {recursive: true});
+    return;
+  }
+
   spinner.start('Cleaning up dist');
 
   await deleteAsync(getDistDir());
@@ -38,7 +47,7 @@ async function generateBundle(config = {}) {
         ...(await resolveFrom('./src/services/**/!(*.(styles|test)).ts')),
       },
       minify: !isDeveloping,
-      external: ['lit', '@lion/ui', '@awesome.me/webawesome'],
+      external: ['lit', '@lion/ui'],
       format: ['esm'],
       sourcemap: true,
       dts: true,
@@ -95,6 +104,13 @@ async function generateVueWrappers() {
   return Promise.resolve();
 }
 
+async function generateColors() {
+  spinner.start('Generating Colors');
+  createColors();
+  spinner.succeed();
+  return Promise.resolve();
+}
+
 async function buildAll() {
   try {
     const steps = [
@@ -102,6 +118,7 @@ async function buildAll() {
       generateManifest,
       generateStyles,
       generateVueWrappers,
+      generateColors,
       generateBundle,
     ];
 

@@ -2328,7 +2328,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             },
           }
         );
-      } catch (e) {}
+      } catch (e) {
+        return;
+      }
 
       $source.data(
         'table-col-opts',
@@ -2954,23 +2956,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         document.activeElement.blur();
       }
 
-      let elementsHeight = this.$elements.height();
-      let windowHeight = window.innerHeight;
-      let scrollTop = $(document).scrollTop();
-
-      if (this.settings.context == 'modal') {
-        windowHeight = this.$elements.parents('.modal').height();
-        scrollTop = this.$elements.scrollParent().scrollTop();
-      }
-
-      if (elementsHeight > windowHeight) {
-        let positionTop = Math.floor(scrollTop + windowHeight / 2) - 100;
-        positionTop = Math.floor((positionTop / elementsHeight) * 100);
-
-        this.$updateSpinner.css({
-          insetBlockStart: `${positionTop}%`,
-        });
-      }
       this.updateLiveRegion(Craft.t('app', 'Loading'));
     },
 
@@ -4387,6 +4372,7 @@ const ViewMenu = Garnish.Base.extend({
     this.menu.on('show', () => {
       this.$trigger.addClass('active');
       this.updateSortField();
+      this.updateRevertBtn();
     });
 
     this.menu.on('hide', () => {
@@ -4445,9 +4431,7 @@ const ViewMenu = Garnish.Base.extend({
           .closest('.table-columns-field')
           .removeClass('hidden');
       }
-      if (this.$revertBtn) {
-        this.$revertBtn.removeClass('hidden');
-      }
+      this.updateRevertBtn();
     } else {
       if (this.$tableColumnsContainer) {
         this.$tableColumnsContainer
@@ -4582,14 +4566,12 @@ const ViewMenu = Garnish.Base.extend({
     this.updateSortField();
     this.updateTableColumnField();
     this.tidyTableColumnField();
+    this.updateRevertBtn();
 
     if (this.elementIndex.settings.context === 'index') {
       // Update the query string
       Craft.setQueryParam('sort', null);
     }
-
-    this.$revertBtn.remove();
-    this.$revertBtn = null;
 
     this.$closeBtn.focus();
     this.elementIndex.updateElements();
@@ -4618,24 +4600,7 @@ const ViewMenu = Garnish.Base.extend({
       class: 'flex-grow',
     }).appendTo($footerContainer);
 
-    // Only create the revert button if there's a custom view state
-    if (
-      this.elementIndex.getSelectedSourceState('order') ||
-      this.elementIndex.getSelectedSourceState('sort') ||
-      this.elementIndex.getSelectedSourceState('tableColumns')
-    ) {
-      this._createRevertBtn();
-    }
-
-    // we only want to show the "Use defaults" btn in table and structure views
-    if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
-    ) {
-      if (this.$revertBtn) {
-        this.$revertBtn.addClass('hidden');
-      }
-    }
+    this.updateRevertBtn();
 
     this.$closeBtn = $('<button/>', {
       type: 'button',
@@ -4848,6 +4813,33 @@ const ViewMenu = Garnish.Base.extend({
     this.elementIndex.setSelectedTableColumns(columns, false);
     this.elementIndex.updateElements();
     this._createRevertBtn();
+  },
+
+  updateRevertBtn: function () {
+    const hasRevertBtn =
+      this.elementIndex.getSelectedSourceState('order') ||
+      this.elementIndex.getSelectedSourceState('sort') ||
+      this.elementIndex.getSelectedSourceState('tableColumns');
+
+    if (!hasRevertBtn) {
+      if (this.$revertBtn) {
+        this.$revertBtn.remove();
+        this.$revertBtn = null;
+      }
+
+      return;
+    }
+
+    if (!this.$revertBtn) {
+      this._createRevertBtn();
+    }
+
+    // Only show it in table and structure views
+    const showRevertBtn = ['table', 'structure'].includes(
+      this.elementIndex.viewMode
+    );
+
+    this.$revertBtn.toggleClass('hidden', !showRevertBtn);
   },
 
   _createRevertBtn: function () {

@@ -27,7 +27,7 @@ use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\TableSettingsAsset;
 use CraftCms\Cms\View\LegacyAssets\TimepickerAsset;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\DB;
@@ -649,7 +649,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
                 // can't call parent::serializeValueForDb() here because that calls $this->serializeValue()
                 // see https://github.com/craftcms/cms/pull/17091
-                if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+                if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
                     $serializedRow[$colId] = Query::prepareDateForDb($value);
                 } else {
                     $serializedRow[$colId] = parent::serializeValue($value, $element);
@@ -680,7 +680,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
         foreach ($value as $row) {
             foreach (array_keys($this->columns) as $colId) {
-                if (isset($row[$colId]) && ! $row[$colId] instanceof DateTime) {
+                if (isset($row[$colId]) && ! $row[$colId] instanceof DateTimeInterface) {
                     $keywords[] = $row[$colId];
                 }
             }

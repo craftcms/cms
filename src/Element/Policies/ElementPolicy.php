@@ -8,11 +8,13 @@ use BadMethodCallException;
 use CraftCms\Cms\Auth\Events\ElementAuthorizing;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
-use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
+use ReflectionMethod;
 
 class ElementPolicy
 {
@@ -28,18 +30,30 @@ class ElementPolicy
         'duplicateAsDraft',
     ];
 
+    private const array ELEMENT_AUTHORIZATION_METHODS = [
+        'view' => 'canView',
+        'save' => 'canSave',
+        'delete' => 'canDelete',
+        'duplicate' => 'canDuplicate',
+        'copy' => 'canCopy',
+        'createDrafts' => 'canCreateDrafts',
+        'deleteForSite' => 'canDeleteForSite',
+        'duplicateAsDraft' => 'canDuplicateAsDraft',
+    ];
+
     /**
      * Runs before all ability checks.
      * Returns true/false to short-circuit, or null to continue.
      */
-    public function before(User $user, string $ability, mixed $element): ?bool
+    public function before(CraftUser $user, string $ability, mixed $element): ?bool
     {
         if (! $element instanceof ElementInterface) {
             return null;
         }
 
         // Site authorization (for view and save)
-        if (in_array($ability, ['view', 'save'], true)
+        if ($this->shouldCheckSiteAuthorization($element)
+            && in_array($ability, ['view', 'save'], true)
             && $this->checkSiteAuthorization($user, $element) === false
         ) {
             return false;
@@ -56,7 +70,7 @@ class ElementPolicy
         return $event->authorized;
     }
 
-    public function saveCanonical(User $user, ElementInterface $element): bool
+    public function saveCanonical(CraftUser $user, ElementInterface $element): bool
     {
         if ($element->getIsUnpublishedDraft()) {
             $fakeCanonical = clone $element;
@@ -76,13 +90,37 @@ class ElementPolicy
     public function __call(string $method, array $arguments): bool
     {
         if (in_array($method, self::ABILITIES, true)) {
+            [$user, $element] = $arguments + [null, null];
+
+            if ($user instanceof CraftUser && $element instanceof ElementInterface && $this->hasCustomElementAuthorizationMethod($element, $method)) {
+                return $element->{self::ELEMENT_AUTHORIZATION_METHODS[$method]}($user->asElement());
+            }
+
             return false;
         }
 
         throw new BadMethodCallException("Method {$method} does not exist.");
     }
 
-    private function checkSiteAuthorization(User $user, ElementInterface $element): ?bool
+    private function hasCustomElementAuthorizationMethod(ElementInterface $element, string $ability): bool
+    {
+        $method = self::ELEMENT_AUTHORIZATION_METHODS[$ability] ?? null;
+
+        if (! $method || ! method_exists($element, $method)) {
+            return false;
+        }
+
+        return new ReflectionMethod($element, $method)
+            ->getDeclaringClass()
+            ->getName() !== Element::class;
+    }
+
+    protected function shouldCheckSiteAuthorization(ElementInterface $element): bool
+    {
+        return true;
+    }
+
+    private function checkSiteAuthorization(CraftUser $user, ElementInterface $element): ?bool
     {
         if (! $siteId = $element->siteId) {
             return null;
@@ -96,7 +134,7 @@ class ElementPolicy
     }
 
     private function checkNestedElementAuthorization(
-        User $user,
+        CraftUser $user,
         string $ability,
         ElementInterface $element,
     ): ?bool {
@@ -109,12 +147,14 @@ class ElementPolicy
             return null;
         }
 
+        $userElement = $user->asElement();
+
         return match ($ability) {
-            'view' => $field->canViewElement($element, $user),
-            'save' => $this->checkNestedSaveAuthorization($element, $user, $field),
-            'delete' => $field->canDeleteElement($element, $user),
-            'duplicate', 'duplicateAsDraft' => $field->canDuplicateElement($element, $user),
-            'deleteForSite' => $field->canDeleteElementForSite($element, $user),
+            'view' => $field->canViewElement($element, $userElement),
+            'save' => $this->checkNestedSaveAuthorization($element, $userElement, $field),
+            'delete' => $field->canDeleteElement($element, $userElement),
+            'duplicate', 'duplicateAsDraft' => $field->canDuplicateElement($element, $userElement),
+            'deleteForSite' => $field->canDeleteElementForSite($element, $userElement),
             default => null,
         };
     }

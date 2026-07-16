@@ -55,7 +55,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
-        if (! $asset->getVolume()->getFs()->hasUrls) {
+        if (! $asset->getVolume()->transformHasUrls()) {
             throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
         }
 
@@ -139,7 +139,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
                 // Generate the transform
                 try {
-                    $this->generateTransform($index);
+                    $this->generateTransform($index, $asset);
                 } catch (Exception $e) {
                     $index->inProgress = false;
                     $index->fileExists = false;
@@ -179,12 +179,14 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
     public function deleteImageTransformFile(Asset $asset, ImageTransformIndex $transformIndex): void
     {
-        $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
+        $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
+        $subPath = Str::chopEnd($asset->getVolume()->getTransformSubpath(), '/');
+        $path = ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$diskPath;
 
         event(new DeletingTransformedImage(asset: $asset, path: $path));
 
         try {
-            $asset->getVolume()->transformDisk()->delete($path);
+            $asset->getVolume()->transformDisk()->delete($diskPath);
         } catch (RuntimeException|NotSupportedException) {
             // NBD
         }
@@ -352,9 +354,9 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
      *
      * @throws ImageTransformException
      */
-    private function generateTransform(ImageTransformIndex $index): void
+    private function generateTransform(ImageTransformIndex $index, ?Asset $asset = null): void
     {
-        $asset = app(Assets::class)->getAssetById($index->assetId);
+        $asset ??= app(Assets::class)->getAssetById($index->assetId);
 
         if (! $asset) {
             throw new ImageTransformException('Asset not found - '.$index->assetId);
@@ -640,10 +642,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
     private function getTransformBasePath(Asset $asset): string
     {
-        $subPath = $asset->getVolume()->getTransformSubpath();
-        $subPath = Str::chopEnd($subPath, '/');
-
-        return ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$asset->folderPath;
+        return $asset->folderPath ?? '';
     }
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void

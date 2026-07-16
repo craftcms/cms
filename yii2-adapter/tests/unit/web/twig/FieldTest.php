@@ -53,8 +53,8 @@ TWIG;
         self::assertStringContainsString('TEST HEADING', $html);
         self::assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
         self::assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
-        self::assertStringContainsString('<p id="foo-tip" class="notice has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><span>TEST TIP</span></p>', $html);
-        self::assertStringContainsString('<p id="foo-warning" class="warning has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><span>TEST WARNING</span></p>', $html);
+        self::assertMatchesRegularExpression('/<craft-callout\s+id="foo-tip"\s+variant="info"[^>]*>.*TEST TIP.*<\/craft-callout>/s', $html);
+        self::assertMatchesRegularExpression('/<craft-callout\s+id="foo-warning"\s+variant="warning"[^>]*>.*TEST WARNING.*<\/craft-callout>/s', $html);
         self::assertStringContainsString('<input name="foo">', $html);
     }
 

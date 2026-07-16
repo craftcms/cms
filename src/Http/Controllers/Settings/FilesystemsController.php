@@ -36,7 +36,7 @@ class FilesystemsController
 
     public function index(): \Inertia\Response
     {
-        return Inertia::render('SettingsFilesystemsIndexPage', [
+        return Inertia::render('settings/filesystems/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Filesystems')],
@@ -107,7 +107,7 @@ class FilesystemsController
             ->title($title)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Filesystems'), 'settings/filesystems')
-            ->inertiaPage('SettingsFilesystemsEditPage', [
+            ->inertiaPage('settings/filesystems/Edit', [
                 'oldHandle' => $handle,
                 'filesystem' => [
                     ...$filesystem->toArray(),

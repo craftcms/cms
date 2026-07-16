@@ -23,4 +23,8 @@ export default css`
     font-size: var(--c-text-base);
     color: var(--c-text-quiet);
   }
+
+  :host([hidden-input]) .input-group__container {
+    display: none;
+  }
 `;

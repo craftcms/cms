@@ -13,13 +13,14 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 use yii\web\Session;
+
+use function CraftCms\Cms\currentUser;
 
 /**
  * Class ContextProcessor
@@ -56,8 +57,8 @@ class ContextProcessor implements ProcessorInterface
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
-        if ($user && ($identity = Auth::user())) {
-            $data['userId'] = $identity->getId();
+        if ($user && ($identity = currentUser())) {
+            $data['userId'] = $identity->getCraftUserId();
         }
 
         /** @var Session|null $session */

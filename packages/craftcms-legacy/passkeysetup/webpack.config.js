@@ -7,7 +7,8 @@ module.exports = getConfig({
   config: {
     entry: {PasskeySetup: './PasskeySetup.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/passkeysetup/dist',
+      path:
+        __dirname + '/../../../cms-assets/resources/legacy/passkeysetup/dist',
     },
   },
 });

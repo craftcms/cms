@@ -8,7 +8,6 @@
 namespace craft\elements;
 
 use craft\behaviors\FieldLayoutBehavior;
-use craft\elements\db\GlobalSetQuery;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -18,8 +17,10 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
@@ -144,7 +145,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function find(): GlobalSetQuery
     {
-        return new GlobalSetQuery(static::class);
+        return new GlobalSetQuery();
     }
 
     /**
@@ -160,17 +161,20 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
     /**
      * @var string|null Name
      */
+    #[AllowedInSandbox]
     public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
+    #[AllowedInSandbox]
     public ?string $handle = null;
 
     /**
      * @var int|null Sort order
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public ?int $sortOrder = null;
 
     /**

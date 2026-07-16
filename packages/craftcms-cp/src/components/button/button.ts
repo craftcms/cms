@@ -7,6 +7,22 @@ import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
 
+export const ButtonAppearance = {
+  Solid: 'solid',
+  Outline: 'outline',
+  Plain: 'plain',
+} as const;
+
+export const ButtonVariant = {
+  Accent: 'accent',
+  Neutral: 'neutral',
+  Danger: 'danger',
+} as const;
+
+export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
+export type ButtonAppearance =
+  (typeof ButtonAppearance)[keyof typeof ButtonAppearance];
+
 /**
  * @summary Interactive element that triggers an action or event.
  * @since 1.0
@@ -22,10 +38,45 @@ import {classMap} from 'lit/directives/class-map.js';
  * @csspart label - The button's label slot.
  * @csspart suffix - The button's suffix slot.
  * @csspart spinner - Spinner that shows when the button is in a loading state.
+ * @csspart link - The anchor element rendered when the button has an href.
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
     return [...super.styles, styles];
+  }
+
+  override connectedCallback() {
+    // Set link-appropriate host state *before* Lion runs, so it skips its
+    // role="button" assignment and (via type) its submit-helper wiring.
+    if (this.href && !this.disabled) {
+      this.type = 'button';
+      this.setAttribute('role', 'presentation');
+    }
+    super.connectedCallback();
+    this.syncLinkHostState();
+  }
+
+  override updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    if (changedProperties.has('href') || changedProperties.has('disabled')) {
+      this.syncLinkHostState();
+    }
+  }
+
+  private syncLinkHostState() {
+    if (this.isLink) {
+      this.setAttribute('role', 'presentation');
+      this.tabIndex = -1;
+      this.type = 'button';
+      this.linkHostStateApplied = true;
+    } else if (this.linkHostStateApplied) {
+      this.setAttribute('role', 'button');
+      this.type = 'submit';
+      if (!this.disabled) {
+        this.tabIndex = 0;
+      }
+      this.linkHostStateApplied = false;
+    }
   }
 
   override async firstUpdated(changedProperties: Map<string, any>) {
@@ -39,7 +90,13 @@ export default class CraftButton extends LionButtonSubmit {
     );
 
     if (!this.accessibleName) {
-      this.accessibleName = computeAccessibleName(this);
+      // In link mode the host is role="presentation" (name not computable on
+      // it); the real accessible element is the inner anchor.
+      const nameTarget = this.isLink
+        ? ((this.shadowRoot?.querySelector('a.link') as HTMLElement | null) ??
+          this)
+        : this;
+      this.accessibleName = computeAccessibleName(nameTarget);
     }
 
     this._hasAccessibilityError =
@@ -50,27 +107,17 @@ export default class CraftButton extends LionButtonSubmit {
   @property() accessibleName: string;
 
   /** Visual appearance of the button */
-  @property({reflect: true}) appearance:
-    | 'accent'
-    | 'inline'
-    | 'plain'
-    | 'filled'
-    | 'none'
-    | 'dashed' = 'accent';
+  @property({reflect: true}) appearance: ButtonAppearance = 'solid';
 
   /**
-   * Theme variant of the button. Defaults to "default"
+   * Theme variant of the button. Defaults to "neutral"
    *
-   * Primary: The primary action on a page
-   * Default: Used in most cases
+   * Accent: The primary action on a page
+   * Neutral: Used in most cases
    * Danger: Indicates a dangerous action, when data will be removed or deleted
    * Inherit: Useful for colorable elements, button will reflect the parent theme
    */
-  @property({reflect: true}) variant:
-    | 'primary'
-    | 'default'
-    | 'danger'
-    | 'inherit' = 'default';
+  @property({reflect: true}) variant: ButtonVariant = 'neutral';
 
   /** Size of the button. Defaults to "medium" */
   @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =
@@ -84,13 +131,38 @@ export default class CraftButton extends LionButtonSubmit {
 
   @property() icon: string | null = null;
 
+  /** When set, the button renders as a link to this URL. */
+  @property({reflect: true}) href: string | null = null;
+
+  /** Anchor target (e.g. "_blank"). Forwarded to the rendered <a>. */
+  @property() target: string | null = null;
+
+  /** Anchor rel. Forwarded to the <a>; "noopener" is added for target="_blank". */
+  @property() rel: string | null = null;
+
+  /** Anchor download attribute. Forwarded to the <a>. */
+  @property() download: string | null = null;
+
   @state()
   private _hasAccessibilityError: boolean = false;
 
+  private linkHostStateApplied = false;
+
+  private get isLink(): boolean {
+    return !!this.href && !this.disabled;
+  }
+
+  private get computedRel(): string | null {
+    if (this.target === '_blank') {
+      const tokens = new Set((this.rel ?? '').split(/\s+/).filter(Boolean));
+      tokens.add('noopener');
+      return Array.from(tokens).join(' ');
+    }
+    return this.rel;
+  }
+
   override render() {
-    return html`
-      <!--@TODO need to figure this out-->
-      <!--<div role="status" class="sr-only"></div>-->
+    const content = html`
       <div
         class="${classMap({
           'button-content': true,
@@ -112,6 +184,22 @@ export default class CraftButton extends LionButtonSubmit {
         ? html`<craft-spinner part="spinner"></craft-spinner>`
         : nothing}
     `;
+
+    if (this.isLink) {
+      return html`
+        <a
+          class="link"
+          part="link"
+          href="${this.href}"
+          target="${this.target ?? nothing}"
+          rel="${this.computedRel ?? nothing}"
+          download="${this.download ?? nothing}"
+          >${content}</a
+        >
+      `;
+    }
+
+    return content;
   }
 }
 

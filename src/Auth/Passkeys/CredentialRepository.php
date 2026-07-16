@@ -8,9 +8,10 @@ use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
 use ParagonIE\ConstantTime\Base64UrlSafe;
-use Webauthn\PublicKeyCredentialSource;
+use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredentialUserEntity;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 readonly class CredentialRepository
@@ -20,9 +21,9 @@ readonly class CredentialRepository
     ) {}
 
     /**
-     * Finds a webauthn record in the database for given id and returns the PublicKeyCredentialSource for its credential value.
+     * Finds a webauthn record in the database for given id and returns the CredentialRecord for its credential value.
      */
-    public function findOneByCredentialId(string $publicKeyCredentialId, bool $checkOldUserHandle = false): ?PublicKeyCredentialSource
+    public function findOneByCredentialId(string $publicKeyCredentialId, bool $checkOldUserHandle = false): ?CredentialRecord
     {
         $model = $this->findByCredentialId($publicKeyCredentialId);
 
@@ -31,27 +32,27 @@ readonly class CredentialRepository
         }
 
         $serializer = $this->passkeys->webauthnServer()->getSerializer();
-        $credentialSource = $serializer->deserialize(
+        $credentialRecord = $serializer->deserialize(
             $model->credential,
-            PublicKeyCredentialSource::class,
+            CredentialRecord::class,
             'json',
         );
 
         if (! $checkOldUserHandle) {
-            return $credentialSource;
+            return $credentialRecord;
         }
 
         // if the record was created using webauthn v4 then the credential was run through Json::encode() before storing in the DB
         // deserializing such value base64 decodes the userHandle too, and leads to user handle mismatch;
         // so, if we failed to log user in based on the handle mismatch exception, we'll try again but using the encoded (old) handle
         $credential = Json::decodeIfJson($model->credential);
-        $credentialSource->userHandle = $credential['userHandle'];
+        $credentialRecord->userHandle = $credential['userHandle'];
 
-        return $credentialSource;
+        return $credentialRecord;
     }
 
     /**
-     * Finds all webauthn records for given user and returns an array of PublicKeyCredentialSources for their credential values.
+     * Finds all webauthn records for given user and returns an array of CredentialRecords for their credential values.
      */
     public function findAllForUserEntity(PublicKeyCredentialUserEntity $publicKeyCredentialUserEntity): array
     {
@@ -68,32 +69,32 @@ readonly class CredentialRepository
             ->get()
             ->map(fn (WebAuthn $record) => $serializer->deserialize(
                 $record->credential,
-                PublicKeyCredentialSource::class,
+                CredentialRecord::class,
                 'json',
             ))
             ->all();
     }
 
-    public function savedNamedCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource, ?string $credentialName = null): void
+    public function savedNamedCredentialSource(CredentialRecord $credentialRecord, ?string $credentialName = null): void
     {
-        $publicKeyCredentialId = $publicKeyCredentialSource->publicKeyCredentialId;
+        $publicKeyCredentialId = $credentialRecord->publicKeyCredentialId;
         $model = $this->findByCredentialId($publicKeyCredentialId);
 
         if (! $model) {
             $model = new WebAuthn;
-            $model->userId = auth('craft')->user()?->id;
+            $model->userId = currentUser()?->getCraftUserId();
             $model->credentialName = ! empty($credentialName) ? $credentialName : t('Secure credential');
             $model->credentialId = Base64UrlSafe::encodeUnpadded($publicKeyCredentialId);
         }
 
         $model->dateLastUsed = now();
-        $model->credential = $this->passkeys->webauthnServer()->getSerializer()->serialize($publicKeyCredentialSource, 'json');
+        $model->credential = $this->passkeys->webauthnServer()->getSerializer()->serialize($credentialRecord, 'json');
         $model->save();
     }
 
-    public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
+    public function saveCredentialSource(CredentialRecord $credentialRecord): void
     {
-        $this->savedNamedCredentialSource($publicKeyCredentialSource);
+        $this->savedNamedCredentialSource($credentialRecord);
     }
 
     private function findByCredentialId(string $publicKeyCredentialId): ?WebAuthn

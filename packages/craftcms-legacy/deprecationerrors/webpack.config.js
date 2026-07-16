@@ -7,7 +7,9 @@ module.exports = getConfig({
   config: {
     entry: {deprecator: './deprecator.js'},
     output: {
-      path: __dirname + '/../../../resources/legacy/deprecationerrors/dist',
+      path:
+        __dirname +
+        '/../../../cms-assets/resources/legacy/deprecationerrors/dist',
     },
   },
 });

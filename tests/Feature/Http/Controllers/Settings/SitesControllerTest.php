@@ -45,7 +45,7 @@ it('requires admin changes', function () {
 
     // Read only
     $this->get(action([SitesController::class, 'edit'], [Site::first()->id]))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsSitesEdit')
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/sites/Edit')
             ->where('readOnly', true));
 
     // Not allowed
@@ -68,7 +68,7 @@ test('index shows all sites', function () {
     ]));
 
     $this->get(action([SitesController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsSitesIndex')
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/sites/Index')
             ->has('sites.0', fn (AssertableInertia $page) => $page->where('id', Site::first()->id)->etc())
         );
 });
@@ -85,7 +85,7 @@ test('index can filter by group', function () {
 
     $this->get(action([SitesController::class, 'index'], ['groupId' => $group->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('SettingsSitesIndex')
+            ->component('settings/sites/Index')
             ->has('group', fn (AssertableInertia $page) => $page
                 ->where('id', $group->id)
                 ->where('name', $group->name)
@@ -117,7 +117,7 @@ test('it can edit a site', function () {
 
     get(action([SitesController::class, 'edit'], [$site->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('SettingsSitesEdit')
+            ->component('settings/sites/Edit')
             ->where('site.name', $site->getName())
             ->where('site.languageRaw', $site->getLanguage(false))
             ->where('site.baseUrlRaw', $site->getBaseUrl(false))

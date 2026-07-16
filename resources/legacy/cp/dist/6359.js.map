@@ -1,1 +1,0 @@
-{"version":3,"file":"6359.js","mappings":"iGAAA,WACEA,aAAc,yB","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/en.js"],"sourcesContent":["export default {\n  optionsPopup: 'Combobox options popup',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

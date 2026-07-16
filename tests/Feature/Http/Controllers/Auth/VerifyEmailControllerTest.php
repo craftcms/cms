@@ -7,14 +7,17 @@ use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\MessageBag;
+use Inertia\Testing\AssertableInertia;
 
-use function CraftCms\Cms\t;
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
-test('show redirects for invalid user id', function () {
+test('show redirects for invalid user uid', function () {
     get(action([VerifyEmailController::class, 'show'], [
-        'id' => 'invalid-uuid',
+        'uid' => 'invalid-uuid',
         'code' => 'some-code',
     ]))->assertRedirect(CpAuthPath::Login->value);
 });
@@ -23,7 +26,7 @@ test('show redirects for invalid code', function () {
     $user = User::findOne();
 
     get(action([VerifyEmailController::class, 'show'], [
-        'id' => $user->uid,
+        'uid' => $user->uid,
         'code' => 'invalid-code',
     ]))->assertRedirect(CpAuthPath::Login->value);
 });
@@ -32,26 +35,25 @@ test('show renders verify-email view for valid token', function () {
     $user = User::findOne();
     $code = Users::setVerificationCodeOnUser($user);
 
-    get(action([VerifyEmailController::class, 'show'], [
-        'id' => $user->uid,
+    get(cp_url(CpAuthPath::VerifyEmail->value, [
+        'uid' => $user->uid,
         'code' => $code,
     ]))
-        ->assertOk()
-        ->assertSee(t('Verify your email address'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('auth/VerifyEmail')
+            ->where('uid', $user->uid)
+            ->where('code', $code));
 });
 
-test('show passes id and code to view', function () {
-    $user = User::findOne();
-    $code = Users::setVerificationCodeOnUser($user);
+test('fallback template renders verify-email web component', function () {
+    $html = TemplateMode::with(TemplateMode::Cp, fn () => view('craftcms::verify-email', [
+        'uid' => 'user-uid',
+        'code' => 'token-code',
+        'errors' => new MessageBag(['code' => ['Invalid verification code.']]),
+    ])->render());
 
-    get(action([VerifyEmailController::class, 'show'], [
-        'id' => $user->uid,
-        'code' => $code,
-    ]))
-        ->assertOk()
-        ->assertSee($user->uid)
-        ->assertSee($code)
-        ->assertSee(t('Verify your email address'));
+    expect($html)->toContain('craft-verify-email-form');
+    expect($html)->toContain('initial-error');
 });
 
 test('store validates required fields', function () {
@@ -59,7 +61,7 @@ test('store validates required fields', function () {
         ->assertJsonValidationErrors(['code', 'uid']);
 });
 
-test('store aborts for invalid user id', function () {
+test('store aborts for invalid user uid', function () {
     postJson(action([VerifyEmailController::class, 'store']), [
         'uid' => 'invalid-uuid',
         'code' => 'some-code',

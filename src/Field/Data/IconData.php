@@ -8,7 +8,6 @@ use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Stringable;
 
-#[AllowedInSandbox]
 class IconData implements Serializable, Stringable
 {
     /**
@@ -18,7 +17,9 @@ class IconData implements Serializable, Stringable
      * @param  string[]  $styles  The Font Awesome styles the icon is available in
      */
     public function __construct(
+        #[AllowedInSandbox]
         public string $name,
+        #[AllowedInSandbox]
         public array $styles,
     ) {}
 

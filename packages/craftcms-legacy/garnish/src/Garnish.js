@@ -1049,7 +1049,7 @@ function initialize() {
             // Prevent buttons from getting focus on click
             if (
               e.currentTarget.nodeName === 'BUTTON' ||
-              e.currentTarget.role === 'button'
+              e.currentTarget.getAttribute?.('role') === 'button'
             ) {
               e.preventDefault();
             }
@@ -1075,7 +1075,7 @@ function initialize() {
 
             if (
               e.currentTarget.nodeName === 'BUTTON' ||
-              e.currentTarget.role === 'button'
+              e.currentTarget.getAttribute?.('role') === 'button'
             ) {
               e.preventDefault();
             }
@@ -1099,7 +1099,7 @@ function initialize() {
 
             if (
               e.currentTarget.nodeName === 'BUTTON' ||
-              e.currentTarget.role === 'button'
+              e.currentTarget.getAttribute?.('role') === 'button'
             ) {
               e.preventDefault();
             }

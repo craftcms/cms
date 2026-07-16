@@ -110,15 +110,19 @@ class Revisions extends Component
 
                     Craft::$app->getRevisions()->trigger($old, $yiiEvent);
 
-                    if (property_exists($event, 'handled')) {
-                        $event->handled = $yiiEvent->handled;
-                    }
-
                     $event->canonical = $yiiEvent->canonical;
                     $event->creatorId = $yiiEvent->creatorId;
                     $event->revisionNum = $yiiEvent->revisionNum;
                     $event->revisionNotes = $yiiEvent->revisionNotes;
                     $event->revision = $yiiEvent->revision;
+
+                    if (property_exists($event, 'handled')) {
+                        $event->handled = $yiiEvent->handled;
+
+                        if ($yiiEvent->handled) {
+                            return false;
+                        }
+                    }
                 }
             });
         }

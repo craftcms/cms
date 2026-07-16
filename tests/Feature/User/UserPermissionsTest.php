@@ -1,14 +1,17 @@
 <?php
 
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 
@@ -61,6 +64,20 @@ test('getAssignablePermissions', function () {
     expect($this->userPermissions->getAllPermissions()->toArray())
         ->not()
         ->toEqualCanonicalizing($this->userPermissions->getAssignablePermissions()->toArray());
+});
+
+test('getAssignablePermissions includes existing recipient permissions without a current user', function () {
+    auth()->logout();
+
+    $recipient = CraftCms\Cms\User\Models\User::factory()->create();
+    $this->userPermissions->saveUserPermissions($recipient->id, ['accessSiteWhenSystemIsOff']);
+
+    $permissions = $this->userPermissions
+        ->getAssignablePermissions($recipient->asElement())
+        ->flatMap(fn (PermissionGroup $group) => $group->permissions)
+        ->pluck('key');
+
+    expect($permissions)->toContain('accessSiteWhenSystemIsOff');
 });
 
 test('getPermissionsByGroupId & doesGroupHavePermission', function () {
@@ -120,4 +137,43 @@ test('saveUserPermissions', function () {
     $this->userPermissions->saveUserPermissions($user->id, ['accessSiteWhenSystemIsOff']);
 
     expect($this->userPermissions->doesUserHavePermission($user->id, 'accessSiteWhenSystemIsOff'))->toBeTrue();
+});
+
+test('permissions are resolved with canonical casing', function () {
+    $user = User::find()->one();
+
+    $this->userPermissions->saveUserPermissions($user->id, ['accesssitewhensystemisoff']);
+
+    expect($this->userPermissions->getPermissionsByUserId($user->id)->all())
+        ->toContain('accessSiteWhenSystemIsOff');
+    expect(DB::table(Table::USERPERMISSIONS)->where('name', 'accessSiteWhenSystemIsOff')->exists())
+        ->toBeTrue();
+
+    DB::table(Table::USERPERMISSIONS_USERS)
+        ->where('userId', $user->id)
+        ->delete();
+
+    $now = now();
+    $legacyPermissionId = DB::table(Table::USERPERMISSIONS)
+        ->where('name', 'accesscp')
+        ->value('id') ?? DB::table(Table::USERPERMISSIONS)->insertGetId([
+            'name' => 'accesscp',
+            'dateCreated' => $now,
+            'dateUpdated' => $now,
+            'uid' => Str::uuid(),
+        ]);
+
+    DB::table(Table::USERPERMISSIONS_USERS)->insert([
+        'permissionId' => $legacyPermissionId,
+        'userId' => $user->id,
+        'dateCreated' => $now,
+        'dateUpdated' => $now,
+        'uid' => Str::uuid(),
+    ]);
+
+    $this->userPermissions->reset();
+
+    expect($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'))->toBeTrue();
+    expect($this->userPermissions->getPermissionsByUserId($user->id)->all())
+        ->toContain('accessCp');
 });

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
@@ -19,8 +20,10 @@ use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -287,8 +290,15 @@ it('adds a plain validation error when a propagated save fails', function () {
 });
 
 it('adds a linked validation error when the current user can fix the propagated site', function () {
-    Auth::setUser(new AuthorizedUser);
+    Cms::config()
+        ->cpTrigger('admin')
+        ->baseCpUrl('https://example.test/admin');
+
     swapUrlRequest('/admin/entries/100?foo=bar&site=primary');
+    request()->attributes->set('isCpRequest', true);
+    Auth::shouldReceive('user')->andReturn(new AuthorizedAuthUser);
+    SitesFacade::shouldReceive('isMultiSite')->andReturnFalse();
+    SitesFacade::shouldReceive('getPrimarySite')->andReturn($this->primarySite);
 
     $this->executor->returnValue = false;
     $this->sites->isMultiSiteValue = true;
@@ -303,6 +313,8 @@ it('adds a linked validation error when the current user can fix the propagated 
     $siteElement->cpEditUrl = '/admin/entries/108';
     $siteElement->errors()->add('title', 'Title is invalid');
     $siteElement->canSave = true;
+
+    Cms::setIsInstalled();
 
     $result = $this->executor->propagate($element, supportedSites(), 2, $siteElement);
     $message = $element->errors()->first('global');
@@ -605,6 +617,26 @@ class TrackingField extends Field
 
 class AuthorizedUser extends User
 {
+    #[Override]
+    public function can($abilities, $arguments = []): bool
+    {
+        return $abilities === 'editSite:secondary-uid';
+    }
+}
+
+class AuthorizedAuthUser extends UserModel
+{
+    public function __construct(private readonly User $user = new AuthorizedUser)
+    {
+        parent::__construct();
+    }
+
+    #[Override]
+    public function asElement(): User
+    {
+        return $this->user;
+    }
+
     #[Override]
     public function can($abilities, $arguments = []): bool
     {

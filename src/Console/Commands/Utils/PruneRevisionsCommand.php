@@ -138,10 +138,6 @@ class PruneRevisionsCommand extends Command
             }
         }
 
-        if ($handles->isEmpty()) {
-            return [];
-        }
-
         $sectionIds = [];
 
         foreach ($handles as $handle) {

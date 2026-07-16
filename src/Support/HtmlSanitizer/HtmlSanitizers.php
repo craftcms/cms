@@ -48,6 +48,12 @@ class HtmlSanitizers
         return isset($this->definitions[$name]);
     }
 
+    /** @return list<string> */
+    public function names(): array
+    {
+        return array_keys($this->definitions);
+    }
+
     /** @return Collection<string, HtmlSanitizerInterface> */
     public function all(): Collection
     {

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Structure\Structures;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +22,7 @@ readonly class RelationalFieldsController
         Structures $structures,
     ): JsonResponse {
         $request->validate([
-            'elementType' => ['required', 'string'],
+            'elementType' => ['required', 'string', new ElementTypeRule],
             'elementIds' => ['nullable', 'array'],
             'siteId' => ['nullable'],
             'branchLimit' => ['nullable', 'integer'],

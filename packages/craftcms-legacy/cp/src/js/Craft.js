@@ -1,3 +1,4 @@
+import {formatMessage, t} from '@craftcms/cp/utilities/translate';
 import * as d3 from 'd3';
 
 /** global: Craft */
@@ -81,208 +82,12 @@ $.extend(Craft, {
    * @param {Object} params
    * @returns {string}
    */
-  t: function (category, message, params) {
-    if (
-      typeof Craft.translations[category] !== 'undefined' &&
-      typeof Craft.translations[category][message] !== 'undefined'
-    ) {
-      message = Craft.translations[category][message];
-    }
-
-    if (params) {
-      return this.formatMessage(message, params);
-    }
-
-    return message;
+  t: function (category, message, params = {}) {
+    return t(message, params, (category = 'app'), Craft.translations);
   },
 
   formatMessage: function (pattern, args) {
-    let tokens;
-    if ((tokens = this._tokenizePattern(pattern)) === false) {
-      throw 'Message pattern is invalid.';
-    }
-    for (let i = 0; i < tokens.length; i++) {
-      let token = tokens[i];
-      if (typeof token === 'object') {
-        if ((tokens[i] = this._parseToken(token, args)) === false) {
-          throw 'Message pattern is invalid.';
-        }
-      }
-    }
-    return tokens.join('');
-  },
-
-  _tokenizePattern: function (pattern) {
-    let depth = 1,
-      start,
-      pos;
-    // Get an array of the string characters (factoring in 3+ byte chars)
-    const chars = [...pattern];
-    if ((start = pos = chars.indexOf('{')) === -1) {
-      return [pattern];
-    }
-    let tokens = [chars.slice(0, pos).join('')];
-    while (true) {
-      let open = chars.indexOf('{', pos + 1);
-      let close = chars.indexOf('}', pos + 1);
-      if (open === -1) {
-        open = false;
-      }
-      if (close === -1) {
-        close = false;
-      }
-      if (open === false && close === false) {
-        break;
-      }
-      if (open === false) {
-        open = chars.length;
-      }
-      if (close > open) {
-        depth++;
-        pos = open;
-      } else {
-        depth--;
-        pos = close;
-      }
-      if (depth === 0) {
-        tokens.push(
-          chars
-            .slice(start + 1, pos)
-            .join('')
-            .split(',', 3)
-        );
-        start = pos + 1;
-        tokens.push(chars.slice(start, open).join(''));
-        start = open;
-      }
-
-      if (depth !== 0 && (open === false || close === false)) {
-        break;
-      }
-    }
-    if (depth !== 0) {
-      return false;
-    }
-
-    return tokens;
-  },
-
-  _parseToken: function (token, args) {
-    // parsing pattern based on ICU grammar:
-    // http://icu-project.org/apiref/icu4c/classMessageFormat.html#details
-    const param = token[0].trim();
-    if (typeof args[param] === 'undefined') {
-      return `{${token.join(',')}}`;
-    }
-    const arg = args[param];
-    const type = typeof token[1] !== 'undefined' ? token[1].trim() : 'none';
-    switch (type) {
-      case 'number':
-        return (() => {
-          let format = typeof token[2] !== 'undefined' ? token[2].trim() : null;
-          if (format !== null && format !== 'integer') {
-            throw `Message format 'number' is only supported for integer values.`;
-          }
-          let number = Craft.formatNumber(arg);
-          let pos;
-          if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
-            number += `.${arg.substring(pos + 1)}`;
-          }
-          return number;
-        })();
-      case 'none':
-        return arg;
-      case 'select':
-        return (() => {
-          /* http://icu-project.org/apiref/icu4c/classicu_1_1SelectFormat.html
-                        selectStyle = (selector '{' message '}')+
-                        */
-          if (typeof token[2] === 'undefined') {
-            return false;
-          }
-          let select = this._tokenizePattern(token[2]);
-          let c = select.length;
-          let message = false;
-          for (let i = 0; i + 1 < c; i++) {
-            if (Array.isArray(select[i]) || !Array.isArray(select[i + 1])) {
-              return false;
-            }
-            let selector = select[i++].trim();
-            if (
-              (message === false && selector === 'other') ||
-              selector == arg
-            ) {
-              message = select[i].join(',');
-            }
-          }
-          if (message === false) {
-            return false;
-          }
-          return this.formatMessage(message, args);
-        })();
-      case 'plural':
-        return (() => {
-          /* http://icu-project.org/apiref/icu4c/classicu_1_1PluralFormat.html
-                        pluralStyle = [offsetValue] (selector '{' message '}')+
-                        offsetValue = "offset:" number
-                        selector = explicitValue | keyword
-                        explicitValue = '=' number  // adjacent, no white space in between
-                        keyword = [^[[:Pattern_Syntax:][:Pattern_White_Space:]]]+
-                        message: see MessageFormat
-                        */
-          if (typeof token[2] === 'undefined') {
-            return false;
-          }
-          let plural = this._tokenizePattern(token[2]);
-          const c = plural.length;
-          let message = false;
-          let offset = 0;
-          for (let i = 0; i + 1 < c; i++) {
-            if (
-              typeof plural[i] === 'object' ||
-              typeof plural[i + 1] !== 'object'
-            ) {
-              return false;
-            }
-            let selector = plural[i++].trim();
-            let selectorChars = [...selector];
-
-            if (i === 1 && selector.substring(0, 7) === 'offset:') {
-              let pos = [...selector.replace(/[\n\r\t]/g, ' ')].indexOf(' ', 7);
-              if (pos === -1) {
-                throw 'Message pattern is invalid.';
-              }
-              offset = parseInt(selectorChars.slice(7, pos).join('').trim());
-              selector = selectorChars
-                .slice(pos + 1, pos + 1 + selectorChars.length)
-                .join('')
-                .trim();
-            }
-            if (
-              (message === false && selector === 'other') ||
-              (selector[0] === '=' &&
-                parseInt(
-                  selectorChars.slice(1, 1 + selectorChars.length).join('')
-                ) === arg) ||
-              (selector === 'one' && arg - offset === 1)
-            ) {
-              message = (
-                typeof plural[i] === 'string' ? [plural[i]] : plural[i]
-              )
-                .map((p) => {
-                  return p.replace('#', arg - offset);
-                })
-                .join(',');
-            }
-          }
-          if (message === false) {
-            return false;
-          }
-          return this.formatMessage(message, args);
-        })();
-      default:
-        throw `Message format '${type}' is not supported.`;
-    }
+    return formatMessage(pattern, args);
   },
 
   formatDate: function (date) {
@@ -2133,7 +1938,7 @@ $.extend(Craft, {
    */
   initUiElements: function ($container) {
     $('.grid', $container).grid();
-    $('.checkbox-select', $container).checkboxselect();
+    $('.cp-checkbox-select', $container).checkboxselect();
     $('.fieldtoggle', $container).fieldtoggle();
     $('.lightswitch', $container).lightswitch();
     $('.nicetext', $container).nicetext();
@@ -2676,20 +2481,37 @@ $.extend(Craft, {
       return;
     }
 
-    const $actions = $(chip).find(
+    // Try old-style chip/card containers first
+    let $actions = $(chip).find(
       '> .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
     );
-    let $actionMenuBtn = $actions.find('.action-btn').removeClass('hidden');
 
-    if (!$actionMenuBtn.length) {
-      // the chip/card doesn't have an action menu yet, so add one
+    let $actionMenuBtn;
+
+    if ($actions.length) {
+      // Old div.chip — look for existing .action-btn
+      $actionMenuBtn = $actions.find('.action-btn').removeClass('hidden');
+    } else {
+      // New craft-chip — look in [slot="suffix"] for an existing disclosure trigger
+      const $suffixSlot = $(chip).children('[slot="suffix"]');
+      if ($suffixSlot.length) {
+        $actions = $suffixSlot;
+        $actionMenuBtn = $actions
+          .find('[data-disclosure-trigger]')
+          .first()
+          .removeClass('hidden');
+      }
+    }
+
+    if (!$actionMenuBtn?.length) {
+      // No existing action button — create one and wire it up
       const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
       const labelId = `${menuId}-label`;
       const $label = $('<label/>', {
         id: labelId,
         class: 'visually-hidden',
         text: Craft.t('app', 'Actions'),
-      }).appendTo($actions);
+      });
       $actionMenuBtn = $('<button/>', {
         class: 'btn action-btn',
         type: 'button',
@@ -2697,11 +2519,23 @@ $.extend(Craft, {
         'aria-controls': menuId,
         'aria-describedby': labelId,
         'data-disclosure-trigger': 'true',
-      }).insertAfter($label);
-      $('<div/>', {
+      });
+      const $menu = $('<div/>', {
         id: menuId,
         class: 'menu menu--disclosure',
-      }).insertAfter($actionMenuBtn);
+      });
+
+      if ($actions?.length) {
+        // Append into the found container (old chip-actions or [slot="suffix"])
+        $label.appendTo($actions);
+        $actionMenuBtn.appendTo($actions);
+        $menu.appendTo($actions);
+      } else {
+        // No container found — create a chip-actions div and append to the chip
+        const $newContainer = $('<div/>', {class: 'chip-actions'});
+        $newContainer.append($label, $actionMenuBtn, $menu);
+        $(chip).append($newContainer);
+      }
     }
 
     const disclosureMenu = $actionMenuBtn

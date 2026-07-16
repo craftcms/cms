@@ -11,6 +11,8 @@ class TestPluginSettings extends PluginSettings
 {
     public ?string $foo = null;
 
+    public ?string $bar = null;
+
     #[Override]
     public function getRules(): array
     {

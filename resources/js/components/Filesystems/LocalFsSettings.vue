@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {computed, inject, type Ref} from 'vue';
-  import CraftCombobox from '@/components/form/CraftCombobox.vue';
+  import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import {usePage} from '@inertiajs/vue3';
 
   defineProps<{
@@ -43,7 +43,7 @@
     :disabled="readOnly"
     :error="page.props.errors?.path"
   >
-    <template #after>
+    <template slot="after">
       <craft-callout
         variant="info"
         appearance="plain"

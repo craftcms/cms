@@ -13,7 +13,6 @@ use craft\base\Event as YiiEvent;
 use craft\base\FieldInterface;
 use craft\console\Controller;
 use craft\elements\Category;
-use craft\elements\db\ElementQuery;
 use craft\elements\Tag;
 use craft\events\DefineConsoleActionsEvent;
 use craft\events\MultiElementActionEvent;
@@ -31,6 +30,7 @@ use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
@@ -612,7 +612,7 @@ class ResaveController extends Controller
         /** @var ElementQuery $query */
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $query->elementType;
-        $count = (int)$query->count();
+        $count = $query->count();
 
         if ($count === 0) {
             $this->output('No ' . $elementType::pluralLowerDisplayName() . ' exist for that criteria.', Console::FG_YELLOW);

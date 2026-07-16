@@ -68,7 +68,7 @@ class ElementDraftsController
 
         if (! $element->getIsDraft() && ! $provisional) {
             Gate::authorize('createDrafts', $element);
-        } elseif (! $this->canSave($element, $this->request->user())) {
+        } elseif (! $this->canSave($element, $this->request->craftUser())) {
             abort(403, 'User not authorized to save this element.');
         }
 
@@ -77,13 +77,13 @@ class ElementDraftsController
             $existingProvisionalDraft = $element::find()
                 ->provisionalDrafts()
                 ->draftOf($element->id)
-                ->draftCreator($this->request->user()->id)
+                ->draftCreator($this->request->craftUser()?->getCraftUserId())
                 ->site('*')
                 ->status(null)
                 ->one();
 
             if ($existingProvisionalDraft) {
-                Log::warning("Overwriting an existing provisional draft for element/user $element->id/{$this->request->user()->id}", [__METHOD__]);
+                Log::warning("Overwriting an existing provisional draft for element/user $element->id/{$this->request->craftUser()?->getCraftUserId()}", [__METHOD__]);
 
                 $this->elements->deleteElement($existingProvisionalDraft, true);
             }
@@ -106,7 +106,7 @@ class ElementDraftsController
                 /** @var Element $element */
                 $draft = $this->drafts->createDraft(
                     canonical: $element,
-                    creatorId: $this->request->user()->id,
+                    creatorId: $this->request->craftUser()?->getCraftUserId(),
                     provisional: $provisional,
                 );
 
@@ -121,7 +121,7 @@ class ElementDraftsController
             $this->applyParamsToElement($element);
 
             // Make sure nothing just changed that would prevent the user from saving
-            if (! $this->canSave($element, $this->request->user())) {
+            if (! $this->canSave($element, $this->request->craftUser())) {
                 abort(403, 'User not authorized to save this element.');
             }
 
@@ -209,7 +209,7 @@ class ElementDraftsController
         $provisionalId = $element::find()
             ->provisionalDrafts()
             ->draftOf($element->id)
-            ->draftCreator($this->request->user()->id)
+            ->draftCreator($this->request->craftUser()?->getCraftUserId())
             ->site('*')
             ->status(null)
             ->ids()[0] ?? null;
@@ -222,7 +222,7 @@ class ElementDraftsController
 
         $draft = $this->drafts->createDraft(
             canonical: $element,
-            creatorId: $this->request->user()->id,
+            creatorId: $this->request->craftUser()?->getCraftUserId(),
             provisional: true,
         );
 
@@ -289,7 +289,7 @@ class ElementDraftsController
             $errors = $element->errors();
             $invalidNestedElementIds = $element->getInvalidNestedElementIds();
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-            $this->elements->saveElement(element: $element, saveContent: $saveContent);
+            $this->elements->saveElement(element: $element, runValidation: false, saveContent: $saveContent);
             $element->clearErrors();
             $element->errors()->merge($errors);
             $element->addInvalidNestedElementIds($invalidNestedElementIds);

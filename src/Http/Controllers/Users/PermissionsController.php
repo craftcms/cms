@@ -10,12 +10,13 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Flash;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
@@ -35,46 +36,42 @@ readonly class PermissionsController
     public function index(Request $request, ?int $userId = null): CpScreenResponse
     {
         $user = $this->editedUser($userId);
-
-        $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
-        $response->action('users/save-permissions');
-        $response->contentTemplate('users/_permissions', [
-            'user' => $user,
-            'currentGroupIds' => Arr::pluck($user->getGroups(), 'id'),
-        ]);
-
-        if (! $user->getIsCredentialed() && $user->username && $request->user()->can('moderateUsers')) {
-            $response->additionalButtonsHtml(
-                Html::button(t('Save and send activation email'), [
-                    'class' => ['btn', 'secondary', 'formsubmit'],
-                    'data' => [
-                        'param' => 'sendActivationEmail',
-                        'value' => '1',
-                    ],
-                ])
-            );
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
         }
 
-        return $response;
+        // Elevation is handled client-side by the Inertia page via
+        // `useSettingsSave({elevatedFields: […]})`, and enforced server-side in
+        // `update()` via `requireConfirmedPassword()`.
+        return $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS)
+            ->inertiaPage('users/Permissions', new UserPermissionsViewModel($user, $currentUser));
     }
 
-    public function store(Request $request, Elements $elements): Response
+    public function update(Request $request, Elements $elements, ?int $userId = null): Response
     {
         $request->validate([
-            'userId' => ['required', 'integer', Rule::exists(Table::USERS, 'id')],
             'admin' => ['nullable', 'boolean'],
-            'sendActivationMail' => ['nullable', 'boolean'],
+            'groups' => ['nullable', 'array'],
+            'groups.*' => ['integer', Rule::exists(Table::USERGROUPS, 'id')],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string'],
+            'sendActivationEmail' => ['nullable', 'boolean'],
         ]);
 
         if (! $this->showPermissionsScreen()) {
             abort(403, 'User not authorized to perform this action.');
         }
 
-        $currentUser = $request->user();
-        $user = $this->editedUser($request->integer('userId'));
+        $currentUser = $request->craftUser();
+        if (! $currentUser) {
+            abort(401);
+        }
+
+        $user = $this->editedUser($userId);
 
         // Is their admin status changing?
-        if ($currentUser->admin) {
+        if ($currentUser->isAdmin()) {
             $adminParam = $request->boolean('admin', $user->admin);
 
             if ($adminParam !== $user->admin) {
@@ -87,7 +84,7 @@ readonly class PermissionsController
             }
         }
 
-        if (Edition::get()->value >= Edition::Pro->value) {
+        if (Edition::isAtLeast(Edition::Pro)) {
             event(new UserGroupsAndPermissionsAssigning($user));
 
             // Assign user groups and permissions if the current user is allowed to do that
@@ -99,7 +96,7 @@ readonly class PermissionsController
 
         if (
             ! $user->getIsCredentialed() &&
-            $currentUser->can('administrateUsers') &&
+            $currentUser->can('sendActivationEmail', $user) &&
             $request->boolean('sendActivationEmail')
         ) {
             try {
@@ -114,9 +111,9 @@ readonly class PermissionsController
         return $this->asSuccess(t('Permissions saved.'));
     }
 
-    private function saveUserGroups(Request $request, UserElement $user, UserElement $currentUser): void
+    private function saveUserGroups(Request $request, UserElement $user, CraftUser $currentUser): void
     {
-        if (! $currentUser->canAssignUserGroups()) {
+        if (! $currentUser->can('assignUserGroups', $user)) {
             return;
         }
 
@@ -145,7 +142,7 @@ readonly class PermissionsController
 
                 // Make sure the current user is in the group or has permission to assign it
                 abort_if(
-                    ! $currentUser->can("assignUserGroup:$group->uid"),
+                    ! $currentUser->can('assignUserGroup', [$user, $group]),
                     403,
                     "Your account doesn't have permission to assign user group “{$group->name}” to a user.",
                 );
@@ -161,26 +158,26 @@ readonly class PermissionsController
         $user->setGroups($newGroups);
     }
 
-    private function saveUserPermissions(Request $request, UserElement $user, UserElement $currentUser): void
+    private function saveUserPermissions(Request $request, UserElement $user, CraftUser $currentUser): void
     {
         if (! $currentUser->can('assignUserPermissions')) {
             return;
         }
 
-        // Save any user permissions
+        // Resolve the permission set
         if ($user->admin) {
+            // Granular permissions aren’t stored for administrators, because they’re implicitly authorized to do anything:
             $permissions = [];
         } else {
-            $permissions = $request->input('permissions');
+            // Laravel’s {@see \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull} middleware makes `$request->input()` ambiguous when an empty set of permissions is sent.
 
-            if ($permissions === null) {
+            // If the request doesn’t indicate the current user is trying to update permissions, we can just bail:
+            if (! $request->has('permissions')) {
                 return;
             }
 
-            // it will be an empty string if no permissions were assigned during user saving.
-            if ($permissions === '') {
-                $permissions = [];
-            }
+            // Now it’s safe to normalize whatever was sent (including an empty set) into an array:
+            $permissions = $request->array('permissions');
         }
 
         // See if there are any new permissions in here
@@ -192,7 +189,7 @@ readonly class PermissionsController
 
                 // Make sure the current user even has permission to grant it
                 abort_if(
-                    ! $currentUser->can($permission),
+                    ! $currentUser->can('assignPermission', [$user, $permission]),
                     403,
                     "Your account doesn't have permission to assign the $permission permission to a user.",
                 );

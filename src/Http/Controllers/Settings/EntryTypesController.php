@@ -4,36 +4,35 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Entry\Resources\EntryTypeResource;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
+use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -53,6 +52,7 @@ class EntryTypesController
         Fields $fields,
         GeneralConfig $generalConfig,
         private readonly EntryTypes $entryTypes,
+        private readonly FieldLayoutDesigner $fieldLayoutDesigner,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
@@ -62,42 +62,24 @@ class EntryTypesController
         }
     }
 
-    public function index(Request $request)
+    public function index(TableRequest $request)
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
-
-        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
-            ['field' => 'name', 'direction' => 'asc'],
-        ];
-
-        $orderBy = match (Arr::get($sort, '0.field')) {
-            'handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-
-        $sortDir = match (Arr::get($sort, '0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        [$pagination, $tableData] = $this->entryTypes->getTableData(page: $page,
-            limit: $limit,
-            searchTerm: $searchTerm,
-            orderBy: $orderBy,
-            sortDir: $sortDir,
+        [$pagination, $tableData] = $this->entryTypes->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
         );
 
-        return Inertia::render('SettingsEntryTypesIndexPage', [
+        return Inertia::render('settings/entry-types/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Entry Types')],
             ],
             'title' => t('Entry Types'),
-            'searchTerm' => $searchTerm,
-            'sort' => $sort,
+            'searchTerm' => $request->search(),
+            'sort' => $request->sort(),
             'data' => fn () => $tableData,
             'pagination' => fn () => $pagination,
             'readOnly' => $this->readOnly,
@@ -108,30 +90,12 @@ class EntryTypesController
     {
         $entryType = new EntryType;
 
-        $fieldLayout = $entryType->getFieldLayout();
-
-        if ($entryType->hasTitleField && ! $fieldLayout->isFieldIncluded('title')) {
-            $fieldLayout->prependElements([new EntryTitleField]);
-        }
-
         return new CpScreenResponse()
             ->title(t('Create a new entry type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
-            ->contentTemplate('settings/entry-types/_edit.twig', [
-                'entryTypeId' => null,
-                'entryType' => $entryType,
-                'typeName' => Entry::displayName(),
-                'lowerTypeName' => Entry::lowerDisplayName(),
-                'readOnly' => $this->readOnly,
-            ])
-            ->action('entry-types/save')
             ->redirectUrl('settings/entry-types')
-            ->addAltAction(t('Save and continue editing'), [
-                'redirect' => 'settings/entry-types/{id}',
-                'shortcut' => true,
-                'retainScroll' => true,
-            ]);
+            ->inertiaPage('settings/entry-types/Edit', $this->entryTypeProps($entryType, brandNew: true));
     }
 
     public function edit(Request $request, ?EntryTypeModel $entryType = null): CpScreenResponse
@@ -144,116 +108,105 @@ class EntryTypesController
 
         abort_if(is_null($entryTypeData), 404, 'Entry type not found');
 
-        $fieldLayout = $entryTypeData->getFieldLayout();
-
-        if ($entryTypeData->hasTitleField) {
-            // Ensure the Title field is present
-            if (! $fieldLayout->isFieldIncluded('title')) {
-                $fieldLayout->prependElements([new EntryTitleField]);
-            }
-        } else {
-            // Remove the title field
-            foreach ($fieldLayout->getTabs() as $tab) {
-                $elements = array_filter($tab->getElements(),
-                    fn (FieldLayoutElement $element) => ! $element instanceof EntryTitleField);
-                $tab->setElements($elements);
-            }
-        }
-
-        return new CpScreenResponse()
+        $response = new CpScreenResponse()
             ->editUrl($entryTypeData->getCpEditUrl())
             ->title(trim($entryTypeData->name) ?: t('Edit Entry Type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
-            ->contentTemplate('settings/entry-types/_edit.twig', [
-                'entryTypeId' => $entryTypeData->id,
-                'entryType' => $entryTypeData,
-                'typeName' => Entry::displayName(),
-                'lowerTypeName' => Entry::lowerDisplayName(),
-                'readOnly' => $this->readOnly,
-            ])
-            ->unless(
-                $this->readOnly,
-                callback: function (CpScreenResponse $response) use ($entryTypeData) {
-                    $response
-                        ->action('entry-types/save')
-                        ->redirectUrl('settings/entry-types')
-                        ->addAltAction(t('Save and continue editing'), [
-                            'redirect' => 'settings/entry-types/{id}',
-                            'shortcut' => true,
-                            'retainScroll' => true,
-                        ])
-                        ->addAltAction(t('Save as a new entry type'), [
-                            'params' => ['saveAsNew' => true],
-                            'redirect' => 'settings/entry-types/{id}',
-                        ])
-                        ->addAltAction(t('Delete'), [
-                            'action' => 'entry-types/delete',
-                            'destructive' => true,
-                        ])
-                        ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml([
-                            t('ID') => $entryTypeData->id,
-                            t('Used by') => function () use ($entryTypeData) {
-                                $usages = $entryTypeData->findUsages();
-                                if (empty($usages)) {
-                                    return Html::tag('i', t('No usages'));
-                                }
+            ->redirectUrl('settings/entry-types')
+            ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml($entryTypeData->getMetadata()))
+            ->inertiaPage('settings/entry-types/Edit', $this->entryTypeProps($entryTypeData, brandNew: false));
 
-                                $labels = [];
-                                $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (
-                                    &$labels
-                                ) {
-                                    $icon = $usage instanceof FieldInterface && ! $usage instanceof Iconic
-                                        ? $usage::icon()
-                                        : $usage->getIcon();
-                                    $label = $labels[] = $usage->getUiLabel();
-                                    $labelHtml = Html::beginTag('span', [
-                                        'class' => ['flex', 'flex-nowrap', 'gap-s'],
-                                    ]).
-                                        Html::tag('div', Icons::svg($icon), [
-                                            'class' => ['cp-icon', 'small'],
-                                        ]).
-                                        Html::tag('span', Html::encode($label)).
-                                        Html::endTag('span');
+        if (! $this->readOnly) {
+            if ($entryTypeData->id) {
+                $response->addAltAction(t('Delete'), [
+                    'variant' => 'danger',
+                    'action' => [
+                        'type' => 'http',
+                        'method' => 'DELETE',
+                        'url' => action([EntryTypesController::class, 'destroy'], [$entryTypeData->id]),
+                        'body' => [
+                            'redirect' => Crypt::encrypt(action([EntryTypesController::class, 'index'])),
+                        ],
+                    ],
+                ]);
+            }
+        }
 
-                                    return Html::a($labelHtml, $usage->getCpEditUrl());
-                                }, $entryTypeData->findUsages());
-
-                                // sort by label
-                                array_multisort($labels, SORT_ASC, $items);
-
-                                $items = array_map(fn ($item) => Html::li($item)->encode(false), $items);
-
-                                return Html::ul()->items(...$items)->render();
-                            },
-                        ]));
-                },
-                default: function (CpScreenResponse $response) {
-                    $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
-                },
-            );
+        return $response;
     }
 
-    #[\Deprecated(message: 'in 6.0. Use `settings/entry-types` instead.')]
-    public function tableData(Request $request): JsonResponse
+    /**
+     * Builds the Inertia props for the entry type edit/new screen.
+     */
+    private function entryTypeProps(EntryType $entryType, bool $brandNew): array
     {
-        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
-        $limit = (int) $request->input('per_page', 100);
-        $searchTerm = $request->input('search');
-        $orderBy = match ($request->input('sort.0.field')) {
-            '__slot:handle' => 'handle',
-            default => 'name',
-        };
-        $sortDir = match ($request->input('sort.0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
+        $fieldLayout = $entryType->getFieldLayout();
 
-        [$pagination, $tableData] = $this->entryTypes->getTableData(page: $page,
-            limit: $limit,
-            searchTerm: $searchTerm,
-            orderBy: $orderBy,
-            sortDir: $sortDir,
+        // Normalize the Title field's presence so the round-tripped config matches what gets saved back.
+        if ($entryType->hasTitleField) {
+            if (! $fieldLayout->isFieldIncluded('title')) {
+                $fieldLayout->prependElements([new EntryTitleField]);
+            }
+        } else {
+            foreach ($fieldLayout->getTabs() as $tab) {
+                $elements = array_filter(
+                    $tab->getElements(),
+                    fn (FieldLayoutElement $element) => ! $element instanceof EntryTitleField,
+                );
+                $tab->setElements($elements);
+            }
+        }
+
+        // Render just the designer markup (with `autoBoot: false`, so it doesn't queue its
+        // own boot JS).
+        $fieldLayoutDesigner = [
+            'html' => $this->fieldLayoutDesigner->fieldHtml($fieldLayout, [
+                'disabled' => $this->readOnly,
+                'withGeneratedFields' => true,
+                'withCardViewDesigner' => true,
+                'autoBoot' => false,
+            ]),
+        ];
+
+        return [
+            'brandNew' => $brandNew,
+            'entryType' => [
+                'id' => $entryType->id,
+                'color' => $entryType->color?->value,
+                'icon' => $entryType->icon,
+                'name' => $entryType->name,
+                'handle' => $entryType->handle,
+                'description' => $entryType->description,
+                'uiLabelFormat' => $entryType->uiLabelFormat,
+                'titleTranslationMethod' => $entryType->titleTranslationMethod->value,
+                'titleTranslationKeyFormat' => $entryType->titleTranslationKeyFormat,
+                'titleFormat' => $entryType->titleFormat,
+                'allowLineBreaksInTitles' => (bool) $entryType->allowLineBreaksInTitles,
+                'showSlugField' => (bool) $entryType->showSlugField,
+                'slugTranslationMethod' => $entryType->slugTranslationMethod->value,
+                'slugTranslationKeyFormat' => $entryType->slugTranslationKeyFormat,
+                'showStatusField' => (bool) $entryType->showStatusField,
+            ],
+            'metadataHtml' => app(ContentHtml::class)->metadataHtml($entryType->getMetadata()),
+            'fieldLayoutDesigner' => $fieldLayoutDesigner,
+            'translationMethodOptions' => TranslationMethod::asOptions(),
+            'typeName' => Entry::displayName(),
+            'lowerTypeName' => Entry::lowerDisplayName(),
+            'isMultiSite' => Sites::isMultiSite(),
+            'readOnly' => $this->readOnly,
+        ];
+    }
+
+    #[Deprecated(message: 'in 6.0. Use `settings/entry-types` instead.')]
+    public function tableData(TableRequest $request): JsonResponse
+    {
+        [$pagination, $tableData] = $this->entryTypes->getTableData(
+            page: $request->page(),
+            limit: $request->limit(),
+            searchTerm: $request->search(),
+            orderBy: $request->orderBy(),
+            sortDir: $request->sortDir(),
         );
 
         return new JsonResponse([
@@ -321,7 +274,7 @@ class EntryTypesController
         $entryType->validate(throw: true);
 
         if (! $this->fieldLayout->validate()) {
-            return $this->asModelFailure($entryType, t('Couldn’t save entry type.'), 'entryType');
+            throw ValidationException::withMessages($this->fieldLayout->errors()->getMessages());
         }
 
         if ($saveAsNew) {
@@ -330,7 +283,14 @@ class EntryTypesController
 
         $this->entryTypes->saveEntryType($entryType);
 
-        return $this->asModelSuccess($entryType, t('Entry type saved.'), 'entryType');
+        return $this->asModelSuccess(
+            $entryType,
+            t('Entry type saved.'),
+            'entryType',
+            // A "save as new" submit should land on the newly-created entry type
+            // rather than the posted (original) redirect.
+            redirect: $saveAsNew ? Url::cpUrl("settings/entry-types/{$entryType->id}") : null,
+        );
     }
 
     public function destroy(Request $request, ?EntryTypeModel $entryType = null): Response
@@ -351,7 +311,7 @@ class EntryTypesController
 
         return $this->asSuccess(t('“{name}” deleted.', [
             'name' => $entryTypeData->getUiLabel(),
-        ]));
+        ]), redirect: action([EntryTypesController::class, 'index']));
     }
 
     public function renderOverrideSettings(Request $request, HtmlStack $HtmlStack): JsonResponse

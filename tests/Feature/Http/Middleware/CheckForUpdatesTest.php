@@ -11,9 +11,25 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 beforeEach(function () {
     $this->updates = $this->mock(Updates::class);
+    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(true)->byDefault();
 
     TemplateMode::set(TemplateMode::Cp);
 });
+
+it('aborts 503 for site requests when the schema version is incompatible', function () {
+    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(false);
+
+    app(CheckForUpdates::class)->handle(Request::create('/site-page'), fn () => 'passed');
+})->throws(HttpException::class);
+
+it('throws for CP requests when the schema version is incompatible', function () {
+    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(false);
+
+    app(CheckForUpdates::class)->handle(
+        Request::create('/'.Cms::config()->cpTrigger.'/dashboard'),
+        fn () => 'passed',
+    );
+})->throws(RuntimeException::class);
 
 it('passes through when no updates pending', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
@@ -123,8 +139,6 @@ it('allows updater action requests when update pending', function () {
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/updater/migrate');
-    $request->attributes->set('isActionRequest', true);
-    $request->attributes->set('actionSegments', ['updater', 'migrate']);
 
     $result = $middleware->handle($request, fn () => 'passed');
 
@@ -136,8 +150,6 @@ it('allows health check action when update pending', function () {
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/app/health-check');
-    $request->attributes->set('isActionRequest', true);
-    $request->attributes->set('actionSegments', ['app', 'health-check']);
 
     $result = $middleware->handle($request, fn () => 'passed');
 
@@ -149,8 +161,6 @@ it('allows migrate action when update pending', function () {
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/app/migrate');
-    $request->attributes->set('isActionRequest', true);
-    $request->attributes->set('actionSegments', ['app', 'migrate']);
 
     $result = $middleware->handle($request, fn () => 'passed');
 
@@ -162,8 +172,6 @@ it('allows pluginstore install migrate action when update pending', function () 
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/pluginstore/install/migrate');
-    $request->attributes->set('isActionRequest', true);
-    $request->attributes->set('actionSegments', ['pluginstore', 'install', 'migrate']);
 
     $result = $middleware->handle($request, fn () => 'passed');
 
@@ -189,8 +197,6 @@ it('aborts 503 for disallowed action when update pending', function () {
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/entries/save');
-    $request->attributes->set('isActionRequest', true);
-    $request->attributes->set('actionSegments', ['entries', 'save']);
 
     $middleware->handle($request, fn () => 'passed');
 })->throws(HttpException::class);

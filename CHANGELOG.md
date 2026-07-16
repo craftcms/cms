@@ -1,9 +1,145 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.12 - 2026-07-15
 
+- Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
+- Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
+- Login attempts are now rate limited.
+- Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where site routes weren't being registered for each localized site value.
+- Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
+- Fixed a bug where users were redirected to the previous page on logout. ([#19220](https://github.com/craftcms/cms/pull/19220))
+- Fixed a bug where requests to the `loginPath`, `setPasswordPath`, and `verifyEmailPath` were getting redirected to the control panel. ([#19229](https://github.com/craftcms/cms/pull/19229))
+- Fixed a bug where Laravel translation fallbacks weren’t applied when `translationDebugOutput` was enabled. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where custom plugin settings `FormRequest` classes could persist unvalidated settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where failed Craft API responses weren’t processing response headers. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where Craft plugin service providers could be skipped when the plugin’s Composer metadata also defined Laravel package discovery settings. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Fixed a bug where event-registered user permissions weren’t getting saved. ([#19232](https://github.com/craftcms/cms/issues/19232))
+- Fixed lifecycle leaks where asset, GraphQL, route token, user, and user permission state could persist in long-running application processes. ([#19242](https://github.com/craftcms/cms/pull/19242))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability.
+
+## 6.0.0-alpha.11 - 2026-07-07
+
+- Users can now connect their accounts to one or more Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
+- The login page now lists Socialite providers. ([#19202](https://github.com/craftcms/cms/pull/19202))
+- Fixed a bug where some control panel resources and pages weren’t loading properly. ([#19214](https://github.com/craftcms/cms/issues/19214))
+
+## 6.0.0-alpha.10 - 2026-07-03
+
+- It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Added SQLite database support. ([#19149](https://github.com/craftcms/cms/pull/19149))
+- Control panel resources are now provided by a `craftcms/cms-assets` package. ([#19162](https://github.com/craftcms/cms/pull/19162))
+- Renamed `CraftCms\Cms\Twig\PageLifecycle` to `CraftCms\Cms\View\PageLifecycle`. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Renamed `CraftCms\Cms\Twig\TemplateResolver` to `CraftCms\Cms\View\TemplateResolver`. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Fixed a bug where anonymous homepage and fallback site-template requests could bypass offline-site access enforcement. ([#19151](https://github.com/craftcms/cms/pull/19151))
+- Fixed a bug where the login page would show a CSRF token mismatch on http requests
+- Fixed an error that could occur during Craft 6 upgrades when the `migrations` table was missing its `track` column. ([#19168](https://github.com/craftcms/cms/pull/19168))
+- Fixed an error that occurred when saving Users source settings after selecting the Groups table column. ([#19184](https://github.com/craftcms/cms/pull/19184))
+- Fixed a bug where database backups weren’t using the `--single-transaction` or `--column-statistics=0` flags on MySQL.
+- Fixed a bug where Content Block fields’ nested fields weren’t available as table columns on element indexes.
+
+## 6.0.0-alpha.9 - 2026-06-23
+
+- Added `CraftCms\Yii2Adapter\Database\DeprecatedTable`.
+- Added `CraftCms\Cms\Translation\Formatter::asRelativeTime()`. ([#19146](https://github.com/craftcms/cms/pull/19146))
+- Updated `webonyx/graphql-php` to 15.33.1. ([#18757](https://github.com/craftcms/cms/pull/18757))
+- `craft\elements\Category::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\CategoryQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- `craft\elements\GlobalSet::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- `craft\elements\Tag::find()` now returns a `CraftCms\Yii2Adapter\Element\Queries\TagQuery` object. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a “This password does not use the Bcrypt algorithm” error that could occur when logging in with a user whose password was set in an earlier version of Craft.
+- Fixed a “File name is not a string” error that could occur when an error was encountered when rendering a string template. ([#19122](https://github.com/craftcms/cms/pull/19122))
+- Fixed a bug where parsed site names would get saved to the project config. ([#19123](https://github.com/craftcms/cms/issues/19123))
+- Fixed a bug where plugin `$styles`, `$scripts`, and `$publishables` weren’t published automatically when the plugin was installed or enabled. ([#19137](https://github.com/craftcms/cms/pull/19137))
+- Fixed several issues that occurred when Craft was configured with a custom (or no) `cpTrigger`. ([#19127](https://github.com/craftcms/cms/pull/19127))
+- Fixed a bug where Craft wasn’t applying the Settings → General timezone to PHP’s default timezone. ([#19138](https://github.com/craftcms/cms/pull/19138))
+- Fixed a bug where entry queries weren’t fetching structure data by default.
+- Fixed a bug where top-level structure elements were always repositioned to the end of the structure on save.
+- Fixed a bug where the Settings index page didn’t include “Globals”, “Categories”, or “Tags” links, when the concepts were supported. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed errors that occurred when editing global sets, category groups, and tag groups. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a bug where it wasn’t possible to create new categories. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed an error that occurred when editing a category. ([#19120](https://github.com/craftcms/cms/pull/19120))
+- Fixed a bug where users’ Language preference field could be set to Arabic by default when the browser’s preferred language included a territory ID (e.g. `en-US`).
+- Fixed a bug where preview tokens weren’t taking the `previewTokenDuration` config setting into account.
+
+## 6.0.0-alpha.8 - 2026-06-17
+
+- Added `CraftCms\Cms\Twig\AllowableInSandbox`.
+- Fixed a bug where Blade templates weren’t loading for text/Markdown mail. ([#19106](https://github.com/craftcms/cms/pull/19106))
+- Fixed a bug where it wasn’t possible to change the primary site, or edit site statuses. ([#19109](https://github.com/craftcms/cms/issues/19109))
+
+## 6.0.0-alpha.7 - 2026-06-16
+
+- Added a new core Markdown field ([#18960](https://github.com/craftcms/cms/pull/18960))
+- Added a way for fields to track references and register a deletion blocker for them ([#19014](https://github.com/craftcms/cms/pull/19014))
+- Added `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$ruleset`.
+- Relaxed the allowed types in the `ValidationRulesResolving` event to include any implementation `ValidatesWithRuleset` or a `Illuminate\Http\Request` object.
+- Renamed `CraftCms\Cms\Validation\Events\ValidationRulesResolving::$component` to `$subject`.
+- Relocated `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` to `CraftCms\Cms\Validation\Events\` to reflect its broader applicability to components and rulesets.
+- Fixed errors that could occur when Craft user elements were expected but the authenticated user was resolved as a Laravel user model. ([#19051](https://github.com/craftcms/cms/pull/19051))
+- Fixed a bug where the `craft:install` command would hang if run within a production environment.
+- Fixed an error that could occur when `CraftCms\Cms\Support\DateTimeHelper::toDateTime()` returned a `DateTimeInterface` implementation other than `DateTime`. ([#19079](https://github.com/craftcms/cms/pull/19079))
+- Fixed a bug where “Replace relation” action buttons weren’t working.
+- Fixed a “Invalid URL” JavaScript error in the control panel. ([#19041](https://github.com/craftcms/cms/pull/19041))
+- Fixed an error that could occur during Craft 6 upgrades when legacy relational or Matrix field settings included `showCardsInGrid`. ([#19047](https://github.com/craftcms/cms/pull/19047))
+- Fixed a bug where queue job progress labels weren’t getting translated.
+- Fixed a bug where the control panel sidebar and Queue Manager were showing completed jobs.
+- Fixed a bug where `CraftCms\Yii2Adapter\Mixins\ValidateMixin::addErrors()` had incorrect arguments. ([#19065](https://github.com/craftcms/cms/pull/19065))
+- Fixed a bug where plugin templates were not being loaded correctly
+- Fixed a bug where query string params were getting registered as variables in Twig templates. ([#19090](https://github.com/craftcms/cms/discussions/19090))
+- Fixed a bug where parsed site URLs would get saved to the project config. ([#19092](https://github.com/craftcms/cms/issues/19092))
+
+## 6.0.0-alpha.6 - 2026-06-03
+
+- Improved the accessibility of the Login page. ([#19025](https://github.com/craftcms/cms/pull/19025))
+- Added `CraftCms\Cms\User\Contracts\CraftUser` and `CraftUserTrait`. ([#19009](https://github.com/craftcms/cms/pull/19009))
+- Removed `CraftCms\Cms\Auth\UserProvider`; the Craft guard now defaults to Laravel’s Eloquent provider using `CraftCms\Cms\User\Models\User`. ([#19009](https://github.com/craftcms/cms/pull/19009))
+- Added `\CraftCms\Cms\craftUser()`/`\CraftCms\Cms\craftUser()` and `request()->craftUser()` as Craft-safe ways to access the authenticated user. ([#19009](https://github.com/craftcms/cms/pull/19009))
+- `Element::getIterator()` no longer includes custom field values. ([#19004](https://github.com/craftcms/cms/issues/19004))
+- Fixed a bug where checking the elevated session timeout could overwrite newer session data, which could prevent passkeys from being created.
+- Fixed a bug where legacy plugin-defined `actions.php` routes could collide between plugins. ([#18994](https://github.com/craftcms/cms/pull/18994))
+- Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
+- Fixed a bug where custom element authorization methods weren’t respected by Laravel element policies. ([#18983](https://github.com/craftcms/cms/pull/18983))
+- Fixed a bug where removing all permissions from a user wouldn’t save. ([#18995](https://github.com/craftcms/cms/pull/18995))
+- Fixed a bug where Single sections had Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixed a bug where Channel and Structure sections didn’t have Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixed a bug where sections’ Min Authors settings were defaulting to `1` when blank. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixes a bug where the “View entry” permission was listed twice for Single sections, causing a SQL error when both were selected. ([#19002](https://github.com/craftcms/cms/pull/19002))
+- Fixes a bug where user group handles weren’t getting auto-generated. ([#19002](https://github.com/craftcms/cms/pull/19002))
+- Fixed a JavaScript error that could occur in the Control Panel when a custom element was registered more than once.
+- Fixed a bug where Control Panel action menu items could trigger their action twice when clicked.
+- Fixed a bug where legacy Control Panel JavaScript wasn’t loaded and initialized on all Control Panel pages.
+- Fixed a styling issue with user avatars.
+
+## 6.0.0-alpha.5 - 2026-05-27
+
+- Improved emoji shortcode handling performance for strings without shortcode delimiters.
+- Improved element query performance by caching element source table column listings in memory.
+- Improved nested entry type resolution by avoiding unnecessary owner element queries.
+- Added Laravel event dispatching to Craft’s `Yiisoft\Translator\Translator` instance, enabling `Yiisoft\Translator\Event\MissingTranslationEvent` listeners. ([#18952](https://github.com/craftcms/cms/pull/18952))
+- The `loginPath` config setting is now `false` by default.
+- Renamed the `PluginsLoaded` event to `PluginsRegistered`. ([#18973](https://github.com/craftcms/cms/pull/18973))
+- Updated Twig to 3.27. ([#18980](https://github.com/craftcms/cms/pull/18980))
+- Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
+- Fixed an error that occurred when rendering the database update screen outside Control Panel template mode.
+- Fixed an error that occurred when Redis was configured as the session driver.
+- Fixed a bug where legacy Control Panel URL rules couldn’t route directly to templates. ([#18972](https://github.com/craftcms/cms/pull/18972))
+- Fixed an error that could occur when request context was dehydrated after a matched element route was resolved.
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could skip setters that used a same-name private backing property.
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could attempt to assign read-only, private-set, protected-set, or setterless virtual properties.
+- Fixed a bug where publishable Craft assets were registered during web requests.
+- Fixed a bug where eager-loading didn’t treat address, content block, and entry queries as nested element queries.
+- Fixed a bug where lazy eager-loading nested element fields could reuse owner criteria and return the wrong elements.
 - Fixed an error that occurred when Updates were cached and deserialized.
-- The default value for `GeneralConfig::$loginPath` is now `false`
+- Fixed an error that prevented link fields from saving.
+- Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
+- Fixed a bug where `CraftCms\Cms\Validation\Contracts\Validatable::prepareForValidation()` wasn’t called consistently, and plain `Validatable` classes without a configured ruleset couldn’t be validated. ([#18944](https://github.com/craftcms/cms/pull/18944))
+- Fixed a bug where invalid element query filters could return all results. ([#18937](https://github.com/craftcms/cms/pull/18937))
+- Fixed an error that occurred when uploading assets to fields with dynamic default upload locations. ([#18949](https://github.com/craftcms/cms/pull/18949))
+- Fixed a bug where Craft could look for the license key in `config/license.key` instead of `config/craft/license.key`.
+- Fixed a styling issue that occurred when editable table cells had a `code` class. ([#18900](https://github.com/craftcms/cms/issues/18900))
 
 ## 6.0.0-alpha.4 - 2026-05-19
 
@@ -12,7 +148,7 @@
 - Updated `elvanto/litemoji` to 5.2.0. ([#18917](https://github.com/craftcms/cms/pull/18917))
 - Updated `pragmarx/google2fa` to 9.0.0. ([#18919](https://github.com/craftcms/cms/pull/18919))
 - Fixed an error that occurred when opening element selector modals with string `sources` values. ([#18915](https://github.com/craftcms/cms/pull/18915))
-- Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897)
+- Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897))
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
 - Fixed an error that could occur when saving filesystems with null transient settings. ([#18909](https://github.com/craftcms/cms/pull/18909))
 - Fixed a bug where plugin routes were not being registered with the `web` middleware.
@@ -54,7 +190,7 @@
 - Fixed a PHP error that occurred when saving a Structure section with a Max Levels value. ([#18809](https://github.com/craftcms/cms/issues/18809))
 - Fixed a bug where plugin settings pages were missing registered scripts and styles. ([#18815](https://github.com/craftcms/cms/pull/18815))
 - Fixed a PHP error that occurred when saving an entry type. ([#18816](https://github.com/craftcms/cms/pull/18816))
-- Fixed an issue with Typecast where typed setters wouldn't have precedence over private properties.
+- Fixed an issue with Typecast where typed setters wouldn’t have precedence over private properties.
 - Fixed a bug where Control Panel templates failed to load on Windows due to mismatched directory separators or drive-letter casing in `CraftCms\Cms\View\TwigEngine`. ([#18804](https://github.com/craftcms/cms/issues/18804))
 - Fixed a bug where Craft’s Vite hot file configuration could override the host application’s Vite hot file. ([#18810](https://github.com/craftcms/cms/issues/18810))
 - Fixed a bug where `CraftCms\Cms\Support\Typecast` could give private properties precedence over typed setters.
@@ -83,9 +219,9 @@
 - Fixed a bug where a `yii\base\InvalidConfigException` would be thrown when a Yii2-based plugin registered an asset bundle. ([#18818](https://github.com/craftcms/cms/issues/18818))
 - Fixed a bug where using `{{ successMessageInput() }}` would not decrypt the resulting message for the flash message.
 - Fixed a bug where a missing widget from an uninstalled plugin would throw instead of mapping to a MissingWidget.
-- Fixed a bug where an address' ownership ids could be overridden unintentionally.
+- Fixed a bug where an address’ ownership ids could be overridden unintentionally.
 - Fixed a bug where `getHasSsoIdentity()` would return `false` when Socialite was not installed but the user had an SSO identity.
-- Fixed a bug where the site's offline status was not being enforced on matched element routes.
+- Fixed a bug where the site’s offline status was not being enforced on matched element routes.
 - Fixed a user photo validation issue with file extensions.
 - Fixed a bug where legacy controllers could return `null` but were not considered handled.
 - Improved performance of the dashboard by reducing the amount of queries for widgets
@@ -114,7 +250,7 @@
 - Added `CraftCms\Cms\Support\Facades\Markdown`.
 - Added `CraftCms\Cms\Support\Path`.
 - Added `CraftCms\Cms\Support\Str`.
-- Added `CraftCms\Cms\Support\URL`.
+- Added `CraftCms\Cms\Support\Url`.
 - Added `CraftCms\Cms\action_url()`, `CraftCms\Cms\cp_url()`, and `CraftCms\Cms\site_url()` helper functions.
 - `craft\services\Elements::stopCollectingCacheInfo()` no longer sets the returned duration to the `cacheDuration` config setting if a duration wasn’t explicitly declared. ([#16796](https://github.com/craftcms/cms/pull/16796))
 - Deprecated `craft\helpers\ArrayHelper`. `CraftCms\Cms\Support\Arr` should be used instead.
@@ -195,7 +331,7 @@
   -
 - Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
 - Deprecated `craft\helpers\FileHelper`. `CraftCms\Cms\Support\File` should be used instead.
-- Deprecated `craft\helpers\UrlHelper`. `CraftCms\Cms\Support\URL` should be used instead.
+- Deprecated `craft\helpers\UrlHelper`. `CraftCms\Cms\Support\Url` should be used instead.
 
 #### Deprecator
 - Added `CraftCms\Cms\Support\Facades\Deprecator`.
@@ -240,7 +376,7 @@
 
 #### Mutex
 
-Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://laravel.com/docs/12.x/cache#atomic-locks) should be used instead.
+Craft’s Mutex classes have been deprecated. [Laravel’s atomic locking](https://laravel.com/docs/12.x/cache#atomic-locks) should be used instead.
 
 - Deprecated `craft\mutex\Mutex`
 - Deprecated `craft\mutex\MutexTrait`
@@ -330,11 +466,11 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ### Auth
 
-- Refactored the authentication system to use Laravel's authentication system.
+- Refactored the authentication system to use Laravel’s authentication system.
 - Added `CraftCms\Cms\Auth\Events\SettingPassword`.
 - Added `CraftCms\Cms\User\Notifications\ResetPasswordNotification`.
 - Deprecated `craft\services\Auth`. `CraftCms\Cms\Auth\Auth` should be used instead.
-- Deprecated `craft\web\User`. `auth('craft')->user()` or `CraftCms\Cms\User\Elements\User` methods should be used instead.
+- Deprecated `craft\web\User`. `auth()->user()` or `CraftCms\Cms\User\Elements\User` methods should be used instead.
 - Deprecated `craft\events\AuthenticateUserEvent`. `CraftCms\Cms\Auth\Events\UserAuthenticating` should be used instead.
 - Deprecated `\craft\records\Authenticator`. `\CraftCms\Cms\Auth\Models\Authenticator` should be used instead.
 - Deprecated `\craft\records\RecoveryCodes`. `\CraftCms\Cms\Auth\Models\RecoveryCodes` should be used instead.
@@ -343,9 +479,9 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\behaviors\SessionBehavior::authorize`. `CraftCms\Cms\Auth\SessionAuth::authorize` should be used instead.
 - Deprecated `craft\behaviors\SessionBehavior::deauthorize`. `CraftCms\Cms\Auth\SessionAuth::deauthorize` should be used instead.
 - Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
-- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
+- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker()->tokenExists($user, $code)` should be used instead.
 - Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
-  - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+  - Elevated sessions now work through [Laravel’s password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 - Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
   - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
   - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
@@ -354,7 +490,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 #### Authorization
 
-Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/authorization) for element authorization checks.
+Craft 6 now uses [Laravel’s authorization system](https://laravel.com/docs/12.x/authorization) for element authorization checks.
 
 ##### Added
 
@@ -551,14 +687,14 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 #### Validation
 
-Craft 6 introduces a new validation system that uses Laravel's Validator instead of Yii2's model validation.
+Craft 6 introduces a new validation system that uses Laravel’s Validator instead of Yii2’s model validation.
 
 ##### Added
 
 - Added `CraftCms\Cms\Validation\Contracts\Validatable` interface for classes that support Laravel-style validation.
 - Added `CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset` interface for classes that use a `Ruleset` class to define validation rules.
 - Added `CraftCms\Cms\Validation\Ruleset` abstract class for defining validation rules, messages, and preparation logic.
-- Added `CraftCms\Cms\Validation\Attributes\Ruleset` PHP attribute for specifying a component's ruleset class.
+- Added `CraftCms\Cms\Validation\Attributes\Ruleset` PHP attribute for specifying a component’s ruleset class.
 - Added `CraftCms\Cms\Validation\Concerns\Validates` trait for simple validation support.
 - Added `CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset` trait for ruleset-based validation.
 - Added `CraftCms\Cms\Validation\Concerns\HasScenarios` trait for scenario-based validation filtering.
@@ -581,7 +717,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ##### Changed
 
-- `FieldInterface::getElementValidationRules()` has been replaced by `FieldInterface::getElementRules()` which returns rules in Laravel's validation format.
+- `FieldInterface::getElementValidationRules()` has been replaced by `FieldInterface::getElementRules()` which returns rules in Laravel’s validation format.
 - Added `FieldInterface::prepareForElementValidation()` for preparing field values before validation.
 - Validation rules are now defined as Laravel-style arrays (e.g., `['required', 'string', 'max:255']`).
 
@@ -644,7 +780,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ### Component
 
-- Added `CraftCms\Cms\Component\Component` base class, replacing Yii2's `BaseObject`/`Component` with config hydration, magic getters/setters, and `Arrayable` support.
+- Added `CraftCms\Cms\Component\Component` base class, replacing Yii2’s `BaseObject`/`Component` with config hydration, magic getters/setters, and `Arrayable` support.
 - Added `CraftCms\Cms\Component\Exceptions\InvalidCallException`, replacing `yii\base\InvalidCallException`.
 - Added `CraftCms\Cms\Component\Exceptions\UnknownPropertyException`, replacing `yii\base\UnknownPropertyException`.
 
@@ -769,11 +905,11 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ### HTTP
 
-- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel’s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
 - Deprecated `craft\filters\BasicHttpAuthLogin`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthStatic`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthTrait`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
-- Deprecated `craft\filters\Cors`. Use Laravel's CORS settings instead. (see https://laravel.com/docs/12.x/routing#cors)
+- Deprecated `craft\filters\Cors`. Use Laravel’s CORS settings instead. (see https://laravel.com/docs/12.x/routing#cors)
 - Deprecated `craft\filters\Headers`. Use Laravel middleware instead. (see https://laravel.com/docs/middleware)
 - Deprecated `craft\filters\ConditionalFilterTrait`.
 - Deprecated `craft\filters\SiteFilterTrait`.
@@ -786,7 +922,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Removed `craft\controllers\AppController::actionGetPluginLicenseInfo()` and `actionUpdatePluginLicense()`. `CraftCms\Cms\Http\Controllers\App\PluginsController` should be used instead.
 - Removed `craft\controllers\AppController::actionBrokenImage()`. `CraftCms\Cms\Http\Middleware\ShowBrokenImage` should be used instead.
 - Removed `craft\controllers\AppController::actionRenderElements()` and `actionRenderComponents()`. `CraftCms\Cms\Http\Controllers\App\RenderController` should be used instead.
-- Removed `craft\controllers\NotFoundController`. Laravel's exception handling should be used instead.
+- Removed `craft\controllers\NotFoundController`. Laravel’s exception handling should be used instead.
 - Removed the header-setting logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\SetHeaders` middleware handles this functionality.
 - Removed the licensing issues screen logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\EnforceLicenses` middleware handles this functionality.
 - Removed `craft\controllers\AppController::actionTryEdition()` and `actionSwitchToLicensedEdition()` in favor of `CraftCms\Cms\Http\Controllers\EditionController`.
@@ -801,11 +937,11 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\helpers\MailerHelper`. Laravel mail configuration and drivers should be used instead.
 - Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
 - Deprecated `craft\mail\Mailer::$template`, `craft\mail\Mailer::$siteOverrides`, `craft\models\MailSettings::$template`, and `craft\models\MailSettings::$siteOverrides`. Laravel mailable views and environment-specific Laravel mailers should be used instead.
-- Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
+- Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel’s `mail` config and drivers.
 
 ### Migrations
 
-Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
+Craft and Yii’s migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
 
 The `php craft fields:merge` and `php craft entry-types:merge` commands will now generate Laravel migrations.
 
@@ -873,8 +1009,8 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 - Added `CraftCms\Cms\Support\Security`.
 - Added `CraftCms\Cms\Support\Facades\Security`.
 - Added `CraftCms\Cms\Http\Middleware\AddLogContext`.
-- Deprecated `Craft::$app->getSecurity()` in favor of Laravel's Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
-- Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
+- Deprecated `Craft::$app->getSecurity()` in favor of Laravel’s Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
+- Deprecated the `blowfishHashCost` general config setting in favor of Laravel’s `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
 
 ### Updates
 
@@ -960,7 +1096,7 @@ Moved the following controllers:
 ### Routes
 
 - Deprecated `craft\services\Routes`. `CraftCms\Cms\Route\Routes` should be used instead.
-- Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel's routing](https://laravel.com/docs/12.x/routing) instead.
+- Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel’s routing](https://laravel.com/docs/12.x/routing) instead.
 
 ### Search
 
@@ -1105,14 +1241,14 @@ Moved the following controllers:
 - Added `CraftCms\Cms\User\Notifications\VerifyEmailNotification`.
 - `Users::purgeExpiredPendingUsers()` now joins the `password_reset_tokens` table to find expired pending users.
 - Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
-- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
+- Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker()->tokenExists($user, $code)` should be used instead.
 - Removed `craft\controllers\UsersController` in favor of:
   - `CraftCms\Cms\Http\Controllers\Users\ActivateController`.
   - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
   - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
 - Removed `\craft\controllers\UserSettingsController` in favor of:
-  - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
-  - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController`
 - Deprecated `UserGroupEvent` in favor of:
   - `CraftCms\Cms\User\Events\UserGroupSaving`
   - `CraftCms\Cms\User\Events\UserGroupSaved`

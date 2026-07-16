@@ -7,10 +7,155 @@ CP Styles
 @import '@craftcms/cp/styles/cp.css' layer(cp);
 @import '@craftcms/cp/tailwind.css' layer(theme);
 
+@import './fld.css';
+@import './cvd.css';
 @import './global-sidebar.css';
 
 :root {
   --global-sidebar-width: calc(226rem / 16);
   --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
+
+  /* Workspace */
+  --workspace-bg-color: var(--c-color-neutral-fill-quiet);
+  --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
+  --workspace-bg-image:
+    linear-gradient(
+      to right,
+      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      transparent 0
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      transparent 1px
+    );
+  --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
+    var(--workspace-bg-image);
+}
+
+/**
+Temporary holding for cp-pane styles until craft-pane is a thing
+ */
+.cp-workspace {
+  padding: var(--c-spacing-xl);
+  border-radius: var(--c-radius-sm);
+  background-color: var(--workspace-bg-color);
+  background-image: var(--workspace-bg-image);
+  background-size: var(--workspace-bg-size);
+  background-position: -1px -1px;
+  box-shadow: var(--c-shadow-sunken);
+  background-clip: padding-box;
+  border: 1px solid var(--c-color-border-quiet);
+  overflow: clip;
+}
+
+.markdown-field > .markdown-field-editor {
+  display: block;
+  min-height: 0;
+}
+
+.markdown-field > .markdown-field-editor:not(:defined) {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--markdown-field-min-height, 188px);
+  margin: 0;
+  padding-block: var(--c-spacing-md);
+  padding-inline: var(--c-input-spacing-inline);
+  overflow: auto;
+  border: var(
+      --c-input-border-width,
+      var(--c-form-control-border-width, var(--c-spacing-1px))
+    )
+    var(--c-input-border-style, var(--c-form-control-border-style, solid))
+    var(
+      --c-input-border-color,
+      var(--c-form-control-border-color, var(--c-color-neutral-border-quiet))
+    );
+  border-radius: var(--c-input-radius, var(--c-radius-sm));
+  background: var(
+    --c-input-fill,
+    var(--c-form-control-fill, var(--c-surface-form))
+  );
+  background-clip: padding-box;
+  box-shadow: var(--c-input-shadow);
+  color: var(--c-input-text, var(--c-text-default));
+  font-family: var(--c-font-mono);
+  font-size: var(--c-text-base);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/**
+Sidebar metadata
+ */
+.cp-metadata-list {
+  display: grid;
+  gap: var(--c-spacing-md);
+  grid-template-columns: minmax(max-content, 25%) 1fr;
+  margin: 0;
+  padding: 0;
+}
+
+.cp-metadata-list__item {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+/**
+CP Checkbox Select (minimal legacy styling)
+ */
+.cp-checkbox-select {
+  display: grid;
+  gap: var(--c-spacing-sm);
+}
+
+.cp-checkbox-select__item {
+  display: flex;
+  align-items: center;
+  gap: var(--c-spacing-md);
+}
+
+/**
+Bring the reorder button to the top to prevent weird click issues between
+the drag handler and the hidden checkbox with legacy markup.
+
+Remove once we have a stable way to create a `<craft-checkbox/>` via twig
+ */
+.cp-checkbox-select__item craft-reorder-button {
+  position: relative;
+  z-index: 1;
+}
+
+/**
+Form controls
+ */
+.cp-form-control {
+  --_border-width: var(
+    --c-input-border-width,
+    var(--c-form-control-border-width)
+  );
+  font: inherit;
+  color: var(--c-input-text, var(--c-text-default));
+  position: relative;
+  min-height: calc(
+    var(--c-input-height, var(--c-size-control-md)) - 2 * var(--_border-width)
+  );
+  border-width: var(--_border-width);
+  border-style: var(--c-input-border-style, var(--c-form-control-border-style));
+  border-color: var(--c-input-border-color, var(--c-form-control-border-color));
+  border-radius: var(--c-input-radius, var(--c-radius-sm));
+  padding-block: 0;
+  width: 100%;
+  flex: 1 1 auto;
+  background-color: var(--c-input-fill, var(--c-form-control-fill));
+  box-shadow: var(--c-input-shadow);
+  overflow: clip;
+}
+
+.selectize-dropdown.cp-form-control {
+  position: absolute;
+  min-height: 0;
+  overflow: visible;
 }

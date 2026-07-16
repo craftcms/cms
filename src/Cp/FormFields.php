@@ -17,13 +17,13 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -112,21 +112,14 @@ readonly class FormFields
 
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
-            Auth::user()->isAdmin() &&
-            Auth::user()->getPreference('showFieldHandles')
+            currentUser()->isAdmin() &&
+            currentUser()->getPreference('showFieldHandles')
         );
         $showActionMenu = (
             ! empty($config['actionMenuItems']) &&
             ($label || $showAttribute || isset($config['labelExtra']))
         );
         $showLabelExtra = $showAttribute || $showActionMenu || isset($config['labelExtra']);
-
-        $instructionsHtml = $instructions
-            ? Html::tag('div', app(ContentHtml::class)->parseMarkdown($instructions), [
-                'id' => $instructionsId,
-                'class' => ['instructions'],
-            ])
-            : '';
 
         $translationDescription = $config['translationDescription'] ?? t('This field is translatable.');
         $translationIconHtml = Html::button('', [
@@ -165,8 +158,8 @@ readonly class FormFields
             $labelHtml = '';
         }
 
-        return
-            Html::beginTag('div', Arr::merge(
+        return view('c::forms.field', [
+            'fieldAttributes' => Arr::merge(
                 [
                     'class' => $fieldClass,
                     'id' => $fieldId,
@@ -179,54 +172,45 @@ readonly class FormFields
                     ] + $data,
                 ],
                 $config['fieldAttributes'] ?? []
-            )).
-            ($status
-                ? Html::beginTag('div', [
-                    'id' => $statusId,
-                    'class' => ['status-badge', Str::toString($status[0])],
-                    'title' => $status[1],
-                    'aria-hidden' => 'true',
-                ]).
-                Html::tag('span', $status[1], [
-                    'class' => 'visually-hidden',
-                ]).
-                Html::endTag('div')
-                : '').
-            (($label || $showLabelExtra)
-                ? (
-                    Html::beginTag('div', ['class' => 'heading']).
-                    ($config['headingPrefix'] ?? '').
-                    ($label
-                        ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, Arr::merge([
-                            'id' => $labelId,
-                            'class' => $config['labelClass'] ?? null,
-                            'for' => ! $fieldset ? $id : null,
-                        ], $config['labelAttributes'] ?? []))
-                        : '').
-                    ($static ? Html::tag('span', t('Read Only'), [
-                        'class' => ['read-only-badge'],
-                    ]) : '').
-                    ($showLabelExtra
-                        ? Html::tag('div', '', ['class' => 'flex-grow']).
-                        ($showActionMenu ? app(MenuHtml::class)->disclosureMenu($config['actionMenuItems'], [
-                            'hiddenLabel' => t('Actions'),
-                            'buttonAttributes' => [
-                                'class' => ['action-btn', 'small', 'prevent-autofocus'],
-                            ],
-                        ]) : '').
-                        ($showAttribute ? self::renderTemplate('_includes/forms/copytextbtn', [
-                            'id' => "$id-attribute",
-                            'class' => ['code', 'small', 'light'],
-                            'value' => $config['attribute'],
-                        ]) : '').
-                        ($config['labelExtra'] ?? '')
-                        : '').
-                    ($config['headingSuffix'] ?? '').
-                    Html::endTag('div')
-                )
-                : '').
-            ($instructionsPosition === 'before' ? $instructionsHtml : '').
-            Html::tag('div', $input, Arr::merge(
+            ),
+            'status' => $status,
+            'statusId' => $statusId,
+            'statusClass' => $status ? Str::toString($status[0]) : null,
+            'statusLabel' => $status ? $status[1] : null,
+            'showHeading' => $label || $showLabelExtra,
+            'headingPrefix' => $config['headingPrefix'] ?? null,
+            'headingSuffix' => $config['headingSuffix'] ?? null,
+            'labelElementHtml' => $label
+                ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, Arr::merge([
+                    'id' => $labelId,
+                    'class' => $config['labelClass'] ?? null,
+                    'for' => ! $fieldset ? $id : null,
+                ], $config['labelAttributes'] ?? []))
+                : null,
+            'static' => $static,
+            'showLabelExtra' => $showLabelExtra,
+            'actionMenuHtml' => $showActionMenu
+                ? app(MenuHtml::class)->disclosureMenu($config['actionMenuItems'], [
+                    'hiddenLabel' => t('Actions'),
+                    'buttonAttributes' => [
+                        'class' => ['action-btn', 'small', 'prevent-autofocus'],
+                    ],
+                ])
+                : null,
+            'attributeCopyHtml' => $showAttribute
+                ? self::renderTemplate('_includes/forms/copytextbtn', [
+                    'id' => "$id-attribute",
+                    'class' => ['code', 'small', 'light'],
+                    'value' => $config['attribute'],
+                ])
+                : null,
+            'labelExtra' => isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
+            'instructionsId' => $instructionsId,
+            'instructionsContent' => $instructions
+                ? app(ContentHtml::class)->parseMarkdown($instructions)
+                : null,
+            'instructionsPosition' => $instructionsPosition,
+            'inputContainerAttributes' => Arr::merge(
                 [
                     'class' => array_filter([
                         'input',
@@ -236,43 +220,28 @@ readonly class FormFields
                     ]),
                 ],
                 $config['inputContainerAttributes'] ?? []
-            )).
-            ($instructionsPosition === 'after' ? $instructionsHtml : '').
-            self::noticeHtml($tipId, 'notice', t('Tip:'), $tip).
-            self::noticeHtml($warningId, 'warning', t('Warning:'), $warning).
-            ($errors
+            ),
+            'input' => $input,
+            'tipId' => $tipId,
+            'tipContent' => self::noticeContent($tip),
+            'warningId' => $warningId,
+            'warningContent' => self::noticeContent($warning),
+            'errorListHtml' => $errors
                 ? self::renderTemplate('_includes/forms/errorList', [
                     'id' => $errorsId,
                     'errors' => $errors,
                 ])
-                : '').
-            Html::endTag('div');
+                : null,
+        ])->render();
     }
 
-    private static function noticeHtml(string $id, string $class, string $label, string|Stringable|null $message): string
+    private static function noticeContent(string|Stringable|null $message): ?string
     {
         if (! $message) {
-            return '';
+            return null;
         }
 
-        $message = (string) $message;
-
-        return
-            Html::beginTag('p', [
-                'id' => $id,
-                'class' => [$class, 'has-icon'],
-            ]).
-            Html::tag('span', '', [
-                'class' => 'icon',
-                'aria' => [
-                    'hidden' => 'true',
-                ],
-            ]).
-            Html::tag('span', "$label ", [
-                'class' => 'visually-hidden',
-            ]).
-            Html::tag('span', Html::decodeDoubles(Markdown::parseParagraph(Html::encodeInvalidTags($message)))).
-            Html::endTag('p');
+        return Html::decodeDoubles(Markdown::parseParagraph(Html::encodeInvalidTags((string) $message)));
     }
 
     public static function buttonHtml(array $config): string

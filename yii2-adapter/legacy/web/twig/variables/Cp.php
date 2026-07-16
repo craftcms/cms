@@ -14,6 +14,7 @@ use craft\base\Event as YiiEvent;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
@@ -152,35 +153,43 @@ class Cp extends Component
 
         Event::listen(function(RegisterCpSettings $event) {
             if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_CP_SETTINGS)) {
-                $yiiEvent = new RegisterCpSettingsEvent(['settings' => &$event->settings]);
+                $yiiEvent = new RegisterCpSettingsEvent(['settings' => $event->settings]);
 
                 \yii\base\Event::trigger(self::class, self::EVENT_REGISTER_CP_SETTINGS, $yiiEvent);
+
+                $event->settings = $yiiEvent->settings;
             }
         });
 
         Event::listen(function(RegisterReadonlyCpSettings $event) {
             if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS)) {
-                $yiiEvent = new RegisterCpSettingsEvent(['settings' => &$event->settings]);
+                $yiiEvent = new RegisterCpSettingsEvent(['settings' => $event->settings]);
 
                 \yii\base\Event::trigger(self::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS, $yiiEvent);
+
+                $event->settings = $yiiEvent->settings;
             }
         });
 
         Event::listen(function(CpNavItemsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, 'registerCpNavItems')) {
-                $yiiEvent = new RegisterCpNavItemsEvent(['navItems' => $event->navItems]);
+                $items = array_map(fn(NavItem $navItem) => $navItem->toArray(), $event->navItems);
+
+                $yiiEvent = new RegisterCpNavItemsEvent(['navItems' => $items]);
 
                 YiiEvent::trigger(self::class, 'registerCpNavItems', $yiiEvent);
 
-                $event->navItems = $yiiEvent->navItems;
+                $event->navItems = array_map(fn(array $item) => new NavItem($item), $yiiEvent->navItems);
             }
         });
 
         Event::listen(function(FormActionsResolving $event) {
             if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_FORM_ACTIONS)) {
-                $yiiEvent = new FormActionsEvent(['formActions' => &$event->formActions]);
+                $yiiEvent = new FormActionsEvent(['formActions' => $event->formActions]);
 
                 \yii\base\Event::trigger(self::class, self::EVENT_REGISTER_FORM_ACTIONS, $yiiEvent);
+
+                $event->formActions = $yiiEvent->formActions;
             }
         });
     }

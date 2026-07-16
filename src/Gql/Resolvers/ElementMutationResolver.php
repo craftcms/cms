@@ -12,7 +12,7 @@ use CraftCms\Cms\Gql\Events\ElementPopulating;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\UserError;
-use GraphQL\Type\Definition\FieldArgument;
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -73,7 +73,7 @@ abstract class ElementMutationResolver extends MutationResolver
                 if (! $normalized) {
                     $value = $this->normalizeValue($argument, $value);
                 }
-                $element->setFieldValue($argument, $value);
+                $element->setFieldValueFromRequest($argument, $value);
             } elseif ($element->canSetProperty($argument)) {
                 $element->{$argument} = $value;
             }
@@ -138,12 +138,12 @@ abstract class ElementMutationResolver extends MutationResolver
         $normalized = [];
 
         // Keep track of known argument names and the corresponding input types.
-        /** @var FieldArgument $argumentDefinition */
+        /** @var Argument $argumentDefinition */
         foreach ($argumentDefinitions as $argumentDefinition) {
             $typeDef = $argumentDefinition->getType();
 
             if ($typeDef instanceof WrappingType) {
-                $typeDef = $typeDef->getWrappedType(true);
+                $typeDef = $typeDef->getInnermostType();
             }
 
             $this->argumentTypeDefsByName[$argumentDefinition->name] = $typeDef;

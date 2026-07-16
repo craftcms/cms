@@ -76,14 +76,15 @@ class ReplaceRelations extends BaseBatchedElementJob
     protected function processItem(mixed $item): void
     {
         /** @var ElementInterface $item */
-        /** @var BaseRelationField[] $fields */
-        $fields = Collection::make($item->getFieldLayout()?->getCustomFields())
-            ->filter(fn($field) => (
-                $field instanceof BaseRelationField &&
-                $field::elementType() === $this->targetElementType
-            ));
+        $customFields = collect($item->getFieldLayout()?->getCustomFields());
 
-        if (empty($fields)) {
+        /** @var Collection<BaseRelationField> $relationFields */
+        $relationFields = $customFields->filter(fn($field) => (
+            $field instanceof BaseRelationField &&
+            $field::elementType() === $this->targetElementType
+        ));
+
+        if ($relationFields->isEmpty()) {
             return;
         }
 
@@ -91,34 +92,8 @@ class ReplaceRelations extends BaseBatchedElementJob
         $behavior = $item->getBehavior('customFields');
         $saveElement = false;
 
-        foreach ($fields as $field) {
-            // avoid a DB query if we can
-            $value = $behavior->{$field->handle};
-
-            if (!is_array($value)) {
-                /** @var ElementQueryInterface $value */
-                $value = $item->getFieldValue($field->handle);
-                $value = $value
-                    ->site('*')
-                    ->unique()
-                    ->status(null)
-                    ->drafts(null)
-                    ->withProvisionalDrafts()
-                    ->revisions(null)
-                    ->trashed(null)
-                    ->ids();
-            }
-
-            $value = array_map(fn($id) => (int)$id, array_values(array_filter($value)));
-
-            $newValue = array_values(array_unique(
-                array_map(fn($id) => in_array($id, $this->oldTargetIds) ? $this->newTargetId : $id, $value)
-            ));
-
-            if ($value !== $newValue) {
-                $item->setFieldValue($field->handle, $newValue);
-                $saveElement = true;
-            }
+        foreach ($relationFields as $field) {
+            $this->processRelationField($item, $field, $behavior->{$field->handle}, $saveElement);
         }
 
         if ($saveElement) {
@@ -130,6 +105,34 @@ class ReplaceRelations extends BaseBatchedElementJob
             } catch (Throwable $e) {
                 Craft::$app->getErrorHandler()->logException($e);
             }
+        }
+    }
+
+    private function processRelationField(ElementInterface $item, BaseRelationField $field, mixed $value, bool &$saveElement): void
+    {
+        if (!is_array($value)) {
+            /** @var ElementQueryInterface $value */
+            $value = $item->getFieldValue($field->handle);
+            $value = $value
+                ->site('*')
+                ->unique()
+                ->status(null)
+                ->drafts(null)
+                ->withProvisionalDrafts()
+                ->revisions(null)
+                ->trashed(null)
+                ->ids();
+        }
+
+        $value = array_map(fn($id) => (int)$id, array_values(array_filter($value)));
+
+        $newValue = array_values(array_unique(
+            array_map(fn($id) => in_array($id, $this->oldTargetIds) ? $this->newTargetId : $id, $value)
+        ));
+
+        if ($value !== $newValue) {
+            $item->setFieldValue($field->handle, $newValue);
+            $saveElement = true;
         }
     }
 

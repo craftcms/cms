@@ -1,28 +1,60 @@
 import {QueueService, ConfigService} from '@craftcms/cp';
 import {createInertiaApp, router} from '@inertiajs/vue3';
-import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
-import {Axios, Config, Queue} from '@/types/keys';
+import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
+import {Axios, Config, Queue} from '@/common/types/keys';
 import axios from 'axios';
-import QueueManagerToolbar from '@/components/utilities/QueueManager/QueueManagerToolbar.vue';
-import DeprecationErrors from '@/components/utilities/DeprecationErrors/DeprecationErrors.vue';
-import ClearCaches from '@/components/utilities/ClearCaches/ClearCaches.vue';
-import FindReplace from '@/components/utilities/FindReplace/FindReplace.vue';
-import DatabaseBackup from '@/components/utilities/DatabaseBackup.vue';
-import Migrations from '@/components/utilities/Migrations.vue';
-import Updates from '@/components/utilities/Updates/Updates.vue';
-import ProjectConfig from '@/components/utilities/ProjectConfig/ProjectConfig.vue';
-import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
-import SystemMessages from '@/components/utilities/SystemMessages/SystemMessages.vue';
-import DeprecationErrorsToolbar from '@/components/utilities/DeprecationErrors/DeprecationErrorsToolbar.vue';
-import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import QueueManagerToolbar from '@/modules/utilities/components/queue-manager/QueueManagerToolbar.vue';
+import DeprecationErrors from '@/modules/utilities/components/deprecation-errors/DeprecationErrors.vue';
+import ClearCaches from '@/modules/utilities/components/clear-caches/ClearCaches.vue';
+import FindReplace from '@/modules/utilities/components/find-replace/FindReplace.vue';
+import DatabaseBackup from '@/modules/utilities/components/DatabaseBackup.vue';
+import Migrations from '@/modules/utilities/components/Migrations.vue';
+import Updates from '@/modules/updater/components/Updates.vue';
+import ProjectConfig from '@/modules/utilities/components/project-config/ProjectConfig.vue';
+import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
+import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
+import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
+import {setTranslations} from '@craftcms/cp/utilities/translate';
+import {setUrlDefaults} from '@/wayfinder';
+import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
+import AppLayout from '@/common/layouts/AppLayout.vue';
+import {createCpComponentRegistry} from './components.js';
+import {configureIcons} from './icons.js';
 import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
 
+/**
+ * Pages under these prefixes render outside the CP shell: auth screens wrap
+ * `<AuthBase/>` themselves and the installer is a standalone wizard.
+ */
+const shellLessPagePrefixes = ['auth/', 'install/'];
+
+/**
+ * The default Inertia layout. Pages that render `<AppLayout>` inline (to pass
+ * it props or fill its slots) opt out with `defineOptions({layout: []})`.
+ */
+function defaultPageLayout(name: string) {
+  if (shellLessPagePrefixes.some((prefix) => name.startsWith(prefix))) {
+    return null;
+  }
+
+  return AppLayout;
+}
+
 // Instantiate services
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
+const components = createCpComponentRegistry();
+
+function routeSegment(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return value.toString().replace(/^\/+|\/+$/g, '');
+}
 
 // Create our object
 const Cp = {
@@ -40,6 +72,14 @@ const Cp = {
     return axios;
   },
 
+  get $inertia() {
+    return inertiaPageRegistry;
+  },
+
+  get $components() {
+    return components;
+  },
+
   booted(callback: (instance: any) => void) {
     bootedCallbacks.push(callback);
   },
@@ -54,6 +94,13 @@ const Cp = {
 
   init() {
     config.initialize(this.initialConfig);
+    configureIcons(config.get('iconBaseUrl', '/vendor/craft/icons'));
+
+    setUrlDefaults(() => ({
+      cpTrigger: routeSegment(config.get('cpTrigger')),
+      actionTrigger: routeSegment(config.get('actionTrigger')),
+    }));
+
     queue.initialize({
       runAutomatically: config.get('runQueueAutomatically', true),
       enabled: true,
@@ -69,7 +116,7 @@ const Cp = {
 
     axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     axios.defaults.headers.common['X-CSRF-TOKEN'] =
-      this.$config.get('csrfToken');
+      this.$config.get('csrfTokenValue');
 
     console.groupCollapsed('Craft configuration');
     console.log(config.all().entries());
@@ -80,8 +127,12 @@ const Cp = {
     bootingCallbacks = [];
 
     await createInertiaApp({
-      pages: '../pages',
+      resolve: (name) => resolveInertiaPage(name),
+      layout: defaultPageLayout,
+      title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
+        app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+
         app.provide(Queue, queue);
         app.provide(Axios, axios);
         app.provide(Config, config);
@@ -101,7 +152,7 @@ const Cp = {
         app.component('SystemMessages', SystemMessages);
         app.component('LocalFsSettings', LocalFsSettings);
 
-        // @TODO Register plugin components
+        components.install(app);
       },
     });
 

@@ -2,10 +2,11 @@
   import {t} from '@craftcms/cp';
   import {usePage} from '@inertiajs/vue3';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-  import CraftCombobox from '@/components/form/CraftCombobox.vue';
-  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
-  import type {Filesystem} from '@/types/filesystems';
-  import VarDump from '@/components/VarDump.vue';
+  import CraftCombobox from '@/common/form/CraftCombobox.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+
+  type Filesystem = any;
 
   const hasUrls = defineModel<boolean>('hasUrls');
   const url = defineModel<string>('url', {default: ''});
@@ -45,7 +46,13 @@
           :disabled="page.props.readOnly"
         ></CraftCombobox>
       </template>
-      <DynamicHtmlRenderer :html="filesystem.settingsHtml" />
+      <!-- Legacy (Twig) settings render as an isolated HTML island; component
+           settings are compiled as part of the page -->
+      <HtmlFragmentRenderer
+        v-if="filesystem.settingsFragment"
+        :fragment="filesystem.settingsFragment"
+      />
+      <DynamicHtmlRenderer v-else :html="filesystem.settingsHtml" />
     </div>
   </div>
 </template>

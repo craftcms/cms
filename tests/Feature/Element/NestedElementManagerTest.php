@@ -7,9 +7,12 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Addresses;
@@ -404,4 +407,82 @@ it('scopes field addresses to their draft owner', function () {
 
     expect($firstAddresses)->toHaveCount(1)
         ->and($secondAddresses)->toHaveCount(0);
+});
+
+it('returns blank ui labels for titleless nested entries with empty ui label formats', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = createMatrixOwnerFixture();
+
+    $entryType->update([
+        'hasTitleField' => false,
+        'titleFormat' => null,
+        'uiLabelFormat' => '',
+    ]);
+    app(EntryTypes::class)->refreshEntryTypes();
+    $field->setEntryTypes([$entryType->id]);
+
+    $entry = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Nested title');
+
+    expect($entry->getUiLabel())->toBe('');
+});
+
+it('eager-loads matrix entries for the requested source owner', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'ownerType' => $ownerType, 'section' => $section] = createMatrixOwnerFixture();
+
+    $firstNested = createMatrixNestedEntry($owner, $field, $entryType, 1, 'First owner block');
+    $secondOwner = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->createElement();
+    createMatrixNestedEntry($secondOwner, $field, $entryType, 1, 'Second owner block');
+
+    app(Elements::class)->eagerLoadElements(EntryElement::class, [$owner, $secondOwner], [$field->handle]);
+
+    $eagerLoaded = $owner->getFieldValue($field->handle)->all();
+
+    expect($eagerLoaded)->toHaveCount(1)
+        ->and($eagerLoaded[0]->id)->toBe($firstNested->id)
+        ->and($eagerLoaded[0]->getPrimaryOwnerId())->toBe($owner->id);
+});
+
+it('creates eager-loaded field addresses with the requested source owner', function () {
+    $entryType = EntryTypeModel::factory()->withFieldLayout()->create();
+    $section = SectionModel::factory()->withEntryTypes($entryType)->create();
+    $firstResult = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->withField('addressesField', Addresses::class)
+        ->createElementWithFields();
+
+    Sections::refreshSections();
+
+    /** @var Addresses $field */
+    $field = Fields::getFieldById($firstResult->field('addressesField')->id);
+    /** @var EntryElement $firstEntry */
+    $firstEntry = EntryElement::find()->id($firstResult->element->id)->one();
+    $address = AddressModel::factory()
+        ->withOwnedElement($firstEntry, 1)
+        ->createElement([
+            'fieldId' => $field->id,
+            'countryCode' => 'US',
+            'addressLine1' => '123 Main St',
+        ]);
+    $map = $field->getEagerLoadingMap([$firstEntry]);
+    $query = Mockery::mock(AddressQuery::class);
+    $result = [
+        'id' => $address->id,
+        'siteId' => $firstEntry->siteId,
+    ];
+
+    $query->shouldReceive('owner')
+        ->once()
+        ->with($firstEntry)
+        ->andReturnSelf();
+    $query->shouldReceive('createElement')
+        ->once()
+        ->with($result)
+        ->andReturn($address);
+
+    $created = $map['createElement']($query, $result, $firstEntry);
+
+    expect($created)->toBe($address);
 });

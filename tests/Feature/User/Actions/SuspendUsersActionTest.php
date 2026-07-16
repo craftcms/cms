@@ -11,7 +11,7 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    actingAs(User::findOne());
+    actingAs(UserModel::findOrFail(User::findOne()->id));
 });
 
 it('suspends users via the Laravel perform-action route', function () {

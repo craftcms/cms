@@ -11,6 +11,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\User\Validation\UserRules;
@@ -18,14 +19,17 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password as PasswordFacade;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
+use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
 readonly class SetPasswordController extends AuthenticationController
 {
-    public function show(Request $request, AuthMethods $auth): Response|View
+    public function show(Request $request, AuthMethods $auth): Response|View|InertiaResponse
     {
         if (! is_array($info = $this->processTokenRequest($request))) {
             return $info;
@@ -41,37 +45,47 @@ readonly class SetPasswordController extends AuthenticationController
         $auth->setRememberedUsername($user);
 
         // Send them to the set password template.
-        return $this->renderViewWithFallback('set-password', [
-            'code' => $code,
-            'id' => $uid,
-            'newUser' => ! $user->password,
-        ]);
+        return $this->renderViewWithFallback(
+            inertiaComponent: 'auth/SetPassword',
+            inertiaProps: [
+                'code' => $code,
+                'uid' => $uid,
+                'newUser' => ! $user->password,
+                'action' => $request->isCpRequest() ? action([self::class, 'store']) : action_url('users/set-password'),
+            ],
+            data: [
+                'code' => $code,
+                'uid' => $uid,
+                'newUser' => ! $user->password,
+            ],
+        );
     }
 
-    public function store(Request $request, Users $users, Elements $elements): Response|View
+    public function store(Request $request, Users $users, Elements $elements): Response|View|InertiaResponse
     {
         $request->validate([
             'code' => ['required'],
-            'id' => ['required'],
+            'uid' => ['required'],
             'newPassword' => ['required', Password::default()],
         ]);
 
         $user = User::find()
-            ->uid($request->input('id'))
+            ->uid($request->input('uid'))
             ->status(null)
             ->addSelect('users.password')
             ->first();
 
-        abort_if(is_null($user), 400, 'Invalid user UUID: '.$request->input('id'));
+        abort_if(is_null($user), 400, 'Invalid user UUID: '.$request->input('uid'));
 
         try {
-            $status = PasswordFacade::broker('craft')->reset(
+            $status = PasswordFacade::broker()->reset(
                 [
                     'token' => $request->input('code'),
-                    'loginName' => $user->email,
+                    'email' => $user->email,
                     'password' => $request->input('newPassword'),
                 ],
-                function (User $user, string $password) use ($elements) {
+                function (CraftUser $authUser, string $password) use ($elements) {
+                    $user = $authUser->asElement();
                     $user->newPassword = $password;
                     $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
 
@@ -96,11 +110,8 @@ readonly class SetPasswordController extends AuthenticationController
                 );
             }
 
-            return $this->renderViewWithFallback('set-password', [
-                'errors' => $user->errors()->get('newPassword'),
-                'code' => $request->input('code'),
-                'id' => $request->input('id'),
-                'newUser' => ! $user->password,
+            throw ValidationException::withMessages([
+                'newPassword' => $user->errors()->get('newPassword') ?: [t('Couldn’t update password.')],
             ]);
         }
 

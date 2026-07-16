@@ -13,9 +13,11 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Validation\EntryTypeRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
@@ -27,11 +29,12 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
-use Illuminate\Support\Facades\Auth;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Ruleset(EntryTypeRules::class)]
@@ -166,7 +169,7 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
             return [];
         }
 
-        if (! Auth::user()?->isAdmin()) {
+        if (! currentUser()?->isAdmin()) {
             return [];
         }
 
@@ -175,11 +178,13 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
         }
 
         $editId = sprintf('action-edit-%s', mt_rand());
-        $items = [[
-            'id' => $editId,
-            'icon' => 'gear',
-            'label' => t('Entry type settings'),
-        ]];
+        $items = [
+            [
+                'id' => $editId,
+                'icon' => 'gear',
+                'label' => t('Entry type settings'),
+            ],
+        ];
 
         HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
 $(document).on('click', '#' + $id, () => {
@@ -193,6 +198,40 @@ JS, [
         ]);
 
         return $items;
+    }
+
+    public function getMetadata(): array
+    {
+        return [
+            t('ID') => $this->id,
+            t('Used by') => function () {
+                $usages = $this->findUsages();
+                if (empty($usages)) {
+                    return Html::tag('i', t('No usages'));
+                }
+
+                $labels = [];
+                $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (&$labels) {
+                    $icon = $usage instanceof FieldInterface && ! $usage instanceof Iconic
+                        ? $usage::icon()
+                        : $usage->getIcon();
+                    $label = $labels[] = $usage->getUiLabel();
+                    $labelHtml = Html::beginTag('span', [
+                        'class' => ['flex', 'flex-nowrap', 'items-center', 'gap-1'],
+                    ]).
+                        Html::tag('craft-icon', '', Icons::resolveIconData($icon)).
+                        Html::tag('span', Html::encode($label)).
+                        Html::endTag('span');
+
+                    return Html::a($labelHtml, $usage->getCpEditUrl());
+                }, $this->findUsages());
+
+                // sort by label
+                array_multisort($labels, SORT_ASC, $items);
+
+                return Html::ul($items, encode: false);
+            },
+        ];
     }
 
     /**
@@ -220,7 +259,7 @@ JS, [
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 

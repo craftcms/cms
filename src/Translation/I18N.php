@@ -7,11 +7,9 @@ namespace CraftCms\Cms\Translation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -20,6 +18,8 @@ use Stringable;
 use Yiisoft\I18n\Locale as YiisoftLocale;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\Translator;
+
+use function CraftCms\Cms\currentUser;
 
 #[Singleton]
 class I18N
@@ -93,14 +93,14 @@ class I18N
             return $this->getLocale();
         }
 
-        if (Cms::isInstalled() && $user = Auth::user()) {
+        if (Cms::isInstalled() && $user = currentUser()) {
             // If they have a preferred locale, use it
-            if (($locale = Users::getUserPreference($user->id, 'locale')) !== null) {
+            if (($locale = $user->getPreference('locale')) !== null) {
                 return $this->getLocaleById($locale);
             }
 
             if (
-                ($language = Users::getUserPreference($user->id, 'language')) !== null &&
+                ($language = $user->getPreference('language')) !== null &&
                 $this->validateAppLocaleId($language)
             ) {
                 return $this->getLocaleById($language);
@@ -368,16 +368,6 @@ class I18N
 
         $translation = $this->translator->translate($message, $parameters, $category, $locale);
 
-        if (Cms::config()->translationDebugOutput) {
-            $char = match ($category) {
-                'site' => '$',
-                'app' => '@',
-                default => '%',
-            };
-
-            $translation = $char.$translation.$char;
-        }
-
         /**
          * If we don't have a translation for the message.
          * Translate it using Laravel's translations.
@@ -386,11 +376,19 @@ class I18N
             $result = __($message, $parameters, $locale);
 
             // We're dealing with a message that's equal to a translation file (for example 'site')
-            if (is_array($result)) {
-                return $translation;
+            if (! is_array($result)) {
+                $translation = $result;
             }
+        }
 
-            return $result;
+        if (Cms::config()->translationDebugOutput) {
+            $char = match ($category) {
+                'site' => '$',
+                'app' => '@',
+                default => '%',
+            };
+
+            $translation = $char.$translation.$char;
         }
 
         return $translation;

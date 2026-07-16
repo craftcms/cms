@@ -397,6 +397,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         params.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
       }
 
+      if (this.settings.siteIds) {
+        params.siteIds = this.settings.siteIds;
+      }
+
       return params;
     },
 
@@ -498,6 +502,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       criteria: null,
       multiSelect: false,
       showSiteMenu: null,
+      siteIds: null,
       disabledElementIds: [],
       disableElementsOnSelect: false,
       hideOnSelect: true,

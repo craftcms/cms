@@ -25,35 +25,34 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\FallbackTransformer;
 use CraftCms\Cms\Image\ImageHelper;
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
-use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 class Assets
 {
-    /** @var VolumeFolder[] */
+    /** @var array<int|string, VolumeFolder> */
     private array $userTempFolders = [];
 
     public function __construct(
@@ -94,7 +93,7 @@ class Assets
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
         $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
-        $asset->uploaderId = Auth::user()?->id;
+        $asset->uploaderId = currentUser()?->getCraftUserId();
         $asset->avoidFilenameConflicts = true;
         $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
@@ -184,7 +183,7 @@ class Assets
 
         if (
             ! $isWebSafe ||
-            ! $asset->getVolume()->getFs()->hasUrls ||
+            ! $asset->getVolume()->sourceHasUrls() ||
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
@@ -256,7 +255,7 @@ class Assets
         if (preg_match('/.*_\d{4}-\d{2}-\d{2}-\d{6}$/', $baseFileName, $matches)) {
             $base = $baseFileName;
         } else {
-            $timestamp = DateTimeHelper::currentUTCDateTime()->format('Y-m-d-His');
+            $timestamp = now('UTC')->format('Y-m-d-His');
             $base = $buildFilename($baseFileName, '_'.$timestamp);
         }
 
@@ -309,7 +308,9 @@ class Assets
         $handle = Env::parse(Cms::config()->tempAssetUploadFs);
 
         if (! $handle) {
-            return new Temp;
+            return new Temp([
+                'handle' => 'disk:'.FilesystemsService::TEMP_ASSET_DISK,
+            ]);
         }
 
         return Filesystems::resolve($handle)
@@ -323,17 +324,7 @@ class Assets
     {
         $handle = Env::parse(Cms::config()->tempAssetUploadFs);
 
-        if (! $handle) {
-            return Storage::build([ // @phpstan-ignore return.type
-                'driver' => 'local',
-                'root' => Path::tempAssetUploads(),
-            ]);
-        }
-
-        return Storage::disk(
-            Filesystems::resolveDiskName($handle)
-                ?? throw new RuntimeException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle")
-        );
+        return Filesystems::disk($handle ?: 'disk:'.FilesystemsService::TEMP_ASSET_DISK);
     }
 
     public function createTempAssetQuery(): AssetQuery
@@ -346,7 +337,7 @@ class Assets
      */
     public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
     {
-        $user ??= Auth::user();
+        $user ??= currentUserElement();
         $cacheKey = $user->id ?? '__GUEST__';
 
         if (isset($this->userTempFolders[$cacheKey])) {
@@ -358,7 +349,7 @@ class Assets
         if ($user) {
             $folderName = "user_{$user->id}";
         } elseif (app()->runningInConsole()) {
-            $folderName = 'temp_'.sha1((string) time());
+            $folderName = 'temp_'.sha1((string) now()->getTimestamp());
         } else {
             $folderName = 'user_'.sha1(session()->id());
         }

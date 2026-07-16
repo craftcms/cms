@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Session;
 
+use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
@@ -28,7 +29,7 @@ describe('generate', function () {
         Session::forget('auth.password_confirmed_at');
 
         postJson(action([RecoveryCodesController::class, 'generate']))
-            ->assertForbidden();
+            ->assertStatus(423);
     });
 
     it('generates recovery codes successfully', function () {
@@ -77,7 +78,7 @@ describe('download', function () {
         Session::forget('auth.password_confirmed_at');
 
         postJson(action([RecoveryCodesController::class, 'download']))
-            ->assertForbidden();
+            ->assertStatus(423);
     });
 
     it('returns 400 when no recovery codes exist', function () {
@@ -128,7 +129,7 @@ describe('download', function () {
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
-        $user = auth()->user();
+        $user = currentUser();
         $content = postJson(action([RecoveryCodesController::class, 'download']))
             ->assertOk()
             ->getContent();

@@ -8,8 +8,8 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\elements\db\ElementQuery;
 use craft\search\SearchQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * SearchEvent class.
@@ -21,10 +21,10 @@ use craft\search\SearchQuery;
 class SearchEvent extends Event
 {
     /**
-     * @var ElementQuery The element query being executed.
+     * @var ElementQueryInterface The element query being executed.
      * @since 3.7.14
      */
-    public ElementQuery $elementQuery;
+    public ElementQueryInterface $elementQuery;
 
     /**
      * @var SearchQuery The search query

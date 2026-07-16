@@ -17,7 +17,7 @@ use yii\web\IdentityInterface;
 
 class IdentityWrapper extends User implements IdentityInterface
 {
-    public function __construct(User $user)
+    public function __construct($user)
     {
         foreach (Utils::getPublicProperties($user) as $attribute => $value) {
             try {

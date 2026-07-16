@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Carbon\CarbonInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
@@ -50,6 +51,8 @@ class DatetimeStubComponent extends Component
     public string $title = '';
 
     public DateTimeImmutable $immutableAt;
+
+    public CarbonInterface $carbonAt;
 
     public DateTime|int $unionAt;
 
@@ -465,13 +468,12 @@ describe('mergeSettings', function () {
 describe('datetimeAttributes', function () {
     test('returns all public datetime attributes including inherited ones', function () {
         expect(ComponentHelper::datetimeAttributes(new DatetimeChildStubComponent))
-            ->toEqualCanonicalizing(['startsAt', 'endsAt', 'publishedAt']);
+            ->toEqualCanonicalizing(['startsAt', 'endsAt', 'immutableAt', 'carbonAt', 'publishedAt']);
     });
 
     test('excludes non-datetime, union, static, and non-public properties', function () {
         expect(ComponentHelper::datetimeAttributes(new DatetimeStubComponent))
             ->not->toContain('title')
-            ->not->toContain('immutableAt')
             ->not->toContain('unionAt')
             ->not->toContain('staticAt')
             ->not->toContain('hiddenAt');

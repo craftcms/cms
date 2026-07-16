@@ -32,17 +32,18 @@ use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 class UserPermissions
 {
     /**
@@ -53,11 +54,11 @@ class UserPermissions
     private Collection $allPermissions;
 
     /**
-     * @var Collection<string>
+     * @var Collection<string, string>
      *
      * @see validatePermission()
      */
-    private Collection $allPermissionNames;
+    private Collection $permissionNamesByLowercase;
 
     /**
      * @var Collection<int, Collection<string>>
@@ -105,7 +106,7 @@ class UserPermissions
 
         event($event = new UserPermissionsResolving($this->allPermissions));
 
-        return $event->permissions;
+        return $this->allPermissions = $event->permissions;
     }
 
     /**
@@ -118,8 +119,9 @@ class UserPermissions
      */
     public function getAssignablePermissions(?User $user = null): Collection
     {
-        // If either user is an admin, all permissions are fair game
-        if (Auth::user()?->isAdmin() || ($user !== null && $user->admin)) {
+        $currentUser = currentUser();
+
+        if (($currentUser !== null && $currentUser->isAdmin()) || ($user !== null && $user->admin)) {
             return $this->getAllPermissions();
         }
 
@@ -148,7 +150,8 @@ class UserPermissions
             fn () => $this->createUserPermissionsQuery()
                 ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
-                ->pluck('p.name'),
+                ->pluck('p.name')
+                ->map(fn (string $permission) => $this->canonicalPermissionName($permission)),
         );
     }
 
@@ -169,7 +172,8 @@ class UserPermissions
             ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
             ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
             ->where('g_u.userId', $userId)
-            ->pluck('p.name');
+            ->pluck('p.name')
+            ->map(fn (string $permission) => $this->canonicalPermissionName($permission));
     }
 
     /**
@@ -177,7 +181,7 @@ class UserPermissions
      */
     public function doesGroupHavePermission(int $groupId, string $checkPermission): bool
     {
-        return $this->getPermissionsByGroupId($groupId)->containsStrict(strtolower($checkPermission));
+        return $this->getPermissionsByGroupId($groupId)->containsStrict($this->canonicalPermissionName($checkPermission));
     }
 
     /**
@@ -188,9 +192,6 @@ class UserPermissions
     public function saveGroupPermissions(int $groupId, array $permissions): bool
     {
         Edition::require(Edition::Team);
-
-        // Lowercase permissions
-        $permissions = array_map(strtolower(...), $permissions);
 
         // Filter out any orphaned permissions
         $permissions = $this->filterOrphanedPermissions($permissions);
@@ -231,7 +232,8 @@ class UserPermissions
                     $userPermissions = $this->createUserPermissionsQuery()
                         ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
                         ->where('p_u.userId', $userId)
-                        ->pluck('p.name');
+                        ->pluck('p.name')
+                        ->map(fn (string $permission) => $this->canonicalPermissionName($permission));
                 } else {
                     $userPermissions = [];
                 }
@@ -243,11 +245,7 @@ class UserPermissions
 
     public function validatePermission(string $permission): bool
     {
-        if (! isset($this->allPermissionNames)) {
-            $this->allPermissionNames = $this->getAllPermissions()->flatMap(fn (PermissionGroup $group) => $this->collectPermissionNames($group->permissions));
-        }
-
-        return $this->allPermissionNames->contains(strtolower($permission));
+        return $this->permissionNamesByLowercase()->has(strtolower($permission));
     }
 
     /**
@@ -257,7 +255,7 @@ class UserPermissions
     private function collectPermissionNames(Collection $permissions): Collection
     {
         return $permissions->flatMap(function (Permission $permission) {
-            $names = collect([strtolower($permission->key)]);
+            $names = collect([$permission->key]);
 
             if ($permission->nested->isNotEmpty()) {
                 return $names->merge($this->collectPermissionNames($permission->nested));
@@ -276,7 +274,7 @@ class UserPermissions
             return true;
         }
 
-        return $this->getPermissionsByUserId($userId)->containsStrict(strtolower($checkPermission));
+        return $this->getPermissionsByUserId($userId)->containsStrict($this->canonicalPermissionName($checkPermission));
     }
 
     /**
@@ -292,9 +290,6 @@ class UserPermissions
         DB::table(Table::USERPERMISSIONS_USERS)
             ->where('userId', $userId)
             ->delete();
-
-        // Lowercase the permissions
-        $permissions = array_map(strtolower(...), $permissions);
 
         // Filter out any orphaned permissions
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
@@ -353,6 +348,7 @@ class UserPermissions
         $groupPermissionVals = [];
 
         if ($permissions) {
+            $permissions = $this->canonicalPermissionNames((array) $permissions);
             $now = now();
 
             foreach ($permissions as $permissionName) {
@@ -549,30 +545,24 @@ class UserPermissions
                     label: mb_ucfirst(t('Save {type}', ['type' => $type])),
                 ),
                 new Permission(
-                    key: "viewEntries:$section->uid",
-                    label: mb_ucfirst(t('View {type}', ['type' => $type])),
+                    key: "viewPeerEntryDrafts:$section->uid",
+                    label: mb_ucfirst(t('View other users’ {type}', [
+                        'type' => t('drafts'),
+                    ])),
                     nested: collect([
                         new Permission(
-                            key: "viewPeerEntryDrafts:$section->uid",
-                            label: mb_ucfirst(t('View other users’ {type}', [
+                            key: "savePeerEntryDrafts:$section->uid",
+                            label: mb_ucfirst(t('Save other users’ {type}', [
                                 'type' => t('drafts'),
                             ])),
-                            nested: collect([
-                                new Permission(
-                                    key: "savePeerEntryDrafts:$section->uid",
-                                    label: mb_ucfirst(t('Save other users’ {type}', [
-                                        'type' => t('drafts'),
-                                    ])),
-                                ),
-                                new Permission(
-                                    key: "deletePeerEntryDrafts:$section->uid",
-                                    label: t('Delete other users’ {type}', [
-                                        'type' => t('drafts'),
-                                    ]),
-                                ),
-                            ])
                         ),
-                    ]),
+                        new Permission(
+                            key: "deletePeerEntryDrafts:$section->uid",
+                            label: t('Delete other users’ {type}', [
+                                'type' => t('drafts'),
+                            ]),
+                        ),
+                    ])
                 ),
             ])
         );
@@ -752,14 +742,14 @@ class UserPermissions
      */
     private function filterUnassignablePermissions(Collection $permissions, ?User $user = null): Collection
     {
-        $currentUser = Auth::user();
+        $currentUser = currentUser();
 
         if (! $currentUser && ! $user) {
             return new Collection;
         }
 
         return $permissions->map(function (Permission $permission) use ($currentUser, $user) {
-            if ($currentUser !== null && ! $currentUser->can($permission->key)) {
+            if ($currentUser !== null && ! Gate::check($permission->key)) {
                 return null;
             }
 
@@ -785,6 +775,8 @@ class UserPermissions
      */
     private function filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array
     {
+        $postedPermissions = $this->canonicalPermissionNames($postedPermissions);
+        $groupPermissions = $this->canonicalPermissionNames($groupPermissions);
         $filteredPermissions = [];
 
         if (! empty($postedPermissions)) {
@@ -816,7 +808,7 @@ class UserPermissions
         $hasAssignedPermissions = false;
 
         foreach ($permissionsGroup as $permission) {
-            $key = strtolower($permission->key);
+            $key = $permission->key;
 
             // Should the user have this permission (either directly or via their group)?
             if (
@@ -852,12 +844,37 @@ class UserPermissions
      */
     private function getPermissionModelByName(string $permissionName): UserPermission
     {
-        // Permission names are always stored in lowercase
-        $permissionName = strtolower($permissionName);
+        $permissionName = $this->canonicalPermissionName($permissionName);
+
+        if ($permissionModel = UserPermission::whereIn('name', [$permissionName, strtolower($permissionName)])->first()) {
+            return $permissionModel;
+        }
 
         return UserPermission::firstOrCreate([
             'name' => $permissionName,
         ]);
+    }
+
+    /** @return Collection<string, string> */
+    private function permissionNamesByLowercase(): Collection
+    {
+        if (! isset($this->permissionNamesByLowercase)) {
+            $this->permissionNamesByLowercase = $this->getAllPermissions()
+                ->flatMap(fn (PermissionGroup $group) => $this->collectPermissionNames($group->permissions))
+                ->mapWithKeys(fn (string $permission) => [strtolower($permission) => $permission]);
+        }
+
+        return $this->permissionNamesByLowercase;
+    }
+
+    private function canonicalPermissionName(string $permission): string
+    {
+        return $this->permissionNamesByLowercase()->get(strtolower($permission), $permission);
+    }
+
+    private function canonicalPermissionNames(array $permissions): array
+    {
+        return array_values(array_unique(array_map($this->canonicalPermissionName(...), $permissions)));
     }
 
     private function createUserPermissionsQuery(): Builder
@@ -872,7 +889,7 @@ class UserPermissions
     {
         unset(
             $this->allPermissions,
-            $this->allPermissionNames,
+            $this->permissionNamesByLowercase,
             $this->permissionsByGroupId,
             $this->permissionsByUserId,
         );

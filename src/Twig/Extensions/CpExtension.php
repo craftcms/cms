@@ -55,6 +55,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('elementChip', app(ElementHtml::class)->elementChipHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('elementIndex', app(ElementIndexHtml::class)->html(...), ['is_safe' => ['html']]),
             new TwigFunction('fieldLayoutDesigner', app(FieldLayoutDesigner::class)->html(...), ['is_safe' => ['html']]),
+            new TwigFunction('fieldLayoutDesignerField', app(FieldLayoutDesigner::class)->fieldHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('findCrumb', fn (array $items) => $this->findCrumb($items)),
             new TwigFunction('generatedFieldsTable', app(FieldLayoutDesigner::class)->generatedFieldsTableHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('iconSvg', Icons::svg(...), ['is_safe' => ['html']]),

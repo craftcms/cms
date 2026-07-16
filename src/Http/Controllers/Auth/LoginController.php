@@ -7,29 +7,41 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\Auth\Impersonation;
-use CraftCms\Cms\Auth\UserProvider;
+use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Timebox;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpFoundation\Response;
+use Tpetry\QueryExpressions\Function\String\Lower;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\site_url;
 use function CraftCms\Cms\template;
 
 readonly class LoginController extends AuthenticationController
 {
-    public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods): Response|View|\Inertia\Response
+    public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods, OAuth $oauth): Response|View|\Inertia\Response
     {
         // see if they're already logged in
-        if ($user = $request->user()) {
+        if ($user = $request->craftUser()) {
             return $this->handleSuccessfulLogin($request, $user);
         }
 
@@ -38,10 +50,23 @@ readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return $this->renderViewWithFallback(cpTemplate: 'login', inertiaComponent: 'LoginPage', inertiaProps: [
-            'action' => action([LoginController::class, 'attemptLogin']),
-            'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
-        ]);
+        $oauthLoginButtons = array_map(
+            static fn (HtmlString $button): string => (string) $button,
+            $oauth->getLoginButtons(),
+        );
+
+        return $this->renderViewWithFallback(
+            inertiaComponent: 'auth/Login',
+            inertiaProps: [
+                'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
+                'oauthLoginButtons' => $oauthLoginButtons,
+                'action' => $request->isCpRequest() ? action([self::class, 'attemptLogin']) : action_url('users/login'),
+            ],
+            data: [
+                'action' => action([self::class, 'attemptLogin']),
+                'oauthLoginButtons' => $oauthLoginButtons,
+            ],
+        );
     }
 
     /**
@@ -85,7 +110,7 @@ readonly class LoginController extends AuthenticationController
         ]);
     }
 
-    public function attemptLogin(Request $request, Impersonation $impersonation): Response
+    public function attemptLogin(Request $request, Impersonation $impersonation, LoginRateLimiter $loginRateLimiter): Response
     {
         $request->validate([
             'loginName' => [
@@ -98,40 +123,58 @@ readonly class LoginController extends AuthenticationController
         ]);
 
         /**
-         * @var UserProvider $provider
-         *
-         * @phpstan-ignore method.notFound
+         * @var EloquentUserProvider $provider
          */
-        $provider = auth('craft')->getProvider();
+        $provider = auth()->getProvider();
 
-        $user = $provider->retrieveByCredentials($request->only('loginName', 'password'));
+        $user = $this->retrieveLoginUser($request->input('loginName'));
 
-        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation) {
-            if (! $user || $user->password === null) {
+        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation, $loginRateLimiter) {
+            if (! $user || $user->getAuthPassword() === null) {
                 return $this->handleLoginFailure($request, AuthError::InvalidCredentials);
             }
 
-            if (! $provider->validateCredentials($user, ['password' => $request->input('password')])) {
-                return $this->handleLoginFailure($request, $provider->getAuthError(), $user);
+            if (! $this->auth->authenticate($user, ['password' => $request->input('password')])) {
+                return $this->handleLoginFailure($request, $this->auth->authError, $user);
             }
 
             // Valid credentials
-            if (config('hashing.rehash_on_login', true)) {
+            $loginRateLimiter->clear($request);
+
+            if (config('hashing.rehash_on_login', true) && $user instanceof Model) {
                 $provider->rehashPasswordIfRequired($user, ['password' => $request->input('password')]);
             }
 
             // if we're impersonating, pass the user we're impersonating to the complete method
             if ($impersonation->isImpersonating()) {
-                $user = $request->user() ?? $user;
+                $user = $request->craftUser() ?? $user;
             }
 
             return $this->finalizeLogin($request, $user, $request->boolean('rememberMe'));
         }, 30_000);
     }
 
+    private function retrieveLoginUser(string $loginName): ?CraftUser
+    {
+        event($retrieving = new LoginUserRetrieving($loginName));
+
+        $user = $retrieving->user ?? User::query()
+            ->where(function (Builder $query) use ($loginName) {
+                $loginName = mb_strtolower($loginName);
+
+                $query->where(new Lower('username'), $loginName)
+                    ->orWhere(new Lower('email'), $loginName);
+            })
+            ->first();
+
+        event($retrieved = new LoginUserRetrieved($loginName, $user));
+
+        return $retrieved->user;
+    }
+
     public function logout(Request $request): Response
     {
-        auth('craft')->logout();
+        auth()->logout();
 
         if ($request->wantsJson()) {
             return $this->asSuccess();
@@ -142,8 +185,6 @@ readonly class LoginController extends AuthenticationController
             return redirect(cp_url(CpAuthPath::Login->value));
         }
 
-        return $this->asSuccess(
-            redirect: $this->generalConfig->getPostLogoutRedirect(),
-        );
+        return redirect(site_url($this->generalConfig->getPostLogoutRedirect()));
     }
 }

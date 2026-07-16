@@ -1271,7 +1271,7 @@ JS, [
                     'structure-id' => $s['structureId'] ?? null,
                 ],
             ])
-            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->sortBy(fn ($option) => $option['value'] === '*' ? 0 : $option['label'], SORT_NATURAL | SORT_FLAG_CASE)
             ->all();
     }
 
@@ -1502,6 +1502,8 @@ JS, [
             }
         }
 
+        $targetSiteId = $this->_targetSiteId();
+
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => $elementType,
@@ -1518,6 +1520,7 @@ JS, [
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || ! $this->showSiteMenu || ! static::canShowSiteMenu()) ? false : 'auto',
+            'siteIds' => $targetSiteId ? [$targetSiteId] : null,
             'allowSelfRelations' => $this->allowSelfRelations,
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
@@ -1530,7 +1533,7 @@ JS, [
             'sortable' => $this->sortable && ! $this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
-                'defaultSiteId' => $element->siteId ?? null,
+                'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
     }

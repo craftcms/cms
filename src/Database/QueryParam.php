@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database;
 
 use CraftCms\Cms\Support\Arr;
-use DateTime;
+use DateTimeInterface;
 
 class QueryParam
 {
@@ -54,7 +54,7 @@ class QueryParam
             return [];
         }
 
-        if ($value instanceof DateTime) {
+        if ($value instanceof DateTimeInterface) {
             return [$value];
         }
 

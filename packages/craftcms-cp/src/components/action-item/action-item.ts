@@ -1,12 +1,7 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import styles from './action-item.styles.js';
-import {
-  type AsyncState,
-  AsyncStates,
-  Variant,
-  type VariantKey,
-} from '@src/types';
+import {type AsyncState, AsyncStates} from '@src/types';
 import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
@@ -17,6 +12,7 @@ import {
   type FeedbackData,
   runAction,
 } from '@src/actions';
+import {Variant, type VariantKey} from '@src/constants/variants';
 
 /**
  * @summary Either a link or button typically used in a menu.
@@ -24,9 +20,15 @@ import {
 export default class CraftActionItem extends LitElement {
   static override styles = [variantsStyles, styles];
   @property() icon: string | null = null;
+  /**
+   * Optional Craft color name used to tint the item's icon. The icon renders
+   * with `currentColor`, so we set the icon element's `color` to a matching
+   * `--c-color-*` token.
+   */
+  @property() iconColor: string | null = null;
   @property() href: string | null = null;
   @property({type: Boolean}) disabled: boolean = false;
-  @property({reflect: true}) variant: VariantKey = Variant.Default;
+  @property({reflect: true}) variant: VariantKey = Variant.Neutral;
   @property({type: Boolean}) checked: boolean = false;
   @property({type: Boolean}) active: boolean = false;
   @property() type: 'button' | 'checkbox' = 'button';
@@ -162,7 +164,12 @@ export default class CraftActionItem extends LitElement {
         return html`
           <slot name="icon">
             ${this.icon
-              ? html`<craft-icon name="${this.icon}"></craft-icon>`
+              ? html`<craft-icon
+                  name="${this.icon}"
+                  style="${this.iconColor
+                    ? `color: var(--c-color-${this.iconColor}-on-normal, currentColor)`
+                    : nothing}"
+                ></craft-icon>`
               : nothing}
           </slot>
         `;

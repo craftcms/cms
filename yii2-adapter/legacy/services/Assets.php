@@ -12,13 +12,11 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\db\AssetQuery;
 use craft\events\AssetPreviewEvent;
 
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use CraftCms\Cms\Asset\Assets as AssetsService;
-use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -28,6 +26,7 @@ use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
@@ -267,7 +266,7 @@ class Assets extends Component
 
     public function createTempAssetQuery(): AssetQuery
     {
-        $query = new AssetQuery(Asset::class);
+        $query = new AssetQuery();
         $query->volumeId(':empty:');
 
         return $query;

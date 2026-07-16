@@ -8,8 +8,8 @@
 namespace craft\validators;
 
 use craft\web\View;
-use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateResolver;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
 

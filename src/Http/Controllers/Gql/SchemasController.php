@@ -8,11 +8,14 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Url;
-use Illuminate\Contracts\View\View;
+use CraftCms\Cms\User\Data\Permission;
+use CraftCms\Cms\User\Data\PermissionGroup;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,7 +36,7 @@ readonly class SchemasController extends GqlController
         // Ensure the public schema exists so the table stays aligned with the legacy UI.
         $this->gql->getPublicSchema();
 
-        return Inertia::render('GraphQlSchemasPage', [
+        return Inertia::render('graphql/schemas/Index', [
             'crumbs' => fn () => [
                 ['label' => t('GraphQL'), 'url' => Url::cpUrl('graphql/schemas')],
                 ['label' => t('Schemas')],
@@ -43,77 +46,28 @@ readonly class SchemasController extends GqlController
         ]);
     }
 
-    public function create(): View
+    public function create(): CpScreenResponse
     {
-        return $this->renderEditSchema(new GqlSchema);
+        return $this->editScreen(new GqlSchema);
     }
 
-    public function edit(int $schemaId): View
+    public function edit(string|int $schemaId): CpScreenResponse
     {
-        $schema = $this->gql->getSchemaById($schemaId);
+        [$schema, $token] = $this->resolveSchema($schemaId);
 
-        abort_if(is_null($schema), 404, 'Schema not found');
-
-        return $this->renderEditSchema($schema);
+        return $this->editScreen($schema, $token);
     }
 
-    public function editPublic(): View
+    public function store(Request $request): Response
     {
-        return $this->renderEditPublicSchema(
-            $this->gql->getPublicSchema(),
-            $this->gql->getPublicToken(),
-        );
+        return $this->saveSchema($request, new GqlSchema);
     }
 
-    public function save(Request $request): Response
+    public function update(Request $request, string|int $schemaId): Response
     {
-        $schemaId = $request->input('schemaId');
+        [$schema, $token] = $this->resolveSchema($schemaId);
 
-        if ($schemaId) {
-            $schema = $this->gql->getSchemaById((int) $schemaId);
-
-            abort_if(is_null($schema), 404, 'Schema not found');
-        } else {
-            $schema = new GqlSchema;
-        }
-
-        if ($request->has('name')) {
-            $schema->name = $request->input('name');
-        }
-
-        $permissions = $request->input('permissions', []);
-        $schema->scope = is_array($permissions) ? $permissions : [$permissions];
-
-        if (! $this->gql->saveSchema($schema)) {
-            return $this->invalidSchemaResponse($request, $schema, t('Couldn’t save schema.'));
-        }
-
-        return $this->asModelSuccess($schema, t('Schema saved.'), 'schema');
-    }
-
-    public function savePublic(Request $request): View|Response
-    {
-        $schema = $this->gql->getPublicSchema();
-        $token = $this->gql->getPublicToken();
-
-        $permissions = $request->input('permissions', []);
-        $schema->scope = is_array($permissions) ? $permissions : [$permissions];
-
-        if (! $this->gql->saveSchema($schema)) {
-            return $this->invalidPublicSchemaSchemaResponse($request, $schema, $token, t('Couldn’t save schema.'));
-        }
-
-        $token->enabled = (bool) $request->input('enabled');
-
-        if ($request->has('expiryDate')) {
-            $token->expiryDate = DateTimeHelper::toDateTime($request->input('expiryDate')) ?: null;
-        }
-
-        if (! $this->gql->saveToken($token)) {
-            return $this->invalidPublicSchemaTokenResponse($request, $schema, $token, t('Couldn’t save public schema settings.'));
-        }
-
-        return $this->asSuccess(t('Schema saved.'));
+        return $this->saveSchema($request, $schema, $token);
     }
 
     public function destroy(Request $request, int $schemaId): Response
@@ -123,73 +77,142 @@ readonly class SchemasController extends GqlController
         return $this->asSuccess(t('Schema deleted.'));
     }
 
-    private function invalidSchemaResponse(Request $request, GqlSchema $schema, string $message): Response
+    private function saveSchema(Request $request, GqlSchema $schema, ?GqlToken $token = null): Response
     {
-        if ($request->expectsJson()) {
-            return $this->asModelFailure($schema, $message, 'schema');
+        if ($request->has('name')) {
+            $schema->name = $request->input('name');
         }
 
-        Flash::error($message);
+        $permissions = $request->input('permissions', []);
+        $schema->scope = is_array($permissions) ? $permissions : [$permissions];
 
-        return response($this->renderEditSchema($schema));
-    }
-
-    private function invalidPublicSchemaSchemaResponse(
-        Request $request,
-        GqlSchema $schema,
-        GqlToken $token,
-        string $message,
-    ): Response|View {
-        if ($request->expectsJson()) {
-            return $this->asModelFailure($schema, $message, 'schema', [
-                'token' => $token->toArray(),
-            ]);
+        if (! $this->gql->saveSchema($schema)) {
+            throw ValidationException::withMessages($schema->errors()->getMessages());
         }
 
-        Flash::error($message);
+        if (! $token) {
+            return $this->asModelSuccess(
+                $schema,
+                t('Schema saved.'),
+                'schema',
+                redirect: $this->getPostedRedirectUrl($schema)
+                    ?? Url::cpUrl("graphql/schemas/$schema->id"),
+            );
+        }
 
-        return $this->renderEditPublicSchema($schema, $token);
+        $token->enabled = (bool) $request->input('enabled');
+
+        if ($request->has('expiryDate')) {
+            $token->expiryDate = DateTimeHelper::toDateTime($request->input('expiryDate')) ?: null;
+        }
+
+        if (! $this->gql->saveToken($token)) {
+            throw ValidationException::withMessages($token->errors()->getMessages());
+        }
+
+        return $this->asSuccess(t('Schema saved.'));
     }
 
-    private function invalidPublicSchemaTokenResponse(
-        Request $request,
-        GqlSchema $schema,
-        GqlToken $token,
-        string $message,
-    ): View|Response {
-        if ($request->expectsJson()) {
-            return $this->asModelFailure($token, $message, 'token', [
+    private function resolveSchema(string|int $schemaId): array
+    {
+        if ($schemaId === 'public') {
+            $schema = $this->gql->getPublicSchema();
+            $token = $this->gql->getPublicToken();
+
+            abort_if(! $schema || ! $token, 404, 'Public schema not found');
+
+            return [$schema, $token];
+        }
+
+        $schema = $this->gql->getSchemaById((int) $schemaId);
+
+        abort_if(is_null($schema), 404, 'Schema not found');
+
+        return [$schema, null];
+    }
+
+    private function editScreen(GqlSchema $schema, ?GqlToken $token = null): CpScreenResponse
+    {
+        $title = $schema->isPublic
+            ? t('Edit the public GraphQL schema')
+            : ($schema->id
+                ? trim((string) $schema->name) ?: t('Edit GraphQL Schema')
+                : t('Create a new GraphQL Schema'));
+
+        return new CpScreenResponse()
+            ->title($title)
+            ->selectedSubnavItem('schemas')
+            ->crumbs([
+                ['label' => t('GraphQL Schemas'), 'url' => 'graphql/schemas'],
+                ['label' => $title],
+            ])
+            ->redirectUrl('graphql/schemas')
+            ->inertiaPage('graphql/schemas/Edit', [
                 'schema' => $schema->toArray(),
+                'token' => $token ? [
+                    'id' => $token->id,
+                    'enabled' => $token->enabled,
+                    'expiryDate' => $token->expiryDate?->format('Y-m-d\TH:i'),
+                ] : null,
+                'permissions' => $this->schemaPermissionGroups(),
             ]);
+    }
+
+    /** @return Collection<int, PermissionGroup> */
+    private function schemaPermissionGroups(): Collection
+    {
+        $schemaComponents = $this->gql->getAllSchemaComponents();
+        $optionalPermissions = [
+            'directive:parseRefs' => [
+                'label' => t('{name} directive', [
+                    'name' => '@parseRefs',
+                ]),
+                'warning' => t('Can be exploited to reveal sensitive content by information disclosure attacks.'),
+            ],
+        ];
+
+        if (! config('craft.general.disableGraphqlTransformDirective')) {
+            $optionalPermissions['directive:transform'] = [
+                'label' => t('{name} directive', [
+                    'name' => '@transform',
+                ]),
+                'warning' => t('Can be exploited by DoS attacks.'),
+            ];
         }
 
-        Flash::error($message);
-
-        return $this->renderEditPublicSchema($schema, $token);
+        return $this->permissionGroups($schemaComponents['queries'])
+            ->merge($this->permissionGroups($schemaComponents['mutations']))
+            ->push(new PermissionGroup(
+                t('Optional Features'),
+                $this->permissionList($optionalPermissions),
+            ));
     }
 
-    private function renderEditSchema(GqlSchema $schema): View
+    /** @return Collection<int, PermissionGroup> */
+    private function permissionGroups(array $categories): Collection
     {
-        $name = trim((string) $schema->name) ?: null;
-
-        $title = $schema->id
-            ? $name ?? t('Edit GraphQL Schema')
-            : $name ?? t('Create a new GraphQL Schema');
-
-        return view('graphql.schemas._edit', compact(
-            'schema',
-            'title',
-        ));
+        return collect($categories)
+            ->filter()
+            ->map(fn (array $permissions, string $heading) => new PermissionGroup(
+                $heading,
+                $this->permissionList($permissions),
+            ))
+            ->values();
     }
 
-    private function renderEditPublicSchema(GqlSchema $schema, GqlToken $token): View
+    /** @return Collection<int, Permission> */
+    private function permissionList(array $permissions): Collection
     {
-        $title = t('Edit the public GraphQL schema');
-
-        return view('graphql.schemas._edit', compact(
-            'schema',
-            'token',
-            'title',
-        ));
+        return collect($permissions)
+            ->map(fn (array $props, string $key) => new Permission(
+                key: $key,
+                label: $props['label'] ?? $key,
+                info: $props['info'] ?? null,
+                warning: $props['warning'] ?? null,
+                nested: isset($props['nested'])
+                    ? $this->permissionList($props['nested'])
+                    : new Collection,
+            ))
+            ->values();
     }
 }

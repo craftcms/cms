@@ -31,8 +31,6 @@ readonly class MultiEnvironmentConfigCompatibility
             }
 
             if (!is_array($config)) {
-                Config::set($key, []);
-
                 continue;
             }
 

@@ -51,7 +51,7 @@ readonly class IconController
             $searchTerms = explode(' ', Search::normalizeKeywords($search));
         }
 
-        $indexPath = '@craftcms/resources/icons/index.php';
+        $indexPath = '@cmsAssets/resources/icons/index.php';
         $icons = require Aliases::get($indexPath);
         $output = [];
         $scores = [];

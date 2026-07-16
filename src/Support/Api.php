@@ -11,13 +11,12 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\User\Models\User;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -69,7 +68,7 @@ class Api
      *
      * @param  string[]  $include
      *
-     * @throws GuzzleException if the API gave a non-2xx response
+     * @throws RequestException if the API gave a non-2xx response
      */
     public function getLicenseInfo(array $include = [], array $headers = []): array
     {
@@ -112,7 +111,7 @@ class Api
                 ->withHeaders(array_merge($this->headers(), Arr::pull($options, 'headers', [])))
                 ->send($method, $uri, $options);
         } catch (RequestException $e) {
-            $response = $e->getResponse();
+            $response = $e->response;
 
             throw $e;
         } finally {
@@ -318,7 +317,7 @@ class Api
                     ) {
                         $timestamp = $oldLicenseInfo[$handle]['timestamp'];
                     } else {
-                        $timestamp = DateTimeHelper::currentTimeStamp();
+                        $timestamp = now()->getTimestamp();
                     }
                 }
                 $licenseInfo[$handle] = [

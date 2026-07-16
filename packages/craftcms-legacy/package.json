@@ -36,7 +36,6 @@
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
     "@craftcms/cp": "file:../craftcms-cp",
-    "@craftcms/graphiql": "file:../craftcms-graphiql",
     "@craftcms/sass": "file:../craftcms-sass",
     "@craftcms/vue": "file:../craftcms-vue",
     "@floating-ui/dom": "^1.7.6",
@@ -45,7 +44,7 @@
     "@types/jquery": "^3.5.34",
     "accounting": "^0.4.1",
     "apexcharts": "^5.10.6",
-    "axios": "^1.15.1",
+    "axios": "^1.17.0",
     "blueimp-file-upload": "^10.32.0",
     "codemirror": "^5.65.21",
     "d3": "^7.9.0",

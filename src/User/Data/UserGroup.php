@@ -18,10 +18,11 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Override;
 use Stringable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class UserGroup extends Component implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
@@ -67,7 +68,7 @@ class UserGroup extends Component implements Actionable, Chippable, CpEditable, 
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! currentUser()?->isAdmin()) {
             return null;
         }
 
@@ -80,7 +81,7 @@ class UserGroup extends Component implements Actionable, Chippable, CpEditable, 
 
         if (
             $this->id &&
-            Auth::user()?->isAdmin() &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
@@ -105,7 +106,7 @@ JS, [
         return $items;
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [

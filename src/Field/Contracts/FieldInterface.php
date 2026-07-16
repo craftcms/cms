@@ -18,7 +18,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Validation\Contracts\Validatable;
-use DateTime;
+use DateTimeInterface;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -69,8 +69,8 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /** @var string|null The field's UID */
     public ?string $uid { get; set; }
 
-    /** @var DateTime|null The date that the field was trashed */
-    public ?DateTime $dateDeleted { get; set; }
+    /** @var DateTimeInterface|null The date that the field was trashed */
+    public ?DateTimeInterface $dateDeleted { get; set; }
 
     /** @var CustomField|null The field layout element */
     public ?CustomField $layoutElement { get; set; }
@@ -84,7 +84,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
      * the path to an SVG file, or raw SVG markup.
      *
-     * System icons can be found in `resources/icons/solid/`.
+     * System icons can be found in `cms-assets/resources/icons/solid/`.
      */
     public static function icon(): string;
 
@@ -133,7 +133,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * Returns the DB data type(s) that fields of this type will store within the `elements_sites.content` column.
      *
      * ```php
-     * return \yii\db\Schema::TYPE_STRING;
+     * return \CraftCms\Cms\Support\Query::TYPE_STRING;
      * ```
      *
      * Specifying the DB type isn’t strictly necessary, but it enables individual field values to be targeted
@@ -144,8 +144,8 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      *
      * ```php
      * return [
-     *     'date' => \yii\db\Schema::TYPE_DATETIME,
-     *     'tz' => \yii\db\Schema::TYPE_STRING,
+     *     'date' => \CraftCms\Cms\Support\Query::TYPE_DATETIME,
+     *     'tz' => \CraftCms\Cms\Support\Query::TYPE_STRING,
      * ];
      * ```
      *
@@ -255,8 +255,8 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * return '<textarea name="'.$name.'">'.$value.'</textarea>';
      * ```
      *
-     * For more complex inputs, you might prefer to create a template, and render it via
-     * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
+     * For more complex inputs, you might prefer to create a template and render it with
+     * [[\CraftCms\Cms\template()]]. For example, the following code would render a template located at
      * `path/to/myplugin/templates/_fieldinput.html`, passing the `$name` and `$value` variables to it:
      *
      * ```php
