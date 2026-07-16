@@ -38,23 +38,8 @@
         {% if selectable %}
             {% set checkboxLabelId = "checkbox-label-#{random()}" %}
             <td class="checkbox-cell">
-                {{ tag('div', {
-                    class: 'checkbox',
-                    title: 'Select'|t('app'),
-                    tabindex: '0',
-                    aria: {
-                        checked: 'false',
-                        labelledby: checkboxLabelId,
-                    },
-                }) }}
-                {{ tag('span', {
-                    id: checkboxLabelId,
-                    class: 'visually-hidden',
-                    text: element.getUiLabel(),
-                    aria: {
-                        hidden: 'true',
-                    }
-                }) }}
+              <craft-checkbox aria-labelledby="{{ checkboxLabelId }}"></craft-checkbox>
+              <span id="{{ checkboxLabelId }}" class="sr-only" aria-hidden="true">{{ element.getUiLabel() }}</span>
             </td>
         {% endif %}
         {% for attribute in attributes %}

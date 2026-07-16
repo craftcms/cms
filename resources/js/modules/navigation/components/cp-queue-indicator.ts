@@ -109,7 +109,7 @@ class CpQueueIndicator extends LitElement {
       return null;
     }
 
-    return window.Craft.getCpUrl('utilities/queue-manager');
+    return Craft.getCpUrl('utilities/queue-manager');
   }
 
   protected override render() {

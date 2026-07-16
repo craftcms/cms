@@ -124,44 +124,43 @@ readonly class ElementRelations
             return;
         }
 
-        DB::beginTransaction();
-
-        foreach ($updateCommands as $command) {
-            DB::table(Table::RELATIONS)
-                ->where('id', Arr::pull($command, 'id'))
-                ->update($command);
-        }
-
-        // Add the new ones
-        if (! empty($relationData)) {
-            $now = now();
-            $values = [];
-            foreach ($relationData as $fieldId => $targetIds) {
-                foreach ($targetIds as $targetId => $sortOrder) {
-                    $values[] = [
-                        'fieldId' => $fieldId,
-                        'sourceId' => $element->id,
-                        'sourceSiteId' => $sourceSiteIds[$fieldId],
-                        'targetId' => $targetId,
-                        'sortOrder' => $sortOrder,
-                        'dateCreated' => $now,
-                        'dateUpdated' => $now,
-                        'uid' => Str::uuid(),
-                    ];
-                }
+        DB::transaction(function () use ($updateCommands, $relationData, $deleteIds, $element, $sourceSiteIds): void {
+            foreach ($updateCommands as $command) {
+                DB::table(Table::RELATIONS)
+                    ->where('id', Arr::pull($command, 'id'))
+                    ->update($command);
             }
 
-            DB::table(Table::RELATIONS)
-                ->insert($values);
-        }
+            // Add the new ones
+            if (! empty($relationData)) {
+                $now = now();
+                $values = [];
+                foreach ($relationData as $fieldId => $targetIds) {
+                    foreach ($targetIds as $targetId => $sortOrder) {
+                        $values[] = [
+                            'fieldId' => $fieldId,
+                            'sourceId' => $element->id,
+                            'sourceSiteId' => $sourceSiteIds[$fieldId],
+                            'targetId' => $targetId,
+                            'sortOrder' => $sortOrder,
+                            'dateCreated' => $now,
+                            'dateUpdated' => $now,
+                            'uid' => Str::uuid(),
+                        ];
+                    }
+                }
 
-        if (! empty($deleteIds)) {
-            DB::table(Table::RELATIONS)
-                ->whereIn('id', $deleteIds)
-                ->delete();
-        }
+                DB::table(Table::RELATIONS)
+                    ->insert($values);
+            }
 
-        DB::commit();
+            if (! empty($deleteIds)) {
+                DB::table(Table::RELATIONS)
+                    ->whereIn('id', $deleteIds)
+                    ->delete();
+            }
+        });
+
     }
 
     /**

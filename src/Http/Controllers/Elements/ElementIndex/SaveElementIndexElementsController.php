@@ -20,17 +20,20 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
-readonly class SaveElementIndexElementsController
+class SaveElementIndexElementsController
 {
+    private ElementIndexRequest $request;
+
     use RespondsWithFlash;
 
     public function __construct(
-        private ElementIndexRequest $request,
         private Elements $elements,
     ) {}
 
-    public function __invoke(): Response
+    public function __invoke(ElementIndexRequest $request): Response
     {
+        $this->request = $request;
+
         $elementType = $this->request->elementType();
 
         $this->request->validate([

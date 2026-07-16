@@ -35,8 +35,6 @@ abstract class Job implements DescribableJob, ShouldQueue
         $this->queue = Cms::config()->queueName;
     }
 
-    abstract public function handle(): void;
-
     public function getDescription(): string
     {
         return $this->description ?? $this->defaultDescription();

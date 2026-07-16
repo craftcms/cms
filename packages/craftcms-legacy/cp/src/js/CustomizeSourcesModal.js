@@ -42,6 +42,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   sourceDrag: null,
   sources: null,
   selectedSource: null,
+  destroying: false,
 
   elementTypeName: null,
   baseSortOptions: null,
@@ -643,6 +644,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   destroy: function () {
+    this.destroying = true;
+
     const sources = [...this.sources];
     for (const source of sources) {
       source.destroy();
@@ -1383,15 +1386,17 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     if (this.isSelected()) {
       this.deselect();
 
-      let $closestItem = this.$item.prev('.cs-item');
-      if (!$closestItem.length) {
-        $closestItem = this.$item.next('.cs-item');
-      }
-      if ($closestItem.length) {
-        $closestItem.data('source').select();
-      }
+      if (!this.modal.destroying) {
+        let $closestItem = this.$item.prev('.cs-item');
+        if (!$closestItem.length) {
+          $closestItem = this.$item.next('.cs-item');
+        }
+        if ($closestItem.length) {
+          $closestItem.data('source').select();
+        }
 
-      Garnish.setFocusWithin(this.modal.$sourceSettingsContainer);
+        Garnish.setFocusWithin(this.modal.$sourceSettingsContainer);
+      }
     }
 
     this.$item.data('source', null);

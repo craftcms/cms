@@ -5,15 +5,15 @@
   const craftData = useCraftData();
   const system = computed(() => craftData.system);
   const site = computed(() => craftData.site);
-  const tag = computed(() => (site.value.url ? 'a' : 'div'));
+  const tag = computed(() => (site.value?.url ? 'a' : 'div'));
 </script>
 
 <template>
   <component
     :is="tag"
     class="system-info"
-    :href="site.url"
-    :target="site.url ? '_blank' : null"
+    :href="site?.url"
+    :target="site?.url ? '_blank' : null"
   >
     <div class="system-info__icon">
       <span v-html="system.icon"></span>

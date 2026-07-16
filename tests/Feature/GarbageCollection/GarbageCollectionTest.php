@@ -14,12 +14,14 @@ use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\GarbageCollectionAction;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\GarbageCollection\Jobs\RunGarbageCollection;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\Models\JobProgress;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Lottery;
 use Symfony\Component\Console\Output\NullOutput;
 
@@ -43,6 +45,17 @@ it('runs on a lottery', function () {
     $garbageCollection->run();
 
     expect($runActionsCalls)->toBe(1);
+});
+
+it('queues garbage collection on a lottery', function () {
+    Queue::fake();
+    Lottery::fix([false, true]);
+
+    $garbageCollection = app(GarbageCollection::class);
+    $garbageCollection->queue();
+    $garbageCollection->queue();
+
+    Queue::assertPushed(RunGarbageCollection::class, 1);
 });
 
 it('uses every action at least once', function () {

@@ -16,7 +16,7 @@ import './modules/editable-table/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
-window.Cp = Cp;
+window.Cp = Cp as unknown as typeof window.Cp;
 
 mountElevatedSessionHost();
 

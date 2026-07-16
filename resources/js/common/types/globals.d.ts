@@ -111,11 +111,25 @@ interface CraftStatic {
   getUrl(path: string, params?: string | object, baseUrl?: string): string;
   baseCpUrl: string;
   getCpUrl(path: string, params?: string | object): string;
+  defaultIndexCriteria: Record<string, any>;
+  siteId?: number;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;
     totalJobs?: number;
     trigger?: (event: string, data?: unknown) => void;
+    $notificationContainer?: {length: number};
+    copyElements?: (
+      elementInfo: Array<{
+        type: string;
+        id: string | number;
+        siteId?: number | null;
+        draftId?: number | null;
+        revisionId?: number | null;
+        fieldId?: number | null;
+        ownerId?: number | null;
+      }>
+    ) => void;
     displayNotification: (
       type: any,
       message?: string,
@@ -126,6 +140,7 @@ interface CraftStatic {
       settings?: CpNotificationSettings
     ) => object;
   };
+  defaultIndexCriteria: Record<string, any>;
   systemUid?: string;
   canAccessQueueManager?: boolean;
   queue?: {
@@ -147,6 +162,10 @@ interface CraftStatic {
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
   };
+  CustomizeSourcesModal: new (
+    elementIndex: unknown,
+    settings?: object
+  ) => {destroy(): void};
   FieldLayoutDesigner: {
     new (container: any, settings?: object): FieldLayoutDesignerInstance;
   };

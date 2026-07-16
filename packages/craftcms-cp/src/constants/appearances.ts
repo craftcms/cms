@@ -8,5 +8,5 @@ export const Appearance = {
 
 export const appearances = Object.values(Appearance);
 
-export type AppearanceKey = (typeof Appearance)[keyof typeof Appearance];
-export type AppearanceValue = typeof appearances;
+export type AppearanceKey = keyof typeof Appearance;
+export type AppearanceValue = (typeof Appearance)[keyof typeof Appearance];
