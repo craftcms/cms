@@ -760,7 +760,7 @@ class Sections
                         description: I18N::prep('Applying new propagation method to {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                    ));
+                    ))->afterCommit();
                 } elseif ($this->autoResaveEntries) {
                     dispatch(new ResaveElements(
                         elementType: Entry::class,
@@ -778,7 +778,7 @@ class Sections
                         description: I18N::prep('Resaving {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                    ));
+                    ))->afterCommit();
                 }
             }
 

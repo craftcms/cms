@@ -46,7 +46,7 @@ if (Edition::get()->registersFrontendUserRoutes()) {
         }
 
         foreach ($routes->localizedConfigPaths('getLogoutPath') as $path) {
-            Route::get($path, [LoginController::class, 'logout'])->middleware('auth');
+            Route::any($path, [LoginController::class, 'logout'])->middleware('auth');
         }
     }
 }

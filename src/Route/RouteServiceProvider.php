@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -121,6 +122,11 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for(
             LoginRateLimiter::NAME,
             fn (Request $request) => app(LoginRateLimiter::class)->limit($request),
+        );
+
+        RateLimiter::for(
+            TwoFactorRateLimiter::NAME,
+            fn (Request $request) => app(TwoFactorRateLimiter::class)->limit($request),
         );
     }
 

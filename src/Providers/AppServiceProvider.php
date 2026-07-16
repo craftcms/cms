@@ -110,8 +110,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
-                // Possibly run garbage collection
-                app(GarbageCollection::class)->run();
+                app(GarbageCollection::class)->queue();
             }
         });
 

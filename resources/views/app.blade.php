@@ -18,7 +18,7 @@
         <x-inertia::app />
         {!! $bodyHtml !!}
         <script>
-          let CpConfig = {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!};
+          let CpConfig = {{ Illuminate\Support\Js::from(\CraftCms\Cms\Cp\Cp::config()) }};
         </script>
         <script
             src="data:text/javascript;base64,{{ base64_encode('console.log(Cp); window.Cp.config(CpConfig); window.Cp.start()') }}"
