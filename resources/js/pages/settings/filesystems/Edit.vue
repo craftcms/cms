@@ -14,7 +14,6 @@
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import VarDump from '@/common/components/VarDump.vue';
 
   const props =
     defineProps<CraftCms.Cms.Http.ViewModels.FilesystemsEditViewModel>();
@@ -105,7 +104,6 @@
 
       <hr />
 
-      <VarDump :data="filesystem" />
       <template v-if="fsOptions.length">
         <Select
           id="type"
