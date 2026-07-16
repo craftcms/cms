@@ -63,7 +63,7 @@ class ContentIndexViewModel extends ViewModel
 
     public function status(): string
     {
-        return $this->request->input('status', '');
+        return $this->request->input('status', '') ?? '';
     }
 
     public function search(): ?string
