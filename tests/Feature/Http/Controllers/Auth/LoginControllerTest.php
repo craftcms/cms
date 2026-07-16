@@ -193,16 +193,16 @@ test('attemptLogin fails for user without password', function () {
     expect(Auth::check())->toBeFalse();
 });
 
-test('logout logs the user out and redirects', function () {
+test('logout logs the user out and redirects', function (string $method) {
     actingAs(User::findOne());
 
     expect(Auth::check())->toBeTrue();
 
-    post(action([LoginController::class, 'logout']))
+    $this->$method(action([LoginController::class, 'logout']))
         ->assertRedirect();
 
     expect(Auth::check())->toBeFalse();
-});
+})->with(['get', 'post']);
 
 test('logout redirects to the post-logout redirect, not back to the previous page', function () {
     Cms::config()->postLogoutRedirect = '';
@@ -225,18 +225,6 @@ test('logout honors a configured post-logout redirect', function () {
     $this->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect('https://localhost/goodbye');
 });
-
-test('logout does not log the user out for a GET request', function (Closure $url) {
-    actingAs(User::findOne());
-
-    get($url())
-        ->assertNotFound();
-
-    expect(Auth::check())->toBeTrue();
-})->with([
-    'control panel' => fn (): string => cp_url(CpAuthPath::Logout->value),
-    'site' => fn (): string => '/'.Cms::config()->getLogoutPath(),
-]);
 
 test('showLoginModal requires email parameter', function () {
     postJson(action([LoginController::class, 'showLoginModal']), [])
