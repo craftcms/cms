@@ -25,7 +25,11 @@ export function useElementIndexLoading() {
     offHandlers.push(
       router.on('start', (event) => {
         const {visit} = event.detail;
-        if (visit.method === 'get' && visit.url.pathname === indexPath) {
+        if (
+          !visit.prefetch &&
+          visit.method === 'get' &&
+          visit.url.pathname === indexPath
+        ) {
           loading.value = true;
         }
       })
