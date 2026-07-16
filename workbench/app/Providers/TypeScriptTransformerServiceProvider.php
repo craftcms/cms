@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
+use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
@@ -44,6 +45,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ImageTransform::class,
                     EntryType::class,
                     EntryTypeIndexData::class,
+                    FilesystemsEditViewModel::class,
                     NavItem::class,
                     Permission::class,
                     PermissionGroup::class,

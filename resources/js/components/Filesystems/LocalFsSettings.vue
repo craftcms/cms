@@ -11,12 +11,16 @@
 
   const page = usePage<{
     basePathSuggestions: Array<any>;
+    filesystem: Pick<
+      CraftCms.Cms.Http.ViewModels.FilesystemsEditViewModel,
+      'filesystem'
+    > & {path: string | null};
     errors: Record<string, string>;
   }>();
 
   const fsTypeSettings = inject<Ref<Record<string, any>>>('fsTypeSettings');
   const path = computed({
-    get: () => fsTypeSettings?.value.path ?? '',
+    get: () => page.props.filesystem.path ?? '',
     set: (v) => {
       if (fsTypeSettings) {
         fsTypeSettings.value.path = v;

@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {serializeFormInputsAsObject, t, toHandle} from '@craftcms/cp';
-  import type {SelectOption} from '@/common/types';
   import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
@@ -9,25 +8,16 @@
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave.js';
   import {store} from '@actions/Settings/FilesystemsController';
-  import {computed, provide, ref} from 'vue';
+  import {provide, ref} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import VarDump from '@/common/components/VarDump.vue';
 
-  // @TODO make actual type
-  type Filesystem = any;
-
-  const props = defineProps<{
-    oldHandle: string | null;
-    filesystem: Filesystem;
-    fsOptions: Array<SelectOption>;
-    fsInstances: Record<string, Filesystem>;
-    fsTypes: Array<string>;
-    readOnly: boolean;
-    baseUrlSuggestions?: Array<any>;
-  }>();
+  const props =
+    defineProps<CraftCms.Cms.Http.ViewModels.FilesystemsEditViewModel>();
 
   const form = useForm({
     name: props.filesystem.name ?? '',
@@ -40,7 +30,6 @@
   });
 
   const settingsHost = ref<HTMLElement | null>(null);
-  const filesystem = computed(() => props.fsInstances[form.type]);
 
   useInputGenerator(
     () => form.name,
@@ -56,11 +45,7 @@
    * @TODO I need to make sure this works with plugins, or make it work with
    * plugins.
    */
-  const fsTypeSettings = ref<{
-    path?: string | null;
-  }>({
-    path: props.filesystem.path ?? null,
-  });
+  const fsTypeSettings = ref<Record<string, any>>({});
 
   provide('fsTypeSettings', fsTypeSettings);
 
@@ -71,13 +56,14 @@
       transform: (data) => {
         const typeSettings = settingsHost.value
           ? serializeFormInputsAsObject(settingsHost.value)
-          : '';
+          : {};
 
         return {
           ...data,
           settings: {
             ...data.settings,
             ...typeSettings,
+            ...fsTypeSettings.value,
           },
         };
       },
@@ -119,6 +105,7 @@
 
       <hr />
 
+      <VarDump :data="filesystem" />
       <template v-if="fsOptions.length">
         <Select
           id="type"
@@ -156,20 +143,17 @@
       </template>
 
       <div ref="settingsHost">
-        <template v-for="fsType in fsTypes" :key="fsType">
-          <craft-field-group v-show="form.type === fsType">
+        <template v-for="(instance, fsType) in fsInstances" :key="fsType">
+          <craft-field-group v-if="form.type === fsType">
             <!-- Legacy (Twig) settings render as an isolated HTML island; component
                  settings are compiled as part of the page. Each pane must render
                  its own type's settings — rendering the selected filesystem's here
                  would inject the same island (and its element ids) once per pane. -->
             <HtmlFragmentRenderer
-              v-if="fsInstances[fsType].settingsFragment"
-              :fragment="fsInstances[fsType].settingsFragment"
+              v-if="instance.settingsFragment"
+              :fragment="instance.settingsFragment"
             />
-            <DynamicHtmlRenderer
-              v-else
-              :html="fsInstances[fsType].settingsHtml"
-            />
+            <DynamicHtmlRenderer v-else :html="instance.settingsHtml ?? ''" />
           </craft-field-group>
         </template>
       </div>

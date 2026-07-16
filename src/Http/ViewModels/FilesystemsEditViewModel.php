@@ -10,8 +10,24 @@ use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\HtmlFragment;
 use Illuminate\Support\Collection;
 
+/**
+ * @phpstan-type FsPayload array{
+ *     name: string|null,
+ *     handle: string|null,
+ *     hasUrls: bool,
+ *     url: string|null,
+ *     type: class-string<FsInterface>,
+ *     settingsHtml: string|null,
+ *     settingsFragment: HtmlFragment|null,
+ *     showHasUrlSetting: bool,
+ *     showUrlSetting: bool,
+ *     ...
+ * }
+ * @phpstan-type FsOption array{value: class-string<FsInterface>, label: string}
+ */
 class FilesystemsEditViewModel extends ViewModel
 {
     private readonly FsInterface $filesystem;
@@ -23,9 +39,9 @@ class FilesystemsEditViewModel extends ViewModel
         ?FsInterface $filesystem,
         private readonly Filesystems $filesystems,
         private readonly ?string $oldHandle = null,
-        private readonly bool $readOnly = false,
+        public readonly bool $readOnly = false,
     ) {
-        $this->filesystem = $filesystem ?? app()->make($this->fsTypes()->first());
+        $this->filesystem = $filesystem ?? app()->make($this->fsTypes()[0]);
     }
 
     public function oldHandle(): ?string
@@ -33,12 +49,13 @@ class FilesystemsEditViewModel extends ViewModel
         return $this->oldHandle;
     }
 
+    /** @return FsPayload */
     public function filesystem(): array
     {
         return $this->fsPayload($this->filesystem);
     }
 
-    /** @return array<int, array{value: class-string<FsInterface>, label: string}> */
+    /** @return array<int, FsOption> */
     public function fsOptions(): array
     {
         $options = $this->instances()
@@ -52,7 +69,7 @@ class FilesystemsEditViewModel extends ViewModel
         return array_values(Arr::sort($options, 'label'));
     }
 
-    /** @return array<class-string<FsInterface>, array> */
+    /** @return array<class-string<FsInterface>, FsPayload> */
     public function fsInstances(): array
     {
         return $this->instances()
@@ -60,10 +77,12 @@ class FilesystemsEditViewModel extends ViewModel
             ->all();
     }
 
-    /** @return Collection<int, class-string<FsInterface>> */
-    public function fsTypes(): Collection
+    /**
+     * @return array<int, class-string<FsInterface>>
+     */
+    public function fsTypes(): array
     {
-        return $this->filesystems->getAllFilesystemTypes();
+        return $this->filesystems->getAllFilesystemTypes()->values()->all();
     }
 
     // @TODO this should probably be its own item on SelectOptions
@@ -85,11 +104,12 @@ class FilesystemsEditViewModel extends ViewModel
      */
     private function instances(): Collection
     {
-        return $this->instances ??= $this->fsTypes()->mapWithKeys(fn (string $type): array => [
+        return $this->instances ??= collect($this->fsTypes())->mapWithKeys(fn (string $type): array => [
             $type => $type === $this->filesystem::class ? $this->filesystem : app()->make($type),
         ]);
     }
 
+    /** @return FsPayload */
     private function fsPayload(FsInterface $filesystem): array
     {
         $settingsHtml = fn (): string => (string) ($this->readOnly
