@@ -1271,7 +1271,7 @@ JS, [
                     'structure-id' => $s['structureId'] ?? null,
                 ],
             ])
-            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->sortBy(fn ($option) => $option['value'] === '*' ? 0 : $option['label'], SORT_NATURAL | SORT_FLAG_CASE)
             ->all();
     }
 

@@ -10,9 +10,11 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Gql\Concerns\PerformsStructureMutations;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -116,6 +118,10 @@ class Entry extends ElementMutationResolver
         $siteId = $arguments['siteId'] ?? null;
         $hardDelete = $arguments['hardDelete'] ?? false;
 
+        if ($siteId) {
+            $this->requireAllowedSite($siteId);
+        }
+
         /** @var EntryElement|null $entry */
         $entry = Elements::getElementById($entryId, EntryElement::class, $siteId);
 
@@ -218,8 +224,18 @@ class Entry extends ElementMutationResolver
         }
 
         if ($canIdentify) {
+            if (isset($arguments['siteId'])) {
+                $this->requireAllowedSite($arguments['siteId']);
+                $siteId = $arguments['siteId'];
+            } else {
+                $siteId = array_map(fn (Site $site) => $site->id, GqlHelper::getAllowedSites());
+                $primarySiteId = Sites::getPrimarySite()->id;
+                if (in_array($primarySiteId, $siteId)) {
+                    $siteId = $primarySiteId;
+                }
+            }
+
             // Prepare the element query
-            $siteId = $arguments['siteId'] ?? Sites::getPrimarySite()->id;
             /** @var EntryQuery $entryQuery */
             $entryQuery = Elements::createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
