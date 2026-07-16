@@ -48,6 +48,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Uri;
 use Override;
 
 class RouteServiceProvider extends ServiceProvider
@@ -153,18 +154,18 @@ class RouteServiceProvider extends ServiceProvider
      */
     private function bootMaintenanceModeExceptions(): void
     {
-        PreventRequestsDuringMaintenance::except([
-            action([UpdaterController::class, 'precheck']),
-            action([UpdaterController::class, 'composerInstall']),
-            action([UpdaterController::class, 'finish']),
-            action([UpdaterController::class, 'backup']),
-            action([UpdaterController::class, 'serverCheck']),
-            action([UpdaterController::class, 'migrate']),
-            action([ConfigSyncController::class, 'finish']),
-            action([PluginStoreInstallController::class, 'finish']),
-            action([PluginStoreRemoveController::class, 'finish']),
-            action(MigrateController::class),
-        ]);
+        PreventRequestsDuringMaintenance::except(collect([
+            [UpdaterController::class, 'precheck'],
+            [UpdaterController::class, 'composerInstall'],
+            [UpdaterController::class, 'finish'],
+            [UpdaterController::class, 'backup'],
+            [UpdaterController::class, 'serverCheck'],
+            [UpdaterController::class, 'migrate'],
+            [ConfigSyncController::class, 'finish'],
+            [PluginStoreInstallController::class, 'finish'],
+            [PluginStoreRemoveController::class, 'finish'],
+            MigrateController::class,
+        ])->map(fn (array|string $action) => Uri::action($action)->path())->all());
     }
 
     private function bootMiddleware(Router $router): void
