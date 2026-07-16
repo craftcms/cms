@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## 6.0.0-alpha.13  2026-07-16
+## 6.0.0-alpha.13 - 2026-07-16
 
 - Updated logout routes to require CSRF-protected POST requests. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/ff6f20717a48e7ede5fbbe47487e7bb8ef71da78))
 - Updated Control Panel configuration serialization to use `Illuminate\Support\Js::from()`. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/f844ae1cc3b02659ff68eb320ff7d2190a2a01da))
