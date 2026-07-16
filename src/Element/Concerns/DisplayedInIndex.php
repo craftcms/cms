@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Events\ElementCardAttributesResolving;
@@ -126,6 +125,52 @@ trait DisplayedInIndex
         bool $selectable,
         bool $sortable,
     ): string|Stringable {
+        $variables = static::indexData(
+            elementQuery: $elementQuery,
+            disabledElementIds: $disabledElementIds,
+            viewState: $viewState,
+            sourceKey: $sourceKey,
+            context: $context,
+            selectable: $selectable,
+            sortable: $sortable,
+        );
+
+        if (empty($variables['elements']) && ! $includeContainer) {
+            // load-more request
+            return '';
+        }
+
+        $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
+
+        return template($template, $variables);
+    }
+
+    /**
+     * Builds the data (template variables) for the element index view.
+     *
+     * This applies the index's ordering and table-attribute preparation to the
+     * given query, resolves the resulting elements, and returns the variables
+     * that {@see indexHtml()} renders — letting callers (e.g. Inertia
+     * controllers) consume the same data without rendering the template.
+     *
+     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @param  int[]|null  $disabledElementIds  The disabled element IDs
+     * @param  array  $viewState  The view state
+     * @param  string|null  $sourceKey  The source key
+     * @param  string|null  $context  The context
+     * @param  bool  $selectable  Whether the elements are selectable
+     * @param  bool  $sortable  Whether the elements are sortable
+     * @return array The template variables
+     */
+    public static function indexData(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $selectable,
+        bool $sortable,
+    ): array {
         $static = $viewState['static'] ?? false;
         $variables = [
             'viewMode' => $viewState['mode'],
@@ -214,11 +259,6 @@ trait DisplayedInIndex
 
         $elements = static::indexElements($elementQuery, $sourceKey);
 
-        if (empty($elements) && ! $includeContainer) {
-            // load-more request
-            return '';
-        }
-
         // See if there are any provisional changes we should show
         Drafts::loadProvisionalChanges($elements);
 
@@ -236,9 +276,8 @@ trait DisplayedInIndex
         }
 
         $variables['elements'] = $elements;
-        $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
 
-        return template($template, $variables);
+        return $variables;
     }
 
     /**
@@ -333,7 +372,7 @@ trait DisplayedInIndex
      * @param  string|null  $sourceKey  The source key
      * @return ElementInterface[] The elements
      */
-    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
+    public static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         return $elementQuery->all();
     }

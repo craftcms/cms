@@ -20,6 +20,7 @@ use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
+use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
@@ -62,6 +63,7 @@ class RouteServiceProvider extends ServiceProvider
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
             HandleTokenRequest::class,
+            HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {

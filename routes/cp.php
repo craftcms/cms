@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
@@ -133,13 +134,16 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
      * Entries & Content
      */
     Route::get('entries', EntriesIndexController::class);
-    Route::view('entries/{sectionHandle}', 'entries.index');
+    Route::get('entries/{sectionHandle}', EntriesIndexController::class);
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
-    Route::view('content/{page}', 'entries.index')->where('page', '[^\/]+');
-    Route::view('content/{page}/{sectionHandle}', 'entries.index')->where('page', '[^\/]+');
+    // Registered before the index route, which would otherwise match
+    // `content/{section}/new` with `new` as its section handle.
     Route::get('content/{section}/new', CreateEntryController::class);
+    Route::get('content/{page}/{sectionHandle?}', ContentIndexController::class)
+        ->name('content.index')
+        ->where('page', '[^\/]+');
 
     /**
      * Users

@@ -1613,3 +1613,7 @@ export function toUriFormat(value: string): string {
 export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+export function rand() {
+  return Math.floor(Math.random() * 1000000);
+}

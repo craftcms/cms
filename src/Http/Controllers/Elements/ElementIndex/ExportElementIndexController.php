@@ -4,27 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
-use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementExporters;
+use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
-use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use Symfony\Component\HttpFoundation\Response;
 
-readonly class ExportElementIndexController
+class ExportElementIndexController
 {
-    use InteractsWithElementIndexes;
-
     public function __construct(
-        private ElementIndexRequest $request,
-        private ElementExporters $elementExporters,
+        private readonly ElementExporters $elementExporters,
+        private readonly ElementIndexes $elementIndexes,
     ) {}
 
-    public function __invoke(): Response
+    public function __invoke(ElementIndexRequest $request): Response
     {
-        $validated = $this->request->validate([
+        $validated = $request->validate([
             'elementType' => [
                 'required',
                 'string',
@@ -36,41 +33,34 @@ readonly class ExportElementIndexController
 
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $validated['elementType'];
-        $context = $this->request->context();
+        $context = $request->context();
 
-        [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $context);
+        [$sourceKey, $source] = $this->elementIndexes->resolveSource($elementType, $request->input('source'), $context);
         abort_if(! isset($sourceKey), 400, 'Request missing required body param');
-        abort_if(! $this->request->isAdministrative(), 400, 'Request missing index context');
+        abort_if(! $request->isAdministrative(), 400, 'Request missing index context');
 
-        $exporters = $this->availableExporters($elementType, $sourceKey);
+        $exporters = $request->isMobileBrowser()
+            ? []
+            : $this->elementExporters->availableExporters($elementType, $sourceKey);
         $exporter = $this->elementExporters->resolveExporter(
             $exporters,
-            $this->request->input('type', Raw::class),
+            $request->input('type', Raw::class),
         );
 
         abort_if($exporter === null, 400, 'Element exporter is not supported by the element type');
 
         return $this->elementExporters->export(
             exporter: $exporter,
-            query: $this->buildElementQueryState(
+            query: $this->elementIndexes->buildQueryState(
                 elementType: $elementType,
                 source: $source,
-                condition: $this->request->condition()
+                condition: $request->condition(),
+                baseCriteria: $request->baseCriteria(),
+                criteria: $request->criteria(),
+                filterConditionConfig: $request->filterConditionConfig(),
+                collapsedElementIds: $request->collapsedElementIds(),
             )['query'],
-            format: $this->request->input('format', 'csv'),
+            format: $request->input('format', 'csv'),
         );
-    }
-
-    /**
-     * @param  class-string<ElementInterface>  $elementType
-     * @return ElementExporterInterface[]
-     */
-    private function availableExporters(string $elementType, string $sourceKey): array
-    {
-        if ($this->request->isMobileBrowser()) {
-            return [];
-        }
-
-        return $this->elementExporters->availableExporters($elementType, $sourceKey);
     }
 }

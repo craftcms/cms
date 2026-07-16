@@ -31,6 +31,7 @@ const availableColors = [
   'white',
   'gray',
   'black',
+  'slate',
 ];
 
 const semanticColors = {

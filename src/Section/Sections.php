@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Section;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
@@ -45,6 +44,7 @@ use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
@@ -59,6 +59,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\t;
 
 #[Scoped]
 class Sections
@@ -267,6 +268,31 @@ class Sections
         return $this->getAllSections()->filter(
             fn (Section $section) => $user->can("viewEntries:$section->uid"),
         );
+    }
+
+    /**
+     * Returns all sections the given user is able to publish.
+     *
+     * Returned as plain arrays rather than a Collection: array shapes are
+     * covariant under static analysis, so branch-narrowed member types stay
+     * assignable — Collection's TValue is invariant and rejects them.
+     *
+     * @throws AuthenticationException
+     */
+    public function getPublishableSections(): Collection
+    {
+        $currentUser = currentUser();
+
+        if (! $currentUser) {
+            return Collection::empty();
+        }
+
+        if ($this->getEditableSections()->isEmpty()) {
+            return Collection::empty();
+        }
+
+        return collect($this->getEditableSections())
+            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid"));
     }
 
     /**
