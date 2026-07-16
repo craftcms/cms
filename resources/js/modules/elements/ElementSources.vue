@@ -5,15 +5,12 @@
   import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
   import type {Source, SourceHeading} from '@/modules/elements/types/sources';
 
-  const props = withDefaults(
-    defineProps<{
-      sources: Array<Source>;
-      route: ElementIndexRoute;
-      activeSource?: string | null;
-      viewMode?: string | null;
-    }>(),
-    {activeSource: null, viewMode: null}
-  );
+  const props = defineProps<{
+    sources: Array<Source>;
+    route: ElementIndexRoute;
+    activeSource?: string | null;
+    viewMode?: string | null;
+  }>();
 
   const {site} = useCraftData();
 
@@ -62,21 +59,11 @@
   // fall back to the source the server says is active.
   const activeKey = computed(() => pendingSource.value ?? props.activeSource);
 
-  function onSourceClick(event: MouseEvent, key: string) {
-    if (event.metaKey || event.ctrlKey || event.shiftKey) {
-      return;
-    }
-
-    event.preventDefault();
-
+  function visitSource(key: string) {
     if (key === activeKey.value) {
       return;
     }
 
-    visitSource(key);
-  }
-
-  function visitSource(key: string) {
     // Reflect the selection right away, before the request goes out.
     pendingSource.value = key;
 
@@ -119,7 +106,7 @@
               :href="sourceUrl(child.key)"
               :active="child.key === activeKey"
               :data-group="source.heading"
-              @click="onSourceClick($event, child.key)"
+              @click.exact.prevent="visitSource(child.key)"
             >
               {{ child.label }}
             </craft-nav-item>
@@ -130,7 +117,7 @@
         <craft-nav-item
           :href="sourceUrl(source.key)"
           :active="source.key === activeKey"
-          @click="onSourceClick($event, source.key)"
+          @click.exact.prevent="visitSource(source.key)"
         >
           {{ source.label }}
         </craft-nav-item>
@@ -138,5 +125,3 @@
     </template>
   </craft-nav-list>
 </template>
-
-<style scoped lang="scss"></style>
