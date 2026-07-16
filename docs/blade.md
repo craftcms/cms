@@ -118,7 +118,7 @@ Blade views receive the same Craft template globals as Twig through a Laravel vi
 - `$devMode`
 - `$isInstalled`
 - `$loginUrl`
-- `$logoutUrl`
+- `$logoutUrl` (the action URL for a CSRF-protected POST logout form)
 - `$setPasswordUrl`
 - `$now`
 - `$today`

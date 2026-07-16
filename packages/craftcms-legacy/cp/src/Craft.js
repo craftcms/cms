@@ -101,8 +101,5 @@ import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 
 // Custom elements
-import './js/CraftGlobalSidebar.js';
-import './js/CraftDisclosure.js';
-import './js/CraftTooltip.js';
 import './js/CraftElementLabel';
 import './js/CraftProxyScrollbar';

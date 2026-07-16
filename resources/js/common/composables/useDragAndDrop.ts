@@ -154,6 +154,15 @@ export function useDragAndDrop(
         },
         onDrop() {
           setDragState(id, idleDragState);
+
+          // Native HTML drag swallows the trailing pointerup on the source, so
+          // an interactive drag handle (e.g. a button) can stay stuck in
+          // :active/:hover. Briefly disabling pointer events forces the browser
+          // to drop those states.
+          dragElement.style.pointerEvents = 'none';
+          requestAnimationFrame(() => {
+            dragElement.style.pointerEvents = '';
+          });
         },
       }),
       dropTargetForElements({

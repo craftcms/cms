@@ -11,12 +11,17 @@ import {
 import type {AccessorParam} from '@/modules/admin-table/composables/useEditableTable';
 import CpLink from '@/common/components/CpLink.vue';
 import Date from '@/common/components/Date.vue';
+import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
-type LinkColumnDef<T extends Record<string, any>> = DisplayColumnDef<T> & {
+type LinkColumnDef<T extends Record<string, any>> = AccessorColumnDef<T> & {
   props: (cellContext: CellContext<T, any>) => Record<string, any>;
 };
 
-type DateColumnDef<T extends Record<string, any>> = DisplayColumnDef<T> & {
+type HtmlColumnDef<T extends Record<string, any>> = AccessorColumnDef<T> & {
+  props: (cellContext: CellContext<T, any>) => Record<string, any>;
+};
+
+type DateColumnDef<T extends Record<string, any>> = AccessorColumnDef<T> & {
   format?: string;
 };
 
@@ -24,7 +29,11 @@ export type CraftColumnHelper<T extends Record<string, any>> =
   ColumnHelper<T> & {
     handle: (
       accessor: AccessorParam<T>,
-      config?: Partial<DisplayColumnDef<T>>
+      config?: Partial<AccessorColumnDef<T>>
+    ) => AccessorColumnDef<T, any>;
+    html: (
+      accessor: AccessorParam<T>,
+      config?: Partial<HtmlColumnDef<T>>
     ) => AccessorColumnDef<T, any>;
     link: (
       accessor: AccessorParam<T>,
@@ -121,6 +130,19 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
             String(getValue())
           ),
         ...config,
+      } as any);
+    },
+
+    html(accessor, config = {}) {
+      const {props = () => ({}), ...rest} = config;
+
+      return baseHelper.accessor(accessor, {
+        cell: (cellContext: CellContext<T, any>) =>
+          h(DynamicHtmlRenderer, {
+            html: cellContext.getValue(),
+            ...props(cellContext),
+          }),
+        ...rest,
       } as any);
     },
   };

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
@@ -125,14 +126,15 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::get('app/health-check', HealthCheckController::class);
 
         // Auth
-        Route::middleware(EnsureTwoFactorChallengeIsRecent::class)->group(function () {
+        Route::middleware([EnsureTwoFactorChallengeIsRecent::class, 'throttle:'.TwoFactorRateLimiter::NAME])->group(function () {
             Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
             Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
         });
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
         Route::post('users/login', [LoginController::class, 'attemptLogin'])
             ->middleware('throttle:'.LoginRateLimiter::NAME);
-        Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
+        Route::post('users/login-with-passkey', [PasskeyController::class, 'login'])
+            ->middleware('throttle:'.LoginRateLimiter::NAME);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);
         Route::post('users/set-password', [SetPasswordController::class, 'store']);

@@ -2,66 +2,45 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
+namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
-use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
-use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\Resources\ElementIndexResource;
+use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
-use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\ElementSources as ElementSourcesFacade;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Container\Attributes\Scoped;
 
 use function CraftCms\Cms\t;
 
-trait InteractsWithElementIndexes
+/**
+ * The element index kernel: source resolution and element-query-state building
+ * shared by every index surface — the Inertia screen's
+ * {@see ContentIndexViewModel}, the legacy
+ * XHR endpoints, and {@see ElementIndexResource}.
+ * Page-payload assembly lives in the view model; legacy HTML formatting in the
+ * resource.
+ */
+#[Scoped]
+class ElementIndexes
 {
-    protected function resolveElementIndexCondition(): ?ElementConditionInterface
-    {
-        /** @var array|null $conditionConfig */
-        /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
-        $conditionConfig = request()->input('condition');
-
-        if (! $conditionConfig) {
-            return null;
-        }
-
-        /** @var ElementConditionInterface $condition */
-        $condition = Conditions::createCondition($conditionConfig);
-
-        if ($condition instanceof ElementCondition) {
-            $referenceElementId = request()->input('referenceElementId');
-
-            if ($referenceElementId) {
-                $criteria = [];
-
-                if ($ownerId = request()->input('referenceElementOwnerId')) {
-                    $criteria['ownerId'] = $ownerId;
-                }
-
-                $condition->referenceElement = Elements::getElementById(
-                    (int) $referenceElementId,
-                    siteId: request()->input('referenceElementSiteId'),
-                    criteria: $criteria,
-                );
-            }
-        }
-
-        return $condition;
-    }
+    public function __construct(
+        private readonly ElementSources $elementSources,
+    ) {}
 
     /**
+     * Resolves a source key to its source config for the given context.
+     *
      * @param  class-string<ElementInterface>  $elementType
-     * @return array{0:?string,1:?array}
+     * @return array{0: ?string, 1: ?array}
      */
-    protected function resolveSource(string $elementType, ?string $sourceKey, string $context): array
+    public function resolveSource(string $elementType, ?string $sourceKey, string $context): array
     {
         if (! isset($sourceKey)) {
             return [$sourceKey, null];
@@ -76,7 +55,7 @@ trait InteractsWithElementIndexes
             ]];
         }
 
-        $source = ElementSourcesFacade::findSource($elementType, $sourceKey, $context);
+        $source = $this->elementSources->findSource($elementType, $sourceKey, $context);
 
         if ($source === null) {
             $sourceKey = null;
@@ -86,41 +65,21 @@ trait InteractsWithElementIndexes
     }
 
     /**
-     * @return FieldLayout[]|null
-     */
-    protected function resolveFieldLayouts(): ?array
-    {
-        $fieldLayouts = request()->input('fieldLayouts');
-
-        if (empty($fieldLayouts) || ! is_array($fieldLayouts)) {
-            return null;
-        }
-
-        return array_map(
-            FieldLayout::createFromConfig(...),
-            $fieldLayouts,
-        );
-    }
-
-    protected function resolveViewState(): array
-    {
-        $viewState = request()->input('viewState', []);
-
-        if (empty($viewState['mode'])) {
-            $viewState['mode'] = 'table';
-        }
-
-        return $viewState;
-    }
-
-    /**
+     * Builds the element query state for a source, applying the source's own
+     * condition/criteria plus any client-supplied condition, criteria, filter
+     * condition, and collapsed-element exclusions.
+     *
      * @param  class-string<ElementInterface>  $elementType
-     * @return array{query:ElementQueryInterface,unfilteredQuery:ElementQueryInterface|null}
+     * @return array{query: ElementQueryInterface, unfilteredQuery: ElementQueryInterface|null}
      */
-    protected function buildElementQueryState(
+    public function buildQueryState(
         string $elementType,
         ?array $source,
-        ?ElementConditionInterface $condition,
+        ?ElementConditionInterface $condition = null,
+        array $baseCriteria = [],
+        array $criteria = [],
+        ?array $filterConditionConfig = null,
+        array $collapsedElementIds = [],
     ): array {
         $query = $elementType::find();
 
@@ -131,12 +90,6 @@ trait InteractsWithElementIndexes
                 'query' => $query,
                 'unfilteredQuery' => null,
             ];
-        }
-
-        if ($source['type'] === ElementSources::TYPE_CUSTOM) {
-            /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = Conditions::createCondition($source['condition']);
-            $sourceCondition->modifyQuery($query);
         }
 
         $applyCriteria = function (array $criteria) use ($query): bool {
@@ -165,7 +118,15 @@ trait InteractsWithElementIndexes
             return true;
         };
 
-        $applyCriteria(request()->input('baseCriteria') ?? []);
+        if ($source['type'] === ElementSources::TYPE_CUSTOM) {
+            /** @var ElementConditionInterface $sourceCondition */
+            $sourceCondition = Conditions::createCondition($source['condition']);
+            $sourceCondition->modifyQuery($query);
+        } else {
+            $applyCriteria($source['criteria'] ?? []);
+        }
+
+        $applyCriteria($baseCriteria);
 
         $unfilteredQuery = clone $query;
         $hasFilters = false;
@@ -176,15 +137,8 @@ trait InteractsWithElementIndexes
             $hasFilters = true;
         }
 
-        if ($applyCriteria(request()->input('criteria') ?? [])) {
+        if ($applyCriteria($criteria)) {
             $hasFilters = true;
-        }
-
-        $filterConditionConfig = request()->input('filterConfig');
-
-        if (! $filterConditionConfig && $filterConditionStr = request()->input('filters')) {
-            parse_str((string) $filterConditionStr, $filterConditionConfig);
-            $filterConditionConfig = $filterConditionConfig['condition'] ?? null;
         }
 
         if ($filterConditionConfig) {
@@ -194,8 +148,6 @@ trait InteractsWithElementIndexes
 
             $hasFilters = true;
         }
-
-        $collapsedElementIds = request()->input('collapsedElementIds');
 
         if (! $collapsedElementIds) {
             return [
@@ -256,16 +208,20 @@ trait InteractsWithElementIndexes
     /**
      * @param  class-string<ElementInterface>  $elementType
      */
-    protected function availableExporters(string $elementType, string $sourceKey): ?array
+    public function availableExporters(string $elementType, string $sourceKey, bool $mobileBrowser = false): ?array
     {
-        if (request()->isMobileBrowser()) {
+        if ($mobileBrowser) {
             return null;
         }
 
         return ElementExporters::availableExporters($elementType, $sourceKey);
     }
 
-    protected function populateFilterHudQueryParams(
+    /**
+     * Scopes a filter-HUD condition's selectable rules to the query params the
+     * source and current condition already claim exclusively.
+     */
+    public function populateFilterHudQueryParams(
         ElementConditionInterface $condition,
         ?array $source,
         ?string $sourceKey,

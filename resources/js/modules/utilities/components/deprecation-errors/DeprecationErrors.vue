@@ -65,7 +65,6 @@
 
 <template>
   <AdminTable
-    spacing="relaxed"
     layout="auto"
     :table="table"
     :from="1"

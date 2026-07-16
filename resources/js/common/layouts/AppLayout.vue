@@ -250,7 +250,7 @@
             </div>
           </div>
         </slot>
-        <main id="main" tabindex="-1">
+        <main id="main" tabindex="-1" class="pb-2xl">
           <component
             :is="form ? 'form' : 'div'"
             method="post"
@@ -407,7 +407,6 @@
 
   .cp__main {
     container-type: size;
-    padding-block-end: var(--c-spacing-2xl);
   }
 
   .cp__header {
@@ -449,6 +448,10 @@
           clamp(12rem, 20%, 16rem);
       }
     }
+  }
+
+  main {
+    padding-block-end: var(--c-spacing-xl);
   }
 
   .content-layout__main {

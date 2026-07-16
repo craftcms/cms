@@ -14,6 +14,7 @@ const meta = {
     label: 'Reorder',
     position: 'middle',
     variant: 'neutral',
+    disabled: false,
   },
   argTypes: {
     position: {
@@ -26,6 +27,7 @@ const meta = {
       label="${args.label}"
       position="${args.position}"
       variant="${args.variant}"
+      ?disabled="${args.disabled}"
       @reorder="${(e: CustomEvent<{direction: 'up' | 'down'}>) =>
         console.log('reorder', e.detail.direction)}"
     ></craft-reorder-button>
@@ -47,4 +49,8 @@ export const First: Story = {
 export const Last: Story = {
   name: 'Last (move-down disabled)',
   args: {position: 'last'},
+};
+
+export const Disabled: Story = {
+  args: {disabled: true},
 };

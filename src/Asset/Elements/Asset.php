@@ -803,7 +803,7 @@ class Asset extends Element
     }
 
     #[Override]
-    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
+    public static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         $assets = [];
         $originalLimit = $elementQuery->limit;

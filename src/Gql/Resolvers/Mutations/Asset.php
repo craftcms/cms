@@ -292,6 +292,6 @@ class Asset extends ElementMutationResolver
                     throw new UserError("$url is invalid.");
                 }
             },
-        ]);
+        ])->get($url)->throw();
     }
 }

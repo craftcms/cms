@@ -2,11 +2,7 @@
   import {t} from '@craftcms/cp';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import {
-    type PaginationData,
-    type SortItem,
-    TableSpacing,
-  } from '@/common/types';
+  import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {router} from '@inertiajs/vue3';
@@ -162,7 +158,6 @@
 
   <Pane :padding="0" appearance="raised">
     <AdminTable
-      :spacing="TableSpacing.Relaxed"
       :table="table"
       :reorderable="false"
       :from="pagination.from"

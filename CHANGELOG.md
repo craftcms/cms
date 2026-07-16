@@ -1,11 +1,42 @@
 # Release Notes for Craft CMS 6
 
+## 6.0.0-alpha.13 - 2026-07-16
+
+- Updated logout routes to require CSRF-protected POST requests. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/ff6f20717a48e7ede5fbbe47487e7bb8ef71da78))
+- Updated Control Panel configuration serialization to use `Illuminate\Support\Js::from()`. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/f844ae1cc3b02659ff68eb320ff7d2190a2a01da))
+- Updated the project testing guidelines to emphasize behavior-focused tests. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/63b452d4b82d066566ad653ea39f6c1ad949eaa3))
+- Updated queue connection retry windows to exceed Craft’s maximum job timeout. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/21bff956e964679a3f9951545bdf059473e0e5e8))
+- Updated core queue jobs to resolve their dependencies through Laravel’s service container. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/dced32fc03120f27bc82ca61a9d960b95786ee03))
+- Updated automatic garbage collection to run as a unique queue job. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/a35f815f3d9096311fc891b33c31427af865d902))
+- Updated two-factor authentication recovery codes to be encrypted at rest. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/fb560d68a1d4f3a4e02b360c5bcacde27780fa05))
+- Improved field reference cleanup performance. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/303054c48d45f33d43c6781664729fd01a6130f3))
+- Improved numeric element reference resolution performance. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/08e882820aa0681e55c346f57102dfb1792e142c))
+- Improved element merge performance by avoiding per-relation and per-structure queries. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/202c2f6782ac59d15cf8cbda32ab4304807b0407))
+- Improved search indexing memory use when indexing many elements. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/117c2c5f222eec8acb2371937928a364a52c0fb0))
+- Improved asset indexing performance when finding missing and empty folders. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/fe4974ab449f2e0402b333cf77282d04f4ee5558))
+- Prevented duplicate image transform jobs from being queued for the same transform. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/059ccbed6ccd41c12dea1a5eb806f281e5878290))
+- Removed duplicate Control Panel icon alias registrations. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/e8acf264f2bad6fd4c7c0f3de742ad85f89cdbbb))
+- Fixed a bug where GraphQL asset mutations weren’t executing HTTP requests for remote asset URLs. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/35e54924d7404ce21a591ece04a970afc5a3ae80))
+- Fixed a bug where failed relation writes could leave partial relation changes persisted. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/4f466d0730e266ea347a069807be6bc7a61e3afc))
+- Fixed a bug where element merge replacement jobs could be dispatched before their database transaction was committed. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/a50f8cb6fe6f037d7fc95a3b7305fb09a57759ff))
+- Fixed a bug where section project-config jobs could be dispatched before their database transaction was committed. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/3b54bc28253cade054a10a879252a8d102571a33))
+- Fixed a bug where passkey login attempts weren’t rate limited. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/e6f7deca8eaba4c056b27358bb9b0b89b96e0cc5))
+- Fixed a bug where relation localization could not be retried safely after a failed run. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/915b8196d920cc1d27d352e1fe773a921a258e46))
+- Fixed a bug where project config mutex cleanup could release a lock owned by another process. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/845e2795c5158dfe1249d7543331e2a163e9dc3f))
+- Fixed a bug where nested structure operations could release their mutex lock before the outer operation completed. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/9f5157ae9745a4677117cdfeb0051a82b8af916b))
+- Fixed a bug where two-factor authentication verification attempts weren’t rate limited. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/f4f11c8ef465fa981ee32d2c1ed84ea8b8e8d13e))
+- Fixed a bug where user photo uploads could exceed the configured maximum upload size. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/fc3fa25f5e7c9108b9e465b1d93ea5d116cf3e08))
+- Fixed a bug where unsafe filenames could be used for Craft support attachments. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/2872b891eca9d243901e186b6bba76150fc0d16e))
+- Fixed a bug where a failed legacy field type migration could leave project config events muted. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/0b22858254f9d6ef54e1f4aaca4de055a1c7f388))
+- Fixed a bug where TemplateGlobals were being resolved every time a Blade component rendered. ([#19257](https://github.com/craftcms/cms/pull/19257))
+- Fixed a bug where Craft updates could fail with a 503 response when the action URL contained query parameters.
+
 ## 6.0.0-alpha.12 - 2026-07-15
 
+- Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
+- Login attempts are now rate limited.
 - Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
 - Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
-- Login attempts are now rate limited.
-- Added `Illuminate\Contracts\Translation\HasLocalePreference` support to user elements, allowing Laravel notifications to use users’ Language preferences. ([#19228](https://github.com/craftcms/cms/pull/19228))
 - Fixed a bug where site routes weren't being registered for each localized site value.
 - Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
 - Fixed a bug where users were redirected to the previous page on logout. ([#19220](https://github.com/craftcms/cms/pull/19220))

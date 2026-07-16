@@ -1,28 +1,61 @@
-import {css, html, LitElement, type PropertyValues} from 'lit';
+import {html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
-import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
+import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
+import styles from './popover.styles.js';
 
 /**
- * craft-popover shows rich interactive content anchored to an external
- * trigger element. The trigger is referenced by id (`for`) or passed directly
- * (`anchor`); clicking it toggles the popover, and clicking outside or
- * pressing Escape dismisses it.
+ * A non-modal popover component built on Lion's overlay system.
+ *
+ * Overlays content on top of the page without affecting document flow.
+ * The trigger can be a slotted `invoker` child, an external element
+ * referenced by id (`for`), or passed directly (`anchor`). Clicking it
+ * toggles the popover; Escape and outside clicks dismiss it.
  *
  * Emits `craft-show`/`craft-after-show`/`craft-hide`/`craft-after-hide`.
+ *
+ * @slot invoker - The element that triggers the popover (e.g. a button).
+ * @slot content - The popup content shown when opened. Default-slot children
+ *   are wrapped into a generated `slot="content"` element on connect.
+ *
+ * @example
+ * ```html
+ * <craft-popover>
+ *   <button slot="invoker">Open</button>
+ *   <div slot="content">Popover content here</div>
+ * </craft-popover>
+ * ```
  */
 export default class CraftPopover extends OverlayMixin(LitElement) {
+  static override styles = [styles];
+
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
 
   /** Explicit anchor element; takes precedence over `for`. */
   @property({attribute: false}) anchor?: HTMLElement;
 
-  /** Popper placement, e.g. `bottom-start`. */
-  @property({reflect: true}) placement = 'bottom';
+  /** Popper.js placement for the overlay content. */
+  @property({reflect: true}) placement:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end' = 'bottom-start';
 
   /** Distance in pixels between the popover and its anchor. */
-  @property({type: Number}) distance = 8;
+  @property({type: Number}) distance = 4;
+
+  /** Whether the overlay should match the invoker's width. */
+  @property({attribute: 'match-invoker-width', type: Boolean})
+  matchInvokerWidth = false;
 
   /** Accepted for API compatibility; craft-popover never renders an arrow. */
   @property({type: Boolean, attribute: 'without-arrow'}) withoutArrow = false;
@@ -34,60 +67,50 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     wireOverlayLifecycleEvents(this);
   }
 
-  static override get styles() {
-    return [
-      css`
-        :host {
-          display: inline-block;
-        }
-
-        :host([hidden]) {
-          display: none;
-        }
-
-        ::slotted([slot='content']) {
-          background-color: var(--c-surface-raised);
-          border: 1px solid var(--c-color-neutral-border-quiet);
-          border-radius: var(--c-radius-lg);
-          box-shadow: var(--c-shadow-md);
-          padding: var(--c-spacing-md);
-        }
-      `,
-    ];
-  }
-
-  override render() {
-    return html`
-      <slot name="invoker"></slot>
-      <div id="overlay-content-node-wrapper">
-        <slot name="content"></slot>
-      </div>
-    `;
-  }
-
-  override connectedCallback() {
-    this.#ensureContentWrapper();
-    super.connectedCallback();
+  // @ts-expect-error – Lion expects this to return an OverlayConfig
+  _defineOverlayConfig() {
+    return {
+      ...withDropdownConfig(),
+      inheritsReferenceWidth: this.matchInvokerWidth ? 'min' : 'none',
+      popperConfig: {
+        // Position relative to the viewport so the overlay escapes any
+        // overflow-clipping / scrolling ancestor (e.g. a popover whose pane has
+        // `overflow: auto`). Without this, a popover nested inside another
+        // popover's scroll container gets clipped.
+        strategy: 'fixed',
+        placement: this.placement,
+        modifiers: [
+          {
+            name: 'offset',
+            options: {
+              offset: [0, this.distance],
+            },
+          },
+          {
+            // Position with top/left instead of `transform`. A transformed
+            // ancestor becomes the containing block for descendant
+            // `position: fixed` overlays, which would re-trap a nested popover
+            // inside this one's clipping pane. Using top/left keeps the viewport
+            // as the containing block so nested overlays escape.
+            name: 'computeStyles',
+            options: {
+              gpuAcceleration: false,
+            },
+          },
+        ],
+      },
+    };
   }
 
   /**
-   * Lion expects popover content as a light-DOM child with `slot="content"`.
-   * Consumers put their content in the default slot, so wrap it on connect.
+   * The popover content lives in the shadow DOM so the component can provide
+   * the scrollable `.content` wrapper (with body/footer slots). Lion's default
+   * getter only looks for a light-DOM `[slot="content"]` child, so we point it
+   * at the shadow node instead. Lion positions `#overlay-content-node-wrapper`
+   * around it, mirroring how LionSelectRich handles shadow-DOM content.
    */
-  #ensureContentWrapper() {
-    if (this.#contentWrapper?.isConnected) {
-      return;
-    }
-
-    const wrapper = document.createElement('div');
-    wrapper.slot = 'content';
-    wrapper.append(
-      ...Array.from(this.childNodes).filter(
-        (node) => !(node instanceof Element) || node.slot === ''
-      )
-    );
-    this.append(wrapper);
-    this.#contentWrapper = wrapper;
+  protected override get _overlayContentNode(): HTMLElement {
+    return this.shadowRoot?.querySelector('.popover-pane') as HTMLElement;
   }
 
   // Resolve the invoker: explicit anchor first, then `for`, then a slotted
@@ -109,18 +132,54 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     return super._overlayInvokerNode;
   }
 
-  // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
-  _defineOverlayConfig() {
-    return {
-      ...withDropdownConfig(),
-      // Popover width follows its content, not the trigger.
-      inheritsReferenceWidth: 'none',
-      popperConfig: {
-        strategy: 'absolute',
-        placement: this.placement,
-        modifiers: [{name: 'offset', options: {offset: [0, this.distance]}}],
-      },
-    };
+  protected override render(): unknown {
+    return html`
+      <slot name="invoker"></slot>
+      <slot name="backdrop"></slot>
+      <div id="overlay-content-node-wrapper">
+        <div class="popover-pane">
+          <slot name="content">
+            <slot name="content-body"></slot>
+            <slot name="content-footer"></slot>
+          </slot>
+        </div>
+      </div>
+    `;
+  }
+
+  override connectedCallback() {
+    this.#ensureContentWrapper();
+    super.connectedCallback();
+  }
+
+  /**
+   * Lion expects popover content as a light-DOM child with `slot="content"`.
+   * Consumers may put their content in the default slot, so wrap it on
+   * connect. Whitespace-only default content is left alone — a generated
+   * (empty) `slot="content"` element would otherwise suppress the shadow
+   * slot's `content-body`/`content-footer` fallback.
+   */
+  #ensureContentWrapper() {
+    if (this.#contentWrapper?.isConnected) {
+      return;
+    }
+
+    const defaultSlotNodes = Array.from(this.childNodes).filter((node) => {
+      if (node instanceof Element) {
+        return node.slot === '';
+      }
+      return (node.textContent ?? '').trim() !== '';
+    });
+
+    if (!defaultSlotNodes.length) {
+      return;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.slot = 'content';
+    wrapper.append(...defaultSlotNodes);
+    this.append(wrapper);
+    this.#contentWrapper = wrapper;
   }
 
   protected override updated(changed: PropertyValues) {
