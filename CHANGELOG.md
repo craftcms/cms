@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Improved Blade component rendering performance. ([#19257](https://github.com/craftcms/cms/pull/19257))
+
 ## 6.0.0-alpha.12 - 2026-07-15
 
 - Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
