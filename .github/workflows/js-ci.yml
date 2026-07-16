@@ -86,6 +86,13 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm run build:cp
 
+      # `build:cp` does not produce the Custom Elements Manifest (only the
+      # Storybook pre-hooks do), so generate it explicitly — it lands in the
+      # packages/craftcms-cp/dist cache path above for the downstream jobs.
+      - name: Build Custom Elements Manifest
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cd ./packages/craftcms-cp && npm run build:manifest
+
       - name: Generate TypeScript types
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm run generate:types

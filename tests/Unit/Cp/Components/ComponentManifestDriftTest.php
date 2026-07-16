@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\ViewComponent;
+use Symfony\Component\Process\Process;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,8 +34,12 @@ use CraftCms\Cms\Cp\Components\ViewComponent;
 | NOT coverage-checked — but the convention guard (#1) still covers them, since
 | it walks the whole manifest.
 |
-| The manifest is regenerated with:  cd packages/craftcms-cp && npm run build:manifest
-| (writes packages/craftcms-cp/dist/custom-elements.json — the ~245KB file).
+| The manifest (packages/craftcms-cp/dist/custom-elements.json) is auto-generated
+| by beforeAll() below. In CI an existing file is trusted, because laravel-ci.yml
+| restores it from a content-keyed actions/cache (never stale by construction);
+| everywhere else it is regenerated on every run so local edits to the web
+| components can't be drift-checked against a stale manifest. Manual regen:
+| cd packages/craftcms-cp && npm run build:manifest
 | The checked-in ROOT packages/craftcms-cp/custom-elements.json is stale; do not use it.
 */
 
@@ -310,9 +315,28 @@ function cpDriftAnalyze(): array
 }
 
 beforeAll(function () {
-    // Fail early and loudly if the manifest hasn't been generated.
-    expect(is_file(cpDriftManifestPath()))->toBeTrue(
-        'Custom Elements Manifest missing. Run: cd packages/craftcms-cp && npm run build:manifest',
+    // In CI an existing manifest was restored by a content-keyed actions/cache
+    // step (see laravel-ci.yml), so it can't be stale — trust it. Locally,
+    // regenerate unconditionally: a stale manifest silently drift-checks
+    // against an outdated attribute API.
+    if (getenv('CI') !== false && is_file(cpDriftManifestPath())) {
+        return;
+    }
+
+    // The pinned npx invocation matches the package's @custom-elements-manifest/analyzer
+    // devDependency and needs neither node_modules nor an npm install, so it
+    // also works in fresh worktrees (and as a CI cache-miss fallback).
+    $process = Process::fromShellCommandline(
+        'npx --yes @custom-elements-manifest/analyzer@0.11.0 analyze',
+        dirname(__FILE__, 5).'/packages/craftcms-cp',
+        timeout: 300,
+    );
+    $process->run();
+
+    expect($process->isSuccessful() && is_file(cpDriftManifestPath()))->toBeTrue(
+        "Failed to generate the Custom Elements Manifest:\n"
+        .trim($process->getErrorOutput()."\n".$process->getOutput())
+        ."\nGenerate it manually with:  cd packages/craftcms-cp && npm run build:manifest",
     );
 });
 
