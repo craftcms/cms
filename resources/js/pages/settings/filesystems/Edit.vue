@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t, toHandle} from '@craftcms/cp';
+  import {serializeFormInputsAsObject, t, toHandle} from '@craftcms/cp';
   import type {SelectOption} from '@/common/types';
   import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
@@ -7,11 +7,14 @@
   import Select from '@/common/form/Select.vue';
   import {useForm} from '@inertiajs/vue3';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
-  import FilesystemSettings from '@/components/Filesystems/FilesystemSettings.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave.js';
   import {store} from '@actions/Settings/FilesystemsController';
-  import {provide, ref} from 'vue';
+  import {computed, provide, ref} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
+  import CraftCombobox from '@/common/form/CraftCombobox.vue';
+  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   // @TODO make actual type
   type Filesystem = any;
@@ -23,6 +26,7 @@
     fsInstances: Record<string, Filesystem>;
     fsTypes: Array<string>;
     readOnly: boolean;
+    baseUrlSuggestions?: Array<any>;
   }>();
 
   const form = useForm({
@@ -34,6 +38,9 @@
       url: props.filesystem.url ?? '',
     },
   });
+
+  const settingsHost = ref<HTMLElement | null>(null);
+  const filesystem = computed(() => props.fsInstances[form.type]);
 
   useInputGenerator(
     () => form.name,
@@ -61,13 +68,19 @@
     form,
     store['/{cpTrigger?}/{actionTrigger?}/fs/save'],
     {
-      transform: (data) => ({
-        ...data,
-        settings: {
-          ...data.settings,
-          ...fsTypeSettings.value,
-        },
-      }),
+      transform: (data) => {
+        const typeSettings = settingsHost.value
+          ? serializeFormInputsAsObject(settingsHost.value)
+          : '';
+
+        return {
+          ...data,
+          settings: {
+            ...data.settings,
+            ...typeSettings,
+          },
+        };
+      },
     }
   );
 
@@ -118,14 +131,48 @@
         />
       </template>
 
-      <template v-for="fsType in fsTypes" :key="fsType">
-        <FilesystemSettings
-          v-show="form.type === fsType"
-          v-model:has-urls="form.settings.hasUrls"
-          v-model:url="form.settings.url"
-          :filesystem="fsInstances[fsType]"
+      <template v-if="filesystem.showHasUrlSetting">
+        <CraftSwitch
+          :label="t('Files in this filesystem have public URLs')"
+          name="hasUrls"
+          id="has-urls"
+          v-model="form.settings.hasUrls"
+          :disabled="readOnly"
         />
       </template>
+
+      <template v-if="form.settings.hasUrls && filesystem.showUrlSetting">
+        <CraftCombobox
+          :label="t('Base URL')"
+          :help-text="t('The base URL to the files in this filesystem.')"
+          v-model="form.settings.url"
+          :options="baseUrlSuggestions"
+          name="url"
+          :required="true"
+          placeholder="//example.com/path/to/folder"
+          data-error-key="url"
+          :disabled="readOnly"
+        ></CraftCombobox>
+      </template>
+
+      <div ref="settingsHost">
+        <template v-for="fsType in fsTypes" :key="fsType">
+          <craft-field-group v-show="form.type === fsType">
+            <!-- Legacy (Twig) settings render as an isolated HTML island; component
+                 settings are compiled as part of the page. Each pane must render
+                 its own type's settings — rendering the selected filesystem's here
+                 would inject the same island (and its element ids) once per pane. -->
+            <HtmlFragmentRenderer
+              v-if="fsInstances[fsType].settingsFragment"
+              :fragment="fsInstances[fsType].settingsFragment"
+            />
+            <DynamicHtmlRenderer
+              v-else
+              :html="fsInstances[fsType].settingsHtml"
+            />
+          </craft-field-group>
+        </template>
+      </div>
     </craft-field-group>
   </Pane>
 </template>
