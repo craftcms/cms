@@ -28,6 +28,7 @@
 - Fixed a bug where user photo uploads could exceed the configured maximum upload size. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/fc3fa25f5e7c9108b9e465b1d93ea5d116cf3e08))
 - Fixed a bug where unsafe filenames could be used for Craft support attachments. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/2872b891eca9d243901e186b6bba76150fc0d16e))
 - Fixed a bug where a failed legacy field type migration could leave project config events muted. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/0b22858254f9d6ef54e1f4aaca4de055a1c7f388))
+- Fixed a bug where TemplateGlobals were being resolved every time a Blade component rendered. ([#19257](https://github.com/craftcms/cms/pull/19257))
 - Fixed a bug where Craft updates could fail with a 503 response when the action URL contained query parameters.
 
 ## 6.0.0-alpha.12 - 2026-07-15
