@@ -162,3 +162,40 @@ jobs:
       # up — the setup job already produced and cached the output).
       - name: Run TypeScript type check
         run: npm run typecheck
+
+  test-ui:
+    name: 'Tests / @craftcms/ui'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore install + build + generated cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/craftcms-ui/dist
+            packages/craftcms-garnish/dist
+            vendor
+            resources/js/actions
+            resources/js/routes
+            resources/js/wayfinder
+            resources/js/generated
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      # The storybook tests run in real Chromium via @vitest/browser-playwright.
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run @craftcms/ui tests
+        run: npm run test:ui
