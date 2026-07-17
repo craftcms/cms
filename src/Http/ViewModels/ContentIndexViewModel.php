@@ -610,7 +610,7 @@ abstract class ContentIndexViewModel extends ViewModel
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title' ?
                         Html::tag('CpLink',
-                            $elementHtml->chipHtml($element, [
+                            $elementHtml->elementChipHtml($element, [
                                 'context' => static::RENDER_CONTEXT,
                                 'appearance' => 'plain',
                             ]),

@@ -1,5 +1,5 @@
 import {property} from 'lit/decorators.js';
-import type {CSSResultGroup, PropertyValueMap, PropertyValues} from 'lit';
+import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import styles from './chip.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -52,25 +52,30 @@ export default class CraftChip extends LitElement {
   /** Shortcut for adding an icon as the prefix */
   @property() icon: string | null = null;
 
+  @property({attribute: 'show-indicators', type: Boolean})
+  showIndicators: boolean = false;
+  @property({attribute: 'show-status', type: Boolean})
+  showStatus: boolean = false;
+  @property({attribute: 'show-thumb', type: Boolean}) showThumb: boolean =
+    false;
+  @property({type: Boolean}) selectable: boolean = false;
+
   #thumbLoader = new ThumbnailLoader();
 
   renderPrefix() {
-    const hasThumb = !!this.querySelector('[slot="thumbnail"]');
-    const hasIndicator = !!this.querySelector('[slot="indicator"]');
-
-    return html` <div class="cp-chip__prefix" part="prefix">
+    return html`<div class="cp-chip__prefix" part="prefix">
       <slot name="prefix">
-        ${hasThumb
+        ${this.showThumb
           ? html`<slot class="cp-chip__thumbnail" name="thumbnail"></slot>`
           : nothing}
-        ${hasIndicator
-          ? html`<slot class="cp-chip__indicator" name="indicator"></slot>`
+        ${this.icon
+          ? html`<slot class="cp-chip__icon" name="icon"
+              ><craft-icon name="${this.icon}"></craft-icon
+            ></slot>`
           : nothing}
-        <slot class="cp-chip__icon" name="icon">
-          ${this.icon
-            ? html` <craft-icon name="${this.icon}"></craft-icon>`
-            : nothing}
-        </slot>
+        ${this.showStatus
+          ? html`<slot class="cp-chip__status" name="status"></slot>`
+          : nothing}
       </slot>
     </div>`;
   }
@@ -99,8 +104,13 @@ export default class CraftChip extends LitElement {
           'cp-chip--medium': this.size === 'medium',
           'cp-chip--large': this.size === 'large',
           'cp-chip--plain': this.appearance === Appearance.Plain,
+          'cp-chip--selectable': this.selectable,
+          'cp-chip--show-thumb': this.showThumb,
+          'cp-chip--show-indicators': this.showIndicators,
+          'cp-chip--show-status': this.showStatus,
         })}"
       >
+        ${this.selectable ? html` <input type="checkbox" />` : nothing}
         ${renderPrefix ? this.renderPrefix() : nothing}
         <div class="cp-chip__body">
           <slot></slot>
