@@ -26,14 +26,21 @@ class AssetIndexViewModel extends ContentIndexViewModel
 
     public function __construct(
         ElementIndexRequest $request,
+        ?string $page = null,
         private readonly ?string $defaultSource = null,
     ) {
-        parent::__construct(Asset::class, $request);
+        parent::__construct(Asset::class, $request, $page);
     }
 
+    /**
+     * The raw source path from the route (e.g. `volumeHandle/sub/folder`),
+     * echoed back so client-side index reloads keep the current volume/folder
+     * in the URL instead of bouncing to the root. The resolved source key
+     * (`volume:{uid}`) is available on the base `source` payload.
+     */
     public function defaultSource(): ?string
     {
-        return $this->defaultSourceKey();
+        return $this->defaultSource;
     }
 
     /** @return array<int, array|null>|null */

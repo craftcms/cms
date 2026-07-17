@@ -43,7 +43,7 @@
 <template>
   <form @submit="emit('submit')" class="w-full">
     <div class="flex gap-2 items-center">
-      <div>
+      <div v-if="statusOptions?.length">
         <CraftSelectRich
           v-model="status"
           :options="statusOptions"
