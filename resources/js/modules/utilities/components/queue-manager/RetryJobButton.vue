@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {type JobInfo, JobStatus} from '@/common/types/queue';
+  import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import {useActionClient} from '@/common/composables/useFetch';
   import {unref, watch} from 'vue';
   import {router} from '@inertiajs/vue3';

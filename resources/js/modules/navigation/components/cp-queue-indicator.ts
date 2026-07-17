@@ -1,10 +1,10 @@
 import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {JobStatus} from '@/common/types/queue';
-import type {JobInfo, JobUpdateDetail} from '@/common/types/queue';
+import {JobStatus} from '@/modules/queue/types';
+import type {JobInfo, JobUpdateDetail} from '@/modules/queue/types';
 
 import '@craftcms/ui/components/progress/progress';
-import {QueueService} from '@/common/services/Queue';
+import {QueueService} from '@/modules/queue/queue';
 
 @customElement('cp-queue-indicator')
 class CpQueueIndicator extends LitElement {

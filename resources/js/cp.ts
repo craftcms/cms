@@ -13,6 +13,7 @@ import './modules/auth/elevated-session';
 import './modules/field-layout-designer';
 import './modules/editable-table';
 import './modules/generated-fields';
+import './modules/queue';
 
 window.Cp = Cp as unknown as typeof window.Cp;
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {type JobInfo} from '@/common/types/queue';
+  import {type JobInfo} from '@/modules/queue/types';
   import VarDump from '@/common/components/VarDump.vue';
   import Badge from '@/common/components/Badge.vue';
   import {computed} from 'vue';

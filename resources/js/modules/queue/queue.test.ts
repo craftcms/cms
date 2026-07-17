@@ -1,8 +1,8 @@
 import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
-import {QueueService} from './Queue';
+import {QueueService} from './queue';
 import {ConfigService} from '@craftcms/ui/services/Config';
-import type {JobInfo} from '../types/queue';
-import {JobStatus} from '../types/queue';
+import type {JobInfo} from './types';
+import {JobStatus} from './types';
 
 // Mock axios
 vi.mock('axios', () => ({

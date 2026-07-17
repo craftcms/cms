@@ -1,5 +1,5 @@
 import type {ConfigService} from '@craftcms/ui';
-import type {QueueService} from '@/common/services/Queue';
+import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 

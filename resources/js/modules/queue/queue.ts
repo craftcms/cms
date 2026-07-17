@@ -5,8 +5,8 @@ import type {
   JobUpdateDetail,
   QueueJobData,
   QueueServiceOptions,
-} from '../types/queue';
-import {JobStatus} from '../types/queue';
+} from './types';
+import {JobStatus} from './types';
 import axios from 'axios';
 // Imports stay relative or bare-package here: this module is also bundled by
 // the legacy webpack build (via CP.js), which doesn't know the `@/` alias.
