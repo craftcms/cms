@@ -88,8 +88,8 @@
     "@types/humanize-duration": "^3.27.4",
     "@types/jquery": "^4.0.0",
     "@types/node": "^25.6.0",
-    "@vitest/browser": "^4.1.5",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/browser": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.10",
     "@wc-toolkit/storybook-helpers": "^10.3.0",
     "del": "^8.0.1",
     "dom-accessibility-api": "^0.7.1",
@@ -109,14 +109,14 @@
     "unplugin-dts": "^1.0.0",
     "vite-plugin-dts": "^5.0.0",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@chromatic-com/storybook": "^5.1.2",
     "@formatjs/intl-durationformat": "^0.10.8",
     "@github/relative-time-element": "^5.0.0",
     "@simplewebauthn/browser": "^13.3.0",
-    "@vitest/browser-playwright": "^4.1.5",
+    "@vitest/browser-playwright": "^4.1.10",
     "axios": "^1.17.0"
   },
   "customElements": "dist/custom-elements.json"
