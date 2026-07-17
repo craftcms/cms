@@ -151,6 +151,12 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return array<int, array{label: string, value: string}> */
     public function statusOptions(): array
     {
+        // Status filtering is a no-op for element types without statuses
+        // (QueriesStatuses ignores it), so don't offer the filter at all.
+        if (! $this->showStatusMenu()) {
+            return [];
+        }
+
         return collect($this->elementType::statuses())
             ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
             ->prepend(['label' => t('All'), 'value' => ''])

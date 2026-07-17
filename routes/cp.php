@@ -177,6 +177,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
      */
     // Route::get('assets/edit/{id}-{filename}', EditElementController::class); - TODO
     Route::get('assets/{defaultSource?}', AssetsIndexController::class)
+        ->name('assets.index')
         ->where('defaultSource', '(?!edit(?:/|$)).*');
 
     /**
