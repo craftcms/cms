@@ -153,3 +153,9 @@ Form controls
   box-shadow: var(--c-input-shadow);
   overflow: clip;
 }
+
+.selectize-dropdown.cp-form-control {
+  position: absolute;
+  min-height: 0;
+  overflow: visible;
+}

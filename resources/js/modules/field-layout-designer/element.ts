@@ -6,7 +6,7 @@ import {
   htmlToElement,
 } from './support';
 import type {Tab} from './tab';
-import type {ActionMenuItem} from '@craftcms/ui';
+import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
 
 declare const Craft: any;
 
@@ -402,7 +402,7 @@ export class Element extends Base {
             config,
             settingsNamespace: this.settingsNamespace,
             settings: withSettings
-              ? this.slideout.$container.serialize()
+              ? serializeFormInputs(this.slideout.$container[0])
               : null,
           },
         }

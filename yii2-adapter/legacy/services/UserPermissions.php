@@ -52,15 +52,6 @@ class UserPermissions extends Component
      */
     public const EVENT_AFTER_SAVE_GROUP_PERMISSIONS = 'afterSaveGroupPermissions';
 
-    private UserPermissionsService $service;
-
-    public function __construct($config = [])
-    {
-        parent::__construct($config);
-
-        $this->service = app(UserPermissionsService::class);
-    }
-
     /**
      * Returns all of the known permissions, divided into groups.
      *
@@ -82,7 +73,7 @@ class UserPermissions extends Component
      */
     public function getAllPermissions(): array
     {
-        return $this->service->getAllPermissions()->toArray();
+        return $this->service()->getAllPermissions()->toArray();
     }
 
     /**
@@ -96,7 +87,7 @@ class UserPermissions extends Component
      */
     public function getAssignablePermissions(?User $user = null): array
     {
-        return $this->service->getAssignablePermissions($user)->toArray();
+        return $this->service()->getAssignablePermissions($user)->toArray();
     }
 
     /**
@@ -108,7 +99,7 @@ class UserPermissions extends Component
      */
     public function getPermissionsByGroupId(int $groupId): array
     {
-        return $this->service->getPermissionsByGroupId($groupId)->toArray();
+        return $this->service()->getPermissionsByGroupId($groupId)->toArray();
     }
 
     /**
@@ -120,7 +111,7 @@ class UserPermissions extends Component
      */
     public function getGroupPermissionsByUserId(int $userId): array
     {
-        return $this->service->getGroupPermissionsByUserId($userId)->toArray();
+        return $this->service()->getGroupPermissionsByUserId($userId)->toArray();
     }
 
     /**
@@ -133,7 +124,7 @@ class UserPermissions extends Component
      */
     public function doesGroupHavePermission(int $groupId, string $checkPermission): bool
     {
-        return $this->service->doesGroupHavePermission($groupId, $checkPermission);
+        return $this->service()->doesGroupHavePermission($groupId, $checkPermission);
     }
 
     /**
@@ -147,7 +138,7 @@ class UserPermissions extends Component
      */
     public function saveGroupPermissions(int $groupId, array $permissions): bool
     {
-        return $this->service->saveGroupPermissions($groupId, $permissions);
+        return $this->service()->saveGroupPermissions($groupId, $permissions);
     }
 
     /**
@@ -159,7 +150,7 @@ class UserPermissions extends Component
      */
     public function getPermissionsByUserId(int $userId): array
     {
-        return $this->service->getPermissionsByUserId($userId)->toArray();
+        return $this->service()->getPermissionsByUserId($userId)->toArray();
     }
 
     /**
@@ -170,7 +161,7 @@ class UserPermissions extends Component
      */
     public function validatePermission(string $permission): bool
     {
-        return $this->service->validatePermission($permission);
+        return $this->service()->validatePermission($permission);
     }
 
     /**
@@ -183,7 +174,7 @@ class UserPermissions extends Component
      */
     public function doesUserHavePermission(int $userId, string $checkPermission): bool
     {
-        return $this->service->doesUserHavePermission($userId, $checkPermission);
+        return $this->service()->doesUserHavePermission($userId, $checkPermission);
     }
 
     /**
@@ -197,7 +188,7 @@ class UserPermissions extends Component
      */
     public function saveUserPermissions(int $userId, array $permissions): bool
     {
-        return $this->service->saveUserPermissions($userId, $permissions);
+        return $this->service()->saveUserPermissions($userId, $permissions);
     }
 
     /**
@@ -207,7 +198,7 @@ class UserPermissions extends Component
      */
     public function handleChangedGroupPermissions(ConfigEvent $event): void
     {
-        $this->service->handleChangedGroupPermissions($event);
+        $this->service()->handleChangedGroupPermissions($event);
     }
 
     /**
@@ -217,7 +208,12 @@ class UserPermissions extends Component
      */
     public function reset(): void
     {
-        $this->service->reset();
+        $this->service()->reset();
+    }
+
+    private function service(): UserPermissionsService
+    {
+        return app(UserPermissionsService::class);
     }
 
     public static function registerEvents(): void

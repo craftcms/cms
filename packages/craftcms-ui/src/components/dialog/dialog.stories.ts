@@ -16,7 +16,7 @@ const meta = {
   render: function (args) {
     function openDialog() {
       const dialog = document.getElementById('storybook-dialog') as CraftDialog;
-      dialog.open = true;
+      dialog.opened = true;
     }
 
     return html`

@@ -112,7 +112,7 @@ interface CraftStatic {
   IntervalManager: IntervalManagerInterface;
   t(message: string, params?: object, category?: string): string;
   sendActionRequest(method: string, action: string, options?: object): Promise;
-  initUiElements($container: JQuery): void;
+  initUiElements(container: Element | JQuery): void;
   createElementSelectorModal(
     elementType: string,
     settings?: ElementSelectorModalSettings
@@ -132,6 +132,18 @@ interface CraftStatic {
     displayedJobInfo?: unknown;
     totalJobs?: number;
     trigger?: (event: string, data?: unknown) => void;
+    $notificationContainer?: {length: number};
+    copyElements?: (
+      elementInfo: Array<{
+        type: string;
+        id: string | number;
+        siteId?: number | null;
+        draftId?: number | null;
+        revisionId?: number | null;
+        fieldId?: number | null;
+        ownerId?: number | null;
+      }>
+    ) => void;
     displayNotification: (
       type: any,
       message?: string,
@@ -161,6 +173,10 @@ interface CraftStatic {
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
   };
+  CustomizeSourcesModal: new (
+    elementIndex: unknown,
+    settings?: object
+  ) => {destroy(): void};
   FieldLayoutDesigner: {
     new (container: any, settings?: object): FieldLayoutDesignerInstance;
   };
@@ -170,8 +186,10 @@ interface CraftStatic {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface GarnishStatic {}
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface JQueryObject {}
+interface JQueryObject {
+  (selector: string | Element): JQueryObject;
+  length: number;
+}
 
 // Declare existing variables, mock the things we'll use.
 

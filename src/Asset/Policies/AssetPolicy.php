@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Policies;
 
-use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
@@ -27,7 +26,7 @@ class AssetPolicy extends ElementPolicy
             return $user->can("viewPeerAssets:$volume->uid");
         }
 
-        if (AssetsHelper::isTempUploadFs($volume->getFs())) {
+        if ($volume->isTemporary()) {
             return true;
         }
 
@@ -54,7 +53,7 @@ class AssetPolicy extends ElementPolicy
 
         $volume = $asset->getVolume();
 
-        if (AssetsHelper::isTempUploadFs($volume->getFs())) {
+        if ($volume->isTemporary()) {
             return true;
         }
 
@@ -80,6 +79,13 @@ class AssetPolicy extends ElementPolicy
     {
         return Gate::forUser($user)->check('uploadAsset', $folder) &&
             $this->hasVolumePermission($user, $asset, 'deleteAssets') &&
+            $this->hasPeerVolumePermission($user, $asset, 'savePeerAssets') &&
+            $this->hasPeerVolumePermission($user, $asset, 'deletePeerAssets');
+    }
+
+    public function mergeFile(CraftUser $user, Asset $asset): bool
+    {
+        return $this->hasVolumePermission($user, $asset, 'deleteAssets') &&
             $this->hasPeerVolumePermission($user, $asset, 'savePeerAssets') &&
             $this->hasPeerVolumePermission($user, $asset, 'deletePeerAssets');
     }

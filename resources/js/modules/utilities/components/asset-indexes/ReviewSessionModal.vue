@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import ModalForm from '@/common/components/ModalForm.vue';
-  import {t} from '@craftcms/ui/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {useAssetIndexer} from '@/modules/utilities/composables/useAssetIndexer';
   import {computed, reactive} from 'vue';
-  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml.ts.mjs';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {FinishIndexingParams} from '@/common/services/AssetIndexer';
   import {router} from '@inertiajs/vue3';

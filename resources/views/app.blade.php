@@ -19,7 +19,7 @@
         <x-inertia::app />
         {!! $bodyHtml !!}
         <script>
-          Object.assign(window.Craft, {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!});
+          Object.assign(window.Craft, {{ Illuminate\Support\Js::from(\CraftCms\Cms\Cp\Cp::config()) }});
         </script>
         <script
             src="data:text/javascript;base64,{{ base64_encode('window.Craft.start()') }}"

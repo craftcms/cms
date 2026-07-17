@@ -144,3 +144,63 @@ export async function appendBodyHtml(
 ): Promise<AppendHtmlDisposer> {
   return appendElementHtml(html, document.body);
 }
+
+export function isVisible(el: HTMLElement): boolean {
+  if (typeof el.checkVisibility === 'function') {
+    return el.checkVisibility({checkOpacity: true, checkVisibilityCSS: true});
+  }
+
+  // Fallback: mirrors jQuery's :visible behavior
+  return el.offsetWidth > 0 || el.offsetHeight > 0;
+}
+
+/**
+ * Serializes every named form control inside a container into a URL-encoded
+ * string, mirroring jQuery's `.serialize()` semantics (unchecked checkboxes
+ * and radios, disabled controls, and buttons/files are omitted).
+ *
+ * Unlike `FormData`, this works on any element — not just `<form>` — so it can
+ * scope serialization to a fragment of a page-level form, such as a legacy
+ * HTML island whose inputs aren't part of an Inertia form's state. Values are
+ * read from live DOM properties, so user edits are always captured (cloning
+ * into a detached form would only see attributes).
+ */
+export function serializeFormInputs(container: HTMLElement): string {
+  const params = new URLSearchParams();
+  const controls = container.querySelectorAll<
+    HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+  >('input[name], select[name], textarea[name]');
+
+  for (const control of controls) {
+    if (control.disabled) {
+      continue;
+    }
+
+    if (control instanceof HTMLInputElement) {
+      if (
+        ['file', 'submit', 'button', 'reset', 'image'].includes(control.type)
+      ) {
+        continue;
+      }
+
+      if (
+        (control.type === 'checkbox' || control.type === 'radio') &&
+        !control.checked
+      ) {
+        continue;
+      }
+    }
+
+    if (control instanceof HTMLSelectElement && control.multiple) {
+      for (const option of control.selectedOptions) {
+        params.append(control.name, option.value);
+      }
+
+      continue;
+    }
+
+    params.append(control.name, control.value);
+  }
+
+  return params.toString();
+}

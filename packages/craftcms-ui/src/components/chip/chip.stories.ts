@@ -36,6 +36,19 @@ export const PrefixAndSuffix: Story = {
   `,
 };
 
+export const Thumbnail: Story = {
+  args: {},
+  render: (args) => html`
+    <craft-chip>
+      <img slot="thumbnail" src="https://picsum.photos/300/300" />
+      This is a chip
+      <craft-button icon size="small" appearance="plain" slot="suffix">
+        <craft-icon name="ellipsis" label="Actions"></craft-icon>
+      </craft-button>
+    </craft-chip>
+  `,
+};
+
 export const PrefixOnly: Story = {
   args: {},
   render: (args) => html`

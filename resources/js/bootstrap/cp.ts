@@ -14,7 +14,9 @@ import ProjectConfig from '@/modules/utilities/components/project-config/Project
 import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
-import {setTranslations} from '@craftcms/ui/utilities/translate.ts.mjs';
+import CpLink from '@/common/components/CpLink.vue';
+import {setTranslations} from '@craftcms/ui/utilities/translate';
+import {configureIcons} from './icons.js';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
@@ -75,6 +77,7 @@ function init() {
   });
 
   setTranslations(window.Craft.translations ?? {});
+  configureIcons(window.Craft.iconBaseUrl ?? '/vendor/craft/icons');
 }
 
 async function start() {
@@ -111,6 +114,7 @@ async function start() {
       app.component('ProjectConfig', ProjectConfig);
       app.component('AssetIndexes', AssetIndexes);
       app.component('SystemMessages', SystemMessages);
+      app.component('CpLink', CpLink);
 
       components.install(app);
     },
@@ -118,11 +122,38 @@ async function start() {
 
   handleNonInertiaRequests();
 
+  ensureLegacyNotificationContainer();
+
   hasBooted = true;
   (window.bootedCallbacks ?? []).forEach((callback) =>
     callback(window.Craft)
   );
   window.bootedCallbacks = [];
+}
+
+/**
+ * The legacy notifier (`Craft.cp.displayNotification()`, element-copy
+ * notifications, …) appends into `#notifications`, which only the Twig layout
+ * renders. Create it for Inertia pages — outside the Vue root, so page visits
+ * can't clobber legacy-appended notifications — and re-point the CP
+ * singleton's cached (empty) reference if it booted before the container
+ * existed.
+ */
+function ensureLegacyNotificationContainer() {
+  if (!document.getElementById('notifications')) {
+    const container = document.createElement('div');
+    container.id = 'notifications';
+    container.setAttribute('role', 'status');
+    document.body.appendChild(container);
+  }
+
+  if (
+    window.Craft.cp &&
+    !window.Craft.cp.$notificationContainer?.length &&
+    window.$
+  ) {
+    window.Craft.cp.$notificationContainer = window.$('#notifications');
+  }
 }
 
 function handleNonInertiaRequests() {

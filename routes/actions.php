@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
@@ -20,7 +22,9 @@ use CraftCms\Cms\Http\Controllers\Assets\UploadController as AssetsUploadControl
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
+use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
+use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
@@ -122,20 +126,28 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::get('app/health-check', HealthCheckController::class);
 
         // Auth
-        Route::middleware(EnsureTwoFactorChallengeIsRecent::class)->group(function () {
+        Route::middleware([EnsureTwoFactorChallengeIsRecent::class, 'throttle:'.TwoFactorRateLimiter::NAME])->group(function () {
             Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
             Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
         });
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
-        Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
+        Route::post('users/login', [LoginController::class, 'attemptLogin'])
+            ->middleware('throttle:'.LoginRateLimiter::NAME);
+        Route::post('users/login-with-passkey', [PasskeyController::class, 'login'])
+            ->middleware('throttle:'.LoginRateLimiter::NAME);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);
+        Route::post('users/set-password', [SetPasswordController::class, 'store']);
+        Route::post('users/verify-email', [VerifyEmailController::class, 'store']);
         Route::any('users/session-info', [SessionInfoController::class, 'show'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
+        Route::post('users/confirm-password', [SessionInfoController::class, 'confirmPassword'])
+            ->middleware(['auth', 'can:accessCp'])
+            ->block();
         Route::middleware(
             in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
         )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
@@ -163,7 +175,6 @@ Route::prefix($routes->actionTriggerRoutePrefix())->group(function () {
     });
 
     Route::middleware([RequireToken::class])->group(function () {
-        Route::any('preview/preview', [PreviewController::class, 'preview'])->name('preview');
         Route::any('users/impersonate-with-token', [ImpersonationController::class, 'withToken']);
     });
 });

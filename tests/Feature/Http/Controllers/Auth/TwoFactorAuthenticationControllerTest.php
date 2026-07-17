@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Auth\Models\RecoveryCodes;
+use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Route;
 use PragmaRX\Google2FA\Google2FA;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
+use function Pest\Laravel\withServerVariables;
 use function Pest\Laravel\withSession;
 
 test('showForm redirects to login when user id in session is invalid', function () {
@@ -102,6 +105,36 @@ test('verifyRecoveryCode requires code parameter', function () {
 
     postJson(action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']), [])
         ->assertJsonValidationErrorFor('code');
+});
+
+test('verification routes share a two-factor rate limit', function () {
+    $totpRoute = Route::getRoutes()->getByAction(TwoFactorAuthenticationController::class.'@verify');
+    $recoveryCodeRoute = Route::getRoutes()->getByAction(TwoFactorAuthenticationController::class.'@verifyRecoveryCode');
+
+    expect($totpRoute->middleware())->toContain('throttle:'.TwoFactorRateLimiter::NAME)
+        ->and($recoveryCodeRoute->middleware())->toContain('throttle:'.TwoFactorRateLimiter::NAME);
+});
+
+test('TOTP and recovery code verification share an attempt budget', function () {
+    $user = User::findOne();
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
+    withServerVariables(['REMOTE_ADDR' => '192.0.2.42']);
+
+    foreach (range(1, 3) as $_) {
+        postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
+            'code' => '000000',
+        ])->assertStatus(400);
+    }
+
+    foreach (range(1, 2) as $_) {
+        postJson(action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']), [
+            'code' => 'invalid-recovery-code',
+        ])->assertStatus(400);
+    }
+
+    postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
+        'code' => '000000',
+    ])->assertTooManyRequests();
 });
 
 test('showForm handles JSON requests', function () {

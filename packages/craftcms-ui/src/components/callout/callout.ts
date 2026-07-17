@@ -2,21 +2,22 @@ import {type CSSResultGroup, html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './callout.styles.js';
 import '../icon/icon.js';
-import {Appearance, type AppearanceKey} from '@src/constants/appearances';
-import {Variant, type VariantKey} from '@src/constants/variants';
+import {Appearance, type AppearanceValue} from '@src/constants/appearances';
+import {Variant, type VariantValue} from '@src/constants/variants';
 import variantsStyles from '@src/styles/variants.styles.js';
 
 export default class CraftCallout extends LitElement {
   static override styles: CSSResultGroup = [variantsStyles, styles];
 
   /** Variant style of the callout */
-  @property({reflect: true}) variant: VariantKey = Variant.Neutral;
+  @property({reflect: true}) variant: VariantValue = Variant.Neutral;
 
   /**
    * Appearance style of the callout
    * @TODO maybe drop "outline"?
    */
-  @property({reflect: true}) appearance: AppearanceKey = Appearance.OutlineFill;
+  @property({reflect: true}) appearance: AppearanceValue =
+    Appearance.OutlineFill;
 
   /** Title of the callout */
   @property() override title: string = '';

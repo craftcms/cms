@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
@@ -66,7 +68,7 @@ Route::get('install', [InstallController::class, 'index']);
 
 Route::middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin']);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
     Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
@@ -81,7 +83,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
+    Route::any(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
@@ -132,13 +134,16 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
      * Entries & Content
      */
     Route::get('entries', EntriesIndexController::class);
-    Route::view('entries/{sectionHandle}', 'entries.index');
+    Route::get('entries/{sectionHandle}', EntriesIndexController::class);
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
-    Route::view('content/{page}', 'entries.index')->where('page', '[^\/]+');
-    Route::view('content/{page}/{sectionHandle}', 'entries.index')->where('page', '[^\/]+');
+    // Registered before the index route, which would otherwise match
+    // `content/{section}/new` with `new` as its section handle.
     Route::get('content/{section}/new', CreateEntryController::class);
+    Route::get('content/{page}/{sectionHandle?}', ContentIndexController::class)
+        ->name('content.index')
+        ->where('page', '[^\/]+');
 
     /**
      * Users
@@ -152,7 +157,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
     Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
-    Route::get('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
+    Route::post('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
 
     Route::middleware([

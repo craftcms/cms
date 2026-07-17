@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {CheckboxOption} from '@/common/types';
   import IndexingSessions from '@/modules/utilities/components/asset-indexes/IndexingSessions.vue';

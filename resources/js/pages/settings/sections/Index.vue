@@ -2,7 +2,7 @@
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
-  import {t} from '@craftcms/ui/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate';
   import DeleteSectionButton from '@/modules/sections/components/DeleteSectionButton.vue';
   import {create, edit, index} from '@actions/Settings/SectionsController';
   import {router} from '@inertiajs/vue3';
@@ -148,7 +148,6 @@
 
   <Pane :padding="0" appearance="raised">
     <AdminTable
-      spacing="relaxed"
       :title="title"
       :table="sectionTable"
       :reorderable="false"

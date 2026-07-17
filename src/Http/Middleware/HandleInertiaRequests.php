@@ -153,9 +153,11 @@ class HandleInertiaRequests extends Middleware
                     'version' => Cms::VERSION,
                     'edition' => Edition::get()->toArray(),
                 ],
-                'site' => [
+                'site' => $currentSite ? [
+                    'id' => $currentSite->id,
+                    'handle' => $currentSite->handle,
                     'url' => $currentSite->getBaseUrl(),
-                ],
+                ] : null,
                 'currentUser' => $currentUser ? [
                     'id' => $currentUser->id,
                     'username' => $currentUser->username,

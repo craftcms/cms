@@ -5,10 +5,27 @@ export default css`
     display: block;
   }
 
+  :host([active]) .card {
+    color: var(--c-color-on-quiet);
+    background-color: color-mix(var(--c-color-fill-quiet), transparent 40%);
+    border-color: var(--c-color-border-loud);
+
+    .card__header,
+    .card__footer {
+      background-color: var(--c-color-fill-loud);
+      border-color: var(--c-color-border-loud);
+      color: var(--c-color-on-loud);
+    }
+  }
+
   .card {
-    color: var(--c-card-color, var(--c-color-on-quiet));
-    background-color: var(--c-card-fill, var(--c-color-fill-quiet));
-    border: 1px solid var(--c-card-border, var(--c-color-border-quiet));
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    background-color: color-mix(
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
+      transparent 70%
+    );
+    border: 1px solid
+      var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
@@ -20,13 +37,9 @@ export default css`
     padding-block: var(--c-card-padding-block, var(--c-spacing-sm));
     padding-inline-start: var(--c-card-padding-inline, var(--c-spacing-md));
     padding-inline-end: var(--c-card-padding-inline, var(--c-spacing-sm));
-    color: var(--c-card-bars-text, var(--c-color-neutral-on-quiet));
-    background-color: var(
-      --c-card-bars-fill,
-      var(--c-color-neutral-fill-quiet)
-    );
+    background-color: var(--c-color-fill-quiet);
     border-width: 0;
-    border-color: var(--c-card-border, var(--c-color-neutral-border-quiet));
+    border-color: var(--c-color-border-quiet);
     border-style: solid;
   }
 
@@ -37,7 +50,7 @@ export default css`
   }
 
   .card__header {
-    min-height: calc(1lh + 0.625rem);
+    min-height: 1lh;
     border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
     border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
     border-block-end-width: 1px;

@@ -18,7 +18,7 @@ workbench:
   install: false # We run the Craft install in DatabaseSeeder
   user: 1
   sync:
-    - from: resources
+    - from: cms-assets/resources
       to: public/vendor/craft
     - from: storage
       to: workbench/storage

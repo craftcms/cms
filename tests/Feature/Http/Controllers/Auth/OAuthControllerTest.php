@@ -65,8 +65,12 @@ function oauthControllerCallbackUrl(bool $isCpRequest = false, string $provider 
 
 function oauthControllerLoginUrl(bool $isCpRequest): string
 {
-    if (! $isCpRequest && app(GeneralConfig::class)->loginPath !== false) {
-        return Url::siteUrl(app(GeneralConfig::class)->getLoginPath());
+    if (! $isCpRequest) {
+        $loginPath = app(GeneralConfig::class)->getLoginPath();
+
+        if ($loginPath !== false) {
+            return Url::siteUrl($loginPath);
+        }
     }
 
     return cp_url('login');

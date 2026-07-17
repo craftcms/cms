@@ -5,7 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
@@ -89,3 +91,18 @@ it('validates data after widget id', function (array $data, array $errors) {
         'errors' => ['attachTemplates'],
     ],
 ]);
+
+it('sanitizes attachment names used in support archives', function () {
+    $attachment = UploadedFile::fake()->create('unsafe?.zip', 1, 'application/zip');
+    $zipData = app(CraftSupportController::class)->createZip(false, false, false, $attachment);
+    $zip = new ZipArchive;
+
+    try {
+        expect($zip->open($zipData['zipPath']))->toBeTrue()
+            ->and($zip->locateName('unsafe.zip'))->not->toBeFalse()
+            ->and($zip->locateName('unsafe?.zip'))->toBeFalse();
+    } finally {
+        $zip->close();
+        File::delete($zipData['zipPath']);
+    }
+});

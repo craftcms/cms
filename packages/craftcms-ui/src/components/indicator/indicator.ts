@@ -1,4 +1,4 @@
-import {css, html, LitElement} from 'lit';
+import {css, html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import variantsStyles from '@src/styles/variants.styles';
@@ -85,10 +85,12 @@ export default class CraftIndicator extends LitElement {
   }
 
   protected override render(): unknown {
+    // Without a label the indicator is purely decorative, so omit the image role
+    // and name rather than exposing an unnamed `role="img"`.
     return html`<span
       style="--fill: ${this.getFill()}; --size: ${this.getSize()}"
-      aria-label="${this.label}"
-      role="img"
+      aria-label="${this.label ?? nothing}"
+      role="${this.label ? 'img' : nothing}"
       class="${classMap({
         indicator: true,
         'indicator--outline': this.appearance === Appearance.Outline,

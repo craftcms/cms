@@ -43,14 +43,12 @@ class IconServiceProvider extends ServiceProvider
         $aliases->set('@appicons/info-circle', "$solidIconsPath/circle-info.svg");
         $aliases->set('@appicons/info-circle.svg', "$solidIconsPath/circle-info.svg");
         $aliases->set('@appicons/info.svg', "$solidIconsPath/circle-info.svg");
-        $aliases->set('@appicons/info.svg', "$solidIconsPath/circle-info.svg");
         $aliases->set('@appicons/location.svg', "$solidIconsPath/location-dot.svg");
         $aliases->set('@appicons/photo.svg', "$solidIconsPath/image.svg");
         $aliases->set('@appicons/plugin.svg', "$solidIconsPath/plug.svg");
         $aliases->set('@appicons/routes.svg', "$solidIconsPath/signs-post.svg");
         $aliases->set('@appicons/search.svg', "$solidIconsPath/magnifying-glass.svg");
         $aliases->set('@appicons/shopping-cart', "$solidIconsPath/cart-shopping.svg");
-        $aliases->set('@appicons/template.svg', "$solidIconsPath/file-code.svg");
         $aliases->set('@appicons/template.svg', "$solidIconsPath/file-code.svg");
         $aliases->set('@appicons/tip.svg', "$solidIconsPath/lightbulb.svg");
         $aliases->set('@appicons/tools.svg', "$solidIconsPath/screwdriver-wrench.svg");

@@ -112,7 +112,7 @@ readonly class CraftSupportController
             $parts[] = [
                 'name' => 'attachments[1]',
                 'contents' => $attachment->get(),
-                'filename' => $attachment->getClientOriginalName(),
+                'filename' => $this->attachmentFilename($attachment),
             ];
         }
 
@@ -265,7 +265,7 @@ readonly class CraftSupportController
 
         // Attachment?
         if ($attachment && $this->shouldZipAttachment($attachment)) {
-            $zip->addFile($attachment->getRealPath(), $attachment->getClientOriginalName());
+            $zip->addFile($attachment->getRealPath(), $this->attachmentFilename($attachment));
         }
 
         // Close and attach the zip
@@ -275,5 +275,10 @@ readonly class CraftSupportController
             'message' => $message,
             'zipPath' => $zipPath,
         ];
+    }
+
+    private function attachmentFilename(UploadedFile $attachment): string
+    {
+        return File::sanitizeFilename($attachment->getClientOriginalName()) ?: 'attachment';
     }
 }

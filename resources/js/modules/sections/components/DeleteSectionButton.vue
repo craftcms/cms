@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate';
   import type {SectionModel} from '@/pages/settings/sections/Index.vue';
   import {useForm} from '@inertiajs/vue3';
   import {destroy} from '@actions/Settings/SectionsController';

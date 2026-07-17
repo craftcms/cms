@@ -41,7 +41,6 @@ class Volumes
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
-        private readonly Assets $assets,
         private readonly Folders $folders,
         private readonly ElementCaches $elementCaches,
     ) {}
@@ -107,8 +106,9 @@ class Volumes
             'name' => t('Temporary Uploads'),
         ]);
 
-        $fs = $this->assets->getTempAssetUploadFs();
+        $fs = app(Assets::class)->getTempAssetUploadFs();
         $volume->setFs($fs);
+        $volume->markAsTemporary();
 
         return $volume;
     }

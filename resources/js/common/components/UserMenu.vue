@@ -5,14 +5,15 @@
   import PreferencesController from '@actions/Users/PreferencesController';
   import UsersController from '@actions/Users/UsersController';
   import useCraftData from '@/common/composables/useCraftData';
-  import {computed} from 'vue';
+  import {computed, useTemplateRef} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import CurrentUser from '@/common/components/CurrentUser.vue';
   import UserThumbnail from '@/common/components/UserThumbnail.vue';
   import PasswordController from '@actions/Users/PasswordController';
 
-  const {currentUser} = useCraftData();
+  const {currentUser, csrfTokenName, csrfTokenValue} = useCraftData();
+  const logoutForm = useTemplateRef('logoutForm');
 
   const menuItems = computed((): ActionItem[] => {
     return [
@@ -41,15 +42,24 @@
       },
       {type: 'hr'},
       {
-        href: LoginController.logout().url,
+        type: 'button',
         variant: 'danger',
         label: t('Sign out'),
+        onClick: () => logoutForm.value?.requestSubmit(),
       },
     ];
   });
 </script>
 
 <template>
+  <form :action="LoginController.logout().url" method="post" ref="logoutForm">
+    <input
+      v-if="csrfTokenName && csrfTokenValue"
+      type="hidden"
+      :name="csrfTokenName"
+      :value="csrfTokenValue"
+    />
+  </form>
   <ActionMenu :actions="menuItems" :label="currentUser!.username">
     <template #invoker>
       <craft-button

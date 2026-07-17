@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
+use Closure;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Support\Json;
@@ -32,11 +34,23 @@ readonly class PasskeyController extends AuthenticationController
         ]);
     }
 
-    public function login(Request $request, Passkeys $passkeys, AuthMethods $auth, Impersonation $impersonation): Response
+    public function login(Request $request, Passkeys $passkeys, AuthMethods $auth, Impersonation $impersonation, LoginRateLimiter $loginRateLimiter): Response
     {
         $request->validate([
-            'requestOptions' => ['required'],
-            'authResponse' => ['required'],
+            'requestOptions' => ['bail', 'required', 'string', 'json'],
+            'authResponse' => [
+                'bail',
+                'required',
+                'string',
+                'json',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    $response = Json::decode($value);
+
+                    if (! is_array($response) || ! isset($response['id']) || ! is_string($response['id']) || $response['id'] === '') {
+                        $fail(t('The auth response must contain a credential ID.'));
+                    }
+                },
+            ],
         ]);
 
         $requestOptions = Session::remove($passkeys->passkeyRequestOptionsParam);
@@ -63,6 +77,8 @@ readonly class PasskeyController extends AuthenticationController
         if (! $auth->authenticateWithPasskey($user, $requestOptions, $response)) {
             return $this->handleLoginFailure($request, $auth->authError, $user);
         }
+
+        $loginRateLimiter->clear($request);
 
         // if we're impersonating, pass the user we're impersonating to the complete method
         if ($impersonation->isImpersonating()) {

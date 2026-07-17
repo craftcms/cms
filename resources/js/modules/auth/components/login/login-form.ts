@@ -80,6 +80,16 @@ export default class CraftLoginForm extends LitElement {
     }
   }
 
+  override focus(options?: FocusOptions): void {
+    void this.updateComplete.then(() => {
+      const input = this.staticEmail
+        ? this._passwordInput
+        : (this._usernameInput ?? this._passwordInput);
+
+      input?.focus(options);
+    });
+  }
+
   #usernameLabel() {
     return this.useEmailAsUsername ? t('Email') : t('Username or Email');
   }

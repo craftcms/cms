@@ -24,6 +24,7 @@ use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
 readonly class SetPasswordController extends AuthenticationController
@@ -45,13 +46,18 @@ readonly class SetPasswordController extends AuthenticationController
 
         // Send them to the set password template.
         return $this->renderViewWithFallback(
-            cpTemplate: 'set-password',
+            inertiaComponent: 'auth/SetPassword',
+            inertiaProps: [
+                'code' => $code,
+                'uid' => $uid,
+                'newUser' => ! $user->password,
+                'action' => $request->isCpRequest() ? action([self::class, 'store']) : action_url('users/set-password'),
+            ],
             data: [
                 'code' => $code,
                 'uid' => $uid,
                 'newUser' => ! $user->password,
             ],
-            inertiaComponent: 'auth/SetPassword',
         );
     }
 

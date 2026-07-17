@@ -3,7 +3,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {JobStatus} from '@/common/types/queue';
 import type {JobInfo, JobUpdateDetail} from '@/common/types/queue';
 
-import '@craftcms/ui/components/progress/progress.ts.mjs';
+import '@craftcms/ui/components/progress/progress';
 import {QueueService} from '@/common/services/Queue';
 import {getCpUrl} from '@/common/api/actionClient';
 

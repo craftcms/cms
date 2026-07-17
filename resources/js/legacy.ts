@@ -7,6 +7,7 @@ import './modules/auth/components/set-password/set-password-form.js';
 import './modules/auth/components/verify-email/verify-email-form.js';
 import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
+import {mountElevatedSessionHost} from './modules/auth/elevated-session';
 
 import './modules/listbox/index';
 import './modules/field-layout-designer/index';
@@ -15,11 +16,13 @@ import './modules/editable-table/index';
 
 await import('./bootstrap/cp.js');
 
+mountElevatedSessionHost();
+
 /**
  * Components - dynamically imported after Craft is initialized
  */
-import('@craftcms/ui/components/nav-list/nav-list.ts.mjs');
-import('@craftcms/ui/components/nav-item/nav-item.ts.mjs');
+import('@craftcms/ui/components/nav-list/nav-list');
+import('@craftcms/ui/components/nav-item/nav-item');
 import('./modules/navigation/components/cp-global-sidebar.js');
 import('./modules/navigation/components/cp-queue-indicator.js');
 import('./modules/markdown-field/markdown-field.js');

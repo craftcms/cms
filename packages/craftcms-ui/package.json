@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "description": "UI Components for Craft CMS",
   "type": "module",
-  "main": "dist/ui.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/ui.mjs",
+  "types": "./dist/ui.d.mts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/craftcms/npm-packages.git"
@@ -25,7 +25,9 @@
     "check:format": "prettier --check ./src",
     "check:exports": "attw --pack .",
     "check:types": "tsc --noEmit",
+    "prestorybook": "npm run build:manifest",
     "storybook": "storybook dev -p 6006",
+    "prebuild:storybook": "npm run build:manifest",
     "build:storybook": "storybook build",
     "build:manifest": "custom-elements-manifest analyze --litelement --outdir dist",
     "generate:vue-wrappers": "node ./scripts/generate-vue-wrappers.js",
@@ -34,19 +36,32 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
+      "development": "./src/index.ts",
       "types": "./dist/ui.d.mts",
-      "import": "./dist/ui.mjs",
-      "require": "./dist/ui.cjs"
+      "import": "./dist/ui.mjs"
     },
-    "./*": "./dist/*",
-    "./dist/*": "./dist/*",
+    "./components/*": {
+      "development": "./src/components/*.ts",
+      "default": "./dist/components/*.ts.mjs"
+    },
+    "./services/*": {
+      "development": "./src/services/*.ts",
+      "default": "./dist/services/*.ts.mjs"
+    },
+    "./utilities/*": {
+      "development": "./src/utilities/*.ts",
+      "default": "./dist/utilities/*.ts.mjs"
+    },
+    "./styles/*": {
+      "development": "./src/styles/*",
+      "default": "./dist/styles/*"
+    },
     "./vue/*": "./dist/vue/*",
     "./types/*": "./src/types/*",
-    "./styles/*": "./src/styles/*",
-    "./utilities/*": "./dist/utilities/*",
-    "./components/*": "./dist/components/*",
     "./custom-elements.json": "./dist/custom-elements.json",
-    "./tailwind.css": "./tailwind.css"
+    "./tailwind.css": "./tailwind.css",
+    "./dist/*": "./dist/*",
+    "./*": "./dist/*"
   },
   "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
   "license": "MIT",
@@ -55,14 +70,12 @@
   },
   "homepage": "https://github.com/craftcms/npm-packages#readme",
   "peerDependencies": {
-    "@awesome.me/webawesome": "^3.0.0",
     "@lion/ui": "0.x",
     "lit": "3.x"
   },
   "devDependencies": {
     "@adobe/leonardo-contrast-colors": "^1.1.0",
     "@arethetypeswrong/cli": "^0.18.2",
-    "@awesome.me/webawesome": "^3.6.0",
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@lion/ui": "^0.16.1",
     "@shoelace-style/shoelace": "^2.20.1",
