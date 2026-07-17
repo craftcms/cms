@@ -74,6 +74,15 @@ abstract class ContentIndexViewModel extends ViewModel
         return null;
     }
 
+    /**
+     * The render context — index screens always render in the `index`
+     * context, and the client echoes it back on XHR element endpoints.
+     */
+    public function context(): string
+    {
+        return static::RENDER_CONTEXT;
+    }
+
     public function status(): string
     {
         return $this->request->input('status', '') ?? '';

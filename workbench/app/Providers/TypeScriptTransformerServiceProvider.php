@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
@@ -59,6 +60,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     UpdaterState::class,
                     HtmlFragment::class,
                     AssetIndexViewModel::class,
+                    ContentIndexViewModel::class,
                     EntryIndexViewModel::class,
                     FieldEditViewModel::class,
                     UserAddressesViewModel::class,
