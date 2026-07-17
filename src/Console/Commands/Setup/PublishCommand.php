@@ -25,11 +25,29 @@ class PublishCommand extends Command
 
     public function handle(): void
     {
-        $this->deletePublishedAssets();
+        if ($this->assetsAreSymlinked()) {
+            $this->warn(sprintf(
+                'Skipping asset publishing: %s is a symlink, so assets are already served from its target. Remove the symlink if you want physical copies published.',
+                public_path('vendor/craft'),
+            ));
+        } else {
+            $this->deletePublishedAssets();
+            $this->call('vendor:publish', ['--tag' => 'craftcms-assets', '--force' => true]);
+        }
 
-        $this->call('vendor:publish', ['--tag' => 'craftcms-assets', '--force' => true]);
         $this->call('vendor:publish', ['--tag' => 'craftcms-config']);
         $this->call('vendor:publish', ['--tag' => 'craftcms-console']);
+    }
+
+    /**
+     * Whether `public/vendor/craft` is a symlink (a common dev setup pointing
+     * straight at the cms-assets resources). Deleting through it would empty
+     * the link's target — `File::deleteDirectory()` follows a top-level
+     * symlink — so publishing must leave it alone entirely.
+     */
+    private function assetsAreSymlinked(): bool
+    {
+        return is_link(public_path('vendor/craft'));
     }
 
     private function deletePublishedAssets(): void
