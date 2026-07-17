@@ -13,9 +13,7 @@ vi.mock('axios', () => ({
 
 // Mock getActionUrl
 vi.mock('@/common/api/actionClient', () => ({
-  getActionUrl: vi.fn(
-    (path: string) => `https://example.com/actions/${path}`
-  ),
+  getActionUrl: vi.fn((path: string) => `https://example.com/actions/${path}`),
 }));
 
 describe('QueueService', () => {

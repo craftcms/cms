@@ -84,12 +84,9 @@ async function start() {
   init();
 
   axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-  axios.defaults.headers.common['X-CSRF-TOKEN'] =
-    window.Craft.csrfTokenValue;
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = window.Craft.csrfTokenValue;
 
-  (window.bootingCallbacks ?? []).forEach((callback) =>
-    callback(window.Craft)
-  );
+  (window.bootingCallbacks ?? []).forEach((callback) => callback(window.Craft));
   window.bootingCallbacks = [];
 
   await createInertiaApp({
@@ -125,9 +122,7 @@ async function start() {
   ensureLegacyNotificationContainer();
 
   hasBooted = true;
-  (window.bootedCallbacks ?? []).forEach((callback) =>
-    callback(window.Craft)
-  );
+  (window.bootedCallbacks ?? []).forEach((callback) => callback(window.Craft));
   window.bootedCallbacks = [];
 }
 
