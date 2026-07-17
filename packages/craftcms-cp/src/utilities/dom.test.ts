@@ -298,3 +298,59 @@ describe('serializeFormInputs', () => {
     );
   });
 });
+
+describe('serializeFormInputsAsObject', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  test('returns raw names and values without url-encoding', async () => {
+    const {serializeFormInputsAsObject} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input name="types[PlainText][placeholder]" value="a b&c">
+        <textarea name="b">two</textarea>
+        <input type="checkbox" name="c" value="1">
+      </div>
+    `;
+    expect(
+      serializeFormInputsAsObject(document.getElementById('host')!)
+    ).toEqual({
+      'types[PlainText][placeholder]': 'a b&c',
+      b: 'two',
+    });
+  });
+
+  test('groups repeated names into arrays', async () => {
+    const {serializeFormInputsAsObject} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <select name="a[]" multiple>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+        </select>
+        <input name="a[]" value="4">
+      </div>
+    `;
+    expect(
+      serializeFormInputsAsObject(document.getElementById('host')!)
+    ).toEqual({
+      'a[]': ['1', '3', '4'],
+    });
+  });
+
+  test('keeps a single value as a string', async () => {
+    const {serializeFormInputsAsObject} = await freshImport();
+    document.body.innerHTML = `
+      <div id="host">
+        <input name="a" value="1">
+      </div>
+    `;
+    expect(
+      serializeFormInputsAsObject(document.getElementById('host')!)
+    ).toEqual({
+      a: '1',
+    });
+  });
+});

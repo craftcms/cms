@@ -16,6 +16,7 @@
     error?: string;
     requireOptionMatch?: boolean;
     showAllOnEmpty?: boolean;
+    placeholder?: string;
   }>();
 
   const slots = useSlots();
@@ -45,6 +46,7 @@
       :clearable="clearable"
       :require-option-match="requireOptionMatch"
       :show-all-on-empty="showAllOnEmpty"
+      :placeholder="placeholder"
     >
       <!-- Forward all other slots -->
       <template v-for="(_, slotName) in forwardedSlots" #[slotName]="slotData">
