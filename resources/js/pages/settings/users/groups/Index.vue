@@ -1,7 +1,9 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {h} from 'vue';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
+  import Pane from '@/common/components/Pane.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Empty from '@/common/components/Empty.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
@@ -53,22 +55,24 @@
     },
     getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
+
+  useAppLayout({fullWidth: true});
 </script>
 
 <template>
-  <IndexLayout>
-    <template #actions>
-      <CpLink
-        :inertia="false"
-        :href="create().url"
-        class="btn submit add icon"
-        icon="plus"
-        appearance="button"
-        variant="accent"
-        >{{ t('New user group') }}</CpLink
-      >
-    </template>
+  <LayoutSlot name="actions">
+    <CpLink
+      :inertia="false"
+      :href="create().url"
+      class="btn submit add icon"
+      icon="plus"
+      appearance="button"
+      variant="accent"
+      >{{ t('New user group') }}</CpLink
+    >
+  </LayoutSlot>
 
+  <Pane appearance="raised" :padding="0" class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
@@ -83,5 +87,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </IndexLayout>
+  </Pane>
 </template>

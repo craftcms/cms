@@ -1,7 +1,10 @@
 <script setup lang="ts">
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import Pane from '@/common/components/Pane.vue';
+  import SecondaryNav from '@/common/components/SecondaryNav.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   interface UtilityItem {
     id: string;
@@ -12,7 +15,7 @@
     badgeCount: number;
   }
 
-  defineProps<{
+  const props = defineProps<{
     id: string;
     title: string;
     contentHtml?: string;
@@ -21,17 +24,19 @@
     viewData?: unknown;
     utilities: Array<UtilityItem>;
   }>();
+
+  useAppLayout(() => ({fullWidth: true, title: props.title}));
 </script>
 
 <template>
-  <IndexLayout :title="title">
-    <template #actions>
-      <DynamicHtmlRenderer
-        v-if="toolbarHtml"
-        :html="toolbarHtml"
-      ></DynamicHtmlRenderer>
-    </template>
-    <template #interior-nav>
+  <LayoutSlot name="actions">
+    <DynamicHtmlRenderer
+      v-if="toolbarHtml"
+      :html="toolbarHtml"
+    ></DynamicHtmlRenderer>
+  </LayoutSlot>
+  <LayoutSlot name="sidebar">
+    <SecondaryNav>
       <craft-nav-list>
         <template v-for="utility in utilities" :key="utility.id">
           <CpLink
@@ -47,11 +52,13 @@
           </CpLink>
         </template>
       </craft-nav-list>
-    </template>
+    </SecondaryNav>
+  </LayoutSlot>
 
+  <Pane appearance="raised" :padding="0" class="@container">
     <div class="content-pane">
       <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
       <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />
     </div>
-  </IndexLayout>
+  </Pane>
 </template>

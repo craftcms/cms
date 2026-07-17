@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Auth\OAuth\OAuth;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -33,6 +35,8 @@ trait EditUserTrait
     private const string SCREEN_PASSWORD = 'password';
 
     private const string SCREEN_PASSKEYS = 'passkeys';
+
+    private const string SCREEN_SIGN_IN_PROVIDERS = 'sign-in-providers';
 
     /**
      * Returns the user being edited.
@@ -90,6 +94,10 @@ trait EditUserTrait
             $screens[self::SCREEN_PASSKEYS] = ['label' => t('Passkeys')];
         }
 
+        if ($this->showSignInProvidersScreen($user)) {
+            $screens[self::SCREEN_SIGN_IN_PROVIDERS] = ['label' => t('Sign-in Providers')];
+        }
+
         abort_if(! isset($screens[$screen]), 403, 'User not authorized to perform this action.');
 
         $pageName = $screens[$screen]['label'];
@@ -107,30 +115,58 @@ trait EditUserTrait
                 }
             );
 
-        $navItems = [];
-        $currentNavItems = &$navItems;
+        $sidebarItems = [];
+        $currentSidebarItems = &$sidebarItems;
+        $subnavItems = [];
+        $accountSecurityItem = null;
+        $currentSubnavItems = &$subnavItems;
 
         foreach ($screens as $s => $screenInfo) {
-            if ($s === self::SCREEN_PASSWORD) {
-                $navItem = [
+            if (
+                $accountSecurityItem === null &&
+                in_array($s, [self::SCREEN_PASSWORD, self::SCREEN_SIGN_IN_PROVIDERS], true)
+            ) {
+                $sidebarItem = [
                     'heading' => t('Account Security'),
                     'nested' => [],
                 ];
-                $navItems[] = &$navItem;
-                $currentNavItems = &$navItem['nested'];
+                $sidebarItems[] = &$sidebarItem;
+                $currentSidebarItems = &$sidebarItem['nested'];
+
+                $accountSecurityItem = new NavItem([
+                    'label' => t('Account Security'),
+                    'url' => '#',
+                    'selected' => false,
+                    'subnav' => [],
+                ]);
+                $subnavItems[] = $accountSecurityItem;
+                $currentSubnavItems = &$accountSecurityItem->subnav;
             }
 
-            $currentNavItems[] = [
+            $url = $screenInfo['url'] ?? $this->editUserScreenUrl($user, $s);
+            $selected = $s === $screen;
+
+            $currentSidebarItems[] = [
                 'label' => $screenInfo['label'],
-                'url' => $screenInfo['url'] ?? $this->editUserScreenUrl($user, $s),
-                'selected' => $s === $screen,
+                'url' => $url,
+                'selected' => $selected,
             ];
+
+            if ($selected && $accountSecurityItem) {
+                $accountSecurityItem->selected = true;
+            }
+
+            $currentSubnavItems[] = new NavItem([
+                'label' => $screenInfo['label'],
+                'url' => $url,
+                'selected' => $selected,
+            ]);
         }
 
         $response->pageSidebarTemplate('_includes/nav', [
             'label' => t('Account'),
-            'items' => $navItems,
-        ]);
+            'items' => $sidebarItems,
+        ])->subnav($subnavItems);
 
         if ($screen !== self::SCREEN_PROFILE) {
             $response->crumbs([
@@ -187,6 +223,11 @@ trait EditUserTrait
         }
 
         return $currentUser->can('viewPermissionsScreen', User::class);
+    }
+
+    private function showSignInProvidersScreen(User $user): bool
+    {
+        return $user->getIsCurrent() && app(OAuth::class)->getProviderDefinitions()->isNotEmpty();
     }
 
     private function editUserScreenUrl(User $user, string $screen): string

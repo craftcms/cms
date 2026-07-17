@@ -294,17 +294,18 @@ class Entries
      */
     public function reassignEntries(int|array $oldUserId, int $newUserId): int
     {
+        $oldUserIds = Arr::wrap($oldUserId);
+
         $count = DB::table(Table::ENTRIES_AUTHORS)
-            ->whereIn('authorId', Arr::wrap($oldUserId))
-            ->whereNotExists(function (Builder $query) use ($newUserId) {
-                $query->selectRaw('1')
-                    ->fromSub(
-                        DB::table(Table::ENTRIES_AUTHORS, 'ea2')
-                            ->select('ea2.entryId')
-                            ->where('ea2.authorId', $newUserId),
-                        'existingAuthor',
-                    )
-                    ->whereColumn('existingAuthor.entryId', Table::ENTRIES_AUTHORS.'.entryId');
+            ->whereIn('authorId', $oldUserIds)
+            ->whereNotIn('entryId', function (Builder $query) use ($newUserId) {
+                // Wrap the subquery in an extra derived table so MySQL doesn't
+                // treat it as selecting from the table being updated.
+                $query->fromSub(function (Builder $query) use ($newUserId) {
+                    $query->select('entryId')
+                        ->from(Table::ENTRIES_AUTHORS, 'ea2')
+                        ->where('authorId', $newUserId);
+                }, 'ea2');
             })
             ->update([
                 'authorId' => $newUserId,

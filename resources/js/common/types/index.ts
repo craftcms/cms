@@ -7,6 +7,8 @@ export interface BaseOption {
 }
 export interface CheckboxOption extends BaseOption {
   info?: string;
+  checked?: boolean;
+  disabled?: boolean;
 }
 export interface SelectOption<
   T = Record<string, any> | null | undefined,
@@ -75,6 +77,7 @@ export interface ActionItemButton {
   label: string;
   variant?: VariantKey | string;
   icon?: string;
+  disabled?: boolean;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
   [key: string]: unknown;
@@ -97,6 +100,12 @@ export type ActionItem =
   | ActionItemLink;
 
 export type ActionItems = Array<ActionItem>;
+
+export interface FormSaveOptions {
+  redirect?: boolean;
+  data?: Record<string, any>;
+  preserveState?: boolean;
+}
 
 export interface EntryType {
   id: number;
@@ -170,7 +179,6 @@ export type EditableTableCellType =
  * @TODO this could probably be a more generic `spacing` constant
  */
 export const TableSpacing = {
-  Relaxed: 'relaxed',
   Compact: 'compact',
   Spacious: 'spacious',
 } as const;

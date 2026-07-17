@@ -636,7 +636,7 @@ JS,
 
             $statusField = FormFields::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => t($this->getSite()->getName(), category: 'site'),
+                'label' => Html::encode(t($this->getSite()->getName(), category: 'site')),
                 'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),

@@ -11,13 +11,13 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -36,8 +36,6 @@ class UserGroupsController extends BaseUserSettingsController
         private readonly GeneralConfig $generalConfig,
         private readonly UserGroups $userGroups,
     ) {
-        parent::__construct();
-
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
 
@@ -50,6 +48,7 @@ class UserGroupsController extends BaseUserSettingsController
         return Inertia::render('settings/users/groups/Index', [
             'crumbs' => $this->crumbs(t('User Groups')),
             'title' => t('User Settings'),
+            'subnav' => $this->subnav(),
             'groups' => $this->userGroups->getAllGroups(),
         ]);
     }
@@ -95,16 +94,6 @@ class UserGroupsController extends BaseUserSettingsController
                 'brandNew' => false,
                 'permissions' => $userPermissions->getAllPermissions(),
             ])
-            ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                HtmlStack::jsWithVars(
-                    fn ($containerId) => <<<JS
-                        new Craft.ElevatedSessionForm('#' + $containerId, [
-                            '.user-permissions input[type="checkbox"]:not(:checked)'
-                        ]);
-                    JS,
-                    [$containerId],
-                );
-            })
             ->when($this->readOnly, function (CpScreenResponse $response) {
                 $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
             });
@@ -139,7 +128,7 @@ class UserGroupsController extends BaseUserSettingsController
         $isNewGroup = ! $group->id;
 
         if (! $this->userGroups->saveGroup($group)) {
-            return $this->asModelFailure($group, t('Couldn’t save group.'), 'group');
+            throw ValidationException::withMessages($group->errors()->getMessages());
         }
 
         $permissions = $request->array('permissions');

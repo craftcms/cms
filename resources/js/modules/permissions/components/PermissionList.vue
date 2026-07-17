@@ -16,6 +16,7 @@
       permissions?: Record<string, PermissionItem>;
       heading?: string;
       permissionKeys?: Array<string>;
+      lockedPermissions?: Array<string>;
       disabled?: boolean;
       level?: number;
     }>(),
@@ -23,24 +24,47 @@
       permissions: () => ({}),
       modelValue: () => [],
       permissionKeys: () => [],
+      lockedPermissions: () => [],
       disabled: false,
       level: 0,
     }
   );
 
+  function lockedSet() {
+    return new Set(props.lockedPermissions);
+  }
+
+  function selectableKeys() {
+    const locked = lockedSet();
+
+    return props.permissionKeys.filter((key) => !locked.has(key));
+  }
+
+  function isSelected(key: string) {
+    return props.modelValue.includes(key) || lockedSet().has(key);
+  }
+
+  function isDisabled(key: string) {
+    return props.disabled || lockedSet().has(key);
+  }
+
   function allSelected() {
-    if (!props.permissionKeys.length) {
+    const keys = selectableKeys();
+
+    if (!keys.length) {
       return false;
     }
 
     const selected = new Set(props.modelValue);
 
-    return props.permissionKeys.every((key) => selected.has(key));
+    return keys.every((key) => selected.has(key));
   }
 
   function toggleAll() {
+    const keys = selectableKeys();
+
     if (allSelected()) {
-      const keysToRemove = new Set(props.permissionKeys);
+      const keysToRemove = new Set(keys);
       emit(
         'update:modelValue',
         props.modelValue.filter((key) => !keysToRemove.has(key))
@@ -48,31 +72,38 @@
       return;
     }
 
-    emit('update:modelValue', [
-      ...new Set([...props.modelValue, ...props.permissionKeys]),
-    ]);
+    emit('update:modelValue', [...new Set([...props.modelValue, ...keys])]);
   }
 
-  function toggleItem(key: string) {
-    const index = props.modelValue.indexOf(key);
-    if (index === -1) {
-      emit('update:modelValue', [...props.modelValue, key]);
-    } else {
-      const keysToRemove = new Set([
-        key,
-        ...getNestedKeys(props.permissions[key]),
-      ]);
-      emit(
-        'update:modelValue',
-        props.modelValue.filter((v) => !keysToRemove.has(v))
-      );
+  function setItemSelected(key: string, selected: boolean) {
+    if (isDisabled(key)) {
+      return;
     }
+
+    const index = props.modelValue.indexOf(key);
+    if (selected && index === -1) {
+      emit('update:modelValue', [...props.modelValue, key]);
+      return;
+    }
+
+    if (selected || index === -1) {
+      return;
+    }
+
+    const keysToRemove = new Set([
+      key,
+      ...getNestedKeys(props.permissions[key]),
+    ]);
+    emit(
+      'update:modelValue',
+      props.modelValue.filter((value) => !keysToRemove.has(value))
+    );
   }
 </script>
 
 <template>
   <div v-if="heading" class="flex gap-2 items-center">
-    <h3 class="mb-1 text-base">
+    <h3 class="m-0! text-base">
       {{ heading }}
     </h3>
 
@@ -103,10 +134,10 @@
     <li>
       <CraftCheckbox
         :label="item.label"
-        :model-value="modelValue.includes(key)"
+        :model-value="isSelected(key)"
         :value="key"
-        :disabled="disabled"
-        @update:model-value="toggleItem(key)"
+        :disabled="isDisabled(key)"
+        @update:model-value="setItemSelected(key, $event)"
         :class="{
           'cp-checkbox-indentation': level! > 0,
         }"
@@ -129,7 +160,8 @@
         v-if="hasNested(item)"
         :permissions="item.nested"
         :model-value="modelValue"
-        :disabled="disabled || !modelValue.includes(item.key)"
+        :locked-permissions="lockedPermissions"
+        :disabled="disabled || !isSelected(item.key)"
         @update:model-value="emit('update:modelValue', $event)"
         :level="level! + 1"
       />

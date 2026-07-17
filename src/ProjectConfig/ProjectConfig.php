@@ -53,6 +53,7 @@ use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -318,13 +319,7 @@ class ProjectConfig
      */
     private array $_sortedChangeEventHandlers = [];
 
-    /**
-     * @var bool Whether a mutex lock was acquired for this request
-     *
-     * @see _acquireLock()
-     * @see _releaseLock()
-     */
-    private bool $_locked = false;
+    private ?Lock $_mutex = null;
 
     public function __construct(GeneralConfig $generalConfig)
     {
@@ -1507,8 +1502,12 @@ class ProjectConfig
 
             if (! empty($projectConfigNames)) {
                 foreach ($projectConfigNames as $uid => $name) {
-                    $uids[] = '/^(.*'.preg_quote((string) $uid).'.*)$/mi';
-                    $replacements[] = '$1 # '.$name;
+                    $name = trim((string) $name);
+
+                    if ($name !== '') {
+                        $uids[] = sprintf('/^.*\b%s\b.*$/m', preg_quote((string) $uid));
+                        $replacements[] = "$0 # $name";
+                    }
                 }
             }
 
@@ -1924,7 +1923,7 @@ class ProjectConfig
      */
     private function _acquireLock(): void
     {
-        if ($this->_locked) {
+        if ($this->_mutex !== null) {
             return;
         }
 
@@ -1948,7 +1947,7 @@ class ProjectConfig
             }
         }
 
-        $this->_locked = true;
+        $this->_mutex = $mutex;
     }
 
     /**
@@ -1956,11 +1955,11 @@ class ProjectConfig
      */
     private function _releaseLock(): void
     {
-        if (! $this->_locked) {
+        if ($this->_mutex === null) {
             return;
         }
 
-        Cache::lock(self::MUTEX_NAME)->forceRelease();
-        $this->_locked = false;
+        $this->_mutex->release();
+        $this->_mutex = null;
     }
 }

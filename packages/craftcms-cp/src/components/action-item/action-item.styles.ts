@@ -13,6 +13,7 @@ export default css`
     font: inherit;
     text-align: left;
     display: flex;
+    width: 100%;
     align-items: center;
     text-decoration: none;
     padding-inline: var(--c-spacing-sm);

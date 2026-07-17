@@ -2,11 +2,10 @@
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {h, ref} from 'vue';
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/cp/utilities/translate';
   import DeleteSectionButton from '@/modules/sections/components/DeleteSectionButton.vue';
   import {create, edit, index} from '@actions/Settings/SectionsController';
   import {router} from '@inertiajs/vue3';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import Pane from '@/common/components/Pane.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import useCraftData from '@/common/composables/useCraftData';
@@ -16,6 +15,8 @@
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
   import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   export interface SectionModel {
     id: number;
@@ -37,6 +38,8 @@
 
   const {readOnly} = useCraftData();
   const searchTerm = ref(props.searchTerm ?? '');
+
+  useAppLayout(() => ({title: props.title}));
   const columnHelper = createCraftColumnHelper<SectionModel>();
   const columns = ref([
     columnHelper.accessor('name', {
@@ -129,35 +132,33 @@
 </script>
 
 <template>
-  <AppLayout :title="title">
-    <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
-    <template #actions>
-      <CpLink
-        as="craft-button"
-        variant="accent"
-        :href="create()"
-        v-if="!readOnly"
-      >
-        <craft-icon name="plus" slot="prefix"></craft-icon>
-        {{ t('New section') }}
-      </CpLink>
-    </template>
+  <LayoutSlot name="actions">
+    <CpLink
+      as="craft-button"
+      variant="accent"
+      :href="create()"
+      v-if="!readOnly"
+    >
+      <craft-icon name="plus" slot="prefix"></craft-icon>
+      {{ t('New section') }}
+    </CpLink>
+  </LayoutSlot>
 
-    <Pane :padding="0" appearance="raised">
-      <AdminTable
-        spacing="relaxed"
-        :title="title"
-        :table="sectionTable"
-        :reorderable="false"
-        :from="pagination.from"
-        :to="pagination.to"
-        :total="pagination.total"
-        :enable-adjust-page-size="true"
-      >
-        <template #search-form>
-          <SearchForm :action="index()" v-model="searchTerm" />
-        </template>
-      </AdminTable>
-    </Pane>
-  </AppLayout>
+  <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
+
+  <Pane :padding="0" appearance="raised">
+    <AdminTable
+      :title="title"
+      :table="sectionTable"
+      :reorderable="false"
+      :from="pagination.from"
+      :to="pagination.to"
+      :total="pagination.total"
+      :enable-adjust-page-size="true"
+    >
+      <template #search-form>
+        <SearchForm :action="index()" v-model="searchTerm" />
+      </template>
+    </AdminTable>
+  </Pane>
 </template>

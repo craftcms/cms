@@ -5,7 +5,12 @@ import {
   platformAuthenticatorIsAvailable,
   startAuthentication,
 } from '@simplewebauthn/browser';
-import {actionClient, t, visuallyHiddenStyles} from '@craftcms/cp';
+import {
+  actionClient,
+  t,
+  visuallyHiddenStyles,
+  ConfigService,
+} from '@craftcms/cp';
 import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';
@@ -79,6 +84,16 @@ export default class CraftLoginForm extends LitElement {
     }
   }
 
+  override focus(options?: FocusOptions): void {
+    void this.updateComplete.then(() => {
+      const input = this.staticEmail
+        ? this._passwordInput
+        : (this._usernameInput ?? this._passwordInput);
+
+      input?.focus(options);
+    });
+  }
+
   #usernameLabel() {
     return this.useEmailAsUsername ? t('Email') : t('Username or Email');
   }
@@ -95,6 +110,7 @@ export default class CraftLoginForm extends LitElement {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': ConfigService.getInstance().get('csrfTokenValue'),
         },
         body: JSON.stringify({
           loginName: this._usernameInput!.value,

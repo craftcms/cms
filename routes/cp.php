@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
@@ -24,6 +26,7 @@ use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
@@ -34,6 +37,7 @@ use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
+use CraftCms\Cms\Http\Controllers\Settings\Users\UserFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
@@ -43,6 +47,7 @@ use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
@@ -63,7 +68,7 @@ Route::get('install', [InstallController::class, 'index']);
 
 Route::middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin']);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
     Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
@@ -78,7 +83,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
+    Route::any(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
@@ -97,7 +102,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::post('system-messages', [SystemMessagesController::class, 'store']);
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
-        Route::view('settings/addresses', 'settings/addresses/_fields');
+        Route::get('settings/addresses', [AddressSettingsController::class, 'index']);
+        Route::post('settings/addresses', [AddressSettingsController::class, 'store']);
     });
 
     /**
@@ -128,13 +134,16 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
      * Entries & Content
      */
     Route::get('entries', EntriesIndexController::class);
-    Route::view('entries/{sectionHandle}', 'entries.index');
+    Route::get('entries/{sectionHandle}', EntriesIndexController::class);
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
-    Route::view('content/{page}', 'entries.index')->where('page', '[^\/]+');
-    Route::view('content/{page}/{sectionHandle}', 'entries.index')->where('page', '[^\/]+');
+    // Registered before the index route, which would otherwise match
+    // `content/{section}/new` with `new` as its section handle.
     Route::get('content/{section}/new', CreateEntryController::class);
+    Route::get('content/{page}/{sectionHandle?}', ContentIndexController::class)
+        ->name('content.index')
+        ->where('page', '[^\/]+');
 
     /**
      * Users
@@ -142,9 +151,14 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount', [UsersController::class, 'edit']);
     Route::get('myaccount/addresses', [AddressesController::class, 'index']);
     Route::get('myaccount/permissions', [PermissionsController::class, 'index']);
+    Route::patch('myaccount/permissions', [PermissionsController::class, 'update']);
     Route::get('myaccount/passkeys', [PasskeysController::class, 'index']);
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
+    Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
+    Route::post('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
+    Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
 
     Route::middleware([
         RequireEdition::class.':'.Edition::Team->value,
@@ -152,7 +166,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::get('users/new', [UsersController::class, 'create']);
         Route::get('users/{userId}', [UsersController::class, 'edit'])->whereNumber('userId');
         Route::get('users/{userId}/addresses', [AddressesController::class, 'index'])->whereNumber('userId');
-        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index']);
+        Route::get('users/{userId}/permissions', [PermissionsController::class, 'index'])->whereNumber('userId');
+        Route::patch('users/{userId}/permissions', [PermissionsController::class, 'update'])->whereNumber('userId');
     });
 
     Route::get('users/{slug?}', [UsersController::class, 'index']);
@@ -318,7 +333,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         } else {
             Route::get('settings/users', fn () => redirect(cp_url('settings/users/fields')));
         }
-        Route::view('settings/users/fields', 'settings/users/fields');
+        Route::get('settings/users/fields', [UserFieldsController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)
+            ->post('settings/users/fields', [UserFieldsController::class, 'store']);
 
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {

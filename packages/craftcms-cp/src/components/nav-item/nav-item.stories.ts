@@ -78,3 +78,40 @@ export const WithChildren: Story = {
     `;
   },
 };
+
+/** Toggle rendered in the prefix instead of the suffix. */
+export const TogglePositionPrefix: Story = {
+  args: {},
+  render(args) {
+    return html`
+      <craft-nav-list style="max-width: 300px">
+        <craft-nav-item toggle-position="prefix">
+          GraphQL
+          <craft-nav-list slot="subnav">
+            <craft-nav-item>Schemas</craft-nav-item>
+            <craft-nav-item active>Tokens</craft-nav-item>
+            <craft-nav-item external>GraphiQL</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+      </craft-nav-list>
+    `;
+  },
+};
+
+/** No label: no toggle, and the subnav stays expanded. */
+export const SubnavWithoutLabel: Story = {
+  args: {},
+  render(args) {
+    return html`
+      <craft-nav-list style="max-width: 300px">
+        <craft-nav-item>
+          <craft-nav-list slot="subnav">
+            <craft-nav-item>Schemas</craft-nav-item>
+            <craft-nav-item active>Tokens</craft-nav-item>
+            <craft-nav-item external>GraphiQL</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+      </craft-nav-list>
+    `;
+  },
+};

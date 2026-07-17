@@ -67,6 +67,7 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -484,7 +485,7 @@ class Asset extends Element
             ! app()->runningInConsole()
         ) {
             $temporaryUploadFolder = AssetsService::getUserTemporaryUploadFolder();
-            $temporaryUploadFs = AssetsService::getTempAssetUploadFs();
+            $temporaryUploadVolume = $temporaryUploadFolder->getVolume();
             $sources[] = [
                 'key' => 'temp',
                 'label' => t('Temporary Uploads'),
@@ -497,7 +498,7 @@ class Asset extends Element
                     'can-upload' => true,
                     'can-move-to' => false,
                     'can-move-peer-files-to' => false,
-                    'fs-type' => $temporaryUploadFs::class,
+                    'fs-type' => $temporaryUploadVolume->sourceFilesystemType(),
                 ],
             ];
         }
@@ -570,8 +571,7 @@ class Asset extends Element
 
         // Only match the first folder ID - ignore nested folders
         if (isset($volume)) {
-            $fs = $volume->getFs();
-            $isTemp = AssetsHelper::isTempUploadFs($fs);
+            $isTemp = $volume->isTemporary();
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -588,7 +588,7 @@ class Asset extends Element
             }
 
             // Copy URL
-            if ($fs->hasUrls) {
+            if ($volume->sourceHasUrls()) {
                 $actions[] = CopyUrl::class;
             }
 
@@ -803,7 +803,7 @@ class Asset extends Element
     }
 
     #[Override]
-    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
+    public static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         $assets = [];
         $originalLimit = $elementQuery->limit;
@@ -931,7 +931,7 @@ class Asset extends Element
             }
         }
 
-        if (AssetsHelper::isTempUploadFs($queryFolder->getFs())) {
+        if ($queryFolder->getVolume()->isTemporary()) {
             return false;
         }
 
@@ -1050,7 +1050,6 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, ?User $user = null): array
     {
         $volume = $folder->getVolume();
-        $fs = $volume->getFs();
         if (! $folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
         } else {
@@ -1074,7 +1073,7 @@ class Asset extends Element
                 'folder-id' => $folder->id,
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
-                'fs-type' => $fs::class,
+                'fs-type' => $volume->sourceFilesystemType(),
             ],
         ];
 
@@ -1279,7 +1278,7 @@ class Asset extends Element
         }
 
         $volume = $this->getVolume();
-        if (AssetsHelper::isTempUploadFs($volume->getFs())) {
+        if ($volume->isTemporary()) {
             return null;
         }
 
@@ -1507,7 +1506,7 @@ JS, [
                 InputNamespace::namespaceId($replaceId),
                 InputNamespace::get(),
                 $this->id,
-                $this->getVolume()->getFs()::class,
+                $this->getVolume()->sourceFilesystemType(),
                 t('Dimensions'),
             ]);
         }
@@ -1570,15 +1569,16 @@ JS, [
                 ['volumeId' => $this->volumeId],
             ]);
 
-            // Filesystem settings
-            $fsEditId = sprintf('edit-fs-%s', mt_rand());
-            $items[] = [
-                'id' => $fsEditId,
-                'icon' => 'gear',
-                'label' => t('Filesystem settings'),
-            ];
+            $fsHandle = $this->getVolume()->getFsHandle();
+            if (is_string($fsHandle) && ! str_starts_with($fsHandle, Volume::STORAGE_DISK_PREFIX) && Filesystems::getFilesystemByHandle($fsHandle)) {
+                $fsEditId = sprintf('edit-fs-%s', mt_rand());
+                $items[] = [
+                    'id' => $fsEditId,
+                    'icon' => 'gear',
+                    'label' => t('Filesystem settings'),
+                ];
 
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
+                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
 (() => {
   $('#' + $id).on('activate', function() {
     const params = $params;
@@ -1586,9 +1586,10 @@ JS, [
   });
 })();
 JS, [
-                InputNamespace::namespaceId($fsEditId),
-                ['handle' => $this->getVolume()->getFs()->handle],
-            ]);
+                    InputNamespace::namespaceId($fsEditId),
+                    ['handle' => $fsHandle],
+                ]);
+            }
         }
 
         return $items;
@@ -1994,8 +1995,7 @@ JS, [
             return $url;
         }
 
-        $fs = $volume->getFs();
-        if (! $fs->hasUrls || AssetsHelper::isTempUploadFs($fs)) {
+        if (! $volume->sourceHasUrls() || $volume->isTemporary()) {
             return null;
         }
 
@@ -2751,7 +2751,7 @@ JS;
     private function locationHtml(): string
     {
         $volume = $this->getVolume();
-        $isTemp = AssetsHelper::isTempUploadFs($volume->getFs());
+        $isTemp = $volume->isTemporary();
 
         if (! $isTemp) {
             $uri = "assets/$volume->handle";
@@ -2886,7 +2886,7 @@ JS;
         // Set the field layout
         $volume = Folders::getFolderById($folderId)->getVolume();
 
-        if (! AssetsHelper::isTempUploadFs($volume->getFs())) {
+        if (! $volume->isTemporary()) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
         }
 
@@ -3106,7 +3106,7 @@ JS;
         $volume = $this->getVolume();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if (AssetsHelper::isTempUploadFs($volume->getFs()) || Auth::id() === $this->uploaderId) {
+        if ($volume->isTemporary() || Auth::id() === $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {

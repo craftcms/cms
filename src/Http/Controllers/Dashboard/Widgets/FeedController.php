@@ -9,6 +9,8 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use function CraftCms\Cms\currentUser;
+
 readonly class FeedController
 {
     public function cacheData(Request $request, Repository $cache, GeneralConfig $generalConfig): JsonResponse
@@ -18,7 +20,8 @@ readonly class FeedController
             'data' => ['required'],
         ]);
 
-        $cache->put("feed:{$request->input('url')}", $request->input('data'), $generalConfig->cacheDuration);
+        $key = sprintf('feed:%s:%s', currentUser()->getCraftUserId(), $request->input('url'));
+        $cache->put($key, $request->input('data'), $generalConfig->cacheDuration);
 
         return new JsonResponse;
     }

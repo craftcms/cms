@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use Illuminate\Container\Container;
 use Illuminate\Http\Request;
-use Illuminate\Pipeline\Pipeline;
-use Illuminate\Routing\Route;
+use Illuminate\Routing\Contracts\ControllerDispatcher;
 use Illuminate\Routing\Router;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 class ControllerRoute
@@ -20,51 +21,39 @@ class ControllerRoute
      * invokable controller class or [Controller::class, 'method'].
      * Params are added as route parameters before handling.
      *
-     * @param  array|string|callable|null  $action
      * @param  array<string, mixed>  $params
      */
     public function __construct(
-        public mixed $action,
+        public array|string $action,
         public array $params = [],
     ) {}
 
     public function handle(Request $request, ElementInterface $element): Response
     {
-        $router = app(Router::class);
-        $route = $router->newRoute(
-            methods: 'GET',
-            uri: $request->path(),
-            action: is_string($this->action)
-                ? ['uses' => $this->action]
-                : $this->action,
-        );
+        $route = $request->route();
 
-        $route->bind($request);
+        if (! $route) {
+            throw new InvalidArgumentException('Controller site routes require a routed HTTP request.');
+        }
 
-        foreach ($this->routeParams($element) as $name => $value) {
+        [$controller, $method] = match (true) {
+            is_string($this->action) => [app(Container::class)->make($this->action), '__invoke'],
+            is_array($this->action) && count($this->action) === 2 && is_string($this->action[0]) && is_string($this->action[1]) => [
+                app(Container::class)->make($this->action[0]),
+                $this->action[1],
+            ],
+            default => throw new InvalidArgumentException('Controller site routes must use an invokable controller or [controller, method].'),
+        };
+
+        $route->setParameter('element', $element);
+
+        foreach ($this->params as $name => $value) {
             $route->setParameter($name, $value);
         }
 
-        $request->setRouteResolver(fn () => $route);
-
-        app()->instance(Route::class, $route);
-
-        $response = new Pipeline(app())
-            ->send($request)
-            ->through($router->gatherRouteMiddleware($route))
-            ->then(fn () => $route->run());
-
-        return $router->prepareResponse($request, $response);
-    }
-
-    private function routeParams(ElementInterface $element): array
-    {
-        $params = ['element' => $element];
-
-        if ($refHandle = $element::refHandle()) {
-            $params[$refHandle] = $element;
-        }
-
-        return $params + $this->params;
+        return Router::toResponse(
+            $request,
+            app(ControllerDispatcher::class)->dispatch($route, $controller, $method),
+        );
     }
 }

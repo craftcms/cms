@@ -13,7 +13,7 @@ use Override;
  * @method static \Illuminate\Support\Collection getAllFilesystems()
  * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface|null getFilesystemByHandle(string $handle)
  * @method static string toDiskName(string $handle)
- * @method static \Illuminate\Contracts\Filesystem\Filesystem disk(string $handle)
+ * @method static \Illuminate\Filesystem\FilesystemAdapter disk(string $reference, string|null $prefix = null)
  * @method static void syncDisks()
  * @method static void registerDisk(string $handle, array|null $filesystemConfig = null)
  * @method static void purgeDisk(string $handle)

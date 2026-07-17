@@ -10,6 +10,8 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use Illuminate\Http\Request;
 
+use function CraftCms\Cms\currentUser;
+
 /** @mixin Section */
 class SectionResource extends JsonResource
 {
@@ -29,7 +31,9 @@ class SectionResource extends JsonResource
             'propagationMethod' => $this->propagationMethod->value,
             'defaultPlacement' => $this->defaultPlacement->value,
             'previewTargets' => $this->previewTargets ?? [],
+            'sites' => $this->getSiteIds(),
             'entryTypes' => EntryTypeResource::collection($this->entryTypes),
+            'canSave' => currentUser()?->can("saveEntries:$this->uid"),
         ];
     }
 }

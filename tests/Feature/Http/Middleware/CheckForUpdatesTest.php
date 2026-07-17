@@ -11,9 +11,25 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 beforeEach(function () {
     $this->updates = $this->mock(Updates::class);
+    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(true)->byDefault();
 
     TemplateMode::set(TemplateMode::Cp);
 });
+
+it('aborts 503 for site requests when the schema version is incompatible', function () {
+    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(false);
+
+    app(CheckForUpdates::class)->handle(Request::create('/site-page'), fn () => 'passed');
+})->throws(HttpException::class);
+
+it('throws for CP requests when the schema version is incompatible', function () {
+    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(false);
+
+    app(CheckForUpdates::class)->handle(
+        Request::create('/'.Cms::config()->cpTrigger.'/dashboard'),
+        fn () => 'passed',
+    );
+})->throws(RuntimeException::class);
 
 it('passes through when no updates pending', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);

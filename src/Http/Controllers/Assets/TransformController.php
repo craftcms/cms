@@ -91,13 +91,9 @@ readonly class TransformController
         $useOriginal = $transformString === 'original';
         if ($useOriginal) {
             $volume = $asset->getVolume();
-            if ($volume->sourceDisk() instanceof LocalFilesystemAdapter) {
-                $path = sprintf(
-                    '%s/%s/%s',
-                    rtrim($volume->sourceDisk()->path(''), '/'),
-                    rtrim($volume->getSubpath(), '/'),
-                    $asset->getPath()
-                );
+            $sourceDisk = $volume->sourceDisk();
+            if ($sourceDisk instanceof LocalFilesystemAdapter) {
+                $path = $sourceDisk->path($asset->getPath());
 
                 return response()->file($path, [
                     'Content-Disposition' => 'inline; filename="'.$asset->getFilename().'"',

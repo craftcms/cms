@@ -1,16 +1,22 @@
 <script setup lang="ts">
   import type {EntryType} from '@/common/types';
   import {computed, ref} from 'vue';
-  import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/cp';
+  import {
+    appendBodyHtml,
+    appendHeadHtml,
+    serializeFormInputs,
+    t,
+  } from '@craftcms/cp';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/common/components/Text.vue';
   import {
     applyOverrideSettings,
+    create,
     renderOverrideSettings,
   } from '@actions/Settings/EntryTypesController';
   import type {SlideoutInstance} from '@/common/types/globals';
   import EntryTypeChip from '@/modules/entry-types/components/EntryTypeChip.vue';
-  import CreateEntryTypeButton from '@/modules/entry-types/components/CreateEntryTypeButton.vue';
+  import SlideoutButton from '@/common/components/SlideoutButton.vue';
   import {router} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
@@ -134,7 +140,7 @@
       const postData = {
         id: body.get('id'),
         settingsNamespace: body.get('settingsNamespace'),
-        settings: new URLSearchParams(body as any).toString(),
+        settings: serializeFormInputs(target),
       };
 
       try {
@@ -359,10 +365,14 @@
         </template>
       </div>
     </craft-action-menu>
-    <CreateEntryTypeButton
+    <SlideoutButton
       v-if="!readOnly"
+      :url="create['/{cpTrigger?}/settings/entry-types/new']().url"
       @success="router.reload({only: ['entryTypes']})"
-    />
+    >
+      <craft-icon name="plus" slot="prefix"></craft-icon>
+      {{ t('Create') }}
+    </SlideoutButton>
   </div>
 </template>
 

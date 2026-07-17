@@ -160,7 +160,7 @@ readonly class UploadController
                 'filename' => $asset->conflictingFilename,
                 'conflictingAssetId' => $conflictingAsset->id ?? null,
                 'suggestedFilename' => $asset->suggestedFilename,
-                'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->getFs()->hasUrls) ? $conflictingAsset->getUrl() : null,
+                'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->sourceHasUrls()) ? $conflictingAsset->getUrl() : null,
                 'url' => $url,
             ]);
         }
@@ -239,6 +239,10 @@ readonly class UploadController
                     ->folderId($sourceAsset->folderId)
                     ->filename(Query::escapeParam($targetFilename))
                     ->one();
+
+                if ($assetToReplace) {
+                    Gate::authorize('replaceFile', $assetToReplace);
+                }
             }
 
             if (! empty($assetToReplace)) {

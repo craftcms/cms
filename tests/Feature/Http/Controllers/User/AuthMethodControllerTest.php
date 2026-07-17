@@ -96,7 +96,7 @@ describe('destroy', function () {
 
         postJson(action([AuthMethodController::class, 'destroy']), [
             'method' => RecoveryCodes::class,
-        ])->assertForbidden();
+        ])->assertStatus(423);
     });
 
     it('validates method parameter is required', function () {

@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,11 +44,11 @@ class CpScreenResponse implements Responsable
     private ?string $inertiaPage = null;
 
     /**
-     * @var array Props to pass to the Inertia page component.
+     * @var array|Arrayable Props to pass to the Inertia page component.
      *
      * @see inertiaPage()
      */
-    private array $inertiaProps = [];
+    private array|Arrayable $inertiaProps = [];
 
     /**
      * @var callable|null Callable that will be called before other properties are added to the screen.
@@ -123,6 +124,13 @@ class CpScreenResponse implements Responsable
     public array $tabs = [];
 
     /**
+     * @var array|null Secondary navigation items.
+     *
+     * @see subnav()
+     */
+    public ?array $subnav = null;
+
+    /**
      * @var string|null Class that should be added to the slideout body.
      */
     public ?string $slideoutBodyClass = null;
@@ -130,7 +138,7 @@ class CpScreenResponse implements Responsable
     /**
      * @var array Custom attributes to add to the `<main>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
      * This will only be used by full-page screens.
      *
@@ -141,7 +149,7 @@ class CpScreenResponse implements Responsable
     /**
      * @var array Custom attributes to add to the `<form>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
      * @see formAttributes()
      */
@@ -401,6 +409,16 @@ class CpScreenResponse implements Responsable
     }
 
     /**
+     * Sets the secondary navigation items.
+     */
+    public function subnav(?array $value): self
+    {
+        $this->subnav = $value;
+
+        return $this;
+    }
+
+    /**
      * Adds a tab.
      *
      * @param  string|string[]|null  $class
@@ -425,7 +443,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets custom attributes that should be added to the `<main>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
      * This will only be used by full-page screens.
      */
@@ -439,7 +457,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets custom attributes that should be added to the `<form>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      */
     public function formAttributes(array $value): self
     {
@@ -629,7 +647,7 @@ class CpScreenResponse implements Responsable
      * When set, `toResponse()` will render an Inertia response instead of a Twig template.
      * The `title` and `crumbs` properties will be automatically included as props.
      */
-    public function inertiaPage(?string $value, array $props = []): self
+    public function inertiaPage(?string $value, array|Arrayable $props = []): self
     {
         $this->inertiaPage = $value;
         $this->inertiaProps = $props;
@@ -868,6 +886,7 @@ class CpScreenResponse implements Responsable
             'submitButtonLabel' => $this->submitButtonLabel,
             'additionalButtons' => $addlButtons,
             'tabs' => $this->tabs,
+            'subnav' => $this->subnav,
             'fullPageForm' => $isForm,
             'mainAttributes' => $this->mainAttributes,
             'mainFormAttributes' => $this->formAttributes,
@@ -888,10 +907,13 @@ class CpScreenResponse implements Responsable
         ];
 
         if ($this->inertiaPage) {
-            return Inertia::render($this->inertiaPage, [
-                ...$templateProps,
-                ...$this->inertiaProps,
-            ])->toResponse($request);
+            if ($this->subnav === null) {
+                unset($templateProps['subnav']);
+            }
+
+            return Inertia::render($this->inertiaPage, $this->inertiaProps)
+                ->with($templateProps)
+                ->toResponse($request);
         }
 
         // Render and return the template

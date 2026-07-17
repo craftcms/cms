@@ -2,7 +2,6 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
 
-// import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import './tooltip.js';
 import '../button/button.js';
 
@@ -24,11 +23,11 @@ const meta = {
     }
 
     return html`
-      <c-tooltip
+      <craft-tooltip
         placement="${args.placement}"
         style="${args.style}"
         for="my-button"
-        >${args.content}</c-tooltip
+        >${args.content}</craft-tooltip
       >
       <craft-button id="my-button">Hover me</craft-button>
     `;

@@ -10,19 +10,18 @@ namespace craft\web;
 use craft\base\ApplicationTrait;
 use craft\errors\ExitException;
 use craft\helpers\App;
-use craft\helpers\FileHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Route\DynamicRoute;
+use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Web\Response as IlluminateBridgeResponse;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request as IlluminateRequest;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -31,11 +30,8 @@ use IntlException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 use yii\base\Component;
-use yii\base\ErrorException;
-use yii\base\Exception;
 use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -90,10 +86,6 @@ class Application extends \yii\web\Application
         $this->_preInit();
 
         parent::init();
-
-        if (!app()->isEphemeral()) {
-            $this->ensureResourcePathExists();
-        }
 
         $this->_postInit();
 
@@ -273,9 +265,11 @@ class Application extends \yii\web\Application
 
     private function runTemplateRoute(array $params = []): BaseResponse
     {
-        $laravelResponse = new DynamicRoute('templates/render', $params + [
-            'publicOnly' => false,
-        ])->handle(request());
+        $laravelResponse = new TemplateRoute(
+            $params['template'],
+            $params['variables'] ?? [],
+            publicOnly: false,
+        )->handle(request());
 
         $response = $this->getResponse();
 
@@ -322,7 +316,7 @@ class Application extends \yii\web\Application
         }
 
         /** @var SymfonyResponse $laravelResponse */
-        $laravelResponse = app(Kernel::class)->handle($internalRequest);
+        $laravelResponse = app(Router::class)->dispatch($internalRequest);
 
         $response = $this->getResponse();
 
@@ -349,10 +343,10 @@ class Application extends \yii\web\Application
             ? app(Sites::class)->getRequestPath($originalRequest)
             : $originalRequest->craftPath();
 
-        $laravelResponse = new DynamicRoute('templates/render', [
-            'template' => $template,
-            'variables' => $this->getUrlManager()->getRouteParams() ?? [],
-        ])->handle($originalRequest);
+        $laravelResponse = new TemplateRoute(
+            $template,
+            $this->getUrlManager()->getRouteParams() ?? [],
+        )->handle($originalRequest);
 
         $response = $this->getResponse();
 
@@ -378,24 +372,6 @@ class Application extends \yii\web\Application
         }
 
         return $component;
-    }
-
-    /**
-     * Ensures that the resources folder exists and is writable.
-     *
-     * @throws ErrorException
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
-    protected function ensureResourcePathExists(): void
-    {
-        $generalConfig = Cms::config();
-
-        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath);
-
-        if (!@FileHelper::createDirectory($resourceBasePath)) {
-            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
-        }
     }
 
     /**

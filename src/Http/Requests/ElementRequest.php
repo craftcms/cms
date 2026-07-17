@@ -118,9 +118,15 @@ class ElementRequest extends FormRequest
 
         abort_unless($this->craftUser()->can('view', $element), 403, 'User not authorized to view this element.');
 
+        // When site resolution is non-strict, the element may have been resolved
+        // in a fallback site (via preferSites) rather than the requested one. In
+        // that case redirect to its canonical edit URL so the URL reflects the
+        // actual site. `$siteId` here is the list of editable sites used for the
+        // query, so compare against the preferred (requested) site instead.
         if (
             ! $this->strictSite &&
-            $element->siteId !== $siteId &&
+            $preferSites !== null &&
+            ! in_array($element->siteId, $preferSites, true) &&
             ! $this->wantsJson()
         ) {
             return redirect($element->getCpEditUrl());
