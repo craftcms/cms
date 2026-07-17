@@ -9,6 +9,8 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
+use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
@@ -50,6 +52,8 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     Route::class,
                     Updates::class,
                     HtmlFragment::class,
+                    AssetIndexViewModel::class,
+                    EntryIndexViewModel::class,
                     FieldEditViewModel::class,
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,

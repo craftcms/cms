@@ -6,30 +6,34 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
+use Override;
 
 /**
- * Payload for the asset index screen (`assets/_index`).
+ * The Inertia payload for the asset index screen (`assets/Index`).
  *
- * Resolves a `defaultSource` path like `volumeHandle/sub/folder` into the
- * source key and source-path chain the element index expects.
+ * A `defaultSource` path like `volumeHandle/sub/folder` selects the volume's
+ * source and resolves the subfolder chain into `defaultSourcePath`.
  */
-class AssetIndexViewModel extends ViewModel
+class AssetIndexViewModel extends ContentIndexViewModel
 {
     /** @var array{0: Volume|null, 1: string[]}|null */
-    private ?array $resolvedSource = null;
+    private ?array $resolvedDefaultSource = null;
 
     public function __construct(
+        ElementIndexRequest $request,
         private readonly ?string $defaultSource = null,
-    ) {}
+    ) {
+        parent::__construct(Asset::class, $request);
+    }
 
     public function defaultSource(): ?string
     {
-        [$volume] = $this->resolveSource();
-
-        return $volume === null ? null : "volume:{$volume->uid}";
+        return $this->defaultSourceKey();
     }
 
     /** @return array<int, array|null>|null */
@@ -61,16 +65,24 @@ class AssetIndexViewModel extends ViewModel
         return $sourcePath;
     }
 
+    #[Override]
+    protected function defaultSourceKey(): ?string
+    {
+        [$volume] = $this->resolveDefaultSource();
+
+        return $volume === null ? null : "volume:{$volume->uid}";
+    }
+
     /**
-     * The volume named by the first path segment, and the remaining
-     * subfolder segments.
+     * The volume named by the first `defaultSource` path segment, and the
+     * remaining subfolder segments.
      *
      * @return array{0: Volume|null, 1: string[]}
      */
-    private function resolveSource(): array
+    private function resolveDefaultSource(): array
     {
-        if ($this->resolvedSource !== null) {
-            return $this->resolvedSource;
+        if ($this->resolvedDefaultSource !== null) {
+            return $this->resolvedDefaultSource;
         }
 
         $segments = Arr::whereNotEmpty(explode('/', (string) $this->defaultSource));
@@ -79,12 +91,12 @@ class AssetIndexViewModel extends ViewModel
             ? null
             : Volumes::getVolumeByHandle(array_shift($segments));
 
-        return $this->resolvedSource = [$volume, $segments];
+        return $this->resolvedDefaultSource = [$volume, $segments];
     }
 
     private function subfolder(): ?VolumeFolder
     {
-        [$volume, $segments] = $this->resolveSource();
+        [$volume, $segments] = $this->resolveDefaultSource();
 
         if ($volume === null || $segments === []) {
             return null;

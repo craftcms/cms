@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 readonly class IndexController
 {
     use RespondsWithFlash;
 
-    public function __invoke(Request $request, ?string $defaultSource = null): View
+    public function __invoke(ElementIndexRequest $request, ?string $defaultSource = null): Response
     {
-        return view('assets/_index', new AssetIndexViewModel(
+        return Inertia::render('assets/Index', new AssetIndexViewModel(
+            $request,
             $request->input('defaultSource', $defaultSource),
         ));
     }

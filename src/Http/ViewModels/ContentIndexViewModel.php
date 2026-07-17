@@ -10,31 +10,33 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
-use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementSources;
-use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 use function CraftCms\Cms\t;
 
 /**
- * The Inertia payload for an element index screen (`content/Index`).
+ * The shared Inertia payload for an element index screen.
  *
  * Query building goes through the shared {@see ElementIndexes} kernel — the
  * same one the legacy XHR endpoints use — while everything page-shaped
  * (view state, pagination, bulk-action items, column/sort metadata, and
  * row/card serialization) lives here.
  *
+ * Element-type view models extend this with their own payload keys (public
+ * methods) and can supply a default source via {@see defaultSourceKey()} —
+ * e.g. entries map a section-handle URL segment, assets a volume path.
+ *
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
  * (resolved source, query, index data, paginator) are memoized privately since
  * payload methods may be invoked in any order.
  */
-class ContentIndexViewModel extends ViewModel
+abstract class ContentIndexViewModel extends ViewModel
 {
-    private const string RENDER_CONTEXT = 'index';
+    protected const string RENDER_CONTEXT = 'index';
 
     /** @var array{0: ?string, 1: ?array}|null */
     private ?array $resolvedSource = null;
@@ -53,13 +55,24 @@ class ContentIndexViewModel extends ViewModel
     /** @var string[]|null */
     private ?array $visibleColumns = null;
 
+    private ?array $resolvedSources = null;
+
     public function __construct(
         /** @var class-string<ElementInterface> */
-        private readonly string $elementType,
-        private readonly ElementIndexRequest $request,
-        private readonly ?string $sectionHandle = null,
-        private readonly array $elementStatuses = [],
+        protected readonly string $elementType,
+        protected readonly ElementIndexRequest $request,
+        protected readonly ?string $page = null,
     ) {}
+
+    /**
+     * The source key to fall back to when the request doesn't name one —
+     * how a type-specific URL (section handle, volume path, …) selects its
+     * source. `null` falls through to the “all elements” source.
+     */
+    protected function defaultSourceKey(): ?string
+    {
+        return null;
+    }
 
     public function status(): string
     {
@@ -79,6 +92,10 @@ class ContentIndexViewModel extends ViewModel
     /** @return array{id: int, editable: bool}|null */
     public function structure(): ?array
     {
+        if ($this->sourceState()[0] === null) {
+            return null;
+        }
+
         $indexData = $this->resolveIndexData();
 
         return isset($indexData['structure'])
@@ -125,11 +142,86 @@ class ContentIndexViewModel extends ViewModel
     /** @return array<int, array{label: string, value: string}> */
     public function statusOptions(): array
     {
-        return collect($this->elementStatuses)
+        return collect($this->elementType::statuses())
             ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
             ->prepend(['label' => t('All'), 'value' => ''])
             ->values()
             ->all();
+    }
+
+    public function showStatusMenu(): bool
+    {
+        return $this->elementType::hasStatuses()
+            && count($this->elementType::statuses()) >= 2;
+    }
+
+    public function showSiteMenu(): bool
+    {
+        return Sites::isMultiSite() && $this->elementType::isLocalized();
+    }
+
+    /**
+     * The element index page title: a custom index page's own name wins,
+     * otherwise the element type's plural display name.
+     */
+    public function title(): string
+    {
+        if ($this->page !== null) {
+            $pageName = $this->sources()[0]['page'] ?? null;
+
+            if ($pageName !== null) {
+                return t($pageName, category: 'site');
+            }
+        }
+
+        return $this->elementType::pluralDisplayName();
+    }
+
+    public function sources(): array
+    {
+        return $this->resolvedSources ??= ElementSources::getSources(
+            $this->elementType,
+            withDisabled: true,
+            page: $this->page,
+        )->all();
+    }
+
+    /** @return class-string<ElementInterface> */
+    public function elementType(): string
+    {
+        return $this->elementType;
+    }
+
+    public function page(): ?string
+    {
+        return $this->page;
+    }
+
+    public function elementDisplayName(): string
+    {
+        return $this->elementType::displayName();
+    }
+
+    public function elementPluralDisplayName(): string
+    {
+        return $this->elementType::pluralDisplayName();
+    }
+
+    public function canHaveDrafts(): bool
+    {
+        return $this->elementType::hasDrafts();
+    }
+
+    public function viewModes(): array
+    {
+        return $this->elementType::indexViewModes();
+    }
+
+    public function selectedSubnavItem(): ?string
+    {
+        return $this->page !== null
+            ? ElementSources::pageNameId($this->page)
+            : null;
     }
 
     /**
@@ -233,6 +325,10 @@ class ContentIndexViewModel extends ViewModel
 
     public function data(): array
     {
+        if ($this->sourceState()[0] === null) {
+            return [];
+        }
+
         $elements = $this->resolvePaginator()->items();
 
         return $this->mode() === 'cards'
@@ -287,11 +383,6 @@ class ContentIndexViewModel extends ViewModel
         return $this->resolvedSort = [['field' => 'dateCreated', 'direction' => 'desc']];
     }
 
-    public function publishableSections(): array
-    {
-        return SectionResource::collection(Sections::getPublishableSections())->resolve();
-    }
-
     /**
      * @return array{
      *     total: int,
@@ -306,6 +397,19 @@ class ContentIndexViewModel extends ViewModel
      */
     public function pagination(): array
     {
+        if ($this->sourceState()[0] === null) {
+            return [
+                'total' => 0,
+                'per_page' => max(1, $this->request->integer('per_page', 50)),
+                'current_page' => 1,
+                'last_page' => 1,
+                'next_page_url' => null,
+                'prev_page_url' => null,
+                'from' => null,
+                'to' => null,
+            ];
+        }
+
         $paginator = $this->resolvePaginator();
 
         return [
@@ -321,39 +425,35 @@ class ContentIndexViewModel extends ViewModel
     }
 
     /** @return array{0: ?string, 1: ?array} */
-    private function sourceState(): array
+    protected function sourceState(): array
     {
         if ($this->resolvedSource !== null) {
             return $this->resolvedSource;
         }
 
-        // An explicit ?source= wins; otherwise a section-handle URL (e.g.
-        // content/entries/blog, content/entries/singles) selects that source.
+        // An explicit ?source= wins; otherwise the element type's default
+        // (e.g. a section-handle or volume-path URL) selects its source.
         $requestedSource = $this->request->input('source')
-            ?? $this->sourceKeyForSectionHandle()
+            ?? $this->defaultSourceKey()
             ?? '*';
 
-        return $this->resolvedSource = app(ElementIndexes::class)
-            ->resolveSource($this->elementType, $requestedSource, self::RENDER_CONTEXT);
-    }
+        $resolved = app(ElementIndexes::class)
+            ->resolveSource($this->elementType, $requestedSource, static::RENDER_CONTEXT);
 
-    /**
-     * Maps the section-handle route segment to its source key (`singles` for
-     * Single sections, `section:{uid}` otherwise).
-     */
-    private function sourceKeyForSectionHandle(): ?string
-    {
-        if ($this->sectionHandle === null || $this->sectionHandle === '') {
-            return null;
+        // Not every element type has a `*` source (assets index per-volume,
+        // for example), so mirror the legacy index's behavior and fall back
+        // to the first available source.
+        if ($resolved[0] === null) {
+            $firstSourceKey = ElementSources::getSources($this->elementType, static::RENDER_CONTEXT)
+                ->first(fn (array $source): bool => isset($source['key']))['key'] ?? null;
+
+            if ($firstSourceKey !== null && $firstSourceKey !== $requestedSource) {
+                $resolved = app(ElementIndexes::class)
+                    ->resolveSource($this->elementType, $firstSourceKey, static::RENDER_CONTEXT);
+            }
         }
 
-        if ($this->sectionHandle === 'singles') {
-            return 'singles';
-        }
-
-        $section = Sections::getSectionByHandle($this->sectionHandle);
-
-        return $section ? "section:$section->uid" : null;
+        return $this->resolvedSource = $resolved;
     }
 
     /**
@@ -434,7 +534,7 @@ class ContentIndexViewModel extends ViewModel
             disabledElementIds: $this->request->array('disabledElementIds'),
             viewState: $viewState,
             sourceKey: $sourceKey,
-            context: self::RENDER_CONTEXT,
+            context: static::RENDER_CONTEXT,
             selectable: true,
             sortable: false,
         );
@@ -496,7 +596,7 @@ class ContentIndexViewModel extends ViewModel
                     $attribute => $attribute === 'title' ?
                         Html::tag('CpLink',
                             $elementHtml->chipHtml($element, [
-                                'context' => self::RENDER_CONTEXT,
+                                'context' => static::RENDER_CONTEXT,
                                 'appearance' => 'plain',
                             ]),
                             ['href' => $element->getCpEditUrl(), 'inertia' => false]
@@ -523,7 +623,7 @@ class ContentIndexViewModel extends ViewModel
             // client-side, while staying unique per card.
             $cardConfig = [
                 'id' => sprintf('card-%s', mt_rand()),
-                'context' => self::RENDER_CONTEXT,
+                'context' => static::RENDER_CONTEXT,
                 'hyperlink' => true,
                 'showEditButton' => false,
                 'autoReload' => false,
