@@ -8,7 +8,6 @@ use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
@@ -154,10 +153,8 @@ test('save creates filesystem with valid data', function () {
         'type' => Local::class,
         'name' => 'New Test Filesystem',
         'handle' => 'newTestFilesystem',
-        'types' => [
-            Html::id(Local::class) => [
-                'path' => sys_get_temp_dir().'/test-uploads',
-            ],
+        'settings' => [
+            'path' => sys_get_temp_dir().'/test-uploads',
         ],
     ]);
 
