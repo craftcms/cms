@@ -18,10 +18,12 @@
       :class="menuBtnClasses"
       :data-icon="icon"
       :disabled="buttonDisabled"
-      :type="enabled && !isMenuButton && !ajax ? 'submit' : null"
+      :type="isMenuButton ? null : enabled && !ajax ? 'submit' : 'button'"
       v-on="
         enabled && !isMenuButton && ajax
-          ? {click: handleClick(param, value, action, ajax, handleClick)}
+          ? {
+              click: () => handleClick(param, value, action, ajax, handleClick),
+            }
           : {}
       "
       >{{ label }}</component

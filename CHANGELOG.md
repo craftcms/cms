@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where admin tables’ action buttons could fire when rendering. ([#19255](https://github.com/craftcms/cms/issues/19255))
+
 ## 5.10.11 - 2026-07-15
 
 - Added `craft\gql\base\MutationResolver::requireAllowedSite()`.
