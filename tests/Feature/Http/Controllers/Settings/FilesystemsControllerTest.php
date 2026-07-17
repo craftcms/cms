@@ -8,7 +8,6 @@ use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
@@ -154,10 +153,8 @@ test('save creates filesystem with valid data', function () {
         'type' => Local::class,
         'name' => 'New Test Filesystem',
         'handle' => 'newTestFilesystem',
-        'types' => [
-            Html::id(Local::class) => [
-                'path' => sys_get_temp_dir().'/test-uploads',
-            ],
+        'settings' => [
+            'path' => sys_get_temp_dir().'/test-uploads',
         ],
     ]);
 
@@ -177,10 +174,8 @@ test('save ignores null transient filesystem settings', function () {
         'type' => TransientSettingsFilesystem::class,
         'name' => 'Transient Settings Filesystem',
         'handle' => 'transientSettingsFilesystem',
-        'types' => [
-            TransientSettingsFilesystem::class => [
-                'transientSetting' => null,
-            ],
+        'settings' => [
+            'transientSetting' => null,
         ],
     ]);
 
@@ -209,10 +204,8 @@ test('save updates existing filesystem with oldHandle', function () {
         'name' => 'Updated Name',
         'handle' => 'updatedHandle',
         'oldHandle' => 'originalHandle',
-        'types' => [
-            'craft-fs-Local' => [
-                'path' => '@webroot/updated',
-            ],
+        'settings' => [
+            'path' => '@webroot/updated',
         ],
     ]);
 
@@ -233,9 +226,7 @@ test('save returns failure on invalid data', function () {
         'type' => 'craft\fs\Local',
         'name' => '', // Empty name should fail
         'handle' => '',
-        'types' => [
-            'craft-fs-Local' => [],
-        ],
+        'settings' => [],
     ]);
 
     $response->assertStatus(400);
@@ -277,7 +268,7 @@ test('respects read-only mode for save operation', function () {
         'type' => 'craft\fs\Local',
         'name' => 'Test',
         'handle' => 'test',
-        'types' => [],
+        'settings' => [],
     ])
         ->assertForbidden();
 });
