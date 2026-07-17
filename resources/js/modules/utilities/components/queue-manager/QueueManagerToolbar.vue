@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {type JobInfo, JobStatus} from '@craftcms/ui';
+  import {type JobInfo, JobStatus} from '@/common/types/queue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed, ref, watch} from 'vue';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';

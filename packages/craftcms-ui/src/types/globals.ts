@@ -1,6 +1,3 @@
-import {QueueService} from '@src/services/Queue';
-import {ConfigService} from '@src/services/Config';
-
 /**
  * Runtime globals bootstrapped by the Control Panel that aren't ES module
  * imports. Declared here so they're available across the package.
@@ -56,11 +53,6 @@ type Site = {
   name: string;
   uid: string;
 };
-
-export interface CpServices {
-  $queue: QueueService;
-  $config: ConfigService;
-}
 
 /** Shape of the legacy global `Craft` object that this package relies on. */
 export interface CraftGlobal {

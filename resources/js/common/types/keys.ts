@@ -1,5 +1,5 @@
 import type {InjectionKey} from 'vue';
-import type {QueueService} from '@craftcms/ui/services/Queue';
+import type {QueueService} from '@/common/services/Queue';
 import type {AxiosInstance} from 'axios';
 import type {ConfigService} from '@craftcms/ui/services/Config';
 

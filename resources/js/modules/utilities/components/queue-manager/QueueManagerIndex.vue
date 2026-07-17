@@ -10,7 +10,7 @@
   } from '@tanstack/vue-table';
   import CpLink from '@/common/components/CpLink.vue';
   import Badge from '@/common/components/Badge.vue';
-  import {type JobInfo, JobStatus} from '@craftcms/ui';
+  import {type JobInfo, JobStatus} from '@/common/types/queue';
   import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
   import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
   import {show} from '@routes/cp/utilities';

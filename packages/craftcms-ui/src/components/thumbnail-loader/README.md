@@ -34,8 +34,8 @@ the static `retryAll()` retry hook used by previews).
   (`$rows`, `$newElements`); it also imported a bad
   `@craftcms/ui/utilities/thumbnail-loader.ts.mjs` specifier that failed to
   resolve at runtime. Both are fixed (the specifier is now
-  `@craftcms/ui/utilities/thumbnail-loader`, matching how `CP.js` imports
-  `@craftcms/ui/services/Queue`).
+  `@craftcms/ui/utilities/thumbnail-loader`, an extensionless subpath the
+  package exports map resolves to built output).
 
 ## Legacy callers that must keep working
 

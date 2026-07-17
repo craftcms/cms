@@ -4,7 +4,6 @@ import '@github/relative-time-element';
 import './types/globals.js';
 import './types/events.js';
 import './types/index.js';
-import './types/queue.js';
 
 export {CraftAuthChallengeForm} from './components/auth-challenge-form/auth-challenge-form.js';
 export {default as CraftActionItem} from './components/action-item/action-item.js';
@@ -83,7 +82,6 @@ export * from './utilities/attrs.js';
 export * from './utilities/thumbnail-loader.js';
 
 // Services
-export {QueueService} from './services/Queue.js';
 export {ConfigService} from './services/Config.js';
 export {AssetIndexer} from './services/AssetIndexer.js';
 export type {
