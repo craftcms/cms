@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import Badge from '@/common/components/Badge.vue';
   import SessionProgress from '@/modules/utilities/components/asset-indexes/SessionProgress.vue';
   import SessionActions from '@/modules/utilities/components/asset-indexes/SessionActions.vue';

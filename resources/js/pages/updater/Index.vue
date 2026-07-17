@@ -7,7 +7,7 @@
     type UpdaterState,
     useUpdater,
   } from '@/modules/updater/composables/useUpdater';
-  import {ConfigService} from '@craftcms/cp';
+  import {ConfigService} from '@craftcms/ui';
 
   defineOptions({layout: []});
 

@@ -9,8 +9,8 @@ the static `retryAll()` retry hook used by previews).
 ## Pieces
 
 - **Main class** — `src/utilities/thumbnail-loader.ts` (`ThumbnailLoader` +
-  `ThumbnailWorker`), exported from `@craftcms/cp` and importable via
-  `@craftcms/cp/utilities/thumbnail-loader`. Also instantiated by this
+  `ThumbnailWorker`), exported from `@craftcms/ui` and importable via
+  `@craftcms/ui/utilities/thumbnail-loader`. Also instantiated by this
   package's `<craft-chip>`.
 - **Custom element** — `<craft-thumbnail-loader>` (this directory). A
   light-DOM controller element that boots a bare `ThumbnailLoader` over its
@@ -32,10 +32,10 @@ the static `retryAll()` retry hook used by previews).
 - **The shim scans full collections again.** An interim version of the shim
   only scanned `$elements[0]`, dropping the rest of multi-row collections
   (`$rows`, `$newElements`); it also imported a bad
-  `@craftcms/cp/utilities/thumbnail-loader.ts.mjs` specifier that failed to
+  `@craftcms/ui/utilities/thumbnail-loader.ts.mjs` specifier that failed to
   resolve at runtime. Both are fixed (the specifier is now
-  `@craftcms/cp/utilities/thumbnail-loader`, matching how `CP.js` imports
-  `@craftcms/cp/services/Queue`).
+  `@craftcms/ui/utilities/thumbnail-loader`, matching how `CP.js` imports
+  `@craftcms/ui/services/Queue`).
 
 ## Legacy callers that must keep working
 

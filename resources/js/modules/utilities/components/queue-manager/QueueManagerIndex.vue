@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Pane from '@/common/components/Pane.vue';
   import {h, ref} from 'vue';
@@ -10,7 +10,7 @@
   } from '@tanstack/vue-table';
   import CpLink from '@/common/components/CpLink.vue';
   import Badge from '@/common/components/Badge.vue';
-  import {type JobInfo, JobStatus} from '@craftcms/cp';
+  import {type JobInfo, JobStatus} from '@craftcms/ui';
   import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
   import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
   import {show} from '@routes/cp/utilities';

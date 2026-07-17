@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import InputCombobox from '@/common/form/InputCombobox.vue';
   import type {SelectItem} from '@/common/types';
   import {computed, useSlots} from 'vue';

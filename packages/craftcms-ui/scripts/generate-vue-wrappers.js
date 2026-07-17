@@ -5,7 +5,7 @@
  * 1. Vue SFC wrappers for Lion-based form components (src/vue/)
  * 2. Vue type augmentations for ALL craft-* web components (src/vue/craft-elements.d.ts)
  *
- * Usage (from packages/craftcms-cp/):
+ * Usage (from packages/craftcms-ui/):
  *   node scripts/generate-vue-wrappers.js
  *
  * The generated wrappers handle v-model bridging between Vue's reactivity system and

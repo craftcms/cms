@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import {Appearance, t} from '@craftcms/cp';
-  import CraftSelectRich from '@craftcms/cp/vue/CraftSelectRich.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import {Appearance, t} from '@craftcms/ui';
+  import CraftSelectRich from '@craftcms/ui/vue/CraftSelectRich.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import IndexViewSettings from '@/modules/elements/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';

@@ -9,7 +9,7 @@
     reorder,
   } from '@actions/Settings/RoutesController';
   import {Link, router} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
   import Empty from '@/common/components/Empty.vue';
   import Pane from '@/common/components/Pane.vue';

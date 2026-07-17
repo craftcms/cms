@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
-  import {t, toHandle} from '@craftcms/cp';
+  import {t, toHandle} from '@craftcms/ui';
   import {computed, ref} from 'vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
-  import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
-  import CraftSelectColor from '@craftcms/cp/vue/CraftSelectColor.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
+  import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+  import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
+  import CraftSelectColor from '@craftcms/ui/vue/CraftSelectColor.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import useCraftData from '@/common/composables/useCraftData';

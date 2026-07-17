@@ -132,7 +132,7 @@ export default defineConfig(({mode}) => {
 
     // Vitest picks up this config's resolve/aliases. The unit tests colocated
     // under resources/js (e.g. modules/auth/elevated-session) need a DOM
-    // environment; the craftcms-cp package has its own vitest projects.
+    // environment; the craftcms-ui package has its own vitest projects.
     test: {
       environment: 'happy-dom',
       include: ['resources/js/**/*.test.ts'],

@@ -1,4 +1,4 @@
-import '@craftcms/cp';
+import '@craftcms/ui';
 import Cp from './bootstrap/cp.js';
 import './modules/navigation/components/cp-global-sidebar.js';
 import './modules/navigation/components/cp-queue-indicator.js';

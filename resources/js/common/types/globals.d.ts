@@ -1,4 +1,4 @@
-import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
+import type {CpServices} from '@craftcms/ui/types/globals.d.ts';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 

@@ -1,6 +1,6 @@
 import {html} from 'lit';
 import {query} from 'lit/decorators.js';
-import {CraftAuthChallengeForm, t} from '@craftcms/cp';
+import {CraftAuthChallengeForm, t} from '@craftcms/ui';
 
 /**
  * @summary Recovery code authentication form.

@@ -7,7 +7,7 @@ import {
   fldTabData,
   hudData,
 } from './support';
-import {serializeFormInputs, type ActionMenuItem} from '@craftcms/cp';
+import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
 
 declare const Craft: any;
 declare const $: any;

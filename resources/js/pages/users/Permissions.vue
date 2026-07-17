@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
   import CpLink from '@/common/components/CpLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -8,7 +8,7 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import PermissionList from '@/modules/permissions/components/PermissionList.vue';
   import UserGroupSelect from '@/modules/user/components/UserGroupSelect.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {update} from '@actions/Users/PermissionsController';
 

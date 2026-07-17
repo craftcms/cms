@@ -20,7 +20,7 @@ const _registry = new Map<string, typeof CraftAuthChallengeForm>();
  * @example
  * ```typescript
  * import {html} from 'lit';
- * import {CraftAuthChallengeForm} from '@craftcms/cp';
+ * import {CraftAuthChallengeForm} from '@craftcms/ui';
  *
  * class MyPluginForm extends CraftAuthChallengeForm {
  *   static METHOD = 'my-method';

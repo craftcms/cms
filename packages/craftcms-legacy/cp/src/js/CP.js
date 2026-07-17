@@ -1,8 +1,8 @@
 // Import from the deep service module rather than the package root. The root
-// entry (`@craftcms/cp`) side-effect-registers WebAwesome components (e.g.
+// entry (`@craftcms/ui`) side-effect-registers WebAwesome components (e.g.
 // `wa-icon`); pulling that into this separately-webpacked legacy bundle causes
 // a duplicate custom-element registration when it loads alongside the Vite app.
-import {QueueService} from '@craftcms/cp/services/Queue';
+import {QueueService} from '@craftcms/ui/services/Queue';
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */
