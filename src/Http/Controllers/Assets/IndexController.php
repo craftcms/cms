@@ -14,11 +14,10 @@ readonly class IndexController
 {
     use RespondsWithFlash;
 
-    public function __invoke(ElementIndexRequest $request, ?string $page = null, ?string $defaultSource = null): Response
+    public function __invoke(ElementIndexRequest $request, ?string $defaultSource = null): Response
     {
         return Inertia::render('assets/Index', new AssetIndexViewModel(
             $request,
-            page: $page,
             defaultSource: $request->input('defaultSource', $defaultSource),
         ));
     }
