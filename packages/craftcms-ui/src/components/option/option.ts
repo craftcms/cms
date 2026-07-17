@@ -8,25 +8,44 @@ export default class CraftOption extends LionOption {
     return [...LionOption.styles, styles];
   }
 
+  /**
+   * One observer shared by every option. Sizes arrive after layout, so
+   * toggling `wide` here never forces a synchronous reflow the way
+   * measuring in connectedCallback did, and hidden options are re-evaluated
+   * automatically once they become visible.
+   */
+  static #wideObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const option = entry.target as CraftOption;
+      const width =
+        entry.borderBoxSize?.[0]?.inlineSize ?? entry.contentRect.width;
+      option.toggleAttribute('wide', width >= option.#wideThreshold());
+    }
+  });
+
   @property()
   hint?: string | null = null;
 
-  #wideThreshold: number = 640;
+  #cachedWideThreshold?: number;
 
-  constructor() {
-    super();
-    this.#wideThreshold = parseInt(
+  #wideThreshold(): number {
+    this.#cachedWideThreshold ??= parseInt(
       getComputedStyle(this).getPropertyValue('--c-option-wide-threshold') ||
         '640',
       10
     );
+
+    return this.#cachedWideThreshold;
   }
 
   override connectedCallback() {
     super.connectedCallback();
+    CraftOption.#wideObserver.observe(this);
+  }
 
-    const width = this.getBoundingClientRect().width ?? 0;
-    this.toggleAttribute('wide', width >= this.#wideThreshold);
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    CraftOption.#wideObserver.unobserve(this);
   }
 
   override render() {
