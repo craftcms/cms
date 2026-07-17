@@ -5,7 +5,6 @@ import './types/globals.js';
 import './types/events.js';
 import './types/index.js';
 
-export {CraftAuthChallengeForm} from './components/auth-challenge-form/auth-challenge-form.js';
 export {default as CraftActionItem} from './components/action-item/action-item.js';
 export {default as CraftActionMenu} from './components/action-menu/action-menu.js';
 export {default as CraftAvatar} from './components/avatar/avatar.js';

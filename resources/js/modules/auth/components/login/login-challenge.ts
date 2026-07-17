@@ -1,7 +1,8 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {CraftAuthChallengeForm, t} from '@craftcms/ui';
+import {t} from '@craftcms/ui';
+import {CraftAuthChallengeForm} from '../auth-challenge-form';
 import componentStyles from './login-form.styles.js';
 // Side-effect imports: ensure both forms call CraftAuthChallengeForm.register()
 // before isNative() is ever queried.

@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
-import {actionClient, t} from '@src/index';
+import {actionClient, t} from '@craftcms/ui';
 
 /** @internal Module-private registry of PHP METHOD handle → element class. */
 const _registry = new Map<string, typeof CraftAuthChallengeForm>();
@@ -20,9 +20,10 @@ const _registry = new Map<string, typeof CraftAuthChallengeForm>();
  * @example
  * ```typescript
  * import {html} from 'lit';
- * import {CraftAuthChallengeForm} from '@craftcms/ui';
  *
- * class MyPluginForm extends CraftAuthChallengeForm {
+ * const {AuthChallengeForm} = window.Craft;
+ *
+ * class MyPluginForm extends AuthChallengeForm {
  *   static METHOD = 'my-method';
  *
  *   protected override get endpoint() {
@@ -39,7 +40,7 @@ const _registry = new Map<string, typeof CraftAuthChallengeForm>();
  *   }
  * }
  *
- * CraftAuthChallengeForm.register('my-plugin-form', MyPluginForm);
+ * AuthChallengeForm.register('my-plugin-form', MyPluginForm);
  * ```
  *
  * @fires login-verified - Verification succeeded; bubbles to `craft-login-challenge`. Detail: `{ returnUrl: string }`
@@ -264,3 +265,10 @@ export abstract class CraftAuthChallengeForm extends LitElement {
     return _registry.has(method);
   }
 }
+
+// Plugin auth methods extend this class at runtime through the `Craft` global
+// (bundling their own copy from an import would give them a separate, useless
+// method registry). Assigned here so the global exists in any bundle that can
+// render a challenge form.
+const craft = (window as any).Craft ?? ((window as any).Craft = {});
+craft.AuthChallengeForm = CraftAuthChallengeForm;
