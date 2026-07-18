@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+> [!CAUTION]
+> Breaking for current 6.x updated plugins:
+> - Updated the plugin lifecycle to register and boot enabled `CraftCms\Cms\Plugin\Plugin` instances through the `CraftCms\Cms\Plugin\Plugins` service, allowing plugins to define normal Laravel `register()` and `boot()` methods.
+> - Removed the previous overridable plugin lifecycle hooks (`CraftCms\Cms\Plugin\Plugin::registerPlugin()` and `CraftCms\Cms\Plugin\Plugin::bootPlugin()`), automatic plugin trait lifecycle hooks, and the `CraftCms\Cms\Plugin\Events\PluginUnregistered` event.
+>
+> For legacy plugins, the yii2-adapter should keep things working.
+
 ## 6.0.0-alpha.13 - 2026-07-16
 
 - Updated logout routes to require CSRF-protected POST requests. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/ff6f20717a48e7ede5fbbe47487e7bb8ef71da78))
