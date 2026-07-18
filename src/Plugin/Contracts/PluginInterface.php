@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -153,6 +154,15 @@ interface PluginInterface
     public function install(): void;
 
     public function uninstall(): void;
+
+    /** @internal */
+    public function bootPlugin(Plugins $plugins): void;
+
+    /** @internal */
+    public function publishAssets(): void;
+
+    /** @internal */
+    public function removeAssets(): void;
 
     /**
      * @return Migrator The plugin’s migrator
