@@ -361,6 +361,17 @@ class Plugins
     }
 
     /**
+     * Republishes all enabled plugins' public assets.
+     */
+    public function publishPluginAssets(): void
+    {
+        foreach ($this->getAllPlugins() as $plugin) {
+            $plugin->removeAssets();
+            $plugin->publishAssets();
+        }
+    }
+
+    /**
      * Enables a plugin by its handle.
      *
      * @param  string  $handle  The plugin’s handle

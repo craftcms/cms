@@ -186,6 +186,23 @@ it('publishes configured files when installing a plugin', function () {
     }
 });
 
+it('cleanly republishes configured files for enabled plugins', function () {
+    $paths = configureTestPluginAssets();
+
+    $this->plugins->enablePlugin('test-plugin');
+
+    $stalePath = public_path('vendor/craftcms/test-plugin/stale.js');
+    File::put($stalePath, 'stale');
+
+    $this->plugins->publishPluginAssets();
+
+    expect(File::exists($stalePath))->toBeFalse();
+
+    foreach ($paths as $path) {
+        expect(File::exists($path))->toBeTrue();
+    }
+});
+
 it('ignores missing transaction exceptions during uninstall commits', function () {
     $this->plugins->enablePlugin('test-plugin');
 

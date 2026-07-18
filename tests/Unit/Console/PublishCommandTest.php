@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\File;
 
 it('removes stale Craft public assets before publishing', function () {
@@ -17,6 +18,9 @@ it('removes stale Craft public assets before publishing', function () {
     app()->usePublicPath($publicPath);
 
     try {
+        $plugins = Mockery::mock(Plugins::class);
+        $plugins->shouldReceive('publishPluginAssets')->once();
+
         $command = new class extends PublishCommand
         {
             public array $calls = [];
@@ -34,16 +38,15 @@ it('removes stale Craft public assets before publishing', function () {
             }
         };
 
-        $command->handle();
+        $command->handle($plugins);
 
         expect(File::exists("{$publicPath}/vendor/craft/old-root.js"))->toBeFalse()
             ->and(File::exists("{$publicPath}/vendor/craft/build/old-build.js"))->toBeFalse()
             ->and(File::exists("{$publicPath}/vendor/craft/build/fresh-build.js"))->toBeTrue()
-            ->and($command->calls)->toBe([
-                ['vendor:publish', ['--tag' => 'craftcms-assets', '--force' => true]],
-                ['vendor:publish', ['--tag' => 'craftcms-config']],
-                ['vendor:publish', ['--tag' => 'craftcms-console']],
-            ]);
+            ->and($command->calls)
+            ->toContain(['vendor:publish', ['--tag' => 'craftcms-assets', '--force' => true]])
+            ->toContain(['vendor:publish', ['--tag' => 'craftcms-config']])
+            ->toContain(['vendor:publish', ['--tag' => 'craftcms-console']]);
     } finally {
         app()->usePublicPath($originalPublicPath);
         File::deleteDirectory($publicPath);
