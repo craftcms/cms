@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability in updater actions. ([#19266](https://github.com/craftcms/cms/pull/19266))
+
 ## 6.0.0-alpha.13 - 2026-07-16
 
 - Updated logout routes to require CSRF-protected POST requests. ([#19252](https://github.com/craftcms/cms/pull/19252/changes/ff6f20717a48e7ede5fbbe47487e7bb8ef71da78))
