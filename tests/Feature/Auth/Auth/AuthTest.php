@@ -67,6 +67,19 @@ test('authenticate inactive user', function () {
     expect($this->auth->authError)->toBe(AuthError::InvalidCredentials);
 });
 
+test('authenticate rejects unavailable Eloquent users', function (array $elementAttributes) {
+    $user = UserModel::factory()->create();
+    $user->element->update($elementAttributes);
+
+    $result = $this->auth->authenticate($user, ['password' => 'password']);
+
+    expect($result)->toBeFalse();
+    expect($this->auth->authError)->toBe(AuthError::InvalidCredentials);
+})->with([
+    'disabled' => [['enabled' => false]],
+    'archived' => [['archived' => true]],
+]);
+
 test('authenticate pending user', function () {
     $user = UserModel::factory()->createElement([
         'pending' => true,
