@@ -115,6 +115,21 @@ it('cannot move a nested entry', function () {
     expect($this->entries->moveEntryToSection($entry, Sections::getAllSections()->first()));
 });
 
+it('cannot move an entry to a section that does not support its type', function () {
+    $entryType = EntryType::factory()->create();
+    $otherEntryType = EntryType::factory()->create();
+    $sourceSection = Section::factory()->withEntryTypes($entryType)->create();
+    $targetSection = Section::factory()->withEntryTypes($otherEntryType)->create();
+    $entry = Entry::factory()->forSection($sourceSection)->forEntryType($entryType)->create();
+
+    expect(fn () => $this->entries->moveEntryToSection(
+        $this->entries->getEntryById($entry->id),
+        Sections::getSectionById($targetSection->id),
+    ))->toThrow(Exception::class, 'Entry type is not supported by the target section.');
+
+    expect($this->entries->getEntryById($entry->id)->sectionId)->toBe($sourceSection->id);
+});
+
 it('can reassign entries to a new author', function () {
     Event::fake([ElementCachesInvalidated::class]);
 
