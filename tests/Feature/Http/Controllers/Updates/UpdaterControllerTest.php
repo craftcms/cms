@@ -59,6 +59,20 @@ test('all routes validate data', function (string $controller, string $action) {
     ]);
 })->with('routes');
 
+test('finish requires encrypted update data', function () {
+    auth()->logout();
+    app()->maintenanceMode()->activate([]);
+
+    try {
+        postJson(action([UpdaterController::class, 'finish']))
+            ->assertJsonValidationErrors(['data']);
+
+        expect(app()->isDownForMaintenance())->toBeTrue();
+    } finally {
+        app()->maintenanceMode()->deactivate();
+    }
+});
+
 test('index returns Inertia Updater page', function () {
     post(action([UpdaterController::class, 'index']), [
         'install' => [
