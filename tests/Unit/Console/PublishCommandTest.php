@@ -90,7 +90,7 @@ it('leaves a symlinked public asset directory and its target alone', function ()
             ),
         );
 
-        $command->handle();
+        $command->handle(app(Plugins::class));
 
         expect(is_link("{$publicPath}/vendor/craft"))->toBeTrue()
             ->and(File::exists("{$targetPath}/icons/custom-icons/craft-cms.svg"))->toBeTrue()
