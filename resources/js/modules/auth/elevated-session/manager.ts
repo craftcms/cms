@@ -1,4 +1,4 @@
-import {actionClient} from '@craftcms/cp';
+import {actionClient} from '@craftcms/ui';
 import {reactive, readonly, type DeepReadonly} from 'vue';
 
 export interface ElevatedSessionOptions {

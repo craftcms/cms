@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {usePage} from '@inertiajs/vue3';
   import AuthBase from '@/common/layouts/AuthBase.vue';
   import '@/modules/auth/components/set-password/set-password-form.js';

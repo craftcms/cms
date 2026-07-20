@@ -49,8 +49,8 @@ async function sectionFor(preview, changed) {
   // Scope the changed-file matching to the relevant subtree so similarly-named
   // directories elsewhere in the repo don't create false positives.
   const baseDir =
-    preview.name === '@craftcms/cp'
-      ? 'packages/craftcms-cp'
+    preview.name === '@craftcms/ui'
+      ? 'packages/craftcms-ui'
       : preview.name === 'resources/js'
         ? 'resources/js'
         : null;
@@ -87,7 +87,7 @@ async function sectionFor(preview, changed) {
 
 module.exports = async ({github, context}) => {
   const previews = [
-    {name: '@craftcms/cp', result: process.env.CP_RESULT, url: process.env.CP_URL},
+    {name: '@craftcms/ui', result: process.env.CP_RESULT, url: process.env.CP_URL},
     {name: 'resources/js', result: process.env.RESOURCES_RESULT, url: process.env.RESOURCES_URL},
   ];
 

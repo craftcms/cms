@@ -13,7 +13,6 @@ export const AsyncStates = {
 
 export type AsyncState = (typeof AsyncStates)[keyof typeof AsyncStates];
 
-export * from './queue.js';
 export type {
   ActionMenuActions,
   ActionMenuItem,

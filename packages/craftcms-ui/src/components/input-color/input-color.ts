@@ -196,7 +196,6 @@ export default class CraftInputColor extends LionInput {
       <input
         class="input-color__picker"
         type="color"
-        aria-controls="${this._inputId}"
         aria-label="${t('Color picker')}"
         .value="${this._pickerValue}"
         ?disabled="${this.disabled}"

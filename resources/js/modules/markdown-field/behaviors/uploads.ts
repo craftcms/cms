@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {useHttp} from '@inertiajs/vue3';
 import type {Options} from 'overtype';
 import {upload as uploadAsset} from '@actions/Assets/UploadController';

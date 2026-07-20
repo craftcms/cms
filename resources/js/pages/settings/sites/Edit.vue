@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {useForm} from '@inertiajs/vue3';
   import type {Site} from '@/common/types';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {store} from '@actions/Settings/SitesController';
   import SiteFields from '@/modules/sites/components/SiteFields.vue';
   import DeleteSiteModal from '@/modules/sites/components/DeleteSiteModal.vue';

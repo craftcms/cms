@@ -2,7 +2,7 @@ import OverType, {
   type Options,
   type OverType as OverTypeInstance,
 } from 'overtype';
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {createAssetController, type AssetController} from './behaviors/assets';

@@ -57,7 +57,7 @@ Garnish widgets are **imperative** — `new Modal(container)`,
 `new DisclosureMenu(trigger)`, `new HUD(trigger, body)` — operating on plain DOM,
 **not** web components. So we use the **`@storybook/html-vite`** renderer: each
 story's `render()` returns an `HTMLElement` and instantiates the Garnish class
-inside it. (By contrast, `@craftcms/cp` uses `@storybook/web-components-vite`
+inside it. (By contrast, `@craftcms/ui` uses `@storybook/web-components-vite`
 because its components are custom elements.) We otherwise match cp's Storybook:
 version **10.4.1** and the **docs / a11y / themes** addons.
 

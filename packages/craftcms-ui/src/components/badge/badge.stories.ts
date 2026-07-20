@@ -35,8 +35,10 @@ export const Default: Story = {
     // The default prefix renders an indicator …
     const indicator = host.shadowRoot!.querySelector('craft-indicator')!;
     await expect(indicator).toBeTruthy();
-    // … filled in the loud tone of `fill` …
-    await expect(indicator.getAttribute('fill')).toBe(
+    // … which receives the badge's color and resolves it to the loud tone …
+    await expect(indicator.getAttribute('fill')).toBe('gray');
+    const dot = indicator.shadowRoot!.querySelector('.indicator')!;
+    await expect(dot.getAttribute('style')).toContain(
       'var(--c-color-gray-fill-loud)'
     );
     // … and the host reflects the resolved color for its own surface styling.

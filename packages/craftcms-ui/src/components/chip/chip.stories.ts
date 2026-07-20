@@ -40,7 +40,7 @@ export const Thumbnail: Story = {
   args: {},
   render: (args) => html`
     <craft-chip>
-      <img slot="thumbnail" src="https://picsum.photos/300/300" />
+      <img slot="thumbnail" src="https://picsum.photos/300/300" alt="" />
       This is a chip
       <craft-button icon size="small" appearance="plain" slot="suffix">
         <craft-icon name="ellipsis" label="Actions"></craft-icon>

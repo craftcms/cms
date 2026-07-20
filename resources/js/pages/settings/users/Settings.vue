@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed, ref} from 'vue';
   import {useForm} from '@inertiajs/vue3';
   import {store} from '@actions/Settings/Users/UserSettingsController';
@@ -7,7 +7,7 @@
   import Pane from '@/common/components/Pane.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import Select from '@/common/form/Select.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import useCraftData from '@/common/composables/useCraftData';
   import type {BaseOption, SelectOption} from '@/common/types';

@@ -13,7 +13,7 @@ import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
 import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
-import {Appearance, t} from '@craftcms/cp';
+import {Appearance, t} from '@craftcms/ui';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or

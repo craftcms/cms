@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {ref, watch} from 'vue';
-  import {Appearance, t} from '@craftcms/cp';
+  import {Appearance, t} from '@craftcms/ui';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {CheckboxOption} from '@/common/types';
