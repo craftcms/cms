@@ -154,6 +154,8 @@
   }
 
   .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     padding: var(--c-spacing-md);
   }
 
