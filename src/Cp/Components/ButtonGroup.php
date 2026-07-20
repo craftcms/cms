@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Support\Html;
 
 /**
  * PHP counterpart to the `<craft-button-group>` web component: a group of
@@ -69,9 +70,15 @@ class ButtonGroup extends ViewComponent
         return $this;
     }
 
-    protected function tagName(): string
+    #[\Override]
+    protected function renderMarkup(): string
     {
-        return 'craft-button-group';
+        return Html::tag('craft-listbox',
+            Html::tag('craft-button-group',
+                $this->renderSlots(),
+                $this->renderedAttributes()
+            )
+        );
     }
 
     /**

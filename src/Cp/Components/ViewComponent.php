@@ -113,7 +113,10 @@ abstract class ViewComponent implements Htmlable, Stringable
     /**
      * The custom element tag name, e.g. `craft-field`.
      */
-    abstract protected function tagName(): string;
+    protected function tagName(): string
+    {
+        return 'div';
+    }
 
     /**
      * Host element attributes derived from the component's typed properties.
