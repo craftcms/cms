@@ -8,6 +8,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\File;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
+use LogicException;
 use Override;
 use ReflectionClass;
 
@@ -99,59 +100,50 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
     protected ?Plugins $pluginsService = null;
 
-    /**
-     * @internal
-     */
-    #[Override]
-    public function register(): void
-    {
-        $this->setupTraits('register');
-        $this->registerPlugin();
-    }
-
-    /**
-     * @internal
-     */
-    public function boot(Plugins $plugins): void
+    /** @internal */
+    final public function bootPlugin(Plugins $plugins): void
     {
         $this->pluginsService = $plugins;
 
-        $handle = $this->pluginsService->getPluginHandleByClass(static::class);
-
-        if (! $handle) {
-            return;
-        }
-
-        if (! $this->pluginsService->isPluginInstalled($handle)) {
-            return;
-        }
-
-        if (! $this->pluginsService->isPluginEnabled($handle)) {
-            return;
-        }
-
-        $this->setupTraits('boot');
-        $this->bootPlugin();
+        $this->bootHasCommands();
+        $this->bootHasConfig();
+        $this->bootHasElementTypes();
+        $this->bootHasFieldTypes();
+        $this->bootHasFrontendAssets();
+        $this->bootHasListeners();
+        $this->bootHasPermissions();
+        $this->bootHasRoutes();
+        $this->bootHasScheduling();
+        $this->bootHasTranslations();
+        $this->bootHasUtilities();
+        $this->bootHasViews();
+        $this->bootHasWidgets();
+        $this->bootPublishesFiles();
     }
 
-    private function setupTraits(string $method): void
+    /** @internal */
+    final public function publishAssets(): void
     {
-        $usesRecursive = once(fn () => class_uses_recursive(static::class));
+        $this->ensurePackageNameIsSet();
 
-        collect($usesRecursive)
-            ->map(fn (string $trait) => class_basename($trait))
-            ->each(function (string $trait) use ($method) {
-                if (! method_exists($this, $method = "{$method}{$trait}")) {
-                    return;
-                }
-
-                $this->$method();
-            });
+        $this->publishFrontendAssets();
+        $this->publishConfiguredFiles();
     }
 
-    public function registerPlugin(): void {}
+    /** @internal */
+    final public function removeAssets(): void
+    {
+        $this->ensurePackageNameIsSet();
 
-    public function bootPlugin(): void {}
+        File::deleteDirectory(public_path("vendor/{$this->packageName}"));
+    }
+
+    private function ensurePackageNameIsSet(): void
+    {
+        if ($this->packageName === null) {
+            throw new LogicException("Plugin [{$this->handle}] does not define a package name.");
+        }
+    }
 
     protected function copyPublishableFiles(array $paths): void
     {
