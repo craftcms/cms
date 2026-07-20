@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';

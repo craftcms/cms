@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {computed, ref} from 'vue';
   import {router} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import {t} from '@craftcms/ui';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
   import Text from '@/common/components/Text.vue';
   import Tooltip from '@/common/components/Tooltip.vue';

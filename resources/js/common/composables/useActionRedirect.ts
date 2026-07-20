@@ -2,7 +2,7 @@ import {onBeforeUnmount, onMounted} from 'vue';
 import {router} from '@inertiajs/vue3';
 
 /**
- * Bridges `@craftcms/cp`'s framework-agnostic `action:redirect` event into an
+ * Bridges `@craftcms/ui`'s framework-agnostic `action:redirect` event into an
  * Inertia SPA visit.
  *
  * `runAction` dispatches a cancelable `action:redirect` event on a redirecting

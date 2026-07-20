@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import {ConfigService} from '@craftcms/cp';
+  import {ConfigService} from '@craftcms/ui';
   import {releaseFocusWithin, trapFocusWithin} from '@craftcms/garnish';
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {nextTick, onBeforeUnmount, useTemplateRef, watch} from 'vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import Modal from '@/common/components/Modal.vue';

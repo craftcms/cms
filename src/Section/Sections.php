@@ -400,7 +400,7 @@ class Sections
 
         $sectionEntryTypeIds = array_map(fn ($entryType) => $entryType->id, $section->getEntryTypes());
 
-        return ! empty(array_intersect($entryTypeIds, $sectionEntryTypeIds));
+        return ! empty($entryTypeIds) && empty(array_diff($entryTypeIds, $sectionEntryTypeIds));
     }
 
     /**

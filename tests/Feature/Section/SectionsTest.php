@@ -144,6 +144,37 @@ it('can get available entry move target sections', function () {
     ]);
 });
 
+it('only returns entry move target sections that support every entry type', function () {
+    Edition::set(Edition::Pro);
+
+    $entryTypeA = EntryType::factory()->create();
+    $entryTypeB = EntryType::factory()->create();
+    $currentSection = Section::factory()->withEntryTypes($entryTypeA, $entryTypeB)->create();
+    $compatibleSection = Section::factory()->withEntryTypes($entryTypeA, $entryTypeB)->create();
+    $partiallyCompatibleSection = Section::factory()->withEntryTypes($entryTypeA)->create();
+
+    $user = UserModel::factory()
+        ->withPermissions([
+            "viewEntries:{$compatibleSection->uid}",
+            "saveEntries:{$compatibleSection->uid}",
+            "viewEntries:{$partiallyCompatibleSection->uid}",
+            "saveEntries:{$partiallyCompatibleSection->uid}",
+        ])
+        ->create();
+
+    actingAs($user);
+    $this->sections->refreshSections();
+
+    $availableSections = $this->sections->getAvailableEntryMoveTargetSections(
+        entryTypeIds: [$entryTypeA->id, $entryTypeB->id],
+        siteId: Sites::getCurrentSite()->id,
+        currentSectionUid: $currentSection->uid,
+    );
+
+    expect(array_values(array_map(fn (SectionData $section) => $section->uid, $availableSections)))
+        ->toBe([$compatibleSection->uid]);
+});
+
 it('can get sections by type', function () {
     expect($this->sections->getSectionsByType(SectionType::Single))->toBeEmpty();
 

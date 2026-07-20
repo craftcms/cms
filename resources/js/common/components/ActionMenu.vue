@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import type {ActionMenuItem} from '@craftcms/cp';
-  import {Appearance, t} from '@craftcms/cp';
+  import type {ActionMenuItem} from '@craftcms/ui';
+  import {Appearance, t} from '@craftcms/ui';
   import {
     type Component,
     computed,

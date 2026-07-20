@@ -379,6 +379,7 @@ class AuthMethods
         switch ($user->getStatus()) {
             case User::STATUS_INACTIVE:
             case User::STATUS_ARCHIVED:
+            default:
                 return AuthError::InvalidCredentials;
             case User::STATUS_PENDING:
                 return AuthError::PendingVerification;
@@ -420,9 +421,9 @@ class AuthMethods
                 ) {
                     return AuthError::NoSiteOfflineAccess;
                 }
-        }
 
-        return null;
+                return null;
+        }
     }
 
     public function getAuthMethodErrorMessage(?string $defaultMessage = null): string

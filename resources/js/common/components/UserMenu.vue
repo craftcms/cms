@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import LoginController from '@actions/Auth/LoginController';
   import PermissionsController from '@actions/Users/PermissionsController';
   import PreferencesController from '@actions/Users/PreferencesController';

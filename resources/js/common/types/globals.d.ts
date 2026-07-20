@@ -1,4 +1,5 @@
-import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
+import type {ConfigService} from '@craftcms/ui';
+import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 
@@ -53,6 +54,11 @@ type Site = {
   name: string;
   uid: string;
 };
+
+interface CpServices {
+  $queue: QueueService;
+  $config: ConfigService;
+}
 
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;

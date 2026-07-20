@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import type {InertiaForm} from '@inertiajs/vue3';
   import {ref, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';

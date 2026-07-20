@@ -25,9 +25,9 @@ use DateTimeInterface;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
 use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
 use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
-use Spatie\TypeScriptTransformer\Writers\GlobalNamespaceWriter;
 use Workbench\App\TypeScript\ClassListClassTransformer;
 use Workbench\App\TypeScript\ClassListTransformedProvider;
+use Workbench\App\TypeScript\ExportedNamespaceWriter;
 use Workbench\App\TypeScript\ViewModelTransformer;
 
 class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicationServiceProvider
@@ -36,7 +36,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
     {
         $config
             ->outputDirectory(dirname(__DIR__, 3).'/resources/js/generated')
-            ->writer(new GlobalNamespaceWriter('types.d.ts'))
+            ->writer(new ExportedNamespaceWriter('types.d.ts'))
             ->replaceType(DateTimeInterface::class, 'string')
             ->provider(new ClassListTransformedProvider(
                 [

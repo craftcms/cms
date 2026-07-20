@@ -8,7 +8,7 @@
   import type {RouteData, RouteFormData} from './types';
   import {destroy, store, update} from '@actions/Settings/RoutesController';
   import {router, useForm} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed, shallowRef} from 'vue';
   import type {BaseOption, SelectItem} from '@/common/types';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
