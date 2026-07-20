@@ -4,7 +4,7 @@
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
   import Select from '@/common/form/Select.vue';
-  import {useForm} from '@inertiajs/vue3';
+  import {useForm, usePage} from '@inertiajs/vue3';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave.js';
   import {store} from '@actions/Settings/FilesystemsController';
@@ -15,8 +15,12 @@
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
+  defineOptions({
+    inheritAttrs: false,
+  });
+
   const props =
-    defineProps<CraftCms.Cms.Http.ViewModels.FilesystemsEditViewModel>();
+    usePage<CraftCms.Cms.Http.ViewModels.FilesystemsEditViewModel>().props;
 
   const form = useForm({
     name: props.filesystem.name ?? '',
@@ -88,7 +92,7 @@
         :required="true"
         :error="form.errors?.name"
         data-error-key="name"
-        :disabled="readOnly"
+        :disabled="props.readOnly"
       />
 
       <CraftInputHandle
@@ -99,49 +103,49 @@
         :required="true"
         :error="form.errors?.handle"
         data-error-key="handle"
-        :disabled="readOnly"
+        :disabled="props.readOnly"
       />
 
       <hr />
 
-      <template v-if="fsOptions.length">
+      <template v-if="props.fsOptions.length">
         <Select
           id="type"
           name="type"
           :label="t('Filesystem Type')"
           :help-text="t('What type of filesystem is this?')"
-          :options="fsOptions"
+          :options="props.fsOptions"
           v-model="form.type"
-          :disabled="readOnly"
+          :disabled="props.readOnly"
         />
       </template>
 
-      <template v-if="filesystem.showHasUrlSetting">
+      <template v-if="props.filesystem.showHasUrlSetting">
         <CraftSwitch
           :label="t('Files in this filesystem have public URLs')"
           name="hasUrls"
           id="has-urls"
           v-model="form.settings.hasUrls"
-          :disabled="readOnly"
+          :disabled="props.readOnly"
         />
       </template>
 
-      <template v-if="form.settings.hasUrls && filesystem.showUrlSetting">
+      <template v-if="form.settings.hasUrls && props.filesystem.showUrlSetting">
         <CraftCombobox
           :label="t('Base URL')"
           :help-text="t('The base URL to the files in this filesystem.')"
           v-model="form.settings.url"
-          :options="baseUrlSuggestions"
+          :options="props.baseUrlSuggestions"
           name="url"
           :required="true"
           placeholder="//example.com/path/to/folder"
           data-error-key="url"
-          :disabled="readOnly"
+          :disabled="props.readOnly"
         ></CraftCombobox>
       </template>
 
       <div ref="settingsHost">
-        <template v-for="(instance, fsType) in fsInstances" :key="fsType">
+        <template v-for="(instance, fsType) in props.fsInstances" :key="fsType">
           <craft-field-group v-if="form.type === fsType">
             <!-- Legacy (Twig) settings render as an isolated HTML island; component
                  settings are compiled as part of the page. Each pane must render
