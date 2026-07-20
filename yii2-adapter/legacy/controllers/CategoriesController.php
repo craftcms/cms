@@ -279,7 +279,7 @@ class CategoriesController extends Controller
         }
 
         // Make sure the user is allowed to create this category
-        Gate::authorize('save' . $category);
+        Gate::authorize('save', $category);
 
         // Title & slug
         $category->title = $this->request->getQueryParam('title');
