@@ -53,6 +53,10 @@ class Button extends ViewComponent
 
     protected string|Closure|null $command = null;
 
+    protected string|Closure|null $value = null;
+
+    protected string|Closure|null $iconPosition = null;
+
     protected function tagName(): string
     {
         return 'craft-button';
@@ -149,6 +153,22 @@ class Button extends ViewComponent
         return $this;
     }
 
+    /** The value submitted with the form, or used for selection within a button group. */
+    public function value(string|Closure|null $value): static
+    {
+        $this->value = $value;
+
+        return $this;
+    }
+
+    /** @param 'prefix'|'suffix'|Closure|null $iconPosition Where the icon renders relative to the label. */
+    public function iconPosition(string|Closure|null $iconPosition): static
+    {
+        $this->iconPosition = $iconPosition;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -161,8 +181,10 @@ class Button extends ViewComponent
             'appearance' => $this->getAppearance(),
             'size' => $this->getSize(),
             'icon' => $this->evaluate($this->icon),
+            'icon-position' => $this->evaluate($this->iconPosition),
             'loading' => (bool) $this->evaluate($this->loading),
             'active' => $this->evaluate($this->active) ? 'true' : null,
+            'value' => $this->evaluate($this->value),
             'disabled' => $this->isDisabled(),
             'accessible-name' => $this->evaluate($this->accessibleName),
             'align' => $this->evaluate($this->align),

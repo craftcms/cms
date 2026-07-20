@@ -34,13 +34,13 @@ use Symfony\Component\Process\Process;
 | NOT coverage-checked — but the convention guard (#1) still covers them, since
 | it walks the whole manifest.
 |
-| The manifest (packages/craftcms-cp/dist/custom-elements.json) is auto-generated
+| The manifest (packages/craftcms-ui/dist/custom-elements.json) is auto-generated
 | by beforeAll() below. In CI an existing file is trusted, because laravel-ci.yml
 | restores it from a content-keyed actions/cache (never stale by construction);
 | everywhere else it is regenerated on every run so local edits to the web
 | components can't be drift-checked against a stale manifest. Manual regen:
-| cd packages/craftcms-cp && npm run build:manifest
-| The checked-in ROOT packages/craftcms-cp/custom-elements.json is stale; do not use it.
+| cd packages/craftcms-ui && npm run build:manifest
+| The checked-in ROOT packages/craftcms-ui/custom-elements.json is stale; do not use it.
 */
 
 /**
@@ -50,7 +50,7 @@ use Symfony\Component\Process\Process;
  */
 function cpDriftManifestPath(): string
 {
-    return dirname(__FILE__, 5).'/packages/craftcms-cp/dist/custom-elements.json';
+    return dirname(__FILE__, 5).'/packages/craftcms-ui/dist/custom-elements.json';
 }
 
 /** Decodes the manifest, failing loudly (with the regen command) if it is missing. */
@@ -61,7 +61,7 @@ function cpDriftManifest(): array
     if (! is_file($path)) {
         throw new RuntimeException(sprintf(
             "Custom Elements Manifest not found at %s.\n".
-            'Generate it with:  cd packages/craftcms-cp && npm run build:manifest',
+            'Generate it with:  cd packages/craftcms-ui && npm run build:manifest',
             $path,
         ));
     }
@@ -328,7 +328,7 @@ beforeAll(function () {
     // also works in fresh worktrees (and as a CI cache-miss fallback).
     $process = Process::fromShellCommandline(
         'npx --yes @custom-elements-manifest/analyzer@0.11.0 analyze',
-        dirname(__FILE__, 5).'/packages/craftcms-cp',
+        dirname(__FILE__, 5).'/packages/craftcms-ui',
         timeout: 300,
     );
     $process->run();
@@ -336,7 +336,7 @@ beforeAll(function () {
     expect($process->isSuccessful() && is_file(cpDriftManifestPath()))->toBeTrue(
         "Failed to generate the Custom Elements Manifest:\n"
         .trim($process->getErrorOutput()."\n".$process->getOutput())
-        ."\nGenerate it manually with:  cd packages/craftcms-cp && npm run build:manifest",
+        ."\nGenerate it manually with:  cd packages/craftcms-ui && npm run build:manifest",
     );
 });
 
@@ -431,7 +431,7 @@ it('prints a full drift report', function () {
     $lines[] = '';
     $lines[] = '=========================================================================';
     $lines[] = ' CP component <-> web-component attribute drift report';
-    $lines[] = ' manifest: packages/craftcms-cp/dist/custom-elements.json';
+    $lines[] = ' manifest: packages/craftcms-ui/dist/custom-elements.json';
     $lines[] = '=========================================================================';
 
     $risky = cpDriftCamelCaseImplicitAttributes();

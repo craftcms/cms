@@ -23,6 +23,13 @@ class Radio extends Checkbox
         return 'craft-radio';
     }
 
+    /** Radios have no indeterminate state, so drop the Checkbox host attribute. */
+    #[\Override]
+    protected function hostAttributes(): array
+    {
+        return [];
+    }
+
     #[\Override]
     protected function inputDefaults(): array
     {

@@ -7,20 +7,21 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Html;
 
 /**
- * PHP counterpart to the `<craft-button-group>` web component: an exclusive
- * group of buttons, wrapped in a `<craft-listbox>` for selection behavior,
- * optionally posting the selected value through a hidden input.
+ * PHP counterpart to the `<craft-button-group>` web component: a group of
+ * buttons. With `name` set the component enters radio mode — it owns single
+ * selection and, being form-associated, submits the selected `value` itself
+ * (no hidden input needed). Each option button carries its own `value`, which
+ * the component matches against the group's `value`.
  *
  *     ButtonGroup::make()
+ *         ->name('alignment')
+ *         ->value('left')
  *         ->buttons([
- *             Button::make()->label(t('Left'))->active(),
- *             Button::make()->label(t('Right')),
- *         ])
- *         ->name('alignment');
+ *             Button::make()->label(t('Left'))->value('left'),
+ *             Button::make()->label(t('Right'))->value('right'),
+ *         ]);
  */
 class ButtonGroup extends ViewComponent
 {
@@ -73,58 +74,24 @@ class ButtonGroup extends ViewComponent
         return 'craft-button-group';
     }
 
+    /**
+     * The `<craft-button-group>` web component is form-associated: with `name`
+     * set it enters radio mode, owns selection, and submits the selected
+     * `value` itself (via ElementInternals). So `name`/`value` ride on the host
+     * — no wrapping `<craft-listbox>` or hidden input is needed. Child buttons
+     * carry their own `value`, which the component matches against the group's.
+     */
     #[\Override]
     protected function hostAttributes(): array
     {
         return [
             'id' => $this->getId(),
+            'name' => $this->evaluate($this->name),
+            'value' => $this->evaluate($this->value),
             'role' => 'group',
             'aria' => [
                 'labelledby' => $this->evaluate($this->labelledBy),
             ],
         ];
-    }
-
-    /** @var array<string, mixed> Additional attributes for the hidden input. */
-    protected array $inputAttributes = [];
-
-    /**
-     * Merges additional HTML attributes onto the hidden input. These win
-     * over the computed defaults.
-     *
-     * @param  array<string, mixed>  $attributes
-     */
-    public function inputAttributes(array $attributes): static
-    {
-        $this->inputAttributes = Arr::merge(
-            static::normalizeClasses($this->inputAttributes),
-            static::normalizeClasses($attributes),
-        );
-
-        return $this;
-    }
-
-    /**
-     * Wraps the group in the `<craft-listbox>` that owns selection behavior,
-     * alongside the hidden input, mirroring the buttonGroup template.
-     */
-    #[\Override]
-    protected function renderMarkup(): string
-    {
-        $name = $this->evaluate($this->name);
-        $id = $this->getId();
-
-        return Html::tag(
-            'craft-listbox',
-            parent::renderMarkup().($name !== null
-                ? (string) Html::hiddenInput($name, (string) ($this->evaluate($this->value) ?? ''), Arr::merge(
-                    ['id' => $id !== null ? "$id-input" : null],
-                    $this->inputAttributes,
-                ))
-                : ''),
-            [
-                'disabled' => $this->isDisabled(),
-            ],
-        );
     }
 }

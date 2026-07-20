@@ -91,7 +91,7 @@ jobs:
       # packages/craftcms-cp/dist cache path above for the downstream jobs.
       - name: Build Custom Elements Manifest
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cd ./packages/craftcms-cp && npm run build:manifest
+        run: cd ./packages/craftcms-ui && npm run build:manifest
 
       - name: Generate TypeScript types
         if: steps.cache.outputs.cache-hit != 'true'

@@ -48,6 +48,8 @@ class Checkbox extends ViewComponent
 
     protected string|Closure|null $labelId = null;
 
+    protected bool|Closure $indeterminate = false;
+
     protected string|Stringable|Closure|null $info = null;
 
     protected string|Closure|null $icon = null;
@@ -74,6 +76,19 @@ class Checkbox extends ViewComponent
     protected function tagName(): string
     {
         return 'craft-checkbox';
+    }
+
+    /**
+     * The `<craft-checkbox>` host owns the indeterminate state: `indeterminate`
+     * isn't a native input attribute (it's a JS-only property), so the web
+     * component reflects it from the host and mirrors it onto the slotted input.
+     */
+    #[\Override]
+    protected function hostAttributes(): array
+    {
+        return [
+            'indeterminate' => (bool) $this->evaluate($this->indeterminate),
+        ];
     }
 
     /** Default attributes for the native input. */
@@ -137,6 +152,13 @@ class Checkbox extends ViewComponent
     public function labelId(string|Closure|null $labelId): static
     {
         $this->labelId = $labelId;
+
+        return $this;
+    }
+
+    public function indeterminate(bool|Closure $indeterminate = true): static
+    {
+        $this->indeterminate = $indeterminate;
 
         return $this;
     }
