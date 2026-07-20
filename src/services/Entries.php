@@ -2214,6 +2214,12 @@ SQL)->execute();
             throw new Exception('Attempting to move a nested element.');
         }
 
+        $sectionEntryTypeIds = array_map(fn($entryType) => $entryType->id, $section->getEntryTypes());
+
+        if (!in_array($entry->typeId, $sectionEntryTypeIds, true)) {
+            throw new Exception('Entry type is not supported by the target section.');
+        }
+
         // Ensure all fields have been normalized
         $entry->getFieldValues();
 
