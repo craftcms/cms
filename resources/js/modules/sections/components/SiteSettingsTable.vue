@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {computed, h} from 'vue';
   import {type SectionSiteSettingsData} from '@/common/types';

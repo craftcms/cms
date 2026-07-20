@@ -1,10 +1,10 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Pane from '@/common/components/Pane.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import PermissionList from '@/modules/permissions/components/PermissionList.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store, update} from '@actions/Gql/SchemasController';

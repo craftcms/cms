@@ -61,17 +61,15 @@ abstract class BaseUpdaterController
             return;
         }
 
-        if (! is_null($this->request->input('data'))) {
-            try {
-                $data = Crypt::decrypt($this->request->input('data', ''));
-            } catch (DecryptException) {
-                throw ValidationException::withMessages([
-                    'data' => t('Invalid data.'),
-                ]);
-            }
-
-            $this->data = Json::decode($data);
+        try {
+            $data = Crypt::decrypt($this->request->input('data', ''));
+        } catch (DecryptException) {
+            throw ValidationException::withMessages([
+                'data' => t('Invalid data.'),
+            ]);
         }
+
+        $this->data = Json::decode($data);
     }
 
     public function index(): Response|View

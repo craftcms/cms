@@ -15,6 +15,7 @@ use craft\web\View;
 use CraftCms\Cms\Plugin\Concerns\HasEditions;
 use CraftCms\Cms\Plugin\Concerns\Installable;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Plugins as PluginsService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -141,6 +142,21 @@ class Plugin extends Module implements PluginInterface
         ) {
             $this->hasReadOnlyCpSettings = true;
         }
+    }
+
+    /** @internal */
+    final public function bootPlugin(PluginsService $plugins): void
+    {
+    }
+
+    /** @internal */
+    final public function publishAssets(): void
+    {
+    }
+
+    /** @internal */
+    final public function removeAssets(): void
+    {
     }
 
     /**

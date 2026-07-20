@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {nextTick, onMounted, shallowRef, useTemplateRef, watch} from 'vue';
   import type {BaseOption} from '@/common/types';
   import type {MixedInputPart} from '@/pages/settings/routes/types';

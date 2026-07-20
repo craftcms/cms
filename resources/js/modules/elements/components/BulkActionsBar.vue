@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed, onMounted, onUnmounted} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import type {BulkActionItem} from '@/modules/elements/types/actions';
   import type {ActionItem} from '@/common/types';
   import Text from '@/common/components/Text.vue';

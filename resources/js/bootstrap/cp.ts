@@ -1,4 +1,5 @@
-import {QueueService, ConfigService} from '@craftcms/cp';
+import {ConfigService} from '@craftcms/ui';
+import {QueueService} from '@/modules/queue/queue';
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/common/types/keys';
@@ -15,7 +16,7 @@ import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetInde
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
 import CpLink from '@/common/components/CpLink.vue';
-import {setTranslations} from '@craftcms/cp/utilities/translate';
+import {setTranslations} from '@craftcms/ui/utilities/translate';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {type Column, FlexRender, type Table} from '@tanstack/vue-table';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed, ref, useId} from 'vue';
   import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';

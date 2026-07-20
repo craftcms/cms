@@ -1,4 +1,4 @@
-import type {ReorderDirection} from '@craftcms/cp';
+import type {ReorderDirection} from '@craftcms/ui';
 import {ControllerElement} from '@/common/web-components';
 import {
   ComponentSelect,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import {useForm} from '@inertiajs/vue3';
   import {deleteDeprecationError} from '@actions/Utilities/DeprecationErrorsController';

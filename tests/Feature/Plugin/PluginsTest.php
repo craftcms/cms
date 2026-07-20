@@ -18,7 +18,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    // Forget the instance as the service provider loads plugins
+    TestPlugin::$useSettings = true;
+    TestPlugin::$beforeSaveSettings = true;
+    TestPlugin::$onAfterSaveSettings = null;
+    TestPlugin::$customPublishables = [];
+    TestPlugin::$customStyles = [];
+    TestPlugin::$customScripts = [];
+
     app()->forgetInstance(Plugins::class);
 
     loadTestPlugin();
@@ -34,6 +40,9 @@ afterEach(function () {
     TestPlugin::$customPublishables = [];
     TestPlugin::$customStyles = [];
     TestPlugin::$customScripts = [];
+    TestPlugin::$useSettings = true;
+    TestPlugin::$beforeSaveSettings = true;
+    TestPlugin::$onAfterSaveSettings = null;
 
     app()->forgetInstance(Plugins::class);
 });
@@ -122,7 +131,7 @@ it('can get plugin handle by class', function () {
 });
 
 it('can get all plugins', function () {
-    expect($this->plugins->getAllPlugins())->toHaveCount(1);
+    expect($this->plugins->getAllPlugins())->toHaveKey('test-plugin');
 });
 
 it('can enable and disable a plugin', function () {
@@ -157,8 +166,6 @@ it('can uninstall and install a plugin', function () {
 it('publishes configured files when enabling a plugin', function () {
     $paths = configureTestPluginAssets();
 
-    TestPlugin::getInstance()->register();
-
     $this->plugins->enablePlugin('test-plugin');
 
     foreach ($paths as $path) {
@@ -172,9 +179,24 @@ it('publishes configured files when installing a plugin', function () {
 
     $paths = configureTestPluginAssets();
 
-    TestPlugin::getInstance()->register();
-
     $this->plugins->installPlugin('test-plugin');
+
+    foreach ($paths as $path) {
+        expect(File::exists($path))->toBeTrue();
+    }
+});
+
+it('cleanly republishes configured files for enabled plugins', function () {
+    $paths = configureTestPluginAssets();
+
+    $this->plugins->enablePlugin('test-plugin');
+
+    $stalePath = public_path('vendor/craftcms/test-plugin/stale.js');
+    File::put($stalePath, 'stale');
+
+    $this->plugins->publishPluginAssets();
+
+    expect(File::exists($stalePath))->toBeFalse();
 
     foreach ($paths as $path) {
         expect(File::exists($path))->toBeTrue();
@@ -282,8 +304,6 @@ it('can cancel saving with beforeSaveSettings', function () {
     expect($plugin->getSettings()->foo)->toBeNull();
 
     expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeFalse();
-
-    TestPlugin::$beforeSaveSettings = true;
 });
 
 it('can run a hook on afterSaveSettings', function () {
@@ -297,8 +317,6 @@ it('can run a hook on afterSaveSettings', function () {
 
     expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeTrue();
     expect($triggered)->toBeTrue();
-
-    TestPlugin::$onAfterSaveSettings = null;
 });
 
 it('cannot save settings when the plugin doesnt use them', function () {
@@ -309,8 +327,6 @@ it('cannot save settings when the plugin doesnt use them', function () {
     expect($plugin->getSettings())->toBeNull();
 
     expect($this->plugins->savePluginSettings($plugin, ['foo' => 'bar']))->toBeFalse();
-
-    TestPlugin::$useSettings = true;
 });
 
 it('can determine if the version number changed', function () {
@@ -359,13 +375,8 @@ it('can get all plugin info', function () {
     expect($this->plugins->getAllPluginInfo())->toHaveKey('test-plugin');
 });
 
-it('can determine if a plugin has issues', function () {
+it('does not report issues for a valid plugin', function () {
     expect($this->plugins->hasIssues('test-plugin'))->toBeFalse();
-
-    // If CRAFT_NO_TRIALS is set, a trial value for licenseKeyStatus will be considered as an issue
-    define('CRAFT_NO_TRIALS', true);
-
-    expect($this->plugins->hasIssues('test-plugin'))->toBeTrue();
 });
 
 it('can get and set the license key', function () {

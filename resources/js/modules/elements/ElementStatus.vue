@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {capitalize} from '@craftcms/cp';
+  import {capitalize} from '@craftcms/ui';
 
   type Color = string | {value: string};
 

@@ -10,7 +10,7 @@ import {
   t,
   visuallyHiddenStyles,
   ConfigService,
-} from '@craftcms/cp';
+} from '@craftcms/ui';
 import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';

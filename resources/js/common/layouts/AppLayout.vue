@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {computed, watch} from 'vue';
   import {Head, type InertiaForm, usePage} from '@inertiajs/vue3';
   import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
@@ -188,7 +188,7 @@
 
   useAppendHtml();
 
-  // Bridge `@craftcms/cp` action redirects into Inertia SPA visits.
+  // Bridge `@craftcms/ui` action redirects into Inertia SPA visits.
   useActionRedirect();
 </script>
 

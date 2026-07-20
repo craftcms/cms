@@ -4,7 +4,7 @@
     appendElementHtml,
     appendHeadHtml,
     type AppendHtmlDisposer,
-  } from '@craftcms/cp';
+  } from '@craftcms/ui';
   import {onBeforeUnmount, ref, watch} from 'vue';
 
   const props = withDefaults(

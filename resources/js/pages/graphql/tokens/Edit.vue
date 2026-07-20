@@ -1,12 +1,12 @@
 <script setup lang="ts">
   import {computed, nextTick, ref} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Pane from '@/common/components/Pane.vue';
   import Select from '@/common/form/Select.vue';
   import type {BaseOption} from '@/common/types';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {

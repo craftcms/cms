@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {html, LitElement, nothing, type TemplateResult} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed, inject, type Ref} from 'vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import {usePage} from '@inertiajs/vue3';
@@ -14,7 +14,9 @@
     filesystem: Pick<
       CraftCms.Cms.Http.ViewModels.FilesystemsEditViewModel,
       'filesystem'
-    > & {path: string | null};
+    > & {
+      path: string | null;
+    };
     errors: Record<string, string>;
   }>();
 

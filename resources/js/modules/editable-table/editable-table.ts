@@ -5,7 +5,7 @@ import type {
   EditableTableColumns,
   EditableTableSettings,
 } from './types';
-import {type ReorderDirection} from '@craftcms/cp';
+import {type ReorderDirection} from '@craftcms/ui';
 
 // `Craft`, `$` (jQuery), and `Garnish` remain page globals. This class extends the
 // modern `@craftcms/garnish` `Base` but still orchestrates jQuery Craft/Garnish

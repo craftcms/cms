@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import type {SelectItem, SelectOption} from '@/common/types';
 
 function addBooleanData(

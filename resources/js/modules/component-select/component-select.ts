@@ -7,7 +7,7 @@ import {
   prefersReducedMotion,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
-import type {CraftActionMenu, ReorderDirection} from '@craftcms/cp';
+import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
 import {componentSelectData} from './support';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the

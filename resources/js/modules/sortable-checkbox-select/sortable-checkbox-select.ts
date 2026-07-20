@@ -1,6 +1,6 @@
 import {Base, DragSort, Y_AXIS} from '@craftcms/garnish';
 import {sortableCheckboxSelectData} from './support';
-import type {ReorderDirection} from '@craftcms/cp';
+import type {ReorderDirection} from '@craftcms/ui';
 
 // `Craft` and `$` (jQuery) remain page globals. This class extends the modern
 // `@craftcms/garnish` `Base` but orchestrates jQuery Craft widgets/DOM and exposes

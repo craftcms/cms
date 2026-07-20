@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {Deferred, Head, useHttp} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import backgroundUrl from '@public/images/install/installer-bg.png';
   import {computed, reactive, watchEffect} from 'vue';
   import AccountFields from '@/modules/install/components/AccountFields.vue';

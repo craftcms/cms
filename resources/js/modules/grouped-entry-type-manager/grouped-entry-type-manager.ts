@@ -10,7 +10,7 @@ import type {
   CraftActionMenu,
   CraftReorderButton,
   ReorderDirection,
-} from '@craftcms/cp';
+} from '@craftcms/ui';
 import type {
   CraftComponentSelect,
   DefineChipActionsEventDetail,
