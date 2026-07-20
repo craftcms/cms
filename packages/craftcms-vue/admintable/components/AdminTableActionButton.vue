@@ -18,10 +18,14 @@
       :class="menuBtnClasses"
       :data-icon="icon"
       :disabled="buttonDisabled"
-      :type="enabled && !isMenuButton && !ajax ? 'submit' : null"
+      :type="isMenuButton ? null : enabled && !ajax ? 'submit' : 'button'"
       v-on="
         enabled && !isMenuButton && ajax
-          ? {click: handleClick(param, value, action, ajax, handleClick)}
+          ? {
+              click: () => {
+                this.onActionClick(param, value, action, ajax, handleClick);
+              },
+            }
           : {}
       "
       >{{ label }}</component
@@ -57,7 +61,7 @@
                   !act.allowMultiple &&
                   hasMultipleSelected
                 )
-                  ? handleClick(
+                  ? onActionClick(
                       act.param,
                       act.value,
                       act.action,
@@ -132,7 +136,7 @@
     },
 
     methods: {
-      handleClick(param, value, action, ajax, handleClick) {
+      onActionClick(param, value, action, ajax, handleClick) {
         this.$emit('click', param, value, action, ajax);
 
         // Is the action button the one to deal with the click?

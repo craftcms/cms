@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where bulk entry moves could assign entries to sections that didn’t support their entry types. ([#19268](https://github.com/craftcms/cms/pull/19268))
+- Fixed a bug where admin tables’ action buttons could fire when rendering. ([#19255](https://github.com/craftcms/cms/issues/19255))
 
 ## 5.10.11 - 2026-07-15
 
