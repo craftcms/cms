@@ -2,13 +2,14 @@
 
 ## Unreleased
 
-> [!CAUTION]
-> Breaking for current 6.x updated plugins:
-> - Updated the plugin lifecycle to register and boot enabled `CraftCms\Cms\Plugin\Plugin` instances through the `CraftCms\Cms\Plugin\Plugins` service, allowing plugins to define normal Laravel `register()` and `boot()` methods.
-> - Removed the previous overridable plugin lifecycle hooks (`CraftCms\Cms\Plugin\Plugin::registerPlugin()` and `CraftCms\Cms\Plugin\Plugin::bootPlugin()`), automatic plugin trait lifecycle hooks, and the `CraftCms\Cms\Plugin\Events\PluginUnregistered` event.
->
-> For legacy plugins, the yii2-adapter should keep things working.
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
 
+- Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed automatic plugin trait lifecycle hooks. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed `CraftCms\Cms\Plugin\Events\PluginUnregistered`. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed `CraftCms\Cms\Plugin\Plugin::bootPlugin()`. `boot()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed `CraftCms\Cms\Plugin\Plugin::registerPlugin()`. `register()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Fixed a bug where the legacy `yii\web\JqueryAsset` wasn’t resolving properly. ([#19264](https://github.com/craftcms/cms/pull/19264))
 
 ## 6.0.0-alpha.13 - 2026-07-16
