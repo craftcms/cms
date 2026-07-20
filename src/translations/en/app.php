@@ -992,7 +992,7 @@ return [
     'Loading' => 'Loading',
     'Local Folder' => 'Local Folder',
     'Local copies of remote images, generated thumbnails' => 'Local copies of remote images, generated thumbnails',
-    'Local filesystems cannot be located within or above system directories or in restricted directories.' => 'Local filesystems cannot be located within or above system directories or in restricted directories.',
+    'Local filesystems cannot be located within or above system directories.' => 'Local filesystems cannot be located within or above system directories.',
     'Locality' => 'Locality',
     'Localizing relations' => 'Localizing relations',
     'Location' => 'Location',
