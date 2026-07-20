@@ -18,7 +18,7 @@ trait InstallsPlugin
     {
         $this->composerInstallPlugin();
         $this->installAndEnablePlugin();
-        $this->bootPluginProvider();
+        $this->app->get(Plugins::class)->loadPlugins();
     }
 
     public function tearDownInstallsPlugin(): void
@@ -60,16 +60,6 @@ trait InstallsPlugin
         $plugins->enablePlugin($composer['extra']['handle']);
 
         $this->app->forgetInstance(Plugins::class);
-    }
-
-    public function bootPluginProvider(): void
-    {
-        $plugins = $this->app->get(Plugins::class);
-        $plugins->loadPlugins();
-
-        $composer = $this->getComposerInfo();
-
-        $this->app->make($composer['extra']['class'], ['app' => app()])->boot($plugins);
     }
 
     private function getComposerInfo(): array

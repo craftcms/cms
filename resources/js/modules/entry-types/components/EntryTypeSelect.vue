@@ -6,8 +6,8 @@
     appendHeadHtml,
     serializeFormInputs,
     t,
-  } from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  } from '@craftcms/ui';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import Text from '@/common/components/Text.vue';
   import {
     applyOverrideSettings,

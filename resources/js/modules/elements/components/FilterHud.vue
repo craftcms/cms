@@ -5,7 +5,7 @@
     appendHeadHtml,
     ButtonAppearance,
     ButtonVariant,
-  } from '@craftcms/cp';
+  } from '@craftcms/ui';
   import {useHttp, usePage} from '@inertiajs/vue3';
   import {onMounted, onUnmounted, ref, useTemplateRef} from 'vue';
   import ElementIndexController from '@actions/Elements/ElementIndex/ElementIndexController';

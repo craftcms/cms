@@ -240,6 +240,34 @@ describe('callback flow', function () {
             ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-2', $user->id))->toBeTrue();
     });
 
+    test('callback rejects unavailable users', function (array $elementAttributes) {
+        $user = UserModel::factory()->active()->createElement([
+            'email' => 'unavailable@example.com',
+            'username' => 'unavailable-user',
+        ]);
+
+        DB::table(Table::ELEMENTS)
+            ->where('id', $user->id)
+            ->update($elementAttributes);
+
+        configureOAuthControllerProvider([
+            'trustsEmail' => true,
+        ]);
+
+        completeOAuthControllerCallback([
+            'id' => 'provider-user-unavailable',
+            'email' => 'unavailable@example.com',
+        ])
+            ->assertRedirect(oauthControllerLoginUrl(false))
+            ->assertSessionHas('error');
+
+        expect(Auth::check())->toBeFalse()
+            ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-unavailable', $user->id))->toBeFalse();
+    })->with([
+        'disabled' => [['enabled' => false]],
+        'archived' => [['archived' => true]],
+    ]);
+
     test('callback does not link an existing user by email fallback for untrusted providers', function () {
         $user = UserModel::factory()->active()->createElement([
             'email' => 'existing-untrusted@example.com',

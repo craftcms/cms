@@ -5,12 +5,12 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {store as saveTransform} from '@actions/Settings/ImageTransformsController';
-  import {t, toHandle} from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputColor from '@craftcms/cp/vue/CraftInputColor.vue';
-  import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+  import {t, toHandle} from '@craftcms/ui';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputColor from '@craftcms/ui/vue/CraftInputColor.vue';
+  import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
+  import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import {useForm} from '@inertiajs/vue3';
   import type {BaseOption} from '@/common/types';
   import {computed} from 'vue';

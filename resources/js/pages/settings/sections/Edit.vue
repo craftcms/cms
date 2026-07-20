@@ -1,12 +1,12 @@
 <script setup lang="ts">
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
-  import {t, toHandle, toUriFormat} from '@craftcms/cp';
+  import {t, toHandle, toUriFormat} from '@craftcms/ui';
   import {computed} from 'vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+  import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
   import EntryTypeSelect from '@/modules/entry-types/components/EntryTypeSelect.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import type {

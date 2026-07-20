@@ -5,16 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use CraftCms\Cms\Plugin\Events\PluginDisabling;
-use CraftCms\Cms\Plugin\Events\PluginEnabling;
-use CraftCms\Cms\Plugin\Events\PluginEvent;
-use CraftCms\Cms\Plugin\Events\PluginInstalling;
-use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Facades\Event;
 
 /**
  * @mixin Plugin
@@ -39,29 +33,15 @@ trait HasFrontendAssets
 
     protected array $scripts = [];
 
-    public function registerHasFrontendAssets(): void
+    public function publishFrontendAssets(): void
     {
-        Event::listen([PluginEnabling::class, PluginInstalling::class], function (PluginEvent $event) {
-            if (! $event->plugin instanceof static) {
-                return;
-            }
+        if ($this->vite) {
+            [$source, $target] = $this->getSourceAndTarget($this, $this->vite);
 
-            if ($config = $event->plugin->vite) {
-                [$source, $target] = $this->getSourceAndTarget($event->plugin, $config);
+            File::copyDirectory($source, $this->app->publicPath($target));
+        }
 
-                File::copyDirectory($source, $this->app->publicPath($target));
-            }
-
-            $event->plugin->copyPublishableFiles($event->plugin->frontendAssetPublishPaths());
-        });
-
-        Event::listen([PluginDisabling::class, PluginUninstalling::class], function (PluginEvent $event) {
-            if (! $event->plugin instanceof static) {
-                return;
-            }
-
-            File::deleteDirectory(public_path("vendor/{$event->plugin->packageName}"));
-        });
+        $this->copyPublishableFiles($this->frontendAssetPublishPaths());
     }
 
     public function bootHasFrontendAssets(): void

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {attrs, t} from '@craftcms/cp';
+  import {attrs, t} from '@craftcms/ui';
   import {computed, ref} from 'vue';
   import type {Table} from '@tanstack/vue-table';
   import {usePage} from '@inertiajs/vue3';

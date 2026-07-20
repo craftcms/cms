@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t, capitalize} from '@craftcms/cp';
+  import {t, capitalize} from '@craftcms/ui';
   import {computed} from 'vue';
 
   const props = withDefaults(

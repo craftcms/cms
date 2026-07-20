@@ -2,7 +2,7 @@
   import {computed, ref, watch} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import type {Table} from '@tanstack/vue-table';
-  import {Appearance, t} from '@craftcms/cp';
+  import {Appearance, t} from '@craftcms/ui';
   import Text from '@/common/components/Text.vue';
   import Select from '@/common/form/Select.vue';
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';

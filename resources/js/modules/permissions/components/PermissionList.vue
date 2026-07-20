@@ -1,11 +1,11 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {
     getNestedKeys,
     hasNested,
     type PermissionItem,
   } from '@/modules/permissions/helpers/permissions';
-  import CraftCheckbox from '@craftcms/cp/vue/CraftCheckbox.vue';
+  import CraftCheckbox from '@craftcms/ui/vue/CraftCheckbox.vue';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<string>): void;

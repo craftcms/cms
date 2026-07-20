@@ -32,14 +32,14 @@ npm run dev           # Vite dev server (HMR) for the Inertia/Vue CP
 npm run build         # Production Vite build (cp.ts + legacy.ts + cp.css)
 npm run build:all     # Build legacy bundles + CP component package + Vite
 npm run dev:bundles   # Webpack dev watch for legacy jQuery bundles
-npm run dev:cp        # Dev build for the @craftcms/cp component package
-npm run build:cp      # Production build for the @craftcms/cp component package
+npm run dev:ui        # Dev build for the @craftcms/ui component package
+npm run build:ui      # Production build for the @craftcms/ui component package
 npm run lint          # ESLint + Stylelint + TypeScript type-check
 npm run typecheck     # TypeScript type-check only (vue-tsc)
-npm run test:cp       # Vitest tests for the @craftcms/cp package
+npm run test:ui       # Vitest tests for the @craftcms/ui package
 ```
 
-> **Note:** `@craftcms/cp` must be built (`npm run build:cp`) before building or running the main Vite app if you've
+> **Note:** `@craftcms/ui` must be built (`npm run build:ui`) before building or running the main Vite app if you've
 > made changes to it.
 
 ## Testing
@@ -79,8 +79,8 @@ partially migrated; full migration means converting the inner form to a Vue comp
 
 **Packages:**
 
-- `packages/craftcms-cp` — the `@craftcms/cp` component library (Web Components built on Lit/WebAwesome). Imported as
-  `@craftcms/cp` in Vue pages. Has its own build (`npm run build:cp`) and Vitest tests (`npm run test:cp`).
+- `packages/craftcms-ui` — the `@craftcms/ui` component library (Web Components built on Lit/WebAwesome). Imported as
+  `@craftcms/ui` in Vue pages. Has its own build (`npm run build:ui`) and Vitest tests (`npm run test:ui`).
 - `packages/craftcms-legacy` — webpack-bundled jQuery modules used by legacy CP surfaces.
 
 **TypeScript types** for PHP classes are auto-generated via `spatie/laravel-typescript-transformer` and written to

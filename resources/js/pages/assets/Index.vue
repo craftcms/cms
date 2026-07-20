@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
   import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
