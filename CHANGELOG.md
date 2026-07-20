@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
+
+- Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed automatic plugin trait lifecycle hooks. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed `CraftCms\Cms\Plugin\Events\PluginUnregistered`. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed `CraftCms\Cms\Plugin\Plugin::bootPlugin()`. `boot()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Removed `CraftCms\Cms\Plugin\Plugin::registerPlugin()`. `register()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
+- Fixed a bug where the legacy `yii\web\JqueryAsset` wasn’t resolving properly. ([#19264](https://github.com/craftcms/cms/pull/19264))
 - Fixed an issue where disabled and archived user accounts could still authenticate. ([#19265](https://github.com/craftcms/cms/pull/19265))
 
 ## 6.0.0-alpha.13 - 2026-07-16
