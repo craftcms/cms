@@ -64,7 +64,7 @@ const meta = {
   render: () => html`
     <table>
       <thead>
-        <th></th>
+        <td></td>
         ${appearances.map((appearance) => html`<th>${appearance}</th>`)}
       </thead>
       <tbody>
@@ -269,7 +269,7 @@ export const ArbitraryColor: Story = {
   render: () => html`
     <table>
       <thead>
-        <th></th>
+        <td></td>
         ${appearances.map((appearance) => html`<th>${appearance}</th>`)}
       </thead>
       <tbody>
@@ -287,7 +287,7 @@ export const ArbitrarySize: Story = {
   render: () => html`
     <table>
       <thead>
-        <th></th>
+        <td></td>
         ${appearances.map((appearance) => html`<th>${appearance}</th>`)}
       </thead>
       <tbody>

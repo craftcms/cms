@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import CpLink from '@/common/components/CpLink.vue';
   import {computed, ref, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';

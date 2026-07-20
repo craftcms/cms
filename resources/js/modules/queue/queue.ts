@@ -5,10 +5,12 @@ import type {
   JobUpdateDetail,
   QueueJobData,
   QueueServiceOptions,
-} from '@src/types';
-import {JobStatus} from '@src/types';
+} from './types';
+import {JobStatus} from './types';
 import axios from 'axios';
-import {ConfigService} from '@src/services/Config';
+// Imports stay relative or bare-package here: this module is also bundled by
+// the legacy webpack build (via CP.js), which doesn't know the `@/` alias.
+import {ConfigService} from '@craftcms/ui/services/Config';
 
 /**
  * Service for managing queue job tracking.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';

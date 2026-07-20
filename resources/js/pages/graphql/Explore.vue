@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {init} from '@craftcms/graphiql';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import Select from '@/common/form/Select.vue';

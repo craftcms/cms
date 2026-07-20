@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import type {OverType as OverTypeInstance} from 'overtype';
 import type {PreviewController} from './preview';
 import {escapeMarkdownLabel} from './utilities';

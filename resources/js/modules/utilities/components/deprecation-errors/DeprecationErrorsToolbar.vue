@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {Form} from '@inertiajs/vue3';
   import type {LogData} from '@/modules/utilities/components/deprecation-errors/DeprecationErrors.vue';
   import {deleteAllDeprecationErrors} from '@actions/Utilities/DeprecationErrorsController';

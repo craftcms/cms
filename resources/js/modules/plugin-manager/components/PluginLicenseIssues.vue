@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {capitalize} from '@craftcms/cp';
+  import {capitalize} from '@craftcms/ui';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import {computed} from 'vue';
   import Text from '@/common/components/Text.vue';

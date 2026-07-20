@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {serializeFormInputsAsObject, t, toHandle} from '@craftcms/cp';
+  import {serializeFormInputsAsObject, t, toHandle} from '@craftcms/ui';
   import Pane from '@/common/components/Pane.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
   import Select from '@/common/form/Select.vue';
   import {useForm, usePage} from '@inertiajs/vue3';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
@@ -11,7 +11,7 @@
   import {provide, ref} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 

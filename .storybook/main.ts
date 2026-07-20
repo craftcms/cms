@@ -32,7 +32,7 @@ const config: StorybookConfig = {
   viteFinal(config) {
     // Storybook's vue3-vite framework adds its own Vue plugin with default options.
     // We need to configure `isCustomElement` so Vue treats `craft-*` tags as web
-    // components (from @craftcms/cp) rather than trying to resolve them as Vue
+    // components (from @craftcms/ui) rather than trying to resolve them as Vue
     // components. Since Vite's mergeConfig doesn't deep-merge plugin options,
     // we remove Storybook's Vue plugin and add our own with the correct config.
     const filteredPlugins = (config.plugins || []).flat().filter((plugin) => {

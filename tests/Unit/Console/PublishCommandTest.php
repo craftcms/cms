@@ -5,6 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\File;
+use Illuminate\Console\OutputStyle;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 it('removes stale Craft public assets before publishing', function () {
     $publicPath = storage_path('framework/testing/setup-publish-public');
@@ -50,5 +53,54 @@ it('removes stale Craft public assets before publishing', function () {
     } finally {
         app()->usePublicPath($originalPublicPath);
         File::deleteDirectory($publicPath);
+    }
+});
+
+it('leaves a symlinked public asset directory and its target alone', function () {
+    $publicPath = storage_path('framework/testing/setup-publish-public');
+    $targetPath = storage_path('framework/testing/setup-publish-target');
+    $originalPublicPath = public_path();
+
+    File::deleteDirectory($publicPath);
+    File::deleteDirectory($targetPath);
+    File::ensureDirectoryExists("{$publicPath}/vendor");
+    File::ensureDirectoryExists("{$targetPath}/icons/custom-icons");
+    File::put("{$targetPath}/icons/custom-icons/craft-cms.svg", '<svg/>');
+    symlink($targetPath, "{$publicPath}/vendor/craft");
+
+    app()->usePublicPath($publicPath);
+
+    try {
+        $command = new class extends PublishCommand
+        {
+            public array $calls = [];
+
+            public function call($command, array $arguments = []): int
+            {
+                $this->calls[] = [$command, $arguments];
+
+                return 0;
+            }
+        };
+
+        $command->setOutput(
+            new OutputStyle(
+                new ArrayInput([]),
+                new BufferedOutput,
+            ),
+        );
+
+        $command->handle();
+
+        expect(is_link("{$publicPath}/vendor/craft"))->toBeTrue()
+            ->and(File::exists("{$targetPath}/icons/custom-icons/craft-cms.svg"))->toBeTrue()
+            ->and($command->calls)->toBe([
+                ['vendor:publish', ['--tag' => 'craftcms-config']],
+                ['vendor:publish', ['--tag' => 'craftcms-console']],
+            ]);
+    } finally {
+        app()->usePublicPath($originalPublicPath);
+        File::deleteDirectory($publicPath);
+        File::deleteDirectory($targetPath);
     }
 });

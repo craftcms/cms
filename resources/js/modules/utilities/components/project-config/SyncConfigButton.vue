@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import ConfigSyncController from '@actions/ConfigSyncController';
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {Form} from '@inertiajs/vue3';
 
   withDefaults(
