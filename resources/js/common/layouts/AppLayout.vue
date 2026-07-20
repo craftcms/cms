@@ -410,6 +410,7 @@
   }
 
   .cp__header {
+    --c-color-focus-outline: var(--color-blue-200);
     color: var(--color-slate-200);
     background-color: var(--color-slate-950);
   }
