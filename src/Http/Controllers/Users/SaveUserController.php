@@ -118,6 +118,11 @@ readonly class SaveUserController
                         ->email(Query::escapeParam($newEmail))
                         ->status(User::STATUS_INACTIVE)
                         ->one();
+
+                    if ($user) {
+                        // ignore their previous admin status, if they had it
+                        $user->admin = false;
+                    }
                 }
             }
 
@@ -249,11 +254,7 @@ readonly class SaveUserController
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        $photo = $request->file('photo');
-
-        if ($photo && ! ImageHelper::canManipulateAsImage($photo->getClientOriginalExtension())) {
-            $user->errors()->add('photo', t('The user photo provided is not an image.'));
-        }
+        $decodedUserPhoto = $this->validateUserPhoto($request, $user);
 
         // Don't validate required custom fields if it's public registration
         if (! $isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
@@ -302,7 +303,7 @@ readonly class SaveUserController
         }
 
         // Save the user’s photo, if it was submitted
-        $this->processUserPhoto($request, app(Elements::class), $user);
+        $this->processUserPhoto($request, app(Elements::class), $user, $decodedUserPhoto);
 
         // If this is public registration, assign the user to the default user group
         if (Edition::isAtLeast(Edition::Pro) && $isPublicRegistration) {
@@ -366,7 +367,7 @@ readonly class SaveUserController
         return $this->redirectToPostedUrl($user);
     }
 
-    private function processUserPhoto(Request $request, Elements $elements, User $user): void
+    private function processUserPhoto(Request $request, Elements $elements, User $user, ?string $decodedUserPhoto): void
     {
         // Delete their photo?
         if ($request->input('deletePhoto')) {
@@ -387,7 +388,7 @@ readonly class SaveUserController
             $filename = $photo->getClientOriginalName();
             $mimeType = $photo->getMimeType();
             $newPhoto = true;
-        } elseif (($photo = $request->input('photo')) && is_array($photo)) {
+        } elseif ($decodedUserPhoto !== null && ($photo = $request->input('photo')) && is_array($photo)) {
             // base64-encoded photo
             $matches = [];
 
@@ -410,8 +411,7 @@ readonly class SaveUserController
                 }
 
                 $fileLocation = AssetsHelper::tempFilePath($extension);
-                $data = base64_decode($matches['data']);
-                File::writeToFile($fileLocation, $data);
+                File::writeToFile($fileLocation, $decodedUserPhoto);
                 $newPhoto = true;
             }
         }
@@ -425,6 +425,57 @@ readonly class SaveUserController
                 throw $e;
             }
         }
+    }
+
+    private function validateUserPhoto(Request $request, User $user): ?string
+    {
+        $maxUploadSize = AssetsHelper::getMaxUploadSize();
+        $uploadedPhoto = $request->file('photo');
+
+        if ($uploadedPhoto && $uploadedPhoto->getSize() > $maxUploadSize) {
+            $user->errors()->add('photo', t('The uploaded file exceeds the maximum allowed size.'));
+
+            return null;
+        }
+
+        if ($uploadedPhoto && ! ImageHelper::canManipulateAsImage($uploadedPhoto->getClientOriginalExtension())) {
+            $user->errors()->add('photo', t('The user photo provided is not an image.'));
+
+            return null;
+        }
+
+        $photo = $request->input('photo');
+        if (! is_array($photo) || ! isset($photo['data'])) {
+            return null;
+        }
+
+        if (! preg_match('/^data:((?<type>[a-z0-9]+\/[a-z0-9+]+);)?base64,(?<data>.+)/i', (string) $photo['data'], $matches)) {
+            $user->errors()->add('photo', t('The user photo provided is not valid.'));
+
+            return null;
+        }
+
+        $maxEncodedSize = (int) (4 * ceil($maxUploadSize / 3));
+        if (strlen($matches['data']) > $maxEncodedSize) {
+            $user->errors()->add('photo', t('The uploaded file exceeds the maximum allowed size.'));
+
+            return null;
+        }
+
+        $data = base64_decode($matches['data'], true);
+        if ($data === false) {
+            $user->errors()->add('photo', t('The user photo provided is not valid.'));
+
+            return null;
+        }
+
+        if (strlen($data) > $maxUploadSize) {
+            $user->errors()->add('photo', t('The uploaded file exceeds the maximum allowed size.'));
+
+            return null;
+        }
+
+        return $data;
     }
 
     /**

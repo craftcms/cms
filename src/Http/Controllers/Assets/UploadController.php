@@ -239,6 +239,10 @@ readonly class UploadController
                     ->folderId($sourceAsset->folderId)
                     ->filename(Query::escapeParam($targetFilename))
                     ->one();
+
+                if ($assetToReplace) {
+                    Gate::authorize('replaceFile', $assetToReplace);
+                }
             }
 
             if (! empty($assetToReplace)) {

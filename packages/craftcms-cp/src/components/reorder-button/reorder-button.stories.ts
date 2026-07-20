@@ -15,6 +15,7 @@ const meta = {
     position: 'middle',
     variant: 'neutral',
     orientation: 'vertical',
+    disabled: false,
   },
   argTypes: {
     position: {
@@ -32,6 +33,7 @@ const meta = {
       position="${args.position}"
       variant="${args.variant}"
       orientation="${args.orientation}"
+      ?disabled="${args.disabled}"
       @reorder="${(e: CustomEvent<{direction: 'up' | 'down'}>) =>
         console.log('reorder', e.detail.direction)}"
     ></craft-reorder-button>
@@ -58,4 +60,8 @@ export const Last: Story = {
 export const Horizontal: Story = {
   name: 'Horizontal (move forward/backward)',
   args: {orientation: 'horizontal'},
+};
+
+export const Disabled: Story = {
+  args: {disabled: true},
 };

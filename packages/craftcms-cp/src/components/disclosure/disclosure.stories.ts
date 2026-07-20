@@ -4,62 +4,103 @@ import {html} from 'lit';
 
 import './disclosure.js';
 
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
   title: 'Functional/Disclosure',
   component: 'craft-disclosure',
   argTypes: {
     state: {
-      control: {
-        type: 'select',
-      },
+      control: {type: 'select'},
       options: ['collapsed', 'expanded'],
-      defaultValue: null,
     },
   },
-  play: async ({canvas, userEvent}) => {
-    const trigger = canvas.getByTestId('trigger');
-    await userEvent.click(trigger);
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    await expect(canvas.getByTestId('target')).toHaveAttribute(
-      'data-state',
-      'expanded'
-    );
-  },
   render: (args) => html`
-    <craft-disclosure state="${args.state}" ${
-      args.cookieName ? `cookie-name="${args.cookieName}` : ''
-    }">
-      <button type="button" aria-controls="target" data-testid="trigger">Toggle</button>
-      <div id="target" data-testid="target">This will toggle</div>
+    <craft-disclosure state="${args.state || 'collapsed'}">
+      <button type="button" aria-controls="disclosure-target">
+        Toggle Content
+      </button>
     </craft-disclosure>
+
+    <div
+      id="disclosure-target"
+      data-testid="target"
+      data-state="collapsed"
+      style="overflow: hidden;"
+    >
+      <p>This content is revealed inline when the disclosure is expanded.</p>
+      <p>It pushes subsequent content down in the normal document flow.</p>
+    </div>
+
+    <style>
+      [data-state='collapsed'] {
+        display: none;
+      }
+      [data-state='expanded'] {
+        display: block;
+      }
+    </style>
   `,
 } satisfies Meta<any>;
 
 export default meta;
 type Story = StoryObj<any>;
 
-// More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Basic: Story = {
-  args: {},
+export const Collapsed: Story = {
+  args: {
+    state: 'collapsed',
+  },
+  play: async ({canvas, userEvent}) => {
+    const trigger = canvas.getByRole('button');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.click(trigger);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  },
 };
 
 export const Expanded: Story = {
   args: {
     state: 'expanded',
   },
-  play: async ({canvas, userEvent}) => {
-    await expect(canvas.getByTestId('trigger')).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    );
+  play: async ({canvas}) => {
+    const trigger = canvas.getByRole('button');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
   },
 };
 
-export const Persistant: Story = {
-  args: {
-    cookieName: 'persistent-disclosure',
-  },
+export const Accordion: Story = {
+  render: () => html`
+    <style>
+      [data-state='collapsed'] {
+        display: none;
+      }
+      [data-state='expanded'] {
+        display: block;
+      }
+    </style>
+
+    <div>
+      <craft-disclosure state="expanded">
+        <button type="button" aria-controls="section-1">Section 1</button>
+      </craft-disclosure>
+      <div id="section-1" data-state="expanded">
+        <p>Content for section 1.</p>
+      </div>
+
+      <craft-disclosure state="collapsed">
+        <button type="button" aria-controls="section-2">Section 2</button>
+      </craft-disclosure>
+      <div id="section-2" data-state="collapsed">
+        <p>Content for section 2.</p>
+      </div>
+
+      <craft-disclosure state="collapsed">
+        <button type="button" aria-controls="section-3">Section 3</button>
+      </craft-disclosure>
+      <div id="section-3" data-state="collapsed">
+        <p>Content for section 3.</p>
+      </div>
+    </div>
+  `,
 };
 
 // Without a slotted invoker, a default `craft-button` is rendered from the

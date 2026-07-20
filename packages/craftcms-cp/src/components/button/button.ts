@@ -6,9 +6,11 @@ import '../spinner/spinner.js';
 import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
+import variantsStyles from '@src/styles/variants.styles';
 
 export const ButtonAppearance = {
   Solid: 'solid',
+  Fill: 'fill',
   Outline: 'outline',
   Plain: 'plain',
 } as const;
@@ -42,7 +44,7 @@ export type ButtonAppearance =
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
-    return [...super.styles, styles];
+    return [...super.styles, variantsStyles, styles];
   }
 
   override connectedCallback() {
@@ -123,12 +125,19 @@ export default class CraftButton extends LionButtonSubmit {
   @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =
     'medium';
 
+  /** The value submitted with the form or used for selection in a radio button-group */
+  @property({reflect: true}) value: string;
+
+  /** Whether the button is in a selected/active state (e.g. inside a radio button-group) */
+  @property({reflect: true, type: Boolean}) override active: boolean = false;
+
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
 
   /** Set align-items for the content */
   @property() align: 'start' | 'end' | 'center' = 'center';
 
+  /** Icon to be rendered within the content. */
   @property() icon: string | null = null;
 
   /** When set, the button renders as a link to this URL. */
@@ -142,6 +151,10 @@ export default class CraftButton extends LionButtonSubmit {
 
   /** Anchor download attribute. Forwarded to the <a>. */
   @property() download: string | null = null;
+
+  /** Position of the icon. Defaults to "prefix" */
+  @property({attribute: 'icon-position'}) iconPosition: 'prefix' | 'suffix' =
+    'prefix';
 
   @state()
   private _hasAccessibilityError: boolean = false;
@@ -173,12 +186,16 @@ export default class CraftButton extends LionButtonSubmit {
         part="content"
       >
         <slot name="prefix" class="prefix" part="prefix">
-          ${this.icon
+          ${this.icon && this.iconPosition === 'prefix'
             ? html`<craft-icon name="${this.icon}"></craft-icon>`
             : nothing}
         </slot>
         <slot class="label" part="label"></slot>
-        <slot name="suffix" class="suffix" part="suffix"></slot>
+        <slot name="suffix" class="suffix" part="suffix">
+          ${this.icon && this.iconPosition === 'suffix'
+            ? html`<craft-icon name="${this.icon}"></craft-icon>`
+            : nothing}
+        </slot>
       </div>
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`

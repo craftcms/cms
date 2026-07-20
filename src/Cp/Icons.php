@@ -84,6 +84,8 @@ readonly class Icons
 
     private const array CUSTOM_ICONS = [
         'asterisk-slash',
+        'c-debug',
+        'c-outline',
         'diamond-slash',
         'element-card',
         'element-card-slash',

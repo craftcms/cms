@@ -145,6 +145,15 @@ export async function appendBodyHtml(
   return appendElementHtml(html, document.body);
 }
 
+export function isVisible(el: HTMLElement): boolean {
+  if (typeof el.checkVisibility === 'function') {
+    return el.checkVisibility({checkOpacity: true, checkVisibilityCSS: true});
+  }
+
+  // Fallback: mirrors jQuery's :visible behavior
+  return el.offsetWidth > 0 || el.offsetHeight > 0;
+}
+
 /**
  * A custom element that carries form state on the host (e.g. Lion-based
  * controls like `craft-select-rich` that have no light-DOM posting input).
@@ -187,6 +196,38 @@ function isChoiceModelValue(
  * into a detached form would only see attributes).
  */
 export function serializeFormInputs(container: HTMLElement): string {
+  return collectFormInputs(container).toString();
+}
+
+/**
+ * Like [[serializeFormInputs()]], but returns a plain object instead of a
+ * URL-encoded string.
+ *
+ * Names are kept verbatim — PHP-style bracket names (`settings[path]`) stay
+ * flat keys, matching what the server would see after parsing the string
+ * form. Repeated names are grouped into arrays rather than last-one-wins.
+ */
+export function serializeFormInputsAsObject(
+  container: HTMLElement
+): Record<string, string | string[]> {
+  const object: Record<string, string | string[]> = {};
+
+  for (const [name, value] of collectFormInputs(container)) {
+    const existing = object[name];
+
+    if (existing === undefined) {
+      object[name] = value;
+    } else if (Array.isArray(existing)) {
+      existing.push(value);
+    } else {
+      object[name] = [existing, value];
+    }
+  }
+
+  return object;
+}
+
+function collectFormInputs(container: HTMLElement): URLSearchParams {
   const params = new URLSearchParams();
   const controls = container.querySelectorAll<
     HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -263,5 +304,5 @@ export function serializeFormInputs(container: HTMLElement): string {
     }
   }
 
-  return params.toString();
+  return params;
 }

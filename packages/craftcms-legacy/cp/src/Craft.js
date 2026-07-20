@@ -98,6 +98,5 @@ import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 
 // Custom elements
-import './js/CraftGlobalSidebar.js';
 import './js/CraftElementLabel';
 import './js/CraftProxyScrollbar';

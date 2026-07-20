@@ -7,6 +7,7 @@ export default css`
         calc(l - 10)
     );
     --_active-color: var(--c-color-on-loud);
+    --_active-border-color: var(--c-color-border-loud);
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -48,9 +49,18 @@ export default css`
     }
   }
 
-  :host(:not(:disabled):not(.loading):active) {
+  :host(:not(:disabled):not(.loading):active),
+  :host(.is-active:not(:disabled):not(.loading)) {
     color: var(--_active-color);
     background-color: var(--_active-background-color);
+    box-shadow: inset 0 1px 3px var(--c-color-mix-active);
+  }
+
+  :host(:not(:disabled):not(.loading)[active]),
+  :host(.is-active:not(:disabled):not(.loading)) {
+    color: var(--c-color-on-loud);
+    background-color: var(--c-color-fill-loud);
+    border-color: var(--c-color-border-loud);
   }
 
   /*
@@ -95,6 +105,7 @@ export default css`
   /*
   Icon
    */
+  :host([icon='']),
   :host([icon]:empty) {
     aspect-ratio: 1;
     padding-inline: 0;
@@ -111,8 +122,10 @@ export default css`
   }
 
   /*
-  Appearances 
+  Appearances
    */
+
+  /* Inline */
   :host([appearance~='inline']) {
     display: inline;
     appearance: none;
@@ -150,6 +163,19 @@ export default css`
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
       var(--c-color-mix-active)
     );
+  }
+
+  :host([appearance='inline'][active]) {
+    background-color: var(
+      --c-color-fill-normal,
+      var(--c-color-neutral-fill-normal)
+    );
+    border-color: var(
+      --c-color-border-normal,
+      var(--c-color-neutral-border-normal)
+    );
+    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+    box-shadow: none;
   }
 
   /* Plain & Outline (Shared) */
@@ -211,7 +237,19 @@ export default css`
     );
   }
 
-  /* Filled */
+  :host([appearance='plain'][active]) {
+    background-color: var(--c-color-fill-normal);
+    border-color: var(--c-color-border-normal);
+    color: var(--c-color-on-normal);
+    box-shadow: none;
+  }
+
+  /* Outline */
+  :host([appearance='outline']) {
+    border-color: var(--c-color-border-loud);
+  }
+
+  /* Solid */
   :host([appearance~='solid']) {
     background-color: var(
       --c-color-fill-loud,
@@ -237,48 +275,32 @@ export default css`
     --_active-color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  /* Outline */
-  :host([appearance='outline']) {
-    border-color: var(--c-color-border-loud);
+  /* Fill */
+  :host([appearance~='fill']) {
+    border-color: transparent;
+    background-color: var(
+      --c-color-fill-normal,
+      var(--c-color-neutral-fill-normal)
+    );
+    border-color: transparent;
+    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  /*
-  Variants (aka fill colors) 
-   */
-  :host([variant~='accent']) {
-    --c-color-fill-loud: var(--c-color-accent-fill-loud);
-    --c-color-fill-normal: var(--c-color-accent-fill-normal);
-    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
-    --c-color-border-loud: var(--c-color-accent-border-loud);
-    --c-color-border-normal: var(--c-color-accent-border-normal);
-    --c-color-border-quiet: var(--c-color-accent-border-quiet);
-    --c-color-on-loud: var(--c-color-accent-on-loud);
-    --c-color-on-normal: var(--c-color-accent-on-normal);
-    --c-color-on-quiet: var(--c-color-accent-on-quiet);
+  :host([appearance='fill']:hover) {
+    background-color: hsl(
+      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+        calc(l - 5)
+    );
+    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([variant='neutral']) {
-    --c-color-fill-loud: var(--c-color-neutral-fill-loud);
-    --c-color-fill-normal: var(--c-color-neutral-fill-normal);
-    --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
-    --c-color-border-loud: var(--c-color-neutral-border-loud);
-    --c-color-border-normal: var(--c-color-neutral-border-normal);
-    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
-    --c-color-on-loud: var(--c-color-neutral-on-loud);
-    --c-color-on-normal: var(--c-color-neutral-on-normal);
-    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
-  }
-
-  :host([variant~='danger']) {
-    --c-color-fill-loud: var(--c-color-danger-fill-loud);
-    --c-color-fill-normal: var(--c-color-danger-fill-normal);
-    --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
-    --c-color-border-loud: var(--c-color-danger-border-loud);
-    --c-color-border-normal: var(--c-color-danger-border-normal);
-    --c-color-border-quiet: var(--c-color-danger-border-quiet);
-    --c-color-on-loud: var(--c-color-danger-on-loud);
-    --c-color-on-normal: var(--c-color-danger-on-normal);
-    --c-color-on-quiet: var(--c-color-danger-on-quiet);
+  :host([appearance='fill'][active]),
+  :host([appearance='fill']:active) {
+    --_active-background-color: hsl(
+      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+        calc(l - 10)
+    );
+    --_active-color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
   .button-content {

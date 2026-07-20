@@ -16,6 +16,6 @@ import './modules/generated-fields';
 import './modules/component-select';
 import './modules/grouped-entry-type-manager';
 
-window.Cp = Cp;
+window.Cp = Cp as unknown as typeof window.Cp;
 
 console.log('window.Cp defined', window.Cp);

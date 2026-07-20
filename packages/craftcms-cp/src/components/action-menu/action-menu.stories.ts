@@ -102,6 +102,38 @@ export const DataDriven: Story = {
 };
 
 /**
+ * Data-driven mode with `disabled` set — the generated default invoker is
+ * rendered disabled (and dimmed) and the menu is prevented from opening,
+ * whether activated by click or keyboard.
+ */
+export const DataDrivenDisabled: Story = {
+  render: () =>
+    html`<craft-action-menu
+      .actions="${dataDrivenActions}"
+      label="Actions"
+      icon="ellipsis"
+      disabled
+    ></craft-action-menu>`,
+};
+
+/**
+ * Slot-based mode with `disabled` set — a consumer-slotted invoker gets
+ * `aria-disabled` applied and is dimmed, and the menu is prevented from
+ * opening even though the invoker itself isn't a form control.
+ */
+export const SlotBasedDisabled: Story = {
+  render: () =>
+    html`<craft-action-menu disabled>
+      <craft-button type="button" slot="invoker" appearance="secondary">
+        Custom invoker
+      </craft-button>
+      <div slot="content">
+        <craft-action-item icon="eye">Preview File</craft-action-item>
+      </div>
+    </craft-action-menu>`,
+};
+
+/**
  * Data-driven mode with a custom slotted invoker — the slotted invoker
  * overrides the generated default, while items still come from `actions`.
  */

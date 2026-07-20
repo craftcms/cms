@@ -7,9 +7,11 @@ use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\AssetIndexData;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
@@ -255,6 +257,46 @@ it('returns empty missing entries for finished session with no actual content', 
     expect($missing)->toHaveKey('files');
     expect($missing['folders'])->toBeEmpty();
     expect($missing['files'])->toBeEmpty();
+});
+
+it('finds missing entries with a fixed number of queries', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $rootFolder = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => null,
+        'path' => '',
+    ]);
+    $parentFolder = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $rootFolder->id,
+        'path' => 'images/',
+        'dateCreated' => now()->subMinute(),
+    ]);
+    $childFolder = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $parentFolder->id,
+        'path' => 'images/nested/',
+        'dateCreated' => now()->subMinute(),
+    ]);
+    $asset = Asset::factory()->create([
+        'volumeId' => $volume->id,
+        'folderId' => $childFolder->id,
+        'dateCreated' => now()->subMinute(),
+    ]);
+    $session = $this->indexer->createIndexingSession([$volumeData], listEmptyFolders: true);
+    $session->actionRequired = true;
+    $queryCount = 0;
+
+    DB::listen(function () use (&$queryCount): void {
+        $queryCount++;
+    });
+
+    $missing = $this->indexer->getMissingEntriesForSession($session);
+
+    expect($queryCount)->toBe(2)
+        ->and($missing['folders'])->toHaveKeys([$parentFolder->id, $childFolder->id])
+        ->and($missing['files'])->toHaveKey($asset->id);
 });
 
 it('stores session options correctly', function () {

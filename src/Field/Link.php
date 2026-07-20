@@ -738,7 +738,7 @@ JS;
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
-        return $value?->getLink() ?? '';
+        return (string) ($value?->getLink() ?? '');
     }
 
     #[Override]

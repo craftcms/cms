@@ -15,20 +15,14 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController;
-use CraftCms\Cms\Search\Search as SearchService;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    if (DB::isMysql()) {
-        app(SearchService::class)->useFullText = false;
-    }
-
     $this->entryType = EntryTypeModel::factory()
         ->withFieldLayout()
         ->create([

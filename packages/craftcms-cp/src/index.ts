@@ -10,10 +10,15 @@ export {CraftAuthChallengeForm} from './components/auth-challenge-form/auth-chal
 export {default as CraftActionItem} from './components/action-item/action-item.js';
 export {default as CraftActionMenu} from './components/action-menu/action-menu.js';
 export {default as CraftAvatar} from './components/avatar/avatar.js';
+export {default as CraftBadge} from './components/badge/badge.js';
 export {default as CraftBreadcrumbItem} from './components/breadcrumb-item/breadcrumb-item.js';
 export {default as CraftBreadcrumbs} from './components/breadcrumbs/breadcrumbs.js';
 export {default as CraftButtonGroup} from './components/button-group/button-group.js';
-export {default as CraftButton} from './components/button/button.js';
+export {
+  default as CraftButton,
+  ButtonAppearance,
+  ButtonVariant,
+} from './components/button/button.js';
 export {default as CraftCallout} from './components/callout/callout.js';
 export {default as CraftCard} from './components/card/card.js';
 export {default as CraftCheckboxGroup} from './components/checkbox-group/checkbox-group.js';
@@ -64,6 +69,8 @@ export {default as CraftTab} from './components/tab/tab.js';
 export {default as CraftTextarea} from './components/textarea/textarea.js';
 export {default as CraftTooltip} from './components/tooltip/tooltip.js';
 export {default as CraftVisuallyHidden} from './components/visually-hidden/visually-hidden.js';
+export {default as CraftThumbnail} from './components/thumbnail/thumbnail.js';
+export {default as CraftThumbnailLoader} from './components/thumbnail-loader/thumbnail-loader.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';
@@ -74,6 +81,8 @@ export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
 export * from './utilities/string.js';
 export * from './utilities/dom.js';
+export * from './utilities/attrs.js';
+export * from './utilities/thumbnail-loader.js';
 
 // Services
 export {QueueService} from './services/Queue.js';

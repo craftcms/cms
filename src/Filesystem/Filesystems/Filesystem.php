@@ -98,6 +98,11 @@ abstract class Filesystem extends Component implements FsInterface
         return static::$showUrlSetting;
     }
 
+    public function hasLegacySettingsHtml(): bool
+    {
+        return true;
+    }
+
     #[Override]
     public function getRules(): array
     {

@@ -18,9 +18,34 @@ test('login validates required fields', function () {
         ->assertJsonValidationErrors(['requestOptions', 'authResponse']);
 });
 
+test('login validates the auth response JSON shape', function (string $authResponse) {
+    postJson(action([PasskeyController::class, 'login']), [
+        'requestOptions' => Json::encode(['challenge' => 'test']),
+        'authResponse' => $authResponse,
+    ])->assertJsonValidationErrors(['authResponse']);
+})->with([
+    'invalid JSON' => ['invalid'],
+    'missing credential ID' => [Json::encode([])],
+    'non-string credential ID' => [Json::encode(['id' => []])],
+]);
+
 test('login fails with invalid credential', function () {
     postJson(action([PasskeyController::class, 'login']), [
         'requestOptions' => Json::encode(['challenge' => 'test']),
         'authResponse' => Json::encode(['id' => 'non-existent-credential-id']),
     ])->assertStatus(400);
+});
+
+test('login is limited to five attempts per minute', function () {
+    foreach (range(1, 5) as $attempt) {
+        postJson(action([PasskeyController::class, 'login']), [
+            'requestOptions' => Json::encode(['challenge' => 'test']),
+            'authResponse' => Json::encode(['id' => 'non-existent-credential-id']),
+        ])->assertStatus(400);
+    }
+
+    postJson(action([PasskeyController::class, 'login']), [
+        'requestOptions' => Json::encode(['challenge' => 'test']),
+        'authResponse' => Json::encode(['id' => 'non-existent-credential-id']),
+    ])->assertTooManyRequests();
 });
