@@ -21,7 +21,7 @@ import {
   prefersReducedMotion,
   scrollContainerToElement,
 } from '@craftcms/garnish';
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
 import {containerMatrixInputs} from './support';
 import {
@@ -50,6 +50,12 @@ export interface MatrixInputSettings extends GarnishBaseSettings {
   ownerId: number | string | null;
   siteId: number | null;
   staticEntries: boolean;
+  /**
+   * Auto-create default entries after init (min-entries fields; see
+   * craftcms/cms#12973 — the server resets the field's delta initial value so
+   * the auto-added entries still register as changes).
+   */
+  addDefaultEntries: {type: string; count: number} | null;
 }
 
 /** The jQuery `'fast'` duration the legacy velocity calls used. */
@@ -70,6 +76,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     ownerId: null,
     siteId: null,
     staticEntries: false,
+    addDefaultEntries: null,
   };
 
   static get collapsedEntryStorageKey(): string {
@@ -295,6 +302,11 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       }
 
       this.trigger('afterInit');
+
+      const defaultEntries = this.settings!.addDefaultEntries;
+      if (defaultEntries && defaultEntries.count > 0) {
+        void this.addDefaultEntries(defaultEntries.type, defaultEntries.count);
+      }
     }, 100);
 
     // If this field is nested within something that's deletable, be ready to
@@ -624,6 +636,23 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         this.addingEntry = false;
       }
     });
+  }
+
+  /** Auto-adds the missing default entries for a min-entries field. */
+  private async addDefaultEntries(type: string, count: number): Promise<void> {
+    if (this.elementEditor) {
+      await this.elementEditor.pause();
+    }
+
+    for (let i = 0; i < count; i++) {
+      await this.addEntry(type, null, false);
+    }
+
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        this.elementEditor?.resume();
+      });
+    }, 100);
   }
 
   getEntryTypeByHandle(handle: string): MatrixEntryType | undefined {

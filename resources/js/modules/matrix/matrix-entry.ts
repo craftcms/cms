@@ -8,8 +8,8 @@
  */
 
 import {Base, getInputPostVal, hasAttr} from '@craftcms/garnish';
-import {t} from '@craftcms/cp';
-import {escapeHtml} from '@craftcms/cp/utilities/escapeHtml';
+import {t} from '@craftcms/ui';
+import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 import {animationDuration, MatrixInput} from './matrix-input';
 import {containerMatrixEntries} from './support';
 import {
