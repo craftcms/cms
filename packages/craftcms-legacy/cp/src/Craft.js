@@ -61,8 +61,6 @@ import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/ElementTableSorter.js';
-import './js/ElevatedSessionForm.js';
-import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
 import './js/EntrySelectInput.js';
 import './js/EntryTypeSelectInput.js';
@@ -103,8 +101,5 @@ import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 
 // Custom elements
-import './js/CraftGlobalSidebar.js';
-import './js/CraftDisclosure.js';
-import './js/CraftTooltip.js';
 import './js/CraftElementLabel';
 import './js/CraftProxyScrollbar';

@@ -52,18 +52,15 @@ trait HasThumbnails
 
     private function renderImageThumb(int $size, string $thumbUrl): string
     {
-        return Html::tag('div', '', [
-            'class' => [
-                'thumb',
-                $this->hasCheckeredThumb() ? 'checkered' : null,
-                $this->hasRoundedThumb() ? 'rounded' : null,
-            ],
-            'data' => [
-                'sizes' => "calc({$size}rem/16)",
-                'srcset' => "{$thumbUrl} {$size}w, {$this->thumbUrl($size * 2)} ".($size * 2).'w',
-                'alt' => $this->thumbAlt(),
-                'animated' => $this->couldHaveAnimatedThumb() ?: null,
-            ],
+        return Html::tag('craft-thumbnail', '', [
+            'slot' => 'thumbnail',
+            'src' => $thumbUrl,
+            'checkered' => $this->hasCheckeredThumb(),
+            'rounded' => $this->hasRoundedThumb(),
+            'sizes' => "calc({$size}rem/16)",
+            'srcset' => "{$thumbUrl} {$size}w, {$this->thumbUrl($size * 2)} ".($size * 2).'w',
+            'alt' => $this->thumbAlt(),
+            'animated' => $this->couldHaveAnimatedThumb() ?: null,
         ]);
     }
 

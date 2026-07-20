@@ -16,6 +16,10 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
       // Save a reference to the element index that this trigger will be used with
       this.elementIndex = Craft.currentElementIndex;
 
+      if (!this.elementIndex?.triggers) {
+        return;
+      }
+
       // Register the trigger on the element index, so it can be destroyed when the view is updated
       this.elementIndex.triggers.push(this);
 

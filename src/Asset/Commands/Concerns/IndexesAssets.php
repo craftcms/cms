@@ -144,7 +144,6 @@ trait IndexesAssets
         $this->components->twoColumnDetail("Indexing assets in <fg=cyan>{$volume->name}</>");
 
         $fileList = AssetIndexer::getIndexListOnVolume($volume, $path);
-        $fsSubpath = $volume->getSubpath();
 
         /** @var Collection<MissingAssetException|MissingVolumeFolderException> $missingRecords */
         $missingRecords = Collection::make();
@@ -153,7 +152,7 @@ trait IndexesAssets
         /** @var FsListing $item */
         foreach ($fileList as $index => $item) {
             $count = $index + 1;
-            $description = "#{$count}: <fg=cyan>{$item->getAdjustedUri($fsSubpath)}".($item->getIsDir() ? '/' : '').'</>';
+            $description = "#{$count}: <fg=cyan>{$item->getUri()}".($item->getIsDir() ? '/' : '').'</>';
 
             if ($count < $startAt) {
                 $this->components->twoColumnDetail($description, '<fg=yellow;options=bold>SKIPPED</>');

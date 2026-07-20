@@ -1,10 +1,10 @@
-import {css, html, LitElement, render, type PropertyValues} from 'lit';
-import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
+import {css, html, type PropertyValues, render} from 'lit';
 import {property, queryAssignedElements} from 'lit/decorators.js';
 import type CraftActionItem from '@src/components/action-item/action-item';
 import {uuid} from '@lion/ui/core.js';
 import {t} from '@src/utilities/translate';
 import {Variant} from '@src/constants/variants';
+import CraftPopover from '../popover/popover.js';
 import type {
   ActionMenuActions,
   ActionMenuItem,
@@ -13,6 +13,10 @@ import type {
 } from './action-menu.types.js';
 
 import '../action-item/action-item.js';
+
+export type ActionMenuChangeDetail =
+  | {item: ActionMenuItemButton | ActionMenuItemLink}
+  | {item: CraftActionItem};
 
 export type {
   ActionMenuActions,
@@ -26,45 +30,56 @@ export type {
 } from './action-menu.types.js';
 
 /**
- * The web component is the single source of truth for action-menu behaviour.
+ * An action menu built on craft-popover.
  *
+ * The web component is the single source of truth for action-menu behaviour.
  * It supports two mutually-compatible modes:
  *
  * 1. **Slot-based** (default / backwards compatible): the consumer slots their
- *    own `invoker`/`content` light-DOM children, exactly as before.
+ *    own `invoker`/`content` light-DOM children.
  * 2. **Data-driven**: the consumer sets the `actions` property and the
  *    component renders the full menu itself (default invoker + items),
  *    mirroring the logic that used to live in `ActionMenu.vue` (normalize,
  *    danger-sort, hr/display/link/button rendering).
  *
  * In data-driven mode the generated invoker + content are appended as
- * *light-DOM* children of the host, so Lion's overlay node getters
- * (`_overlayInvokerNode`/`_overlayContentNode`, which scan `this.children` for
- * `slot="invoker"`/`slot="content"`) and the existing aria wiring continue to
- * work unchanged. A consumer-slotted invoker always takes precedence over the
- * generated default.
+ * *light-DOM* children of the host. The generated `slot="content"` element is
+ * projected into craft-popover's shadow `.popover-pane`, which provides the
+ * container chrome (border/background/shadow/sizing); this component only adds
+ * the menu item layout. A consumer-slotted invoker always takes precedence over
+ * the generated default.
  *
- * @slot - Items to be rendered in the menu.
  * @slot invoker - Element that triggers the menu.
- * @slot backdrop - Element that covers the screen when the menu is open.
- * @slot content - Content to be rendered inside the menu.
+ * @slot content - Action items to be rendered in the menu.
+ *
+ * @fires {CustomEvent<ActionMenuChangeDetail>} change - Emitted when the user
+ *   clicks an item. In data-driven mode `event.detail.item` is the
+ *   `ActionMenuItemButton` or `ActionMenuItemLink` descriptor; in slot-based
+ *   mode it is the clicked `craft-action-item` element.
  */
-export default class CraftActionMenu extends OverlayMixin(LitElement) {
-  static override styles = css`
-    ::slotted([slot='content']) {
-      font-size: var(--c-text-base);
-      font-weight: 400;
-      display: grid;
-      gap: var(--c-spacing-xs);
-      border: 1px solid var(--c-color-neutral-border-quiet);
-      border-radius: var(--c-radius-md);
-      background-color: var(--c-surface-overlay);
-      box-shadow: var(--c-shadow-sm);
-      padding: var(--c-spacing-sm);
-      min-width: calc(180rem / 16);
-      max-width: calc(320rem / 16);
-    }
-  `;
+export default class CraftActionMenu extends CraftPopover {
+  static override styles = [
+    ...CraftPopover.styles,
+    css`
+      ::slotted([slot='content']) {
+        display: grid;
+        gap: var(--c-spacing-xs);
+        padding: var(--c-spacing-sm);
+        font-size: var(--c-text-base);
+        font-weight: 400;
+      }
+
+      ::slotted([slot='content']) hr {
+        margin: 0;
+      }
+
+      :host([disabled]) ::slotted([slot='invoker']) {
+        cursor: not-allowed;
+        opacity: 0.5;
+        pointer-events: none;
+      }
+    `,
+  ];
 
   /**
    * Data-driven menu items. When provided, the component renders the full menu
@@ -87,15 +102,15 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
   @property() icon: string = 'ellipsis';
 
   /**
-   * Disables the generated default invoker (data-driven mode only). When `true`,
-   * the generated `craft-button` invoker is rendered disabled and the menu is
-   * prevented from opening. Has no effect in slot-based mode (a consumer-slotted
-   * invoker manages its own disabled state). Defaults to `false`.
+   * Disables the menu. When `true`, the popover is prevented from opening
+   * (click or keyboard activation of the invoker is a no-op) and `aria-disabled`
+   * is applied to the invoker — whether it's the generated default invoker
+   * (data-driven mode) or a consumer-slotted one (slot-based mode). The
+   * generated `craft-button` invoker is also rendered with its native
+   * `disabled` state. Reflected as an attribute so `:host([disabled])` styling
+   * applies. Defaults to `false`.
    */
-  @property({type: Boolean}) disabled = false;
-
-  @queryAssignedElements({selector: 'craft-action-item'})
-  actionItems!: CraftActionItem[];
+  @property({type: Boolean, reflect: true}) disabled = false;
 
   @queryAssignedElements({slot: 'invoker'})
   invokerNodes!: HTMLElement[];
@@ -105,34 +120,41 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
 
   private uid: string = uuid();
 
-  /**
-   * Lion's `OverlayMixin` caches the resolved content node on this field (see
-   * its `_overlayContentNode` getter). We reset it after regenerating our
-   * light-DOM content so the getter re-resolves to the fresh node.
-   */
-  declare _cachedOverlayContentNode?: HTMLElement;
-
   /** Generated light-DOM invoker (data-driven mode only). */
   private _generatedInvoker: HTMLElement | null = null;
 
   /** Generated light-DOM content container (data-driven mode only). */
   private _generatedContent: HTMLElement | null = null;
 
-  // @ts-ignore
-  _defineOverlayConfig() {
-    return {
-      ...withDropdownConfig(),
-    };
+  private _addEventListeners() {
+    const content = this.contentNodes[0];
+    if (!content) return;
+
+    content
+      .querySelectorAll<CraftActionItem>('craft-action-item')
+      .forEach((item) => {
+        item.addEventListener('click', () => {
+          this.opened = false;
+          // In data-driven mode the 'change' event is dispatched from
+          // _renderItem (which has access to the descriptor). For slot-based
+          // mode this is the only click handler, so dispatch it here.
+          if (this.actions === undefined) {
+            this._dispatchChange(item);
+          }
+        });
+      });
   }
 
-  private _addEventListeners() {
-    // Close the menu when an item is clicked.
-    // @TODO is this good or bad?
-    this.actionItems.forEach((item) => {
-      item.addEventListener('click', (e) => {
-        e.target?.dispatchEvent(new Event('close-overlay', {bubbles: true}));
-      });
-    });
+  private _dispatchChange(
+    item: ActionMenuItemButton | ActionMenuItemLink | CraftActionItem
+  ): void {
+    this.dispatchEvent(
+      new CustomEvent<ActionMenuChangeDetail>('change', {
+        bubbles: true,
+        composed: true,
+        detail: {item} as ActionMenuChangeDetail,
+      })
+    );
   }
 
   private _setupInvoker() {
@@ -141,6 +163,27 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
       firstInvoker.setAttribute('id', `invoker-${this.uid}`);
       firstInvoker.setAttribute('aria-controls', `content-${this.uid}`);
       firstInvoker.setAttribute('aria-haspopup', 'true');
+    }
+    this._syncInvokerDisabled();
+  }
+
+  /**
+   * Reflect `disabled` onto the current invoker (slotted or generated) as
+   * `aria-disabled`, so Lion's overlay controller (which checks
+   * `invokerNode.disabled || invokerNode.getAttribute('aria-disabled') ===
+   * 'true'` before toggling open) refuses to open the popover, and assistive
+   * tech announces the invoker as disabled. Runs for both slot-based and
+   * data-driven modes — a consumer-slotted invoker doesn't otherwise know
+   * about the host's `disabled` state.
+   */
+  private _syncInvokerDisabled(): void {
+    const invoker = this.invokerNodes[0];
+    if (!invoker) return;
+
+    if (this.disabled) {
+      invoker.setAttribute('aria-disabled', 'true');
+    } else {
+      invoker.removeAttribute('aria-disabled');
     }
   }
 
@@ -156,10 +199,16 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     super._setupOverlayCtrl();
     this._setupInvoker();
     this._setupContent();
+    this._addEventListeners();
   }
 
-  override firstUpdated() {
-    this._addEventListeners();
+  override firstUpdated(changed: PropertyValues) {
+    super.firstUpdated(changed);
+    // craft-popover owns the shadow render, so wire the invoker slotchange
+    // listener imperatively rather than overriding render().
+    this.shadowRoot
+      ?.querySelector<HTMLSlotElement>('slot[name="invoker"]')
+      ?.addEventListener('slotchange', this._onInvokerSlotChange);
   }
 
   /**
@@ -171,6 +220,14 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
   protected override willUpdate(changed: PropertyValues): void {
     super.willUpdate(changed);
 
+    // Prevent opening while disabled, regardless of slot-based vs data-driven
+    // mode — a consumer-slotted invoker shouldn't be able to open the menu
+    // either.
+    if (changed.has('opened') && this.opened && this.disabled) {
+      this.opened = false;
+      return;
+    }
+
     if (this.actions === undefined) {
       // Slot-based mode — tear down anything we previously generated.
       this._removeGeneratedNodes();
@@ -181,12 +238,6 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     // `updated()` shows the overlay), so it can return state-dependent items.
     const openingWithProvider =
       changed.has('opened') && this.opened && this._hasActionsProvider();
-
-    // Prevent opening while disabled (data-driven / default-invoker mode).
-    if (changed.has('opened') && this.opened && this.disabled) {
-      this.opened = false;
-      return;
-    }
 
     if (
       changed.has('actions') ||
@@ -207,6 +258,10 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
    */
   protected override updated(changed: PropertyValues): void {
     super.updated(changed);
+
+    if (changed.has('disabled')) {
+      this._syncInvokerDisabled();
+    }
 
     if (this.actions === undefined) {
       return;
@@ -232,9 +287,6 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
    * `icon` change path and the on-open provider re-evaluation path.
    */
   private _rewireGeneratedMenu(): void {
-    // The cached content node may predate our generated node — refresh it.
-    this._cachedOverlayContentNode = undefined;
-
     if (this._overlayCtrl) {
       this._overlayCtrl.updateConfig({
         contentNode: this._overlayContentNode,
@@ -359,6 +411,8 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
       item.addEventListener('click', (event) => onClick(event));
     }
 
+    item.addEventListener('click', () => this._dispatchChange(action));
+
     return item;
   }
 
@@ -460,14 +514,6 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
       this._setupInvoker();
     }
   };
-
-  protected override render(): unknown {
-    return html`
-      <slot name="invoker" @slotchange="${this._onInvokerSlotChange}"></slot>
-      <slot name="backdrop"></slot>
-      <slot name="content"></slot>
-    `;
-  }
 }
 
 if (!customElements.get('craft-action-menu')) {

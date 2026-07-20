@@ -32,7 +32,7 @@ use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +43,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 class UserPermissions
 {
     /**
@@ -107,7 +107,7 @@ class UserPermissions
 
         event($event = new UserPermissionsResolving($this->allPermissions));
 
-        return $event->permissions;
+        return $this->allPermissions = $event->permissions;
     }
 
     /**

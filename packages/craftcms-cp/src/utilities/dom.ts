@@ -8,7 +8,14 @@ let existingJs: string[] | null = null;
  */
 export type AppendHtmlDisposer = () => void;
 
-async function appendHtml(
+function waitForScript(script: HTMLScriptElement): Promise<void> {
+  return new Promise((resolve) => {
+    script.addEventListener('load', () => resolve(), {once: true});
+    script.addEventListener('error', () => resolve(), {once: true});
+  });
+}
+
+export async function appendElementHtml(
   html: string,
   parent: HTMLElement
 ): Promise<AppendHtmlDisposer> {
@@ -72,6 +79,8 @@ async function appendHtml(
 
     if (node instanceof HTMLScriptElement) {
       const script = document.createElement('script');
+      let scriptLoaded: Promise<void> | null = null;
+
       Array.from(node.attributes).forEach((attr) => {
         script.setAttribute(attr.name, attr.value);
       });
@@ -91,12 +100,18 @@ async function appendHtml(
         existingJs.push(src);
         jsAdded.push(src);
         script.async = false;
+        scriptLoaded = waitForScript(script);
       } else {
         script.textContent = node.textContent;
       }
 
       parent.appendChild(script);
       appended.push(script);
+
+      if (scriptLoaded) {
+        await scriptLoaded;
+      }
+
       continue;
     }
 
@@ -116,7 +131,7 @@ async function appendHtml(
 export async function appendHeadHtml(
   html: string
 ): Promise<AppendHtmlDisposer> {
-  return appendHtml(html, document.head);
+  return appendElementHtml(html, document.head);
 }
 
 /**
@@ -127,5 +142,97 @@ export async function appendHeadHtml(
 export async function appendBodyHtml(
   html: string
 ): Promise<AppendHtmlDisposer> {
-  return appendHtml(html, document.body);
+  return appendElementHtml(html, document.body);
+}
+
+export function isVisible(el: HTMLElement): boolean {
+  if (typeof el.checkVisibility === 'function') {
+    return el.checkVisibility({checkOpacity: true, checkVisibilityCSS: true});
+  }
+
+  // Fallback: mirrors jQuery's :visible behavior
+  return el.offsetWidth > 0 || el.offsetHeight > 0;
+}
+
+/**
+ * Serializes every named form control inside a container into a URL-encoded
+ * string, mirroring jQuery's `.serialize()` semantics (unchecked checkboxes
+ * and radios, disabled controls, and buttons/files are omitted).
+ *
+ * Unlike `FormData`, this works on any element — not just `<form>` — so it can
+ * scope serialization to a fragment of a page-level form, such as a legacy
+ * HTML island whose inputs aren't part of an Inertia form's state. Values are
+ * read from live DOM properties, so user edits are always captured (cloning
+ * into a detached form would only see attributes).
+ */
+export function serializeFormInputs(container: HTMLElement): string {
+  return collectFormInputs(container).toString();
+}
+
+/**
+ * Like [[serializeFormInputs()]], but returns a plain object instead of a
+ * URL-encoded string.
+ *
+ * Names are kept verbatim — PHP-style bracket names (`settings[path]`) stay
+ * flat keys, matching what the server would see after parsing the string
+ * form. Repeated names are grouped into arrays rather than last-one-wins.
+ */
+export function serializeFormInputsAsObject(
+  container: HTMLElement
+): Record<string, string | string[]> {
+  const object: Record<string, string | string[]> = {};
+
+  for (const [name, value] of collectFormInputs(container)) {
+    const existing = object[name];
+
+    if (existing === undefined) {
+      object[name] = value;
+    } else if (Array.isArray(existing)) {
+      existing.push(value);
+    } else {
+      object[name] = [existing, value];
+    }
+  }
+
+  return object;
+}
+
+function collectFormInputs(container: HTMLElement): URLSearchParams {
+  const params = new URLSearchParams();
+  const controls = container.querySelectorAll<
+    HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+  >('input[name], select[name], textarea[name]');
+
+  for (const control of controls) {
+    if (control.disabled) {
+      continue;
+    }
+
+    if (control instanceof HTMLInputElement) {
+      if (
+        ['file', 'submit', 'button', 'reset', 'image'].includes(control.type)
+      ) {
+        continue;
+      }
+
+      if (
+        (control.type === 'checkbox' || control.type === 'radio') &&
+        !control.checked
+      ) {
+        continue;
+      }
+    }
+
+    if (control instanceof HTMLSelectElement && control.multiple) {
+      for (const option of control.selectedOptions) {
+        params.append(control.name, option.value);
+      }
+
+      continue;
+    }
+
+    params.append(control.name, control.value);
+  }
+
+  return params;
 }

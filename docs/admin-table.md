@@ -55,7 +55,7 @@ const table = useVueTable({
 | `selectable` | `boolean` | `true` | Reserved for future row selection support. |
 | `readOnly` | `boolean` | — | When `true`, hides reorder handles (used with `reorderable`). |
 | `layout` | `'auto' \| 'fixed'` | `'auto'` | CSS table layout mode. |
-| `spacing` | `TableSpacingValue` | — | Row density: `'compact'`, `'relaxed'`, or `'spacious'`. |
+| `spacing` | `TableSpacingValue` | — | Row density: `'compact'` or `'spacious'`. |
 | `from` | `number` | — | Start index of displayed rows (for "X–Y of Z" display). |
 | `to` | `number` | — | End index of displayed rows. |
 | `total` | `number` | — | Total number of items (all pages). |

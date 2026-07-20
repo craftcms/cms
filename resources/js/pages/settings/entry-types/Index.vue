@@ -2,16 +2,11 @@
   import {t} from '@craftcms/cp';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import {
-    type PaginationData,
-    type SortItem,
-    TableSpacing,
-  } from '@/common/types';
+  import {type PaginationData, type SortItem} from '@/common/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/Settings/EntryTypesController';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import Pane from '@/common/components/Pane.vue';
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
@@ -20,6 +15,8 @@
   import Empty from '@/common/components/Empty.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   type EntryTypeRow = CraftCms.Cms.Entry.Data.EntryTypeIndexData;
 
@@ -142,39 +139,38 @@
     ...paginationConfig,
     ...sortingConfig,
   });
+
+  useAppLayout({title: props.title});
 </script>
 
 <template>
-  <AppLayout :title="title">
-    <template #actions>
-      <CpLink
-        appearance="button"
-        :href="create['/{cpTrigger?}/settings/entry-types/new']().url"
-        variant="accent"
-        :inertia="false"
-        icon="plus"
-      >
-        {{ t('New entry type') }}
-      </CpLink>
-    </template>
+  <LayoutSlot name="actions">
+    <CpLink
+      appearance="button"
+      :href="create['/{cpTrigger?}/settings/entry-types/new']().url"
+      variant="accent"
+      :inertia="false"
+      icon="plus"
+    >
+      {{ t('New entry type') }}
+    </CpLink>
+  </LayoutSlot>
 
-    <Pane :padding="0" appearance="raised">
-      <AdminTable
-        :spacing="TableSpacing.Relaxed"
-        :table="table"
-        :reorderable="false"
-        :from="pagination.from"
-        :to="pagination.to"
-        :total="pagination.total"
-        :enable-adjust-page-size="true"
-      >
-        <template #empty-row>
-          <Empty icon="light/files" :label="t('No entry types exist yet.')" />
-        </template>
-        <template #search-form>
-          <SearchForm :action="index()" v-model="searchTerm" />
-        </template>
-      </AdminTable>
-    </Pane>
-  </AppLayout>
+  <Pane :padding="0" appearance="raised">
+    <AdminTable
+      :table="table"
+      :reorderable="false"
+      :from="pagination.from"
+      :to="pagination.to"
+      :total="pagination.total"
+      :enable-adjust-page-size="true"
+    >
+      <template #empty-row>
+        <Empty icon="light/files" :label="t('No entry types exist yet.')" />
+      </template>
+      <template #search-form>
+        <SearchForm :action="index()" v-model="searchTerm" />
+      </template>
+    </AdminTable>
+  </Pane>
 </template>

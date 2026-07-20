@@ -2,20 +2,30 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
+use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Auth\Events\Failed;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
+use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 test('showLogin redirects already authenticated users', function () {
@@ -28,6 +38,26 @@ test('showLogin redirects already authenticated users', function () {
 test('showLogin shows the login form for guests', function () {
     get(action([LoginController::class, 'showLogin']))
         ->assertOk();
+});
+
+test('showLogin includes configured OAuth buttons', function () {
+    Edition::set(Edition::Pro);
+
+    app(GeneralConfig::class)->oauthProviders([
+        'test' => [
+            'driver' => FakeOAuthProvider::class,
+            'clientId' => 'client-id',
+            'clientSecret' => 'client-secret',
+            'label' => 'Continue with Test OAuth',
+        ],
+    ]);
+
+    get(cp_url(CpAuthPath::Login->value))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('auth/Login')
+            ->where('oauthLoginButtons.0', fn (string $button) => str_contains($button, 'Continue with Test OAuth') &&
+                str_contains($button, 'oauth/test/redirect')));
 });
 
 test('showLogin redirects to 2fa form when verify parameter is present', function () {
@@ -59,6 +89,61 @@ test('attemptLogin fails with wrong password', function () {
     ])->assertStatus(400);
 
     Event::assertDispatched(Failed::class);
+});
+
+test('attemptLogin is limited to five failed attempts per minute', function () {
+    $user = User::findOne();
+
+    foreach (range(1, 5) as $attempt) {
+        postJson(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => $attempt % 2 === 0 ? mb_strtoupper($user->email) : $user->email,
+            'password' => 'wrongpassword',
+        ])->assertStatus(400);
+    }
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertTooManyRequests();
+});
+
+test('attemptLogin limits full-page login failures', function () {
+    $user = User::findOne();
+
+    foreach (range(1, 5) as $attempt) {
+        post(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => $user->email,
+            'password' => 'wrongpassword',
+        ])->assertRedirect();
+    }
+
+    post(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertTooManyRequests();
+});
+
+test('attemptLogin clears failed attempts after valid credentials', function () {
+    $user = User::findOne();
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertStatus(400);
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    Auth::logout();
+
+    foreach (range(1, 5) as $attempt) {
+        postJson(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => $user->email,
+            'password' => 'wrongpassword',
+        ])->assertStatus(400);
+    }
 });
 
 test('attemptLogin succeeds with valid credentials', function () {
@@ -108,15 +193,37 @@ test('attemptLogin fails for user without password', function () {
     expect(Auth::check())->toBeFalse();
 });
 
-test('logout logs the user out and redirects', function () {
+test('logout logs the user out and redirects', function (string $method) {
     actingAs(User::findOne());
 
     expect(Auth::check())->toBeTrue();
 
-    get(action([LoginController::class, 'logout']))
+    $this->$method(action([LoginController::class, 'logout']))
         ->assertRedirect();
 
     expect(Auth::check())->toBeFalse();
+})->with(['get', 'post']);
+
+test('logout redirects to the post-logout redirect, not back to the previous page', function () {
+    Cms::config()->postLogoutRedirect = '';
+
+    actingAs(User::findOne());
+
+    // Even when arriving from a page, logout must not fall through to back().
+    $response = $this->from('https://localhost/members/dashboard')
+        ->post('/'.Cms::config()->getLogoutPath())
+        ->assertRedirect();
+
+    expect($response->headers->get('Location'))->toBe('https://localhost/');
+});
+
+test('logout honors a configured post-logout redirect', function () {
+    Cms::config()->postLogoutRedirect = 'goodbye';
+
+    actingAs(User::findOne());
+
+    $this->post('/'.Cms::config()->getLogoutPath())
+        ->assertRedirect('https://localhost/goodbye');
 });
 
 test('showLoginModal requires email parameter', function () {
@@ -174,7 +281,7 @@ test('attemptLogin dispatches Failed event on wrong credentials', function () {
         'password' => 'wrongpassword',
     ]);
 
-    Event::assertDispatched(fn (Failed $event) => $event->user->id === $user->id
+    Event::assertDispatched(fn (Failed $event) => $event->user?->getAuthIdentifier() === $user->id
         && $event->credentials['loginName'] === $user->email);
 });
 
@@ -194,6 +301,25 @@ test('attemptLogin accepts username when useEmailAsUsername is false', function 
 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => $user->username,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    expect(Auth::check())->toBeTrue();
+});
+
+test('login routes are registered for localized loginPath values', function () {
+    Cms::config()->isSystemLive = true;
+    Cms::config()->loginPath = ['siteWithCustomPath' => 'aanmelden'];
+
+    Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
+
+    $route = Route::getRoutes()->match(Request::create('/aanmelden', 'POST'));
+    $user = User::findOne();
+
+    expect($route->middleware())->toContain('throttle:'.LoginRateLimiter::NAME);
+
+    postJson('/aanmelden', [
+        'loginName' => $user->email,
         'password' => 'craftcms2018!!',
     ])->assertOk();
 

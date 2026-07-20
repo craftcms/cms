@@ -101,6 +101,10 @@ readonly class PasswordController
 
         abort_if(is_null($user), 400, 'User not found');
 
+        if ($user->admin) {
+            $this->requireAdmin();
+        }
+
         try {
             $url = $users->getPasswordResetUrl($user);
         } catch (InvalidElementException $e) {

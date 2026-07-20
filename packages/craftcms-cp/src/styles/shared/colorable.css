@@ -220,6 +220,17 @@
   --c-color-black-on-quiet: var(--color-static-gray-100);
   --c-color-black-on-normal: var(--color-static-gray-100);
   --c-color-black-on-loud: var(--color-static-gray-100);
+
+  /* slate */
+  --c-color-slate-fill-quiet: var(--color-slate-50);
+  --c-color-slate-fill-normal: var(--color-slate-100);
+  --c-color-slate-fill-loud: var(--color-slate-600);
+  --c-color-slate-border-quiet: var(--color-slate-400);
+  --c-color-slate-border-normal: var(--color-slate-600);
+  --c-color-slate-border-loud: var(--color-slate-800);
+  --c-color-slate-on-quiet: var(--color-slate-800);
+  --c-color-slate-on-normal: var(--color-slate-950);
+  --c-color-slate-on-loud: var(--color-slate-50);
   /* Semantics colors - neutral */
   --c-color-neutral-fill-quiet: var(--color-slate-50);
   --c-color-neutral-fill-normal: var(--color-slate-100);
@@ -526,6 +537,18 @@
   --c-color-fill-loud: var(--c-color-black-fill-loud);
   --c-color-border-loud: var(--c-color-black-border-loud);
   --c-color-on-loud: var(--c-color-black-on-loud);
+}
+.cp-color-slate,
+[data-color='slate'] {
+  --c-color-fill-quiet: var(--c-color-slate-fill-quiet);
+  --c-color-border-quiet: var(--c-color-slate-border-quiet);
+  --c-color-on-quiet: var(--c-color-slate-on-quiet);
+  --c-color-fill-normal: var(--c-color-slate-fill-normal);
+  --c-color-border-normal: var(--c-color-slate-border-normal);
+  --c-color-on-normal: var(--c-color-slate-on-normal);
+  --c-color-fill-loud: var(--c-color-slate-fill-loud);
+  --c-color-border-loud: var(--c-color-slate-border-loud);
+  --c-color-on-loud: var(--c-color-slate-on-loud);
 }
 .cp-color-neutral,
 [data-color='neutral'] {

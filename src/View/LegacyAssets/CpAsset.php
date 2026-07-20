@@ -20,7 +20,7 @@ use function CraftCms\Cms\craftAsset;
 class CpAsset implements LegacyAssetInterface
 {
     public array $depends = [
-        TailwindResetAsset::class,
+        // TailwindResetAsset::class,
         AnimationBlockerAsset::class,
         AxiosAsset::class,
         D3Asset::class,
@@ -43,7 +43,7 @@ class CpAsset implements LegacyAssetInterface
     public function register(HtmlStack $htmlStack): void
     {
         // CP
-        $htmlStack->cssFile(craftAsset('legacy/cp/dist/css/cp.css'));
+        // $htmlStack->cssFile(craftAsset('legacy/cp/dist/css/cp.css'));
         $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));
 
         $htmlStack->icons([

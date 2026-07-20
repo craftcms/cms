@@ -89,7 +89,7 @@ use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -100,7 +100,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 class Gql
 {
     public const string CACHE_TAG = 'graphql';

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Field\BaseRelationField;
-use CraftCms\Cms\Field\Commands\Concerns\MergesFields;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
@@ -22,7 +21,6 @@ use function Laravel\Prompts\select;
 class FieldsMergeCommand extends Command
 {
     use CraftCommand;
-    use MergesFields;
 
     #[\Override]
     protected $signature = 'craft:fields:merge {handles* : The field handles to merge.}';
@@ -184,11 +182,15 @@ class FieldsMergeCommand extends Command
         }
 
         $persistingField = $this->choosePersistingField($fields, $layoutsByField, $mergeableFields);
+        /** @var Collection<string,FieldInterface&MergeableFieldInterface> $outgoingFields */
         $outgoingFields = $fields->filter(fn (FieldInterface $field) => $field->handle !== $persistingField->handle);
 
         $migrationPaths = [];
         foreach ($outgoingFields as $field) {
-            $this->mergeFields($fieldsService, $persistingField, $field, $layoutsByField[$field->handle], $migrationPaths);
+            $this->components->task("Merging `$field->handle` → `$persistingField->handle`", function () use ($fieldsService, $persistingField, $field, &$migrationPaths) {
+                $result = $fieldsService->merge($persistingField, $field);
+                $migrationPaths[] = $result->migrationPath;
+            });
             $this->newLine();
         }
 
@@ -227,7 +229,7 @@ class FieldsMergeCommand extends Command
         Collection $fields,
         Collection $layoutsByField,
         Collection $mergeableFields,
-    ): FieldInterface {
+    ): FieldInterface&MergeableFieldInterface {
         if ($mergeableFields->count() <= 1) {
             return $fields[$mergeableFields->first()];
         }

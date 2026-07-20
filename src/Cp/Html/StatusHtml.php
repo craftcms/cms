@@ -71,33 +71,28 @@ readonly class StatusHtml
             'color' => Color::Gray->value,
             'icon' => null,
             'label' => null,
-            'indicatorClass' => null,
         ];
 
         if ($config['color'] instanceof Color) {
             $config['color'] = $config['color']->value;
         }
 
+        // An icon, when supplied, replaces the badge's default indicator dot
+        // through the `prefix` slot.
+        $contents = '';
         if ($config['icon']) {
-            $html = Html::tag('span', Icons::svg($config['icon']), [
-                'class' => ['cp-icon', 'puny', $config['color']],
-            ]);
-        } else {
-            $html = $this->statusIndicatorHtml($config['color'], [
-                'label' => null,
-                'class' => $config['indicatorClass'] ?? $config['color'],
-            ]);
+            $contents .= Html::tag('craft-icon', '', array_merge(
+                Icons::resolveIconData($config['icon']),
+                ['slot' => 'prefix'],
+            ));
         }
 
         if ($config['label']) {
-            $html .= ' '.Html::tag('span', Html::encode($config['label']), ['class' => 'status-label-text']);
+            $contents .= Html::encode($config['label']);
         }
 
-        return Html::tag('span', $html, [
-            'class' => array_filter([
-                'status-label',
-                $config['color'],
-            ]),
+        return Html::tag('craft-badge', $contents, [
+            'fill' => $config['color'],
         ]);
     }
 
@@ -117,10 +112,6 @@ readonly class StatusHtml
         $config['label'] ??= match ($status) {
             'draft' => t('Draft'),
             default => ucfirst($status),
-        };
-        $config['indicatorClass'] = match ($status) {
-            'pending', 'off', 'suspended', 'expired', 'disabled', 'inactive' => $status,
-            default => $config['color']->value,
         };
 
         return $this->statusLabelHtml($config);

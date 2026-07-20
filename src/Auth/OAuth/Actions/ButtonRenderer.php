@@ -13,11 +13,10 @@ class ButtonRenderer implements RendersOAuthButton
 {
     public function handle(ButtonData $button): HtmlString
     {
-        return new HtmlString(Html::a(Html::encode($button->label), $button->url, [
-            'class' => ['btn'],
-            'data' => [
-                'provider' => $button->provider->handle,
-            ],
+        return new HtmlString(Html::tag('craft-button', Html::encode($button->label), [
+            'href' => $button->url,
+            'class' => 'w-full',
+            'data-provider' => $button->provider->handle,
         ]));
     }
 }

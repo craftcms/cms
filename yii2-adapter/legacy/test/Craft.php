@@ -246,6 +246,8 @@ class Craft extends Yii2
     {
         parent::_after($test);
 
+        app()->forgetInstance(\CraftCms\Cms\View\TemplateGlobals::class);
+
         app()->forgetInstance(\CraftCms\Cms\Element\Elements::class);
         app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Sections::class);

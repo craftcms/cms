@@ -20,9 +20,11 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
@@ -153,9 +155,43 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         }
     }
 
-    private function ensureNoRecursion(self $field): bool
+    private function ensureNoRecursion(self $field, array $ancestorUids = []): bool
     {
-        return array_all($field->getFieldLayout()->getCustomFields(), fn ($customField) => ! ($customField instanceof self && ($customField->id === $this->id || ! $this->ensureNoRecursion($customField))));
+        if ($field->uid !== null) {
+            $ancestorUids[] = $field->uid;
+        }
+
+        /** @var CustomFieldElement $layoutElement */
+        foreach ($field->getFieldLayout()->getElementsByType(CustomFieldElement::class) as $layoutElement) {
+            try {
+                $customField = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                // The referenced field may not be saved yet (e.g. this field's own first save),
+                // so the raw UUID is all there is to compare against
+                if (in_array($layoutElement->getFieldUid(), $ancestorUids, true)) {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if (! $customField instanceof self) {
+                continue;
+            }
+
+            if (
+                ($customField->id !== null && $customField->id === $this->id) ||
+                in_array($customField->uid, $ancestorUids, true)
+            ) {
+                return false;
+            }
+
+            if (! $this->ensureNoRecursion($customField, $ancestorUids)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function getFieldLayoutProviders(): array

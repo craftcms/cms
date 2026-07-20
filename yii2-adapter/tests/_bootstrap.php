@@ -30,6 +30,7 @@ const CRAFT_TESTS_PATH = __DIR__;
 new TestCase('laravel')->createApplication();
 
 Config::set('auth.defaults.guard', 'web');
+Config::set('craft.app.components.errorHandler.silentExitOnException', false);
 
 $devMode = true;
 

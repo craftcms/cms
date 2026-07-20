@@ -3,7 +3,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {JobStatus} from '@craftcms/cp/types/queue.js';
 import type {JobInfo, JobUpdateDetail} from '@craftcms/cp';
 
-import '@craftcms/cp/components/progress/progress.ts.mjs';
+import '@craftcms/cp/components/progress/progress';
 import {QueueService} from '@craftcms/cp';
 
 @customElement('cp-queue-indicator')
@@ -109,7 +109,7 @@ class CpQueueIndicator extends LitElement {
       return null;
     }
 
-    return window.Craft.getCpUrl('utilities/queue-manager');
+    return Craft.getCpUrl('utilities/queue-manager');
   }
 
   protected override render() {

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Field\BaseRelationField;
-use CraftCms\Cms\Field\Commands\Concerns\MergesFields;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -22,7 +21,6 @@ use function Laravel\Prompts\select;
 class FieldsAutoMergeCommand extends Command
 {
     use CraftCommand;
-    use MergesFields;
 
     #[\Override]
     protected $signature = 'craft:fields:auto-merge';
@@ -132,14 +130,17 @@ class FieldsAutoMergeCommand extends Command
                     ->all(),
             );
 
-            /** @var FieldInterface $persistentField */
+            /** @var FieldInterface&MergeableFieldInterface $persistentField */
             $persistentField = $group->get($choice);
 
             $group
                 ->except($choice)
-                ->each(function (FieldInterface $outgoingField) use ($fieldsService, $persistentField, $usagesByField, &$migrationPaths) {
+                ->each(function (FieldInterface&MergeableFieldInterface $outgoingField) use ($fieldsService, $persistentField, &$migrationPaths) {
                     $this->components->info("Merging `{$outgoingField->handle}` → `{$persistentField->handle}`");
-                    $this->mergeFields($fieldsService, $persistentField, $outgoingField, $usagesByField[$outgoingField->id], $migrationPaths);
+                    $this->components->task("Merging `{$outgoingField->handle}` → `{$persistentField->handle}`", function () use ($fieldsService, $persistentField, $outgoingField, &$migrationPaths) {
+                        $result = $fieldsService->merge($persistentField, $outgoingField);
+                        $migrationPaths[] = $result->migrationPath;
+                    });
                 });
 
             // flush out the project config in case the command is aborted early

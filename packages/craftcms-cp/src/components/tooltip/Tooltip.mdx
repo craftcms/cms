@@ -5,6 +5,6 @@ import TooltipMeta, {Playground} from './tooltip.stories';
 
 # Tooltip
 
-`<craft-tooltip` is just a wrapper for [Web Awesome's `<wa-tooltip>`](https://webawesome.com/docs/components/tooltip) element so all of the options and properties of `<wa-tooltip>` can be used with `<craft-tooltip>`.
+`<craft-tooltip>` shows contextual text for an external trigger element referenced by id via the `for` attribute. It is built on [Lion's tooltip/overlay system](https://lion.js.org/components/tooltip/overview/) and supports `placement` (Popper placement strings) and `trigger` (`hover focus`, `click`, or `manual`). It emits `craft-show`, `craft-after-show`, `craft-hide`, and `craft-after-hide` events.
 
 <Canvas of={Playground} />

@@ -64,7 +64,7 @@ use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Auth\Passwords\PasswordBroker;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -76,7 +76,7 @@ use Tpetry\QueryExpressions\Function\String\Lower;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 class Users
 {
     public function __construct(

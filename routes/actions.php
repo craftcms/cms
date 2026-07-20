@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
@@ -20,7 +22,9 @@ use CraftCms\Cms\Http\Controllers\Assets\UploadController as AssetsUploadControl
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
+use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
+use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
@@ -82,12 +86,9 @@ use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
-use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
-use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
-use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
@@ -127,20 +128,28 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::get('app/health-check', HealthCheckController::class);
 
         // Auth
-        Route::middleware(EnsureTwoFactorChallengeIsRecent::class)->group(function () {
+        Route::middleware([EnsureTwoFactorChallengeIsRecent::class, 'throttle:'.TwoFactorRateLimiter::NAME])->group(function () {
             Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
             Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
         });
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
-        Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
+        Route::post('users/login', [LoginController::class, 'attemptLogin'])
+            ->middleware('throttle:'.LoginRateLimiter::NAME);
+        Route::post('users/login-with-passkey', [PasskeyController::class, 'login'])
+            ->middleware('throttle:'.LoginRateLimiter::NAME);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);
+        Route::post('users/set-password', [SetPasswordController::class, 'store']);
+        Route::post('users/verify-email', [VerifyEmailController::class, 'store']);
         Route::any('users/session-info', [SessionInfoController::class, 'show'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout'])
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
+        Route::post('users/confirm-password', [SessionInfoController::class, 'confirmPassword'])
+            ->middleware(['auth', 'can:accessCp'])
+            ->block();
         Route::middleware(
             in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
         )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
@@ -168,7 +177,6 @@ Route::prefix($routes->actionTriggerRoutePrefix())->group(function () {
     });
 
     Route::middleware([RequireToken::class])->group(function () {
-        Route::any('preview/preview', [PreviewController::class, 'preview'])->name('preview');
         Route::any('users/impersonate-with-token', [ImpersonationController::class, 'withToken']);
     });
 });
@@ -209,7 +217,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
     Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
-        Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
 
         // App
         Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
@@ -422,7 +429,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // Filesystems
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::get('fs/edit', [FilesystemsController::class, 'edit']);
-            Route::post('fs/save', [FilesystemsController::class, 'save']);
+            Route::post('fs/save', [FilesystemsController::class, 'store']);
         });
 
         // Volumes
@@ -504,15 +511,12 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
         });
 
-        Route::post('users/save-permissions', [PermissionsController::class, 'store']);
-        Route::post('users/save-preferences', [PreferencesController::class, 'store']);
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
-        Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
 
         // Pluginstore
         Route::middleware([

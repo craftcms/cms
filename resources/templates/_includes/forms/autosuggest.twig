@@ -119,8 +119,8 @@ new Vue({
                 }
                 if (sectionFilter.length) {
                     sectionFilter.sort(function(a, b) {
-                        var scoreA = that.scoreItem(a, this.query);
-                        var scoreB = that.scoreItem(b, this.query);
+                        var scoreA = that.scoreItem(a);
+                        var scoreB = that.scoreItem(b);
                         if (scoreA === scoreB) {
                             return 0;
                         }

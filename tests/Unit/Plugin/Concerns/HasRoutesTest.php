@@ -7,6 +7,7 @@ use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
+    app()->forgetInstance('routes.cached');
     app()->forgetInstance(TestPlugin::class);
 
     $this->basePath = dirname(__DIR__, 3).'/TestClasses/TestPlugin/src';
@@ -14,6 +15,7 @@ beforeEach(function () {
 
 afterEach(function () {
     Route::getRoutes()->refreshNameLookups();
+    app()->forgetInstance('routes.cached');
     app()->forgetInstance(TestPlugin::class);
 });
 
@@ -46,7 +48,40 @@ it('registers web, cp, and action routes from plugin route files', function () {
         ->keyBy(fn ($route) => $route->uri());
 
     expect($routesByUri->get('{cpTrigger}/plugin-cp')->middleware())->toContain('web', 'craft', 'craft.cp')
-        ->and($routesByUri->get('{cpTrigger}/{actionTrigger}/test-plugin/plugin-action')->middleware())->toContain('web', 'craft', 'craft.cp');
+        ->and($routesByUri->get('{cpTrigger}/{actionTrigger}/test-plugin/plugin-action')->middleware())->toContain('web', 'craft', 'craft.cp')
+        ->and($routesByUri->get('{cpTrigger}/{actionTrigger}/test-plugin/plugin-action')->getName())->toBe('plugin.action')
+        ->and($routesByUri->get('{actionTrigger}/test-plugin/plugin-action')->getName())->toBe('craft.plugin.test-plugin.site.plugin.action');
+
+    collect([
+        $routesByUri->get('{cpTrigger}/{actionTrigger}/test-plugin/plugin-action'),
+        $routesByUri->get('{actionTrigger}/test-plugin/plugin-action'),
+    ])->each(function ($route) {
+        $route->prepareForSerialization();
+
+        expect(serialize($route))->toBeString();
+    });
+});
+
+it('does not register plugin routes when routes are cached', function () {
+    app()->instance('routes.cached', true);
+
+    $plugin = TestPlugin::create([
+        'handle' => 'test-plugin',
+        'name' => 'Test Plugin',
+    ]);
+
+    $plugin->useBasePath($this->basePath);
+    $plugin->bootHasRoutes();
+
+    $uris = collect(Route::getRoutes()->getRoutes())
+        ->map(fn ($route) => $route->uri());
+
+    expect($uris)->not()->toContain(
+        'plugin-web',
+        '{cpTrigger}/plugin-cp',
+        '{cpTrigger}/{actionTrigger}/test-plugin/plugin-action',
+        '{actionTrigger}/test-plugin/plugin-action',
+    );
 });
 
 it('registers root control panel routes when the cp trigger is null', function () {

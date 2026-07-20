@@ -10,12 +10,12 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Flash;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
@@ -41,37 +41,22 @@ readonly class PermissionsController
             abort(401);
         }
 
-        $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
-        $response->action('users/save-permissions');
-        $response->contentTemplate('users/_permissions', [
-            'user' => $user,
-            'currentGroupIds' => Arr::pluck($user->getGroups(), 'id'),
-            'currentUserIsAdmin' => $currentUser->isAdmin(),
-            'showPermissions' => $currentUser->can('assignUserPermissions'),
-            'showUserGroups' => $currentUser->can('assignUserGroups', $user),
-        ]);
-
-        if (! $user->getIsCredentialed() && $user->username && $currentUser->can('sendActivationEmail', $user)) {
-            $response->additionalButtonsHtml(
-                Html::button(t('Save and send activation email'), [
-                    'class' => ['btn', 'secondary', 'formsubmit'],
-                    'data' => [
-                        'param' => 'sendActivationEmail',
-                        'value' => '1',
-                    ],
-                ])
-            );
-        }
-
-        return $response;
+        // Elevation is handled client-side by the Inertia page via
+        // `useSettingsSave({elevatedFields: […]})`, and enforced server-side in
+        // `update()` via `requireConfirmedPassword()`.
+        return $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS)
+            ->inertiaPage('users/Permissions', new UserPermissionsViewModel($user, $currentUser));
     }
 
-    public function store(Request $request, Elements $elements): Response
+    public function update(Request $request, Elements $elements, ?int $userId = null): Response
     {
         $request->validate([
-            'userId' => ['required', 'integer', Rule::exists(Table::USERS, 'id')],
             'admin' => ['nullable', 'boolean'],
-            'sendActivationMail' => ['nullable', 'boolean'],
+            'groups' => ['nullable', 'array'],
+            'groups.*' => ['integer', Rule::exists(Table::USERGROUPS, 'id')],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string'],
+            'sendActivationEmail' => ['nullable', 'boolean'],
         ]);
 
         if (! $this->showPermissionsScreen()) {
@@ -83,7 +68,7 @@ readonly class PermissionsController
             abort(401);
         }
 
-        $user = $this->editedUser($request->integer('userId'));
+        $user = $this->editedUser($userId);
 
         // Is their admin status changing?
         if ($currentUser->isAdmin()) {
@@ -99,7 +84,7 @@ readonly class PermissionsController
             }
         }
 
-        if (Edition::get()->value >= Edition::Pro->value) {
+        if (Edition::isAtLeast(Edition::Pro)) {
             event(new UserGroupsAndPermissionsAssigning($user));
 
             // Assign user groups and permissions if the current user is allowed to do that

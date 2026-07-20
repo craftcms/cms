@@ -134,7 +134,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * Returns the DB data type(s) that fields of this type will store within the `elements_sites.content` column.
      *
      * ```php
-     * return \yii\db\Schema::TYPE_STRING;
+     * return \CraftCms\Cms\Support\Query::TYPE_STRING;
      * ```
      *
      * Specifying the DB type isn’t strictly necessary, but it enables individual field values to be targeted
@@ -145,8 +145,8 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      *
      * ```php
      * return [
-     *     'date' => \yii\db\Schema::TYPE_DATETIME,
-     *     'tz' => \yii\db\Schema::TYPE_STRING,
+     *     'date' => \CraftCms\Cms\Support\Query::TYPE_DATETIME,
+     *     'tz' => \CraftCms\Cms\Support\Query::TYPE_STRING,
      * ];
      * ```
      *
@@ -256,8 +256,8 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * return '<textarea name="'.$name.'">'.$value.'</textarea>';
      * ```
      *
-     * For more complex inputs, you might prefer to create a template, and render it via
-     * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
+     * For more complex inputs, you might prefer to create a template and render it with
+     * [[\CraftCms\Cms\template()]]. For example, the following code would render a template located at
      * `path/to/myplugin/templates/_fieldinput.html`, passing the `$name` and `$value` variables to it:
      *
      * ```php

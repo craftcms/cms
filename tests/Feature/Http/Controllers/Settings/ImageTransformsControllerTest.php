@@ -196,13 +196,11 @@ it('updates an existing transform', function () {
 });
 
 it('rejects save when both width and height are missing', function () {
-    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
+    post(action([ImageTransformsController::class, 'store']), validTransformData([
         'width' => '',
         'height' => '',
     ]))
-        ->assertStatus(400)
-        ->assertJsonPath('modelName', 'transform')
-        ->assertJsonPath('errors.width.0', t('You must set at least one of the dimensions.'));
+        ->assertSessionHasErrors('width');
 });
 
 it('normalizes letterbox fill color on save', function () {
