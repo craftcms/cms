@@ -286,6 +286,10 @@ class ImageTransforms
         }
 
         if (is_array($transform)) {
+            if (isset($transform['class'])) {
+                throw new InvalidArgumentException('Invalid transform config.');
+            }
+
             if (!empty($transform['width']) && !is_numeric($transform['width'])) {
                 Craft::warning("Invalid transform width: {$transform['width']}", __METHOD__);
                 $transform['width'] = null;
