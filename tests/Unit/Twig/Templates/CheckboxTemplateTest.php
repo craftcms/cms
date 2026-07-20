@@ -12,11 +12,12 @@ it('renders the web component from the legacy checkbox variables', function () {
         templateMode: TemplateMode::Cp,
     );
 
-    expect($html)->toContain('<input type="hidden" name="agree" value>')
+    expect($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'agree', 'value' => ''])
         ->and($html)->toContain('<craft-checkbox>')
         ->and($html)->toContain('type="checkbox"')
         ->and($html)->toContain(' checked')
-        ->and($html)->toContain('<label slot="label" for="cb" id="cb-label">I agree</label>');
+        ->and($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb', 'id' => 'cb-label'])
+        ->and($html)->toContain('I agree');
 });
 
 it('prefers checkboxLabel and suppresses labelledby when aria-label is set', function () {

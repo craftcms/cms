@@ -15,7 +15,7 @@ it('renders a button-group host with grouped button children', function () {
         ])
         ->toHtml();
 
-    expect($html)->toStartWith('<craft-button-group id="alignment" role="group" aria-labelledby="alignment-label">')
+    expect($html)->toContainTag('craft-button-group', ['id' => 'alignment', 'role' => 'group', 'aria-labelledby' => 'alignment-label'])
         ->and($html)->toContain('Left')
         ->and($html)->toContain('active="true"')
         ->and(substr_count($html, '</craft-button>'))->toBe(2)
@@ -30,7 +30,7 @@ it('emits name and value as host attributes when named, without a hidden input',
         ->buttons([Button::make()->label('Left')->value('left')])
         ->toHtml();
 
-    expect($html)->toStartWith('<craft-button-group id="alignment" name="alignment" value="left"')
+    expect($html)->toContainTag('craft-button-group', ['id' => 'alignment', 'name' => 'alignment', 'value' => 'left'])
         ->and($html)->not->toContain('type="hidden"');
 });
 

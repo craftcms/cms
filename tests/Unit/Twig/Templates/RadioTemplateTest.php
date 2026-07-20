@@ -16,7 +16,8 @@ it('renders the web component from the legacy radio variables', function () {
         ->and($html)->toContain('type="radio"')
         ->and($html)->toContain('value="auto"')
         ->and($html)->toContain('class="radio"')
-        ->and($html)->toContain('<label slot="label" for="r" id="r-label">Auto</label>')
+        ->and($html)->toContainTag('label', ['slot' => 'label', 'for' => 'r', 'id' => 'r-label'])
+        ->and($html)->toContain('Auto')
         ->and($html)->not->toContain('type="hidden"');
 });
 

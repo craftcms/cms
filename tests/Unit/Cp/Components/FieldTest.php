@@ -72,7 +72,7 @@ describe('slots', function () {
     it('applies the input slot to a single root element', function () {
         $html = Field::make()->input('<input type="text" name="foo">')->toHtml();
 
-        expect($html)->toContain('<input type="text" name="foo" slot="input">');
+        expect($html)->toContainTag('input', ['type' => 'text', 'name' => 'foo', 'slot' => 'input']);
     });
 
     it('wraps non-element input content in a slotted span', function () {

@@ -14,7 +14,7 @@ describe('input', function () {
             ->checked()
             ->toHtml();
 
-        expect($html)->toStartWith('<input type="hidden" name="remember" value>')
+        expect($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'remember', 'value' => ''])
             ->and($html)->toContain('<craft-checkbox>')
             ->and($html)->toContain('slot="input"')
             ->and($html)->toContain('type="checkbox"')
@@ -74,13 +74,15 @@ describe('label', function () {
     it('renders the associated label with encoded text', function () {
         $html = Checkbox::make()->id('cb')->label('Tom & Jerry')->toHtml();
 
-        expect($html)->toContain('<label slot="label" for="cb" id="cb-label">Tom &amp; Jerry</label>');
+        expect($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb', 'id' => 'cb-label'])
+            ->and($html)->toContain('Tom &amp; Jerry');
     });
 
     it('renders a Twig Markup label unencoded', function () {
         $html = Checkbox::make()->id('cb')->label(new Markup('<b>All</b>', 'UTF-8'))->toHtml();
 
-        expect($html)->toContain('<label slot="label" for="cb" id="cb-label"><b>All</b></label>');
+        expect($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb', 'id' => 'cb-label'])
+            ->and($html)->toContain('<b>All</b>');
     });
 
     it('renders no label element without label content', function () {
@@ -120,7 +122,8 @@ describe('custom-option mode', function () {
 
         expect($html)->toContain('>Custom:</label>')
             ->and($html)->not->toContain('Ignored')
-            ->and($html)->toContain('<div class="custom-option-wrapper"><input type="text" class="custom-option-input"></div>');
+            ->and($html)->toContainTag('div', ['class' => 'custom-option-wrapper'])
+            ->and($html)->toContainTag('input', ['type' => 'text', 'class' => 'custom-option-input']);
     });
 });
 

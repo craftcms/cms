@@ -17,10 +17,9 @@ it('renders the web component from the legacy variable API', function () {
         templateMode: TemplateMode::Cp,
     );
 
-    expect($html)->toContain('<craft-switch')
+    expect($html)->toContainTag('craft-switch', ['on-label' => 'Enabled'])
         ->and($html)->toContain(' checked')
-        ->and($html)->toContain('on-label="Enabled"')
-        ->and($html)->toContain('type="hidden" name="enabled" value="1"');
+        ->and($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'enabled', 'value' => '1']);
 });
 
 it('logs a deprecation for the unsupported descriptionId param', function () {

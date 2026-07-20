@@ -12,10 +12,12 @@ it('renders the web component from the legacy button variables', function () {
         templateMode: TemplateMode::Cp,
     );
 
-    expect($html)->toContain('<craft-button')
-        ->and($html)->toContain('type="submit"')
-        ->and($html)->toContain('Save')
-        ->and($html)->toContain('data-busy-message="Saving…"');
+    expect($html)
+        ->toContainTag('craft-button', [
+            'type' => 'submit',
+            'data-busy-message' => 'Saving…',
+        ])
+        ->and($html)->toContain('Save');
 });
 
 it('maps readOnly to a disabled button with the read-only class', function () {
@@ -24,7 +26,8 @@ it('maps readOnly to a disabled button with the read-only class', function () {
         templateMode: TemplateMode::Cp,
     );
 
-    expect($html)->toContain(' disabled')
+    expect($html)
+        ->toContainTag('craft-button', ['disabled' => true])
         ->and($html)->toContain('read-only');
 });
 
@@ -34,12 +37,27 @@ it('renders the web component from the legacy buttonGroup variables', function (
         templateMode: TemplateMode::Cp,
     );
 
-    expect($html)->toContain('<craft-listbox>')
-        ->and($html)->toContain('<craft-button-group id="bg" role="group">')
-        ->and(substr_count($html, 'type="button"'))->toBe(2)
-        ->and($html)->toContain('appearance="outline"')
-        ->and($html)->toContain('active="true"')
-        ->and($html)->toContain('aria-pressed="true"')
-        ->and($html)->toContain('aria-pressed="false"')
-        ->and($html)->toContain('type="hidden" name="align" value="left"');
+    // The group is form-associated: `name`/`value` ride on the host and it
+    // submits the selection itself, so there's no hidden input.
+    expect($html)
+        ->toContainTag('craft-button-group', [
+            'id' => 'bg',
+            'name' => 'align',
+            'value' => 'left',
+            'role' => 'group',
+        ])
+        ->toContainTag('craft-button', [
+            'data-value' => 'left',
+            'type' => 'button',
+            'appearance' => 'outline',
+            'active' => 'true',
+            'aria-pressed' => 'true',
+        ])
+        ->toContainTag('craft-button', [
+            'data-value' => 'right',
+            'type' => 'button',
+            'appearance' => 'outline',
+            'aria-pressed' => 'false',
+        ])
+        ->and($html)->not->toContainTag('input', ['type' => 'hidden']);
 });

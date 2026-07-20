@@ -101,10 +101,9 @@ describe('hidden input', function () {
         $indeterminate = Lightswitch::make()->name('enabled')->indeterminate()->toHtml();
         $off = Lightswitch::make()->name('enabled')->toHtml();
 
-        expect($on)->toContain('type="hidden" name="enabled" value="1"')
-            ->and($on)->toContain('slot="hidden-input"')
-            ->and($indeterminate)->toContain('type="hidden" name="enabled" value="-"')
-            ->and($off)->toContain('type="hidden" name="enabled" value slot="hidden-input"');
+        expect($on)->toContainTag('input', ['type' => 'hidden', 'name' => 'enabled', 'value' => '1', 'slot' => 'hidden-input'])
+            ->and($indeterminate)->toContainTag('input', ['type' => 'hidden', 'name' => 'enabled', 'value' => '-', 'slot' => 'hidden-input'])
+            ->and($off)->toContainTag('input', ['type' => 'hidden', 'name' => 'enabled', 'value' => '', 'slot' => 'hidden-input']);
     });
 
     it('renders no hidden input without a name', function () {
