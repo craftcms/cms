@@ -623,7 +623,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
-        if ($value === '') {
+        // An empty POST value means every entry was removed. It arrives as
+        // null rather than '' because of Laravel's ConvertEmptyStringsToNull
+        // middleware — and delta ensures the value is only applied from the
+        // request when the field was actually modified.
+        if ($value === '' || ($fromRequest && $value === null)) {
             $query->setResultOverride([]);
         } elseif ($value === '*') {
             // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
