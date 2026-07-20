@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\View\LegacyAssets;
 
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\RegisteredClientAssets;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
@@ -23,6 +24,7 @@ class InternalAssetRegistry
 
     public function __construct(
         private readonly HtmlStack $htmlStack,
+        private readonly RegisteredClientAssets $clientAssets,
     ) {
         foreach (session()->pull('__ab', []) as $bundle) {
             $this->register($bundle);
@@ -79,7 +81,14 @@ class InternalAssetRegistry
             $this->registerPendingBundle($dependency);
         }
 
-        $bundle->register($this->htmlStack);
+        // Skip bundles the browser reported as already loaded (Craft 5's
+        // registered-asset-bundles mechanism); dependencies were still walked
+        // above so each one makes its own call on this.
+        if (! $this->clientAssets->hasBundle($bundle::class)) {
+            $bundle->register($this->htmlStack);
+        }
+
+        $this->clientAssets->trackBundle($bundle::class);
 
         unset($this->pendingBundles[$bundle::class]);
         $this->registeredBundles[$bundle::class] = true;
