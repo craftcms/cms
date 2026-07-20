@@ -467,7 +467,7 @@ JS, [
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
         $labels = array_filter([
-            ($config['showStatus'] ?? false) && $element->showStatusIndicator() ? $this->statusHtml->componentStatusLabelHtml($element) : null,
+            ($config['showStatus'] ?? false) && $config['showStatus'] && $element->showStatusIndicator() ? $this->statusHtml->componentStatusLabelHtml($element) : null,
             $element->isProvisionalDraft || $element->hasProvisionalChanges ? $this->statusHtml->editedStatusLabelHtml() : null,
         ]);
 
