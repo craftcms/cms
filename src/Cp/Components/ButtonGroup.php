@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
-use CraftCms\Cms\Support\Html;
 
 /**
  * PHP counterpart to the `<craft-button-group>` web component: a group of
@@ -34,6 +33,11 @@ class ButtonGroup extends ViewComponent
     protected string|Closure|null $name = null;
 
     protected string|Closure|null $value = null;
+
+    protected function tagName(): string
+    {
+        return 'craft-button-group';
+    }
 
     /**
      * The grouped buttons (default slot).
@@ -68,17 +72,6 @@ class ButtonGroup extends ViewComponent
         $this->value = $value;
 
         return $this;
-    }
-
-    #[\Override]
-    protected function renderMarkup(): string
-    {
-        return Html::tag('craft-listbox',
-            Html::tag('craft-button-group',
-                $this->renderSlots(),
-                $this->renderedAttributes()
-            )
-        );
     }
 
     /**
