@@ -9,6 +9,7 @@
   import Empty from '@/common/components/Empty.vue';
   import {usePage} from '@inertiajs/vue3';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
+  import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
 
   const props = withDefaults(
     defineProps<{
@@ -49,6 +50,22 @@
   const pendingShiftKey = ref(false);
   function rememberShift(event: MouseEvent) {
     pendingShiftKey.value = event.shiftKey;
+  }
+
+  const {navigateToFolder, isFolderRow} = useFolderNavigation();
+
+  // Folder rows (asset index) navigate into the folder on click, except when
+  // the click lands on an interactive control (checkbox, a real link, …).
+  function onRowClick(row: any, event: MouseEvent) {
+    if (!isFolderRow(row.original)) return;
+    if (
+      (event.target as HTMLElement).closest(
+        'a[href], button, input, craft-checkbox, craft-reorder-button'
+      )
+    ) {
+      return;
+    }
+    navigateToFolder(row.original.folderUrl);
   }
 
   const {setRowRef, setHandleRef, getDragState, getDropState} =
@@ -177,6 +194,10 @@
       case ' ':
       case 'Enter':
         event.preventDefault();
+        if (isFolderRow(row.original)) {
+          navigateToFolder(row.original.folderUrl);
+          break;
+        }
         toggleRow(row);
         break;
       case 'ArrowDown': {
@@ -311,9 +332,11 @@
           :class="{
             row: true,
             'cp-table-row': true,
+            'cp-table-row--folder': isFolderRow(row.original),
             'row--dragging':
               !readOnly && getDragState(row.id).type === 'is-dragging',
           }"
+          @click="onRowClick(row, $event)"
           @keydown="onRowKeydown(row, rowIdx, $event)"
         >
           <template v-if="reorderable && !readOnly">
@@ -439,5 +462,9 @@
 
   :deep(.row--dragging) {
     opacity: 0.4;
+  }
+
+  .cp-table-row--folder {
+    cursor: pointer;
   }
 </style>

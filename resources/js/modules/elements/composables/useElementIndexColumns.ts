@@ -1,7 +1,8 @@
-import {computed, onMounted, type Ref} from 'vue';
+import {computed, type Ref} from 'vue';
 import {
   createIndexVisitor,
   type ElementIndexRoute,
+  type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
 import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
@@ -165,15 +166,28 @@ export function useElementIndexColumns(
         ...value.filter((key) => !visibleKeys.value.includes(key)),
       ];
 
+      // The `craft-checkbox-group` emits its initial model value on mount, which
+      // lands here as a no-op change. Ignore it so it doesn't fire a redundant
+      // columns refetch — which, being viewMode-less, would otherwise interrupt
+      // and clobber the mount-time view-mode/sort restore visits.
+      if (
+        next.length === visibleKeys.value.length &&
+        next.every((key, index) => key === visibleKeys.value[index])
+      ) {
+        return;
+      }
+
       patchSourceColumnState({visible: next});
       refetchWithColumns(next);
     },
   });
 
   // On load, if the user has a persisted column selection that differs from
-  // what the server rendered by default, restore it into the URL (without
-  // adding a history entry) so the rows include those columns' data.
-  onMounted(() => {
+  // what the server rendered by default, restore it so the rows include those
+  // columns' data. The page folds this into one mount-time restore visit
+  // alongside the view-mode/sort restores (see `useElementIndexPage`), so they
+  // can't interrupt each other.
+  function restore(): IndexRestore | null {
     const params = new URLSearchParams(window.location.search);
     const hasColumnsInUrl = [...params.keys()].some(
       (key) => key === 'columns' || key.startsWith('columns[')
@@ -181,15 +195,15 @@ export function useElementIndexColumns(
     const persisted = sourceColumnState.value?.visible;
 
     if (hasColumnsInUrl || !persisted?.length) {
-      return;
+      return null;
     }
 
     if (JSON.stringify(persisted) === JSON.stringify(defaultVisible.value)) {
-      return;
+      return null;
     }
 
-    refetchWithColumns(persisted, {replace: true});
-  });
+    return {params: {columns: persisted}, only: ['data']};
+  }
 
   function reorder(options: Array<{value: string}>) {
     // Dragging rewrites the visible columns' order to match what's displayed
@@ -205,5 +219,5 @@ export function useElementIndexColumns(
     });
   }
 
-  return {columns, columnOrder, columnOptions, reorder, tableColumns};
+  return {columns, columnOrder, columnOptions, reorder, tableColumns, restore};
 }

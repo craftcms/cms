@@ -111,6 +111,10 @@
       <slot name="header"></slot>
     </div>
 
+    <div class="element-index__navbar" v-if="$slots.navbar">
+      <slot name="navbar"></slot>
+    </div>
+
     <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
       <slot name="body"></slot>
     </div>
@@ -208,6 +212,7 @@
   }
 
   .element-index__header,
+  .element-index__navbar,
   .element-index__footer {
     background-color: var(--c-color-neutral-fill-quiet);
     padding: var(--c-spacing-md);
