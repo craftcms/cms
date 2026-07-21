@@ -1,8 +1,11 @@
 import {LionCheckbox} from '@lion/ui/checkbox-group.js';
 import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
+import {SsrChoiceInputMixin} from '../../mixins/SsrChoiceInputMixin.js';
 
-export default class CraftCheckbox extends LionCheckbox {
+export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
+  private __inputPatched = false;
+
   /**
    * LionCheckbox has no native indeterminate state, so mirror this property onto
    * the underlying input. Used for "select all" affordances where some — but not
@@ -10,8 +13,16 @@ export default class CraftCheckbox extends LionCheckbox {
    */
   @property({type: Boolean, reflect: true}) indeterminate = false;
 
-  override updated(changedProperties: PropertyValues): void {
+  override connectedCallback() {
+    super.connectedCallback();
+    this.__patchSlottedInputProps();
+  }
+
+  // Patch fallback for streaming parsing, where the input can be absent on
+  // connect; also mirrors `indeterminate` onto the underlying input.
+  override updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
+    this.__patchSlottedInputProps();
 
     const input = this._inputNode as HTMLInputElement | undefined;
     if (input) {
@@ -19,6 +30,72 @@ export default class CraftCheckbox extends LionCheckbox {
     }
   }
 
+  /**
+   * Keep the host's `checked`/`disabled` in step with the slotted input when
+   * the input's properties are written directly, bypassing Lion. Lion only
+   * learns of checkedness through `change`/`user-input-changed`, but the
+   * legacy checkbox select "All" handler flips every option with jQuery
+   * `.prop({checked, disabled})`, which sets the properties and fires no
+   * event — leaving Lion's model stale. A stale `checked` breaks consumers
+   * that read it off the host (`SortableCheckboxSelect`'s `isItemChecked`); a
+   * stale `disabled` is worse: Lion's `_toggleChecked` refuses user input
+   * while the host is disabled, so after unchecking "All" (which re-enables
+   * the inputs) no option could be selected.
+   *
+   * We wrap the input instance's own accessors to mirror external writes into
+   * the host, rather than overriding the host's properties — those are
+   * load-bearing for Lion (model sync, checkbox groups, its own input
+   * reflection), and reading them off the input there breaks that sync.
+   * Lion's own writes already match the host value, so the guard makes them
+   * no-ops and avoids recursion.
+   */
+  private __patchSlottedInputProps() {
+    if (this.__inputPatched) {
+      return;
+    }
+
+    const input = this.__slottedInputElement();
+    if (!input) {
+      return;
+    }
+
+    this.__inputPatched = true;
+
+    const host = this;
+
+    for (const prop of ['checked', 'disabled'] as const) {
+      const descriptor = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        prop
+      );
+      if (!descriptor?.get || !descriptor.set) {
+        continue;
+      }
+
+      const {get, set} = descriptor;
+
+      Object.defineProperty(input, prop, {
+        configurable: true,
+        enumerable: descriptor.enumerable,
+        get() {
+          return get.call(this);
+        },
+        set(value: boolean) {
+          set.call(this, value);
+          if (host[prop] !== value) {
+            host[prop] = value;
+          }
+        },
+      });
+    }
+  }
+
+  private __slottedInputElement(): HTMLInputElement | undefined {
+    return Array.from(this.children).find(
+      (child): child is HTMLInputElement =>
+        child instanceof HTMLInputElement && child.slot === 'input'
+    );
+  }
   static override get styles() {
     return [
       ...LionCheckbox.styles,

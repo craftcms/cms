@@ -339,6 +339,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             'allowDelete' => true,
             'cols' => $cols,
             'rows' => $rows,
+            'width' => 'full',
             'errors' => $this->errors()->get('options'),
             'data' => ['error-key' => 'options'],
         ]);

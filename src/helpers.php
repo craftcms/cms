@@ -264,3 +264,14 @@ function backTraceAsString(int $limit = 0): string
 
     return $trace;
 }
+
+/**
+ * Creates a UI component by its registered name, applying the given config
+ * via its fluent setters.
+ *
+ *     ui('callout', ['variant' => 'warning'])->content(t('Careful!'));
+ */
+function ui(string $name, array $config = []): Cp\Components\ViewComponent
+{
+    return app(Cp\Components\ComponentRegistry::class)->make($name, $config);
+}

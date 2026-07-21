@@ -75,6 +75,7 @@ export const inputStyles = css`
     appearance: none;
     padding-inline: var(--c-input-spacing-inline);
     background-color: transparent;
+    width: 100%;
   }
 
   .input-group__container {

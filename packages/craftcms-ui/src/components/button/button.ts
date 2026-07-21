@@ -106,7 +106,7 @@ export default class CraftButton extends LionButtonSubmit {
   }
 
   /** The computed accessible name */
-  @property() accessibleName: string;
+  @property({attribute: 'accessible-name'}) accessibleName: string;
 
   /** Visual appearance of the button */
   @property({reflect: true}) appearance: ButtonAppearance = 'solid';

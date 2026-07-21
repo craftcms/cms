@@ -14,19 +14,21 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
+use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Crypt;
@@ -210,18 +212,17 @@ readonly class ElementHtml
             $html .= $this->componentActionMenu($component);
         }
         if ($config['sortable']) {
-            $html .= FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'move-btn'],
-                'icon' => 'move',
-                'attributes' => [
+            $html .= Button::make()
+                ->icon('move')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'move-btn'],
                     'title' => t('Reorder'),
                     'aria' => [
                         'label' => t('Reorder'),
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
-                ],
-            ]);
+                ]);
         }
         $html .= Html::endTag('div'); // slot=suffix
 
@@ -419,10 +420,10 @@ JS, [
             Html::beginTag('div', ['class' => 'card-actions-container']).
             Html::beginTag('div', ['class' => 'card-actions']).
             ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
-            ($showEditButton ? FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'edit-btn'],
-                'icon' => 'edit',
-                'attributes' => [
+            ($showEditButton ? Button::make()
+                ->icon('edit')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'edit-btn'],
                     'id' => $editId,
                     'title' => mb_ucfirst(t('Edit {type}', [
                         'type' => $element::lowerDisplayName(),
@@ -432,21 +433,19 @@ JS, [
                             'type' => $element::lowerDisplayName(),
                         ])),
                     ],
-                ],
-            ]) : '').
+                ]) : '').
             ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton) : '').
-            ($config['sortable'] ? FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'move-btn'],
-                'icon' => 'move',
-                'attributes' => [
+            ($config['sortable'] ? Button::make()
+                ->icon('move')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'move-btn'],
                     'title' => t('Reorder'),
                     'aria' => [
                         'label' => t('Reorder'),
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
-                ],
-            ]) : '').
+                ]) : '').
             Html::endTag('div'). // .card-actions
             Html::endTag('div'). // .card-actions-container
             Html::endTag('div'); // .card-titlebar
@@ -802,6 +801,20 @@ JS, [
         ]);
     }
 
+    /**
+     * Renders a `<craft-action-menu>` for a component's action menu items.
+     *
+     * This feeds both {@see chipHtml()} and the card markup: it's the single
+     * `craft-action-menu`/`craft-action-item` producer for chip and card
+     * "Actions" menus, replacing the legacy `disclosureMenu()`-rendered
+     * markup (which required a `Craft.initUiElements()` pass — unreliable for
+     * fetched/injected chips). `craft-action-menu`/`craft-action-item`
+     * self-boot, so no init pass is needed.
+     *
+     * The menu is always rendered, even with zero items, so JS (e.g.
+     * `Craft.addActionsToChip()`) always has a `[slot="content"]` container
+     * to inject into.
+     */
     private function componentActionMenu(Actionable $component, bool $withEdit = true): string
     {
         return InputNamespace::namespaceInputs(
@@ -822,17 +835,173 @@ JS, [
                         $item['attributes']['data']['copy-action'] = true;
                     }
                 }
+                unset($item);
 
-                return $this->menuHtml->disclosureMenu($actionMenuItems, [
-                    'hiddenLabel' => t('Actions'),
-                    'buttonHtml' => Html::tag('craft-icon', '', [
-                        'name' => 'ellipsis',
-                    ]),
-                    'omitIfEmpty' => false,
+                // `disclosureMenuItems()` normalizes types, moves destructive
+                // items to the end (behind an `hr`), and trims leading/
+                // trailing/repeated `hr`s — all still desirable here.
+                $items = $this->menuHtml->disclosureMenuItems($actionMenuItems);
+
+                $invokerHtml = Html::tag('craft-button', Html::tag('craft-icon', '', [
+                    'name' => 'ellipsis',
+                ]), [
+                    'type' => 'button',
+                    'slot' => 'invoker',
+                    'appearance' => 'plain',
+                    'variant' => 'inherit',
+                    'size' => 'small',
+                    // Bare `icon` attribute triggers the icon-only button styling
+                    // (the icon itself is slotted content, not the `icon` prop —
+                    // it needs its own `aria-label`-free presentation since the
+                    // button already carries one).
+                    'icon' => true,
+                    'aria' => [
+                        'label' => t('Actions'),
+                    ],
                 ]);
+
+                $contentHtml = Html::tag('div', implode('', array_map(
+                    $this->actionMenuItemHtml(...),
+                    $items,
+                )), [
+                    'slot' => 'content',
+                ]);
+
+                return Html::tag('craft-action-menu', $invokerHtml.$contentHtml);
             },
             sprintf('action-menu-%s', mt_rand()),
         );
+    }
+
+    /**
+     * Renders a single normalized action menu item (see
+     * {@see MenuHtml::normalizeMenuItems()}) as either an `<hr>` separator or
+     * a `<craft-action-item>`.
+     *
+     * Field mapping from the legacy `disclosureMenu()`/`menuitem.twig`
+     * contract:
+     *
+     * - `label`/`html`, `handle`, `description` → slotted content (mirrors
+     *   `_includes/forms/componentSelect.twig`'s option markup).
+     * - `icon` + `color` → `icon` + `icon-color` attributes.
+     * - `url` (link items) → `href`.
+     * - `destructive` → `variant="danger"`.
+     * - `disabled`, `hidden` → same-named boolean attributes.
+     * - `attributes` (incl. the `data-edit-action`/`data-copy-action` set
+     *   above) → merged onto the tag verbatim.
+     * - `action`/`params`/`confirm`/`redirect` → a `craft-action-item`
+     *   `action` object (`{type: 'http', ...}`, JSON-encoded — see
+     *   `@src/actions`), replacing the legacy `formsubmit`/`data-action`
+     *   mechanism. `redirect` is encrypted the same way the `hash` Twig
+     *   filter did, and posted as a `redirect` body param for the controller
+     *   action to honor.
+     * - `requireElevatedSession` has no client-side equivalent in the frozen
+     *   `craft-action-item`/`runAction()` — there's no re-auth prompt hook —
+     *   so it's intentionally dropped here. An item that needs it will still
+     *   be rejected server-side; it just won't get the elevated-session
+     *   modal first. See the task report for details.
+     */
+    private function actionMenuItemHtml(array $item): string
+    {
+        $type = $item['type'] ?? MenuItemType::Button;
+        if ($type instanceof MenuItemType) {
+            $type = $type->value;
+        }
+
+        if ($type === MenuItemType::HR->value) {
+            return Html::tag('hr', '', [
+                'class' => 'action-menu__separator',
+                // `craft-action-menu`'s `::slotted()` styles can't reach a
+                // light-DOM `<hr>`, so style it inline (mirrors
+                // `action-menu.ts`'s `_renderItem()`).
+                'style' => [
+                    'margin' => '0',
+                    'border' => '0',
+                    'border-block-start' => '1px solid var(--c-color-neutral-border-quiet)',
+                ],
+            ]);
+        }
+
+        if ($type === MenuItemType::Group->value) {
+            // `craft-action-item` has no heading/group concept; flatten.
+            return implode('', array_map(
+                $this->actionMenuItemHtml(...),
+                $this->menuHtml->normalizeMenuItems($item['items'] ?? []),
+            ));
+        }
+
+        $color = $item['color'] ?? null;
+        if ($color instanceof Color) {
+            $color = $color->value;
+        }
+
+        $action = null;
+        if ($item['action'] ?? false) {
+            $body = (array) ($item['params'] ?? []);
+            if ($item['redirect'] ?? false) {
+                $body['redirect'] = Crypt::encrypt((string) $item['redirect']);
+            }
+
+            $action = array_filter([
+                'type' => 'http',
+                'method' => 'POST',
+                'url' => Url::actionUrl((string) $item['action']),
+                'body' => $body ?: null,
+                'confirm' => $item['confirm'] ?? null,
+            ], fn ($value) => $value !== null);
+        }
+
+        $attributes = Arr::merge([
+            // Deliberately *not* run through `InputNamespace::namespaceId()`:
+            // this whole method already runs inside its own
+            // `InputNamespace::namespaceInputs()` closure (see
+            // `componentActionMenu()`), which namespaces every `id=`
+            // attribute in the returned HTML automatically — namespacing it
+            // here too would double it up.
+            'id' => $item['id'] ?? sprintf('menu-item-%s', mt_rand()),
+            'icon' => $item['icon'] ?? false,
+            'icon-color' => $color ?: false,
+            'href' => $type === MenuItemType::Link->value ? Url::url((string) ($item['url'] ?? '')) : false,
+            'disabled' => $item['disabled'] ?? false,
+            'hidden' => $item['hidden'] ?? false,
+            'variant' => ($item['destructive'] ?? false) ? 'danger' : false,
+            'action' => $action ? Json::encode($action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : false,
+        ], $item['attributes'] ?? []);
+
+        return Html::tag('craft-action-item', $this->actionMenuItemContentHtml($item), $attributes);
+    }
+
+    /**
+     * Renders a menu item's slotted content: its label (or raw `html`), plus
+     * an optional secondary line for `description`/`handle` — the same
+     * `menu-item-description` markup `_includes/menuitem.twig` and
+     * `_includes/forms/componentSelect.twig` use.
+     */
+    private function actionMenuItemContentHtml(array $item): string
+    {
+        $labelHtml = isset($item['label'])
+            ? Html::encode($item['label'])
+            : (string) ($item['html'] ?? '');
+
+        if (isset($item['description'])) {
+            $secondaryHtml = Html::tag('span', Html::encode($item['description']), [
+                'class' => ['menu-item-description', 'mt-2xs', 'smalltext', 'light'],
+            ]);
+        } elseif (isset($item['handle'])) {
+            $secondaryHtml = Html::tag('span', Html::encode($item['handle']), [
+                'class' => ['menu-item-description', 'mt-2xs', 'smalltext', 'light', 'code'],
+            ]);
+        } else {
+            $secondaryHtml = null;
+        }
+
+        if ($secondaryHtml === null) {
+            return $labelHtml;
+        }
+
+        return Html::tag('span', $labelHtml.$secondaryHtml, [
+            'class' => ['inline-flex', 'flex-col', 'items-start', 'gap-2xs'],
+        ]);
     }
 
     private function contextIsAdministrative(string $context): bool
