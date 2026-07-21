@@ -53,6 +53,7 @@
 - Removed `CraftCms\Cms\Plugin\Plugin::registerPlugin()`. `register()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Fixed a bug where the legacy `yii\web\JqueryAsset` wasn’t resolving properly. ([#19264](https://github.com/craftcms/cms/pull/19264))
 - Fixed a bug where bulk entry moves could assign entries to sections that didn’t support their entry types. ([#19267](https://github.com/craftcms/cms/pull/19267))
+- Fixed bugs that could prevent authored content from being deleted or reassigned safely when deleting users. ([#19273](https://github.com/craftcms/cms/pull/19273))
 - Fixed an issue where disabled and archived user accounts could still authenticate. ([#19265](https://github.com/craftcms/cms/pull/19265))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
