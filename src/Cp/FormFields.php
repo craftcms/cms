@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
@@ -801,14 +802,67 @@ readonly class FormFields
 
     public static function textHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/text', $config);
+        return self::textFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy text config surface onto the {@see Input} component —
+     * the PHP twin of the `_includes/forms/text` glue template. Legacy
+     * semantics preserved: `unit` is a `suffix` fallback, aria-labelledby is
+     * suppressed when an `aria-label` is configured, and a legacy `size`
+     * (character width) shrinks the control instead of spanning the column.
+     * A `maxlength` alone keeps the legacy full-width behavior unless a
+     * `width` is configured, since the web component would otherwise shrink.
+     */
+    public static function textFromConfig(array $config): Input
+    {
+        $inputAttributes = $config['inputAttributes'] ?? [];
+        $size = ($config['size'] ?? false) ?: null;
+        $maxlength = ($config['maxlength'] ?? false) ?: null;
+        $value = $config['value'] ?? null;
+
+        return Input::make()
+            ->id($config['id'] ?? 'text'.mt_rand())
+            ->type($config['type'] ?? 'text')
+            ->name($config['name'] ?? null)
+            ->value($value !== false ? $value : null)
+            ->inputSize($size !== null ? (int) $size : null)
+            ->maxlength($maxlength !== null ? (int) $maxlength : null)
+            ->width($size !== null ? 'auto' : ($maxlength !== null ? 'full' : null))
+            ->autofocus((bool) ($config['autofocus'] ?? false))
+            ->autocomplete($config['autocomplete'] ?? false)
+            ->autocorrect((bool) ($config['autocorrect'] ?? true))
+            ->autocapitalize((bool) ($config['autocapitalize'] ?? true))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->title($config['title'] ?? null)
+            ->placeholder($config['placeholder'] ?? null)
+            ->step(($config['step'] ?? false) ?: null)
+            ->min(($config['min'] ?? false) ?: null)
+            ->max(($config['max'] ?? false) ?: null)
+            ->inputmode(($config['inputmode'] ?? false) ?: null)
+            ->orientation($config['orientation'] ?? null)
+            ->role(($config['role'] ?? false) ?: null)
+            ->expanded($config['expanded'] ?? null)
+            ->suffix(($config['suffix'] ?? $config['unit'] ?? false) ?: null)
+            ->descriptionId($config['descriptionId'] ?? null)
+            ->showCharsLeft((bool) ($config['showCharsLeft'] ?? false))
+            ->labelledBy(empty($inputAttributes['aria']['label']) ? ($config['labelledBy'] ?? null) : null)
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $inputAttributes,
+            ));
     }
 
     public static function textFieldHtml(array $config): string
     {
         $config['id'] ??= 'text'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/text', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::textFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     public static function textareaHtml(array $config): string
