@@ -276,8 +276,6 @@ class AuthMethods
         if (! $this->hasher->check($plain, $hashed)) {
             $this->authError = AuthError::InvalidCredentials;
 
-            $this->handleInvalidLogin($user);
-
             return false;
         }
 
@@ -327,7 +325,7 @@ class AuthMethods
         $updatedCredentialRecord = Session::remove($this->passkeys->passkeyCredSourceParam);
 
         if (! $keyValid) {
-            $this->handleInvalidLogin($user);
+            $this->authError = AuthError::InvalidCredentials;
 
             return false;
         }
