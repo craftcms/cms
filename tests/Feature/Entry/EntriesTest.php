@@ -160,6 +160,13 @@ it('can reassign entries to a new author', function () {
     Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->tags === ['element::'.EntryElement::class]);
 });
 
+it('cannot reassign entries to the same author', function () {
+    $author = User::factory()->create();
+
+    expect(fn () => $this->entries->reassignEntries($author->id, $author->id))
+        ->toThrow(InvalidArgumentException::class, 'The new author must be different from the old author.');
+});
+
 it('does not reassign entries that already have the new author', function () {
     $oldAuthor = User::factory()->create();
     $newAuthor = User::factory()->create();

@@ -19,13 +19,24 @@ import {Variant, type VariantValue} from '@src/constants/variants';
  */
 export default class CraftActionItem extends LitElement {
   static override styles = [variantsStyles, styles];
+
+  /**
+   * Delegate focus into the shadow root, so `host.focus()` (used by
+   * `craft-action-menu`'s keyboard navigation) lands on the internal
+   * button/anchor and native Enter/Space activation keeps working.
+   */
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   @property() icon: string | null = null;
   /**
    * Optional Craft color name used to tint the item's icon. The icon renders
    * with `currentColor`, so we set the icon element's `color` to a matching
    * `--c-color-*` token.
    */
-  @property() iconColor: string | null = null;
+  @property({attribute: 'icon-color'}) iconColor: string | null = null;
   @property() href: string | null = null;
   @property({type: Boolean}) disabled: boolean = false;
   @property({reflect: true}) variant: VariantValue = Variant.Neutral;
@@ -34,7 +45,8 @@ export default class CraftActionItem extends LitElement {
   @property() type: 'button' | 'checkbox' = 'button';
   @property({type: Object}) action: BaseAction | null = null;
   @property({type: Object}) feedback: ActionFeedback | null = null;
-  @property({type: Number}) feedbackDuration: number = 1000;
+  @property({type: Number, attribute: 'feedback-duration'})
+  feedbackDuration: number = 1000;
   @property() confirm: string | null = null;
 
   @state() private state: AsyncState = AsyncStates.Idle;

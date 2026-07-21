@@ -45,6 +45,12 @@ interface ActionMenuItemInteractiveBase {
   variant?: VariantKey | string;
   disabled?: boolean;
   shortcut?: ActionShortcut;
+  /**
+   * Extra search terms (e.g. a handle) matched by the menu's `searchable`
+   * filter in addition to the item's visible text. Rendered onto the generated
+   * `craft-action-item` as a `data-keywords` attribute.
+   */
+  keywords?: string;
   onClick?: (event: Event) => void;
   [key: string]: unknown;
 }

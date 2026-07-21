@@ -319,6 +319,70 @@ class Cp extends Component
         return FormFields::fieldHtml($input, $config);
     }
 
+    /**
+     * Renders a lightswitch's HTML from the legacy lightswitch variables.
+     */
+    public function lightswitch(array $config = []): string
+    {
+        return FormFields::lightswitchFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a button's HTML from the legacy button variables.
+     */
+    public function button(array $config = []): string
+    {
+        return FormFields::buttonFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a button group's HTML from the legacy buttonGroup variables.
+     */
+    public function buttonGroup(array $config = []): string
+    {
+        return FormFields::buttonGroupFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a checkbox's HTML from the legacy checkbox variables.
+     */
+    public function checkbox(array $config = []): string
+    {
+        return FormFields::checkboxFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a checkbox group's HTML from the legacy checkboxGroup variables.
+     */
+    public function checkboxGroup(array $config = []): string
+    {
+        return FormFields::checkboxGroupFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a checkbox select's HTML from the legacy checkboxSelect variables.
+     */
+    public function checkboxSelect(array $config = []): string
+    {
+        return FormFields::checkboxSelectFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a radio's HTML from the legacy radio variables.
+     */
+    public function radio(array $config = []): string
+    {
+        return FormFields::radioFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a radio group's HTML from the legacy radioGroup variables.
+     */
+    public function radioGroup(array $config = []): string
+    {
+        return FormFields::radioGroupFromConfig($config)->toHtml();
+    }
+
     private function formatLegacySuggestions(array $options): array
     {
         return array_map(fn ($group) => [

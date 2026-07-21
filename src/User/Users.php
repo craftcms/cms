@@ -844,6 +844,19 @@ class Users
         }
     }
 
+    public function invalidateUserSessions(User $user): void
+    {
+        DB::transaction(function () use ($user) {
+            $userModel = UserModel::findOrFail($user->id);
+            $userModel->setRememberToken(Str::random(60));
+            $userModel->save();
+
+            DB::table(Table::SESSIONS)
+                ->where('user_id', $user->id)
+                ->delete();
+        });
+    }
+
     /**
      * Unsuspends a user.
      *

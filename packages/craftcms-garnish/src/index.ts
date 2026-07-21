@@ -40,6 +40,7 @@ import {Drag, type DragSettings} from './drag/drag';
 import {DragDrop, type DragDropSettings} from './drag/drag-drop';
 import {DragSort, type DragSortSettings} from './drag/drag-sort';
 import {DragMove} from './drag-move';
+import {Select, type SelectSettings} from './select';
 import {ResizeHandle} from './icons/resize-handle';
 import {garnishClassBus, globals, win, doc, bod} from './globals';
 import type {Callback, Constructor, GarnishBaseSettings} from './types';
@@ -77,6 +78,8 @@ export {Drag, type DragSettings};
 export {DragDrop, type DragDropSettings};
 export {DragSort, type DragSortSettings};
 export {DragMove};
+export {Select, type SelectSettings};
+export type {SelectHandle, SelectFilter} from './select';
 export {ResizeHandle};
 export {win, doc, bod};
 
@@ -184,6 +187,7 @@ export const Garnish = {
   DragDrop,
   DragSort,
   DragMove,
+  Select,
   /** @deprecated Use UiLayerManager instead. */
   ShortcutManager: UiLayerManager,
 

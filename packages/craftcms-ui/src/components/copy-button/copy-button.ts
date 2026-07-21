@@ -53,7 +53,7 @@ export default class CraftCopyButton extends LitElement {
   @property({attribute: 'feedback-duration', type: Number}) feedbackDuration =
     1000;
 
-  @property()
+  @property({attribute: 'tooltip-label'})
   tooltipLabel: string | null = null;
 
   async copyValue() {
