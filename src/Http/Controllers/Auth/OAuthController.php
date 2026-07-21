@@ -102,17 +102,21 @@ readonly class OAuthController extends AuthenticationController
                 $users->activateUser($user);
             }
 
-            $oauthManager->linkIdentity($user, $definition, $identity);
+            $authError = $this->getAuthError($user, $isCpRequest);
 
-            if ($isNew) {
-                $groupIds = $oauthManager->resolveGroupIds($definition, $socialiteUser, $user, $identity);
+            if (! $authError || $isNew) {
+                $oauthManager->linkIdentity($user, $definition, $identity);
 
-                if ($groupIds !== []) {
-                    $users->assignUserToGroups($user->id, $groupIds);
+                if ($isNew) {
+                    $groupIds = $oauthManager->resolveGroupIds($definition, $socialiteUser, $user, $identity);
+
+                    if ($groupIds !== []) {
+                        $users->assignUserToGroups($user->id, $groupIds);
+                    }
                 }
             }
 
-            if ($authError = $this->getAuthError($user, $isCpRequest)) {
+            if ($authError) {
                 return $this->failedResponse(
                     $isCpRequest,
                     $this->auth->getLoginFailureInfo($authError, $user)[1],
@@ -276,7 +280,7 @@ readonly class OAuthController extends AuthenticationController
             User::STATUS_PENDING => AuthError::PendingVerification,
             User::STATUS_SUSPENDED => AuthError::AccountSuspended,
             User::STATUS_ACTIVE => $this->getCpAuthError($user),
-            default => null,
+            default => AuthError::InvalidCredentials,
         };
     }
 
