@@ -29,6 +29,7 @@ class ComponentRegistry
         'lightswitch' => Lightswitch::class,
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,
+        'textarea' => Textarea::class,
     ];
 
     /**

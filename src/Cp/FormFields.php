@@ -17,6 +17,7 @@ use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
+use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -867,14 +868,49 @@ readonly class FormFields
 
     public static function textareaHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/textarea', $config);
+        return self::textareaFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy textarea config surface onto the {@see Textarea}
+     * component — the PHP twin of the `_includes/forms/textarea` glue
+     * template. Legacy semantics preserved: unlike {@see textFromConfig()},
+     * autofocus isn't gated on the current user's autofocus preference.
+     */
+    public static function textareaFromConfig(array $config): Textarea
+    {
+        $cols = ($config['cols'] ?? false) ?: null;
+        $maxlength = ($config['maxlength'] ?? false) ?: null;
+
+        return Textarea::make()
+            ->id($config['id'] ?? 'textarea'.mt_rand())
+            ->name($config['name'] ?? null)
+            ->value($config['value'] ?? null)
+            ->maxlength($maxlength !== null ? (int) $maxlength : null)
+            ->rows((int) ($config['rows'] ?? 2))
+            ->cols($cols !== null ? (int) $cols : null)
+            ->inputmode(($config['inputmode'] ?? false) ?: null)
+            ->autofocus((bool) ($config['autofocus'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->title($config['title'] ?? null)
+            ->placeholder($config['placeholder'] ?? null)
+            ->showCharsLeft((bool) ($config['showCharsLeft'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['inputAttributes'] ?? [],
+            ));
     }
 
     public static function textareaFieldHtml(array $config): string
     {
         $config['id'] ??= 'textarea'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/textarea', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::textareaFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     public static function dateHtml(array $config): string
