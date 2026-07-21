@@ -26,6 +26,12 @@ class PreviewAsset extends ElementAction
         return $this->label;
     }
 
+    #[\Override]
+    public static function supportsBulk(): bool
+    {
+        return false;
+    }
+
     public function getTriggerHtml(): ?string
     {
         HtmlStack::jsWithVars(fn ($type) => <<<JS
