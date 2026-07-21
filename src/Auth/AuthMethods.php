@@ -14,6 +14,7 @@ use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -27,6 +28,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use RuntimeException;
@@ -343,11 +345,26 @@ class AuthMethods
     {
         $user = $this->getUser();
 
-        if (! $this->getMethod($methodClass, $user)->verify(...$args)) {
+        $verified = DB::transaction(function () use ($methodClass, $args, $user): bool {
+            if ($user) {
+                DB::table(Table::USERS)
+                    ->where('id', $user->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+            }
+
+            if ($this->getMethod($methodClass, $user)->verify(...$args)) {
+                return true;
+            }
+
             if ($user) {
                 $this->handleInvalidLogin($user);
             }
 
+            return false;
+        });
+
+        if (! $verified) {
             return false;
         }
 

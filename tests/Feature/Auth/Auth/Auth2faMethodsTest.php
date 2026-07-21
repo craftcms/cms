@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
+use CraftCms\Cms\Auth\Methods\BaseAuthMethod;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Edition;
@@ -12,8 +13,53 @@ use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Users;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
+
+class TransactionAwareAuthMethod extends BaseAuthMethod
+{
+    public static ?int $transactionLevel = null;
+
+    public static function handle(): string
+    {
+        return 'transaction-aware';
+    }
+
+    public static function displayName(): string
+    {
+        return 'Transaction-aware';
+    }
+
+    public static function description(): string
+    {
+        return 'Checks the database transaction level.';
+    }
+
+    public function isActive(): bool
+    {
+        return true;
+    }
+
+    public function getSetupHtml(string $containerId): string
+    {
+        return '';
+    }
+
+    public function getAuthFormHtml(?string $returnUrl = null): string
+    {
+        return '';
+    }
+
+    public function verify(mixed ...$args): bool
+    {
+        self::$transactionLevel = DB::transactionLevel();
+
+        return false;
+    }
+
+    public function remove(): void {}
+}
 
 beforeEach(function () {
     Event::fake();
@@ -111,6 +157,22 @@ test('custom methods can be registered', function () {
     $methods = $this->auth->getAllMethods($user);
 
     expect($methods)->not()->toBeEmpty();
+});
+
+test('verifyMethod runs verification in a dedicated database transaction', function () {
+    Event::fakeExcept(AuthMethodsResolving::class);
+    Event::listen(AuthMethodsResolving::class, function (AuthMethodsResolving $event) {
+        $event->methods->push(TransactionAwareAuthMethod::class);
+    });
+
+    $user = User::factory()->createElement();
+    $auth = app(AuthMethods::class);
+    $auth->setUser($user);
+    TransactionAwareAuthMethod::$transactionLevel = null;
+    $transactionLevel = DB::transactionLevel();
+
+    expect($auth->verifyMethod(TransactionAwareAuthMethod::class))->toBeFalse()
+        ->and(TransactionAwareAuthMethod::$transactionLevel)->toBeGreaterThan($transactionLevel);
 });
 
 test('is2faRequired returns false for Solo', function () {
