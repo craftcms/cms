@@ -7,10 +7,12 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\Url;
 use Override;
 
 /**
@@ -23,6 +25,10 @@ class AssetIndexViewModel extends ContentIndexViewModel
 {
     /** @var array{0: Volume|null, 1: string[]}|null */
     private ?array $resolvedDefaultSource = null;
+
+    private bool $subfolderResolved = false;
+
+    private ?VolumeFolder $resolvedSubfolder = null;
 
     public function __construct(
         ElementIndexRequest $request,
@@ -72,6 +78,64 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return $sourcePath;
     }
 
+    /**
+     * Folder rows have no element id, so key them by folder id to stay unique
+     * and stable for the client's table/selection.
+     */
+    #[Override]
+    protected function rowId(ElementInterface $element): string|int|null
+    {
+        if ($element instanceof Asset && $element->isFolder) {
+            return "folder:{$element->folderId}";
+        }
+
+        return $element->id;
+    }
+
+    /**
+     * Marks folder rows and gives the client the folder's own index URL so a
+     * click can navigate into it (the folder chip itself has no edit URL). The
+     * folder's URL is the last step of its resolved source path.
+     *
+     * @return array<string, mixed>
+     */
+    #[Override]
+    protected function extraRowData(ElementInterface $element): array
+    {
+        if (! $element instanceof Asset || ! $element->isFolder) {
+            return [];
+        }
+
+        $uri = array_last($element->sourcePath)['uri'] ?? null;
+
+        return [
+            'isFolder' => true,
+            'folderUrl' => $uri !== null ? Url::cpUrl($uri) : null,
+        ];
+    }
+
+    /**
+     * A `defaultSource` path selects the volume source (`volume:{uid}`), whose
+     * criteria points at the volume root. When the path names a subfolder,
+     * re-point the query's `folderId` at that subfolder so the listing (and its
+     * merged child folders) is scoped to it rather than the volume root.
+     *
+     * @return array{0: ?string, 1: ?array}
+     */
+    #[Override]
+    protected function sourceState(): array
+    {
+        [$sourceKey, $source] = parent::sourceState();
+
+        $subfolder = $this->subfolder();
+
+        if ($subfolder !== null && $source !== null) {
+            $source['criteria']['folderId'] = $subfolder->id;
+        }
+
+        return [$sourceKey, $source];
+    }
+
     #[Override]
     protected function defaultSourceKey(): ?string
     {
@@ -103,13 +167,19 @@ class AssetIndexViewModel extends ContentIndexViewModel
 
     private function subfolder(): ?VolumeFolder
     {
+        if ($this->subfolderResolved) {
+            return $this->resolvedSubfolder;
+        }
+
+        $this->subfolderResolved = true;
+
         [$volume, $segments] = $this->resolveDefaultSource();
 
         if ($volume === null || $segments === []) {
-            return null;
+            return $this->resolvedSubfolder = null;
         }
 
-        return Folders::findFolder([
+        return $this->resolvedSubfolder = Folders::findFolder([
             'volumeId' => $volume->id,
             'path' => sprintf('%s/', implode('/', $segments)),
         ]);
