@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -11,6 +11,7 @@
   import {useElementIndexPage} from '@/modules/elements/composables/useElementIndexPage';
   import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
   import {TableSpacing} from '@/common/types';
+  import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -115,9 +116,17 @@
           @reorder="reorder"
         />
       </template>
+      <template #navbar><slot name="navbar"></slot></template>
       <template #body>
         <ElementCards
           v-if="mode === 'cards'"
+          :table="elementTable"
+          :data="elementIndex.data"
+          :selectable="true"
+          :loading="loading"
+        />
+        <ElementThumbs
+          v-else-if="mode === 'thumbs'"
           :table="elementTable"
           :data="elementIndex.data"
           :selectable="true"

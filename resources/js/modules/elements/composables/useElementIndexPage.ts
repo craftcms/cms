@@ -4,7 +4,7 @@ import {
   type RowSelectionState,
   useVueTable,
 } from '@tanstack/vue-table';
-import {computed, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {useContentIndexData} from '@/modules/elements/composables/useContentIndexData';
 import {useConditionBuilder} from '@/modules/elements/composables/useConditionBuilder';
 import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
@@ -14,7 +14,11 @@ import {useElementIndexPagination} from '@/modules/elements/composables/useEleme
 import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
 import {useElementIndexViewMode} from '@/modules/elements/composables/useElementIndexViewMode';
 import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
-import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+import {
+  createIndexVisitor,
+  type ElementIndexRoute,
+  type IndexRestore,
+} from '@/modules/elements/composables/useElementIndexVisits';
 
 type Element = Record<any, any>;
 
@@ -52,24 +56,66 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     options.route,
     conditions
   );
-  const {columns, columnOrder, columnOptions, reorder, tableColumns} =
-    useElementIndexColumns(
-      elementIndex,
-      viewState,
-      options.pinnedColumn ?? {
-        key: 'title',
-        label: elementIndex.elementDisplayName,
-      },
-      options.route
-    );
-  const {sortingState, sortingConfig, sortField, sortDirection} =
-    useElementIndexSort(elementIndex, viewState, {route: options.route});
+  const {
+    columns,
+    columnOrder,
+    columnOptions,
+    reorder,
+    tableColumns,
+    restore: restoreColumns,
+  } = useElementIndexColumns(
+    elementIndex,
+    viewState,
+    options.pinnedColumn ?? {
+      key: 'title',
+      label: elementIndex.elementDisplayName,
+    },
+    options.route
+  );
+  const {
+    sortingState,
+    sortingConfig,
+    sortField,
+    sortDirection,
+    restore: restoreSort,
+  } = useElementIndexSort(elementIndex, viewState, {route: options.route});
   const {paginationState, paginationConfig} = useElementIndexPagination(
     elementIndex,
     options.route
   );
-  const {mode} = useElementIndexViewMode(options.route, viewState);
+  const {mode, restore: restoreViewMode} = useElementIndexViewMode(
+    options.route,
+    viewState
+  );
   const {loading} = useElementIndexLoading();
+
+  // The server renders the initial page for its defaults — it can't see the
+  // client's persisted view state — so view mode, sort, and columns may each
+  // need re-requesting on load. Compose every contribution into a SINGLE visit:
+  // fired separately they'd each go through Inertia's interruptible sync request
+  // stream and abort one another, dropping whichever params lost the race (e.g.
+  // the view mode, leaving cards rendered against table-shaped data).
+  const restoreVisitor = createIndexVisitor(options.route);
+
+  onMounted(() => {
+    const restores = [
+      restoreColumns(),
+      restoreSort(),
+      restoreViewMode(),
+    ].filter((restore): restore is IndexRestore => restore !== null);
+
+    if (restores.length === 0) {
+      return;
+    }
+
+    restoreVisitor.merge(
+      Object.assign({}, ...restores.map((restore) => restore.params)),
+      {
+        only: [...new Set(restores.flatMap((restore) => restore.only))],
+        replace: true,
+      }
+    );
+  });
 
   // The structure view mode only applies to structure sources, so hide it
   // (and any other `structuresOnly` mode) unless the active source is one.
@@ -150,7 +196,9 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
       },
     },
     getRowId: (row) => String(row.id),
-    enableRowSelection: true,
+    // Folder rows (asset index) navigate rather than select, so they opt out of
+    // selection and bulk actions.
+    enableRowSelection: (row) => !row.original?.isFolder,
     onRowSelectionChange: (updater) => {
       rowSelection.value =
         typeof updater === 'function' ? updater(rowSelection.value) : updater;
