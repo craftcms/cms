@@ -8,7 +8,7 @@ import {
   type Row,
   useVueTable,
 } from '@tanstack/vue-table';
-import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import InputCombobox from '@/common/form/InputCombobox.vue';
 import type {SelectItem, SelectOption} from '@/common/types';
 import useCraftData from '@/common/composables/useCraftData';

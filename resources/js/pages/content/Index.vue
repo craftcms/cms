@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ElementSources from '@/modules/elements/ElementSources.vue';

@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {markdownActions, toolbarButtons, type ToolbarButton} from 'overtype';
 import {customIcons} from './icons';
 

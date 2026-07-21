@@ -107,7 +107,7 @@ class Local extends Filesystem
                 'required',
                 'string',
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    if (Security::isSystemDir($this->getRootPath())) {
+                    if (Security::isRestrictedDir($this->getRootPath())) {
                         $fail(t('Local filesystems cannot be located within or above system directories.'));
                     }
                 },

@@ -9,7 +9,7 @@ The `AdminTable` component renders data tables in the Craft CMS Control Panel. I
 import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
 import AdminTable from '@/components/AdminTable/AdminTable.vue';
 import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 
 interface RowData {
   id: number;

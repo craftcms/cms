@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
   import {computed} from 'vue';
   import type {SelectItem, SuggestionGroup} from '@/common/types';
@@ -8,7 +8,7 @@
   import {store, test} from '@routes/cp/settings/email';
   import Pane from '@/common/components/Pane.vue';
   import InlineFlash from '@/common/components/InlineFlash.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {useAppLayout} from '@/common/composables/useAppLayout';
 

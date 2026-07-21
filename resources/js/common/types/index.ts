@@ -1,4 +1,4 @@
-import type {VariantKey} from '@craftcms/cp';
+import type {VariantKey} from '@craftcms/ui';
 import type {Component} from 'vue';
 
 export interface BaseOption {

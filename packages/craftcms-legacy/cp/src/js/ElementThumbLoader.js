@@ -1,8 +1,8 @@
-import {ThumbnailLoader} from '@craftcms/cp/utilities/thumbnail-loader';
+import {ThumbnailLoader} from '@craftcms/ui/utilities/thumbnail-loader';
 
 /** global: Craft */
 /**
- * Legacy `Craft.ElementThumbLoader` — a thin bridge over `@craftcms/cp`'s
+ * Legacy `Craft.ElementThumbLoader` — a thin bridge over `@craftcms/ui`'s
  * `ThumbnailLoader` (see the package's `components/thumbnail-loader/README.md`).
  *
  * Callers (`Craft.cp.elementThumbLoader`, element index views, slideouts,

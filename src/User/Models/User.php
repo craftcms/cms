@@ -125,6 +125,11 @@ class User extends BaseModel implements CraftUser
             'invalidLoginWindowStart',
         ]));
 
+        if ($this->element) {
+            $element->enabled = $this->element->enabled;
+            $element->archived = $this->element->archived;
+        }
+
         $element->password = $this->password;
 
         if ($this->id && ! $element->uid) {

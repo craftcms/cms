@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {useFocusField} from '@/common/composables/useFocusField';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import Select from '@/common/form/Select.vue';
   import {usePage} from '@inertiajs/vue3';

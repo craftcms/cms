@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import dbBackupController from '@actions/Utilities/DbBackupController';
   import {useForm} from '@inertiajs/vue3';
-  import CraftCheckbox from '@craftcms/cp/vue/CraftCheckbox.vue';
+  import CraftCheckbox from '@craftcms/ui/vue/CraftCheckbox.vue';
   import {useTemplateRef} from 'vue';
   import useCraftData from '@/common/composables/useCraftData';
 

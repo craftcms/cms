@@ -1,4 +1,4 @@
-import {createUrlIconResolver, getIconUrl, setIconResolver} from '@craftcms/cp';
+import {createUrlIconResolver, getIconUrl, setIconResolver} from '@craftcms/ui';
 
 const LEGACY_NAMES: Record<string, string> = {
   alert: 'triangle-exclamation',

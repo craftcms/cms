@@ -6,7 +6,7 @@ import {
   htmlToElement,
 } from './support';
 import type {Tab} from './tab';
-import {serializeFormInputs, type ActionMenuItem} from '@craftcms/cp';
+import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
 
 declare const Craft: any;
 

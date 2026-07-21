@@ -1,7 +1,7 @@
 import type {OverType as OverTypeInstance} from 'overtype';
 import type {PreviewController} from './preview';
 import {escapeMarkdownLabel} from './utilities';
-import '@craftcms/cp/components/popover/popover';
+import '@craftcms/ui/components/popover/popover';
 import '../../link-field/craft-link-field';
 import type {LinkFieldValue} from '../../link-field/craft-link-field';
 

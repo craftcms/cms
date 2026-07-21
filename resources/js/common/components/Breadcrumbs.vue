@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import CpLink from '@/common/components/CpLink.vue';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
 
   withDefaults(
     defineProps<{
