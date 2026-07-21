@@ -39,6 +39,12 @@ export default css`
     );
   }
 
+  :host(:focus:not([disabled])),
+  :host(:focus-visible) {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   @media (hover: hover) {
     :host(:hover) {
       background-color: hsl(

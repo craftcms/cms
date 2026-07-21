@@ -7,7 +7,10 @@
 
   --c-leading-normal: 1.42;
 
+  /* Focus outline tokens */
   --c-color-focus-outline: var(--color-blue-500);
+  --c-focus-outline-offset: 2px;
+  --c-focus-outline-width: 2px;
 
   /* Surface tokens (replaces --c-bg-*) */
   --c-surface-default: var(--color-base-100);
