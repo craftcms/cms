@@ -7,6 +7,8 @@
 
   --c-leading-normal: 1.42;
 
+  --c-color-focus-outline: var(--color-blue-500);
+
   /* Surface tokens (replaces --c-bg-*) */
   --c-surface-default: var(--color-base-100);
   --c-surface-raised: var(--color-base-50);
