@@ -533,6 +533,61 @@ are recomputed per insertion; lists `> 200` items use a viewport filter. Unlike
 
 ---
 
+## `Select`
+
+`class Select<S extends SelectSettings = SelectSettings> extends Base<S>` — the
+selection interface over a set of sibling items: click to select, shift-click to extend
+a contiguous range, ctrl/⌘-click to toggle individual items (ctrl/shift roles swap under
+`checkboxMode`). Selected items get the `selectedClass`; arrow keys move the selection
+two-dimensionally by measuring item geometry, so it spans vertical lists and wrapping
+grids. Commonly paired with `DragSort` to drag a multi-selection as a group.
+
+**Constructor:** `new Select(container?, items?, settings?)` — with `new Select(settings)`
+and `new Select(container, settings)` param-shifts (a plain-object arg is treated as the
+settings).
+
+### Statics
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `Select.defaults` | `SelectSettings` | Default settings (below). |
+
+### Settings (`SelectSettings`)
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `selectedClass` | `'sel'` | Class added to selected items. |
+| `checkboxClass` | `'checkbox'` | Class of a checkbox affordance inside an item; gets `aria-checked` toggled. |
+| `multi` | `false` | Allow more than one item selected at once. |
+| `allowEmpty` | `true` | Allow the selection to be emptied (container click / last-item deselect). |
+| `vertical` / `horizontal` | `false` | Constrain arrow-key nav to a single column / row. |
+| `handle` | `null` | What within each item receives the pointer listeners: selector / fn / element(s) / `null` (the item). |
+| `filter` | `null` | Gate before selecting: a selector string or `(target) => boolean` predicate. |
+| `checkboxMode` | `false` | Whether a checkbox affordance (not ctrl/shift) drives selection. |
+| `makeFocusable` | `false` | Give the focused item a roving `tabindex` (keyboard-navigable list). |
+| `waitForDoubleClicks` | `false` | Defer single-click (de)selection briefly so a double-click can pre-empt it. |
+| `onSelectionChange` | no-op | Fired (RAF-deferred) whenever the selection changes. |
+
+### Methods & properties
+
+| Member | Signature | Description |
+| --- | --- | --- |
+| `$items` / `$selectedItems` | `HTMLElement[]` | Tracked items / the selected subset (native arrays). |
+| `addItems` / `removeItems` | `(items) => void` | Track / untrack items (binds/unbinds their listeners). |
+| `selectItem` / `selectRange` / `selectAll` | `(item?, …) => void` | Select one / a contiguous range / everything (range & all are `multi`-only). |
+| `deselectItem` / `deselectAll` / `deselectOthers` | `(item?) => void` | Deselect one / all / all-but-one. |
+| `toggleItem` | `(item, preventScroll?) => void` | Toggle a single item (honoring `allowEmpty`). |
+| `isSelected` | `(item) => boolean` | Whether an item is selected. |
+| `getSelectedItems` | `() => HTMLElement[]` | The selected items, as a fresh array. |
+| `totalSelected` | `get => number` | How many are selected. |
+| `resetItemOrder` | `() => void` | Re-sort `$items` / `$selectedItems` into current DOM order (after a reorder). |
+| `focusItem` / `setFocusableItem` | `(item, …) => void` | Move DOM focus / set the roving-`tabindex` item. |
+
+**Events:** `selectionChange` (RAF-deferred), `focusItem` (`{item}`), plus `Base`'s
+`destroy`.
+
+---
+
 ## `UiLayerManager`
 
 `class UiLayerManager extends Base` — manages the stack of UI layers (document,

@@ -297,6 +297,131 @@ describe('serializeFormInputs', () => {
       'types%5BPlainText%5D%5Bplaceholder%5D=a+b%26c'
     );
   });
+
+  test('serializes custom elements that hold their value on the host', async () => {
+    const {serializeFormInputs} = await freshImport();
+    if (!customElements.get('fake-rich-select')) {
+      customElements.define(
+        'fake-rich-select',
+        class extends HTMLElement {
+          name = 'volume';
+          serializedValue = '11';
+        }
+      );
+    }
+    document.body.innerHTML = `<div id="host"><fake-rich-select></fake-rich-select></div>`;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'volume=11'
+    );
+  });
+
+  test('expands array serializedValues into repeated params', async () => {
+    const {serializeFormInputs} = await freshImport();
+    if (!customElements.get('fake-multi-select')) {
+      customElements.define(
+        'fake-multi-select',
+        class extends HTMLElement {
+          name = 'kinds[]';
+          serializedValue = ['image', 'video'];
+        }
+      );
+    }
+    document.body.innerHTML = `<div id="host"><fake-multi-select></fake-multi-select></div>`;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'kinds%5B%5D=image&kinds%5B%5D=video'
+    );
+  });
+
+  test('applies choice semantics to hosts with a Lion choice modelValue', async () => {
+    const {serializeFormInputs} = await freshImport();
+    if (!customElements.get('fake-choice')) {
+      customElements.define(
+        'fake-choice',
+        class extends HTMLElement {
+          name = '';
+          modelValue = {value: '', checked: false};
+        }
+      );
+    }
+    document.body.innerHTML = `
+      <div id="host">
+        <fake-choice id="on"></fake-choice>
+        <fake-choice id="off"></fake-choice>
+      </div>
+    `;
+    const on = document.getElementById('on') as HTMLElement & {
+      name: string;
+      modelValue: {value: string; checked: boolean};
+    };
+    const off = document.getElementById('off') as typeof on;
+    on.name = 'agree';
+    on.modelValue = {value: '1', checked: true};
+    off.name = 'decline';
+    off.modelValue = {value: '1', checked: false};
+
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'agree=1'
+    );
+  });
+
+  test('skips disabled custom elements', async () => {
+    const {serializeFormInputs} = await freshImport();
+    if (!customElements.get('fake-disabled-host')) {
+      customElements.define(
+        'fake-disabled-host',
+        class extends HTMLElement {
+          name = 'muted';
+          disabled = true;
+          serializedValue = 'x';
+        }
+      );
+    }
+    document.body.innerHTML = `<div id="host"><fake-disabled-host></fake-disabled-host></div>`;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe('');
+  });
+
+  test('does not double-count hosts whose light DOM posts natively', async () => {
+    const {serializeFormInputs} = await freshImport();
+    if (!customElements.get('fake-lion-input')) {
+      customElements.define(
+        'fake-lion-input',
+        class extends HTMLElement {
+          name = 'title';
+          serializedValue = 'from-host';
+        }
+      );
+    }
+    document.body.innerHTML = `
+      <div id="host">
+        <fake-lion-input>
+          <input slot="input" name="title" value="from-input">
+        </fake-lion-input>
+      </div>
+    `;
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'title=from-input'
+    );
+  });
+
+  test('captures an SSR-hydrated craft-checkbox exactly once', async () => {
+    const {serializeFormInputs} = await freshImport();
+    await import('../components/checkbox/checkbox.js');
+    document.body.innerHTML = `
+      <div id="host">
+        <craft-checkbox>
+          <input slot="input" type="checkbox" name="allowedKinds[]" value="image" checked>
+        </craft-checkbox>
+      </div>
+    `;
+    const checkbox = document.querySelector<
+      HTMLElement & {updateComplete: Promise<boolean>}
+    >('craft-checkbox')!;
+    await checkbox.updateComplete;
+
+    expect(serializeFormInputs(document.getElementById('host')!)).toBe(
+      'allowedKinds%5B%5D=image'
+    );
+  });
 });
 
 describe('serializeFormInputsAsObject', () => {

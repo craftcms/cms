@@ -14,6 +14,7 @@ const meta = {
     label: 'Reorder',
     position: 'middle',
     variant: 'neutral',
+    orientation: 'vertical',
     disabled: false,
   },
   argTypes: {
@@ -21,12 +22,17 @@ const meta = {
       control: {type: 'select'},
       options: ['first', 'middle', 'last'],
     },
+    orientation: {
+      control: {type: 'select'},
+      options: ['vertical', 'horizontal'],
+    },
   },
   render: (args) => html`
     <craft-reorder-button
       label="${args.label}"
       position="${args.position}"
       variant="${args.variant}"
+      orientation="${args.orientation}"
       ?disabled="${args.disabled}"
       @reorder="${(e: CustomEvent<{direction: 'up' | 'down'}>) =>
         console.log('reorder', e.detail.direction)}"
@@ -49,6 +55,11 @@ export const First: Story = {
 export const Last: Story = {
   name: 'Last (move-down disabled)',
   args: {position: 'last'},
+};
+
+export const Horizontal: Story = {
+  name: 'Horizontal (move forward/backward)',
+  args: {orientation: 'horizontal'},
 };
 
 export const Disabled: Story = {

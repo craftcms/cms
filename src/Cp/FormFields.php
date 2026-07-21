@@ -7,16 +7,28 @@ namespace CraftCms\Cms\Cp;
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Components\ButtonGroup;
+use CraftCms\Cms\Cp\Components\Checkbox;
+use CraftCms\Cms\Cp\Components\CheckboxGroup;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\Lightswitch;
+use CraftCms\Cms\Cp\Components\Radio;
+use CraftCms\Cms\Cp\Components\RadioGroup;
+use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Markdown;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rules\RequiredIf;
@@ -29,33 +41,34 @@ use function CraftCms\Cms\template;
 
 readonly class FormFields
 {
+    /**
+     * Renders a `<craft-field>` for the given input, via the {@see Field} UI
+     * component. The field chrome (heading, notices, error list) lives in the
+     * web component; aria wiring between the label, descriptors and the
+     * slotted control happens client-side, so `labelledBy`/`describedBy` are
+     * only passed to input templates when explicitly configured.
+     */
     public static function fieldHtml(string|Stringable|callable $input, array $config = []): string
+    {
+        return self::fieldFromConfig($input, $config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy field config surface onto the {@see Field} component —
+     * the PHP twin of the `_includes/forms/field` glue template.
+     */
+    private static function fieldFromConfig(string|Stringable|callable $input, array $config): Field
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] ??= 'field'.mt_rand();
-        $labelId = $config['labelId'] ?? "$id-label";
-        $instructionsId = $config['instructionsId'] ?? "$id-instructions";
-        $tipId = $config['tipId'] ?? "$id-tip";
-        $warningId = $config['warningId'] ?? "$id-warning";
-        $errorsId = $config['errorsId'] ?? "$id-errors";
-        $statusId = $config['statusId'] ?? "$id-status";
 
-        $instructions = $config['instructions'] ?? null;
-        $tip = $config['tip'] ?? null;
-        $warning = $config['warning'] ?? null;
         $errors = $config['errors'] ?? null;
         if ($errors instanceof ViewErrorBag) {
             $errors = $errors->get($attribute);
         }
+
         $status = $config['status'] ?? null;
-        $disabled = $config['disabled'] ?? false;
-        $static = $config['static'] ?? false;
-
-        $fieldset = $config['fieldset'] ?? false;
-        $fieldId = $config['fieldId'] ?? "$id-field";
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
-
-        $data = $config['data'] ?? [];
 
         if ($label === '__blank__') {
             $label = null;
@@ -67,27 +80,10 @@ readonly class FormFields
             $input = (string) $input;
         }
 
-        if (is_callable($input) || str_starts_with($input, 'template:')) {
-            // Set labelledBy and describedBy values in case the input template supports it
-            if (! isset($config['labelledBy']) && $label) {
-                $config['labelledBy'] = $labelId;
-            }
-            if (! isset($config['describedBy'])) {
-                $descriptorIds = array_filter([
-                    $errors ? $errorsId : null,
-                    $status ? $statusId : null,
-                    $instructions ? $instructionsId : null,
-                    $tip ? $tipId : null,
-                    $warning ? $warningId : null,
-                ]);
-                $config['describedBy'] = $descriptorIds ? implode(' ', $descriptorIds) : null;
-            }
-
-            if (is_callable($input)) {
-                $input = $input($config);
-            } else {
-                $input = self::renderTemplate(substr($input, 9), $config);
-            }
+        if (is_callable($input)) {
+            $input = $input($config);
+        } elseif (str_starts_with($input, 'template:')) {
+            $input = self::renderTemplate(substr($input, 9), $config);
         }
 
         if ($siteId) {
@@ -99,16 +95,7 @@ readonly class FormFields
             $site = null;
         }
 
-        $required = (bool) ($config['required'] ?? false);
-        $instructionsPosition = $config['instructionsPosition'] ?? 'before';
-        $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : I18N::getLocale())->getOrientation();
         $translatable = Sites::isMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
-
-        $fieldClass = array_merge(array_filter([
-            'field',
-            ($config['first'] ?? false) ? 'first' : null,
-            $errors ? 'has-errors' : null,
-        ]), Html::explodeClass($config['fieldClass'] ?? []));
 
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
@@ -119,77 +106,9 @@ readonly class FormFields
             ! empty($config['actionMenuItems']) &&
             ($label || $showAttribute || isset($config['labelExtra']))
         );
-        $showLabelExtra = $showAttribute || $showActionMenu || isset($config['labelExtra']);
 
-        $translationDescription = $config['translationDescription'] ?? t('This field is translatable.');
-        $translationIconHtml = Html::button('', [
-            'class' => ['t9n-indicator', 'prevent-autofocus'],
-            'data' => [
-                'icon' => 'language',
-            ],
-            'aria' => [
-                'label' => $translationDescription,
-            ],
-        ]);
-
-        $translationIconHtml = Html::tag('craft-tooltip', $translationIconHtml, [
-            'placement' => 'bottom',
-            'max-width' => '200px',
-            'text' => $translationDescription,
-            'delay' => '1000',
-        ]);
-
-        if ($label) {
-            $labelHtml = $label.(
-                ($required
-                    ? Html::tag('span', t('Required'), [
-                        'class' => ['visually-hidden'],
-                    ]).
-                    Html::tag('span', '', [
-                        'class' => ['required'],
-                        'aria' => [
-                            'hidden' => 'true',
-                        ],
-                    ])
-                    : '').
-                ($translatable ? $translationIconHtml : '')
-            );
-        } else {
-            $labelHtml = '';
-        }
-
-        return view('c::forms.field', [
-            'fieldAttributes' => Arr::merge(
-                [
-                    'class' => $fieldClass,
-                    'id' => $fieldId,
-                    'aria' => [
-                        'labelledby' => $fieldset ? $labelId : null,
-                    ],
-                    'role' => $fieldset ? 'group' : null,
-                    'data' => [
-                        'attribute' => $attribute,
-                    ] + $data,
-                ],
-                $config['fieldAttributes'] ?? []
-            ),
-            'status' => $status,
-            'statusId' => $statusId,
-            'statusClass' => $status ? Str::toString($status[0]) : null,
-            'statusLabel' => $status ? $status[1] : null,
-            'showHeading' => $label || $showLabelExtra,
-            'headingPrefix' => $config['headingPrefix'] ?? null,
-            'headingSuffix' => $config['headingSuffix'] ?? null,
-            'labelElementHtml' => $label
-                ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, Arr::merge([
-                    'id' => $labelId,
-                    'class' => $config['labelClass'] ?? null,
-                    'for' => ! $fieldset ? $id : null,
-                ], $config['labelAttributes'] ?? []))
-                : null,
-            'static' => $static,
-            'showLabelExtra' => $showLabelExtra,
-            'actionMenuHtml' => $showActionMenu
+        $labelExtra = implode('', array_filter([
+            $showActionMenu
                 ? app(MenuHtml::class)->disclosureMenu($config['actionMenuItems'], [
                     'hiddenLabel' => t('Actions'),
                     'buttonAttributes' => [
@@ -197,61 +116,130 @@ readonly class FormFields
                     ],
                 ])
                 : null,
-            'attributeCopyHtml' => $showAttribute
+            $showAttribute
                 ? self::renderTemplate('_includes/forms/copytextbtn', [
                     'id' => "$id-attribute",
                     'class' => ['code', 'small', 'light'],
                     'value' => $config['attribute'],
                 ])
                 : null,
-            'labelExtra' => isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
-            'instructionsId' => $instructionsId,
-            'instructionsContent' => $instructions
-                ? app(ContentHtml::class)->parseMarkdown($instructions)
-                : null,
-            'instructionsPosition' => $instructionsPosition,
-            'inputContainerAttributes' => Arr::merge(
+            isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
+        ]));
+
+        return Field::make()
+            ->id($config['fieldId'] ?? "$id-field")
+            ->label($label !== null ? (string) $label : null)
+            ->required((bool) ($config['required'] ?? false))
+            ->translatable($translatable, $config['translationDescription'] ?? null)
+            ->fieldset((bool) ($config['fieldset'] ?? false))
+            ->readOnly((bool) ($config['static'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->orientation($config['orientation'] ?? ($site ? $site->getLocale() : I18N::getLocale())->getOrientation())
+            ->status($status ? Str::toString($status[0]) : null, $status[1] ?? null)
+            ->instructions($config['instructions'] ?? null)
+            ->instructionsPosition($config['instructionsPosition'] ?? 'before')
+            ->tip($config['tip'] ?? null)
+            ->warning($config['warning'] ?? null)
+            ->errors($errors !== null ? collect($errors)->map(fn ($error): string => (string) $error)->all() : [])
+            ->headingPrefix($config['headingPrefix'] ?? null)
+            ->headingSuffix($config['headingSuffix'] ?? null)
+            ->labelExtra($labelExtra !== '' ? $labelExtra : null)
+            ->input($input)
+            ->width($config['width'] ?? null)
+            ->attributes(Arr::merge(
                 [
-                    'class' => array_filter([
-                        'input',
-                        $orientation,
-                        $errors ? 'errors' : null,
-                        $disabled ? 'disabled' : null,
-                    ]),
+                    'class' => array_merge(array_filter([
+                        'field',
+                        ($config['first'] ?? false) ? 'first' : null,
+                    ]), Html::explodeClass($config['fieldClass'] ?? [])),
+                    'data' => [
+                        'attribute' => $attribute,
+                    ] + ($config['data'] ?? []),
                 ],
-                $config['inputContainerAttributes'] ?? []
-            ),
-            'input' => $input,
-            'tipId' => $tipId,
-            'tipContent' => self::noticeContent($tip),
-            'warningId' => $warningId,
-            'warningContent' => self::noticeContent($warning),
-            'errorListHtml' => $errors
-                ? self::renderTemplate('_includes/forms/errorList', [
-                    'id' => $errorsId,
-                    'errors' => $errors,
-                ])
-                : null,
-        ])->render();
+                // Transitional: the input container lives in the web
+                // component's shadow DOM now, so per-instance container
+                // attributes land on the host until callers migrate.
+                Arr::merge(
+                    $config['inputContainerAttributes'] ?? [],
+                    $config['fieldAttributes'] ?? [],
+                ),
+            ));
     }
 
-    private static function noticeContent(string|Stringable|null $message): ?string
+    /**
+     * Logs deprecations for legacy config keys that the new UI components no
+     * longer support (or support with changed behavior). Keys that map
+     * faithfully onto the components don't warn.
+     *
+     * @param  array<string, string>  $messages  Key => what to use instead
+     */
+    private static function deprecateConfig(string $component, array $config, array $messages): void
     {
-        if (! $message) {
-            return null;
+        foreach ($messages as $key => $message) {
+            if (array_key_exists($key, $config)) {
+                Deprecator::log(
+                    "$component-config-$key",
+                    "The `$key` $component config option $message",
+                );
+            }
+        }
+    }
+
+    /**
+     * Maps the legacy button config surface onto the {@see Button} component,
+     * the translation layer between the legacy Twig config array and the
+     * component. `spinner` is absorbed (the web component renders its own
+     * spinner when loading); the busy/failure/retry/success messages pass
+     * through as data attributes for the legacy submit JS.
+     */
+    public static function buttonFromConfig(array $config): Button
+    {
+        self::deprecateConfig('button', $config, [
+            'spinner' => 'has been deprecated. `<craft-button>` renders its own spinner while loading.',
+        ]);
+
+        $label = $config['label'] ?? null;
+        $labelHtml = $config['labelHtml'] ?? null;
+        $readOnly = (bool) ($config['readOnly'] ?? false);
+        $size = Size::tryFrom($config['size'] ?? '');
+        $classArray = Html::explodeClass($config['class'] ?? []);
+
+        if (! $size && in_array('small', $classArray)) {
+            $size = Size::Small;
+            // Remove the small class
+            Arr::forget($classArray, 'small');
+            self::deprecateConfig('button', $config, [
+                'class.small' => 'has been deprecated. Use size="small" instead.',
+            ]);
         }
 
-        return Html::decodeDoubles(Markdown::parseParagraph(Html::encodeInvalidTags((string) $message)));
-    }
+        $attributes = $config['attributes'] ?? [];
 
-    public static function buttonHtml(array $config): string
-    {
-        return self::renderTemplate('_includes/forms/button', $config);
-    }
-
-    public static function buttonGroupHtml(array $config): string
-    {
-        return self::renderTemplate('_includes/forms/buttonGroup', $config);
+        return Button::make()
+            ->id($config['id'] ?? null)
+            ->type($config['type'] ?? 'button')
+            ->label($labelHtml !== null ? new HtmlString((string) $labelHtml) : ($label !== null ? (string) $label : null))
+            ->icon($config['icon'] ?? null)
+            ->prefix(! isset($config['icon']) ? ($config['iconHtml'] ?? null) : null)
+            ->disabled((bool) ($config['disabled'] ?? $readOnly))
+            ->size($size)
+            ->appearance($config['appearance'] ?? null)
+            ->command($config['command'] ?? null)
+            ->attributes(Arr::merge(
+                [
+                    'class' => array_merge(
+                        Html::explodeClass($config['class'] ?? []),
+                        array_filter([$readOnly ? 'read-only' : null]),
+                    ),
+                    'data' => array_filter([
+                        'busy-message' => $config['busyMessage'] ?? null,
+                        'failure-message' => $config['failureMessage'] ?? null,
+                        'retry-message' => $config['retryMessage'] ?? null,
+                        'success-message' => $config['successMessage'] ?? null,
+                    ]),
+                ],
+                $attributes
+            ));
     }
 
     public static function buttonGroupFieldHtml(array $config): string
@@ -259,7 +247,65 @@ readonly class FormFields
         $config['id'] ??= 'buttongroup'.mt_rand();
         $config['fieldset'] = true;
 
-        return self::fieldHtml('template:_includes/forms/buttonGroup', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::buttonGroupFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy buttonGroup config surface onto the {@see ButtonGroup}
+     * component, applying the group-level appearance/size defaults and the
+     * selected state to each option's button.
+     */
+    public static function buttonGroupFromConfig(array $config): ButtonGroup
+    {
+        $value = $config['value'] ?? null;
+        $appearance = $config['appearance'] ?? 'outline';
+        $size = $config['size'] ?? null;
+        $disabled = ($config['disabled'] ?? false) || ($config['static'] ?? false);
+
+        $buttons = [];
+
+        foreach (($config['options'] ?? []) as $key => $option) {
+            if (! is_array($option)) {
+                $option = ['label' => $option, 'value' => $key];
+            }
+
+            $optionValue = $option['value'] ?? null;
+            $selected = $optionValue !== null && $optionValue == $value;
+
+            $buttons[] = Button::make()
+                ->label(isset($option['labelHtml'])
+                    ? new HtmlString((string) $option['labelHtml'])
+                    : ($option['label'] ?? null))
+                ->icon($option['icon'] ?? null)
+                ->appearance($option['appearance'] ?? $appearance)
+                ->size($option['size'] ?? $size)
+                ->active($selected)
+                ->disabled($disabled)
+                ->attributes(Arr::merge(
+                    [
+                        'class' => Html::explodeClass($option['class'] ?? []),
+                        'value' => $optionValue,
+                        'data' => ['value' => $optionValue],
+                        'aria' => ['pressed' => $selected ? 'true' : 'false'],
+                    ],
+                    $option['attributes'] ?? [],
+                ));
+        }
+
+        return ButtonGroup::make()
+            ->id($config['id'] ?? 'button-group-'.mt_rand())
+            ->labelledBy($config['labelledBy'] ?? null)
+            ->name($config['name'] ?? null)
+            ->value($value !== null ? (string) $value : null)
+            ->disabled($disabled)
+            ->buttons($buttons)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     public static function checkboxFieldHtml(array $config): string
@@ -273,7 +319,57 @@ readonly class FormFields
         // Don't pass along `label` since it's ambiguous
         unset($config['label']);
 
-        return self::fieldHtml('template:_includes/forms/checkbox', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::checkboxFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy checkbox config surface onto the {@see Checkbox}
+     * component. Legacy semantics preserved: `checkboxLabel` wins over
+     * `label`, aria-labelledby is suppressed when an `aria-label` is
+     * configured, and custom-option mode renders a text input for the value.
+     */
+    public static function checkboxFromConfig(array $config): Checkbox
+    {
+        $id = $config['id'] ?? 'checkbox'.mt_rand();
+        $labelId = $config['labelId'] ?? "$id-label";
+        $aria = Arr::merge($config['inputAttributes']['aria'] ?? [], $config['aria'] ?? []);
+        $custom = (bool) ($config['custom'] ?? false);
+
+        return Checkbox::make()
+            ->id($id)
+            ->labelId($labelId)
+            ->name($config['name'] ?? null)
+            ->value($config['value'] ?? 1)
+            ->checked((bool) ($config['checked'] ?? false))
+            ->autofocus((bool) ($config['autofocus'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->label($config['checkboxLabel'] ?? $config['label'] ?? null)
+            ->info($config['info'] ?? null)
+            ->icon($config['icon'] ?? null)
+            ->color($config['color'] ?? null)
+            ->custom($custom
+                ? self::textHtml([
+                    'value' => $config['value'] ?? null,
+                    'class' => 'small custom-option-input',
+                    'labelledBy' => $labelId,
+                ])
+                : null)
+            ->toggle($config['toggle'] ?? null)
+            ->reverseToggle($config['reverseToggle'] ?? null)
+            ->targetPrefix($config['targetPrefix'] ?? null)
+            ->labelledBy(empty($aria['label']) ? ($config['labelledBy'] ?? null) : null)
+            ->describedBy($config['describedBy'] ?? $aria['describedby'] ?? null)
+            ->inputAttributes(Arr::merge(
+                [
+                    'class' => Html::explodeClass($config['class'] ?? []),
+                    'aria' => $aria,
+                    'data' => $config['data'] ?? [],
+                ],
+                $config['inputAttributes'] ?? [],
+            ));
     }
 
     public static function checkboxSelectFieldHtml(array $config): string
@@ -281,19 +377,262 @@ readonly class FormFields
         $config['id'] ??= 'checkboxselect'.mt_rand();
         $config['fieldset'] = true;
 
-        return self::fieldHtml('template:_includes/forms/checkboxSelect', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::checkboxSelectFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
-    public static function checkboxGroupHtml(array $config): string
+    /**
+     * Maps the legacy checkboxSelect config surface onto the
+     * {@see CheckboxSelect} component — the PHP twin of the
+     * `_includes/forms/checkboxSelect` glue template. Legacy semantics
+     * preserved: sortable pre-orders options by the `values` order, and a
+     * checked "All" option checks and disables every item.
+     */
+    public static function checkboxSelectFromConfig(array $config): CheckboxSelect
     {
-        return self::renderTemplate('_includes/forms/checkboxGroup', $config);
+        $id = $config['id'] ?? 'checkbox-select-'.mt_rand();
+        $name = $config['name'] ?? null;
+        $values = $config['values'] ?? [];
+        $disabled = (bool) ($config['disabled'] ?? false);
+        $sortable = (bool) ($config['sortable'] ?? false);
+
+        $options = collect($config['options'] ?? [])
+            ->map(fn ($option, $key) => is_array($option) ? $option : [
+                'label' => $option,
+                'value' => $key,
+            ])
+            ->values();
+
+        if ($sortable && is_array($values) && $values !== []) {
+            $options = $options
+                ->sortBy(function (array $option) use ($values): int {
+                    $index = array_search($option['value'] ?? null, $values);
+
+                    return $index === false ? PHP_INT_MAX : $index;
+                })
+                ->values();
+        }
+
+        $showAllOption = (bool) ($config['showAllOption'] ?? false);
+        $allChecked = false;
+        $allCheckbox = null;
+
+        if ($showAllOption) {
+            $allLabel = $config['allLabel'] ?? t('All');
+            $allValue = $config['allValue'] ?? '*';
+            $allChecked = $values == $allValue;
+
+            $allCheckbox = self::checkboxFromConfig([
+                'describedBy' => $config['describedBy'] ?? null,
+                'class' => ['cp-checkbox-select__item', 'all'],
+                'label' => new HtmlString("<b>$allLabel</b>"),
+                'name' => $name,
+                'value' => $allValue,
+                'checked' => $allChecked,
+                'autofocus' => $config['autofocus'] ?? false,
+                'targetPrefix' => $config['targetPrefix'] ?? null,
+                'disabled' => $disabled,
+            ]);
+        }
+
+        $checkboxes = $options
+            ->map(fn (array $option): Checkbox => self::checkboxFromConfig(array_merge([
+                'name' => $name !== null ? "{$name}[]" : null,
+                'checked' => ($showAllOption && $allChecked)
+                    || (isset($option['value']) && is_array($values) && in_array($option['value'], $values)),
+                'disabled' => ($showAllOption && $allChecked) || $disabled,
+                'targetPrefix' => $config['targetPrefix'] ?? null,
+            ], $option)))
+            ->all();
+
+        return CheckboxSelect::make()
+            ->id($id)
+            ->name($showAllOption ? null : $name)
+            ->allCheckbox($allCheckbox)
+            ->options($checkboxes)
+            ->sortable($sortable)
+            ->storageKey($config['storageKey'] ?? null)
+            ->disabled($disabled)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
+    }
+
+    public static function radioGroupFieldHtml(array $config): string
+    {
+        $config['id'] ??= 'radiogroup'.mt_rand();
+        $config['fieldset'] = true;
+
+        return self::fieldHtml(
+            fn (array $c): string => self::radioGroupFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy radio config surface onto the {@see Radio} component —
+     * the PHP twin of the `_includes/forms/radio` glue template. Legacy
+     * semantics preserved: `radioLabel` wins over `label`, and custom-option
+     * mode renders an "Other:" text input that syncs its value to the radio.
+     */
+    public static function radioFromConfig(array $config): Radio
+    {
+        $id = $config['id'] ?? 'radio'.mt_rand();
+        $labelId = $config['labelId'] ?? "$id-label";
+        $custom = (bool) ($config['custom'] ?? false);
+
+        if ($custom) {
+            HtmlStack::jsWithVars(fn ($radio, $text) => <<<JS
+                (() => {
+                  const \$radio = $($radio);
+                  const \$text = $($text);
+                  \$text.on('input', () => {
+                    \$radio.val(\$text.val());
+                  });
+                })();
+                JS, [
+                'radio' => '#'.InputNamespace::namespaceId($id),
+                'text' => '#'.InputNamespace::namespaceId("$id-text"),
+            ]);
+        }
+
+        return Radio::make()
+            ->id($id)
+            ->labelId($labelId)
+            ->name($config['name'] ?? null)
+            ->value($config['value'] ?? 1)
+            ->checked((bool) ($config['checked'] ?? false))
+            ->autofocus((bool) ($config['autofocus'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->label($config['radioLabel'] ?? $config['label'] ?? null)
+            ->icon($config['icon'] ?? null)
+            ->color($config['color'] ?? null)
+            ->custom($custom
+                ? self::textHtml([
+                    'id' => "$id-text",
+                    'value' => $config['value'] ?? null,
+                    'class' => 'small custom-option-input',
+                    'labelledBy' => $labelId,
+                ])
+                : null)
+            ->describedBy($config['describedBy'] ?? null)
+            ->inputAttributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['inputAttributes'] ?? [],
+            ))
+            ->attributes($config['containerAttributes'] ?? []);
+    }
+
+    /**
+     * Maps the legacy radioGroup config surface onto the {@see RadioGroup}
+     * component — the PHP twin of the `_includes/forms/radioGroup` glue
+     * template.
+     */
+    public static function radioGroupFromConfig(array $config): RadioGroup
+    {
+        $id = $config['id'] ?? 'radio-group-'.mt_rand();
+        $value = $config['value'] ?? null;
+        $disabled = (bool) ($config['disabled'] ?? false);
+
+        $radios = [];
+        $first = true;
+
+        foreach ($config['options'] ?? [] as $key => $option) {
+            if (! is_array($option)) {
+                $option = ['label' => $option, 'value' => $key];
+            }
+
+            $radios[] = self::radioFromConfig(array_merge([
+                'describedBy' => $config['describedBy'] ?? null,
+                'name' => $config['name'] ?? null,
+                'checked' => isset($option['value'])
+                    && $option['value'] == $value
+                    && ($option['value'] || ! ($option['custom'] ?? false)),
+                'autofocus' => $first && ($config['autofocus'] ?? false),
+                'disabled' => $disabled,
+            ], $option));
+
+            $first = false;
+        }
+
+        return RadioGroup::make()
+            ->id($id)
+            ->options($radios)
+            ->toggle((bool) ($config['toggle'] ?? false))
+            ->targetPrefix($config['targetPrefix'] ?? null)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     public static function checkboxGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxgroup'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/checkboxGroup', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::checkboxGroupFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy checkboxGroup config surface onto the
+     * {@see CheckboxGroup} component — the PHP twin of the
+     * `_includes/forms/checkboxGroup` glue template.
+     */
+    public static function checkboxGroupFromConfig(array $config): CheckboxGroup
+    {
+        $id = $config['id'] ?? 'checkbox-group-'.mt_rand();
+        $name = $config['name'] ?? null;
+        $optionName = $name !== null ? "{$name}[]" : null;
+        $values = $config['values'] ?? [];
+
+        $checkboxes = [];
+        $first = true;
+
+        foreach ($config['options'] ?? [] as $key => $option) {
+            if (! is_array($option)) {
+                $option = ['label' => $option, 'value' => $key];
+            }
+
+            $checkboxes[] = self::checkboxFromConfig(array_merge([
+                'describedBy' => $config['describedBy'] ?? null,
+                'name' => $optionName,
+                'checked' => isset($option['value']) && is_array($values) && in_array($option['value'], $values),
+                'autofocus' => $first && ($config['autofocus'] ?? false),
+            ], $option));
+
+            $first = false;
+        }
+
+        $customOptionTemplate = null;
+
+        if (($config['allowCustomOptions'] ?? false) && $optionName !== null) {
+            $customOptionTemplate = InputNamespace::namespaceInputs(Html::tag(
+                'div',
+                self::checkboxFromConfig([
+                    'id' => '__ID__',
+                    'label' => null,
+                    'value' => '',
+                    'describedBy' => $config['describedBy'] ?? null,
+                    'name' => $optionName,
+                    'checked' => true,
+                    'custom' => true,
+                ])->toHtml(),
+                ['data' => ['custom' => true]],
+            ), InputNamespace::get());
+        }
+
+        return CheckboxGroup::make()
+            ->id($id)
+            ->name($name)
+            ->options($checkboxes)
+            ->customOptionTemplate($customOptionTemplate)
+            ->attributes($config['containerAttributes'] ?? []);
     }
 
     public static function colorHtml(array $config): string
@@ -336,13 +675,9 @@ readonly class FormFields
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] ??= 'editabletable'.mt_rand();
+        $config['width'] ??= 'full';
 
         return self::fieldHtml('template:_includes/forms/editableTable', $config);
-    }
-
-    public static function lightswitchHtml(array $config): string
-    {
-        return self::renderTemplate('_includes/forms/lightswitch', $config);
     }
 
     public static function lightswitchFieldHtml(array $config): string
@@ -356,7 +691,40 @@ readonly class FormFields
         $config['fieldLabel'] ??= $config['label'] ?? null;
         unset($config['label']);
 
-        return self::fieldHtml('template:_includes/forms/lightswitch', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::lightswitchFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps the legacy lightswitch config surface onto the {@see Lightswitch}
+     * component — the PHP twin of the `_includes/forms/lightswitch` glue
+     * template. Legacy semantics preserved: `label` is an `onLabel` fallback,
+     * not a field label.
+     */
+    public static function lightswitchFromConfig(array $config): Lightswitch
+    {
+        self::deprecateConfig('lightswitch', $config, [
+            'descriptionId' => 'is no longer supported. `<craft-switch>` renders and links its own state description.',
+        ]);
+
+        return Lightswitch::make()
+            ->id($config['id'] ?? 'lightswitch'.mt_rand())
+            ->on((bool) ($config['on'] ?? false))
+            ->indeterminate((bool) ($config['indeterminate'] ?? false))
+            ->value((string) ($config['value'] ?? '1'))
+            ->indeterminateValue((string) ($config['indeterminateValue'] ?? '-'))
+            ->size(($config['small'] ?? false) ? Size::Small : null)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->onLabel($config['onLabel'] ?? $config['label'] ?? null)
+            ->offLabel($config['offLabel'] ?? null)
+            ->toggle($config['toggle'] ?? null)
+            ->reverseToggle($config['reverseToggle'] ?? null)
+            ->labelledBy($config['labelledBy'] ?? $config['labelId'] ?? null)
+            ->describedBy($config['describedBy'] ?? null)
+            ->name($config['name'] ?? null)
+            ->attributes($config['containerAttributes'] ?? []);
     }
 
     public static function rangeHtml(array $config): string

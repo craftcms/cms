@@ -18,6 +18,14 @@ export default class CraftInput extends LionInput {
   /** Renders the input at a smaller size. */
   @property({reflect: true, type: Boolean}) small = false;
 
+  /**
+   * Overrides the inferred width behavior. By default the control spans its
+   * column, unless `maxlength` is set — which shrinks the control to the
+   * expected character width. `full` spans the column despite a `maxlength`;
+   * `auto` shrinks to the input's intrinsic width without one.
+   */
+  @property({type: String, reflect: true}) width?: 'full' | 'auto';
+
   /** Center-aligns the input text. */
   @property({reflect: true, type: Boolean}) center = false;
 
@@ -35,10 +43,11 @@ export default class CraftInput extends LionInput {
   override connectedCallback() {
     super.connectedCallback();
 
-    if (this._inputNode && this.maxlength) {
-      if (this.maxlength > 0) {
-        this._inputNode.maxLength = this.maxlength;
-      }
+    if (this._inputNode && this.maxlength && this.maxlength > 0) {
+      this._inputNode.maxLength = this.maxlength;
+      // Give the input a matching intrinsic width, so the shrunk control
+      // (see `width`) fits the expected character count.
+      this._inputNode.size = this.maxlength;
     }
   }
 }
