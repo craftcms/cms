@@ -40,7 +40,8 @@ actionClient.interceptors.request.use(async (config) => {
   // trigger + action trigger (e.g. `/admin/actions/fields/render-settings`),
   // so the base only needs the scheme + host (+ port). `URL.origin` supplies
   // all three without the `protocol` trailing-colon / port-doubling pitfalls.
-  config.baseURL = new URL(getActionUrl()).origin;
+  const {origin, pathname} = new URL(getActionUrl());
+  config.baseURL = `${origin}/${pathname}`;
 
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');
