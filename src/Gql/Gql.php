@@ -1018,7 +1018,7 @@ class Gql
         }
 
         // Do not cache mutations
-        if (preg_match('/^\s*mutation(?P<operationName>\s+\w+)?\s*(?P<variables>\(.*\))?\s*{/si', $query)) {
+        if (GqlHelper::isMutation($query, $operationName)) {
             return null;
         }
 
