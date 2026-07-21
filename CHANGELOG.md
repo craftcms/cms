@@ -56,6 +56,7 @@
 - Fixed bugs that could prevent authored content from being deleted or reassigned safely when deleting users. ([#19273](https://github.com/craftcms/cms/pull/19273))
 - Fixed an issue where disabled and archived user accounts could still authenticate. ([#19265](https://github.com/craftcms/cms/pull/19265))
 - Fixed issues with `craft:users:set-password` password validation, exit statuses, and session invalidation. ([#19272](https://github.com/craftcms/cms/pull/19272))
+- Fixed a bug where selected GraphQL mutations could be mistaken for cacheable queries. ([#19284](https://github.com/craftcms/cms/pull/19284))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
 ## 6.0.0-alpha.13 - 2026-07-16
