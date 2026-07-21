@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use Inertia\Testing\AssertableInertia;
 
@@ -53,6 +55,52 @@ it('renders with a default source', function () {
     $cpTrigger = Cms::config()->cpTrigger;
 
     get("/{$cpTrigger}/assets", ['defaultSource' => $volume->handle])->assertOk();
+});
+
+it('includes a volume’s subfolders in the index results', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'testvolume',
+    ]);
+
+    $volume = Volumes::getVolumeById($volumeModel->id);
+    Folders::ensureFolderByFullPathAndVolume('a-subfolder', $volume);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets/{$volumeModel->handle}")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('assets/Index')
+            ->where('pagination.total', 1)
+            ->has('data', 1)
+            // The folder row is flagged and carries the URL to navigate into it.
+            ->where('data.0.isFolder', true)
+            ->where('data.0.folderUrl', fn (string $url) => str_contains($url, "assets/{$volumeModel->handle}/a-subfolder"))
+        );
+});
+
+it('scopes the results to the subfolder named in the path', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        'handle' => 'testvolume',
+    ]);
+
+    $volume = Volumes::getVolumeById($volumeModel->id);
+    // parent/ holds child/, so browsing parent/ should list child/ — not the
+    // volume root's folders.
+    Folders::ensureFolderByFullPathAndVolume('parent/child', $volume);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets/{$volumeModel->handle}/parent")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('pagination.total', 1)
+            ->has('data', 1)
+            ->where('data.0.isFolder', true)
+            ->where('data.0.folderUrl', fn (string $url) => str_contains($url, "assets/{$volumeModel->handle}/parent/child"))
+        );
 });
 
 it('passes the route path segment through as defaultSource', function () {
