@@ -27,12 +27,6 @@ use function Illuminate\Support\enum_value;
 #[Scoped]
 class TemplateManager extends Manager
 {
-    /** @var string[] */
-    private array $rendererNames = [
-        TemplateEngine::Twig->value,
-        TemplateEngine::Blade->value,
-    ];
-
     private ?string $renderingTemplate = null;
 
     private bool $isRenderingPageTemplate = false;
@@ -344,7 +338,13 @@ class TemplateManager extends Manager
             return [$rendererName, $this->renderer($renderer)];
         }
 
-        foreach ($this->rendererNames as $rendererName) {
+        $rendererNames = array_unique([
+            TemplateEngine::Twig->value,
+            TemplateEngine::Blade->value,
+            ...array_map(strval(...), array_keys($this->customCreators)),
+        ]);
+
+        foreach ($rendererNames as $rendererName) {
             $resolvedRenderer = $this->renderer($rendererName);
 
             if ($resolvedRenderer->supports($file)) {
@@ -389,10 +389,6 @@ class TemplateManager extends Manager
 
     private function extendCurrentScope(string $renderer, Closure $callback): void
     {
-        if (! in_array($renderer, $this->rendererNames, true)) {
-            $this->rendererNames[] = $renderer;
-        }
-
         parent::extend($renderer, $callback);
     }
 }
