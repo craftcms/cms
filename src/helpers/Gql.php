@@ -674,6 +674,7 @@ class Gql
      * @param string $query
      * @param string|null $operationName
      * @return bool
+     * @since 5.10.12
      */
     public static function isMutation(string $query, ?string $operationName = null): bool
     {
