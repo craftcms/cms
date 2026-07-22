@@ -24,8 +24,10 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
@@ -341,40 +343,53 @@ class AuthMethods
     {
         $user = $this->getUser();
 
-        if (! $this->getMethod($methodClass, $user)->verify(...$args)) {
-            if ($user) {
-                $this->handleInvalidLogin($user);
+        $verify = function () use ($methodClass, $user, $args): bool {
+            if (! $this->getMethod($methodClass, $user)->verify(...$args)) {
+                if ($user) {
+                    $this->handleInvalidLogin($user);
+                }
+
+                return false;
             }
 
-            return false;
-        }
+            // success!
+            if ($user) {
+                $user = User::findOne($user->id);
+                $this->authError = $user
+                    ? $this->getAuthError($user)
+                    : AuthError::InvalidCredentials;
 
-        // success!
-        if ($user) {
-            $user = User::findOne($user->id);
-            $this->authError = $user
-                ? $this->getAuthError($user)
-                : AuthError::InvalidCredentials;
+                if ($this->authError) {
+                    $this->setUser(null);
 
-            if ($this->authError) {
+                    return false;
+                }
+
+                $authUser = auth()->getProvider()->retrieveById(Session::get('user.login_id', $user->id));
+                $remember = (bool) Session::get('user.remember', false);
+
                 $this->setUser(null);
 
-                return false;
+                if (! $authUser) {
+                    return false;
+                }
+
+                auth()->login($authUser, $remember);
             }
 
-            $authUser = auth()->getProvider()->retrieveById(Session::get('user.login_id', $user->id));
-            $remember = (bool) Session::get('user.remember', false);
+            return true;
+        };
 
-            $this->setUser(null);
-
-            if (! $authUser) {
-                return false;
-            }
-
-            auth()->login($authUser, $remember);
+        if (! $user) {
+            return $verify();
         }
 
-        return true;
+        try {
+            // Serialize verification attempts per user, so concurrent requests can't race each other.
+            return Cache::lock("auth-verify:{$user->id}", 10)->block(5, $verify);
+        } catch (LockTimeoutException) {
+            return false;
+        }
     }
 
     public function getAuthError(CraftUser $user): ?AuthError
