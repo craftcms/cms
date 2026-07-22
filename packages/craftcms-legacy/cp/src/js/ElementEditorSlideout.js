@@ -3,13 +3,18 @@
 /**
  * Element Editor Slideout
  *
- * Defined lazily for the same reason as `Craft.CpScreenSlideout` (see
- * `CpScreenSlideout.js`): accessing `Craft.CpScreenSlideout.extend` below
- * would otherwise eagerly trigger *that* lazy getter — which itself calls
- * `Craft.Slideout.extend(...)` — at this file's module-eval time, undoing the
- * ordering fix. Deferring this `.extend()` call too means neither getter runs
- * until a CP screen actually constructs `Craft.ElementEditorSlideout`, well
- * after every entrypoint's modules have loaded.
+ * Defined lazily because `Craft.CpScreenSlideout` is now a `compatify()`-wrapped
+ * modern class assigned by the Vite-bundled `resources/js/modules/slideout`
+ * (see `cp-screen-slideout.ts` and that module's README) — this legacy webpack
+ * bundle isn't guaranteed to evaluate after that assignment has run, since the
+ * two bundles load independently. Accessing `Craft.CpScreenSlideout.extend`
+ * eagerly at this file's module-eval time could therefore run before
+ * `Craft.CpScreenSlideout` exists. Deferring the `.extend()` call (and the
+ * `Craft.CpScreenSlideout` lookup) until something actually reads
+ * `Craft.ElementEditorSlideout` — constructing one in response to a user
+ * action — means every entrypoint's modules have finished loading by then. On
+ * first access the getter builds the extended class, replaces itself with a
+ * plain cached value, and returns it.
  */
 Object.defineProperty(Craft, 'ElementEditorSlideout', {
   configurable: true,

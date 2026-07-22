@@ -1,36 +1,23 @@
 /**
- * Slideout — ported from the legacy jQuery `Craft.Slideout`
- * (`packages/craftcms-legacy/cp/src/js/Slideout.js`), onto the modern,
- * `@craftcms/garnish` `Base`.
+ * Slideout — a slide-in panel: builds a container around passed-in contents
+ * and manages its shade, open/close transitions, dismissal, focus, and
+ * stacking against other open panels. See the module README for usage.
  *
- * Unlike most other module ports, `Craft.Slideout` still has a *real* legacy
- * subclass: `Craft.CpScreenSlideout` (`packages/craftcms-legacy/cp/src/js/CpScreenSlideout.js`)
- * subclasses it via the legacy Dean-Edwards `Garnish.Base.extend({...}, {...})`
- * API and calls `this.base(contents, settings)` from its own `init`, expecting
- * that to run the ancestor's `init`. `Craft.ElementEditorSlideout` subclasses
- * `CpScreenSlideout` the same way. To keep that working:
+ * Two structural constraints shape this class:
  *
- * - {@link init} is a real public method, invoked from the constructor only
- *   for the leaf class (the `new.target === Slideout` guard below) — the same
- *   construction contract as every other port. A legacy subclass built via
- *   `compatify(Slideout).extend({init: function (…) { this.base(…); }})`
- *   reaches this method through `this.base()`.
- * - `index.ts` assigns `window.Craft.Slideout = compatify(Slideout)` — **not**
- *   the plain class — precisely so that legacy `.extend()` chain keeps
- *   working. See `compatify`/`makeSubclass` in
- *   `packages/craftcms-garnish/src/compat.ts`: each `.extend()` produces a
- *   real subclass (native prototype chain), and `init` methods that reference
- *   `base` get wrapped so `this.base` resolves to the ancestor implementation
- *   found on that prototype chain — which, for the leaf-most `.extend()`
- *   level, is this class's own `init`.
- *
- * What deliberately stays jQuery: `$outerContainer`, `$container`, `$shade`,
- * `$triggerElement`, and `$liveRegion` remain jQuery collections (not native
- * elements) because the subclass and external code depend on that shape —
- * `ElementEditor.js`'s `this.$container.data('slideout')`, `CP.js`'s
- * `$modal.find('.slideout').data('slideout')`, and `CpScreenSlideout`'s own
- * jQuery-heavy internals. `declare const $` / `declare const Craft` are page
- * globals, same as every other port.
+ * - **Legacy subclasses exist.** `Craft.AuthMethodSetup.Slideout` (and, one
+ *   level down, `Craft.ElementEditorSlideout`) subclass the `Craft.Slideout`
+ *   global via `Garnish.Base.extend()`, calling `this.base(contents,
+ *   settings)` from their own `init`. So {@link init} is a real public
+ *   method, invoked from the constructor only for the leaf class (the
+ *   `new.target === Slideout` guard below), and `index.ts` assigns the
+ *   global as `compatify(Slideout)` so `.extend()`/`this.base()` dispatch
+ *   into it.
+ * - **The `$`-prefixed members are public API and stay jQuery collections.**
+ *   External code reads them directly (`ElementEditor.js`'s
+ *   `this.$container.data('slideout')`, `CP.js`'s
+ *   `$modal.find('.slideout').data('slideout')`, `CpScreenSlideout`'s
+ *   chrome). `declare const $` / `declare const Craft` are page globals.
  */
 
 import {
@@ -63,8 +50,11 @@ initGarnish();
  * would run in two disconnected managers (e.g. one Escape press closing both a
  * menu and the slideout behind it). Prefer the page's legacy manager when
  * present; fall back to the modern one for legacy-free surfaces.
+ *
+ * Exported so `cp-screen-slideout.ts` can reuse this same lookup for its own
+ * `registerShortcut`/`addLayer`/`removeLayer` calls instead of reimplementing it.
  */
-function uiLayerManager(): any {
+export function uiLayerManager(): any {
   return (window as any).Garnish?.uiLayerManager ?? Garnish.uiLayerManager!;
 }
 
@@ -86,14 +76,9 @@ function resetBackgroundLayerVisibility(): void {
 }
 
 /**
- * The legacy `Craft.Slideout` prototype default was a single jQuery element
- * literal (`$liveRegion: $('<span .../>')`), evaluated once when
- * `Garnish.Base.extend()` ran — every instance shared the SAME `<span>` node,
- * moved (not cloned) into whichever container most recently called
- * {@link Slideout.init}. That's faithfully reproduced here as a module-scoped
- * singleton rather than a fresh per-instance element, since screen readers
- * only need one live region announcing at a time and changing that would be a
- * behavior change, not just a port.
+ * A single status live region shared by every slideout — it moves (not
+ * clones) into whichever container most recently initialized, since screen
+ * readers only announce one status region at a time.
  */
 const $sharedLiveRegion = $(
   '<span class="visually-hidden" role="status"></span>'
@@ -122,12 +107,11 @@ export interface SlideoutSettings extends GarnishBaseSettings {
 }
 
 /**
- * A slideout panel — the `@craftcms/garnish` `Base` port of the legacy jQuery
- * `Craft.Slideout`. Builds a container element around passed-in contents,
+ * A slideout panel. Builds a container element around passed-in contents,
  * manages its shade, open/close transitions, and stacking against any other
  * open slideouts (via the class statics below).
  *
- * @fires open - When the slideout has finished opening (legacy timing/parity).
+ * @fires open - When the slideout has opened.
  * @fires beforeClose - Just before {@link close} starts tearing things down.
  * @fires close - After the close transition finishes.
  *
@@ -150,10 +134,10 @@ export class Slideout extends Base<SlideoutSettings> {
     triggerElement: null,
   };
 
-  /** Container-id → instance map (legacy `Craft.Slideout.instances`), populated by {@link init}. */
+  /** Container-id → instance map (also reachable as `Craft.Slideout.instances`), populated by {@link init}. */
   static instances: Record<string, Slideout> = {};
 
-  /** Currently-open slideouts, most-recently-opened first (legacy `Craft.Slideout.openPanels`). */
+  /** Currently-open slideouts, most-recently-opened first (also reachable as `Craft.Slideout.openPanels`). */
   static openPanels: Slideout[] = [];
 
   /**
@@ -183,11 +167,9 @@ export class Slideout extends Base<SlideoutSettings> {
   }
 
   /**
-   * Unregister a closing panel and reposition the remaining stack. Mutates
-   * {@link openPanels} in place (`splice`, not a `filter` reassignment) so
-   * that `window.Craft.Slideout.openPanels` — mirrored onto the compatified
-   * global by `index.ts` — keeps pointing at the live array instead of going
-   * stale after the first removal.
+   * Unregister a closing panel and reposition the remaining stack. Must
+   * mutate {@link openPanels} in place — `Craft.Slideout.openPanels` shares
+   * the array reference (see `index.ts`), so a reassignment would strand it.
    */
   static removePanel(panel: Slideout): void {
     const index = Slideout.openPanels.indexOf(panel);
@@ -241,9 +223,9 @@ export class Slideout extends Base<SlideoutSettings> {
 
   /**
    * Build the container/shade and (by default) open it. Invoked from the
-   * constructor only for the leaf class; a `compatify()`-built subclass (e.g.
-   * `Craft.CpScreenSlideout`) calls this via `this.base(contents, settings)`
-   * from its own `init` — see the class docblock.
+   * constructor only for the leaf class; subclasses call it themselves —
+   * `super.init()` from TypeScript, or `this.base()` from a legacy
+   * `.extend()` body (see the class docblock).
    */
   init(contents?: unknown, settings?: Partial<SlideoutSettings>): void {
     this.setSettings(settings, Slideout.defaults);
@@ -496,9 +478,8 @@ export class Slideout extends Base<SlideoutSettings> {
     this.$outerContainer = null;
     this.$container = null;
 
-    // In-place deletion (not a `Craft.filterObject` reassignment) so
-    // `window.Craft.Slideout.instances` — mirrored onto the compatified
-    // global by `index.ts` — keeps pointing at the live object.
+    // Must delete in place — `Craft.Slideout.instances` shares this object
+    // reference (see `index.ts`), so a reassignment would strand it.
     for (const key of Object.keys(Slideout.instances)) {
       if (Slideout.instances[key] === this) {
         delete Slideout.instances[key];
