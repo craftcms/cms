@@ -30,7 +30,7 @@ use Override;
  * @method static \CraftCms\Cms\View\TemplateManager setContainer(\Illuminate\Contracts\Container\Container $container)
  * @method static \CraftCms\Cms\View\TemplateManager forgetDrivers()
  *
- * @see \CraftCms\Cms\View\TemplateManager
+ * @see TemplateManager
  */
 class Template extends Facade
 {
