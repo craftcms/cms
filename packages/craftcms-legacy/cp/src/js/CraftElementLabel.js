@@ -1,6 +1,9 @@
 /** global: $ */
 /** global: jQuery */
 
+// Fallback for generating a unique invoker id when the element itself has none.
+let elementLabelTooltipId = 0;
+
 /**
  * Element label
  *
@@ -56,7 +59,9 @@ class CraftElementLabel extends HTMLElement {
   }
 
   update() {
-    this.desiredWidth = this.calculateWidth(this.innerText);
+    // Measure the label link's text, not `this.innerText`, so the tooltip's
+    // own (light-DOM) text content can't skew the overflow calculation.
+    this.desiredWidth = this.calculateWidth(this.labelLink.innerText);
     this.hasOverflow = this.desiredWidth > this.scrollWidth;
 
     // If the label has an overflow, add a tooltip
@@ -75,38 +80,37 @@ class CraftElementLabel extends HTMLElement {
   }
 
   createTooltip() {
-    this.tooltip = document.createElement('craft-tooltip');
-    this.tooltip.setAttribute('self-managed', 'true');
-    this.tooltip.setAttribute('text', this.innerText);
-    this.tooltip.setAttribute('aria-hidden', 'true');
+    const labelLink = this.labelLink;
 
-    // Make sure tooltips created show ellipses
-    Object.assign(this.tooltip.style, {
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    });
+    // The new craft-tooltip references its invoker (the label link) by id
+    // rather than wrapping it, so make sure the link has one. The CSS on
+    // `.label-link` already handles the visual ellipsis truncation.
+    if (!labelLink.id) {
+      labelLink.id = this.id
+        ? `${this.id}-link`
+        : `element-label-link-${elementLabelTooltipId++}`;
+    }
 
-    // If there's a context label, make it a little nicer
+    // The tooltip shows the full, untruncated label text; the tooltip content
+    // lives in its default slot. Present a context label (e.g. a draft name)
+    // in parentheses, matching the inline label.
+    let text = labelLink.innerText;
     const contextLabel = this.querySelector('.context-label');
     if (contextLabel) {
-      this.tooltip.innerText = this.tooltip.innerText.replace(
+      text = text.replace(
         contextLabel.innerText,
         ` (${contextLabel.innerText})`
       );
     }
 
-    this.insertBefore(this.tooltip, this.labelLink);
-    this.tooltip.appendChild(this.labelLink);
+    this.tooltip = document.createElement('craft-tooltip');
+    this.tooltip.setAttribute('for', labelLink.id);
+    this.tooltip.textContent = text;
+
+    this.appendChild(this.tooltip);
   }
 
   disconnectedCallback() {
-    // put the .label-link back into <craft-element-label>
-    // so that when connectedCallback() is called after insetBefore/insertAfter
-    // everything can get initialised as expected
-    // we can't use Element.moveBefore/Element.moveAfter as those are experimental at the moment and not available in Safari & FF
-    this.append(this.labelLink);
-
     this.tooltip?.remove();
     if (this.$tabs?.length) {
       this.$tabs.data('tabs')?.off('selectTab');
