@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed an error that could occur when saving an element with an eager-loaded relation field value. ([#19280](https://github.com/craftcms/cms/issues/19280))
 - Fixed a bug where bulk entry moves could assign entries to sections that didn’t support their entry types. ([#19268](https://github.com/craftcms/cms/pull/19268))
 - Fixed a bug where admin tables’ action buttons could fire when rendering. ([#19255](https://github.com/craftcms/cms/issues/19255))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
