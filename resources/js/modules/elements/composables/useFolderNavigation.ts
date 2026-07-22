@@ -40,5 +40,35 @@ export function useFolderNavigation() {
     return Boolean(row?.isFolder) && typeof row?.folderUrl === 'string';
   }
 
-  return {navigateToFolder, isFolderRow};
+  /**
+   * data-attributes wiring a row into asset-move drag-and-drop: asset rows are
+   * draggable (`data-movable-asset` + `data-id`), folder rows are move targets
+   * (`data-folder-drop-target` + `data-folder-id` + `data-can-move-to`). Inert
+   * unless an asset-move drag is set up on the page (asset index only).
+   */
+  function rowMoveAttrs(row: {
+    id?: unknown;
+    isFolder?: unknown;
+    folderUrl?: unknown;
+    folderId?: unknown;
+    canMoveTo?: unknown;
+  }): Record<string, string> {
+    const attrs: Record<string, string> = {'data-id': String(row.id)};
+
+    if (isFolderRow(row)) {
+      attrs['data-folder-drop-target'] = '';
+      if (row.folderId != null) {
+        attrs['data-folder-id'] = String(row.folderId);
+      }
+      if (row.canMoveTo) {
+        attrs['data-can-move-to'] = '';
+      }
+    } else {
+      attrs['data-movable-asset'] = '';
+    }
+
+    return attrs;
+  }
+
+  return {navigateToFolder, isFolderRow, rowMoveAttrs};
 }

@@ -12,6 +12,8 @@
         /** Server-rendered crumb content, e.g. an element chip. */
         html?: string | null;
         icon?: string;
+        /** Extra attributes for the crumb (e.g. drag-and-drop drop-target hooks). */
+        attrs?: Record<string, string>;
       }>;
       separator?: string;
     }>(),
@@ -50,7 +52,11 @@
 
 <template>
   <craft-breadcrumbs :label="t('Breadcrumbs')">
-    <craft-breadcrumb-item v-for="(item, idx) in items" :key="idx">
+    <craft-breadcrumb-item
+      v-for="(item, idx) in items"
+      :key="idx"
+      v-bind="item.attrs"
+    >
       <template v-if="item.icon">
         <craft-icon :name="item.icon" slot="prefix"></craft-icon>
       </template>

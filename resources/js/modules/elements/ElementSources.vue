@@ -94,6 +94,26 @@
       },
     });
   }
+
+  // Folder/volume sources double as drag-and-drop move targets: their `data`
+  // carries the backend `folder-id` / `can-move-to` flags. Inert unless an
+  // asset-move drag is set up on the page.
+  function sourceMoveAttrs(source: Source): Record<string, string> {
+    const data = 'data' in source ? source.data : undefined;
+    const folderId = data?.['folder-id'];
+    if (folderId == null || folderId === false) {
+      return {};
+    }
+
+    const attrs: Record<string, string> = {
+      'data-folder-drop-target': '',
+      'data-folder-id': String(folderId),
+    };
+    if (data?.['can-move-to']) {
+      attrs['data-can-move-to'] = '';
+    }
+    return attrs;
+  }
 </script>
 
 <template>
@@ -114,6 +134,7 @@
               :href="sourceUrl(child.key)"
               :active="child.key === activeKey"
               :data-group="source.heading"
+              v-bind="sourceMoveAttrs(child)"
               @mousedown.exact="prefetchSource(child.key)"
               @click.exact.prevent="visitSource(child.key)"
             >
@@ -126,6 +147,7 @@
         <craft-nav-item
           :href="sourceUrl(source.key)"
           :active="source.key === activeKey"
+          v-bind="sourceMoveAttrs(source)"
           @mousedown.exact="prefetchSource(source.key)"
           @click.exact.prevent="visitSource(source.key)"
         >
