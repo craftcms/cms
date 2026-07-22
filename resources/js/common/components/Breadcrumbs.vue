@@ -1,24 +1,29 @@
+<script lang="ts">
+  import type {ActionItems} from '@/common/types';
+
+  export interface BreadcrumbItem {
+    url?: string | null;
+    label?: string | null;
+    /** Server-rendered crumb content, e.g. an element chip. */
+    html?: string | null;
+    icon?: string;
+    /** Extra attributes for the crumb (e.g. drag-and-drop drop-target hooks). */
+    attrs?: Record<string, string>;
+    /** Optional per-crumb action menu (e.g. the current folder's actions). */
+    actions?: ActionItems;
+  }
+</script>
+
 <script setup lang="ts">
   import CpLink from '@/common/components/CpLink.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import type {ActionItems} from '@/common/types';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {t} from '@craftcms/ui';
   import {computed, getCurrentInstance} from 'vue';
 
   withDefaults(
     defineProps<{
-      items: Array<{
-        url?: string | null;
-        label?: string | null;
-        /** Server-rendered crumb content, e.g. an element chip. */
-        html?: string | null;
-        icon?: string;
-        /** Extra attributes for the crumb (e.g. drag-and-drop drop-target hooks). */
-        attrs?: Record<string, string>;
-        /** Optional per-crumb action menu (e.g. the current folder's actions). */
-        actions?: ActionItems;
-      }>;
+      items: Array<BreadcrumbItem>;
       separator?: string;
     }>(),
     {
