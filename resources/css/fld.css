@@ -391,6 +391,7 @@ body:not(.dragging) .fld-element {
 .fld-element-settings-footer {
   position: relative;
   display: flex;
+  gap: var(--c-spacing-sm);
   flex-direction: row;
   margin-block: 0 -24px;
 
