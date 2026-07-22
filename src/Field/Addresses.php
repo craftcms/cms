@@ -642,6 +642,7 @@ JS, [
             'label' => mb_ucfirst(t('Copy all {type}', [
                 'type' => Address::pluralLowerDisplayName(),
             ])),
+            'showInChips' => false,
         ];
     }
 
