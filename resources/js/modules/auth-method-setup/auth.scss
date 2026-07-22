@@ -1,7 +1,5 @@
 @charset "UTF-8";
 
-@import '@craftcms/sass/mixins';
-
 #auth-method-setup {
   .auth-method {
     display: flex;
@@ -85,7 +83,9 @@
 }
 
 ul.auth-method-recovery-codes-list {
-  @include fixed-width-font;
+  font-family:
+    SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-size: 0.9em !important;
   max-width: 20em;
   margin-inline: auto;
 

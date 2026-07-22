@@ -129,12 +129,12 @@ override used by `isDirty()`.
 All three globals are `compatify()`-wrapped constructors, so the legacy
 `Garnish.Base.extend({...instance}, {...statics})` API still works, and
 `this.base(...)` inside an overridden method dispatches into the modern
-implementation (`Craft.AuthMethodSetup.Slideout` is built this way today).
+implementation.
 
 One rule for legacy bundles: **don't call `.extend()` on these globals at
 script-eval time.** They're assigned by module scripts, which may execute
-after a classic bundle evaluates. Resolve the class lazily on first use —
-`AuthMethodSetup.js` does this with a lazy `Object.defineProperty` getter.
+after a classic bundle evaluates. Resolve the class lazily on first use
+(e.g. behind an `Object.defineProperty` getter).
 
 ## No custom element
 

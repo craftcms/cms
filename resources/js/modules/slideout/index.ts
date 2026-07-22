@@ -18,9 +18,9 @@ import {containerSlideouts} from './support';
  * `Craft.*` globals and the class-level open/close hook.
  */
 
-// `compatify`, not the plain class: `Craft.AuthMethodSetup.Slideout` still
-// subclasses this global via the legacy `Garnish.Base.extend()` API, whose
-// `this.base()` calls must dispatch into the modern methods.
+// `compatify`, not the plain class: plugins subclass this global via the
+// legacy `Garnish.Base.extend()` API, whose `this.base()` calls must
+// dispatch into the modern methods.
 const CompatSlideout = compatify(Slideout);
 
 // Mirror the static API onto the compatified constructor. All of these are
