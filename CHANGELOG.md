@@ -5,9 +5,6 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
 
-- Added `CraftCms\Cms\View\TemplateManager`, its `CraftCms\Cms\Support\Facades\Template` facade, and `CraftCms\Cms\Twig\Contracts\TwigRendererInterface`, with support for plugin-defined template renderers. `CraftCms\Cms\View\Contracts\TemplateRendererInterface`, `CraftCms\Cms\Twig\TwigRenderer`, and `CraftCms\Cms\Blade\BladeRenderer` were updated for manager-based rendering. Creators registered via `CraftCms\Cms\Support\Facades\Template::extend()` are replayed for each manager scope.
-- `template()` and `pageTemplate()` now accept an optional template renderer name.
-- `TemplateRendered` and `PageTemplateRendered` events now expose the final renderer name via `$rendererName`; the corresponding before events no longer expose renderer identity.
 - Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Removed automatic plugin trait lifecycle hooks. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Added `CraftCms\Cms\Cp\Components\Button`. ([#19248](https://github.com/craftcms/cms/pull/19248))
@@ -42,6 +39,8 @@
 - Added `CraftCms\Cms\Cp\FormFields::radioFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\FormFields::radioGroupFieldHtml()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\FormFields::radioGroupFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Support\Facades\Template`. ([#19290](https://github.com/craftcms/cms/pull/19290))
+- Added `CraftCms\Cms\Twig\Contracts\TwigRendererInterface`. ([#19290](https://github.com/craftcms/cms/pull/19290))
 - Added `CraftCms\Cms\Twig\Variables\Cp::button()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Twig\Variables\Cp::buttonGroup()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Twig\Variables\Cp::checkbox()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
@@ -51,6 +50,9 @@
 - Added `CraftCms\Cms\Twig\Variables\Cp::radio()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Twig\Variables\Cp::radioGroup()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\ui()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\View\TemplateManager`. ([#19290](https://github.com/craftcms/cms/pull/19290))
+- `template()` and `pageTemplate()` now accept an optional template renderer name. ([#19290](https://github.com/craftcms/cms/pull/19290))
+- `TemplateRendered` and `PageTemplateRendered` events now expose the final renderer name via `$rendererName`; the corresponding before events no longer expose renderer identity. ([#19290](https://github.com/craftcms/cms/pull/19290))
 - Removed `CraftCms\Cms\Plugin\Events\PluginUnregistered`. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Removed `CraftCms\Cms\Plugin\Plugin::bootPlugin()`. `boot()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Removed `CraftCms\Cms\Plugin\Plugin::registerPlugin()`. `register()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
