@@ -144,4 +144,12 @@
   </craft-pane>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  // The pane is a grid item in the content layout; with the default
+  // min-width: auto it grows to fit a wide table and overflows the container.
+  // Letting it shrink lets the element-index body's `overflow-x: auto` scroll
+  // the table instead.
+  craft-pane {
+    min-width: 0;
+  }
+</style>
