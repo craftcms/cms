@@ -131,7 +131,16 @@ class UserPolicy extends ElementPolicy
 
     public function activate(CraftUser $user, UserElement $target): bool
     {
-        return $user->can('administrateUsers');
+        if (! $user->can('administrateUsers')) {
+            return false;
+        }
+
+        // Even if they have administrateUsers permissions, only an admin should be able to activate another admin
+        if ($target->admin && ! $user->isAdmin()) {
+            return false;
+        }
+
+        return true;
     }
 
     public function deactivate(CraftUser $user, UserElement $target): bool

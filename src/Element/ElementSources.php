@@ -327,7 +327,7 @@ class ElementSources
     public function getPages(string $elementType): Collection
     {
         $pages = [];
-        foreach ($this->sourceConfigs($elementType) ?? [] as $source) {
+        foreach ($this->getSources($elementType) as $source) {
             // divide all sources into pages
             if (isset($source['page'])) {
                 $pages[$source['page']][] = $source;
