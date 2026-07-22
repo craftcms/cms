@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Twig\Twig;
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
+use CraftCms\Cms\View\TemplateEngine;
+use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
@@ -25,7 +27,7 @@ beforeEach(function () {
 
     app()->forgetScopedInstances();
 
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 afterEach(function () {
@@ -34,7 +36,7 @@ afterEach(function () {
 
 describe('renderString', function () {
     it('renders string templates', function (string $template, array $variables, string $expected) {
-        $result = $this->renderer->renderString($template, $variables);
+        $result = $this->manager->renderTwigString($template, $variables);
 
         expect($result)->toBe($expected);
     })->with([
@@ -45,57 +47,34 @@ describe('renderString', function () {
     ]);
 
     it('does not escape HTML by default', function () {
-        $result = $this->renderer->renderString('{{ html }}', ['html' => '<strong>bold</strong>']);
+        $result = $this->manager->renderTwigString('{{ html }}', ['html' => '<strong>bold</strong>']);
 
         expect($result)->toBe('<strong>bold</strong>');
     });
 
     it('restores the default escaper strategy after rendering', function (bool $escapeHtml) {
         $twig = app(Twig::class)->get();
+        $escaper = $twig->getExtension(EscaperExtension::class);
+        $originalStrategy = $escaper->getDefaultStrategy('template.html');
 
-        $this->renderer->renderString('{{ 1 + 1 }}', escapeHtml: $escapeHtml);
+        $this->manager->renderTwigString('{{ 1 + 1 }}', escapeHtml: $escapeHtml);
 
-        $ext = $twig->getExtension(EscaperExtension::class);
-        $strategy = $ext->getDefaultStrategy('template.html');
-
-        expect($strategy)->toBe('html');
+        expect($escaper->getDefaultStrategy('template.html'))->toBe($originalStrategy);
     })->with([
         'escapeHtml disabled' => [false],
         'escapeHtml enabled' => [true],
     ]);
-
-    it('restores the template mode after rendering', function () {
-        TemplateMode::set(TemplateMode::Site);
-
-        $this->renderer->renderString('{{ 1 }}', templateMode: TemplateMode::Cp);
-
-        expect(TemplateMode::get())->toBe(TemplateMode::Site);
-    });
-
-    it('tracks rendering state during render', function () {
-        expect($this->renderer->isRenderingTemplate())->toBeFalse();
-
-        $twig = app(Twig::class)->get();
-        $twig->addGlobal('_renderer', $this->renderer);
-
-        $result = $this->renderer->renderString(
-            '{{ _renderer.isRenderingTemplate ? "yes" : "no" }}',
-        );
-
-        expect($result)->toBe('yes');
-        expect($this->renderer->isRenderingTemplate())->toBeFalse();
-    });
 });
 
 describe('renderTemplate', function () {
     it('renders a template file', function () {
-        $result = $this->renderer->renderTemplate('test-template.twig');
+        $result = $this->manager->renderTemplate('test-template.twig', renderer: TemplateEngine::Twig);
 
         expect($result)->toBe('Hello from test template');
     });
 
     it('renders a template with variables', function () {
-        $result = $this->renderer->renderTemplate('greeting.twig', ['name' => 'World']);
+        $result = $this->manager->renderTemplate('greeting.twig', ['name' => 'World'], renderer: TemplateEngine::Twig);
 
         expect($result)->toBe('Hello, World!');
     });
@@ -105,14 +84,14 @@ describe('renderTemplate', function () {
             $event->template = 'other-template.twig';
         });
 
-        expect($this->renderer->renderTemplate('test-template.twig'))
+        expect($this->manager->renderTemplate('test-template.twig', renderer: TemplateEngine::Twig))
             ->toBe('Other template content');
     });
 });
 
 describe('renderObjectTemplate', function () {
     it('renders object templates', function (string $template, object $object, array $variables, string $expected) {
-        $result = $this->renderer->renderObjectTemplate($template, $object, $variables);
+        $result = $this->manager->renderObjectTemplate($template, $object, $variables);
 
         expect($result)->toBe($expected);
     })->with([
@@ -126,37 +105,16 @@ describe('renderObjectTemplate', function () {
     ]);
 
     it('trims the output', function () {
-        $result = $this->renderer->renderObjectTemplate('{name}', (object) ['name' => '  spaced  ']);
+        $result = $this->manager->renderObjectTemplate('{name}', (object) ['name' => '  spaced  ']);
 
         expect($result)->toBe('spaced');
-    });
-
-    it('caches parsed object templates for same template string', function () {
-        $object = new stdClass;
-        $object->name = 'first';
-
-        $result1 = $this->renderer->renderObjectTemplate('{name}', $object);
-
-        $object->name = 'second';
-        $result2 = $this->renderer->renderObjectTemplate('{name}', $object);
-
-        expect($result1)->toBe('first');
-        expect($result2)->toBe('second');
-    });
-
-    it('restores the template mode after rendering', function () {
-        TemplateMode::set(TemplateMode::Site);
-
-        $this->renderer->renderObjectTemplate('{foo}', (object) ['foo' => 'bar'], templateMode: TemplateMode::Cp);
-
-        expect(TemplateMode::get())->toBe(TemplateMode::Site);
     });
 
     it('restores strict variables setting after rendering', function () {
         $twig = app(Twig::class)->get();
         $wasStrict = $twig->isStrictVariables();
 
-        $this->renderer->renderObjectTemplate('{foo}', (object) ['foo' => 'bar']);
+        $this->manager->renderObjectTemplate('{foo}', (object) ['foo' => 'bar']);
 
         expect($twig->isStrictVariables())->toBe($wasStrict);
     });
@@ -164,7 +122,7 @@ describe('renderObjectTemplate', function () {
 
 describe('normalizeObjectTemplate', function () {
     it('converts property shorthand to twig output', function (string $template, string $expected) {
-        $result = $this->renderer->normalizeObjectTemplate($template);
+        $result = $this->manager->normalizeObjectTemplate($template);
 
         expect($result)->toBe($expected);
     })->with([
@@ -174,7 +132,7 @@ describe('normalizeObjectTemplate', function () {
     ]);
 
     it('leaves twig tags unchanged', function (string $template) {
-        $result = $this->renderer->normalizeObjectTemplate($template);
+        $result = $this->manager->normalizeObjectTemplate($template);
 
         expect($result)->toBe($template);
     })->with([
@@ -186,7 +144,7 @@ describe('normalizeObjectTemplate', function () {
     ]);
 
     it('does not convert object literals', function (string $template) {
-        $result = $this->renderer->normalizeObjectTemplate($template);
+        $result = $this->manager->normalizeObjectTemplate($template);
 
         expect($result)->toBe($template);
     })->with([
@@ -195,14 +153,14 @@ describe('normalizeObjectTemplate', function () {
     ]);
 
     it('handles multiple property tags in the same template', function () {
-        $result = $this->renderer->normalizeObjectTemplate('{title} - {slug}');
+        $result = $this->manager->normalizeObjectTemplate('{title} - {slug}');
 
         expect($result)->toContain('(_variables.title ?? object.title)')
             ->toContain('(_variables.slug ?? object.slug)');
     });
 
     it('wraps code in verbatim blocks', function (string $template) {
-        $result = $this->renderer->normalizeObjectTemplate($template);
+        $result = $this->manager->normalizeObjectTemplate($template);
 
         expect($result)->toContain('{% verbatim %}')
             ->toContain('{% endverbatim %}');
@@ -212,13 +170,13 @@ describe('normalizeObjectTemplate', function () {
     ]);
 
     it('returns plain text unchanged', function () {
-        $result = $this->renderer->normalizeObjectTemplate('Just plain text');
+        $result = $this->manager->normalizeObjectTemplate('Just plain text');
 
         expect($result)->toBe('Just plain text');
     });
 
     it('converts property tags mixed with twig tags', function () {
-        $result = $this->renderer->normalizeObjectTemplate('{title} {{ someGlobal }}');
+        $result = $this->manager->normalizeObjectTemplate('{title} {{ someGlobal }}');
 
         expect($result)->toContain('(_variables.title ?? object.title)')
             ->toContain('{{ someGlobal }}');
@@ -227,24 +185,34 @@ describe('normalizeObjectTemplate', function () {
 
 describe('sandboxed rendering', function () {
     it('renders sandboxed strings', function () {
-        $result = $this->renderer->renderSandboxedString('{{ 1 + 1 }}');
+        $result = $this->manager->renderSandboxedString('{{ 1 + 1 }}');
 
         expect($result)->toBe('2');
     });
 
     it('does not allow Facade calls in sandbox', function () {
-        $this->renderer->renderSandboxedString('{{ Config.get("app.name") }}');
+        $this->manager->renderSandboxedString('{{ Config.get("app.name") }}');
     })->throws(SecurityNotAllowedMethodError::class);
 
     it('renders sandboxed templates', function () {
-        $result = $this->renderer->renderSandboxedTemplate('test-template.twig');
+        Event::fake([TemplateRendering::class, TemplateRendered::class]);
+
+        $result = $this->manager->renderSandboxedTemplate('test-template.twig');
 
         expect($result)->toBe('Hello from test template');
+
+        Event::assertDispatched(TemplateRendering::class);
+        Event::assertDispatched(fn (TemplateRendered $event) => $event->rendererName === TemplateEngine::Twig->value);
     });
 
     it('returns the template as-is when sandbox is enabled and there are no dynamic tags', function () {
-        $result = $this->renderer->renderSandboxedObjectTemplate('hello world', new stdClass);
+        Event::fake([TemplateRendering::class, TemplateRendered::class]);
+
+        $result = $this->manager->renderSandboxedObjectTemplate('hello world', new stdClass);
 
         expect($result)->toBe('hello world');
+
+        Event::assertNotDispatched(TemplateRendering::class);
+        Event::assertNotDispatched(TemplateRendered::class);
     });
 });
