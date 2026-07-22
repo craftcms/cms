@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.12 - 2026-07-22
 
 - Added `craft\helpers\Gql::isMutation()`. ([#19285](https://github.com/craftcms/cms/pull/19285))
 - Fixed an error that could occur when saving an element with an eager-loaded relation field value. ([#19280](https://github.com/craftcms/cms/issues/19280))
