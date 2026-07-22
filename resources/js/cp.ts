@@ -16,6 +16,7 @@ import './modules/generated-fields';
 import './modules/component-select';
 import './modules/grouped-entry-type-manager';
 import './modules/queue';
+import './modules/slideout';
 
 window.Cp = Cp as unknown as typeof window.Cp;
 

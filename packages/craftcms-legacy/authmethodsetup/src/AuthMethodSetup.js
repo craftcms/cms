@@ -122,13 +122,21 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
   }
 );
 
-Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
-  methodName: null,
+// `Craft.Slideout` is assigned by the Vite `modules/slideout` port, whose
+// module scripts may evaluate after this classic bundle — build the subclass
+// lazily on first access so `Craft.Slideout.extend` isn't read at eval time.
+// (Same treatment as `Craft.CpScreenSlideout` in the cp bundle.)
+let AuthMethodSetupSlideout;
+Object.defineProperty(Craft.AuthMethodSetup, 'Slideout', {
+  configurable: true,
+  get() {
+    AuthMethodSetupSlideout ??= Craft.Slideout.extend({
+      methodName: null,
 
-  init(data) {
-    this.methodName = data.methodName;
+      init(data) {
+        this.methodName = data.methodName;
 
-    const contents = `
+        const contents = `
 <div class="so-body">${data.html}</div>
 <div class="so-footer">
   <div class="flex-grow"></div>
@@ -141,36 +149,39 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
 </div>
 `;
 
-    this.base(contents, {
-      containerAttributes: {
-        id: data.containerId,
+        this.base(contents, {
+          containerAttributes: {
+            id: data.containerId,
+          },
+        });
+
+        // Add alt text to QR code image
+        const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
+
+        if ($qrCodeImg.length) {
+          $qrCodeImg.attr({
+            role: 'img',
+            'aria-label': Craft.t('app', 'QR Code'),
+          });
+        }
       },
-    });
 
-    // Add alt text to QR code image
-    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
-
-    if ($qrCodeImg.length) {
-      $qrCodeImg.attr({
-        role: 'img',
-        'aria-label': Craft.t('app', 'QR Code'),
-      });
-    }
-  },
-
-  showSuccess() {
-    const message = Craft.t('app', '{name} added successfully.', {
-      name: this.methodName,
-    });
-    this.$container.find('.so-body').addClass('auth-method-setup-success')
-      .html(`
+      showSuccess() {
+        const message = Craft.t('app', '{name} added successfully.', {
+          name: this.methodName,
+        });
+        this.$container.find('.so-body').addClass('auth-method-setup-success')
+          .html(`
         <div class="auth-method-setup-success-graphic" data-icon="check" aria-hidden="true"></div>
         <h1 class="auth-method-setup-success-message" tabindex="-1">${message}</h1>
       `);
 
-    this.$container.find('.auth-method-setup-success-message').focus();
-    this.$container
-      .find('.auth-method-close-btn')
-      .text(Craft.t('app', 'Close'));
+        this.$container.find('.auth-method-setup-success-message').focus();
+        this.$container
+          .find('.auth-method-close-btn')
+          .text(Craft.t('app', 'Close'));
+      },
+    });
+    return AuthMethodSetupSlideout;
   },
 });

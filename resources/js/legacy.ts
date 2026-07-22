@@ -15,6 +15,7 @@ import './modules/sortable-checkbox-select/index';
 import './modules/editable-table/index';
 import './modules/grouped-entry-type-manager/index';
 import './modules/queue/index';
+import './modules/slideout/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 

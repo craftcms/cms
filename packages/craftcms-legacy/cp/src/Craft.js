@@ -22,7 +22,12 @@ import './js/BaseInputGenerator.js';
 import './js/BaseUploader.js';
 
 // Slideouts
-import './js/Slideout.js';
+// `Craft.Slideout` itself now comes from the Vite-bundled
+// `resources/js/modules/slideout` (a `compatify()`-wrapped modern class); see
+// that module's README. `CpScreenSlideout.js`/`ElementEditorSlideout.js` still
+// extend it via the legacy `.extend()` API, but do so lazily (see their
+// module docblocks) since this bundle can't assume `Craft.Slideout` has been
+// assigned by the time it evaluates.
 import './js/CpScreenSlideout.js';
 import './js/ElementEditorSlideout.js';
 
