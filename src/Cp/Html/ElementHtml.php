@@ -965,7 +965,7 @@ readonly class ElementHtml
             return '';
         }
 
-        return Html::tag('craft-element-label', $content, [
+        return Html::tag('craft-truncate', $content, [
             'id' => sprintf('%s-label', $config['id']),
             'class' => 'label',
         ]);

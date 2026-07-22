@@ -332,7 +332,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         class: 'chip-content',
       }).appendTo($element);
 
-      const $titleContainer = $('<craft-element-label/>', {
+      const $titleContainer = $('<craft-truncate/>', {
         class: 'label',
       }).appendTo($chipContent);
 

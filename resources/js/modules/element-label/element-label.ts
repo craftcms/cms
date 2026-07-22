@@ -15,10 +15,6 @@
  *
  * @example <craft-element-label><a href="#" class="label-link">Label</a></craft-element-label>
  */
-
-/** Fallback for generating a unique invoker id when the element has none. */
-let elementLabelTooltipId = 0;
-
 export class ElementLabel extends HTMLElement {
   private tooltip: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
@@ -50,15 +46,7 @@ export class ElementLabel extends HTMLElement {
   }
 
   update(): void {
-    const labelLink = this.labelLink;
-
-    if (!labelLink) {
-      return;
-    }
-
-    // Measure the label link's text, not `this.innerText`, so the tooltip's
-    // own (light-DOM) text content can't skew the overflow calculation.
-    this.desiredWidth = this.calculateWidth(labelLink.innerText);
+    this.desiredWidth = this.calculateWidth(this.innerText);
     this.hasOverflow = this.desiredWidth > this.scrollWidth;
 
     // If the label has an overflow, add a tooltip
@@ -76,38 +64,32 @@ export class ElementLabel extends HTMLElement {
   }
 
   createTooltip(): void {
-    const labelLink = this.labelLink;
+    const tooltip = document.createElement('craft-tooltip');
+    tooltip.setAttribute('self-managed', 'true');
+    tooltip.setAttribute('text', this.innerText);
+    tooltip.setAttribute('aria-hidden', 'true');
 
-    if (!labelLink) {
-      return;
-    }
+    // Make sure tooltips created show ellipses
+    Object.assign(tooltip.style, {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    });
 
-    // `craft-tooltip` references its invoker by id (`for`) rather than
-    // wrapping it, so the link needs one. The CSS on `.label-link` already
-    // handles the visual ellipsis truncation.
-    if (!labelLink.id) {
-      labelLink.id = this.id
-        ? `${this.id}-link`
-        : `element-label-link-${elementLabelTooltipId++}`;
-    }
-
-    // The tooltip shows the full, untruncated label text, in its default
-    // slot. Present a context label (e.g. a draft name) in parentheses,
-    // matching the inline label.
-    let text = labelLink.innerText;
+    // If there's a context label, make it a little nicer
     const contextLabel = this.querySelector<HTMLElement>('.context-label');
     if (contextLabel) {
-      text = text.replace(
+      tooltip.innerText = tooltip.innerText.replace(
         contextLabel.innerText,
         ` (${contextLabel.innerText})`
       );
     }
 
-    const tooltip = document.createElement('craft-tooltip');
-    tooltip.setAttribute('for', labelLink.id);
-    tooltip.textContent = text;
-
-    this.appendChild(tooltip);
+    const labelLink = this.labelLink;
+    if (labelLink) {
+      this.insertBefore(tooltip, labelLink);
+      tooltip.appendChild(labelLink);
+    }
 
     this.tooltip = tooltip;
   }
@@ -116,9 +98,15 @@ export class ElementLabel extends HTMLElement {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
 
-    // No need to restore the `.label-link` any more: referencing the invoker
-    // by `for` leaves it where it is, so nothing has to be moved back before
-    // `connectedCallback()` runs again.
+    // Put the `.label-link` back into `<craft-element-label>` so that when
+    // `connectedCallback()` runs again after an insertBefore/insertAfter move,
+    // everything can re-initialise as expected. `Element.moveBefore`/`moveAfter`
+    // aren't used as they're still experimental (unavailable in Safari & FF).
+    const labelLink = this.labelLink;
+    if (labelLink) {
+      this.append(labelLink);
+    }
+
     this.tooltip?.remove();
   }
 
