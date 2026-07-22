@@ -9,7 +9,7 @@ import {
   useVueTable,
 } from '@tanstack/vue-table';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
-import InputCombobox from '@/common/form/InputCombobox.vue';
+import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import type {SelectItem, SelectOption} from '@/common/types';
 import useCraftData from '@/common/composables/useCraftData';
 
@@ -266,21 +266,21 @@ export function useEditableTable<T extends Record<string, any>>(
           ? (cellOptions.options as (row: Row<T>) => Array<SelectItem>)(row)
           : resolve(cellOptions?.options ?? []);
 
-      return h(InputCombobox, {
+      return h(CraftCombobox, {
         modelValue: row.original[column.id],
         options: opts,
         class: `cp-table-input cp-table-input--autocomplete ${cellOptions?.class ?? ''}`,
         placeholder: cellOptions?.placeholder,
         label: cellOptions?.label ?? column.id,
+        'label-sr-only': '',
         ...(cellOptions?.requireOptionMatch !== undefined && {
           requireOptionMatch: cellOptions.requireOptionMatch,
         }),
-        ...(cellOptions?.transformModelValue !== undefined && {
-          transformModelValue: cellOptions.transformModelValue,
-        }),
         disabled: resolveDisabled(cellOptions?.disabled, row),
-        'onUpdate:modelValue': (value: string | number) => {
-          const strValue = String(value);
+        'onUpdate:modelValue': (
+          value: string | number | boolean | undefined
+        ) => {
+          const strValue = String(value ?? '');
           if (typeof cellOptions?.onChange === 'function') {
             cellOptions.onChange(strValue, {row, column});
           }

@@ -1,26 +1,234 @@
 import {LionCombobox} from '@lion/ui/combobox.js';
-import {html} from 'lit';
+import {html, nothing, render} from 'lit';
+import {property} from 'lit/decorators.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
+import {t} from '@src/utilities/translate';
 import '../option/option.js';
 import '../icon/icon.js';
+import '../indicator/indicator.js';
+import '../button/button.js';
 
+export interface ComboboxOptionData {
+  /** Extra text matched against the query, in addition to label/value. */
+  keywords?: string;
+  /** Secondary text rendered after the label. */
+  hint?: string;
+  /** Renders a `craft-indicator` before the label. */
+  indicator?: {variant?: string} & Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface ComboboxOption {
+  label: string;
+  value: string;
+  type?: 'option';
+  data?: ComboboxOptionData | null;
+}
+
+export interface ComboboxOptGroup {
+  type: 'optgroup';
+  label: string;
+  options: ComboboxOption[];
+}
+
+export type ComboboxItem = ComboboxOption | ComboboxOptGroup;
+
+interface VisibleEntry {
+  groupLabel?: string;
+  option: ComboboxOption;
+}
+
+/**
+ * @summary A single-select combobox with type-ahead filtering.
+ * @since 1.0
+ *
+ * Unlike Lion's combobox (which expects every option authored as a slotted
+ * child), `craft-combobox` takes an `options` array property and renders only
+ * the matching subset — capped at {@link limit} — as `craft-option` children.
+ * This keeps the DOM node count bounded even when the source list has hundreds
+ * of entries. Lion still drives selection, keyboard navigation, and a11y over
+ * the rendered set.
+ *
+ * @dependency craft-option
+ * @dependency craft-indicator
+ *
+ * @slot input - The text input (provided by Lion).
+ * @slot label - Field label.
+ * @slot after - Supplementary content rendered below the field.
+ * @slot feedback - Validation feedback.
+ */
 export default class CraftCombobox extends LionCombobox {
   static override get styles() {
     return [...super.styles, styles];
   }
 
+  /** Options to render. Groups are supported via `type: 'optgroup'`. */
+  @property({type: Array}) options: ComboboxItem[] = [];
+
+  /** Maximum number of matching options rendered at once (performance guard). */
+  @property({type: Number}) limit = 150;
+
+  /** Shows a clear button when a value is present. */
+  @property({type: Boolean, reflect: true}) clearable = false;
+
   constructor() {
     super();
-    // Configure validators on construction
+    // Configure validators on construction.
     this.defaultValidators = [];
+    // We own filtering (see `matchCondition`), so keep Lion in list mode and
+    // avoid its inline-autofill, which would fight our pre-filtered set.
+    this.autocomplete = 'list';
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  override firstUpdated(changed: Map<PropertyKey, unknown>) {
+    super.firstUpdated(changed);
+    this._inputNode?.addEventListener('input', this.#onInput);
+    this.#renderOptions();
+  }
+
+  override updated(changed: Map<PropertyKey, unknown>) {
+    super.updated(changed);
+    if (
+      changed.has('options') ||
+      changed.has('limit') ||
+      changed.has('opened') ||
+      changed.has('modelValue')
+    ) {
+      this.#renderOptions();
+    }
+  }
+
+  #onInput = () => this.#renderOptions();
+
+  /**
+   * We filter the source array ourselves and only render matches, so every
+   * rendered option is already a match — never let Lion hide one (its default
+   * label-substring check would drop keyword-only matches).
+   */
+  override matchCondition() {
+    return true;
+  }
+
+  #matchedOptions(query: string): VisibleEntry[] {
+    const q = query.trim().toLowerCase();
+    const entries: VisibleEntry[] = [];
+
+    for (const item of this.options) {
+      if (this.#isGroup(item)) {
+        for (const option of item.options) {
+          if (q === '' || this.#matches(q, option)) {
+            entries.push({groupLabel: item.label, option});
+          }
+        }
+      } else if (q === '' || this.#matches(q, item)) {
+        entries.push({option: item});
+      }
+    }
+
+    return entries;
+  }
+
+  #isGroup(item: ComboboxItem): item is ComboboxOptGroup {
+    return item.type === 'optgroup';
+  }
+
+  #matches(loweredQuery: string, option: ComboboxOption): boolean {
+    return (
+      option.label.toLowerCase().includes(loweredQuery) ||
+      String(option.value).toLowerCase().includes(loweredQuery) ||
+      (option.data?.keywords?.toLowerCase().includes(loweredQuery) ?? false)
+    );
+  }
+
+  #renderOptions() {
+    const node = this._listboxNode as HTMLElement | undefined;
+    if (!node) {
+      return;
+    }
+
+    const query = this._inputNode?.value ?? '';
+    const matched = this.#matchedOptions(query);
+    const visible = matched.slice(0, this.limit);
+
+    let lastGroup: string | undefined;
+    const rows = visible.map((entry) => {
+      const header =
+        entry.groupLabel && entry.groupLabel !== lastGroup
+          ? html`<div class="combobox__optgroup" aria-hidden="true">
+              ${entry.groupLabel}
+            </div>`
+          : nothing;
+      lastGroup = entry.groupLabel;
+      return html`${header}${this.#optionTemplate(entry.option)}`;
+    });
+
+    const footer =
+      matched.length > this.limit
+        ? html`<div class="combobox__footer" aria-hidden="true">
+            ${t('Showing {shown} of {total} — keep typing to narrow results.', {
+              shown: this.limit,
+              total: matched.length,
+            })}
+          </div>`
+        : nothing;
+
+    render(html`${rows}${footer}`, node);
+  }
+
+  #optionTemplate(option: ComboboxOption) {
+    const data = option.data ?? {};
+    const label = option.label;
+    const isEnv = label.startsWith('$') || label.startsWith('@');
+
+    return html`
+      <craft-option
+        .choiceValue=${String(option.value)}
+        .hint=${data.hint ?? null}
+      >
+        <span class="combobox__option">
+          ${data.indicator
+            ? html`<craft-indicator
+                variant=${data.indicator.variant ?? 'neutral'}
+              ></craft-indicator>`
+            : nothing}
+          ${isEnv ? html`<code>${label}</code>` : label}
+        </span>
+      </craft-option>
+    `;
+  }
+
+  #hasValue(): boolean {
+    return this.modelValue !== '' && this.modelValue != null;
+  }
+
+  #clear = () => {
+    this.modelValue = '';
+    if (this._inputNode) {
+      this._inputNode.value = '';
+    }
+    this.#renderOptions();
+    this._inputNode?.focus();
+  };
+
   override _inputGroupInputTemplate() {
     return html`
       <div class="input-group__input">
         <slot name="input"></slot>
+        ${this.clearable && this.#hasValue()
+          ? html`<craft-button
+              class="clear"
+              type="button"
+              appearance="plain"
+              size="small"
+              icon
+              aria-label=${t('Clear')}
+              @mousedown=${(e: Event) => e.preventDefault()}
+              @click=${this.#clear}
+            >
+              <craft-icon name="xmark" style="font-size: 0.8em"></craft-icon>
+            </craft-button>`
+          : nothing}
         <craft-icon
           class="indicator"
           name="chevron-down"
@@ -30,16 +238,42 @@ export default class CraftCombobox extends LionCombobox {
     `;
   }
 
+  /**
+   * Lion drives a single-select combobox's model value off the textbox string.
+   * Because we display each option's label (not its value), map a displayed
+   * label back to its option value here so `modelValue` is the option's value —
+   * e.g. selecting "Online" yields `'1'`, not `'Online'`. Text that matches no
+   * option label is passed through as a custom value (`requireOptionMatch`
+   * false), preserving free-text/env-var entry.
+   */
   override parser(value: string | Array<string>) {
-    if (value !== '') {
-      return value;
+    if (typeof value === 'string' && value !== '') {
+      const match = this.#optionByLabel(value);
+      return match ? match.value : value;
     }
 
     return super.parser(value);
   }
 
+  #optionByLabel(label: string): ComboboxOption | undefined {
+    const target = label.trim();
+
+    for (const item of this.options) {
+      if (this.#isGroup(item)) {
+        const found = item.options.find((option) => option.label === target);
+        if (found) {
+          return found;
+        }
+      } else if (item.label === target) {
+        return item;
+      }
+    }
+
+    return undefined;
+  }
+
   /**
-   * Override to use the option's text content instead of choiceValue
+   * Override to use the option's text content instead of choiceValue.
    */
   override _getTextboxValueFromOption(option: CraftOption) {
     if (option) {
@@ -47,7 +281,7 @@ export default class CraftCombobox extends LionCombobox {
       return option.textContent?.trim() || '';
     }
 
-    // @ts-ignore Lion's code handles `null` but the types don't account for it
+    // @ts-expect-error Lion handles `null` but the types don't account for it
     return super._getTextboxValueFromOption(option);
   }
 }
