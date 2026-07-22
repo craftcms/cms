@@ -8,6 +8,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Queue\Jobs\SyncJob;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -28,7 +29,15 @@ abstract class BatchedJob extends Job
     /**
      * The number of items that should be processed in a single batch.
      */
-    public int $batchSize = 100;
+    public int $batchSize = 100 {
+        set {
+            if ($value < 1) {
+                throw new InvalidArgumentException('Batch size must be at least 1.');
+            }
+
+            $this->batchSize = $value;
+        }
+    }
 
     /**
      * The index of the current batch (starting with 0).
@@ -59,7 +68,10 @@ abstract class BatchedJob extends Job
 
     public function handle(): void
     {
-        $items = $this->getQuery()->offset($this->itemOffset)->limit($this->batchSize)->get();
+        $items = $this->getQuery()
+            ->offset($this->queryOffset() + $this->itemOffset)
+            ->limit(min($this->batchSize, $this->totalItems() - $this->itemOffset))
+            ->get();
 
         $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit !== -1 ? memory_get_usage() : null;
@@ -176,12 +188,32 @@ abstract class BatchedJob extends Job
     protected function afterBatch(): void {}
 
     /**
+     * Returns the initial query offset before batch pagination is applied.
+     */
+    protected function queryOffset(): int
+    {
+        return 0;
+    }
+
+    /**
+     * Returns the maximum number of items to process across all batches.
+     */
+    protected function queryLimit(): ?int
+    {
+        return null;
+    }
+
+    /**
      * Returns the total number of items across all batches.
      */
     final protected function totalItems(): int
     {
         if (! isset($this->totalItems)) {
-            $this->totalItems = $this->getQuery()->count();
+            $this->totalItems = max($this->getQuery()->count() - $this->queryOffset(), 0);
+
+            if ($this->queryLimit() !== null) {
+                $this->totalItems = min($this->totalItems, $this->queryLimit());
+            }
         }
 
         return $this->totalItems;

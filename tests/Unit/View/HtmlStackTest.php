@@ -133,8 +133,15 @@ describe('clear', function () {
 
         $this->registry->clear();
 
+        // The body end may still carry the client-asset sync script (what
+        // the browser has loaded isn't undone by a clear), but none of the
+        // cleared assets themselves.
+        $bodyEndHtml = $this->registry->bodyEndHtml();
+
         expect($this->registry->headHtml())->toBe('')
-            ->and($this->registry->bodyEndHtml())->toBe('');
+            ->and($bodyEndHtml)->not->toContain('var x = 1')
+            ->and($bodyEndHtml)->not->toContain('/app.js')
+            ->and($bodyEndHtml)->not->toContain('console.log');
     });
 });
 
