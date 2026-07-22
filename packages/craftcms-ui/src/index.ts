@@ -68,6 +68,7 @@ export {default as CraftTabs} from './components/tabs/tabs.js';
 export {default as CraftTab} from './components/tab/tab.js';
 export {default as CraftTextarea} from './components/textarea/textarea.js';
 export {default as CraftTooltip} from './components/tooltip/tooltip.js';
+export {default as CraftTruncate} from './components/truncate/truncate.js';
 export {default as CraftVisuallyHidden} from './components/visually-hidden/visually-hidden.js';
 export {default as CraftThumbnail} from './components/thumbnail/thumbnail.js';
 export {default as CraftThumbnailLoader} from './components/thumbnail-loader/thumbnail-loader.js';
