@@ -5,7 +5,7 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
 
-- Added `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager`, with support for plugin-defined HTML sanitizers via `CraftCms\Cms\Support\Facades\HtmlSanitizers::extend()`.
+- Replaced `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers` with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager`. HTML sanitizers should now be registered via `CraftCms\Cms\Support\Facades\HtmlSanitizers::extend()` rather than `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers::register()`. ([#19292](https://github.com/craftcms/cms/pull/19292))
 - Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Removed automatic plugin trait lifecycle hooks. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Added `CraftCms\Cms\Cp\Components\Button`. ([#19248](https://github.com/craftcms/cms/pull/19248))
