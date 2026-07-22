@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\Gate;
 use Override;
 
 /**
@@ -72,7 +73,15 @@ class AssetIndexViewModel extends ContentIndexViewModel
                 $folder->setHasChildren(true);
             }
 
-            $sourcePath[] = $folder->getSourcePathInfo();
+            $info = $folder->getSourcePathInfo();
+
+            // Let the breadcrumb double as a drag-and-drop move target, matching
+            // the folder rows/sources (see extraRowData()).
+            if ($info !== null) {
+                $info['canMoveTo'] = Gate::check('moveIntoFolder', $folder);
+            }
+
+            $sourcePath[] = $info;
         }
 
         return $sourcePath;
@@ -93,9 +102,10 @@ class AssetIndexViewModel extends ContentIndexViewModel
     }
 
     /**
-     * Marks folder rows and gives the client the folder's own index URL so a
-     * click can navigate into it (the folder chip itself has no edit URL). The
-     * folder's URL is the last step of its resolved source path.
+     * Marks folder rows so the client can (a) navigate into the folder on click
+     * — the folder chip has no edit URL, so `folderUrl` (the last step of its
+     * resolved source path) is provided — and (b) treat the row as a drag-and-
+     * drop move target (`folderId` + `canMoveTo`).
      *
      * @return array<string, mixed>
      */
@@ -107,10 +117,13 @@ class AssetIndexViewModel extends ContentIndexViewModel
         }
 
         $uri = array_last($element->sourcePath)['uri'] ?? null;
+        $folder = Folders::getFolderById($element->folderId);
 
         return [
             'isFolder' => true,
+            'folderId' => $element->folderId,
             'folderUrl' => $uri !== null ? Url::cpUrl($uri) : null,
+            'canMoveTo' => $folder !== null && Gate::check('moveIntoFolder', $folder),
         ];
     }
 
