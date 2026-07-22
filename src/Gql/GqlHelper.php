@@ -16,12 +16,15 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use GraphQL\Error\Error;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\VariableNode;
+use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
+use GraphQL\Utils\AST;
 use Illuminate\Support\Facades\Log;
 
 class GqlHelper
@@ -441,5 +444,16 @@ class GqlHelper
         $tok = trim($tok);
 
         return in_array($tok, ['__schema', '__type']);
+    }
+
+    public static function isMutation(string $query, ?string $operationName = null): bool
+    {
+        try {
+            $document = Parser::parse($query);
+        } catch (Error) {
+            return false;
+        }
+
+        return AST::getOperationAST($document, $operationName)?->operation === 'mutation';
     }
 }

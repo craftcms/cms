@@ -16,7 +16,7 @@ use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Volumes;
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\NameNode;
 use GraphQL\Language\AST\NodeList;
@@ -499,10 +499,10 @@ it('saves and retrieves markdown field values as markdown data', function () {
 
 it('renders as safe html in twig while raw markdown remains accessible', function () {
     $value = new MarkdownData('**bold**', MarkdownService::FLAVOR_GFM);
-    $renderer = app(TwigRenderer::class);
+    $manager = app(TemplateManager::class);
 
-    expect($renderer->renderString('{{ body }}', ['body' => $value], escapeHtml: true))->toBe("<p><strong>bold</strong></p>\n")
-        ->and($renderer->renderString('{{ body.raw }}', ['body' => $value], escapeHtml: true))->toBe('**bold**');
+    expect($manager->renderTwigString('{{ body }}', ['body' => $value], escapeHtml: true))->toBe("<p><strong>bold</strong></p>\n")
+        ->and($manager->renderTwigString('{{ body.raw }}', ['body' => $value], escapeHtml: true))->toBe('**bold**');
 });
 
 it('returns rendered html by default and raw markdown when requested through graphql', function () {

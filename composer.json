@@ -153,7 +153,7 @@
       "@php vendor/bin/testbench serve --ansi"
     ],
     "ci": [
-      "@php pint",
+      "@php pint --parallel",
       "@rector",
       "@phpstan",
       "@tests",
@@ -219,6 +219,7 @@
         "SiteGroups": "CraftCms\\Cms\\Support\\Facades\\SiteGroups",
         "Sites": "CraftCms\\Cms\\Support\\Facades\\Sites",
         "Structures": "CraftCms\\Cms\\Support\\Facades\\Structures",
+        "Template": "CraftCms\\Cms\\Support\\Facades\\Template",
         "TemplateHooks": "CraftCms\\Cms\\Support\\Facades\\TemplateHooks",
         "Twig": "CraftCms\\Cms\\Support\\Facades\\Twig",
         "Updates": "CraftCms\\Cms\\Support\\Facades\\Updates",
