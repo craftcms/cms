@@ -237,7 +237,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new I18NCompatibility()->boot();
         new TestToEmailAddressCompatibility()->boot();
-        app(LegacyHtmlPurifierConfigRegistrar::class)->boot();
+        $this->app->make(LegacyHtmlPurifierConfigRegistrar::class)->boot();
 
         /**
          * Load legacy Craft

@@ -20,6 +20,7 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -28,7 +29,6 @@ use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\Twig\Twig;
-use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\Events\PageTemplateRendered;
@@ -39,7 +39,9 @@ use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\PageLifecycle;
+use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateHooks;
+use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Support\Facades\Event;
@@ -374,13 +376,13 @@ class View extends \yii\web\View
      * Returns whether a template is currently being rendered.
      *
      * @return bool Whether a template is currently being rendered.
-     * @deprecated 6.0.0 use {@see TwigRenderer::isRenderingTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::isRenderingTemplate()} instead.
      */
     public function getIsRenderingTemplate(): bool
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::isRenderingTemplate` instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingTemplate()` instead.');
 
-        return app(TwigRenderer::class)->isRenderingTemplate();
+        return Template::isRenderingTemplate();
     }
 
     /**
@@ -396,17 +398,17 @@ class View extends \yii\web\View
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
-     * @deprecated 6.0.0 use {@see TwigRenderer::renderTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::renderTemplate()} instead.
      */
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderTemplate()` or the `template()` helper instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::renderTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderTemplate()` or the `template()` helper instead.');
 
         $templateMode = $templateMode
             ? TemplateMode::from($templateMode)
             : TemplateMode::get();
 
-        return app(TwigRenderer::class)->renderTemplate($template, $variables, $templateMode);
+        return Template::renderTemplate($template, $variables, $templateMode, renderer: TemplateEngine::Twig);
     }
 
     /**
@@ -425,26 +427,26 @@ class View extends \yii\web\View
      *
      * @see renderTemplate()
      * @since 4.17.0
-     * @deprecated 6.0.0 use {@see TwigRenderer::renderSandboxedTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::renderSandboxedTemplate()} instead.
      */
     public function renderSandboxedTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper instead.');
 
-        return app(TwigRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
+        return Template::renderSandboxedTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
     }
 
     /**
      * Returns whether a page template is currently being rendered.
      *
      * @return bool Whether a page template is currently being rendered.
-     * @deprecated 6.0.0 use {@see TwigRenderer::isRenderingPageTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::isRenderingPageTemplate()} instead.
      */
     public function getIsRenderingPageTemplate(): bool
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingPageTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::isRenderingPageTemplate` instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingPageTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingPageTemplate()` instead.');
 
-        return app(TwigRenderer::class)->isRenderingPageTemplate();
+        return Template::isRenderingPageTemplate();
     }
 
     /**
@@ -460,13 +462,18 @@ class View extends \yii\web\View
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
-     * @deprecated 6.0.0 use {@see TwigRenderer::renderPageTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::renderPageTemplate()} instead.
      */
     public function renderPageTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderPageTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderPageTemplate()` or the `pageTemplate()` helper instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::renderPageTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderPageTemplate()` or the `pageTemplate()` helper instead.');
 
-        return app(TwigRenderer::class)->renderPageTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
+        return Template::renderPageTemplate(
+            $template,
+            $variables,
+            $templateMode ? TemplateMode::from($templateMode) : null,
+            renderer: TemplateEngine::Twig,
+        );
     }
 
     /**
@@ -481,13 +488,13 @@ class View extends \yii\web\View
      *
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
-     * @deprecated 6.0.0 use {@see TwigRenderer::renderString()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::renderTwigString()} instead.
      */
     public function renderString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderString()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderString()` or the `renderString()` helper instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::renderString()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderTwigString()` or the `renderString()` helper instead.');
 
-        return app(TwigRenderer::class)->renderString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
+        return Template::renderTwigString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
     }
 
     /**
@@ -505,13 +512,13 @@ class View extends \yii\web\View
      *
      * @see renderString()
      * @since 4.17.0
-     * @deprecated 6.0.0 use {@see TwigRenderer::renderSandboxedString()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::renderSandboxedString()} instead.
      */
     public function renderSandboxedString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedString()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedString()` or the `renderSandboxedString()` helper instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedString()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedString()` or the `renderSandboxedString()` helper instead.');
 
-        return app(TwigRenderer::class)->renderSandboxedString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
+        return Template::renderSandboxedString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
     }
 
     /**
@@ -534,13 +541,13 @@ class View extends \yii\web\View
      *
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
-     * @deprecated 6.0.0 use {@see TwigRenderer::renderObjectTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::renderObjectTemplate()} instead.
      */
     public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = TemplateMode::Site->value): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderObjectTemplate()` or the `renderObjectTemplate()` helper instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::renderObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderObjectTemplate()` or the `renderObjectTemplate()` helper instead.');
 
-        return app(TwigRenderer::class)->renderObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
+        return Template::renderObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
     }
 
     /**
@@ -558,7 +565,7 @@ class View extends \yii\web\View
      *
      * @see renderObjectTemplate()
      * @since 4.17.0
-     * @deprecated 6.0.0 use {@see TwigRenderer::renderSandboxedObjectTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::renderSandboxedObjectTemplate()} instead.
      */
     public function renderSandboxedObjectTemplate(
         string $template,
@@ -566,9 +573,9 @@ class View extends \yii\web\View
         array $variables = [],
         string $templateMode = TemplateMode::Site->value,
     ): string {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper instead.');
 
-        return app(TwigRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
+        return Template::renderSandboxedObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
     }
 
     /**
@@ -577,15 +584,15 @@ class View extends \yii\web\View
      * @param string $template
      *
      * @return string
-     * @deprecated 6.0.0 use {@see TwigRenderer::normalizeObjectTemplate()} instead.
+     * @deprecated 6.0.0 use {@see TemplateManager::normalizeObjectTemplate()} instead.
      */
     public function normalizeObjectTemplate(string $template): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::normalizeObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::normalizeObjectTemplate()` instead.');
+        Deprecator::log(__METHOD__, '`craft\web\View::normalizeObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::normalizeObjectTemplate()` instead.');
 
 
 
-        return app(TwigRenderer::class)->normalizeObjectTemplate($template);
+        return Template::normalizeObjectTemplate($template);
     }
 
     /**

@@ -91,6 +91,19 @@ test('attemptLogin fails with wrong password', function () {
     Event::assertDispatched(Failed::class);
 });
 
+test('attemptLogin counts a wrong password once', function () {
+    Cms::config()->maxInvalidLogins = 10;
+
+    $user = User::findOne();
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertStatus(400);
+
+    expect(UserModel::findOrFail($user->id)->invalidLoginCount)->toBe(1);
+});
+
 test('attemptLogin is limited to five failed attempts per minute', function () {
     $user = User::findOne();
 

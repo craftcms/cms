@@ -636,7 +636,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
-        if ($value === '') {
+        // An empty POST value means every entry was removed. It arrives as
+        // null rather than '' because of Laravel's ConvertEmptyStringsToNull
+        // middleware — and delta ensures the value is only applied from the
+        // request when the field was actually modified.
+        if ($value === '' || ($fromRequest && $value === null)) {
             $query->setResultOverride([]);
         } elseif ($value === '*') {
             // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
@@ -993,7 +997,7 @@ JS, [
             )
         );
 
-        app(InternalAssetRegistry::class)->register(MatrixAsset::class);
+        // app(InternalAssetRegistry::class)->register(MatrixAsset::class);
 
         $settings = [
             'fieldId' => $this->id,
@@ -1007,13 +1011,6 @@ JS, [
             'staticEntries' => $staticEntries,
         ];
 
-        $js = 'const input = new Craft.MatrixInput('.
-            '"'.InputNamespace::namespaceId($id).'", '.
-            Json::encode($entryTypeInfo).', '.
-            '"'.InputNamespace::namespaceInputName($this->handle).'", '.
-            Json::encode($settings).
-            ');';
-
         // Safe to create the default entries?
         if ($createDefaultEntries && count($value) < $this->minEntries) {
             // @link https://github.com/craftcms/cms/issues/12973
@@ -1023,33 +1020,13 @@ JS, [
             // and so not passed to PHP for save
             DeltaRegistry::setInitialValue($this->handle, null);
 
-            $js .= "\n".<<<'JS'
-input.on('afterInit', async () => {
-  if (input.elementEditor) {
-    await input.elementEditor.pause();
-  }
-JS."\n";
-
-            $entryTypeJs = Json::encode($entryTypes[0]->handle);
-            for ($i = count($value); $i < $this->minEntries; $i++) {
-                $js .= <<<JS
-  await input.addEntry($entryTypeJs, null, false)
-JS."\n";
-            }
-
-            $js .= <<<'JS'
-  setTimeout(() => {
-    Garnish.requestAnimationFrame(() => {
-      input.elementEditor?.resume();
-    });
-  }, 100);
-})
-JS;
+            $settings['addDefaultEntries'] = [
+                'type' => $entryTypes[0]->handle,
+                'count' => $this->minEntries - count($value),
+            ];
         }
 
-        HtmlStack::js("(() => {\n$js\n})();");
-
-        return template('_components/fieldtypes/Matrix/input', [
+        $inputHtml = template('_components/fieldtypes/Matrix/input', [
             'id' => $id,
             'field' => $this,
             'name' => $this->handle,
@@ -1059,6 +1036,17 @@ JS;
             'staticEntries' => $staticEntries,
             'createButtonLabel' => $this->createButtonLabel(),
             'labelId' => $this->getLabelId(),
+        ]);
+
+        // The `<craft-matrix-input>` element (resources/js/modules/matrix)
+        // boots the MatrixInput controller from these attributes, replacing the
+        // imperative `new Craft.MatrixInput(...)` boot script. The attribute
+        // values are written fully namespaced, since the outer namespacing pass
+        // only rewrites name/id-style attributes.
+        return Html::tag('craft-matrix-input', $inputHtml, [
+            'entry-types' => Json::encode($entryTypeInfo),
+            'input-name-prefix' => InputNamespace::namespaceInputName($this->handle),
+            'settings' => Json::encode($settings),
         ]);
     }
 

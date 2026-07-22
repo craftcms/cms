@@ -39,6 +39,10 @@ class HtmlStack
         'icons',
     ];
 
+    public function __construct(
+        private readonly RegisteredClientAssets $clientAssets,
+    ) {}
+
     /** @var array<int, array<string, string>> */
     private array $js = [];
 
@@ -130,10 +134,20 @@ class HtmlStack
      */
     public function jsFile(string $url, array $options = [], ?string $key = null): void
     {
+        $key ??= $url;
+
+        // Skip files the browser reported as already loaded (Craft 5's
+        // registered-JS-files mechanism); see RegisteredClientAssets.
+        if ($this->clientAssets->hasJsFile($key)) {
+            return;
+        }
+
+        $this->clientAssets->trackJsFile($key);
+
         $position = Position::tryFrom((int) Arr::pull($options, 'position', Position::BodyEnd->value)) ?? Position::BodyEnd;
 
         $entries = $this->jsFiles[$position->value] ?? [];
-        $this->registerEntry($entries, $key ?? $url, Html::javaScriptFile($url, $options));
+        $this->registerEntry($entries, $key, Html::javaScriptFile($url, $options));
         $this->jsFiles[$position->value] = $entries;
     }
 
@@ -373,6 +387,15 @@ class HtmlStack
      */
     public function bodyEndHtml(bool $clear = true): string
     {
+        // Record what this request registered onto the `Craft` global so the
+        // JS action clients can report it back on XHR renders. Skipped for
+        // the XHR renders themselves (internally ajax-gated) and for fragment
+        // captures, whose drains run with asset events suppressed; see
+        // RegisteredClientAssets.
+        if (! $this->suppressAssetRenderingEvents) {
+            app(RegisteredClientAssets::class)->registerSyncJs($this);
+        }
+
         $this->dispatchAssetsRenderingEvent();
 
         $body = Position::BodyEnd->value;
