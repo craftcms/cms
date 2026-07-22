@@ -1,4 +1,4 @@
-import {actionClient, ConfigService} from '@craftcms/ui';
+import {actionClient} from '@craftcms/ui';
 import {reactive, readonly, type DeepReadonly} from 'vue';
 
 export interface ElevatedSessionOptions {
@@ -30,10 +30,7 @@ async function requestConfirmation(
   options: Required<ElevatedSessionOptions>
 ): Promise<ElevatedSessionResponse> {
   const {data} = await actionClient.post<ElevatedSessionResponse>(
-    // A full action URL (not a bare action path): actionClient's baseURL is
-    // origin-only and expects route paths that already carry the CP/action
-    // triggers.
-    ConfigService.getInstance().getActionUrl('users/confirm-password'),
+    'users/confirm-password',
     options
   );
 
