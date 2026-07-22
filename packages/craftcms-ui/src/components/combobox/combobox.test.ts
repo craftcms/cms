@@ -73,6 +73,19 @@ describe('craft-combobox', () => {
     expect(labels).toEqual(['Canada']);
   });
 
+  it('re-renders cleanly across successive filters without duplicating text', async () => {
+    // Regression: Lion's match-highlighting used to mutate option DOM and
+    // collide with our lit-html render, producing e.g. "Option 000Option 300".
+    const combobox = await createFixture((c) => {
+      c.options = makeOptions(400);
+    });
+    for (const q of ['O', 'Op', 'Option 3', 'Option 30', 'Option 300']) {
+      await typeQuery(combobox, q);
+    }
+    const labels = optionEls(combobox).map((el) => el.textContent?.trim());
+    expect(labels).toEqual(['Option 300']);
+  });
+
   it('filters by keywords in option data', async () => {
     const combobox = await createFixture((c) => {
       c.options = [
@@ -157,6 +170,27 @@ describe('craft-combobox', () => {
     await combobox.updateComplete;
 
     expect(combobox.modelValue).toBe('');
+  });
+
+  it('opens on ArrowDown even when empty and not showAllOnEmpty', async () => {
+    const combobox = await createFixture((c) => {
+      c.options = [
+        {label: 'United States', value: 'us'},
+        {label: 'Canada', value: 'ca'},
+      ];
+    });
+    const input = combobox._inputNode as HTMLInputElement;
+    input.focus();
+    expect(combobox.opened).toBe(false);
+
+    input.dispatchEvent(
+      new KeyboardEvent('keyup', {key: 'ArrowDown', bubbles: true})
+    );
+    await combobox.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(combobox.opened).toBe(true);
+    expect(optionEls(combobox).length).toBe(2);
   });
 
   it('shows a footer when matches exceed the limit', async () => {

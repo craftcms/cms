@@ -110,6 +110,40 @@ export default class CraftCombobox extends LionCombobox {
     return true;
   }
 
+  /**
+   * Lion highlights the matched substring by mutating each option's DOM
+   * (bolding text and moving children into an a11y span). We render option
+   * content ourselves with lit-html and reconcile on every keystroke, so those
+   * mutations detach lit-html's tracked nodes and corrupt the output — stale
+   * text is left behind and new text is appended (e.g. "Option 000Option 300").
+   * Disable the highlight entirely; we own the option content. The visibility
+   * toggling in `_onFilterMatch`/`_onFilterUnmatch` is untouched (and moot,
+   * since we only render matches).
+   */
+  override _highlightMatchedOption() {}
+
+  override _unhighlightMatchedOption() {}
+
+  /**
+   * Open the listbox on Down/Up arrow even when the textbox is empty, so
+   * keyboard users can browse the options (the standard combobox affordance).
+   * Lion otherwise only opens an empty field when `showAllOnEmpty` is set.
+   */
+  override _showOverlayCondition(options: {
+    currentValue?: string;
+    lastKey?: string;
+  }) {
+    if (
+      !this.disabled &&
+      !this.readOnly &&
+      (options.lastKey === 'ArrowDown' || options.lastKey === 'ArrowUp')
+    ) {
+      return true;
+    }
+
+    return super._showOverlayCondition(options);
+  }
+
   #matchedOptions(query: string): VisibleEntry[] {
     const q = query.trim().toLowerCase();
     const entries: VisibleEntry[] = [];
@@ -270,6 +304,27 @@ export default class CraftCombobox extends LionCombobox {
     }
 
     return undefined;
+  }
+
+  /**
+   * With `autocomplete='list'`, Lion only reflects the model value into the
+   * textbox while the field is blurred. Selecting an option refocuses the
+   * input, so on overlay close the condition was false and the chosen label
+   * never appeared. Force the sync when a selection commits (overlay close);
+   * typing is unaffected — that path never runs with the `overlay-close`
+   * phase, and the overlay-close sync is already gated on a real selection
+   * (`checkedIndex !== -1`), so custom/free-text entry is preserved.
+   */
+  override _syncToTextboxCondition(
+    modelValue: string | string[],
+    oldModelValue: string | string[],
+    config: {phase?: string} = {}
+  ) {
+    if (config.phase === 'overlay-close') {
+      return true;
+    }
+
+    return super._syncToTextboxCondition(modelValue, oldModelValue, config);
   }
 
   /**
