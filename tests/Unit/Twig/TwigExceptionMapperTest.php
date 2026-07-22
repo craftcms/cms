@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 
 it('ignores missing compiled template files', function () {
@@ -19,7 +19,7 @@ it('keeps string template filenames reportable', function () {
     app(Twig::class)->get(TemplateMode::Site)->enableStrictVariables();
 
     try {
-        app(TwigRenderer::class)->renderString('{{ app("CraftCms\\\\Cms\\\\Twig\\\\TemplateRenderer").renderString("{{ someVar }}") }}');
+        app(TemplateManager::class)->renderTwigString('{{ app("CraftCms\\\\Cms\\\\View\\\\TemplateManager").renderTwigString("{{ someVar }}") }}');
     } catch (Throwable $exception) {
         $trace = app(TwigExceptionMapper::class)->map($exception)->getTrace();
 

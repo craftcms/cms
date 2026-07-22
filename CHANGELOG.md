@@ -5,6 +5,9 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
 
+- Added `CraftCms\Cms\View\TemplateManager`, its `CraftCms\Cms\Support\Facades\Template` facade, and `CraftCms\Cms\Twig\Contracts\TwigRendererInterface`, with support for plugin-defined template renderers. `CraftCms\Cms\View\Contracts\TemplateRendererInterface`, `CraftCms\Cms\Twig\TwigRenderer`, and `CraftCms\Cms\Blade\BladeRenderer` were updated for manager-based rendering. Creators registered via `CraftCms\Cms\Support\Facades\Template::extend()` are replayed for each manager scope.
+- `template()` and `pageTemplate()` now accept an optional template renderer name.
+- `TemplateRendered` and `PageTemplateRendered` events now expose the final renderer name via `$rendererName`; the corresponding before events no longer expose renderer identity.
 - Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Removed automatic plugin trait lifecycle hooks. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Added `CraftCms\Cms\Cp\Components\Button`. ([#19248](https://github.com/craftcms/cms/pull/19248))
@@ -1272,9 +1275,9 @@ Moved the following controllers:
 
 - Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on the `pageTrigger` general config setting.
 - Added `CraftCms\Cms\Twig\Twig` service for managing Twig environments, replacing the Twig management logic previously in `craft\web\View`.
-- Added `CraftCms\Cms\Twig\TemplateRenderer` for rendering templates, replacing the rendering logic previously in `craft\web\View`.
+- Added `CraftCms\Cms\View\TemplateManager` for rendering templates, replacing the rendering logic previously in `craft\web\View`.
 - Added `CraftCms\Cms\Twig\PageLifecycle` for managing the page rendering lifecycle (head/body placeholder replacement), replacing the page lifecycle logic previously in `craft\web\View`.
-- Added `CraftCms\Cms\Support\Facades\Twig` facade, resolving to `CraftCms\Cms\Twig\TemplateRenderer`.
+- Added `CraftCms\Cms\Support\Facades\Twig` facade, resolving to `CraftCms\Cms\Twig\Twig`.
 - Added `CraftCms\Cms\Twig\Environment`, moved from `craft\web\twig\Environment`.
 - Added `CraftCms\Cms\Twig\TemplateResolver`.
 - Added `CraftCms\Cms\Twig\TemplateLoader`.
@@ -1287,16 +1290,16 @@ Moved the following controllers:
 - Deprecated `craft\web\View::registerCpTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
 - Deprecated `craft\web\View::registerSiteTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
 - Deprecated `craft\web\View::registerTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
-- Deprecated `craft\web\View::renderTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::renderTemplate()` or the `template()` helper should be used instead.
-- Deprecated `craft\web\View::renderSandboxedTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper should be used instead.
-- Deprecated `craft\web\View::renderPageTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::renderPageTemplate()` or the `pageTemplate()` helper should be used instead.
-- Deprecated `craft\web\View::renderString()`. `CraftCms\Cms\Twig\TemplateRenderer::renderString()` or the `renderString()` helper should be used instead.
-- Deprecated `craft\web\View::renderSandboxedString()`. `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedString()` or the `renderSandboxedString()` helper should be used instead.
-- Deprecated `craft\web\View::renderObjectTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::renderObjectTemplate()` or the `renderObjectTemplate()` helper should be used instead.
-- Deprecated `craft\web\View::renderSandboxedObjectTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper should be used instead.
-- Deprecated `craft\web\View::normalizeObjectTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::normalizeObjectTemplate()` should be used instead.
-- Deprecated `craft\web\View::getIsRenderingTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::isRenderingTemplate` should be used instead.
-- Deprecated `craft\web\View::getIsRenderingPageTemplate()`. `CraftCms\Cms\Twig\TemplateRenderer::isRenderingPageTemplate` should be used instead.
+- Deprecated `craft\web\View::renderTemplate()`. `CraftCms\Cms\View\TemplateManager::renderTemplate()` or the `template()` helper should be used instead.
+- Deprecated `craft\web\View::renderSandboxedTemplate()`. `CraftCms\Cms\View\TemplateManager::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper should be used instead.
+- Deprecated `craft\web\View::renderPageTemplate()`. `CraftCms\Cms\View\TemplateManager::renderPageTemplate()` or the `pageTemplate()` helper should be used instead.
+- Deprecated `craft\web\View::renderString()`. `CraftCms\Cms\View\TemplateManager::renderTwigString()` or the `renderString()` helper should be used instead.
+- Deprecated `craft\web\View::renderSandboxedString()`. `CraftCms\Cms\View\TemplateManager::renderSandboxedString()` or the `renderSandboxedString()` helper should be used instead.
+- Deprecated `craft\web\View::renderObjectTemplate()`. `CraftCms\Cms\View\TemplateManager::renderObjectTemplate()` or the `renderObjectTemplate()` helper should be used instead.
+- Deprecated `craft\web\View::renderSandboxedObjectTemplate()`. `CraftCms\Cms\View\TemplateManager::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper should be used instead.
+- Deprecated `craft\web\View::normalizeObjectTemplate()`. `CraftCms\Cms\View\TemplateManager::normalizeObjectTemplate()` should be used instead.
+- Deprecated `craft\web\View::getIsRenderingTemplate()`. `CraftCms\Cms\View\TemplateManager::isRenderingTemplate()` should be used instead.
+- Deprecated `craft\web\View::getIsRenderingPageTemplate()`. `CraftCms\Cms\View\TemplateManager::isRenderingPageTemplate()` should be used instead.
 - Deprecated `craft\web\twig\Environment`. `CraftCms\Cms\Twig\Environment` should be used instead.
 - Deprecated `craft\web\View::EVENT_AFTER_CREATE_TWIG`. `CraftCms\Cms\Twig\Events\TwigCreated` should be used instead.
 - Deprecated `craft\web\View::doesTemplateExist()`. `CraftCms\Cms\Twig\TemplateResolver::doesTemplateExist()` should be used instead.
