@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- SSO user attribute mapping no longer logs a warning for native user properties.
+
 ## 5.10.12 - 2026-07-22
 
 - Added `craft\helpers\Gql::isMutation()`. ([#19285](https://github.com/craftcms/cms/pull/19285))
