@@ -1,12 +1,15 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
+  import {useEventListener} from '@vueuse/core';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
   import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
   import {usePage} from '@inertiajs/vue3';
   import {index} from '@routes/cp/assets';
-  import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
+  import Breadcrumbs, {
+    type BreadcrumbItem,
+  } from '@/common/components/Breadcrumbs.vue';
   import Modal from '@/common/components/Modal.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
@@ -29,18 +32,18 @@
       ),
   };
 
-  /** One step of the volume-root → current-folder chain. */
-  interface SourcePathStep {
-    uri: string;
-    label: string;
-    icon?: string | null;
-    folderId?: number;
-    canMoveTo?: boolean;
-    canCreate?: boolean;
-  }
+  // The breadcrumb trail is built server-side (labels, folder links, drop-target
+  // attrs, and the current folder's action menu) — see
+  // AssetIndexViewModel::breadcrumbs(). We render it as-is.
+  const breadcrumbs = computed(
+    () => (page.props.breadcrumbs ?? []) as BreadcrumbItem[]
+  );
 
-  // "New subfolder" prompt for the current folder, driven from the breadcrumb
-  // action menu. It refreshes the active index itself on success.
+  // "New subfolder" prompt for the current folder. Its breadcrumb menu item is a
+  // server-driven `event` action (AssetIndexViewModel::NEW_SUBFOLDER_EVENT); we
+  // listen for that event and open the name prompt, since the modal itself can't
+  // be described server-side. On submit the composable creates the folder and
+  // refreshes the active index.
   const {
     isOpen: newFolderOpen,
     name: newFolderName,
@@ -50,57 +53,11 @@
     submit: createSubfolder,
   } = useNewSubfolder();
 
-  // The folder trail for the breadcrumb bar: the full chain when in a subfolder,
-  // otherwise just the volume root (from the source). Every ancestor links to
-  // its own folder index; the current folder (last step) is plain text.
-  //
-  // Ancestor crumbs also double as drag-and-drop move targets (drag a file up to
-  // a parent folder), matching the folder rows and sidebar sources. The current
-  // folder is skipped — the dragged assets already live there. The current folder
-  // instead gets an action menu (e.g. New subfolder) when the user can create in
-  // it.
-  const breadcrumbs = computed(() => {
-    const steps: SourcePathStep[] =
-      (page.props.defaultSourcePath as SourcePathStep[] | null) ??
-      (page.props.source as {defaultSourcePath?: SourcePathStep[]} | null)
-        ?.defaultSourcePath ??
-      [];
-
-    return steps.map((step, i) => {
-      const isCurrent = i === steps.length - 1;
-
-      const attrs: Record<string, string> = {};
-      if (!isCurrent && step.canMoveTo && step.folderId != null) {
-        attrs['data-folder-drop-target'] = '';
-        attrs['data-folder-id'] = String(step.folderId);
-        attrs['data-can-move-to'] = '';
-      }
-
-      const actions =
-        isCurrent && step.canCreate && step.folderId != null
-          ? [
-              {
-                label: t('New subfolder'),
-                icon: 'folder-plus',
-                onClick: () => openNewFolder(step.folderId as number),
-              },
-            ]
-          : undefined;
-
-      return {
-        label: step.label,
-        icon: step.icon ?? undefined,
-        url: isCurrent
-          ? null
-          : // `uri` is e.g. `assets/local/general`; the route's defaultSource is
-            // the path after `assets/`.
-            index.url({
-              defaultSource: step.uri.replace(/^assets\/?/, '') || undefined,
-            }),
-        attrs,
-        actions,
-      };
-    });
+  useEventListener(window, 'assets:new-subfolder', (event: Event) => {
+    const {folderId} = (event as CustomEvent<{folderId?: number}>).detail ?? {};
+    if (typeof folderId === 'number') {
+      openNewFolder(folderId);
+    }
   });
 
   const {conflictPrompt, resolveConflictChoice} = useAssetMoveDrag();

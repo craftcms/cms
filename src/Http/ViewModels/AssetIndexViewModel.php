@@ -16,14 +16,22 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Gate;
 use Override;
 
+use function CraftCms\Cms\t;
+
 /**
  * The Inertia payload for the asset index screen (`assets/Index`).
  *
  * A `defaultSource` path like `volumeHandle/sub/folder` selects the volume's
- * source and resolves the subfolder chain into `defaultSourcePath`.
+ * source and resolves the subfolder chain into `breadcrumbs`.
  */
 class AssetIndexViewModel extends ContentIndexViewModel
 {
+    /**
+     * Client event fired by the current folder's "New subfolder" breadcrumb
+     * action; the page listens for it and opens the name prompt.
+     */
+    public const NEW_SUBFOLDER_EVENT = 'assets:new-subfolder';
+
     /** @var array{0: Volume|null, 1: string[]}|null */
     private ?array $resolvedDefaultSource = null;
 
@@ -50,41 +58,78 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return $this->defaultSource;
     }
 
-    /** @return array<int, array|null>|null */
-    public function defaultSourcePath(): ?array
+    /**
+     * The breadcrumb trail for the folder bar: volume root → current folder.
+     *
+     * Ancestors link to their own folder index and double as drag-and-drop move
+     * targets (`data-folder-*` attrs); the current folder is plain text but
+     * carries a "New subfolder" action menu. That action is a server-driven
+     * `event` primitive — the page listens for {@see self::NEW_SUBFOLDER_EVENT}
+     * and opens the name prompt (the modal can't be described server-side).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function breadcrumbs(): array
     {
-        $subfolder = $this->subfolder();
+        $current = $this->subfolder() ?? $this->rootFolder();
 
-        if ($subfolder === null) {
-            return null;
+        if ($current === null) {
+            return [];
         }
 
-        $folderChain = [];
+        $chain = [];
 
-        while ($subfolder) {
-            array_unshift($folderChain, $subfolder);
-            $subfolder = $subfolder->getParent();
+        while ($current !== null) {
+            array_unshift($chain, $current);
+            $current = $current->getParent();
         }
 
-        $sourcePath = [];
+        $lastIndex = count($chain) - 1;
+        $crumbs = [];
 
-        foreach ($folderChain as $i => $folder) {
-            if ($i < count($folderChain) - 1) {
-                $folder->setHasChildren(true);
-            }
-
+        foreach ($chain as $i => $folder) {
             $info = $folder->getSourcePathInfo();
 
-            // Let the breadcrumb double as a drag-and-drop move target, matching
-            // the folder rows/sources (see extraRowData()).
-            if ($info !== null) {
-                $info['canMoveTo'] = Gate::check('moveIntoFolder', $folder);
+            if ($info === null) {
+                continue;
             }
 
-            $sourcePath[] = $info;
+            $isCurrent = $i === $lastIndex;
+
+            $crumb = [
+                'label' => $info['label'],
+                'icon' => $info['icon'] ?? null,
+                'url' => $isCurrent ? null : Url::cpUrl($info['uri']),
+            ];
+
+            // Ancestors the user can move into become drop targets, matching the
+            // folder rows and sidebar sources (see extraRowData()).
+            if (! $isCurrent && Gate::check('moveIntoFolder', $folder)) {
+                $crumb['attrs'] = [
+                    'data-folder-drop-target' => '',
+                    'data-folder-id' => (string) $folder->id,
+                    'data-can-move-to' => '',
+                ];
+            }
+
+            // The current folder gets a "New subfolder" action when the user can
+            // create in it.
+            if ($isCurrent && ($info['canCreate'] ?? false)) {
+                $crumb['actions'] = [[
+                    'label' => t('New subfolder'),
+                    'icon' => 'folder-plus',
+                    'action' => [
+                        'type' => 'event',
+                        'name' => self::NEW_SUBFOLDER_EVENT,
+                        'detail' => ['folderId' => $folder->id],
+                    ],
+                ]];
+            }
+
+            $crumbs[] = $crumb;
         }
 
-        return $sourcePath;
+        return $crumbs;
     }
 
     /**
@@ -176,6 +221,16 @@ class AssetIndexViewModel extends ContentIndexViewModel
             : Volumes::getVolumeByHandle(array_shift($segments));
 
         return $this->resolvedDefaultSource = [$volume, $segments];
+    }
+
+    /** The volume's root folder (the breadcrumb chain's top step). */
+    private function rootFolder(): ?VolumeFolder
+    {
+        [$volume] = $this->resolveDefaultSource();
+
+        return $volume === null
+            ? null
+            : Folders::getRootFolderByVolumeId($volume->id);
     }
 
     private function subfolder(): ?VolumeFolder
