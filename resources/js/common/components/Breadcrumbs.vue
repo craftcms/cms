@@ -1,5 +1,7 @@
 <script setup lang="ts">
   import CpLink from '@/common/components/CpLink.vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItems} from '@/common/types';
   import {t} from '@craftcms/ui';
   import {computed, getCurrentInstance} from 'vue';
 
@@ -11,6 +13,8 @@
         icon?: string;
         /** Extra attributes for the crumb (e.g. drag-and-drop drop-target hooks). */
         attrs?: Record<string, string>;
+        /** Optional per-crumb action menu (e.g. the current folder's actions). */
+        actions?: ActionItems;
       }>;
       separator?: string;
     }>(),
@@ -68,6 +72,12 @@
       <template v-else>
         {{ item.label }}
       </template>
+      <ActionMenu
+        v-if="item.actions?.length"
+        slot="suffix"
+        :actions="item.actions"
+        :label="t('Actions')"
+      />
     </craft-breadcrumb-item>
   </craft-breadcrumbs>
 </template>
