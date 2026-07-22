@@ -40,7 +40,7 @@
     pendingShiftKey.value = event.shiftKey;
   }
 
-  const {navigateToFolder, isFolderRow} = useFolderNavigation();
+  const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
 
   // Folder cards (asset index) navigate into the folder on click, except when
   // the click lands on an interactive control (the select checkbox, a link, …).
@@ -127,7 +127,7 @@
       <li
         v-for="(element, cardIdx) in data"
         :key="element.id"
-        :data-id="element.id"
+        v-bind="rowMoveAttrs(element)"
         :tabindex="selectable ? 0 : undefined"
         @keydown="onCardKeydown(element.id, cardIdx, $event)"
         @click="onCardClick(element, $event)"

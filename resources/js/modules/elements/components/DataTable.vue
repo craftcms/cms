@@ -52,7 +52,7 @@
     pendingShiftKey.value = event.shiftKey;
   }
 
-  const {navigateToFolder, isFolderRow} = useFolderNavigation();
+  const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
 
   // Folder rows (asset index) navigate into the folder on click, except when
   // the click lands on an interactive control (checkbox, a real link, …).
@@ -329,6 +329,7 @@
           :key="row.id"
           :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
           :tabindex="selectable ? 0 : undefined"
+          v-bind="rowMoveAttrs(row.original)"
           :class="{
             row: true,
             'cp-table-row': true,

@@ -40,7 +40,7 @@
     pendingShiftKey.value = event.shiftKey;
   }
 
-  const {navigateToFolder, isFolderRow} = useFolderNavigation();
+  const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
 
   // Folder tiles (asset index) navigate into the folder on click, except when
   // the click lands on an interactive control (the select checkbox, a link, …).
@@ -131,7 +131,7 @@
       <li
         v-for="(element, thumbIdx) in data"
         :key="element.id"
-        :data-id="element.id"
+        v-bind="rowMoveAttrs(element)"
         :tabindex="selectable ? 0 : undefined"
         @keydown="onTileKeydown(element.id, thumbIdx, $event)"
         @click="onTileClick(element, $event)"
@@ -203,6 +203,7 @@
     border-radius: var(--c-radius-lg);
     border: 1px solid var(--c-color-neutral-border-quiet);
   }
+
 
   .thumbsview > li:has(a.thumb-tile) {
     &:hover {
