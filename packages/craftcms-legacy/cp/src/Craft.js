@@ -21,10 +21,6 @@ import './js/BaseElementSelectorModal.js';
 import './js/BaseInputGenerator.js';
 import './js/BaseUploader.js';
 
-// Slideouts: `Craft.Slideout`, `Craft.CpScreenSlideout`, and
-// `Craft.ElementEditorSlideout` all come from the Vite-bundled
-// `resources/js/modules/slideout` module; see its README.
-
 // Modals
 import './js/CpModal.js';
 

@@ -174,9 +174,9 @@ describe('craft-field aria-describedby wiring', () => {
     const [tip, warning] = callouts;
     expect(tip!.getAttribute('variant')).toBe('info');
     expect(tip!.hasAttribute('icon')).toBe(false);
-    expect(
-      tip!.querySelector('craft-visually-hidden')?.textContent
-    ).toContain('Tip:');
+    expect(tip!.querySelector('craft-visually-hidden')?.textContent).toContain(
+      'Tip:'
+    );
     expect(tip!.querySelector('slot[name="tip"]')).not.toBeNull();
 
     expect(warning!.getAttribute('variant')).toBe('warning');
