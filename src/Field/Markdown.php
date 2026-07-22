@@ -21,11 +21,11 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -381,7 +381,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     private function htmlSanitizerOptions(): Collection
     {
-        return collect(app(HtmlSanitizers::class)->names())
+        return collect(HtmlSanitizers::names())
             ->map(fn (string $name) => [
                 'label' => $name === 'default' ? t('Default') : $name,
                 'value' => $name,

@@ -7,9 +7,9 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -158,7 +158,7 @@ test('render markdown encodes markdown before parsing', function () {
 });
 
 test('render markdown sanitizes preview html when requested', function () {
-    app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
+    HtmlSanitizers::extend('paragraphs-only', new HtmlSanitizer(
         (new HtmlSanitizerConfig)->allowElement('p')
     ));
 
