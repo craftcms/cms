@@ -35,7 +35,7 @@ class TwigRenderer implements TwigRendererInterface
      *
      * @param  string  $template  The name of the template to load
      * @param  array  $variables  The variables that should be available to the template
-     * @param  TemplateMode  $templateMode  The template mode to use
+     * @param  TemplateMode|null  $templateMode  The template mode to use
      * @return string the rendering result
      */
     public function renderTemplate(

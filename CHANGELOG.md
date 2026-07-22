@@ -5,7 +5,7 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
 
-- Added `CraftCms\Cms\View\TemplateManager`, its `CraftCms\Cms\Support\Facades\Template` facade, `CraftCms\Cms\View\Contracts\TemplateRendererInterface`, `CraftCms\Cms\Twig\Contracts\TwigRendererInterface`, `CraftCms\Cms\Twig\TwigRenderer`, and `CraftCms\Cms\Blade\BladeRenderer` with support for plugin-defined template renderers. Creators registered via `CraftCms\Cms\Support\Facades\Template::extend()` are replayed for each manager scope.
+- Added `CraftCms\Cms\View\TemplateManager`, its `CraftCms\Cms\Support\Facades\Template` facade, and `CraftCms\Cms\Twig\Contracts\TwigRendererInterface`, with support for plugin-defined template renderers. `CraftCms\Cms\View\Contracts\TemplateRendererInterface`, `CraftCms\Cms\Twig\TwigRenderer`, and `CraftCms\Cms\Blade\BladeRenderer` were updated for manager-based rendering. Creators registered via `CraftCms\Cms\Support\Facades\Template::extend()` are replayed for each manager scope.
 - `template()` and `pageTemplate()` now accept an optional template renderer name.
 - `TemplateRendered` and `PageTemplateRendered` events now expose the final renderer name via `$rendererName`; the corresponding before events no longer expose renderer identity.
 - Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))

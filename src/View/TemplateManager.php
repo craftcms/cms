@@ -316,7 +316,7 @@ class TemplateManager extends Manager
         [$rendererName, $resolvedRenderer] = $this->rendererForFile($resolvedTemplate, $renderer);
         $rendererSelected?->__invoke($rendererName);
 
-        Log::debug("Rendering template: {$template}", [__METHOD__, 'renderer' => $rendererName]);
+        Log::debug("Rendering template: {$template}", ['method' => __METHOD__, 'renderer' => $rendererName]);
 
         $output = $this->withRenderingState(
             $template,
