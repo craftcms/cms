@@ -14,11 +14,21 @@ export function getActionUrl(action: string = '') {
  * @TODO
  */
 export function actionHeaders(): RawAxiosRequestHeaders {
+  // The body-end sync script records what the page has loaded on the `Craft`
+  // global (see PHP's RegisteredClientAssets); fall back to the Cp config.
+  const craftGlobal = (window as {Craft?: Record<string, unknown>}).Craft;
+  const registeredAssetBundles =
+    (craftGlobal?.registeredAssetBundles as string[] | undefined) ??
+    Cp.registeredAssetBundles;
+  const registeredJsFiles =
+    (craftGlobal?.registeredJsFiles as string[] | undefined) ??
+    Cp.registeredJsFiles;
+
   let headers: Record<string, string> = {
-    'X-Registered-Asset-Bundles': [...new Set(Cp.registeredAssetBundles)].join(
+    'X-Registered-Asset-Bundles': [...new Set(registeredAssetBundles)].join(
       ','
     ),
-    'X-Registered-Js-Files': [...new Set(Cp.registeredJsFiles)].join(','),
+    'X-Registered-Js-Files': [...new Set(registeredJsFiles)].join(','),
   };
 
   // @TODO Make sure we really don't need this anymore
@@ -36,7 +46,11 @@ const csrf = new Csrf();
 actionClient.interceptors.request.use(async (config) => {
   // Resolve the base URL lazily so it reflects the runtime CP trigger. Config
   // isn't guaranteed to be initialized when this module is first imported.
-  config.baseURL = getActionUrl();
+  // Use the origin only: the generated action routes already include the CP
+  // trigger + action trigger (e.g. `/admin/actions/fields/render-settings`),
+  // so the base only needs the scheme + host (+ port). `URL.origin` supplies
+  // all three without the `protocol` trailing-colon / port-doubling pitfalls.
+  config.baseURL = new URL(getActionUrl()).origin;
 
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');

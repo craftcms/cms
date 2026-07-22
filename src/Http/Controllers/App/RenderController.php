@@ -119,7 +119,7 @@ readonly class RenderController
 
         $components = $validated['components'];
         $withMenuItems = $validated['withMenuItems'] ?? false;
-        $menuId = $validated['menuId'];
+        $menuId = $validated['menuId'] ?? null;
 
         $componentHtml = [];
         $menuItemHtml = [];

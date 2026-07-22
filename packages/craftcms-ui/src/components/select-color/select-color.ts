@@ -37,7 +37,7 @@ export default class CraftSelectColor extends LitElement {
   /**
    * The currently selected color value.
    */
-  @property()
+  @property({attribute: 'model-value'})
   modelValue: string | null = null;
 
   /**

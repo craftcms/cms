@@ -6,7 +6,7 @@
   showIndicators: showIndicators ?? allowOverrides,
   showDescription: showDescription ?? allowOverrides,
   createAction: (create ?? false) ? 'entry-types/new' : null,
-  jsClass: jsClass ?? 'Craft.EntryTypeSelectInput',
+  jsClass: jsClass ?? false,
   jsSettings: {
     allowOverrides,
   }|merge(jsSettings ?? {}),

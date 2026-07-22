@@ -1,59 +1,9 @@
-{%- set options = options ?? [] %}
-{%- set value = value ?? null %}
-{%- set disabled = disabled ?? false %}
-{%- set static = static ?? false %}
-{%- set appearance = appearance ?? 'outline' %}
-{%- set size = size ?? null %}
+{# Renders a <craft-button-group> (wrapped in a <craft-listbox>) from the
+   legacy buttonGroup variables (`options`, `value`, `name`, `id`, `class`,
+   `appearance`, `size`, `disabled`, `static`, `labelledBy`,
+   `containerAttributes`).
 
-{%- set id = id ?? "button-group-#{random()}" %}
-{%- set class = (class ?? [])|explodeClass %}
+   The legacy-to-component mapping lives in
+   FormFields::buttonGroupFromConfig(). #}
 
-{%- set containerAttributes = {
-  id,
-  class,
-  role: 'group',
-  aria: {
-    labelledby: labelledBy ?? false,
-  },
-}|merge(containerAttributes ?? [], recursive=true) %}
-
-{% tag 'craft-listbox' with { disabled: (disabled or static) ? true : false } %}
-  {% tag 'craft-button-group' with containerAttributes %}
-    {%- for key, option in options %}
-      {%- if option is not iterable %}
-        {%- set option = {label: option, value: key} %}
-      {%- endif %}
-      {%- set selected = option.value is defined and option.value == value %}
-      {% tag 'craft-button' with {
-        type: 'button',
-        appearance: option.appearance ?? appearance,
-        size: option.size ?? size,
-        active: selected ? 'true' : null,
-        class: (option.class ?? [])|explodeClass,
-        aria: {
-          pressed: selected ? 'true' : 'false',
-        },
-        data: {
-          value: option.value ?? null,
-        },
-        value: option.value ?? null,
-        disabled: disabled or static,
-      }|merge(option.attributes ?? {}, recursive=true)|filter %}
-        {% if option.icon ?? false %}
-          <craft-icon name="{{ option.icon }}" slot="prefix"></craft-icon>
-        {% endif %}
-        {%- if option.labelHtml is defined -%}
-          {{ option.labelHtml|raw }}
-        {%- else -%}
-          {{ option.label ?? '' }}
-        {%- endif -%}
-      {% endtag %}
-    {% endfor %}
-  {% endtag %}
-  {% if name ?? false %}
-    {% set inputId = "#{id}-input" %}
-    {{ hiddenInput(name, value, {
-      id: inputId,
-    }) }}
-  {% endif %}
-{% endtag %}
+{{- craft.cp.buttonGroup(_context)|raw -}}

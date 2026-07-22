@@ -9,10 +9,13 @@ import './modules/navigation/components/cp-queue-indicator.js';
  */
 import './modules/sortable-checkbox-select';
 import './modules/listbox';
+import './modules/matrix';
 import './modules/auth/elevated-session';
 import './modules/field-layout-designer';
 import './modules/editable-table';
 import './modules/generated-fields';
+import './modules/component-select';
+import './modules/grouped-entry-type-manager';
 import './modules/queue';
 
 window.Cp = Cp as unknown as typeof window.Cp;

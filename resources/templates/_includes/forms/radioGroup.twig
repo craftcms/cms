@@ -1,38 +1,14 @@
-{%- set options = options ?? [] %}
-{%- set value = value ?? null %}
-{%- set disabled = disabled ?? false %}
+{# Renders a radio group from the legacy radioGroup variables (`id`, `name`,
+   `options`, `value`, `toggle`, `targetPrefix`, `disabled`, `describedBy`,
+   `autofocus`, `class`, `containerAttributes` and an `attr` block).
 
-{%- set id = id ?? "radio-group-#{random()}" %}
-{%- set class = (class ?? [])|explodeClass|merge([
-    'radio-group',
-    (toggle ?? false) ? 'fieldtoggle' : null,
-]|filter) %}
+   The legacy-to-component mapping lives in
+   FormFields::radioGroupFromConfig(); this template only handles the `attr`
+   block. #}
 
-{%- set containerAttributes = {
-    id,
-    class,
-    data: {
-        'target-prefix': (toggle ?? false) ? (targetPrefix ?? '#') : false,
-    },
-}|merge(containerAttributes ?? [], recursive=true) %}
-
+{%- set containerAttributes = containerAttributes ?? {} %}
 {%- if block('attr') is defined %}
-    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{% tag 'div' with containerAttributes %}
-    {%- for key, option in options %}
-        {%- if option is not iterable %}
-            {%- set option = {label: option, value: key} %}
-        {%- endif %}
-        <div>
-            {% include "_includes/forms/radio" with {
-                describedBy: describedBy ?? null,
-                name: name ?? null,
-                checked: (option.value is defined and option.value == value and (option.value or not (option.custom ?? false))),
-                autofocus: loop.first and (autofocus ?? false) and not Request.isMobileBrowser(true),
-                disabled: disabled,
-            }|merge(option) only %}
-        </div>
-    {% endfor %}
-{% endtag %}
+{{ craft.cp.radioGroup(_context)|raw }}

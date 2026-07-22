@@ -12,6 +12,7 @@ use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Template;
 use Illuminate\Support\Collection;
 
@@ -294,7 +295,7 @@ trait ProvidesLinkField
 
             if ($html !== null && $html !== '') {
                 $settings[$typeId] = [
-                    'html' => $html,
+                    'html' => Html::tag('craft-field-group', $html),
                     'label' => $this->linkTypeSettingsLabel($typeClass),
                 ];
             }

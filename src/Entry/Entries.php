@@ -28,6 +28,7 @@ use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -301,6 +302,10 @@ class Entries
     public function reassignEntries(int|array $oldUserId, int $newUserId): int
     {
         $oldUserIds = Arr::wrap($oldUserId);
+
+        if (in_array($newUserId, $oldUserIds, true)) {
+            throw new InvalidArgumentException('The new author must be different from the old author.');
+        }
 
         $count = DB::table(Table::ENTRIES_AUTHORS)
             ->whereIn('authorId', $oldUserIds)
