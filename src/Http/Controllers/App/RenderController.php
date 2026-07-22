@@ -18,8 +18,8 @@ use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -180,7 +180,7 @@ readonly class RenderController
             'encode' => ['boolean'],
             'inlineOnly' => ['boolean'],
             'sanitizeHtml' => ['boolean'],
-            'htmlSanitizer' => ['nullable', 'string', Rule::in(app(HtmlSanitizers::class)->names())],
+            'htmlSanitizer' => ['nullable', 'string', Rule::in(HtmlSanitizers::names())],
         ]);
 
         $encode = $request->boolean('encode');
