@@ -46,6 +46,21 @@ describe('renderString', function () {
         'array variables with filter' => ['{{ items|join(", ") }}', ['items' => ['a', 'b', 'c']], 'a, b, c'],
     ]);
 
+    it('short-circuits the null-safe operator instead of erroring', function (string $template, array $variables, string $expected) {
+        config(['app.debug' => true]);
+        app()->forgetScopedInstances();
+        $renderer = app(TwigRenderer::class);
+
+        $result = $renderer->renderString($template, $variables);
+
+        expect($result)->toBe($expected);
+    })->with([
+        'property access on null' => ['{{ user?.name }}', ['user' => null], ''],
+        'method call on null' => ['{{ user?.getName() }}', ['user' => null], ''],
+        'chained null-safe access short-circuits at the first null' => ['{{ user?.profile?.name }}', ['user' => null], ''],
+        'non-null case still resolves normally' => ['{{ user?.name }}', ['user' => ['name' => 'Bob']], 'Bob'],
+    ]);
+
     it('does not escape HTML by default', function () {
         $result = $this->manager->renderTwigString('{{ html }}', ['html' => '<strong>bold</strong>']);
 

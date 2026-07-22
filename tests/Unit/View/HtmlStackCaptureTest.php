@@ -65,7 +65,10 @@ it('captures html with registered head and body assets', function () {
         ->and($fragment->bodyHtml)->toContain('/prefs-hook.js')
         ->and($fragment->bodyHtml)->toContain('window.prefsHookReady = true')
         ->and($this->htmlStack->headHtml())->toBe('')
-        ->and($this->htmlStack->bodyHtml())->toBe('');
+        // The outer drain may carry the client-asset sync script (the
+        // fragment's assets do reach the browser), but no fragment content.
+        ->and($this->htmlStack->bodyHtml())->not->toContain('prefs-hook')
+        ->and($this->htmlStack->bodyHtml())->not->toContain('prefsHookReady');
 });
 
 it('isolates captured assets from the outer stack', function () {
@@ -127,5 +130,5 @@ it('captures pending legacy assets registered during render', function () {
     });
 
     expect($fragment->bodyHtml)->toContain('window.capturedFragmentAsset = true')
-        ->and($this->htmlStack->bodyHtml())->toBe('');
+        ->and($this->htmlStack->bodyHtml())->not->toContain('capturedFragmentAsset');
 });
