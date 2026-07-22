@@ -67,6 +67,7 @@ readonly class ApiController extends GqlController
 
         foreach ($queries as $key => [$query, $variables, $operationName]) {
             $query = is_string($query) ? trim($query) : trim((string) ($query ?? ''));
+            $operationName = is_string($operationName) ? $operationName : null;
 
             try {
                 if ($query === '') {
@@ -77,7 +78,7 @@ readonly class ApiController extends GqlController
                     $schema,
                     $query,
                     is_array($variables) ? $variables : null,
-                    is_string($operationName) ? $operationName : null,
+                    $operationName,
                     app()->hasDebugModeEnabled(),
                 );
             } catch (ValueError $e) {
@@ -98,7 +99,7 @@ readonly class ApiController extends GqlController
                 ];
             }
 
-            if (str_starts_with($query, 'mutation')) {
+            if (GqlHelper::isMutation($query, $operationName)) {
                 $hasMutations = true;
             }
         }
@@ -109,7 +110,7 @@ readonly class ApiController extends GqlController
 
         $response = new GqlResponse($singleQuery ? reset($result) : $result);
 
-        if (! ($cache ?? ! $hasMutations)) {
+        if ($hasMutations || $cache === false) {
             $response->nocache();
         }
 

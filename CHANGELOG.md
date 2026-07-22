@@ -53,9 +53,12 @@
 - Removed `CraftCms\Cms\Plugin\Plugin::registerPlugin()`. `register()` should be used instead. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Fixed a bug where the legacy `yii\web\JqueryAsset` wasn’t resolving properly. ([#19264](https://github.com/craftcms/cms/pull/19264))
 - Fixed a bug where bulk entry moves could assign entries to sections that didn’t support their entry types. ([#19267](https://github.com/craftcms/cms/pull/19267))
+- Fixed a bug where queued resaves ignored offset and limit criteria or accepted non-positive batch sizes. ([#19271](https://github.com/craftcms/cms/pull/19271))
+- Fixed a bug where failed password and passkey login attempts incremented invalid-login counters twice. ([#19283](https://github.com/craftcms/cms/pull/19283))
 - Fixed bugs that could prevent authored content from being deleted or reassigned safely when deleting users. ([#19273](https://github.com/craftcms/cms/pull/19273))
 - Fixed an issue where disabled and archived user accounts could still authenticate. ([#19265](https://github.com/craftcms/cms/pull/19265))
 - Fixed issues with `craft:users:set-password` password validation, exit statuses, and session invalidation. ([#19272](https://github.com/craftcms/cms/pull/19272))
+- Fixed a bug where selected GraphQL mutations could be mistaken for cacheable queries. ([#19284](https://github.com/craftcms/cms/pull/19284))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 - Fixed a bug where two-factor authentication could lose login state or verify the wrong user during impersonation. ([#19274](https://github.com/craftcms/cms/pull/19274))
 - Fixed a bug where new Matrix blocks weren’t getting created. ([#19161](https://github.com/craftcms/cms/issues/19161))

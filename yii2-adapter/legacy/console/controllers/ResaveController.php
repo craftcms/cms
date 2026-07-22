@@ -483,6 +483,12 @@ class ResaveController extends Controller
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
+        if ($this->batchSize < 1) {
+            $this->stderr('--batch-size must be at least 1.' . PHP_EOL, Console::FG_RED);
+
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {

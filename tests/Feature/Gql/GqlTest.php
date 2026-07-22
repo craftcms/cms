@@ -171,6 +171,21 @@ it('fills the cache when querying through the new service', function () {
     expect($gql->getCachedResult($cacheKey))->toBe($result);
 });
 
+it('does not create cache keys for mutations', function (string $query, ?string $operationName) {
+    Cms::config()->enableGraphqlCaching = true;
+
+    $gql = app(Gql::class);
+    $schema = $gql->getPublicSchema();
+
+    $cacheKeyMethod = new ReflectionMethod(Gql::class, '_getCacheKey');
+
+    expect($cacheKeyMethod->invoke($gql, $schema, $query, null, null, $operationName))->toBeNull();
+})->with([
+    'comment-prefixed mutation' => ["# comment\nmutation { bogus }", null],
+    'fragment-prefixed mutation' => ['fragment PingFields on Query { ping } mutation { bogus }', null],
+    'named mutation after a query' => ['query Read { ping } mutation Write { bogus }', 'Write'],
+]);
+
 it('flushes graphql registries and loaders', function () {
     UserInterface::getType();
     $typeName = User::GQL_TYPE_NAME;
