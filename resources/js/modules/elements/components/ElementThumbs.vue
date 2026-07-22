@@ -170,9 +170,9 @@
             />
             <craft-icon v-else name="asset" class="thumb-fallback"></craft-icon>
           </span>
-          <span class="thumb-label" :title="element.label">{{
+          <craft-truncate class="thumb-label">{{
             element.label
-          }}</span>
+          }}</craft-truncate>
         </component>
       </li>
     </ul>
@@ -275,10 +275,9 @@
   }
 
   .thumb-label {
+    // craft-truncate handles the ellipsis + overflow tooltip internally; cap the
+    // width so it truncates within the tile.
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     font-weight: 500;
     text-align: center;
   }
