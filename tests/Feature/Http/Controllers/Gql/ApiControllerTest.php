@@ -132,7 +132,7 @@ it('denies access when the schema has no site permissions', function () {
         ->assertSee('Schema doesn’t have access');
 });
 
-it('adds no-cache headers for mutations unless caching is forced', function () {
+it('always adds no-cache headers for mutations', function () {
     $response = get(action_url('graphql/api').'?query=mutation%20%7Bbogus%7D')
         ->assertOk()
         ->assertHeader('Pragma', 'no-cache')
@@ -146,11 +146,30 @@ it('adds no-cache headers for mutations unless caching is forced', function () {
     $response = get(action_url('graphql/api').'?query=mutation%20%7Bbogus%7D', [
         'X-Craft-Gql-Cache' => 'cache',
     ])->assertOk()
-        ->assertHeaderMissing('Pragma')
-        ->assertHeaderMissing('Expires');
+        ->assertHeader('Pragma', 'no-cache')
+        ->assertHeader('Expires', '0');
 
     expect($response->headers->get('Cache-Control'))
-        ->not->toBe('no-cache, no-store, must-revalidate');
+        ->toContain('no-cache')
+        ->toContain('no-store')
+        ->toContain('must-revalidate');
+});
+
+it('adds no-cache headers for the selected mutation operation', function () {
+    $url = action_url('graphql/api').'?'.http_build_query([
+        'query' => 'query Read { __typename } mutation Write { bogus }',
+        'operationName' => 'Write',
+    ]);
+
+    $response = get($url)
+        ->assertOk()
+        ->assertHeader('Pragma', 'no-cache')
+        ->assertHeader('Expires', '0');
+
+    expect($response->headers->get('Cache-Control'))
+        ->toContain('no-cache')
+        ->toContain('no-store')
+        ->toContain('must-revalidate');
 });
 
 function setActiveSchema(GqlSchema $schema): void
