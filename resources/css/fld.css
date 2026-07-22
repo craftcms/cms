@@ -385,7 +385,7 @@ body:not(.dragging) .fld-element {
 }
 
 .fld-element-settings-body hr {
-  margin-inline: -24px;
+  margin-block: var(--c-spacing-xl);
 }
 
 .fld-element-settings-footer {
