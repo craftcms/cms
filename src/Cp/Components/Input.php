@@ -359,6 +359,10 @@ class Input extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
+        $type = (string) $this->evaluate($this->type);
+        $placeholder = $this->evaluate($this->placeholder);
+        $name = $this->evaluate($this->name);
+
         return [
             'maxlength' => $this->evaluate($this->maxlength),
             'size' => $this->getSize(),
@@ -367,6 +371,17 @@ class Input extends ViewComponent
             'center' => (bool) $this->evaluate($this->center),
             'monospace' => (bool) $this->evaluate($this->monospace),
             'hidden-input' => (bool) $this->evaluate($this->hiddenInput),
+            // Lion pushes these host properties onto the slotted input when
+            // the element upgrades (LionInput::updated()), overwriting the
+            // server-rendered attributes with its defaults — so any
+            // non-default value must also live on the host. The native input
+            // keeps them too, for pre-upgrade correctness (form posts,
+            // password masking, CSS).
+            'type' => $type !== 'text' ? $type : null,
+            'placeholder' => $placeholder !== null && $placeholder !== '' ? (string) $placeholder : null,
+            'name' => $name !== null && $name !== '' ? (string) $name : null,
+            'disabled' => $this->isDisabled(),
+            'readonly' => (bool) $this->evaluate($this->readOnly),
         ];
     }
 

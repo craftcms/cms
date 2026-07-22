@@ -12,7 +12,7 @@ describe('input', function () {
             ->value('Happy Lager')
             ->toHtml();
 
-        expect($html)->toContain('<craft-input>')
+        expect($html)->toContain('<craft-input name="siteName">')
             ->and($html)->toContain('slot="input"')
             ->and($html)->toContain('type="text"')
             ->and($html)->toContain('id="site-name"')
@@ -90,6 +90,31 @@ describe('input', function () {
 });
 
 describe('host attributes', function () {
+    it('mirrors Lion-synced control attributes onto the host', function () {
+        // Lion pushes type/placeholder/name/disabled/readonly from the host
+        // onto the slotted input on upgrade, so non-default values must be
+        // reflected there or the server-rendered attributes get clobbered.
+        $html = Input::make()
+            ->id('i')
+            ->type('password')
+            ->placeholder('Enter a value')
+            ->name('myField')
+            ->disabled()
+            ->readOnly()
+            ->toHtml();
+
+        expect($html)->toMatch('/<craft-input[^>]* type="password"/')
+            ->and($html)->toMatch('/<craft-input[^>]* placeholder="Enter a value"/')
+            ->and($html)->toMatch('/<craft-input[^>]* name="myField"/')
+            ->and($html)->toMatch('/<craft-input[^>]* disabled/')
+            ->and($html)->toMatch('/<craft-input[^>]* readonly/');
+    });
+
+    it('omits Lion-default control attributes from the host', function () {
+        expect(Input::make()->id('i')->toHtml())
+            ->toContain('<craft-input>');
+    });
+
     it('reflects the display modifiers on the host', function () {
         $html = Input::make()
             ->id('i')

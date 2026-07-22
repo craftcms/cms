@@ -12,7 +12,7 @@ describe('textarea', function () {
             ->value('Happy Lager')
             ->toHtml();
 
-        expect($html)->toContain('<craft-textarea>')
+        expect($html)->toContain('<craft-textarea name="notes">')
             ->and($html)->toContain('slot="input"')
             ->and($html)->toContain('id="notes"')
             ->and($html)->toContain('name="notes"')
@@ -114,6 +114,26 @@ describe('host attributes', function () {
         $html = Textarea::make()->id('i')->toHtml();
 
         expect($html)->toContain('<craft-textarea>');
+    });
+
+    it('mirrors Lion-synced control attributes onto the host', function () {
+        // Lion pushes placeholder/name/disabled/readonly/rows from the host
+        // onto the slotted textarea on upgrade, so non-default values must be
+        // reflected there or the server-rendered attributes get clobbered.
+        $html = Textarea::make()
+            ->id('i')
+            ->placeholder('Enter a value')
+            ->name('myField')
+            ->rows(6)
+            ->disabled()
+            ->readOnly()
+            ->toHtml();
+
+        expect($html)->toMatch('/<craft-textarea[^>]* placeholder="Enter a value"/')
+            ->and($html)->toMatch('/<craft-textarea[^>]* name="myField"/')
+            ->and($html)->toMatch('/<craft-textarea[^>]* rows="6"/')
+            ->and($html)->toMatch('/<craft-textarea[^>]* disabled/')
+            ->and($html)->toMatch('/<craft-textarea[^>]* readonly/');
     });
 });
 

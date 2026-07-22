@@ -189,8 +189,23 @@ class Textarea extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
+        $placeholder = $this->evaluate($this->placeholder);
+        $name = $this->evaluate($this->name);
+        $rows = (int) $this->evaluate($this->rows);
+
         return [
             'monospace' => (bool) $this->evaluate($this->monospace),
+            // Lion pushes these host properties onto the slotted textarea
+            // when the element upgrades (LionTextarea::updated()),
+            // overwriting the server-rendered attributes with its defaults —
+            // so any non-default value must also live on the host. The
+            // native textarea keeps them too, for pre-upgrade correctness
+            // (form posts, CSS).
+            'placeholder' => $placeholder !== null && $placeholder !== '' ? (string) $placeholder : null,
+            'name' => $name !== null && $name !== '' ? (string) $name : null,
+            'disabled' => $this->isDisabled(),
+            'readonly' => (bool) $this->evaluate($this->readOnly),
+            'rows' => $rows !== 2 ? $rows : null,
         ];
     }
 
