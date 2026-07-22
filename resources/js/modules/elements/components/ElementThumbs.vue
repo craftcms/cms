@@ -219,14 +219,6 @@
     inset-block-start: var(--c-spacing-sm);
     inset-inline-start: var(--c-spacing-sm);
     z-index: 1;
-    opacity: 0;
-    transition: opacity 0.1s ease-in-out;
-  }
-
-  .thumbsview > li:hover .thumb-check,
-  .thumbsview > li:focus-within .thumb-check,
-  .thumbsview > li.sel .thumb-check {
-    opacity: 1;
   }
 
   .thumb-tile {
