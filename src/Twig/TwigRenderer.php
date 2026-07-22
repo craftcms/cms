@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\View\BaseTemplateRenderer;
-use CraftCms\Cms\View\PageLifecycle;
+use CraftCms\Cms\Twig\Contracts\TwigRendererInterface;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Arrayable;
 use Twig\Extension\SandboxExtension;
 use Twig\Template;
@@ -18,18 +16,14 @@ use Yiisoft\Arrays\ArrayableInterface;
 /**
  * @mixin Twig
  */
-#[Scoped]
-class TwigRenderer extends BaseTemplateRenderer
+class TwigRenderer implements TwigRendererInterface
 {
     /** @var TemplateWrapper[] Object template cache */
     private array $objectTemplates = [];
 
     public function __construct(
         private readonly Twig $twig,
-        protected PageLifecycle $pageLifecycle,
-    ) {
-        parent::__construct($this->pageLifecycle);
-    }
+    ) {}
 
     public function supports(string $file): bool
     {
@@ -41,7 +35,7 @@ class TwigRenderer extends BaseTemplateRenderer
      *
      * @param  string  $template  The name of the template to load
      * @param  array  $variables  The variables that should be available to the template
-     * @param  ?TemplateMode  $templateMode  The template mode to use
+     * @param  TemplateMode|null  $templateMode  The template mode to use
      * @return string the rendering result
      */
     public function renderTemplate(
@@ -50,12 +44,9 @@ class TwigRenderer extends BaseTemplateRenderer
         ?TemplateMode $templateMode = null,
         ?string $resolvedTemplate = null,
     ): string {
-        return $this->renderInternal(
-            template: $template,
-            variables: $variables,
-            templateMode: $templateMode,
-            render: fn (string $template, array $variables) => $this->twig->get()->render($template, $variables),
-        );
+        $templateMode ??= TemplateMode::get();
+
+        return $this->twig->get($templateMode)->render($template, $variables);
     }
 
     /**
@@ -65,8 +56,14 @@ class TwigRenderer extends BaseTemplateRenderer
         string $template,
         array $variables = [],
         ?TemplateMode $templateMode = null,
+        ?string $resolvedTemplate = null,
     ): string {
-        return $this->sandbox(fn () => $this->renderTemplate($template, $variables, $templateMode), $templateMode);
+        $templateMode ??= TemplateMode::get();
+
+        return $this->sandbox(
+            fn () => $this->renderTemplate($template, $variables, $templateMode, $resolvedTemplate),
+            $templateMode,
+        );
     }
 
     /**
@@ -83,28 +80,18 @@ class TwigRenderer extends BaseTemplateRenderer
             return $template;
         }
 
-        $oldTemplateMode = TemplateMode::get();
-        TemplateMode::set($templateMode);
-
-        $twig = $this->twig->get();
+        $twig = $this->twig->get($templateMode);
 
         if (! $escapeHtml) {
             $twig->setDefaultEscaperStrategy(false);
         }
 
-        $lastRenderingTemplate = $this->renderingTemplate;
-        $this->renderingTemplate = 'string:'.$template;
-
         try {
             return $twig->createTemplate($template)->render($variables);
         } finally {
-            $this->renderingTemplate = $lastRenderingTemplate;
-
             if (! $escapeHtml) {
                 $twig->setDefaultEscaperStrategy();
             }
-
-            TemplateMode::set($oldTemplateMode);
         }
     }
 
@@ -144,9 +131,7 @@ class TwigRenderer extends BaseTemplateRenderer
             return trim($template);
         }
 
-        $oldTemplateMode = TemplateMode::get();
-        TemplateMode::set($templateMode);
-        $twig = $this->twig->get();
+        $twig = $this->twig->get($templateMode);
 
         // Temporarily disable strict variables if it's enabled
         $strictVariables = $twig->isStrictVariables();
@@ -156,9 +141,6 @@ class TwigRenderer extends BaseTemplateRenderer
         }
 
         $twig->setDefaultEscaperStrategy(false);
-        $lastRenderingTemplate = $this->renderingTemplate;
-        $this->renderingTemplate = 'string:'.$template;
-
         try {
             // Is this the first time we've parsed this template?
             $cacheKey = md5($templateMode->value.':'.$template);
@@ -196,9 +178,7 @@ class TwigRenderer extends BaseTemplateRenderer
 
             return trim($templateObj->render($variables));
         } finally {
-            $this->renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();
-            TemplateMode::set($oldTemplateMode);
 
             // Re-enable strict variables
             if ($strictVariables) {

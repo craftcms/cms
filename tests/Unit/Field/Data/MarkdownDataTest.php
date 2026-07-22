@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
 use Illuminate\Contracts\Support\Htmlable;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -47,7 +47,7 @@ it('can render inline-only markdown', function () {
 });
 
 it('can sanitize rendered html', function () {
-    app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
+    HtmlSanitizers::extend('paragraphs-only', new HtmlSanitizer(
         (new HtmlSanitizerConfig)->allowElement('p')
     ));
 

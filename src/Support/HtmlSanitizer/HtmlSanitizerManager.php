@@ -8,57 +8,69 @@ use Closure;
 use CraftCms\Cms\Support\HtmlSanitizer\AttributeSanitizers\VideoEmbedUrlSanitizer;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
+use Illuminate\Support\Manager;
+use Override;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerAction;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
+use UnexpectedValueException;
 
 #[Singleton]
-class HtmlSanitizers
+class HtmlSanitizerManager extends Manager
 {
-    /** @var array<string, array<string, mixed>|Closure|HtmlSanitizerInterface> */
-    private array $definitions = [];
-
     /** @var list<Closure> */
     private array $defaultCallbacks = [];
 
-    /** @var array<string, HtmlSanitizerInterface> */
-    private array $resolvedSanitizers = [];
-
-    public function __construct()
+    public function getDefaultDriver(): string
     {
-        $this->definitions['default'] = fn () => new HtmlSanitizer($this->defaultConfig());
+        return 'default';
     }
 
-    public function register(string $name, array|Closure|HtmlSanitizerInterface $definition): void
+    /**
+     * @param  string  $driver
+     */
+    #[Override]
+    public function extend($driver, array|Closure|HtmlSanitizerInterface $definition): static
     {
-        $this->definitions[$name] = $definition;
-        unset($this->resolvedSanitizers[$name]);
+        $creator = $definition instanceof Closure
+            ? $definition
+            : static fn () => $definition;
+
+        parent::extend($driver, $creator);
+
+        return $this;
     }
 
-    public function defaults(Closure $callback): void
+    public function defaults(Closure $callback): static
     {
         $this->defaultCallbacks[] = $callback;
-        unset($this->resolvedSanitizers['default']);
+
+        return $this;
     }
 
     public function has(string $name): bool
     {
-        return isset($this->definitions[$name]);
+        if ($name === $this->getDefaultDriver()) {
+            return true;
+        }
+
+        return array_key_exists($name, $this->customCreators);
     }
 
     /** @return list<string> */
     public function names(): array
     {
-        return array_keys($this->definitions);
+        return array_values(array_unique([
+            $this->getDefaultDriver(),
+            ...array_keys($this->customCreators),
+        ]));
     }
 
     /** @return Collection<string, HtmlSanitizerInterface> */
     public function all(): Collection
     {
-        return collect($this->definitions)
-            ->keys()
+        return collect($this->names())
             ->mapWithKeys(fn (string $name) => [$name => $this->sanitizer($name)]);
     }
 
@@ -77,19 +89,16 @@ class HtmlSanitizers
 
     public function sanitizer(?string $name = null): HtmlSanitizerInterface
     {
-        $name ??= 'default';
+        return $this->driver($name);
+    }
 
-        if (isset($this->resolvedSanitizers[$name])) {
-            return $this->resolvedSanitizers[$name];
-        }
-
-        if (! isset($this->definitions[$name])) {
-            throw new InvalidArgumentException("Unknown HTML sanitizer [$name].");
-        }
-
-        $sanitizer = $this->resolveDefinition($this->definitions[$name]);
-
-        return $this->resolvedSanitizers[$name] = $sanitizer;
+    /**
+     * @param  string|null  $driver
+     */
+    #[Override]
+    public function driver($driver = null): HtmlSanitizerInterface
+    {
+        return parent::driver($driver);
     }
 
     public function defaultConfig(): HtmlSanitizerConfig
@@ -107,27 +116,35 @@ class HtmlSanitizers
         foreach ($this->defaultCallbacks as $callback) {
             $resolvedConfig = $callback($config);
 
-            if ($resolvedConfig instanceof HtmlSanitizerConfig) {
-                $config = $resolvedConfig;
+            if (! $resolvedConfig instanceof HtmlSanitizerConfig) {
+                throw new UnexpectedValueException('HTML sanitizer default callbacks must return '.HtmlSanitizerConfig::class.'.');
             }
+
+            $config = $resolvedConfig;
         }
 
         return $config;
     }
 
-    private function resolveDefinition(array|Closure|HtmlSanitizerInterface $definition): HtmlSanitizerInterface
+    #[Override]
+    protected function createDriver($driver): HtmlSanitizerInterface
     {
-        $resolvedSanitizer = value($definition);
+        $definition = parent::createDriver($driver);
 
-        if ($resolvedSanitizer instanceof HtmlSanitizerInterface) {
-            return $resolvedSanitizer;
+        if ($definition instanceof HtmlSanitizerInterface) {
+            return $definition;
         }
 
-        if (is_array($resolvedSanitizer)) {
-            return new HtmlSanitizer($this->configFromArray($resolvedSanitizer));
+        if (is_array($definition)) {
+            return new HtmlSanitizer($this->configFromArray($definition));
         }
 
-        throw new InvalidArgumentException('HTML sanitizer definitions must resolve to array configs or HtmlSanitizerInterface instances.');
+        throw new UnexpectedValueException("HTML sanitizer [$driver] must resolve to an array config or an instance of ".HtmlSanitizerInterface::class.'.');
+    }
+
+    protected function createDefaultDriver(): HtmlSanitizerInterface
+    {
+        return new HtmlSanitizer($this->defaultConfig());
     }
 
     private function configFromArray(array $settings): HtmlSanitizerConfig

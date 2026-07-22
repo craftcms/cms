@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer as TwigTemplateRenderer;
+use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\File;
 
@@ -23,13 +23,13 @@ afterEach(function () {
 });
 
 it('renders named Blade views from Twig', function () {
-    $output = app(TwigTemplateRenderer::class)->renderString('{{ blade("laravel-extension-test::blade-partial", {"name": "Twig"}) }}');
+    $output = app(TemplateManager::class)->renderTwigString('{{ blade("laravel-extension-test::blade-partial", {"name": "Twig"}) }}');
 
     expect($output)->toBe('Blade Twig');
 });
 
 it('renders slash-style Blade view names from Twig', function () {
-    $output = app(TwigTemplateRenderer::class)->renderString('{{ blade("laravel-extension-test::nested/blade-partial", {"name": "Twig"}) }}');
+    $output = app(TemplateManager::class)->renderTwigString('{{ blade("laravel-extension-test::nested/blade-partial", {"name": "Twig"}) }}');
 
     expect($output)->toBe('Nested Blade Twig');
 });

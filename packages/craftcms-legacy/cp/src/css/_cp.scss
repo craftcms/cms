@@ -32,15 +32,6 @@ body {
     cursor: move !important;
     cursor: grabbing !important;
   }
-
-  :focus {
-    outline-style: solid;
-    outline-color: transparent;
-  }
-
-  :focus-visible {
-    box-shadow: var(--focus-ring);
-  }
 }
 
 .skip-link {

@@ -130,6 +130,7 @@ readonly class Cp
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
             'right' => $orientation === 'ltr' ? 'right' : 'left',
+            'systemName' => Cms::systemName(),
             'systemUid' => Cms::systemUid(),
             'timepickerOptions' => self::timepickerOptions($formattingLocale, $orientation),
             'timezone' => Cms::timezone(),
