@@ -994,6 +994,8 @@ JS, [
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
+        } elseif ($value instanceof ElementCollection) {
+            $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
         }

@@ -48,6 +48,9 @@ class GetAttrAdjuster implements NodeVisitorInterface
             'is_defined_test' => $isDefinedTest,
             'ignore_strict_check' => $node->getAttribute('ignore_strict_check'),
             'optimizable' => $node->getAttribute('optimizable'),
+            'null_safe' => $node->getAttribute('null_safe'),
+            'is_short_circuited' => false,
+            'var_name' => null,
         ];
 
         if ($node->hasAttribute('spread')) {
