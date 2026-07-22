@@ -46,7 +46,11 @@ const csrf = new Csrf();
 actionClient.interceptors.request.use(async (config) => {
   // Resolve the base URL lazily so it reflects the runtime CP trigger. Config
   // isn't guaranteed to be initialized when this module is first imported.
-  config.baseURL = getActionUrl();
+  // Use the origin only: the generated action routes already include the CP
+  // trigger + action trigger (e.g. `/admin/actions/fields/render-settings`),
+  // so the base only needs the scheme + host (+ port). `URL.origin` supplies
+  // all three without the `protocol` trailing-colon / port-doubling pitfalls.
+  config.baseURL = new URL(getActionUrl()).origin;
 
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');

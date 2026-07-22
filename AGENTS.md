@@ -93,6 +93,8 @@ partially migrated; full migration means converting the inner form to a Vue comp
 **Custom elements** (anything with a hyphen in the tag name) are treated as native web components by the Vue compiler —
 they pass through to the browser without Vue trying to resolve them as Vue components.
 
+When porting behavior out of the legacy jQuery bundle (`packages/craftcms-legacy/cp/src/js/*.js`) into modern TypeScript, follow the shared module pattern documented in `resources/js/modules/README.md` — a logic class (`<name>.ts` on `@craftcms/garnish` `Base`), a `ControllerElement` custom element (`<name>.ce.ts`), an instance-registry `support.ts` WeakMap, and an `index.ts` shim that registers the element and assigns the legacy `window.Craft.*` global. Note the source-vs-`dist` gotcha in that README: after editing `packages/craftcms-garnish/src` (or `@craftcms/cp`), rebuild the package's `dist` or `npm run typecheck` won't see the change.
+
 ## Adapter Work
 
 `yii2-adapter` is compatibility code, not the implementation path for new core behavior. If you need to add adapter classes, follow its Composer autoload mapping. Do not put general adapter classes in `yii2-adapter/lib/`; that area is for vendored or library-style code.

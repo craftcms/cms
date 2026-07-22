@@ -155,9 +155,39 @@ export function isVisible(el: HTMLElement): boolean {
 }
 
 /**
+ * A custom element that carries form state on the host (e.g. Lion-based
+ * controls like `craft-select-rich` that have no light-DOM posting input).
+ */
+interface FormValueHost extends HTMLElement {
+  name?: unknown;
+  disabled?: unknown;
+  modelValue?: unknown;
+  serializedValue?: unknown;
+  value?: unknown;
+}
+
+/** Lion choice-input model shape (`craft-checkbox`, `craft-option`, …). */
+function isChoiceModelValue(
+  modelValue: unknown
+): modelValue is {value: unknown; checked: boolean} {
+  return (
+    typeof modelValue === 'object' &&
+    modelValue !== null &&
+    'checked' in modelValue &&
+    typeof (modelValue as {checked: unknown}).checked === 'boolean'
+  );
+}
+
+/**
  * Serializes every named form control inside a container into a URL-encoded
  * string, mirroring jQuery's `.serialize()` semantics (unchecked checkboxes
  * and radios, disabled controls, and buttons/files are omitted).
+ *
+ * Custom elements that hold their value on the host (a `name` plus a Lion
+ * `modelValue`/`serializedValue`, or a `value` property) are serialized too —
+ * unless their light DOM contains a named native control, in which case that
+ * control is the posting surface and already covered (the SSR pattern used by
+ * `craft-checkbox`, `craft-switch`, etc.).
  *
  * Unlike `FormData`, this works on any element — not just `<form>` — so it can
  * scope serialization to a fragment of a page-level form, such as a legacy
@@ -232,6 +262,46 @@ function collectFormInputs(container: HTMLElement): URLSearchParams {
     }
 
     params.append(control.name, control.value);
+  }
+
+  for (const host of container.querySelectorAll<FormValueHost>('*')) {
+    if (!host.tagName.includes('-')) {
+      continue;
+    }
+
+    const name = host.name;
+
+    if (typeof name !== 'string' || name === '' || host.disabled === true) {
+      continue;
+    }
+
+    // A named native control in the host's light DOM is the posting surface;
+    // it was already serialized above.
+    if (host.querySelector('input[name], select[name], textarea[name]')) {
+      continue;
+    }
+
+    if (isChoiceModelValue(host.modelValue)) {
+      if (host.modelValue.checked) {
+        params.append(name, String(host.modelValue.value ?? ''));
+      }
+
+      continue;
+    }
+
+    const value = host.serializedValue ?? host.value;
+
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        params.append(name, String(item));
+      }
+    } else {
+      params.append(name, String(value));
+    }
   }
 
   return params;

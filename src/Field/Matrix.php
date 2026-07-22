@@ -561,7 +561,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'renderDefaultInput' => false,
             'allowOverrides' => true,
             'create' => true,
-            'jsClass' => 'Craft.GroupedEntryTypeSelectInput',
+            // No jsClass → componentSelect.twig renders the self-booting
+            // `<craft-component-select>`, orchestrated by
+            // `<craft-entry-type-manager>` (resources/js/modules/entry-types).
+            'jsClass' => false,
             'errors' => $this->errors()->get('entryTypes'),
             'data' => [
                 'error-key' => 'entryTypes',
@@ -570,16 +573,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
 
         if (! $readOnly) {
+            // The select template for new groups, with TEMP_ID placeholder ids
+            // the manager swaps client-side. Rendered with NO ambient namespace
+            // so the markup stays raw (a clean TEMP_ID and un-namespaced input
+            // names); the field settings' own namespace pass then namespaces the
+            // whole settings HTML — including this `<template>`'s contents —
+            // exactly once, the same single pass the inline group selects get.
+            // Applying `namespaceInputs()` here too would double it up, breaking
+            // the TEMP_ID swap and producing over-nested `entryTypes[]` names
+            // (which fail to save as unknown `types` properties).
+            // The JS buffer only guards against stray registered JS leaking
+            // TEMP_ID references into the page — the web-component path registers
+            // none, so it's discarded.
             HtmlStack::startJsBuffer();
-            $namespace = InputNamespace::get();
             $entryTypeSelectHtml = InputNamespace::with(
                 namespace: null,
-                callback: fn () => InputNamespace::namespaceInputs(fn () => FormFields::entryTypeSelectHtml([
+                callback: fn () => FormFields::entryTypeSelectHtml([
                     ...$entryTypeSelectConfig,
                     'id' => 'TEMP_ID',
-                ]), $namespace),
+                ]),
             );
-            $entryTypeSelectJs = HtmlStack::clearJsBuffer();
+            HtmlStack::clearJsBuffer();
         }
 
         app(InternalAssetRegistry::class)->register(CpAsset::class);
@@ -589,7 +603,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'entryTypes' => $entryTypes,
             'entryTypeSelectConfig' => $entryTypeSelectConfig,
             'entryTypeSelectHtml' => $entryTypeSelectHtml ?? null,
-            'entryTypeSelectJs' => $entryTypeSelectJs ?? null,
             'defaultTableColumnOptions' => self::defaultTableColumnOptions($this->_entryTypes),
             'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
             'indexViewModes' => array_filter(

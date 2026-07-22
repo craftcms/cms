@@ -14,6 +14,7 @@ import './modules/matrix/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
 import './modules/editable-table/index';
+import './modules/grouped-entry-type-manager/index';
 import './modules/queue/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');

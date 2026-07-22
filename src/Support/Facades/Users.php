@@ -33,6 +33,7 @@ use Override;
  * @method static void unverifyEmailForUser(\CraftCms\Cms\User\Elements\User $user)
  * @method static void unlockUser(\CraftCms\Cms\User\Elements\User $user)
  * @method static void suspendUser(\CraftCms\Cms\User\Elements\User $user)
+ * @method static void invalidateUserSessions(\CraftCms\Cms\User\Elements\User $user)
  * @method static void unsuspendUser(\CraftCms\Cms\User\Elements\User $user)
  * @method static void shunMessageForUser(int $userId, string $message, \DateTimeInterface|null $expiryDate = null)
  * @method static void unshunMessageForUser(int $userId, string $message)
