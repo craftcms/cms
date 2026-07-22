@@ -8,9 +8,10 @@
   import {index} from '@routes/cp/assets';
   import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
   import Modal from '@/common/components/Modal.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
   import {useAssetMoveDrag} from '@/modules/elements/composables/useAssetMoveDrag';
-  import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+  import {useNewSubfolder} from '@/modules/elements/composables/useNewSubfolder';
 
   const page = usePage<CraftCms.Cms.Http.ViewModels.AssetIndexViewModel>();
 
@@ -35,7 +36,19 @@
     icon?: string | null;
     folderId?: number;
     canMoveTo?: boolean;
+    canCreate?: boolean;
   }
+
+  // "New subfolder" prompt for the current folder, driven from the breadcrumb
+  // action menu. It refreshes the active index itself on success.
+  const {
+    isOpen: newFolderOpen,
+    name: newFolderName,
+    submitting: creatingFolder,
+    open: openNewFolder,
+    close: closeNewFolder,
+    submit: createSubfolder,
+  } = useNewSubfolder();
 
   // The folder trail for the breadcrumb bar: the full chain when in a subfolder,
   // otherwise just the volume root (from the source). Every ancestor links to
@@ -43,7 +56,9 @@
   //
   // Ancestor crumbs also double as drag-and-drop move targets (drag a file up to
   // a parent folder), matching the folder rows and sidebar sources. The current
-  // folder is skipped — the dragged assets already live there.
+  // folder is skipped — the dragged assets already live there. The current folder
+  // instead gets an action menu (e.g. New subfolder) when the user can create in
+  // it.
   const breadcrumbs = computed(() => {
     const steps: SourcePathStep[] =
       (page.props.defaultSourcePath as SourcePathStep[] | null) ??
@@ -61,6 +76,17 @@
         attrs['data-can-move-to'] = '';
       }
 
+      const actions =
+        isCurrent && step.canCreate && step.folderId != null
+          ? [
+              {
+                label: t('New subfolder'),
+                icon: 'folder-plus',
+                onClick: () => openNewFolder(step.folderId as number),
+              },
+            ]
+          : undefined;
+
       return {
         label: step.label,
         icon: step.icon ?? undefined,
@@ -72,29 +98,12 @@
               defaultSource: step.uri.replace(/^assets\/?/, '') || undefined,
             }),
         attrs,
+        actions,
       };
     });
   });
 
-  // Drag-and-drop moving of assets into folders. The selection + refresh live in
-  // the shared index pipeline, which we grab from its composable rather than
-  // reaching through a component ref.
-  const {table, onActionPerformed} = useElementIndexTable();
-
-  const {conflictPrompt, resolveConflictChoice} = useAssetMoveDrag({
-    enabled: () => true,
-    selectedAssetIds: () => {
-      const selection = table.value?.getState().rowSelection ?? {};
-      return Object.entries(selection)
-        .filter(([id, selected]) => selected && !id.startsWith('folder:'))
-        .map(([id]) => Number(id))
-        .filter((id) => Number.isFinite(id));
-    },
-    ensureSelected: (rowId) => {
-      table.value?.setRowSelection((prev) => ({...prev, [rowId]: true}));
-    },
-    onMoved: () => onActionPerformed(),
-  });
+  const {conflictPrompt, resolveConflictChoice} = useAssetMoveDrag();
 
   useAppLayout({fullWidth: true});
 </script>
@@ -135,11 +144,41 @@
         <craft-button @click="resolveConflictChoice('keepBoth')">
           {{ t('Keep both') }}
         </craft-button>
-        <craft-button variant="danger" @click="resolveConflictChoice('replace')">
+        <craft-button
+          variant="danger"
+          @click="resolveConflictChoice('replace')"
+        >
           {{ t('Replace') }}
         </craft-button>
       </div>
     </div>
+  </Modal>
+
+  <!-- New subfolder prompt, opened from the current folder's breadcrumb menu. -->
+  <Modal :is-active="newFolderOpen" width="sm" @close="closeNewFolder">
+    <form class="p-lg flex flex-col gap-4" @submit.prevent="createSubfolder">
+      <label class="flex flex-col gap-2">
+        <span class="font-medium">{{ t('Folder name') }}</span>
+        <CraftInput
+          v-model="newFolderName"
+          :label="t('Folder name')"
+          label-sr-only
+          autofocus
+        />
+      </label>
+      <div class="flex gap-2 justify-end">
+        <craft-button type="button" @click="closeNewFolder">
+          {{ t('Cancel') }}
+        </craft-button>
+        <craft-button
+          type="submit"
+          variant="primary"
+          :disabled="!newFolderName.trim() || creatingFolder"
+        >
+          {{ t('Create') }}
+        </craft-button>
+      </div>
+    </form>
   </Modal>
 </template>
 

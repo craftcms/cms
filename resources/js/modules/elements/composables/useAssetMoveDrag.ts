@@ -6,17 +6,7 @@ import {
   type ConflictResolution,
   moveAssets,
 } from './assetMover';
-
-export interface UseAssetMoveDragOptions {
-  /** Whether asset-move drag should be wired up (asset index only). */
-  enabled: () => boolean;
-  /** Ids of the currently selected asset rows (numeric; excludes folders). */
-  selectedAssetIds: () => number[];
-  /** Ensure the given row id is part of the selection (force-select on grab). */
-  ensureSelected: (rowId: string) => void;
-  /** Refresh the listing + counts after a successful move. */
-  onMoved: () => void;
-}
+import {useElementIndexTable} from './useElementIndexTable';
 
 /** A pending filename-conflict prompt awaiting the user's choice. */
 export interface AssetMoveConflictPrompt {
@@ -36,10 +26,21 @@ export interface AssetMoveConflictPrompt {
  * The conflict prompt is surfaced as reactive state (`conflictPrompt`) so the
  * page can render a dialog; `resolveConflictChoice` settles it.
  */
-export function useAssetMoveDrag(options: UseAssetMoveDragOptions) {
+export function useAssetMoveDrag() {
+  const {table, onActionPerformed} = useElementIndexTable();
+
   let dragDrop: DragDrop | null = null;
 
   const conflictPrompt = ref<AssetMoveConflictPrompt | null>(null);
+
+  // Ids of the currently selected asset rows (numeric; folder rows excluded).
+  function selectedAssetIds(): number[] {
+    const selection = table.value?.getState().rowSelection ?? {};
+    return Object.entries(selection)
+      .filter(([id, selected]) => selected && !id.startsWith('folder:'))
+      .map(([id]) => Number(id))
+      .filter((id) => Number.isFinite(id));
+  }
 
   function resolveConflict(
     conflict: AssetMoveConflict
@@ -63,8 +64,7 @@ export function useAssetMoveDrag(options: UseAssetMoveDragOptions) {
   }
 
   function selectedElements(): HTMLElement[] {
-    return options
-      .selectedAssetIds()
+    return selectedAssetIds()
       .map((id) =>
         document.querySelector<HTMLElement>(
           `.element-index__body [data-movable-asset][data-id="${id}"]`
@@ -82,7 +82,7 @@ export function useAssetMoveDrag(options: UseAssetMoveDragOptions) {
   }
 
   async function performMove(targetFolderId: number) {
-    const assetIds = options.selectedAssetIds();
+    const assetIds = selectedAssetIds();
     if (!assetIds.length) {
       return;
     }
@@ -98,7 +98,7 @@ export function useAssetMoveDrag(options: UseAssetMoveDragOptions) {
           'notice',
           t('{num, plural, =1{Item} other{Items}} moved.', {num: moved})
         );
-        options.onMoved();
+        onActionPerformed();
       }
     } catch (e) {
       Craft.cp?.displayError?.(t('Couldn’t move the selected items.'));
@@ -190,7 +190,8 @@ export function useAssetMoveDrag(options: UseAssetMoveDragOptions) {
       filter: () => {
         const grabbed = dragDrop?.$targetItem;
         if (grabbed?.dataset.id) {
-          options.ensureSelected(grabbed.dataset.id);
+          const rowId = grabbed.dataset.id;
+          table.value?.setRowSelection((prev) => ({...prev, [rowId]: true}));
         }
         return selectedElements();
       },
@@ -221,11 +222,7 @@ export function useAssetMoveDrag(options: UseAssetMoveDragOptions) {
     observeListing();
   }
 
-  onMounted(() => {
-    if (options.enabled()) {
-      setup();
-    }
-  });
+  onMounted(setup);
 
   onBeforeUnmount(() => {
     unbindDragKeys();
