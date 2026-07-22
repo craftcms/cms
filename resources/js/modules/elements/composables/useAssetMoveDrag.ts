@@ -31,6 +31,11 @@ export function useAssetMoveDrag() {
 
   let dragDrop: DragDrop | null = null;
 
+  // The row selection as it was when the current drag began, captured before the
+  // grab force-selects the dragged row. Restored on drop so a row that wasn't
+  // already selected doesn't stay checked (a pre-selected group survives).
+  let preDragSelection: Record<string, boolean> = {};
+
   const conflictPrompt = ref<AssetMoveConflictPrompt | null>(null);
 
   // Ids of the currently selected asset rows (numeric; folder rows excluded).
@@ -81,8 +86,7 @@ export function useAssetMoveDrag() {
     );
   }
 
-  async function performMove(targetFolderId: number) {
-    const assetIds = selectedAssetIds();
+  async function performMove(targetFolderId: number, assetIds: number[]) {
     if (!assetIds.length) {
       return;
     }
@@ -187,7 +191,10 @@ export function useAssetMoveDrag() {
       moveHelperToCursor: true,
       helperOpacity: 0.85,
       // Force the grabbed row into the selection, then drag everything selected.
+      // Snapshot the pre-grab selection first so onDragStop can undo a force
+      // select of a row that wasn't already part of a selected group.
       filter: () => {
+        preDragSelection = {...(table.value?.getState().rowSelection ?? {})};
         const grabbed = dragDrop?.$targetItem;
         if (grabbed?.dataset.id) {
           const rowId = grabbed.dataset.id;
@@ -207,14 +214,21 @@ export function useAssetMoveDrag() {
         // Escape (or no valid target) → snap the helpers back, move nothing.
         const target = escaped ? null : dragDrop?.$activeDropTarget;
         const folderId = target ? Number(target.dataset.folderId) : NaN;
+        const validTarget = Number.isFinite(folderId);
 
-        if (!Number.isFinite(folderId)) {
+        // Capture what to move while the grab's force-selection is still applied,
+        // then restore the pre-drag selection so the dragged row returns to its
+        // original checked state (a pre-selected group stays selected).
+        const assetIds = validTarget ? selectedAssetIds() : [];
+        table.value?.setRowSelection(preDragSelection);
+
+        if (!validTarget) {
           dragDrop?.returnHelpersToDraggees();
           return;
         }
 
         dragDrop?.fadeOutHelpers();
-        void performMove(folderId);
+        void performMove(folderId, assetIds);
       },
     });
 
