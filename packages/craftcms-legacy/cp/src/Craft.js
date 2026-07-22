@@ -21,16 +21,9 @@ import './js/BaseElementSelectorModal.js';
 import './js/BaseInputGenerator.js';
 import './js/BaseUploader.js';
 
-// Slideouts
-// `Craft.Slideout` AND `Craft.CpScreenSlideout` now come from the
-// Vite-bundled `resources/js/modules/slideout` (both `compatify()`-wrapped
-// modern classes); see that module's README.
-// `CpScreenSlideout.js` was ported there (`cp-screen-slideout.ts`) and
-// deleted. `ElementEditorSlideout.js` still extends `Craft.CpScreenSlideout`
-// via the legacy `.extend()` API, but does so lazily (see its module
-// docblock) since this bundle can't assume `Craft.CpScreenSlideout` has been
-// assigned by the time it evaluates.
-import './js/ElementEditorSlideout.js';
+// Slideouts: `Craft.Slideout`, `Craft.CpScreenSlideout`, and
+// `Craft.ElementEditorSlideout` all come from the Vite-bundled
+// `resources/js/modules/slideout` module; see its README.
 
 // Modals
 import './js/CpModal.js';

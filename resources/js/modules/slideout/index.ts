@@ -5,6 +5,10 @@ import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
+import {
+  ElementEditorSlideout,
+  type ElementEditorSlideoutSettings,
+} from './element-editor-slideout';
 import {containerSlideouts} from './support';
 
 /**
@@ -38,9 +42,8 @@ Object.assign(CompatSlideout, {
 const craft = (window as any).Craft ?? ((window as any).Craft = {});
 craft.Slideout = CompatSlideout;
 
-// Same reasoning one level down: `Craft.ElementEditorSlideout` subclasses
-// this global via the legacy `.extend()` API — see `cp-screen-slideout.ts`'s
-// class docblock.
+// Same reasoning one level down: plugins subclass CP screen slideouts via
+// the legacy `.extend()` API.
 const CompatCpScreenSlideout = compatify(CpScreenSlideout);
 
 // `Craft.ElementEditorSlideout.defaults` is a separate object built by that
@@ -50,6 +53,16 @@ Object.assign(CompatCpScreenSlideout, {
 });
 
 craft.CpScreenSlideout = CompatCpScreenSlideout;
+
+// And once more for element editors — nothing in core `.extend()`s this
+// anymore, but it stays compatified so plugin subclasses keep working.
+const CompatElementEditorSlideout = compatify(ElementEditorSlideout);
+
+Object.assign(CompatElementEditorSlideout, {
+  defaults: ElementEditorSlideout.defaults,
+});
+
+craft.ElementEditorSlideout = CompatElementEditorSlideout;
 
 // Reposition any open HUDs whenever a slideout opens or closes. Registered
 // against the modern `Slideout` class: the class-event dispatch is an
@@ -71,5 +84,7 @@ export {
   type SlideoutSettings,
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
+  ElementEditorSlideout,
+  type ElementEditorSlideoutSettings,
   containerSlideouts,
 };

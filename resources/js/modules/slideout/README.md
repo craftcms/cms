@@ -1,6 +1,6 @@
 # Slideout
 
-Slide-in panels for the control panel. Two classes:
+Slide-in panels for the control panel. Three classes:
 
 - **`Slideout`** — the base panel. Builds a container around your content and
   manages the shade, open/close transitions, Escape/shade dismissal, focus
@@ -8,9 +8,13 @@ Slide-in panels for the control panel. Two classes:
 - **`CpScreenSlideout`** — a `Slideout` that loads a CP screen from a
   controller action, with header/tab/toolbar chrome, an optional details
   sidebar, a Cancel/Save footer, and delta-aware form submission.
+- **`ElementEditorSlideout`** — a `CpScreenSlideout` for the `elements/edit`
+  screen, pairing the slideout with a `Craft.ElementEditor` that takes over
+  drafts, tabs, and submission once the screen loads. Usually reached via
+  `Craft.createElementEditor(elementType, element, settings)`.
 
-Both are module exports and page globals (`Craft.Slideout`,
-`Craft.CpScreenSlideout`).
+All three are module exports and page globals (`Craft.Slideout`,
+`Craft.CpScreenSlideout`, `Craft.ElementEditorSlideout`).
 
 ## `Slideout`
 
@@ -122,18 +126,15 @@ override used by `isDirty()`.
 
 ## Extending from legacy code
 
-The `Craft.Slideout` / `Craft.CpScreenSlideout` globals are
-`compatify()`-wrapped constructors, so the legacy
+All three globals are `compatify()`-wrapped constructors, so the legacy
 `Garnish.Base.extend({...instance}, {...statics})` API still works, and
 `this.base(...)` inside an overridden method dispatches into the modern
-implementation. `Craft.ElementEditorSlideout` and
-`Craft.AuthMethodSetup.Slideout` are built this way today.
+implementation (`Craft.AuthMethodSetup.Slideout` is built this way today).
 
 One rule for legacy bundles: **don't call `.extend()` on these globals at
 script-eval time.** They're assigned by module scripts, which may execute
 after a classic bundle evaluates. Resolve the class lazily on first use —
-`ElementEditorSlideout.js` and `AuthMethodSetup.js` do this with lazy
-`Object.defineProperty` getters.
+`AuthMethodSetup.js` does this with a lazy `Object.defineProperty` getter.
 
 ## No custom element
 
@@ -146,6 +147,8 @@ there's no server-rendered markup to boot from, so this module has no
 - `slideout.ts` — `Slideout`, `SlideoutSettings`, and the exported
   `uiLayerManager()` lookup (resolves the page's UI-layer manager).
 - `cp-screen-slideout.ts` — `CpScreenSlideout`, `CpScreenSlideoutSettings`.
+- `element-editor-slideout.ts` — `ElementEditorSlideout`,
+  `ElementEditorSlideoutSettings`.
 - `support.ts` — the `containerSlideouts` WeakMap.
 - `index.ts` — assigns the `Craft.*` globals (with the static API mirrored
   onto them) and registers the open/close hook that repositions open HUDs.
