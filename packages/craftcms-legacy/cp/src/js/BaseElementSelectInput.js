@@ -228,10 +228,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           onBeforeDragStart: () => {
             this.elementEditor?.pause();
 
-            // Disable all craft-element-labels so connectedCallback()
-            // doesn't get fired constantly during drag
+            // Disable the labels' overflow tooltips while dragging so they
+            // don't recompute/pop up during the drag.
             this.$elementsContainer
-              .find('craft-element-label')
+              .find('craft-truncate')
               .attr('disabled', true);
           },
           onDragStop: () => {
@@ -239,7 +239,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
             // Put things back where we found them.
             this.$elementsContainer
-              .find('craft-element-label')
+              .find('craft-truncate')
               .removeAttr('disabled');
           },
           onSortChange: () => {

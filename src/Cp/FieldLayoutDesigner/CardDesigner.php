@@ -79,7 +79,7 @@ class CardDesigner
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
 
         // get heading
-        $headingHtml = Html::tag('craft-element-label',
+        $headingHtml = Html::tag('craft-truncate',
             Html::tag('a', Html::tag('span', t('Title')), [
                 'class' => ['label-link'],
                 'href' => '#',

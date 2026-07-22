@@ -175,7 +175,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       if (e?.response?.data?.invalidNestedElementIds) {
         const $cards = this.$content.find('.element.card').removeClass('error');
         $cards
-          .find('craft-element-label > span[data-icon="triangle-exclamation"]')
+          .find('craft-truncate > span[data-icon="triangle-exclamation"]')
           .remove();
         if (e.response.data.invalidNestedElementIds.length) {
           const $errorCards = $cards
@@ -186,7 +186,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
             )
             .addClass('error');
           for (let i = 0; i < $errorCards.length; i++) {
-            const $label = $errorCards.eq(i).find('craft-element-label');
+            const $label = $errorCards.eq(i).find('craft-truncate');
             $('<span/>', {
               'data-icon': 'triangle-exclamation',
               'aria-label': Craft.t('app', 'Error'),

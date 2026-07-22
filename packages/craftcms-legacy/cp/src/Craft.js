@@ -98,5 +98,8 @@ import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 
 // Custom elements
+// craft-element-label is superseded by @craftcms/ui's craft-truncate, but keep
+// it registered for backwards compatibility (e.g. plugins / the yii2 adapter).
+import '@craftcms/ui/components/truncate/truncate';
 import './js/CraftElementLabel';
 import './js/CraftProxyScrollbar';
