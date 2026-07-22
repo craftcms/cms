@@ -192,6 +192,7 @@ class GraphqlController extends Controller
 
         foreach ($queries as $key => [$query, $variables, $operationName]) {
             $query = trim($query);
+            $operationName = is_string($operationName) ? $operationName : null;
             try {
                 if (empty($query)) {
                     throw new InvalidValueException('No GraphQL query was supplied');
@@ -218,7 +219,7 @@ class GraphqlController extends Controller
                 ];
             }
 
-            if (str_starts_with($query, 'mutation')) {
+            if (GqlHelper::isMutation($query, $operationName)) {
                 $hasMutations = true;
             }
         }
@@ -231,7 +232,7 @@ class GraphqlController extends Controller
         $this->response->data = $singleQuery ? reset($result) : $result;
 
         // send no-cache headers?
-        if (!($cache ?? !$hasMutations)) {
+        if ($hasMutations || $cache === false) {
             $this->response->setNoCacheHeaders();
         }
 
