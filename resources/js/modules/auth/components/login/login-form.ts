@@ -73,7 +73,8 @@ export default class CraftLoginForm extends LitElement {
   @query('craft-input-password.login-password')
   private _passwordInput?: HTMLElement & {value: string};
   @query('.login-remember-me') private _rememberMeInput?: HTMLInputElement;
-
+  @query('.cp-visually-hidden[role="status"]')
+  private _liveRegion!: HTMLDivElement;
   override async connectedCallback() {
     super.connectedCallback();
 
@@ -207,10 +208,21 @@ export default class CraftLoginForm extends LitElement {
 
   #setError(message: string) {
     this._error = message.trim();
-    const live = this.shadowRoot?.querySelector(
-      '.cp-visually-hidden[role="status"]'
-    );
-    if (live) live.textContent = message;
+    this.#setLiveRegion(message);
+  }
+
+  #setLiveRegion(message: string) {
+    if (!this._liveRegion) return;
+
+    this._liveRegion.textContent = message.trim();
+
+    setTimeout(() => {
+      const textContent = this._liveRegion.textContent;
+
+      if (textContent === message) {
+        this._liveRegion.textContent = '';
+      }
+    }, 5000);
   }
 
   #handleSuccess(returnUrl: string) {

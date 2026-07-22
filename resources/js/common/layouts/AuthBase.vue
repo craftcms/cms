@@ -82,7 +82,7 @@
   .cp-login__powered-by {
     display: block;
     margin-block-start: calc(70rem / 16);
-    opacity: 0.92;;
+    opacity: 0.92;
     text-align: center;
 
     &:hover,
