@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager extend(string $name, \Closure|\Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface|array $definition)
+ * @method static string getDefaultDriver()
+ * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager extend(string $driver, \Closure|\Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface|array $definition)
  * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager defaults(\Closure $callback)
  * @method static bool has(string $name)
  * @method static array names()
@@ -19,9 +20,11 @@ use Override;
  * @method static \Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface driver(string|null $driver = null)
  * @method static \Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig defaultConfig()
  * @method static array getDrivers()
+ * @method static \Illuminate\Contracts\Container\Container getContainer()
+ * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager setContainer(\Illuminate\Contracts\Container\Container $container)
  * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager forgetDrivers()
  *
- * @see HtmlSanitizerManager
+ * @see \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager
  */
 class HtmlSanitizers extends Facade
 {
