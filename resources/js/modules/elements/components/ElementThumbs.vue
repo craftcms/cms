@@ -201,6 +201,13 @@
   .thumbsview > li {
     position: relative;
     border-radius: var(--c-radius-lg);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .thumbsview > li:has(a.thumb-tile) {
+    &:hover {
+      background-color: var(--c-color-neutral-fill-quiet);
+    }
   }
 
   .thumbsview > li.element--folder {
@@ -226,16 +233,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
     gap: var(--c-spacing-sm);
     padding: var(--c-spacing-md);
     border-radius: var(--c-radius-lg);
-    border: 1px solid transparent;
     text-decoration: none;
     color: inherit;
-  }
-
-  a.thumb-tile:hover {
-    background-color: var(--c-color-neutral-fill-quiet);
+    min-height: 100%;
   }
 
   .thumbsview > li.sel .thumb-tile {
@@ -280,5 +284,6 @@
     max-width: 100%;
     font-weight: 500;
     text-align: center;
+    height: 1lh;
   }
 </style>
