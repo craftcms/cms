@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.14 - 2026-07-22
 
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
