@@ -43,10 +43,6 @@
     createCustomizeSourcesModal,
   } = page;
 
-  // Pages that need to reach deeper (the table instance, selection, …) can
-  // grab the whole pipeline off the component ref.
-  defineExpose(page);
-
   useAppLayout({fullWidth: true});
 </script>
 

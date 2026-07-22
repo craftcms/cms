@@ -4,8 +4,9 @@ import {
   type RowSelectionState,
   useVueTable,
 } from '@tanstack/vue-table';
-import {computed, onMounted, ref} from 'vue';
+import {computed, onMounted, onScopeDispose, ref} from 'vue';
 import {useContentIndexData} from '@/modules/elements/composables/useContentIndexData';
+import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
 import {useConditionBuilder} from '@/modules/elements/composables/useConditionBuilder';
 import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
 import {useElementIndexFilters} from '@/modules/elements/composables/useElementIndexFilters';
@@ -207,6 +208,18 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     ...sortingConfig,
     ...paginationConfig,
     enableMultiSort: false,
+  });
+
+  // Publish this index as the active one so sibling components (e.g. the asset
+  // page's drag-and-drop) can reach its table + refresh without prop-drilling.
+  // Clear it on teardown, but only if it's still the current one — during an SPA
+  // page swap the next page may register before this one unmounts.
+  const {table: activeTable, register} = useElementIndexTable();
+  register({table: elementTable, onActionPerformed});
+  onScopeDispose(() => {
+    if (activeTable.value === elementTable) {
+      register(null);
+    }
   });
 
   return {
