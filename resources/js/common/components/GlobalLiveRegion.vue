@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import {useAnnouncementStore} from '@/common/composables/useAnnouncementStore';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
 
-  const {announcement} = useAnnouncementStore();
+  const {announcement} = useAnnouncer();
 </script>
 
 <template>

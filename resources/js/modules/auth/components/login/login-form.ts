@@ -15,7 +15,7 @@ import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';
 import './login-reset-password.js';
-import { useAnnouncementStore } from '@/common/composables/useAnnouncementStore';
+import { useAnnouncer } from '@/common/composables/useAnnouncer';
 type View = 'login' | 'reset-password' | 'challenge';
 
 /**
@@ -206,7 +206,7 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #setError(message: string) {
-    const { announce } = useAnnouncementStore();
+    const { announce } = useAnnouncer();
     this._error = message.trim();
     announce(message);
   }
