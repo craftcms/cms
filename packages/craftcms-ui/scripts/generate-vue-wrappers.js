@@ -321,12 +321,22 @@ function generateValueWrapper(component) {
   defineProps<{
     error?: null | string
   }>()
+
+  function onModelValueChanged(event: Event) {
+    // Ignore Lion's initial model-value-changed (detail.initialize=true), which
+    // carries the element's default value before Vue's binding settles and would
+    // otherwise clobber the bound value on mount.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    model.value = (event.target as ${component.className})?.modelValue ?? undefined;
+  }
 </script>
 
 <template>
   <${component.tagName}
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -362,12 +372,21 @@ function generateCheckedWrapper(component) {
   const emit = defineEmits<{
     'update:modelValue': [value: boolean]
   }>();
+
+  function onModelValueChanged(event: Event) {
+    // Ignore Lion's initial model-value-changed (detail.initialize=true) so the
+    // element's default value can't clobber the bound value on mount.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    emit('update:modelValue', (event.target as ${component.className})?.checked ?? false);
+  }
 </script>
 
 <template>
   <${component.tagName}
     .checked="props.modelValue ?? false"
-    @model-value-changed="emit('update:modelValue', ($event.target as ${component.className})?.checked ?? false)"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -400,12 +419,21 @@ function generateGroupWrapper(component) {
   }>()
 
   const model = defineModel<${component.modelType}>();
+
+  function onModelValueChanged(event: Event) {
+    // Ignore Lion's initial model-value-changed (detail.initialize=true) so the
+    // element's default value can't clobber the bound value on mount.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    model.value = (event.target as ${component.className})?.modelValue ?? undefined;
+  }
 </script>
 
 <template>
   <${component.tagName}
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -469,17 +497,26 @@ function generateSelectRichWrapper(component) {
   });
   
   const model = defineModel<${component.modelType}>();
-  
+
   defineProps<{
     error?: null | string
     options?: SelectRichOption[]
   }>()
+
+  function onModelValueChanged(event: Event) {
+    // Ignore Lion's initial model-value-changed (detail.initialize=true) so the
+    // element's default value can't clobber the bound value on mount.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    model.value = (event.target as ${component.className})?.modelValue;
+  }
 </script>
 
 <template>
   <${component.tagName}
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <craft-option
@@ -491,7 +528,7 @@ function generateSelectRichWrapper(component) {
         {{ option.label }}
       </slot>
     </craft-option>
-    
+
     <div slot="feedback">
       <ul class="error-list" v-if="error">
         <li>{{ error }}</li>
@@ -550,17 +587,28 @@ function generateComboboxWrapper(component) {
       limit: 150,
     }
   );
+
+  function onModelValueChanged(event: Event) {
+    // Lion fires an initial model-value-changed with detail.initialize=true and
+    // its default (empty) value while the element boots — before Vue's
+    // .modelValue binding has settled. Honoring that flag (as Lion's own
+    // form-group repropagation does) prevents it from clobbering a bound value.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    model.value = (event.target as ${component.className})?.modelValue ?? undefined;
+  }
 </script>
 
 <template>
   <${component.tagName}
-    .modelValue="model"
     .options="options"
     .requireOptionMatch="requireOptionMatch"
     .showAllOnEmpty="showAllOnEmpty"
     .clearable="clearable"
     .limit="limit"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
+    .modelValue="model"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>

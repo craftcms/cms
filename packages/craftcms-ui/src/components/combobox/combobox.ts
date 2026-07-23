@@ -81,9 +81,19 @@ export default class CraftCombobox extends LionCombobox {
     this.autocomplete = 'list';
   }
 
+  /** Last model value we've announced via `model-value-changed`. */
+  #lastNotifiedValue: unknown = undefined;
+
   override firstUpdated(changed: Map<PropertyKey, unknown>) {
     super.firstUpdated(changed);
     this._inputNode?.addEventListener('input', this.#onInput);
+    // Keep our notion of the last-announced value in sync with every
+    // model-value-changed the component emits — Lion's (on selection) and ours
+    // (on free-text, below) — so we never double-announce the same value.
+    this.addEventListener('model-value-changed', () => {
+      this.#lastNotifiedValue = this.modelValue;
+    });
+    this.#lastNotifiedValue = this.modelValue;
     this.#renderOptions();
   }
 
@@ -99,7 +109,43 @@ export default class CraftCombobox extends LionCombobox {
     }
   }
 
-  #onInput = () => this.#renderOptions();
+  #onInput = () => {
+    this.#renderOptions();
+    this.#syncModelFromInput();
+  };
+
+  /**
+   * Keep the model value in sync with typed (free-text) input.
+   *
+   * With `autocomplete='list'` Lion only re-derives a custom value from the
+   * textbox inside its autoselect branch (which list mode disables), so a
+   * typed value stops updating the model after the first keystroke. And even
+   * when the model does change for free text, Lion never emits
+   * `model-value-changed` for it — that only happens by repropagating a
+   * *selected option's* event. So we own both here: derive the model from the
+   * textbox each keystroke, then announce it (matching Lion's dispatch shape;
+   * `target === this` makes Lion's child-repropagation handler ignore it, so it
+   * reaches application listeners — the Vue v-model — without looping).
+   *
+   * Driving the model from the raw input each keystroke also means an external
+   * `.modelValue` write-back (from the bound v-model) can't wedge editing:
+   * the next keystroke recomputes from the actual textbox value.
+   */
+  #syncModelFromInput() {
+    const parsed = this.parser(this._inputNode?.value ?? '');
+    if (parsed !== this.modelValue) {
+      this.modelValue = parsed;
+    }
+    if (this.modelValue !== this.#lastNotifiedValue) {
+      this.#lastNotifiedValue = this.modelValue;
+      this.dispatchEvent(
+        new CustomEvent('model-value-changed', {
+          bubbles: true,
+          detail: {formPath: [this], isTriggeredByUser: true},
+        })
+      );
+    }
+  }
 
   /**
    * We filter the source array ourselves and only render matches, so every

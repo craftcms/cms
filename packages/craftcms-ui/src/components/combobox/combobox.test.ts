@@ -172,6 +172,80 @@ describe('craft-combobox', () => {
     expect(combobox.modelValue).toBe('');
   });
 
+  it('keeps a matching requireOptionMatch value when options are present first', async () => {
+    // Regression: a value resolved before options existed was cleared to "".
+    // The wrapper now sets options before modelValue; mirror that here.
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = true;
+      c.options = [
+        {label: 'English (US)', value: 'en-US'},
+        {label: 'French', value: 'fr'},
+      ];
+      c.modelValue = 'en-US';
+    });
+    expect(combobox.modelValue).toBe('en-US');
+  });
+
+  it('preserves a custom value on mount', async () => {
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = false;
+      c.options = [{label: '$SITE_NAME', value: '$SITE_NAME'}];
+      c.modelValue = 'My Site';
+    });
+    expect(combobox.modelValue).toBe('My Site');
+  });
+
+  it('emits model-value-changed for a typed (custom) value, not just selection', async () => {
+    // Lion only emits by repropagating a checked option's event; free text
+    // (requireOptionMatch=false) has no option to repropagate, so without our
+    // fix the model updates silently and v-model bindings never see it.
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = false;
+      c.options = [{label: 'Online', value: '1'}];
+    });
+    const fired: unknown[] = [];
+    combobox.addEventListener('model-value-changed', () => {
+      fired.push(combobox.modelValue);
+    });
+
+    const input = combobox._inputNode as HTMLInputElement;
+    input.focus();
+    input.value = '$MY_ENV';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await combobox.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(combobox.modelValue).toBe('$MY_ENV');
+    expect(fired).toContain('$MY_ENV');
+  });
+
+  it('keeps updating the model past the first keystroke, even with a v-model write-back', async () => {
+    // Regression: list-mode autocomplete stopped syncing typed text into the
+    // model after the first character, and a bound v-model writing .modelValue
+    // back used to wedge further edits.
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = false;
+      c.options = [{label: 'Online', value: '1'}];
+    });
+    const input = combobox._inputNode as HTMLInputElement;
+    // Simulate the Vue two-way binding writing the value back on each event.
+    combobox.addEventListener('model-value-changed', () => {
+      const v = combobox.modelValue;
+      queueMicrotask(() => {
+        combobox.modelValue = v;
+      });
+    });
+
+    for (const v of ['h', 'ht', 'htt', 'http']) {
+      input.focus();
+      input.value = v;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await combobox.updateComplete;
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(combobox.modelValue).toBe(v);
+    }
+  });
+
   it('opens on ArrowDown even when empty and not showAllOnEmpty', async () => {
     const combobox = await createFixture((c) => {
       c.options = [
