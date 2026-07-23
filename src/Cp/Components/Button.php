@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\Concerns\HasAppearance;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
-use CraftCms\Cms\Cp\Concerns\HasVariant;
+use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use Stringable;
@@ -29,11 +28,13 @@ use Stringable;
  */
 class Button extends ViewComponent
 {
-    use HasAppearance;
     use HasDisabled;
     use HasId;
     use HasSize;
-    use HasVariant;
+
+    protected ButtonVariant|string|Closure|null $variant = null;
+
+    protected bool|Closure $inherit = false;
 
     protected string|Closure $type = 'button';
 
@@ -66,6 +67,39 @@ class Button extends ViewComponent
     public function type(string|Closure $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    /** The button's visual style (the single variant axis). */
+    public function variant(ButtonVariant|string|Closure|null $variant): static
+    {
+        $this->variant = $variant;
+
+        return $this;
+    }
+
+    public function getVariant(): ?string
+    {
+        $variant = $this->evaluate($this->variant);
+
+        if ($variant === null) {
+            return null;
+        }
+
+        return $variant instanceof ButtonVariant
+            ? $variant->value
+            : ButtonVariant::from($variant)->value;
+    }
+
+    /**
+     * Adopt the ambient colorable palette (from a colorable ancestor, e.g. a
+     * callout) instead of the neutral palette. Only affects the neutral
+     * variants; `primary` and `danger` stay stable.
+     */
+    public function inherit(bool|Closure $inherit = true): static
+    {
+        $this->inherit = $inherit;
 
         return $this;
     }
@@ -178,7 +212,7 @@ class Button extends ViewComponent
             'id' => $this->getId(),
             'type' => $this->evaluate($this->href) === null ? $type : null,
             'variant' => $this->getVariant(),
-            'appearance' => $this->getAppearance(),
+            'inherit' => (bool) $this->evaluate($this->inherit),
             'size' => $this->getSize(),
             'icon' => $this->evaluate($this->icon),
             'icon-position' => $this->evaluate($this->iconPosition),

@@ -747,8 +747,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             type: 'button',
             icon: 'x',
             size: 'small',
-            variant: 'danger',
-            appearance: 'plain',
+            variant: 'danger-plain',
             'aria-label': Craft.t('app', 'Delete'),
             command: '--delete-row',
           })

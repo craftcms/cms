@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
   import {computed} from 'vue';
   import type {SelectItem, SuggestionGroup} from '@/common/types';
@@ -224,7 +224,7 @@
         <div class="flex gap-2 items-center">
           <craft-button
             type="button"
-            variant="primary"
+            :variant="ButtonVariant.Solid"
             :loading="testForm.processing"
             @click="sendTest"
           >

@@ -17,10 +17,10 @@
   <craft-button
     type="button"
     :id="id"
-    appearance="plain"
+    variant="plain"
     size="zero"
     icon
-    variant="inherit"
+    inherit
   >
     <slot name="icon">
       <craft-icon :name="icon"></craft-icon>

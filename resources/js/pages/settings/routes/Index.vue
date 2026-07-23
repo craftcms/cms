@@ -9,7 +9,7 @@
     reorder,
   } from '@actions/Settings/RoutesController';
   import {Link, router} from '@inertiajs/vue3';
-  import {t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
   import Empty from '@/common/components/Empty.vue';
   import Pane from '@/common/components/Pane.vue';
@@ -83,8 +83,7 @@
 <template>
   <LayoutSlot name="actions">
     <Link :href="create()">
-      <craft-button v-if="!readOnly" type="button" variant="primary">
-        <craft-icon name="plus" slot="prefix"></craft-icon>
+      <craft-button v-if="!readOnly" type="button" icon="plus" :variant="ButtonVariant.Primary">
         {{ t('New route') }}
       </craft-button>
     </Link>
@@ -155,9 +154,8 @@
         ></craft-reorder-button>
         <craft-button
           @click="deleteRoute(route)"
-          variant="danger"
+          variant="danger-plain"
           size="small"
-          appearance="plain"
           icon
         >
           <craft-icon name="trash" :label="t('Delete')"></craft-icon>

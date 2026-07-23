@@ -268,11 +268,10 @@
               <craft-button
                 icon="x"
                 size="small"
-                appearance="plain"
                 aria-label="{{ 'Delete row {index}'|t('app', {
                   index: rowNumber,
                 }) }}"
-                variant="danger"
+                variant="danger-plain"
                 command="--delete-row"
                 {% if minRows and totalRows <= minRows %}disabled{% endif %}
               >

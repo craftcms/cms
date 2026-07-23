@@ -35,8 +35,7 @@
         <input type="hidden" name="edition" :value="plugin.licensedEdition" />
         <craft-button
           type="submit"
-          appearance="inline"
-          variant="inherit"
+          inherit
           :loading="processing"
           >Switch</craft-button
         >

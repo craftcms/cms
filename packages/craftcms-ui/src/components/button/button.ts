@@ -10,6 +10,7 @@ import {classMap} from 'lit/directives/class-map.js';
 export const ButtonVariant = {
   Primary: 'primary',
   Danger: 'danger',
+  DangerPlain: 'danger-plain',
   Solid: 'solid',
   Fill: 'fill',
   Outline: 'outline',

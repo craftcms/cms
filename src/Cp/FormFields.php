@@ -223,7 +223,7 @@ readonly class FormFields
             ->prefix(! isset($config['icon']) ? ($config['iconHtml'] ?? null) : null)
             ->disabled((bool) ($config['disabled'] ?? $readOnly))
             ->size($size)
-            ->appearance($config['appearance'] ?? null)
+            ->variant($config['variant'] ?? $config['appearance'] ?? null)
             ->command($config['command'] ?? null)
             ->attributes(Arr::merge(
                 [
@@ -261,7 +261,7 @@ readonly class FormFields
     public static function buttonGroupFromConfig(array $config): ButtonGroup
     {
         $value = $config['value'] ?? null;
-        $appearance = $config['appearance'] ?? 'outline';
+        $variant = $config['variant'] ?? $config['appearance'] ?? 'outline';
         $size = $config['size'] ?? null;
         $disabled = ($config['disabled'] ?? false) || ($config['static'] ?? false);
 
@@ -280,7 +280,7 @@ readonly class FormFields
                     ? new HtmlString((string) $option['labelHtml'])
                     : ($option['label'] ?? null))
                 ->icon($option['icon'] ?? null)
-                ->appearance($option['appearance'] ?? $appearance)
+                ->variant($option['variant'] ?? $option['appearance'] ?? $variant)
                 ->size($option['size'] ?? $size)
                 ->active($selected)
                 ->disabled($disabled)

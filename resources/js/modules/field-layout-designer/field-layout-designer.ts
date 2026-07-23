@@ -13,7 +13,7 @@ import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
 import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
-import {Appearance, t} from '@craftcms/ui';
+import {ButtonVariant, t} from '@craftcms/ui';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
@@ -191,7 +191,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     // Add the “New Field” button — Craft.ui returns jQuery; unwrap to native.
     const createFieldBtn = document.createElement('craft-button');
-    createFieldBtn.appearance = Appearance.Outline;
+    createFieldBtn.variant = ButtonVariant.Dashed;
     createFieldBtn.size = 'small';
     createFieldBtn.classList.add('w-full');
     createFieldBtn.innerText = t('New field');

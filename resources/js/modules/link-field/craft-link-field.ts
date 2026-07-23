@@ -354,7 +354,7 @@ class CraftLinkField extends LitElement {
           <div class="input ltr">
             <craft-button
               type="button"
-              appearance="filled"
+              variant="fill"
               aria-describedby=${this.valueError ? this.valueErrorId : nothing}
               aria-invalid=${this.valueError ? 'true' : nothing}
               @click=${this.chooseElement}

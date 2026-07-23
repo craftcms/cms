@@ -1,4 +1,5 @@
 import {css} from 'lit';
+
 export default css`
   :host {
     /* Necessary to use variables here to override the default active style specificity */
@@ -53,13 +54,13 @@ export default css`
     through instead. primary/danger set their palettes unconditionally below, so
     they are unaffected by [inherit].
   */
-  :host([variant='solid']:not([inherit])),
-  :host([variant='fill']:not([inherit])),
-  :host([variant='outline']:not([inherit])),
-  :host([variant='dashed']:not([inherit])),
-  :host([variant='plain']:not([inherit])),
-  :host([variant='link']:not([inherit])),
-  :host([variant='none']:not([inherit])) {
+  :host([variant~='solid']:not([inherit])),
+  :host([variant~='fill']:not([inherit])),
+  :host([variant~='outline']:not([inherit])),
+  :host([variant~='dashed']:not([inherit])),
+  :host([variant~='plain']:not([inherit])),
+  :host([variant~='link']:not([inherit])),
+  :host([variant~='none']:not([inherit])) {
     --c-color-fill-loud: var(--c-color-neutral-fill-loud);
     --c-color-fill-normal: var(--c-color-neutral-fill-normal);
     --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
@@ -71,7 +72,7 @@ export default css`
     --c-color-on-quiet: var(--c-color-neutral-on-quiet);
   }
 
-  :host([variant='primary']) {
+  :host([variant~='primary']) {
     --c-color-fill-loud: var(--c-color-accent-fill-loud);
     --c-color-fill-normal: var(--c-color-accent-fill-normal);
     --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
@@ -83,7 +84,8 @@ export default css`
     --c-color-on-quiet: var(--c-color-accent-on-quiet);
   }
 
-  :host([variant='danger']) {
+  :host([variant~='danger-plain']),
+  :host([variant~='danger']) {
     --c-color-fill-loud: var(--c-color-danger-fill-loud);
     --c-color-fill-normal: var(--c-color-danger-fill-normal);
     --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
@@ -182,9 +184,9 @@ export default css`
    */
 
   /* Solid — primary, danger, and solid are filled with the loud color. */
-  :host([variant='primary']),
-  :host([variant='danger']),
-  :host([variant='solid']) {
+  :host([variant~='primary']),
+  :host([variant~='danger']),
+  :host([variant~='solid']) {
     background-color: var(
       --c-color-fill-loud,
       var(--c-color-neutral-fill-loud)
@@ -193,9 +195,9 @@ export default css`
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  :host([variant='primary']:hover),
-  :host([variant='danger']:hover),
-  :host([variant='solid']:hover) {
+  :host([variant~='primary']:hover),
+  :host([variant~='danger']:hover),
+  :host([variant~='solid']:hover) {
     background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 5)
@@ -203,9 +205,9 @@ export default css`
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  :host([variant='primary']:active),
-  :host([variant='danger']:active),
-  :host([variant='solid']:active) {
+  :host([variant~='primary']:active),
+  :host([variant~='danger']:active),
+  :host([variant~='solid']:active) {
     --_active-background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 10)
@@ -214,7 +216,7 @@ export default css`
   }
 
   /* Fill (default) — neutral normal fill. */
-  :host([variant='fill']) {
+  :host([variant~='fill']) {
     border-color: transparent;
     background-color: var(
       --c-color-fill-normal,
@@ -223,7 +225,7 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([variant='fill']:hover) {
+  :host([variant~='fill']:hover) {
     background-color: hsl(
       from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
         calc(l - 5)
@@ -231,7 +233,7 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([variant='fill']:active) {
+  :host([variant~='fill']:active) {
     --_active-background-color: hsl(
       from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
         calc(l - 10)
@@ -240,16 +242,18 @@ export default css`
   }
 
   /* Outline, Dashed & Plain — transparent fill. */
-  :host([variant='outline']),
-  :host([variant='dashed']),
-  :host([variant='plain']) {
+  :host([variant~='outline']),
+  :host([variant~='dashed']),
+  :host([variant~='danger-plain']),
+  :host([variant~='plain']) {
     background-color: transparent;
     color: var(--c-color-on-quiet);
   }
 
-  :host([variant='outline']:not(:disabled):not(.loading):hover),
-  :host([variant='dashed']:not(:disabled):not(.loading):hover),
-  :host([variant='plain']:not(:disabled):not(.loading):hover) {
+  :host([variant~='outline']:not(:disabled):not(.loading):hover),
+  :host([variant~='dashed']:not(:disabled):not(.loading):hover),
+  :host([variant~='danger-plain']:not(:disabled):not(.loading):hover),
+  :host([variant~='plain']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
@@ -258,9 +262,10 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([variant='outline']:not(:disabled):not(.loading):active),
-  :host([variant='dashed']:not(:disabled):not(.loading):active),
-  :host([variant='plain']:not(:disabled):not(.loading):active) {
+  :host([variant~='outline']:not(:disabled):not(.loading):active),
+  :host([variant~='dashed']:not(:disabled):not(.loading):active),
+  :host([variant~='danger-plain']:not(:disabled):not(.loading):active),
+  :host([variant~='plain']:not(:disabled):not(.loading):active) {
     --_active-background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
@@ -270,17 +275,18 @@ export default css`
   }
 
   /* Outline & Dashed — visible border. */
-  :host([variant='outline']),
-  :host([variant='dashed']) {
+  :host([variant~='outline']),
+  :host([variant~='dashed']) {
     border-color: var(--c-color-border-loud);
   }
 
-  :host([variant='dashed']) {
-    border-style: dashed;
+  :host([variant~='dashed']) {
+    --c-button-border-style: dashed;
   }
 
   /* Plain — no border. */
-  :host([variant='plain']) {
+  :host([variant~='danger-plain']),
+  :host([variant~='plain']) {
     border-color: transparent;
 
     &::before {
@@ -289,7 +295,7 @@ export default css`
   }
 
   /* Link — renders as a text hyperlink: no fill or border, underlined. */
-  :host([variant='link']) {
+  :host([variant~='link']) {
     display: inline;
     appearance: none;
     background-color: transparent;
@@ -311,7 +317,7 @@ export default css`
     }
   }
 
-  :host([variant='link']:not(:disabled):not(.loading):hover) {
+  :host([variant~='link']:not(:disabled):not(.loading):hover) {
     background-color: transparent;
     color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
@@ -320,12 +326,12 @@ export default css`
     text-decoration: none;
   }
 
-  :host([variant='link']:not(:disabled):not(.loading):active) {
+  :host([variant~='link']:not(:disabled):not(.loading):active) {
     background-color: transparent;
   }
 
   /* None — completely unstyled; provides behavior only. */
-  :host([variant='none']) {
+  :host([variant~='none']) {
     appearance: none;
     background-color: transparent;
     border-color: transparent;
@@ -345,8 +351,8 @@ export default css`
     }
   }
 
-  :host([variant='none']:hover),
-  :host([variant='none']:active) {
+  :host([variant~='none']:hover),
+  :host([variant~='none']:active) {
     background-color: transparent;
     color: inherit;
   }
@@ -372,10 +378,6 @@ export default css`
 
   .button-content--end {
     justify-content: end;
-  }
-
-  craft-button-group craft-button {
-    border-radius: 0;
   }
 
   .a11y-error {

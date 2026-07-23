@@ -839,8 +839,8 @@ JS, [
                 ]), [
                     'type' => 'button',
                     'slot' => 'invoker',
-                    'appearance' => 'plain',
-                    'variant' => 'inherit',
+                    'variant' => 'plain',
+                    'inherit' => true,
                     'size' => 'small',
                     // Bare `icon` attribute triggers the icon-only button styling
                     // (the icon itself is slotted content, not the `icon` prop —

@@ -30,11 +30,10 @@
 <template>
   <form @submit.prevent="handleDelete" method="post">
     <craft-button
-      variant="danger"
+      variant="danger-plain"
       type="submit"
       size="small"
       icon
-      appearance="plain"
       :loading="form.processing"
     >
       <craft-icon :label="t('Delete section')" name="x"></craft-icon>
