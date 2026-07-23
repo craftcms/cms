@@ -1,9 +1,16 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.12 - 2026-07-22
 
+- Added `craft\helpers\Gql::isMutation()`. ([#19285](https://github.com/craftcms/cms/pull/19285))
+- Fixed an error that could occur when saving an element with an eager-loaded relation field value. ([#19280](https://github.com/craftcms/cms/issues/19280))
 - Fixed a bug where bulk entry moves could assign entries to sections that didn’t support their entry types. ([#19268](https://github.com/craftcms/cms/pull/19268))
 - Fixed a bug where admin tables’ action buttons could fire when rendering. ([#19255](https://github.com/craftcms/cms/issues/19255))
+- Fixed an error that occurred when using the null-safe operator in a Twig template. ([#19279](https://github.com/craftcms/cms/issues/19279))
+- Fixed a bug where GraphQL mutation queries could be cached. ([#19285](https://github.com/craftcms/cms/pull/19285))
+- Fixed a bug where custom element index pages were getting included in the control panel navigation, even if they only contained sources that the current user didn’t have access to. ([#19289](https://github.com/craftcms/cms/issues/19289))
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities.
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 
 ## 5.10.11 - 2026-07-15
