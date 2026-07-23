@@ -70,6 +70,18 @@ it('resolves Yii jQuery asset bundles to the internal jQuery asset', function() 
         ->and($html)->not->toContain('cpresources');
 });
 
+it('initializes registered asset arrays before appending hashes', function() {
+    $view = Craft::$app->getView();
+    $view->registeredAssetBundles = ['bundle-hash'];
+    $view->registeredJsFiles = ['js-file-hash'];
+
+    $html = $view->placeholderHtml()['headHtml'];
+
+    expect($html)
+        ->toContain('(Craft.registeredAssetBundles ??= []).push("bundle-hash");')
+        ->and($html)->toContain('(Craft.registeredJsFiles ??= []).push("js-file-hash");');
+});
+
 it('uses the current scoped HtmlStack after scoped instances are flushed', function() {
     $view = Craft::$app->getView();
 

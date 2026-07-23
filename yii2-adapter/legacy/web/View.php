@@ -2188,7 +2188,7 @@ JS;
                 $jsName = Json::encode($name);
                 // WARNING: the curly braces are needed here no matter what PhpStorm thinks
                 // https://youtrack.jetbrains.com/issue/WI-60044
-                $js .= "  Craft.{$property}.push($jsName);\n";
+                $js .= "  (Craft.{$property} ??= []).push($jsName);\n";
             }
         }
         $js .= '}';
