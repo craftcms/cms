@@ -91,6 +91,22 @@ describe('craft-button link semantics', () => {
     const element = await createButton();
     expect(element.getAttribute('role')).toBe('button');
     expect(element.tabIndex).toBe(0);
+    // Defaults to "button" even though we extend LionButtonSubmit.
+    expect(element.type).toBe('button');
+  });
+
+  it('honors an explicit type="submit"', async () => {
+    const element = await createButton({type: 'submit'});
+    expect(element.type).toBe('submit');
+  });
+
+  it('restores an explicit type="submit" when href is removed', async () => {
+    const element = await createButton({type: 'submit', href: '/x'});
+    expect(element.type).toBe('button');
+
+    element.href = null;
+    await element.updateComplete;
+
     expect(element.type).toBe('submit');
   });
 

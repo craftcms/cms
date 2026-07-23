@@ -44,12 +44,26 @@ export default class CraftButton extends LionButtonSubmit {
     return [...super.styles, styles];
   }
 
+  constructor() {
+    super();
+    // We extend LionButtonSubmit so `type="submit"`/`"reset"` Just Work inside
+    // forms, but a plain action button is the far more common case — and Lion
+    // gates all of its submit/reset helper wiring behind `type`, so defaulting
+    // to "button" also skips that runtime cost. (LionButtonSubmit's constructor
+    // sets this to "submit"; we override it after super().)
+    this.type = 'button';
+  }
+
   override connectedCallback() {
     // Set link-appropriate host state *before* Lion runs, so it skips its
     // role="button" assignment and (via type) its submit-helper wiring.
     if (this.href && !this.disabled) {
+      this.originalType = this.type;
       this.type = 'button';
       this.setAttribute('role', 'presentation');
+      // Mark link state as applied so syncLinkHostState() below re-applies the
+      // rest (tabindex) without re-capturing the (now-overwritten) type.
+      this.linkHostStateApplied = true;
     }
     super.connectedCallback();
     this.syncLinkHostState();
@@ -64,13 +78,18 @@ export default class CraftButton extends LionButtonSubmit {
 
   private syncLinkHostState() {
     if (this.isLink) {
+      if (!this.linkHostStateApplied) {
+        // Capture the caller's intended type before we force "button" for the
+        // link, so we can restore it if `href` is later removed.
+        this.originalType = this.type;
+      }
       this.setAttribute('role', 'presentation');
       this.tabIndex = -1;
       this.type = 'button';
       this.linkHostStateApplied = true;
     } else if (this.linkHostStateApplied) {
       this.setAttribute('role', 'button');
-      this.type = 'submit';
+      this.type = this.originalType ?? 'button';
       if (!this.disabled) {
         this.tabIndex = 0;
       }
@@ -156,6 +175,9 @@ export default class CraftButton extends LionButtonSubmit {
   private _hasAccessibilityError: boolean = false;
 
   private linkHostStateApplied = false;
+
+  /** The caller's `type` before link mode forced it to "button". */
+  private originalType: string | null = null;
 
   private get isLink(): boolean {
     return !!this.href && !this.disabled;
