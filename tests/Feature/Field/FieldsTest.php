@@ -320,8 +320,8 @@ it('can hard delete a field layout by id', function () {
     ]);
     FieldsFacade::refreshFields();
 
-    $layout = FieldLayout::create(EntryElement::class)
-        ->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::for($field->handle)));
+    $layout = FieldLayout::make(EntryElement::class)
+        ->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::make($field->handle)));
 
     expect($this->fields->saveLayout($layout))->toBeTrue();
 
@@ -510,8 +510,8 @@ test('field layouts', function () {
     ]);
     FieldsFacade::refreshFields();
 
-    $layout = FieldLayout::create(EntryElement::class)
-        ->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::for($field->handle)));
+    $layout = FieldLayout::make(EntryElement::class)
+        ->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::make($field->handle)));
 
     expect($this->fields->saveLayout($layout))->toBeTrue()
         ->and($layout->id)->toBeInt()
@@ -521,7 +521,7 @@ test('field layouts', function () {
 
     $layout
         ->removeTab(FieldLayout::defaultTabName())
-        ->tab('Updated', fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::for($field->handle)));
+        ->tab('Updated', fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::make($field->handle)));
 
     expect($this->fields->saveLayout($layout))->toBeTrue();
 

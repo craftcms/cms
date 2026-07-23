@@ -28,6 +28,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -46,6 +47,7 @@ use function CraftCms\Cms\t;
 /** @phpstan-consistent-constructor */
 class FieldLayout extends Component
 {
+    use EvaluatesClosures;
     use LegacyConstants;
 
     public ?int $id = null;
@@ -163,7 +165,7 @@ class FieldLayout extends Component
     /**
      * @param  class-string<ElementInterface>  $type
      */
-    public static function create(string $type): static
+    public static function make(string $type): static
     {
         return new static(['type' => $type]);
     }
@@ -173,10 +175,11 @@ class FieldLayout extends Component
      *
      * Use {@see defaultTabName()} to target the tab created for mandatory fields.
      *
-     * @param  Closure(FieldLayoutTab): mixed  $closure
+     * @param  Closure(FieldLayoutTab): mixed|null  $configure
      */
-    public function tab(string $name, Closure $closure): static
+    public function tab(string|Closure $name, ?Closure $configure = null): static
     {
+        $name = $this->evaluate($name);
         $tab = array_find($this->getTabs(), fn (FieldLayoutTab $tab) => $tab->name === $name);
 
         if ($tab === null) {
@@ -188,7 +191,7 @@ class FieldLayout extends Component
             $this->setTabs([...$this->getTabs(), $tab]);
         }
 
-        $closure($tab);
+        $configure?->__invoke($tab);
 
         return $this;
     }
@@ -436,6 +439,13 @@ class FieldLayout extends Component
         $this->_generatedFields = array_values($fields);
     }
 
+    public function generatedFields(array|Closure|null $fields): static
+    {
+        $this->setGeneratedFields($this->evaluate($fields));
+
+        return $this;
+    }
+
     public function getCardView(): array
     {
         if (! isset($this->_cardView)) {
@@ -455,6 +465,20 @@ class FieldLayout extends Component
         $this->_cardView = array_values($items ?? []);
 
         $this->reset();
+    }
+
+    public function cardView(array|Closure|null $items): static
+    {
+        $this->setCardView($this->evaluate($items));
+
+        return $this;
+    }
+
+    public function thumbFieldKey(string|Closure|null $key): static
+    {
+        $this->thumbFieldKey = $this->evaluate($key);
+
+        return $this;
     }
 
     /**
@@ -485,6 +509,19 @@ class FieldLayout extends Component
         }
 
         $this->_cardThumbAlignment = $alignment ?? 'end';
+    }
+
+    public function cardThumbAlignment(string|Closure|null $alignment = null): static
+    {
+        $alignment = $this->evaluate($alignment);
+
+        if ($alignment !== null && ! in_array($alignment, ['start', 'end'], true)) {
+            throw new InvalidArgumentException("Invalid card thumbnail alignment: $alignment");
+        }
+
+        $this->setCardThumbAlignment($alignment);
+
+        return $this;
     }
 
     /**
@@ -564,8 +601,8 @@ class FieldLayout extends Component
         $elements = $event->elements;
 
         // HR and Line Break should always be last
-        $elements[] = new HorizontalRule;
-        $elements[] = new LineBreak;
+        $elements[] = HorizontalRule::make();
+        $elements[] = LineBreak::make();
 
         // Instantiate them
         foreach ($elements as &$element) {

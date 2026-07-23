@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Html;
@@ -21,9 +22,16 @@ class Heading extends BaseUiElement
      */
     public string $heading = '';
 
-    public function __construct(string|array|object $config = [])
+    public static function make(string|Closure $heading): static
     {
-        parent::__construct(is_string($config) ? ['heading' => $config] : $config);
+        return app(static::class)->heading($heading);
+    }
+
+    public function heading(string|Closure $heading): static
+    {
+        $this->heading = $this->evaluate($heading);
+
+        return $this;
     }
 
     protected function selectorLabel(): string

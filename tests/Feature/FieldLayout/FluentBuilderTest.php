@@ -22,7 +22,7 @@ beforeEach(function () {
 });
 
 it('resolves custom fields by handle', function () {
-    $element = CustomField::for('body');
+    $element = CustomField::make('body');
 
     expect($element->getFieldUid())->toBe($this->field->uid)
         ->and($element->attribute())->toBe('body');
@@ -41,13 +41,13 @@ it('adds custom fields by handle', function () {
 });
 
 it('rejects unknown field handles', function () {
-    expect(fn () => CustomField::for('missing'))
+    expect(fn () => CustomField::make('missing'))
         ->toThrow(InvalidArgumentException::class);
 });
 
 it('removes fields by handle and rejects unknown handles', function () {
     $layout = new FieldLayout;
-    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomField::for('body')));
+    $layout->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomField::make('body')));
 
     expect($layout->removeField('body'))->toBe($layout)
         ->and($layout->getCustomFields())->toBeEmpty()
@@ -61,7 +61,7 @@ it('modifies and persists a factory-created field layout', function () {
     EntryTypes::refreshEntryTypes();
 
     $layout = EntryTypes::getEntryTypeById($entryTypeModel->id)->getFieldLayout();
-    $layout->tab('SEO', fn (FieldLayoutTab $tab) => $tab->add(CustomField::for('body')->required()));
+    $layout->tab('SEO', fn (FieldLayoutTab $tab) => $tab->add(CustomField::make('body')->required()));
 
     expect(Fields::saveLayout($layout))->toBeTrue();
 

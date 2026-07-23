@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use Closure;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
@@ -117,7 +118,7 @@ class CustomField extends BaseField
         }
     }
 
-    public static function for(FieldInterface|string $field): static
+    public static function make(FieldInterface|string $field): static
     {
         if (is_string($field)) {
             $field = Fields::getFieldByHandle($field)
@@ -128,7 +129,7 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function label(?string $label = null): static|string|null
+    public function label(string|Closure|null $label = null): static|string|null
     {
         if (func_num_args() === 0) {
             return parent::label();
@@ -137,26 +138,27 @@ class CustomField extends BaseField
         parent::label($label);
 
         if ($this->_field !== null) {
-            $this->_field->name = $label ?? $this->_originalName;
+            $this->_field->name = $this->label ?? $this->_originalName;
         }
 
         return $this;
     }
 
     #[Override]
-    public function instructions(?string $instructions): static
+    public function instructions(string|Closure|null $instructions): static
     {
         parent::instructions($instructions);
 
         if ($this->_field !== null) {
-            $this->_field->instructions = $instructions ?? $this->_originalInstructions;
+            $this->_field->instructions = $this->instructions ?? $this->_originalInstructions;
         }
 
         return $this;
     }
 
-    public function handle(?string $handle): static
+    public function handle(string|Closure|null $handle): static
     {
+        $handle = $this->evaluate($handle);
         $this->handle = $handle;
 
         if ($this->_field !== null) {
@@ -168,14 +170,14 @@ class CustomField extends BaseField
 
     public function editCondition(mixed $editCondition): static
     {
-        $this->setEditCondition($editCondition);
+        $this->setEditCondition($this->evaluate($editCondition));
 
         return $this;
     }
 
     public function elementEditCondition(mixed $elementEditCondition): static
     {
-        $this->setElementEditCondition($elementEditCondition);
+        $this->setElementEditCondition($this->evaluate($elementEditCondition));
 
         return $this;
     }

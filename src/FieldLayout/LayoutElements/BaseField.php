@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -17,6 +18,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -33,6 +35,11 @@ abstract class BaseField extends FieldLayoutElement
      * @var string|null The field’s instructions
      */
     public ?string $instructions = null;
+
+    /**
+     * @var string Whether the instructions should be displayed before or after the input.
+     */
+    public string $instructionsPosition = 'before';
 
     /**
      * @var string|null The field’s tip text
@@ -405,6 +412,7 @@ abstract class BaseField extends FieldLayoutElement
             'showAttribute' => $this->showAttribute(),
             'required' => ! $static && $this->required,
             'instructions' => $instructions !== null ? Html::encode($instructions) : null,
+            'instructionsPosition' => $this->instructionsPosition,
             'tip' => $tip !== null ? Html::encode($tip) : null,
             'warning' => $warning !== null ? Html::encode($warning) : null,
             'orientation' => $this->orientation($element, $static),
@@ -590,10 +598,10 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * Returns or sets the field’s label.
      */
-    public function label(?string $label = null): static|string|null
+    public function label(string|Closure|null $label = null): static|string|null
     {
         if (func_num_args() !== 0) {
-            $this->label = $label;
+            $this->label = $this->evaluate($label);
 
             return $this;
         }
@@ -605,36 +613,51 @@ abstract class BaseField extends FieldLayoutElement
         return $this->defaultLabel();
     }
 
-    public function instructions(?string $instructions): static
+    public function instructions(string|Closure|null $instructions): static
     {
-        $this->instructions = $instructions;
+        $this->instructions = $this->evaluate($instructions);
 
         return $this;
     }
 
-    public function tip(?string $tip): static
+    public function instructionsPosition(string|Closure $position): static
     {
-        $this->tip = $tip;
+        $position = $this->evaluate($position);
+
+        if (! in_array($position, ['before', 'after'], true)) {
+            throw new InvalidArgumentException("Invalid instructions position: $position");
+        }
+
+        $this->instructionsPosition = $position;
 
         return $this;
     }
 
-    public function warning(?string $warning): static
+    public function tip(string|Closure|null $tip): static
     {
-        $this->warning = $warning;
+        $this->tip = $this->evaluate($tip);
 
         return $this;
     }
 
-    public function required(bool $required = true): static
+    public function warning(string|Closure|null $warning): static
     {
-        $this->required = $required;
+        $this->warning = $this->evaluate($warning);
 
         return $this;
     }
 
-    public function labelHidden(bool $labelHidden = true): static
+    public function required(bool|Closure $required = true): static
     {
+        $this->required = $this->evaluate($required);
+
+        return $this;
+    }
+
+    public function labelHidden(bool|Closure $labelHidden = true): static
+    {
+        $labelHidden = $this->evaluate($labelHidden);
+
         return $this->label($labelHidden ? '__blank__' : null);
     }
 
