@@ -56,6 +56,7 @@ readonly class LegacyApp
             $craftApp->language = app()->getLocale();
 
             Craft::$app = $craftApp;
+            $laravelApp->instance('Craft', $craftApp);
             Craft::populateCustomFieldBehavior();
 
             /**
