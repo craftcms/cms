@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- SSO user attribute mapping no longer logs a warning for native user properties.
+- Fixed a bug where warnings were getting logged for SSO attributes that mapped to native user properties. ([#19294](https://github.com/craftcms/cms/pull/19294))
 
 ## 5.10.12 - 2026-07-22
 
