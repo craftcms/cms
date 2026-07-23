@@ -156,7 +156,7 @@ export const WithActions: Story = {
           type="button"
           slot="invoker"
           icon="chevron-down"
-          label
+          aria-label="Actions"
         ></craft-button>
 
         <div slot="content">
