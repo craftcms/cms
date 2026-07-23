@@ -21,11 +21,6 @@ import './js/BaseElementSelectorModal.js';
 import './js/BaseInputGenerator.js';
 import './js/BaseUploader.js';
 
-// Slideouts
-import './js/Slideout.js';
-import './js/CpScreenSlideout.js';
-import './js/ElementEditorSlideout.js';
-
 // Modals
 import './js/CpModal.js';
 

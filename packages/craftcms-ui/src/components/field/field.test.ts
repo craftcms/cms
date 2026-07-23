@@ -173,8 +173,8 @@ describe('craft-field aria-describedby wiring', () => {
 
     const [tip, warning] = callouts;
     expect(tip!.getAttribute('variant')).toBe('info');
-    expect(tip!.getAttribute('icon')).toBe('lightbulb');
-    expect(tip!.querySelector('.cp-visually-hidden')?.textContent).toContain(
+    expect(tip!.hasAttribute('icon')).toBe(false);
+    expect(tip!.querySelector('craft-visually-hidden')?.textContent).toContain(
       'Tip:'
     );
     expect(tip!.querySelector('slot[name="tip"]')).not.toBeNull();
@@ -182,7 +182,7 @@ describe('craft-field aria-describedby wiring', () => {
     expect(warning!.getAttribute('variant')).toBe('warning');
     expect(warning!.hasAttribute('icon')).toBe(false);
     expect(
-      warning!.querySelector('.cp-visually-hidden')?.textContent
+      warning!.querySelector('craft-visually-hidden')?.textContent
     ).toContain('Warning:');
     expect(warning!.querySelector('slot[name="warning"]')).not.toBeNull();
   });
