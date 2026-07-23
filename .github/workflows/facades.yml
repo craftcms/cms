@@ -62,6 +62,7 @@ jobs:
           done
 
           php -f vendor/bin/facade.php -- "${facade_classes[@]}"
+          vendor/bin/pint "${facades[@]}"
 
       - name: Commit facade docblocks
         uses: stefanzweifel/git-auto-commit-action@v7
