@@ -171,7 +171,7 @@ export class EditableTable extends Base<EditableTableSettings> {
     this.initialized = true;
     this.removeListener(window, 'resize');
 
-    const $container = this.$table.closest('.input');
+    const $container = this.$table.closest('.input, craft-field');
     if ($container.length && this.$table.width() > $container.width()) {
       $container.css('overflow-x', 'auto');
     }

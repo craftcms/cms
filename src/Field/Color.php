@@ -165,7 +165,9 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
     private function settingsHtml(bool $readOnly): string
     {
+
         return
+            Html::beginTag('craft-field-group').
             FormFields::editableTableFieldHtml([
                 'label' => t('Palette'),
                 'name' => 'palette',
@@ -200,7 +202,8 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 'name' => 'allowCustomColors',
                 'on' => $this->allowCustomColors,
                 'disabled' => $readOnly,
-            ]);
+            ]).
+            Html::endTag('craft-field-group');
     }
 
     #[Override]

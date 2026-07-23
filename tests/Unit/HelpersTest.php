@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\File;
 
@@ -103,7 +104,7 @@ describe('template helpers', function () {
         expect(template('helper', ['name' => 'Craft']))->toBe('Blade Craft');
     });
 
-    test('pageTemplate renders Blade page templates through the neutral renderer', function () {
+    test('pageTemplate renders Blade page templates with an explicit renderer', function () {
         File::put($this->tempDir.'/page.blade.php', <<<'BLADE'
 <html>
 <head>@craftHead</head>
@@ -115,7 +116,7 @@ Page {{ $name }}
 </html>
 BLADE);
 
-        expect(pageTemplate('page', ['name' => 'Craft']))
+        expect(pageTemplate('page', ['name' => 'Craft'], renderer: TemplateEngine::Blade))
             ->toContain('Page Craft')
             ->toContain('console.log("helper");')
             ->not->toContain('CRAFT-BLOCK-BODY-END');

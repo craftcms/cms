@@ -251,11 +251,7 @@
           </div>
         </slot>
         <main id="main" tabindex="-1" class="pb-2xl">
-          <component
-            :is="form ? 'form' : 'div'"
-            method="post"
-            @submit.prevent="save()"
-          >
+          <form method="post" @submit.prevent="form && save()">
             <slot name="header">
               <div :class="{container: true, 'container--full': fullWidth}">
                 <div class="index-grid index-grid--header">
@@ -381,7 +377,7 @@
                 </aside>
               </div>
             </div>
-          </component>
+          </form>
         </main>
       </slot>
     </div>
@@ -410,6 +406,7 @@
   }
 
   .cp__header {
+    --c-color-focus-outline: var(--color-blue-300);
     color: var(--color-slate-200);
     background-color: var(--color-slate-950);
   }

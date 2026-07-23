@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 uses(TestCase::class);
@@ -75,3 +76,20 @@ it('runs the legacy categories controller action when support tables are enabled
         ->and(Category::find()->id($categoryElementId)->one()?->title)
         ->toBe('Category Title');
 });
+
+it('rejects non-positive queue batch sizes', function(int $batchSize) {
+    Queue::fake();
+
+    $controller = new ResaveController('resave', Craft::$app);
+    $controller->queue = true;
+    $controller->batchSize = $batchSize;
+
+    $exitCode = $controller->resaveElements(Category::class);
+
+    expect($exitCode)->toBe(1);
+
+    Queue::assertNothingPushed();
+})->with([
+    'zero' => 0,
+    'negative' => -1,
+]);

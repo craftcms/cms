@@ -8,6 +8,7 @@ export default css`
     );
     --_active-color: var(--c-color-on-loud);
     --_active-border-color: var(--c-color-border-loud);
+    --_focus-outline-color: transparent;
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -37,6 +38,16 @@ export default css`
       --c-color-fill-loud,
       var(--c-color-neutral-fill-loud)
     );
+  }
+
+  :host(:focus:not([disabled])),
+  :host(:focus-visible) {
+    outline: var(--c-focus-outline-width) solid var(--_focus-outline-color);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
+  :host(:focus-visible) {
+    --_focus-outline-color: var(--c-color-focus-outline);
   }
 
   @media (hover: hover) {
@@ -105,7 +116,7 @@ export default css`
   /*
   Icon
    */
-  :host([icon='']) {
+  :host([icon]:empty) {
     aspect-ratio: 1;
     padding-inline: 0;
     padding-block: 0;

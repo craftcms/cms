@@ -160,6 +160,19 @@ it('passes fields and default value options to queued resave jobs', function () 
         && $job->toDefault === true);
 });
 
+it('rejects non-positive queue batch sizes', function (int $batchSize) {
+    Queue::fake();
+
+    $this->artisan("craft:resave:entries --queue --batch-size=$batchSize")
+        ->expectsOutputToContain('--batch-size must be at least 1.')
+        ->assertExitCode(1);
+
+    Queue::assertNothingPushed();
+})->with([
+    'zero' => 0,
+    'negative' => -1,
+]);
+
 it('filters users by group', function () {
     $group = UserGroup::factory()->create(['handle' => 'staff']);
     $groupedUser = User::factory()->createElement(['fullName' => 'Grouped User']);

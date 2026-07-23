@@ -6,6 +6,8 @@ export {
   coerceElements,
   getElement,
   hasAttr,
+  nearestSibling,
+  closestRegistered,
   getOffset,
   getOuterWidth,
   getOuterHeight,

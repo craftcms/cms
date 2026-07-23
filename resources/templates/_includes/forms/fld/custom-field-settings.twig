@@ -18,43 +18,45 @@
 
     {% js %}
       (() => {
-        const componentSelect = $("#{{ fieldSelectId|namespaceInputId }}").data('componentSelect');
+        const componentSelect = document.getElementById("{{ fieldSelectId|namespaceInputId }}");
         let replaced = false;
 
         const oldName = {{ defaultLabel|json_encode|raw }};
         const oldHandle = {{ defaultHandle|json_encode|raw }};
         const oldInstructions = {{ defaultInstructions|json_encode|raw }};
 
-        const $labelInput = $("#{{ 'label'|namespaceInputId }}");
-        const $handleInput = $("#{{ 'handle'|namespaceInputId }}");
-        const $instructionsInput = $("#{{ 'instructions'|namespaceInputId }}");
+        const labelInput = document.getElementById("{{ 'label'|namespaceInputId }}");
+        const handleInput = document.getElementById("{{ 'handle'|namespaceInputId }}");
+        const instructionsInput = document.getElementById("{{ 'instructions'|namespaceInputId }}");
 
-        componentSelect.on('change', () => {
-          const $chip = componentSelect.getComponents().first();
+        componentSelect.addEventListener('change', () => {
+          const chip = componentSelect.querySelector('ul > li:not([data-removing]) > craft-chip');
 
-          if (!$chip.length) {
+          if (!chip) {
             return;
           }
 
-          const newName = $chip.data('label');
-          const newHandle = $chip.data('handle');
-          const newInstructions = $chip.data('instructions');
-
-          $labelInput.attr('placeholder', newName);
-          $handleInput.attr('placeholder', newHandle);
-          $instructionsInput.attr('placeholder', newInstructions);
+          if (chip.dataset.label != null) {
+            labelInput.placeholder = chip.dataset.label;
+          }
+          if (chip.dataset.handle != null) {
+            handleInput.placeholder = chip.dataset.handle;
+          }
+          if (chip.dataset.instructions != null) {
+            instructionsInput.placeholder = chip.dataset.instructions;
+          }
 
           if (!replaced) {
             // Override the name/handle/instructions for consistency with the old field,
             // if they weren't already being overridden
-            if (!$labelInput.val()) {
-              $labelInput.val(oldName);
+            if (!labelInput.value) {
+              labelInput.value = oldName;
             }
-            if (!$handleInput.val()) {
-              $handleInput.val(oldHandle);
+            if (!handleInput.value) {
+              handleInput.value = oldHandle;
             }
-            if (!$instructionsInput.val()) {
-              $instructionsInput.val(oldInstructions);
+            if (!instructionsInput.value) {
+              instructionsInput.value = oldInstructions;
             }
           }
 

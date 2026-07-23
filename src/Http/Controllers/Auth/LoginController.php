@@ -145,12 +145,20 @@ readonly class LoginController extends AuthenticationController
                 $provider->rehashPasswordIfRequired($user, ['password' => $request->input('password')]);
             }
 
-            // if we're impersonating, pass the user we're impersonating to the complete method
+            $loginUser = $user;
+            $remember = $request->boolean('rememberMe');
+
             if ($impersonation->isImpersonating()) {
-                $user = $request->craftUser() ?? $user;
+                $loginUser = $request->craftUser() ?? $user;
+                $remember = false;
             }
 
-            return $this->finalizeLogin($request, $user, $request->boolean('rememberMe'));
+            return $this->finalizeLogin(
+                $request,
+                $user,
+                $remember,
+                loginUser: $loginUser,
+            );
         }, 30_000);
     }
 

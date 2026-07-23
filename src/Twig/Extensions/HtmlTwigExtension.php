@@ -12,8 +12,8 @@ use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\View\InputNamespace;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -112,7 +112,7 @@ class HtmlTwigExtension extends AbstractExtension
             return null;
         }
 
-        return app(HtmlSanitizers::class)->sanitize($html, $sanitizer);
+        return HtmlSanitizers::sanitize($html, $sanitizer);
     }
 
     public function removeClassFilter(string $tag, array|string $class): string
