@@ -24,7 +24,7 @@ use Override;
  * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager setContainer(\Illuminate\Contracts\Container\Container $container)
  * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager forgetDrivers()
  *
- * @see HtmlSanitizerManager
+ * @see \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager
  */
 class HtmlSanitizers extends Facade
 {
