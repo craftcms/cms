@@ -10,7 +10,7 @@ import {
 } from '@tanstack/vue-table';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
-import type {SelectItem, SelectOption} from '@/common/types';
+import type {SelectItem} from '@/common/types';
 import useCraftData from '@/common/composables/useCraftData';
 
 type MaybeGetter<T> = T | (() => T);
@@ -67,7 +67,6 @@ interface AutocompleteColumnOptions<
     | MaybeGetter<Array<SelectItem>>
     | ((row: Row<T>) => Array<SelectItem>);
   requireOptionMatch?: boolean;
-  transformModelValue?: (newValue: SelectOption | null) => string;
   label?: string;
   onChange?: (
     value: string,
@@ -354,19 +353,12 @@ export function useEditableTable<T extends Record<string, any>>(
     },
 
     autocomplete(accessor, opts = {}) {
-      const {
-        options,
-        requireOptionMatch,
-        transformModelValue,
-        onChange,
-        ...base
-      } = opts;
+      const {options, requireOptionMatch, onChange, ...base} = opts;
       const columnDef = buildColumnDef(base);
       columnDef.cell = autocompleteCell({
         disabled: base.disabled,
         options,
         requireOptionMatch,
-        transformModelValue,
         onChange,
         class: opts.class ?? '',
         placeholder: opts.placeholder ?? '',

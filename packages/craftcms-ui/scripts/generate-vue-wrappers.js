@@ -284,15 +284,6 @@ const COMBOBOX_COMPONENT = {
 
 // ─── Template Generators ────────────────────────────────────────────────────
 
-function generateSlotForwards(slots) {
-  return slots
-    .map(
-      (slot) =>
-        `    <slot name="${slot}"><template v-if="$slots['${slot}']"><template v-for="(_, name) in $slots" :key="name"><slot :name="name" v-if="name === '${slot}'"></slot></template></template></slot>`
-    )
-    .join('\n');
-}
-
 /**
  * Actually, using Vue's slot forwarding with web component slots is tricky.
  * Web components use <slot> natively, not Vue's slot system.
