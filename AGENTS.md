@@ -106,3 +106,12 @@ When porting behavior out of the legacy jQuery bundle (`packages/craftcms-legacy
 - `declare(strict_types=1)` is required in PHP files.
 - Classes are non-final by default; use `readonly` when it fits.
 - You do not need to manually remove unused imports; Pint will fix them.
+
+## Pull Requests
+
+When creating a pull request, follow these steps:
+
+- Verify first that `composer ci` passes locally
+- Prefix the PR title with the origin branch, for example [6.x] or [5.x], omit if the origin branch does not look like a version.
+- Use a single `### Description` header with a to-the-point description of the PR and a `### Related issues` header only if there are any related issues being fixed or referenced. No other headers or content necessary. You must not add "Validated with.." statements
+- If related issues you find are Linear issues and you are on a branch referencing a Linear issue (xxx-1234-slug), there is no need to add that issue identifier to the related issues. Find the GitHub related issue instead and reference that.
