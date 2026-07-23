@@ -14,7 +14,6 @@ export {default as CraftBreadcrumbs} from './components/breadcrumbs/breadcrumbs.
 export {default as CraftButtonGroup} from './components/button-group/button-group.js';
 export {
   default as CraftButton,
-  ButtonAppearance,
   ButtonVariant,
 } from './components/button/button.js';
 export {default as CraftCallout} from './components/callout/callout.js';

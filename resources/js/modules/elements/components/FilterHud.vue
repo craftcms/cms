@@ -3,7 +3,6 @@
     t,
     appendBodyHtml,
     appendHeadHtml,
-    ButtonAppearance,
     ButtonVariant,
   } from '@craftcms/ui';
   import {useHttp, usePage} from '@inertiajs/vue3';
@@ -108,14 +107,13 @@
           <div class="mt-4 flex justify-end gap-2">
             <craft-button
               type="button"
-              :appearance="ButtonAppearance.Fill"
+              :variant="ButtonVariant.Fill"
               @click="() => emit('close')"
               >{{ t('Cancel') }}</craft-button
             >
             <craft-button
               type="submit"
-              :variant="ButtonVariant.Accent"
-              :appearance="ButtonAppearance.Solid"
+              :variant="ButtonVariant.Primary"
               >{{ t('Apply') }}</craft-button
             >
           </div>
