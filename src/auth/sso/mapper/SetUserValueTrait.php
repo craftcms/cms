@@ -56,6 +56,8 @@ trait SetUserValueTrait
             );
 
             $user->{$this->craftProperty} = $value;
+        } else {
+            Craft::warning(sprintf("User field '%s' was not found", $this->craftProperty), 'auth');
         }
     }
 
@@ -80,17 +82,6 @@ trait SetUserValueTrait
             return null;
         }
 
-        $field = $fieldLayout->getFieldByHandle($fieldHandle);
-
-        if ($field !== null) {
-            // A custom field included in this field layout
-            Craft::info(sprintf("User field '%s' was found", $fieldHandle), 'Auth');
-        } elseif (!in_array($fieldHandle, $user->attributes(), true)) {
-            // Only log if we're missing a custom field. If it's "native" properties that will always exist
-            // (firstName, lastName, fullName, email), don't log.
-            Craft::warning(sprintf("User field '%s' was not found", $fieldHandle), 'auth');
-        }
-
-        return $field;
+        return $fieldLayout->getFieldByHandle($fieldHandle);
     }
 }
