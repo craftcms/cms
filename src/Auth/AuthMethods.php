@@ -14,6 +14,7 @@ use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -24,16 +25,18 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use RuntimeException;
 use SensitiveParameter;
 use Webauthn\Exception\InvalidUserHandleException;
 
-use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
@@ -58,7 +61,6 @@ class AuthMethods
         private readonly Hasher $hasher,
         private readonly Passkeys $passkeys,
         private readonly ProjectConfig $projectConfig,
-        private readonly Impersonation $impersonation,
     ) {
         $this->methods = new Collection;
     }
@@ -198,15 +200,17 @@ class AuthMethods
         return $this->user;
     }
 
-    public function setUser(?CraftUser $user): void
+    public function setUser(?CraftUser $user, bool $remember = false, ?CraftUser $loginUser = null): void
     {
         $this->user = $user?->asElement();
 
         if ($this->user) {
             Session::put('user.id', $this->user->id);
+            Session::put('user.login_id', ($loginUser ?? $user)->getCraftUserId());
+            Session::put('user.remember', $remember);
             Session::put('user.pending_2fa_at', now()->timestamp);
         } else {
-            Session::forget(['user.id', 'user.pending_2fa_at']);
+            Session::forget(['user.id', 'user.login_id', 'user.remember', 'user.pending_2fa_at']);
         }
     }
 
@@ -276,8 +280,6 @@ class AuthMethods
         if (! $this->hasher->check($plain, $hashed)) {
             $this->authError = AuthError::InvalidCredentials;
 
-            $this->handleInvalidLogin($user);
-
             return false;
         }
 
@@ -327,7 +329,7 @@ class AuthMethods
         $updatedCredentialRecord = Session::remove($this->passkeys->passkeyCredSourceParam);
 
         if (! $keyValid) {
-            $this->handleInvalidLogin($user);
+            $this->authError = AuthError::InvalidCredentials;
 
             return false;
         }
@@ -343,33 +345,68 @@ class AuthMethods
     {
         $user = $this->getUser();
 
-        if (! $this->getMethod($methodClass, $user)->verify(...$args)) {
-            if ($user) {
-                $this->handleInvalidLogin($user);
-            }
+        $verify = function () use ($methodClass, $user, $args): bool {
+            $verified = DB::transaction(function () use ($methodClass, $user, $args): bool {
+                if ($user) {
+                    DB::table(Table::USERS)
+                        ->where('id', $user->id)
+                        ->lockForUpdate()
+                        ->firstOrFail();
+                }
 
-            return false;
-        }
+                if ($this->getMethod($methodClass, $user)->verify(...$args)) {
+                    return true;
+                }
 
-        // success!
-        if ($user) {
-            $this->setUser(null);
+                if ($user) {
+                    $this->handleInvalidLogin($user);
+                }
 
-            // if we're impersonating, pass the user we're impersonating to the complete the login
-            if ($this->impersonation->isImpersonating()) {
-                $authUser = currentUser();
-            }
+                return false;
+            });
 
-            $authUser ??= auth()->getProvider()->retrieveById($user->id);
-
-            if (! $authUser) {
+            if (! $verified) {
                 return false;
             }
 
-            auth()->login($authUser, true);
+            // success!
+            if ($user) {
+                $user = User::findOne($user->id);
+                $this->authError = $user
+                    ? $this->getAuthError($user)
+                    : AuthError::InvalidCredentials;
+
+                if ($this->authError) {
+                    $this->setUser(null);
+
+                    return false;
+                }
+
+                $authUser = auth()->getProvider()->retrieveById(Session::get('user.login_id', $user->id));
+                $remember = (bool) Session::get('user.remember', false);
+
+                $this->setUser(null);
+
+                if (! $authUser) {
+                    return false;
+                }
+
+                auth()->login($authUser, $remember);
+            }
+
+            return true;
+        };
+
+        if (! $user) {
+            return $verify();
         }
 
-        return true;
+        try {
+            // Serialize verification attempts per user, so concurrent requests can't race each other.
+            return Cache::lock("auth-verify:{$user->id}", 10)->block(5, $verify);
+        } catch (LockTimeoutException) {
+            return false;
+        }
     }
 
     public function getAuthError(CraftUser $user): ?AuthError
@@ -379,6 +416,7 @@ class AuthMethods
         switch ($user->getStatus()) {
             case User::STATUS_INACTIVE:
             case User::STATUS_ARCHIVED:
+            default:
                 return AuthError::InvalidCredentials;
             case User::STATUS_PENDING:
                 return AuthError::PendingVerification;
@@ -420,17 +458,17 @@ class AuthMethods
                 ) {
                     return AuthError::NoSiteOfflineAccess;
                 }
-        }
 
-        return null;
+                return null;
+        }
     }
 
     public function getAuthMethodErrorMessage(?string $defaultMessage = null): string
     {
         $user = $this->getUser();
-        $authError = null;
+        $authError = $this->authError;
 
-        if ($user) {
+        if (! $authError && $user) {
             $authError = $this->getAuthError($user);
         }
 

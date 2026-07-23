@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import MainNav from '@/common/components/MainNav.vue';
   import EditionInfo from '@/common/components/EditionInfo.vue';

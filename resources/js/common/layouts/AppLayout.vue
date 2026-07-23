@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {computed, watch} from 'vue';
   import {Head, type InertiaForm, usePage} from '@inertiajs/vue3';
   import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
@@ -188,7 +188,7 @@
 
   useAppendHtml();
 
-  // Bridge `@craftcms/cp` action redirects into Inertia SPA visits.
+  // Bridge `@craftcms/ui` action redirects into Inertia SPA visits.
   useActionRedirect();
 </script>
 
@@ -250,12 +250,8 @@
             </div>
           </div>
         </slot>
-        <main id="main" tabindex="-1">
-          <component
-            :is="form ? 'form' : 'div'"
-            method="post"
-            @submit.prevent="save()"
-          >
+        <main id="main" tabindex="-1" class="pb-2xl">
+          <form method="post" @submit.prevent="form && save()">
             <slot name="header">
               <div :class="{container: true, 'container--full': fullWidth}">
                 <div class="index-grid index-grid--header">
@@ -381,7 +377,7 @@
                 </aside>
               </div>
             </div>
-          </component>
+          </form>
         </main>
       </slot>
     </div>
@@ -407,10 +403,10 @@
 
   .cp__main {
     container-type: size;
-    padding-block-end: var(--c-spacing-2xl);
   }
 
   .cp__header {
+    --c-color-focus-outline: var(--color-blue-300);
     color: var(--color-slate-200);
     background-color: var(--color-slate-950);
   }
@@ -449,6 +445,10 @@
           clamp(12rem, 20%, 16rem);
       }
     }
+  }
+
+  main {
+    padding-block-end: var(--c-spacing-xl);
   }
 
   .content-layout__main {

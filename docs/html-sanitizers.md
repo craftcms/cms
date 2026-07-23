@@ -1,19 +1,17 @@
 # HTML Sanitizers
 
-Craft 6 includes a Laravel-native HTML sanitizer registry built on [Symfony HtmlSanitizer](https://symfony.com/doc/current/html_sanitizer.html).
+Craft 6 includes a Laravel-native `HtmlSanitizerManager` built on [Symfony HtmlSanitizer](https://symfony.com/doc/current/html_sanitizer.html). Application code can access it through the plural `HtmlSanitizers` facade.
 
-The `HtmlSanitizers` service lets plugins and apps:
+The manager lets plugins and apps:
 
-- sanitize HTML with Craft's default sanitizer
+- sanitize HTML with Craft’s default sanitizer
 - register named sanitizers for project-specific rules
 - customize the default sanitizer config
-- reuse Craft's default config when defining custom sanitizers
+- reuse Craft’s default config when defining custom sanitizers
 
-Legacy HtmlPurifier support remains available through the Yii2 adapter layer. The legacy Twig `|purify` filter still uses HtmlPurifier, while the new `|sanitize` filter uses the new sanitizer registry.
+Legacy HtmlPurifier support remains available through the Yii2 adapter layer. The legacy Twig `|purify` filter still uses HtmlPurifier, while `|sanitize` uses the sanitizer manager.
 
 ## Basic Usage
-
-Use the facade and call `sanitize()`:
 
 ```php
 <?php
@@ -23,38 +21,27 @@ use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 $cleanHtml = HtmlSanitizers::sanitize($dirtyHtml);
 ```
 
-This uses Craft's default sanitizer.
-
-## Default Behavior
-
-Craft's default sanitizer starts from Symfony's safe and static element sets, then adds Craft-specific support for:
-
-- relative links and media URLs
-- `div[data-oembed-url]`
-- `oembed[url]`
-- Craft's video embed URL sanitizer
-
-The default sanitizer is intended for general safe rich text output.
+Craft’s default sanitizer starts from Symfony’s safe and static element sets, then adds support for relative links and media URLs, `div[data-oembed-url]`, `oembed[url]`, and Craft’s video embed URL sanitizer.
 
 ## Registering Named Sanitizers
 
-Plugins and apps can register named sanitizers from a service provider. Registered sanitizers may be concrete `HtmlSanitizerInterface` instances or closures that return one.
+Register extensions from a service provider’s `boot()` method:
 
 ```php
 <?php
 
 namespace App\Providers;
 
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function boot(HtmlSanitizers $sanitizers): void
+    public function boot(): void
     {
-        $sanitizers->register('links-only', new HtmlSanitizer(
+        HtmlSanitizers::extend('links-only', new HtmlSanitizer(
             (new HtmlSanitizerConfig())
                 ->allowElement('a')
                 ->allowAttribute('href', ['a'])
@@ -63,29 +50,32 @@ class AppServiceProvider extends ServiceProvider
 }
 ```
 
-Use the registered sanitizer by name:
+`extend()` accepts any of these definitions:
+
+- an array of sanitizer settings
+- an `HtmlSanitizerInterface` instance
+- a creator closure that returns either an array or an `HtmlSanitizerInterface` instance
+
+Laravel binds anonymous creator closures to the manager and passes the service container as their first argument.
 
 ```php
-<?php
-
-use CraftCms\Cms\Support\Facades\HtmlSanitizers;
-
-$cleanHtml = HtmlSanitizers::sanitize($dirtyHtml, 'links-only');
+HtmlSanitizers::extend('links-only', fn () => [
+    'allow_elements' => [
+        'a' => ['href'],
+    ],
+]);
 ```
 
-You can also resolve the sanitizer instance directly:
+Use a sanitizer by name or resolve it directly:
 
 ```php
-<?php
-
-use CraftCms\Cms\Support\Facades\HtmlSanitizers;
-
+$cleanHtml = HtmlSanitizers::sanitize($dirtyHtml, 'links-only');
 $cleanHtml = HtmlSanitizers::sanitizer('links-only')->sanitize($dirtyHtml);
 ```
 
 ## Array Config Files
 
-Named sanitizers can also be registered with Symfony-style array config files in `config/craft/sanitizers/`. The file name becomes the sanitizer name.
+Named sanitizers can also be defined in `config/craft/sanitizers/`. The file name becomes the sanitizer name and the returned array is loaded through Laravel’s configuration repository, including when configuration is cached.
 
 ```php
 <?php
@@ -97,77 +87,43 @@ return [
 ];
 ```
 
-Use it like any other named sanitizer:
+Config files must return arrays; closures and object instances are not compatible with `config:cache`. Unknown definition keys are ignored.
 
 ```twig
 {{ body|sanitize('no-headings') }}
 ```
 
+A `default.php` definition replaces Craft’s built-in default sanitizer.
+
 ## Customizing the Default Sanitizer
 
-Use `defaults()` to modify Craft's default `HtmlSanitizerConfig`.
+Use `defaults()` to transform Craft’s default `HtmlSanitizerConfig`. Every callback must return an `HtmlSanitizerConfig`.
 
 ```php
-<?php
-
-namespace App\Providers;
-
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
-use Illuminate\Support\ServiceProvider;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
-
-class AppServiceProvider extends ServiceProvider
-{
-    public function boot(HtmlSanitizers $sanitizers): void
-    {
-        $sanitizers->defaults(fn (HtmlSanitizerConfig $config) => $config
-            ->allowAttribute('class', ['p', 'span'])
-            ->allowElement('iframe')
-            ->allowAttribute('src', ['iframe'])
-        );
-    }
-}
+HtmlSanitizers::defaults(static fn (HtmlSanitizerConfig $config) => $config
+    ->allowAttribute('class', ['p', 'span'])
+    ->allowElement('iframe')
+    ->allowAttribute('src', ['iframe'])
+);
 ```
 
-Each callback receives the current default config and may return the same config or a modified one.
-
-The default sanitizer instance is built lazily from `defaultConfig()`, so calling `defaults()` changes what `sanitize($html)` uses by default.
-
-## Reusing the Default Config
-
-If you want a custom named sanitizer that starts from Craft's defaults, call `defaultConfig()` and keep building from there.
+To create a named sanitizer starting from Craft’s defaults:
 
 ```php
-<?php
-
-namespace App\Providers;
-
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
-use Illuminate\Support\ServiceProvider;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
-
-class AppServiceProvider extends ServiceProvider
-{
-    public function boot(HtmlSanitizers $sanitizers): void
-    {
-        $config = $sanitizers->defaultConfig()
-            ->allowElement('iframe')
-            ->allowAttribute('src', ['iframe']);
-
-        $sanitizers->register('embedded-content', new HtmlSanitizer($config));
-    }
-}
+HtmlSanitizers::extend('embedded-content', fn () => new HtmlSanitizer(
+    HtmlSanitizers::defaultConfig()
+        ->allowElement('iframe')
+        ->allowAttribute('src', ['iframe'])
+));
 ```
 
-This is the recommended way to define custom sanitizers that should stay close to Craft's defaults.
+## Resolution and Caching
 
-## Twig Filters
+Sanitizers are created lazily and cached by name. Register extensions and default callbacks before their sanitizers are first resolved. Replacing a creator or adding a default callback does not change an already-resolved sanitizer. Call `HtmlSanitizers::forgetDrivers()` to clear all resolved instances when an intentional runtime change must take effect.
 
-Craft now provides two distinct Twig filters:
+Calling `all()` eagerly resolves every registered sanitizer. `getDrivers()` returns only sanitizers that have already been resolved.
 
-- `|sanitize` uses the new `HtmlSanitizers` service
-
-Examples:
+## Twig Filter
 
 ```twig
 {{ body|sanitize }}
@@ -175,11 +131,3 @@ Examples:
 ```
 
 You may also pass a concrete sanitizer instance from PHP into a template context and use it directly with `|sanitize`.
-
-## Recommended Direction
-
-For new code:
-
-- prefer the `HtmlSanitizers` service or facade for application code
-- prefer `|sanitize` in Twig
-- define named sanitizers in service providers when they need custom PHP logic

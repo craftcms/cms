@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {h, ref} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -65,7 +65,6 @@
 
 <template>
   <AdminTable
-    spacing="relaxed"
     layout="auto"
     :table="table"
     :from="1"

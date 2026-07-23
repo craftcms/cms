@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import type {BaseOption} from '@/common/types';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
+  import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
   import {computed} from 'vue';
 
   const emit = defineEmits<{

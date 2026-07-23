@@ -9,11 +9,10 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\Support\Html;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class Local extends Filesystem
 {
@@ -108,12 +107,18 @@ class Local extends Filesystem
                 'required',
                 'string',
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    if (Security::isSystemDir($this->getRootPath())) {
+                    if (Security::isRestrictedDir($this->getRootPath())) {
                         $fail(t('Local filesystems cannot be located within or above system directories.'));
                     }
                 },
             ],
         ]);
+    }
+
+    #[Override]
+    public function hasLegacySettingsHtml(): bool
+    {
+        return false;
     }
 
     #[Override]
@@ -130,10 +135,15 @@ class Local extends Filesystem
 
     private function settingsHtml(bool $readOnly): string
     {
-        return template('_components/fs/Local/settings', [
-            'filesystem' => $this,
-            'readOnly' => $readOnly,
-        ], TemplateMode::Cp);
+        return Html::tag('LocalFsSettings', attributes: [
+            ':filesystem' => [
+                'name' => static::displayName(),
+                'type' => self::class,
+                'handle' => $this->handle,
+                'path' => $this->path,
+            ],
+            ':readOnly' => $readOnly,
+        ]);
     }
 
     #[Override]

@@ -24,7 +24,7 @@ vi.mock('./manager', async () => {
   };
 });
 
-vi.mock('@craftcms/cp', () => ({
+vi.mock('@craftcms/ui', () => ({
   ConfigService: {
     getInstance: () => ({
       getCpUrl: (path: string) => `https://example.test/admin/${path}`,

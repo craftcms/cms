@@ -91,6 +91,19 @@ test('attemptLogin fails with wrong password', function () {
     Event::assertDispatched(Failed::class);
 });
 
+test('attemptLogin counts a wrong password once', function () {
+    Cms::config()->maxInvalidLogins = 10;
+
+    $user = User::findOne();
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'wrongpassword',
+    ])->assertStatus(400);
+
+    expect(UserModel::findOrFail($user->id)->invalidLoginCount)->toBe(1);
+});
+
 test('attemptLogin is limited to five failed attempts per minute', function () {
     $user = User::findOne();
 
@@ -193,16 +206,16 @@ test('attemptLogin fails for user without password', function () {
     expect(Auth::check())->toBeFalse();
 });
 
-test('logout logs the user out and redirects', function () {
+test('logout logs the user out and redirects', function (string $method) {
     actingAs(User::findOne());
 
     expect(Auth::check())->toBeTrue();
 
-    get(action([LoginController::class, 'logout']))
+    $this->$method(action([LoginController::class, 'logout']))
         ->assertRedirect();
 
     expect(Auth::check())->toBeFalse();
-});
+})->with(['get', 'post']);
 
 test('logout redirects to the post-logout redirect, not back to the previous page', function () {
     Cms::config()->postLogoutRedirect = '';
@@ -211,7 +224,7 @@ test('logout redirects to the post-logout redirect, not back to the previous pag
 
     // Even when arriving from a page, logout must not fall through to back().
     $response = $this->from('https://localhost/members/dashboard')
-        ->get('/'.Cms::config()->getLogoutPath())
+        ->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect();
 
     expect($response->headers->get('Location'))->toBe('https://localhost/');
@@ -222,7 +235,7 @@ test('logout honors a configured post-logout redirect', function () {
 
     actingAs(User::findOne());
 
-    $this->get('/'.Cms::config()->getLogoutPath())
+    $this->post('/'.Cms::config()->getLogoutPath())
         ->assertRedirect('https://localhost/goodbye');
 });
 

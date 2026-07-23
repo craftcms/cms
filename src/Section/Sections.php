@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Section;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
@@ -45,6 +44,7 @@ use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
@@ -59,6 +59,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\t;
 
 #[Scoped]
 class Sections
@@ -270,6 +271,31 @@ class Sections
     }
 
     /**
+     * Returns all sections the given user is able to publish.
+     *
+     * Returned as plain arrays rather than a Collection: array shapes are
+     * covariant under static analysis, so branch-narrowed member types stay
+     * assignable — Collection's TValue is invariant and rejects them.
+     *
+     * @throws AuthenticationException
+     */
+    public function getPublishableSections(): Collection
+    {
+        $currentUser = currentUser();
+
+        if (! $currentUser) {
+            return Collection::empty();
+        }
+
+        if ($this->getEditableSections()->isEmpty()) {
+            return Collection::empty();
+        }
+
+        return collect($this->getEditableSections())
+            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $currentUser->can("createEntries:$section->uid"));
+    }
+
+    /**
      * @param  array<int, int>  $entryTypeIds
      * @return array<array-key, Section>
      */
@@ -374,7 +400,7 @@ class Sections
 
         $sectionEntryTypeIds = array_map(fn ($entryType) => $entryType->id, $section->getEntryTypes());
 
-        return ! empty(array_intersect($entryTypeIds, $sectionEntryTypeIds));
+        return ! empty($entryTypeIds) && empty(array_diff($entryTypeIds, $sectionEntryTypeIds));
     }
 
     /**
@@ -760,7 +786,7 @@ class Sections
                         description: I18N::prep('Applying new propagation method to {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                    ));
+                    ))->afterCommit();
                 } elseif ($this->autoResaveEntries) {
                     dispatch(new ResaveElements(
                         elementType: Entry::class,
@@ -778,7 +804,7 @@ class Sections
                         description: I18N::prep('Resaving {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                    ));
+                    ))->afterCommit();
                 }
             }
 

@@ -14,6 +14,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
@@ -182,6 +183,49 @@ describe('updateRelations', function () {
         expect($relations[0]->targetId)->toBe($targetIds[2]);
         expect($relations[1]->targetId)->toBe($targetIds[1]);
         expect($relations[2]->targetId)->toBe($targetIds[0]);
+    });
+
+    it('rolls back relation changes when a write fails', function () {
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
+        $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
+
+        $targetEntries = EntryModel::factory(2)->create();
+
+        $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
+        $element->setFieldValue('relatedEntries', [$targetEntries[0]->id]);
+        Elements::saveElement($element);
+
+        $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
+        $element->setFieldValue('relatedEntries', [$targetEntries[1]->id]);
+
+        $transactionLevel = DB::transactionLevel();
+        $throwOnRelationInsert = true;
+
+        DB::listen(function (QueryExecuted $query) use (&$throwOnRelationInsert): void {
+            if ($throwOnRelationInsert && str_contains($query->sql, 'insert into') && str_contains($query->sql, 'relations')) {
+                throw new RuntimeException('Relation write failed.');
+            }
+        });
+
+        try {
+            expect(fn () => $this->relations->updateRelations($element, false))
+                ->toThrow(RuntimeException::class, 'Relation write failed.');
+        } finally {
+            $throwOnRelationInsert = false;
+        }
+
+        expect(DB::transactionLevel())->toBe($transactionLevel);
+
+        $relations = DB::table(Table::RELATIONS)
+            ->where('sourceId', $element->id)
+            ->where('fieldId', $this->field->id)
+            ->get();
+
+        expect($relations)->toHaveCount(1);
+        expect($relations[0]->targetId)->toBe($targetEntries[0]->id);
     });
 
     it('does nothing for elements without field layouts', function () {

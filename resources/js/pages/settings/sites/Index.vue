@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
@@ -272,7 +272,6 @@
       :table="sitesTable"
       :read-only="readOnly"
       :reorderable="!!group?.id"
-      spacing="relaxed"
       @reorder="handleReorder"
     >
       <template #empty-row>

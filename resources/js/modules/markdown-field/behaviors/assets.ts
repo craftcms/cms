@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import type {OverType as OverTypeInstance} from 'overtype';
 import type {PreviewController} from './preview';
 import {escapeMarkdownLabel} from './utilities';
@@ -33,7 +33,7 @@ export function createAssetController(
 
   function open(): void {
     if (!assetSelectorModal) {
-      assetSelectorModal = window.Craft.createElementSelectorModal(
+      assetSelectorModal = Craft.createElementSelectorModal(
         ASSET_ELEMENT_TYPE,
         {
           closeOtherModals: false,

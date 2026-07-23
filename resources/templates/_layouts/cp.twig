@@ -178,7 +178,12 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                         </ul>
                         <hr>
                         <ul>
-                            <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                            <li>
+                                <form action="{{ url('logout') }}" method="post">
+                                    {{ csrfInput() }}
+                                    <button type="submit" class="menu-item">{{ "Sign out"|t('app') }}</button>
+                                </form>
+                            </li>
                         </ul>
                     </div>
                 </div>

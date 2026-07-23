@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import Pane from '@/common/components/Pane.vue';
   import {
     type ComponentPublicInstance,

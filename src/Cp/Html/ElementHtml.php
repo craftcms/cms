@@ -14,19 +14,21 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
+use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Crypt;
@@ -71,6 +73,7 @@ readonly class ElementHtml
             'showThumb' => true,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
+            'appearance' => null,
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -90,6 +93,7 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
+            'appearance' => $config['appearance'],
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
@@ -114,13 +118,11 @@ readonly class ElementHtml
 
         $html = Html::beginTag('craft-chip', $attributes);
 
-        if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
-            $html .= Html::beginTag('div', ['slot' => 'prefix', 'class' => 'flex items-center gap-1']);
-        }
-
         if ($config['showStatus']) {
             /** @var Chippable&Statusable $component */
-            $html .= $this->statusHtml->componentStatusIndicatorHtml($component) ?? '';
+            $html .= Html::tag('div', $this->statusHtml->componentStatusIndicatorHtml($component) ?? '', [
+                'slot' => 'indicator',
+            ]);
         }
 
         if ($config['showThumb']) {
@@ -138,10 +140,6 @@ readonly class ElementHtml
 
         if ($config['selectable']) {
             $html .= $this->componentCheckboxHtml(sprintf('%s-label', $config['id']));
-        }
-
-        if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
-            $html .= Html::endTag('div'); // prefix slot
         }
 
         if (isset($config['labelHtml'])) {
@@ -206,18 +204,17 @@ readonly class ElementHtml
             $html .= $this->componentActionMenu($component);
         }
         if ($config['sortable']) {
-            $html .= FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'move-btn'],
-                'icon' => 'move',
-                'attributes' => [
+            $html .= Button::make()
+                ->icon('move')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'move-btn'],
                     'title' => t('Reorder'),
                     'aria' => [
                         'label' => t('Reorder'),
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
-                ],
-            ]);
+                ]);
         }
         $html .= Html::endTag('div'); // slot=suffix
 
@@ -341,22 +338,33 @@ readonly class ElementHtml
      */
     public function elementCardHtml(ElementInterface $element, array $config = []): string
     {
-        $config += [
-            'attributes' => [],
-            'autoReload' => true,
-            'context' => 'index',
-            'hyperlink' => false,
-            'returnUrl' => null,
-            'id' => sprintf('card-%s', mt_rand()),
-            'inputName' => null,
-            'selectable' => false,
-            'showActionMenu' => false,
-            'showEditButton' => true,
-            'sortable' => false,
-        ];
+        $config = $this->normalizeCardConfig($element, $config);
+
+        $attributes = $this->cardAttributes($element, $config);
+
+        $html = Html::beginTag('div', $attributes).
+            $this->elementCardHeaderHtml($element, $config).
+            $this->elementCardContentHtml($element, $config).
+            $this->elementCardFooterHtml($element, $config).
+            Html::endTag('div'); // .card
+
+        event($event = new ElementCardHtmlResolving($element, $config['context'], $html));
+
+        return $event->html;
+    }
+
+    /**
+     * Renders the header (titlebar) portion of an element’s card.
+     *
+     * Accepts the same `$config` settings as {@see elementCardHtml()}.
+     */
+    public function elementCardHeaderHtml(ElementInterface $element, array $config = []): string
+    {
+        $config = $this->normalizeCardConfig($element, $config);
 
         $showEditButton = $config['showEditButton'] && Gate::check('view', $element);
 
+        $editId = null;
         if ($showEditButton) {
             $editId = sprintf('action-edit-%s', mt_rand());
             HtmlStack::jsWithVars(fn ($id, $elementType, $settings, $cpEditUrl) => <<<JS
@@ -390,52 +398,61 @@ JS, [
             ]);
         }
 
-        if ($element->getIsRevision()) {
-            $config['showActionMenu'] = false;
-            $config['selectable'] = false;
-        }
+        $icon = $element instanceof Iconic ? $element->getIcon() : null;
+        $title = $element->getCardTitle();
 
-        $color = $element instanceof Colorable ? $element->getColor() : null;
+        return Html::beginTag('div', ['class' => 'card-titlebar']).
+            Html::beginTag('div', [
+                'class' => ['flex', 'flex-nowrap', 'gap-1', 'items-center'],
+            ]).
+            ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
+            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
+            Html::endTag('div'). // .flex
+            $this->cardModifiedStatusHtml($element).
+            Html::beginTag('div', ['class' => 'card-actions-container']).
+            Html::beginTag('div', ['class' => 'card-actions']).
+            ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
+            ($showEditButton ? Button::make()
+                ->icon('edit')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'edit-btn'],
+                    'id' => $editId,
+                    'title' => mb_ucfirst(t('Edit {type}', [
+                        'type' => $element::lowerDisplayName(),
+                    ])),
+                    'aria' => [
+                        'label' => mb_ucfirst(t('Edit {type}', [
+                            'type' => $element::lowerDisplayName(),
+                        ])),
+                    ],
+                ]) : '').
+            ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton) : '').
+            ($config['sortable'] ? Button::make()
+                ->icon('move')
+                ->attributes([
+                    'class' => ['chromeless', 'small', 'move-btn'],
+                    'title' => t('Reorder'),
+                    'aria' => [
+                        'label' => t('Reorder'),
+                    ],
+                    'role' => 'none',
+                    'tabindex' => '-1',
+                ]) : '').
+            Html::endTag('div'). // .card-actions
+            Html::endTag('div'). // .card-actions-container
+            Html::endTag('div'); // .card-titlebar
+    }
 
-        $classes = ['card'];
-        if ($element->errors()->isNotEmpty()) {
-            $classes[] = 'error';
-        }
+    /**
+     * Renders the content (main content + thumbnail) portion of an element’s card.
+     *
+     * Accepts the same `$config` settings as {@see elementCardHtml()}.
+     */
+    public function elementCardContentHtml(ElementInterface $element, array $config = []): string
+    {
+        $config = $this->normalizeCardConfig($element, $config);
 
-        $thumb = $element->getThumbHtml(120);
-        $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
-
-        if ($thumb) {
-            if ($thumbAlignment) {
-                $classes[] = 'thumb-'.$thumbAlignment;
-            }
-        }
-
-        $attributes = Arr::merge(
-            $this->baseElementAttributes($element, $config),
-            [
-                'class' => $classes,
-                'style' => array_filter([
-                    '--custom-border-color' => $color?->cssVar(200),
-                    '--custom-titlebar-bg-color' => $color?->cssVar(100),
-                    '--custom-bg-color' => $color?->cssVar(50),
-                    '--custom-text-color' => $color?->cssVar(900),
-                    '--custom-sel-titlebar-bg-color' => $color?->cssVar(900),
-                    '--custom-sel-bg-color' => $color?->cssVar(800),
-                ]),
-                'data' => array_filter([
-                    'settings' => $config['autoReload'] ? [
-                        'hyperlink' => $config['hyperlink'],
-                        'returnUrl' => $config['returnUrl'],
-                        'selectable' => $config['selectable'],
-                        'context' => $config['context'],
-                        'id' => InputNamespace::namespaceId($config['id']),
-                        'ui' => 'card',
-                    ] : false,
-                ]),
-            ],
-            $config['attributes'],
-        );
+        $attributes = $this->cardAttributes($element, $config);
 
         $headingContent = $this->elementLabelHtml($element, $config, $attributes, fn () => Html::encode($element->getUiLabel()));
         $bodyContent = $element->getCardBodyHtml() ?? '';
@@ -452,93 +469,6 @@ JS, [
                 ->render();
         }
 
-        // is this a nested element that will end up replacing its canonical
-        // counterpart when the owner is saved?
-        if (
-            $element instanceof NestedElementInterface &&
-            $element->getOwnerId() !== null &&
-            $element->getOwnerId() === $element->getPrimaryOwnerId() &&
-            ! $element->getIsDraft() &&
-            ! $element->getIsRevision() &&
-            $element->getOwner()->getIsDerivative()
-        ) {
-            if ($element->getIsCanonical()) {
-                // this element was created for the owner
-                $statusLabel = t('This is a new {type}.', [
-                    'type' => $element::lowerDisplayName(),
-                ]);
-            } else {
-                // this element is a derivative of another element owned by the canonical owner
-                $statusLabel = t('This {type} has been edited.', [
-                    'type' => $element::lowerDisplayName(),
-                ]);
-            }
-
-            $status = Html::beginTag('div', [
-                'class' => ['status-badge', AttributeStatus::Modified->value],
-                'title' => $statusLabel,
-            ]).
-                Html::tag('span', $statusLabel, [
-                    'class' => 'visually-hidden',
-                ]).
-                Html::endTag('div');
-        }
-
-        $icon = $element instanceof Iconic ? $element->getIcon() : null;
-        $title = $element->getCardTitle();
-
-        $html = Html::beginTag('div', $attributes).
-            Html::beginTag('div', ['class' => 'card-titlebar']).
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-nowrap', 'flex-gap-s'],
-            ]).
-            ($icon ? Html::tag('div', Icons::svg($icon), [
-                'class' => array_filter([
-                    'cp-icon',
-                    'small',
-                    $element instanceof Colorable ? $element->getColor()?->value : null,
-                ]),
-                'aria' => ['hidden' => true],
-            ]) : '').
-            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
-            Html::endTag('div'). // .flex
-            ($status ?? '').
-            Html::beginTag('div', ['class' => 'card-actions-container']).
-            Html::beginTag('div', ['class' => 'card-actions']).
-            ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
-            ($showEditButton ? FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'edit-btn'],
-                'icon' => 'edit',
-                'attributes' => [
-                    'id' => $editId,
-                    'title' => mb_ucfirst(t('Edit {type}', [
-                        'type' => $element::lowerDisplayName(),
-                    ])),
-                    'aria' => [
-                        'label' => mb_ucfirst(t('Edit {type}', [
-                            'type' => $element::lowerDisplayName(),
-                        ])),
-                    ],
-                ],
-            ]) : '').
-            ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton) : '').
-            ($config['sortable'] ? FormFields::buttonHtml([
-                'class' => ['chromeless', 'small', 'move-btn'],
-                'icon' => 'move',
-                'attributes' => [
-                    'title' => t('Reorder'),
-                    'aria' => [
-                        'label' => t('Reorder'),
-                    ],
-                    'role' => 'none',
-                    'tabindex' => '-1',
-                ],
-            ]) : '').
-            Html::endTag('div'). // .card-actions
-            Html::endTag('div'). // .card-actions-container
-            Html::endTag('div'). // .card-titlebar
-            Html::beginTag('div', ['class' => 'card-main']);
-
         $contentHtml =
             Html::beginTag('div', ['class' => 'card-content']).
             ($headingContent !== '' ? Html::tag('div', $headingContent, ['class' => 'card-heading']) : '').
@@ -546,26 +476,171 @@ JS, [
             Html::endTag('div'); // .card-content
 
         $thumbHtml = $element->getThumbHtml(120);
+        $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
+
+        $html = Html::beginTag('div', ['class' => 'card-main']);
 
         if ($thumbAlignment === 'start') {
             $html .= $thumbHtml.$contentHtml;
         } else {
             $html .= $contentHtml.$thumbHtml;
-        }
+        } // .card-main
 
-        $html .=
-            Html::endTag('div'); // .card-main
+        return $html.Html::endTag('div');
+    }
+
+    /**
+     * Renders the footer portion of an element’s card.
+     *
+     * In the `field` context this carries the hidden input holding the element’s
+     * ID; otherwise it’s empty. Accepts the same `$config` settings as
+     * {@see elementCardHtml()}.
+     */
+    public function elementCardFooterHtml(ElementInterface $element, array $config = []): string
+    {
+        $config = $this->normalizeCardConfig($element, $config);
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
             $inputValue = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
-            $html .= Html::hiddenInput($config['inputName'], (string) $inputValue);
+
+            return (string) Html::hiddenInput($config['inputName'], (string) $inputValue);
         }
 
-        $html .= Html::endTag('div'); // .card
+        return '';
+    }
 
-        event($event = new ElementCardHtmlResolving($element, $config['context'], $html));
+    /**
+     * Returns the HTML attributes for the outer `.card` element as a structured
+     * (normalized) tag-attributes array.
+     *
+     * These match exactly what the wrapper produced by {@see elementCardHtml()}
+     * uses, so they can be applied to a card rendered from the individual part
+     * methods. Accepts the same `$config` settings as {@see elementCardHtml()}.
+     */
+    public function elementCardAttributes(ElementInterface $element, array $config = []): array
+    {
+        return $this->cardAttributes($element, $this->normalizeCardConfig($element, $config));
+    }
 
-        return $event->html;
+    /**
+     * Normalizes the config passed to the card rendering methods.
+     *
+     * Applying defaults here (rather than in each part method) keeps the
+     * generated `id` stable when {@see elementCardHtml()} composes the parts, so
+     * the same already-normalized `$config` is threaded through each.
+     */
+    private function normalizeCardConfig(ElementInterface $element, array $config): array
+    {
+        $config += [
+            'attributes' => [],
+            'autoReload' => true,
+            'context' => 'index',
+            'hyperlink' => false,
+            'returnUrl' => null,
+            'id' => sprintf('card-%s', mt_rand()),
+            'inputName' => null,
+            'selectable' => false,
+            'showActionMenu' => false,
+            'showEditButton' => true,
+            'sortable' => false,
+        ];
+
+        if ($element->getIsRevision()) {
+            $config['showActionMenu'] = false;
+            $config['selectable'] = false;
+        }
+
+        return $config;
+    }
+
+    /**
+     * Builds the HTML attributes for the outer `.card` element.
+     */
+    private function cardAttributes(ElementInterface $element, array $config): array
+    {
+        $color = $element instanceof Colorable ? $element->getColor() : null;
+
+        $classes = ['card'];
+        if ($element->errors()->isNotEmpty()) {
+            $classes[] = 'error';
+        }
+
+        $thumb = $element->getThumbHtml(120);
+        $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
+
+        if ($thumb) {
+            if ($thumbAlignment) {
+                $classes[] = 'thumb-'.$thumbAlignment;
+            }
+        }
+
+        return Arr::merge(
+            $this->baseElementAttributes($element, $config),
+            [
+                'class' => $classes,
+                'style' => array_filter([
+                    '--custom-border-color' => $color?->cssVar(200),
+                    '--custom-titlebar-bg-color' => $color?->cssVar(100),
+                    '--custom-bg-color' => $color?->cssVar(50),
+                    '--custom-text-color' => $color?->cssVar(900),
+                    '--custom-sel-titlebar-bg-color' => $color?->cssVar(900),
+                    '--custom-sel-bg-color' => $color?->cssVar(800),
+                ]),
+                'data' => array_filter([
+                    'color' => $color?->value,
+                    'settings' => $config['autoReload'] ? [
+                        'hyperlink' => $config['hyperlink'],
+                        'returnUrl' => $config['returnUrl'],
+                        'selectable' => $config['selectable'],
+                        'context' => $config['context'],
+                        'id' => InputNamespace::namespaceId($config['id']),
+                        'ui' => 'card',
+                    ] : false,
+                ]),
+            ],
+            $config['attributes'],
+        );
+    }
+
+    /**
+     * Renders the “modified” status badge for a nested element that will replace
+     * its canonical counterpart when the owner is saved, or an empty string.
+     */
+    private function cardModifiedStatusHtml(ElementInterface $element): string
+    {
+        if (
+            ! (
+                $element instanceof NestedElementInterface &&
+                $element->getOwnerId() !== null &&
+                $element->getOwnerId() === $element->getPrimaryOwnerId() &&
+                ! $element->getIsDraft() &&
+                ! $element->getIsRevision() &&
+                $element->getOwner()->getIsDerivative()
+            )
+        ) {
+            return '';
+        }
+
+        if ($element->getIsCanonical()) {
+            // this element was created for the owner
+            $statusLabel = t('This is a new {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]);
+        } else {
+            // this element is a derivative of another element owned by the canonical owner
+            $statusLabel = t('This {type} has been edited.', [
+                'type' => $element::lowerDisplayName(),
+            ]);
+        }
+
+        return Html::beginTag('div', [
+            'class' => ['status-badge', AttributeStatus::Modified->value],
+            'title' => $statusLabel,
+        ]).
+            Html::tag('span', $statusLabel, [
+                'class' => 'visually-hidden',
+            ]).
+            Html::endTag('div');
     }
 
     private function baseElementAttributes(ElementInterface $element, array $config): array
@@ -718,6 +793,20 @@ JS, [
         ]);
     }
 
+    /**
+     * Renders a `<craft-action-menu>` for a component's action menu items.
+     *
+     * This feeds both {@see chipHtml()} and the card markup: it's the single
+     * `craft-action-menu`/`craft-action-item` producer for chip and card
+     * "Actions" menus, replacing the legacy `disclosureMenu()`-rendered
+     * markup (which required a `Craft.initUiElements()` pass — unreliable for
+     * fetched/injected chips). `craft-action-menu`/`craft-action-item`
+     * self-boot, so no init pass is needed.
+     *
+     * The menu is always rendered, even with zero items, so JS (e.g.
+     * `Craft.addActionsToChip()`) always has a `[slot="content"]` container
+     * to inject into.
+     */
     private function componentActionMenu(Actionable $component, bool $withEdit = true): string
     {
         return InputNamespace::namespaceInputs(
@@ -738,17 +827,173 @@ JS, [
                         $item['attributes']['data']['copy-action'] = true;
                     }
                 }
+                unset($item);
 
-                return $this->menuHtml->disclosureMenu($actionMenuItems, [
-                    'hiddenLabel' => t('Actions'),
-                    'buttonHtml' => Html::tag('craft-icon', '', [
-                        'name' => 'ellipsis',
-                    ]),
-                    'omitIfEmpty' => false,
+                // `disclosureMenuItems()` normalizes types, moves destructive
+                // items to the end (behind an `hr`), and trims leading/
+                // trailing/repeated `hr`s — all still desirable here.
+                $items = $this->menuHtml->disclosureMenuItems($actionMenuItems);
+
+                $invokerHtml = Html::tag('craft-button', Html::tag('craft-icon', '', [
+                    'name' => 'ellipsis',
+                ]), [
+                    'type' => 'button',
+                    'slot' => 'invoker',
+                    'appearance' => 'plain',
+                    'variant' => 'inherit',
+                    'size' => 'small',
+                    // Bare `icon` attribute triggers the icon-only button styling
+                    // (the icon itself is slotted content, not the `icon` prop —
+                    // it needs its own `aria-label`-free presentation since the
+                    // button already carries one).
+                    'icon' => true,
+                    'aria' => [
+                        'label' => t('Actions'),
+                    ],
                 ]);
+
+                $contentHtml = Html::tag('div', implode('', array_map(
+                    $this->actionMenuItemHtml(...),
+                    $items,
+                )), [
+                    'slot' => 'content',
+                ]);
+
+                return Html::tag('craft-action-menu', $invokerHtml.$contentHtml);
             },
             sprintf('action-menu-%s', mt_rand()),
         );
+    }
+
+    /**
+     * Renders a single normalized action menu item (see
+     * {@see MenuHtml::normalizeMenuItems()}) as either an `<hr>` separator or
+     * a `<craft-action-item>`.
+     *
+     * Field mapping from the legacy `disclosureMenu()`/`menuitem.twig`
+     * contract:
+     *
+     * - `label`/`html`, `handle`, `description` → slotted content (mirrors
+     *   `_includes/forms/componentSelect.twig`'s option markup).
+     * - `icon` + `color` → `icon` + `icon-color` attributes.
+     * - `url` (link items) → `href`.
+     * - `destructive` → `variant="danger"`.
+     * - `disabled`, `hidden` → same-named boolean attributes.
+     * - `attributes` (incl. the `data-edit-action`/`data-copy-action` set
+     *   above) → merged onto the tag verbatim.
+     * - `action`/`params`/`confirm`/`redirect` → a `craft-action-item`
+     *   `action` object (`{type: 'http', ...}`, JSON-encoded — see
+     *   `@src/actions`), replacing the legacy `formsubmit`/`data-action`
+     *   mechanism. `redirect` is encrypted the same way the `hash` Twig
+     *   filter did, and posted as a `redirect` body param for the controller
+     *   action to honor.
+     * - `requireElevatedSession` has no client-side equivalent in the frozen
+     *   `craft-action-item`/`runAction()` — there's no re-auth prompt hook —
+     *   so it's intentionally dropped here. An item that needs it will still
+     *   be rejected server-side; it just won't get the elevated-session
+     *   modal first. See the task report for details.
+     */
+    private function actionMenuItemHtml(array $item): string
+    {
+        $type = $item['type'] ?? MenuItemType::Button;
+        if ($type instanceof MenuItemType) {
+            $type = $type->value;
+        }
+
+        if ($type === MenuItemType::HR->value) {
+            return Html::tag('hr', '', [
+                'class' => 'action-menu__separator',
+                // `craft-action-menu`'s `::slotted()` styles can't reach a
+                // light-DOM `<hr>`, so style it inline (mirrors
+                // `action-menu.ts`'s `_renderItem()`).
+                'style' => [
+                    'margin' => '0',
+                    'border' => '0',
+                    'border-block-start' => '1px solid var(--c-color-neutral-border-quiet)',
+                ],
+            ]);
+        }
+
+        if ($type === MenuItemType::Group->value) {
+            // `craft-action-item` has no heading/group concept; flatten.
+            return implode('', array_map(
+                $this->actionMenuItemHtml(...),
+                $this->menuHtml->normalizeMenuItems($item['items'] ?? []),
+            ));
+        }
+
+        $color = $item['color'] ?? null;
+        if ($color instanceof Color) {
+            $color = $color->value;
+        }
+
+        $action = null;
+        if ($item['action'] ?? false) {
+            $body = (array) ($item['params'] ?? []);
+            if ($item['redirect'] ?? false) {
+                $body['redirect'] = Crypt::encrypt((string) $item['redirect']);
+            }
+
+            $action = array_filter([
+                'type' => 'http',
+                'method' => 'POST',
+                'url' => Url::actionUrl((string) $item['action']),
+                'body' => $body ?: null,
+                'confirm' => $item['confirm'] ?? null,
+            ], fn ($value) => $value !== null);
+        }
+
+        $attributes = Arr::merge([
+            // Deliberately *not* run through `InputNamespace::namespaceId()`:
+            // this whole method already runs inside its own
+            // `InputNamespace::namespaceInputs()` closure (see
+            // `componentActionMenu()`), which namespaces every `id=`
+            // attribute in the returned HTML automatically — namespacing it
+            // here too would double it up.
+            'id' => $item['id'] ?? sprintf('menu-item-%s', mt_rand()),
+            'icon' => $item['icon'] ?? false,
+            'icon-color' => $color ?: false,
+            'href' => $type === MenuItemType::Link->value ? Url::url((string) ($item['url'] ?? '')) : false,
+            'disabled' => $item['disabled'] ?? false,
+            'hidden' => $item['hidden'] ?? false,
+            'variant' => ($item['destructive'] ?? false) ? 'danger' : false,
+            'action' => $action ? Json::encode($action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : false,
+        ], $item['attributes'] ?? []);
+
+        return Html::tag('craft-action-item', $this->actionMenuItemContentHtml($item), $attributes);
+    }
+
+    /**
+     * Renders a menu item's slotted content: its label (or raw `html`), plus
+     * an optional secondary line for `description`/`handle` — the same
+     * `menu-item-description` markup `_includes/menuitem.twig` and
+     * `_includes/forms/componentSelect.twig` use.
+     */
+    private function actionMenuItemContentHtml(array $item): string
+    {
+        $labelHtml = isset($item['label'])
+            ? Html::encode($item['label'])
+            : (string) ($item['html'] ?? '');
+
+        if (isset($item['description'])) {
+            $secondaryHtml = Html::tag('span', Html::encode($item['description']), [
+                'class' => ['menu-item-description', 'mt-2xs', 'smalltext', 'light'],
+            ]);
+        } elseif (isset($item['handle'])) {
+            $secondaryHtml = Html::tag('span', Html::encode($item['handle']), [
+                'class' => ['menu-item-description', 'mt-2xs', 'smalltext', 'light', 'code'],
+            ]);
+        } else {
+            $secondaryHtml = null;
+        }
+
+        if ($secondaryHtml === null) {
+            return $labelHtml;
+        }
+
+        return Html::tag('span', $labelHtml.$secondaryHtml, [
+            'class' => ['inline-flex', 'flex-col', 'items-start', 'gap-2xs'],
+        ]);
     }
 
     private function contextIsAdministrative(string $context): bool

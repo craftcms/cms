@@ -21,7 +21,6 @@ use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\PluginUninstalling;
-use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -590,17 +589,6 @@ class Plugins extends Component
                 }
 
                 Craft::$app->setModule($event->plugin->handle, $event->plugin);
-            }
-        );
-
-        Event::listen(
-            PluginUnregistered::class,
-            function(PluginUnregistered $event) {
-                if (!$event->plugin instanceof Module) {
-                    return;
-                }
-
-                Craft::$app->setModule($event->plugin->handle, null);
             }
         );
     }

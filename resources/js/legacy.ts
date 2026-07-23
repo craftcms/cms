@@ -10,21 +10,24 @@ import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import {mountElevatedSessionHost} from './modules/auth/elevated-session';
 
 import './modules/listbox/index';
+import './modules/matrix/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
 import './modules/editable-table/index';
+import './modules/grouped-entry-type-manager/index';
+import './modules/queue/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
-window.Cp = Cp;
+window.Cp = Cp as unknown as typeof window.Cp;
 
 mountElevatedSessionHost();
 
 /**
  * Components - dynamically imported after Craft is initialized
  */
-import('@craftcms/cp/components/nav-list/nav-list');
-import('@craftcms/cp/components/nav-item/nav-item');
+import('@craftcms/ui/components/nav-list/nav-list');
+import('@craftcms/ui/components/nav-item/nav-item');
 import('./modules/navigation/components/cp-global-sidebar.js');
 import('./modules/navigation/components/cp-queue-indicator.js');
 import('./modules/markdown-field/markdown-field.js');

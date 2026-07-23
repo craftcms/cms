@@ -943,6 +943,8 @@ JS, [
     ): array {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
+        } elseif ($value instanceof ElementCollection) {
+            $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
         }
@@ -988,7 +990,7 @@ JS, [
     {
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element)->all();
+            $value = ElementCollection::make($this->_all($value, $element)->all());
         } else {
             // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
             $rawValue = $element->getCustomFieldRawValue($this->handle);
@@ -1271,7 +1273,7 @@ JS, [
                     'structure-id' => $s['structureId'] ?? null,
                 ],
             ])
-            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->sortBy(fn ($option) => $option['value'] === '*' ? 0 : $option['label'], SORT_NATURAL | SORT_FLAG_CASE)
             ->all();
     }
 

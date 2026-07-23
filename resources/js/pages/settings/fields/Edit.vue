@@ -1,19 +1,22 @@
 <script setup lang="ts">
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
-  import {actionClient, serializeFormInputs, t, toHandle} from '@craftcms/cp';
+  import {actionClient, serializeFormInputs, t, toHandle} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
-  import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
+  import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+  import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import Pane from '@/common/components/Pane.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import {store} from '@/actions/CraftCms/Cms/Http/Controllers/FieldsController';
+  import {
+    renderSettings,
+    store,
+  } from '@/actions/CraftCms/Cms/Http/Controllers/FieldsController';
 
   interface FieldTypeOption {
     value: string;
@@ -95,7 +98,7 @@
       settingsFragment.value = null;
 
       try {
-        const {data} = await actionClient.post('fields/render-settings', {
+        const {data} = await actionClient.post(renderSettings().url, {
           type,
           oldType,
           settings,
@@ -304,7 +307,10 @@
             <div v-if="settingsLoading" class="flex justify-center p-4">
               <craft-spinner></craft-spinner>
             </div>
-            <HtmlFragmentRenderer :fragment="settingsFragment" />
+            <HtmlFragmentRenderer
+              as="craft-field-group"
+              :fragment="settingsFragment"
+            />
           </div>
         </div>
       </craft-field-group>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {h, ref} from 'vue';
   import {router, useHttp, usePage} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import Pane from '@/common/components/Pane.vue';
   import {connect, destroy} from '@actions/Users/SignInProvidersController';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';

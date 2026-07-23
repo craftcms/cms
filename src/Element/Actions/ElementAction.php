@@ -34,6 +34,11 @@ abstract class ElementAction extends Component implements ElementActionInterface
         return false;
     }
 
+    public static function supportsBulk(): bool
+    {
+        return true;
+    }
+
     public function setElementType(string $elementType): void
     {
         $this->elementType = $elementType;

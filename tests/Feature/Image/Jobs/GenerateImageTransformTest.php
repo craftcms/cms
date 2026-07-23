@@ -22,6 +22,12 @@ it('can be instantiated with transform id', function () {
     expect($job->transformId)->toBe(123);
 });
 
+it('uses the transform id as its unique id', function () {
+    $job = new GenerateImageTransform(transformId: 123);
+
+    expect($job->uniqueId())->toBe('123');
+});
+
 it('can be dispatched to the queue', function () {
     Queue::fake();
 
@@ -49,7 +55,7 @@ it('handles non-existent transform id gracefully', function () {
         transformId: 999999,
     );
 
-    $job->handle();
+    app()->call($job->handle(...));
 
     expect(true)->toBeTrue();
 });
@@ -59,7 +65,7 @@ it('handles zero transform id gracefully', function () {
         transformId: 0,
     );
 
-    $job->handle();
+    app()->call($job->handle(...));
 
     expect(true)->toBeTrue();
 });

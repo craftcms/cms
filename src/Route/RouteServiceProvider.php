@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
+use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
@@ -29,6 +31,7 @@ use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
+use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -45,6 +48,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Uri;
 use Override;
 
 class RouteServiceProvider extends ServiceProvider
@@ -60,6 +64,7 @@ class RouteServiceProvider extends ServiceProvider
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
             HandleTokenRequest::class,
+            HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
@@ -122,6 +127,11 @@ class RouteServiceProvider extends ServiceProvider
             LoginRateLimiter::NAME,
             fn (Request $request) => app(LoginRateLimiter::class)->limit($request),
         );
+
+        RateLimiter::for(
+            TwoFactorRateLimiter::NAME,
+            fn (Request $request) => app(TwoFactorRateLimiter::class)->limit($request),
+        );
     }
 
     private function bootRequestForgeryExceptions(): void
@@ -144,18 +154,18 @@ class RouteServiceProvider extends ServiceProvider
      */
     private function bootMaintenanceModeExceptions(): void
     {
-        PreventRequestsDuringMaintenance::except([
-            action([UpdaterController::class, 'precheck']),
-            action([UpdaterController::class, 'composerInstall']),
-            action([UpdaterController::class, 'finish']),
-            action([UpdaterController::class, 'backup']),
-            action([UpdaterController::class, 'serverCheck']),
-            action([UpdaterController::class, 'migrate']),
-            action([ConfigSyncController::class, 'finish']),
-            action([PluginStoreInstallController::class, 'finish']),
-            action([PluginStoreRemoveController::class, 'finish']),
-            action(MigrateController::class),
-        ]);
+        PreventRequestsDuringMaintenance::except(collect([
+            [UpdaterController::class, 'precheck'],
+            [UpdaterController::class, 'composerInstall'],
+            [UpdaterController::class, 'finish'],
+            [UpdaterController::class, 'backup'],
+            [UpdaterController::class, 'serverCheck'],
+            [UpdaterController::class, 'migrate'],
+            [ConfigSyncController::class, 'finish'],
+            [PluginStoreInstallController::class, 'finish'],
+            [PluginStoreRemoveController::class, 'finish'],
+            MigrateController::class,
+        ])->map(fn (array|string $action) => Uri::action($action)->path())->all());
     }
 
     private function bootMiddleware(Router $router): void
@@ -163,6 +173,7 @@ class RouteServiceProvider extends ServiceProvider
         $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
 
         collect([
+            UseWriteConnection::class,
             ForgetTriggerParameters::class,
             EnsureInstalled::class,
             AddLogContext::class,

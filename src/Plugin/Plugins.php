@@ -23,7 +23,6 @@ use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginsRegistered;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\PluginUninstalling;
-use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -38,12 +37,14 @@ use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\PackageManifest;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use PDOException;
 use ReflectionClass;
@@ -107,9 +108,10 @@ class Plugins
 
     public function __construct(
         private readonly Repository $cache,
-        Application $app,
+        private readonly Application $app,
         Filesystem $files,
-        GeneralConfig $generalConfig
+        GeneralConfig $generalConfig,
+        private readonly PackageManifest $packageManifest,
     ) {
         if ($generalConfig->safeMode) {
             $this->forceDisabledPlugins = '*';
@@ -151,7 +153,13 @@ class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || ! Cms::isInstalled()) {
+        if ($this->pluginsLoaded === true || $this->loadingPlugins === true) {
+            return;
+        }
+
+        $this->ensurePluginsAreNotLaravelProviders();
+
+        if (! Cms::isInstalled()) {
             return;
         }
 
@@ -186,6 +194,8 @@ class Plugins
             ->all();
 
         $anyVersionsChanged = false;
+
+        $plugins = [];
 
         foreach ($this->storedPluginInfo as $handle => $row) {
             // Skip disabled plugins
@@ -235,7 +245,7 @@ class Plugins
                 $anyVersionsChanged = true;
             }
 
-            $this->registerPlugin($plugin);
+            $plugins[$handle] = $plugin;
         }
 
         if ($anyVersionsChanged) {
@@ -243,8 +253,23 @@ class Plugins
             $this->cache->forget(License::CACHE_KEY_LICENSE_INFO);
         }
 
+        $this->plugins = $plugins;
+
+        foreach ($plugins as $plugin) {
+            if ($plugin instanceof ServiceProvider) {
+                $plugin->booting(fn () => $plugin->bootPlugin($this));
+                $registered = $this->app->register($plugin);
+
+                if ($registered !== $plugin) {
+                    throw new InvalidPluginException($plugin->handle, 'Plugin class ['.$plugin::class.'] was already registered.');
+                }
+            }
+
+            event(new PluginRegistered($plugin));
+        }
+
         // Sort enabled plugins by their names
-        $this->plugins = Collection::make($this->plugins)
+        $this->plugins = Collection::make($plugins)
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
             ->all();
 
@@ -336,6 +361,17 @@ class Plugins
     }
 
     /**
+     * Republishes all enabled plugins' public assets.
+     */
+    public function publishPluginAssets(): void
+    {
+        foreach ($this->getAllPlugins() as $plugin) {
+            $plugin->removeAssets();
+            $plugin->publishAssets();
+        }
+    }
+
+    /**
      * Enables a plugin by its handle.
      *
      * @param  string  $handle  The plugin’s handle
@@ -367,7 +403,7 @@ class Plugins
         );
 
         $this->storedPluginInfo[$handle]['enabled'] = true;
-        $this->registerPlugin($plugin);
+        $plugin->publishAssets();
 
         event(new PluginEnabled($plugin));
 
@@ -406,7 +442,7 @@ class Plugins
         );
 
         $this->storedPluginInfo[$handle]['enabled'] = false;
-        $this->unregisterPlugin($plugin);
+        $plugin->removeAssets();
 
         event(new PluginDisabled($plugin));
 
@@ -519,7 +555,7 @@ class Plugins
         );
 
         $this->storedPluginInfo[$handle] = $info;
-        $this->registerPlugin($plugin);
+        $plugin->publishAssets();
 
         event(new PluginInstalled($plugin));
 
@@ -608,11 +644,11 @@ class Plugins
             $projectConfig->remove(ProjectConfig::PATH_PLUGINS.'.'.$handle, "Uninstall the “{$handle}” plugin");
         }
 
-        if ($plugin) {
-            $this->unregisterPlugin($plugin);
-        }
-
         unset($this->storedPluginInfo[$handle]);
+
+        if ($plugin) {
+            $plugin->removeAssets();
+        }
 
         event(new PluginUninstalled($plugin));
 
@@ -1263,30 +1299,26 @@ class Plugins
         return $handle;
     }
 
-    /**
-     * Registers a plugin internally and as an application module.
-     *
-     * This should only be called for enabled plugins
-     *
-     * @param  PluginInterface  $plugin  The plugin
-     */
-    private function registerPlugin(PluginInterface $plugin): void
+    private function ensurePluginsAreNotLaravelProviders(): void
     {
-        $this->plugins[$plugin->handle] = $plugin;
+        $providers = $this->packageManifest->providers();
 
-        event(new PluginRegistered($plugin));
-    }
+        foreach ($this->composerPluginInfo as $handle => $plugin) {
+            $class = $plugin['class'] ?? null;
 
-    /**
-     * Unregisters a plugin internally and as an application module.
-     *
-     * @param  PluginInterface  $plugin  The plugin
-     */
-    private function unregisterPlugin(PluginInterface $plugin): void
-    {
-        unset($this->plugins[$plugin->handle]);
+            if (! is_string($class) || $class === '') {
+                throw new InvalidPluginException($handle, "Plugin package [{$plugin['packageName']}] does not define a plugin class.");
+            }
 
-        event(new PluginUnregistered($plugin));
+            if (! in_array($class, $providers, true)) {
+                continue;
+            }
+
+            throw new InvalidPluginException(
+                $handle,
+                "Plugin class [$class] from package [{$plugin['packageName']}] must not be declared as a Laravel service provider.",
+            );
+        }
     }
 
     /**

@@ -250,7 +250,7 @@ describe('BaseCondition::getBuilderInnerHtml() with rules', function () {
         $html = $condition->getBuilderInnerHtml();
 
         expect($html)->toContain('rule-switcher');
-        expect($html)->toContain('menubtn');
+        expect($html)->toContain('craft-action-menu');
         expect($html)->toContain('Title');
     });
 
@@ -318,12 +318,13 @@ describe('Rule type menu', function () {
         expect($footerHtml)->toContain('Slug');
     });
 
-    it('renders a menu div with class menu', function () {
+    it('renders the rule types as an action menu', function () {
         $condition = new ElementCondition(Entry::class);
 
         $html = $condition->getBuilderInnerHtml();
 
-        expect($html)->toContain('class="menu"');
+        expect($html)->toContain('<craft-action-menu');
+        expect($html)->toContain('<craft-action-item');
     });
 });
 

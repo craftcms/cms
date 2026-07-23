@@ -6,6 +6,7 @@ namespace CraftCms\Cms\User\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\User\Users;
 use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
@@ -25,7 +26,7 @@ class SetPasswordCommand extends Command implements PromptsForMissingInput
     #[Override]
     protected $aliases = ['users/set-password', 'users/setPassword', 'users:setPassword'];
 
-    public function handle(Elements $elements): int
+    public function handle(Elements $elements, Users $users): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
@@ -34,10 +35,24 @@ class SetPasswordCommand extends Command implements PromptsForMissingInput
         $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
         $user->newPassword = $this->argument('password');
 
+        $saved = false;
+
         $this->components->task(
             'Saving the user',
-            fn () => $elements->saveElement($user, false),
+            function () use ($elements, $user, &$saved) {
+                return $saved = $elements->saveElement($user);
+            },
         );
+
+        if (! $saved) {
+            foreach ($user->errors()->all() as $error) {
+                $this->components->error($error);
+            }
+
+            return self::FAILURE;
+        }
+
+        $users->invalidateUserSessions($user);
 
         return self::SUCCESS;
     }

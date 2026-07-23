@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import {html, LitElement, nothing, type TemplateResult} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
@@ -149,7 +149,7 @@ class CraftLinkField extends LitElement {
       event.currentTarget instanceof HTMLElement ? event.currentTarget : null
     );
 
-    const modal = window.Craft.createElementSelectorModal(type.elementType, {
+    const modal = Craft.createElementSelectorModal(type.elementType, {
       ...config,
       closeOtherModals: false,
       hideOnSelect: true,
@@ -525,10 +525,15 @@ class CraftLinkField extends LitElement {
         ${this.renderAdvancedFields()}
 
         <div class="buttons right">
-          <craft-button type="button" appearance="plain" @click=${this.cancel}>
+          <craft-button
+            type="button"
+            appearance="plain"
+            size="small"
+            @click=${this.cancel}
+          >
             ${t('Cancel')}
           </craft-button>
-          <craft-button type="button" @click=${this.apply}>
+          <craft-button type="button" size="small" @click=${this.apply}>
             ${t('Apply')}
           </craft-button>
         </div>
