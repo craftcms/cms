@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a styling issue. ([#19296](https://github.com/craftcms/cms/pull/19296))
+- Fixed a bug where Yii adapter plugins could cause legacy Control Panel assets to be omitted. ([#19302](https://github.com/craftcms/cms/pull/19302))
 
 ## 6.0.0-alpha.14 - 2026-07-22
 
