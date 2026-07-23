@@ -8,8 +8,6 @@ use Closure;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 
@@ -32,7 +30,6 @@ readonly class Enforce2fa
 
         /** @var User $user */
         if ($this->auth->is2faRequired($user) && ! $this->auth->hasActiveMethod($user)) {
-            app(InternalAssetRegistry::class)->register(AuthMethodSetupAsset::class);
             TemplateMode::set(TemplateMode::Cp);
 
             return response()

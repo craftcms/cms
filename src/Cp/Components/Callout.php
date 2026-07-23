@@ -31,6 +31,8 @@ class Callout extends ViewComponent
 
     protected string|Closure|null $icon = null;
 
+    protected bool|Closure $hideIcon = false;
+
     protected string|Closure|null $rounded = null;
 
     protected bool|Closure $inline = false;
@@ -51,6 +53,14 @@ class Callout extends ViewComponent
     public function icon(string|Closure|null $icon): static
     {
         $this->icon = $icon;
+
+        return $this;
+    }
+
+    /** Suppresses the icon entirely, including the variant default. */
+    public function hideIcon(bool|Closure $hideIcon = true): static
+    {
+        $this->hideIcon = $hideIcon;
 
         return $this;
     }
@@ -86,6 +96,7 @@ class Callout extends ViewComponent
             'appearance' => $this->getAppearance(),
             'title' => $this->evaluate($this->title),
             'icon' => $this->evaluate($this->icon),
+            'hide-icon' => (bool) $this->evaluate($this->hideIcon),
             'rounded' => $this->evaluate($this->rounded),
             'inline' => (bool) $this->evaluate($this->inline),
         ];

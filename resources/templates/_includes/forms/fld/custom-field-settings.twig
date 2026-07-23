@@ -4,88 +4,95 @@
 {% set originalField = Fields.getFieldByUid(field.getField().uid) %}
 
 {% block fieldSettings %}
-  {% if originalField %}
-    {% set fieldSelectId = "fieldselect#{random()}" %}
-    <div class="pane no-border p-m">
-      {{ forms.fieldSelectField({
-        id: fieldSelectId,
-        name: 'fieldId',
-        value: originalField,
-        limit: 1,
-        warning: 'Changing this may result in data loss.'|t('app'),
-      }) }}
-    </div>
+  <craft-field-group>
+    {% if originalField %}
+      {% set fieldSelectId = "fieldselect#{random()}" %}
+        {{ forms.fieldSelectField({
+          label: 'Field'|t('app'),
+          id: fieldSelectId,
+          name: 'fieldId',
+          value: originalField,
+          limit: 1,
+          warning: 'Changing this may result in data loss.'|t('app'),
+        }) }}
 
-    {% js %}
-      (() => {
-        const componentSelect = document.getElementById("{{ fieldSelectId|namespaceInputId }}");
-        let replaced = false;
+      <script type="module">
+        (() => {
+          const componentSelect = document.getElementById("{{ fieldSelectId|namespaceInputId }}");
+          let replaced = false;
 
-        const oldName = {{ defaultLabel|json_encode|raw }};
-        const oldHandle = {{ defaultHandle|json_encode|raw }};
-        const oldInstructions = {{ defaultInstructions|json_encode|raw }};
+          const oldName = {{ defaultLabel|json_encode|raw }};
+          const oldHandle = {{ defaultHandle|json_encode|raw }};
+          const oldInstructions = {{ defaultInstructions|json_encode|raw }};
 
-        const labelInput = document.getElementById("{{ 'label'|namespaceInputId }}");
-        const handleInput = document.getElementById("{{ 'handle'|namespaceInputId }}");
-        const instructionsInput = document.getElementById("{{ 'instructions'|namespaceInputId }}");
+          const labelInput = document.getElementById("{{ 'label'|namespaceInputId }}");
+          const handleInput = document.getElementById("{{ 'handle'|namespaceInputId }}");
+          const instructionsInput = document.getElementById("{{ 'instructions'|namespaceInputId }}");
 
-        componentSelect.addEventListener('change', () => {
-          const chip = componentSelect.querySelector('ul > li:not([data-removing]) > craft-chip');
+          componentSelect.addEventListener('replace-component', (event) => {
+            console.log('replace-component fired', {event});
+          });
 
-          if (!chip) {
-            return;
-          }
+          componentSelect.addEventListener('change', () => {
+            console.log('changed!');
+            const chip = componentSelect.querySelector('ul > li:not([data-removing]) > craft-chip');
 
-          if (chip.dataset.label != null) {
-            labelInput.placeholder = chip.dataset.label;
-          }
-          if (chip.dataset.handle != null) {
-            handleInput.placeholder = chip.dataset.handle;
-          }
-          if (chip.dataset.instructions != null) {
-            instructionsInput.placeholder = chip.dataset.instructions;
-          }
-
-          if (!replaced) {
-            // Override the name/handle/instructions for consistency with the old field,
-            // if they weren't already being overridden
-            if (!labelInput.value) {
-              labelInput.value = oldName;
+            if (!chip) {
+              return;
             }
-            if (!handleInput.value) {
-              handleInput.value = oldHandle;
+
+            if (chip.dataset.label != null) {
+              labelInput.placeholder = chip.dataset.label;
             }
-            if (!instructionsInput.value) {
-              instructionsInput.value = oldInstructions;
+            if (chip.dataset.handle != null) {
+              handleInput.placeholder = chip.dataset.handle;
             }
-          }
+            if (chip.dataset.instructions != null) {
+              instructionsInput.placeholder = chip.dataset.instructions;
+            }
 
-          replaced = true;
-        });
-      })();
-    {% endjs %}
-  {% endif %}
+            if (!replaced) {
+              // Override the name/handle/instructions for consistency with the old field,
+              // if they weren't already being overridden
+              if (!labelInput.value) {
+                labelInput.value = oldName;
+              }
+              if (!handleInput.value) {
+                handleInput.value = oldHandle;
+              }
+              if (!instructionsInput.value) {
+                instructionsInput.value = oldInstructions;
+              }
+            }
 
-  {{ block('labelField') }}
+            replaced = true;
+          });
+        })();
+      </script>
+    {% endif %}
 
-  {{ forms.textField({
-    label: 'Handle'|t('app'),
-    id: 'handle',
-    name: 'handle',
-    class: 'code',
-    autocorrect: false,
-    autocapitalize: false,
-    maxlength: 64,
-    value: field.handle,
-    placeholder: defaultHandle,
-    errors: field.errors.get('handle'),
-    required: true,
-    data: {
-      'error-key': 'handle'
-    },
-  }) }}
+    {{ block('labelField') }}
 
-  {{ block('instructionsField') }}
-  {{ block('tipField') }}
-  {{ block('warningField') }}
+    {{ forms.textField({
+      label: 'Handle'|t('app'),
+      id: 'handle',
+      name: 'handle',
+      class: 'code',
+      autocorrect: false,
+      autocapitalize: false,
+      maxlength: 64,
+      width: 'full',
+      value: field.handle,
+      placeholder: defaultHandle,
+      errors: field.errors.get('handle'),
+      required: true,
+      data: {
+        'error-key': 'handle'
+      },
+    }) }}
+
+    {{ block('instructionsField') }}
+    {{ block('tipField') }}
+    {{ block('warningField') }}
+  </craft-field-group>
 {% endblock %}

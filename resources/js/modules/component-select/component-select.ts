@@ -48,6 +48,19 @@ export interface DefineChipActionsEventDetail {
 }
 
 /**
+ * Detail for the bubbling, cancelable `replace-component` `CustomEvent`
+ * dispatched from a chip when its Replace action is activated. The owning
+ * select's container listener provides the default behavior (opening the
+ * Choose menu); consumers may take over the replace flow instead by calling
+ * `preventDefault()` — from a listener between the chip and the select's
+ * container, or from a capture-phase listener anywhere above it.
+ */
+export interface ReplaceComponentEventDetail {
+  /** The chip whose Replace action was activated. */
+  chip: HTMLElement;
+}
+
+/**
  * Attribute-driven configuration, replacing the legacy `{% js %}` settings boot.
  * Defaults match `Craft.ComponentSelectInput.defaults`, except
  * `addItemsToActionMenus` (folded into always-on for now). Fully resolved
@@ -218,6 +231,14 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     // whole activation story.
     this.#menu?.addEventListener('click', this.#handleMenuClick);
 
+    // Default handler for the chips' `replace-component` events — bound on
+    // the container so a chip's event finds its owning select by bubbling,
+    // with no instance lookup.
+    this.container.addEventListener(
+      'replace-component',
+      this.#handleReplaceComponent
+    );
+
     if (this.#createBtn && this.settings.createAction) {
       this.#$createBtn = $(this.#createBtn);
       this.#$createBtn.on('activate', this.#handleCreateActivate);
@@ -243,6 +264,11 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     this.#menu?.removeEventListener('click', this.#handleMenuClick);
     this.#menu = null;
+
+    this.container.removeEventListener(
+      'replace-component',
+      this.#handleReplaceComponent
+    );
 
     this.#$createBtn?.off('activate', this.#handleCreateActivate);
     this.#$createBtn = null;
@@ -301,9 +327,34 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
   /** Open the Choose menu (the chip Replace action's path). */
   openChooseMenu(): void {
-    if (this.#menu) {
-      this.#menu.opened = true;
+    const menu = this.#menu;
+
+    if (!menu) {
+      return;
     }
+
+    // At the limit, #updateButtons() has hidden the menu (and possibly its
+    // footer wrapper), leaving the popover nothing visible to anchor to — the
+    // replace flow still needs it, so reveal it for the duration of the
+    // choose and let #updateButtons() recompute the hidden state once the
+    // menu closes. (The legacy jQuery menu re-anchored itself to the chip
+    // instead; Lion's dropdown anchors to the invoker.)
+    if (menu.classList.contains('hidden')) {
+      menu.classList.remove('hidden');
+      menu
+        .closest('[data-id="component-select-footer"]')
+        ?.classList.remove('hidden');
+
+      const restoreOnClose = (): void => {
+        if (!menu.opened) {
+          menu.removeEventListener('opened-changed', restoreOnClose);
+          this.#updateButtons();
+        }
+      };
+      menu.addEventListener('opened-changed', restoreOnClose);
+    }
+
+    menu.opened = true;
   }
 
   /**
@@ -509,6 +560,20 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     });
   };
 
+  /**
+   * Default behavior for a chip's `replace-component` event: open the Choose
+   * menu. Skipped when a consumer already took the flow over via
+   * `preventDefault()` — see {@link ReplaceComponentEventDetail}.
+   */
+  #handleReplaceComponent = (ev: Event): void => {
+    if (ev.defaultPrevented) {
+      return;
+    }
+
+    ev.preventDefault();
+    this.openChooseMenu();
+  };
+
   // --- Chips ----------------------------------------------------------------------
 
   /**
@@ -620,12 +685,20 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
         icon: 'arrows-rotate',
         label: Craft.t('app', 'Replace'),
         callback: () => {
-          // Open the Choose menu; picking an option adds the replacement (and,
-          // at the limit, drops this chip). The legacy jQuery menu re-anchored
-          // itself to the chip (`$alignmentElement`); Lion's dropdown config
-          // anchors to the invoker, so that nicety is dropped as a
-          // simplification.
-          owner().openChooseMenu();
+          // Announce rather than act: the owning select's container listener
+          // opens the Choose menu as the default (picking an option adds the
+          // replacement and, at the limit, drops this chip), and wrappers can
+          // take the flow over via `preventDefault()` — see
+          // {@link ReplaceComponentEventDetail}. Dispatched from the chip so
+          // bubbling finds whichever select currently owns it, with no
+          // instance lookup.
+          chip.dispatchEvent(
+            new CustomEvent<ReplaceComponentEventDetail>('replace-component', {
+              bubbles: true,
+              cancelable: true,
+              detail: {chip},
+            })
+          );
         },
       });
     }

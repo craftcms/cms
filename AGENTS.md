@@ -93,6 +93,29 @@ partially migrated; full migration means converting the inner form to a Vue comp
 **Custom elements** (anything with a hyphen in the tag name) are treated as native web components by the Vue compiler —
 they pass through to the browser without Vue trying to resolve them as Vue components.
 
+### PHP UI Components
+
+Server-rendered CP UI is moving onto the `@craftcms/ui` web components via PHP component classes in
+`src/Cp/Components/`:
+
+- Each component (e.g. `Button`, `Checkbox`, `Lightswitch`, `Field`) extends `ViewComponent` and renders its custom
+  element tag (`<craft-button>`, `<craft-field>`, …) with typed fluent setters, named-slot handling, and lazily
+  evaluated Closure values (DI-resolved, Filament-style). Build instances with `Component::make()->…`;
+  `configure(array)` maps config-array keys (kebab/snake camelized) onto the setters.
+- `ComponentRegistry` (`#[Singleton]`, plugin-extensible) maps template-facing names to component classes and backs
+  the `ui()` PHP helper and the `ui` Twig function.
+- `CraftCms\Cms\Cp\FormFields` is the legacy shim layer. Its `*FromConfig()` methods translate the legacy Twig
+  config-array surface (the old `_includes/forms/*` option names) onto a component's fluent API, preserving legacy
+  semantics; keys the components no longer support get `Deprecator` warnings via `deprecateConfig()`. The
+  `*FieldHtml()` methods wrap an input in the `Field` component via `fieldHtml()`.
+- Migrated `resources/templates/_includes/forms/*.twig` templates are one-line delegates to the Twig `Cp` variable
+  (`craft.cp.button(_context)` → `FormFields::buttonFromConfig()`); inputs not yet ported still render their Twig
+  template via `FormFields::renderTemplate()`.
+
+When porting a form input to this pattern: add the component class to `src/Cp/Components/` (and register it), add a
+`FormFields::*FromConfig()` mapping that keeps the legacy config keys working, and reduce the Twig template to a
+delegate — don't drop legacy config support without a deprecation.
+
 When porting behavior out of the legacy jQuery bundle (`packages/craftcms-legacy/cp/src/js/*.js`) into modern TypeScript, follow the shared module pattern documented in `resources/js/modules/README.md` — a logic class (`<name>.ts` on `@craftcms/garnish` `Base`), a `ControllerElement` custom element (`<name>.ce.ts`), an instance-registry `support.ts` WeakMap, and an `index.ts` shim that registers the element and assigns the legacy `window.Craft.*` global. Note the source-vs-`dist` gotcha in that README: after editing `packages/craftcms-garnish/src` (or `@craftcms/cp`), rebuild the package's `dist` or `npm run typecheck` won't see the change.
 
 ## Adapter Work
