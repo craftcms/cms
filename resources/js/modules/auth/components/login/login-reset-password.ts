@@ -2,6 +2,7 @@ import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {actionClient, t} from '@craftcms/ui';
 import componentStyles from './login-form.styles.js';
+import { useAnnouncementStore} from '@/common/composables/useAnnouncementStore';
 
 /**
  * @summary Password-reset request form. Fires `reset-back` when the user
@@ -35,6 +36,11 @@ export default class CraftLoginResetPassword extends LitElement {
     return this.useEmailAsUsername ? t('Email') : t('Username or Email');
   }
 
+  #setError(message: string) {
+    this._error = message.trim();
+    useAnnouncementStore().announce(message);
+  }
+
   async #onSubmit(event: Event) {
     event.preventDefault();
 
@@ -55,7 +61,9 @@ export default class CraftLoginResetPassword extends LitElement {
       dialog.appendChild(msg);
       document.body.appendChild(dialog);
     } catch (e: any) {
-      this._error = e?.response?.data?.message ?? t('A server error occurred.');
+      this.#setError(
+        e?.response?.data?.message ?? t('A server error occurred.')
+      );
     } finally {
       this._busy = false;
     }

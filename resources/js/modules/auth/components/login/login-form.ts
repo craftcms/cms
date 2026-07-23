@@ -15,7 +15,7 @@ import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';
 import './login-reset-password.js';
-
+import { useAnnouncementStore } from '@/common/composables/useAnnouncementStore';
 type View = 'login' | 'reset-password' | 'challenge';
 
 /**
@@ -73,8 +73,7 @@ export default class CraftLoginForm extends LitElement {
   @query('craft-input-password.login-password')
   private _passwordInput?: HTMLElement & {value: string};
   @query('.login-remember-me') private _rememberMeInput?: HTMLInputElement;
-  @query('.cp-visually-hidden[role="status"]')
-  private _liveRegion!: HTMLDivElement;
+
   override async connectedCallback() {
     super.connectedCallback();
 
@@ -207,22 +206,9 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #setError(message: string) {
+    const { announce } = useAnnouncementStore();
     this._error = message.trim();
-    this.#setLiveRegion(message);
-  }
-
-  #setLiveRegion(message: string) {
-    if (!this._liveRegion) return;
-
-    this._liveRegion.textContent = message.trim();
-
-    setTimeout(() => {
-      const textContent = this._liveRegion.textContent;
-
-      if (textContent === message) {
-        this._liveRegion.textContent = '';
-      }
-    }, 5000);
+    announce(message);
   }
 
   #handleSuccess(returnUrl: string) {
