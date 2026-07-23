@@ -57,6 +57,8 @@ trait SetUserValueTrait
             );
 
             $user->{$this->craftProperty} = $value;
+        } else {
+            Craft::warning(sprintf("User field '%s' was not found", $this->craftProperty), 'auth');
         }
     }
 
@@ -81,22 +83,6 @@ trait SetUserValueTrait
             return null;
         }
 
-        $field = $fieldLayout->getFieldByHandle($fieldHandle);
-
-        $field ? Log::info(
-            sprintf(
-                "User field '%s' was found",
-                $fieldHandle
-            ),
-            ['auth']
-        ) : Log::warning(
-            sprintf(
-                "User field '%s' was not found",
-                $fieldHandle
-            ),
-            ['auth']
-        );
-
-        return $field;
+        return $fieldLayout->getFieldByHandle($fieldHandle);
     }
 }
