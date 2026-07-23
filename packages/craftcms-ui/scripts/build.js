@@ -106,7 +106,7 @@ async function generateVueWrappers() {
 
 async function generateColors() {
   spinner.start('Generating Colors');
-  createColors();
+  await createColors();
   spinner.succeed();
   return Promise.resolve();
 }
