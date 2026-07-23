@@ -46,8 +46,12 @@ export default class CraftInput extends LionInput {
     if (this._inputNode && this.maxlength && this.maxlength > 0) {
       this._inputNode.maxLength = this.maxlength;
       // Give the input a matching intrinsic width, so the shrunk control
-      // (see `width`) fits the expected character count.
-      this._inputNode.size = this.maxlength;
+      // (see `width`) fits the expected character count. `width="full"`
+      // opts out of the shrink behavior, so the intrinsic width would only
+      // blow the control out of its column.
+      if (this.width !== 'full') {
+        this._inputNode.size = this.maxlength;
+      }
     }
   }
 }
