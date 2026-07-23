@@ -6,24 +6,20 @@ import '../spinner/spinner.js';
 import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
-import variantsStyles from '@src/styles/variants.styles';
 
-export const ButtonAppearance = {
+export const ButtonVariant = {
+  Primary: 'primary',
+  Danger: 'danger',
   Solid: 'solid',
   Fill: 'fill',
   Outline: 'outline',
+  Dashed: 'dashed',
   Plain: 'plain',
-} as const;
-
-export const ButtonVariant = {
-  Accent: 'accent',
-  Neutral: 'neutral',
-  Danger: 'danger',
+  Link: 'link',
+  None: 'none',
 } as const;
 
 export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
-export type ButtonAppearance =
-  (typeof ButtonAppearance)[keyof typeof ButtonAppearance];
 
 /**
  * @summary Interactive element that triggers an action or event.
@@ -44,7 +40,7 @@ export type ButtonAppearance =
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
-    return [...super.styles, variantsStyles, styles];
+    return [...super.styles, styles];
   }
 
   override connectedCallback() {
@@ -108,18 +104,17 @@ export default class CraftButton extends LionButtonSubmit {
   /** The computed accessible name */
   @property({attribute: 'accessible-name'}) accessibleName: string;
 
-  /** Visual appearance of the button */
-  @property({reflect: true}) appearance: ButtonAppearance = 'solid';
+  /**
+   * The button's visual style. Defaults to "fill" (neutral fill).
+   */
+  @property({reflect: true}) variant: ButtonVariant = ButtonVariant.Fill;
 
   /**
-   * Theme variant of the button. Defaults to "neutral"
-   *
-   * Accent: The primary action on a page
-   * Neutral: Used in most cases
-   * Danger: Indicates a dangerous action, when data will be removed or deleted
-   * Inherit: Useful for colorable elements, button will reflect the parent theme
+   * Adopt the ambient colorable palette (from a `[data-color]` / colorable
+   * ancestor) instead of the neutral palette. Only
+   * affects the neutral variants; `primary` and `danger` stay stable.
    */
-  @property({reflect: true}) variant: ButtonVariant = 'neutral';
+  @property({reflect: true, type: Boolean}) inherit: boolean = false;
 
   /** Size of the button. Defaults to "medium" */
   @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =
