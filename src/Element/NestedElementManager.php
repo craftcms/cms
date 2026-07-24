@@ -33,6 +33,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Support\Facades\DB;
@@ -305,7 +306,7 @@ class NestedElementManager extends Component
 
                 $html = Html::beginTag('div', options: [
                     'id' => $id,
-                    'class' => 'nested-element-cards',
+                    'class' => 'nested-element-cards grid gap-2',
                 ]);
 
                 $value = $this->getValue($owner, true);
@@ -350,7 +351,8 @@ class NestedElementManager extends Component
                     )->render();
                 }
 
-                $html .= Html::tag('div', t('Nothing yet.'), [
+                $html .= Html::tag('craft-pane', t('Nothing yet.'), [
+                    'appearance' => 'plain',
                     'class' => array_keys(array_filter([
                         'pane' => true,
                         'no-border' => true,
@@ -537,17 +539,10 @@ class NestedElementManager extends Component
 
             $html = $renderHtml($id, $config, $attribute, $settings);
 
-            HtmlStack::jsWithVars(fn ($id, $elementType, $settings) => <<<JS
-(() => {
-  new Craft.NestedElementManager('#' + $id, $elementType, $settings)
-})();
-JS, [
-                InputNamespace::namespaceId($id),
-                $this->elementType,
-                $settings,
+            return Html::tag('craft-nested-element-manager', $html, [
+                'element-type' => $this->elementType,
+                'settings' => Json::encode($settings),
             ]);
-
-            return $html;
         }, Html::id($this->field->handle ?? $attribute));
     }
 
