@@ -13,7 +13,7 @@ return [
         'type' => 'channel',
         'enableVersioning' => true,
         'propagationMethod' => 'all',
-        'uid' => 'nem-section-uid',
+        'uid' => 'nem-section----------------------uid',
         'entryTypes' => ['3000'],
     ],
 ];

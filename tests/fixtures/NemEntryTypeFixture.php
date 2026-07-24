@@ -31,16 +31,23 @@ class NemEntryTypeFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public function afterLoad()
+    public function load(): void
     {
+        parent::load();
+
+        // Refresh here (not in afterLoad()) since Yii2's FixtureTrait::loadFixtures() runs every
+        // fixture's load() before calling ANY fixture's afterLoad() - so a dependent fixture (e.g.
+        // NemFieldLayoutFixture, which needs to resolve these entry types by UID) would otherwise
+        // see a stale entry-types cache during its own load().
         Craft::$app->getEntries()->refreshEntryTypes();
     }
 
     /**
      * @inheritdoc
      */
-    public function afterUnload()
+    public function unload(): void
     {
+        parent::unload();
         Craft::$app->getEntries()->refreshEntryTypes();
     }
 }

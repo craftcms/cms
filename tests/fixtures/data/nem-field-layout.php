@@ -12,25 +12,25 @@ use craft\fields\PlainText;
 
 return [
     [
-        'uid' => 'nem-field-layout-owner-uid',
+        'uid' => 'nem-field-layout-owner-----------uid',
         'type' => Entry::class,
         'tabs' => [
             [
                 'name' => 'Content',
                 'fields' => [
                     [
-                        'uid' => 'nem-native-field-owner-uid',
+                        'uid' => 'nem-native-field-owner-----------uid',
                         'type' => EntryTitleField::class,
                         'required' => true,
                     ],
                     [
-                        'uid' => 'nem-field-matrix-uid',
+                        'uid' => 'nem-field-matrix-----------------uid',
                         'name' => 'NEM Matrix',
                         'handle' => 'nemMatrix',
                         'type' => Matrix::class,
                         'propagationMethod' => 'none',
                         'entryTypes' => [
-                            'nem-entry-type-block-uid',
+                            'nem-entry-type-block-------------uid',
                         ],
                         'required' => false,
                     ],
@@ -39,14 +39,14 @@ return [
         ],
     ],
     [
-        'uid' => 'nem-field-layout-block-uid',
+        'uid' => 'nem-field-layout-block-----------uid',
         'type' => Entry::class,
         'tabs' => [
             [
                 'name' => 'Content',
                 'fields' => [
                     [
-                        'uid' => 'nem-field-text-uid',
+                        'uid' => 'nem-field-text-------------------uid',
                         'name' => 'NEM Text',
                         'handle' => 'nemText',
                         'type' => PlainText::class,
@@ -56,13 +56,13 @@ return [
                     // A Matrix field nested inside a Matrix block, so 2-level-nested regression
                     // scenarios (e.g. #18461) can be reproduced.
                     [
-                        'uid' => 'nem-field-inner-matrix-uid',
+                        'uid' => 'nem-field-inner-matrix-----------uid',
                         'name' => 'NEM Inner Matrix',
                         'handle' => 'nemInnerMatrix',
                         'type' => Matrix::class,
                         'propagationMethod' => 'none',
                         'entryTypes' => [
-                            'nem-entry-type-block-uid',
+                            'nem-entry-type-block-------------uid',
                         ],
                         'required' => false,
                     ],

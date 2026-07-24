@@ -263,7 +263,7 @@ class NestedElementManagerTest extends TestCase
         self::assertCount(1, $nested);
         self::assertSame('Saved block', $nested[0]->getFieldValue('nemText'));
 
-        $this->elements->deleteElement($duplicate, true);
+        $this->elements->deleteElement($duplicate);
     }
 
     // Models the #18461 bug report (2726404, 9022194, ea90a03, 3b0ede5, 2344e21): repeatedly

@@ -12,8 +12,8 @@ return [
         'name' => 'NEM Owner',
         'handle' => 'nemOwner',
         'titleFormat' => null,
-        'fieldLayoutUid' => 'nem-field-layout-owner-uid',
-        'uid' => 'nem-entry-type-owner-uid',
+        'fieldLayoutUid' => 'nem-field-layout-owner-----------uid',
+        'uid' => 'nem-entry-type-owner-------------uid',
     ],
     [
         'id' => '3001',
@@ -22,7 +22,7 @@ return [
         'handle' => 'nemBlock',
         'hasTitleField' => false,
         'titleFormat' => '{id}',
-        'fieldLayoutUid' => 'nem-field-layout-block-uid',
-        'uid' => 'nem-entry-type-block-uid',
+        'fieldLayoutUid' => 'nem-field-layout-block-----------uid',
+        'uid' => 'nem-entry-type-block-------------uid',
     ],
 ];
