@@ -33,10 +33,7 @@
       <Form :action="switchEdition()" method="post" v-slot="{processing}">
         <input type="hidden" name="pluginHandle" :value="plugin.handle" />
         <input type="hidden" name="edition" :value="plugin.licensedEdition" />
-        <craft-button
-          type="submit"
-          inherit
-          :loading="processing"
+        <craft-button type="submit" inherit :loading="processing"
           >Switch</craft-button
         >
       </Form>

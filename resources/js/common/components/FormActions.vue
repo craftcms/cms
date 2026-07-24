@@ -87,7 +87,12 @@
       </slot>
       <ActionMenu icon="chevron-down" :actions="actionItems">
         <template #invoker="{label}">
-          <craft-button slot="invoker" :variant="ButtonVariant.Solid" type="button" icon>
+          <craft-button
+            slot="invoker"
+            :variant="ButtonVariant.Solid"
+            type="button"
+            icon
+          >
             <craft-icon name="chevron-down" :label="label"></craft-icon>
           </craft-button>
         </template>
