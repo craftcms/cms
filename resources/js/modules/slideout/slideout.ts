@@ -80,9 +80,9 @@ function resetBackgroundLayerVisibility(): void {
  * clones) into whichever container most recently initialized, since screen
  * readers only announce one status region at a time.
  */
-const $sharedLiveRegion = $(
-  '<span class="visually-hidden" role="status"></span>'
-);
+const $sharedLiveRegion = document.createElement('span');
+$sharedLiveRegion.classList.add('sr-only');
+$sharedLiveRegion.role = 'status';
 
 /**
  * Settings accepted by {@link Slideout}. Pass a `Partial<SlideoutSettings>` to
