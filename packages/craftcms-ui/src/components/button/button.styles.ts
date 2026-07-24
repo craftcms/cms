@@ -97,6 +97,16 @@ export default css`
     --c-color-on-quiet: var(--c-color-danger-on-quiet);
   }
 
+  @media (hover: hover) {
+    :host(:hover) {
+      background-color: hsl(
+        from var(--c-color-fill-loud, var(--c-button-default-fill)) h s
+          calc(l - 5)
+      );
+      color: var(--c-color-on-loud);
+    }
+  }
+
   :host(:focus:not([disabled])),
   :host(:focus-visible) {
     outline: var(--c-focus-outline-width) solid var(--_focus-outline-color);
@@ -296,7 +306,7 @@ export default css`
 
   /* Link — renders as a text hyperlink: no fill or border, underlined. */
   :host([variant~='link']) {
-    display: inline;
+    display: inline-flex;
     appearance: none;
     background-color: transparent;
     border-color: transparent;
