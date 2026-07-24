@@ -15,4 +15,4 @@
 
 ### System
 - Updated Twig to 3.28.
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-pcmv-c398-gc5m)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-pcmv-c398-gc5m, GHSA-4w9w-3x96-7ghp)
