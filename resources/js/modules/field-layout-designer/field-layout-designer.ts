@@ -364,7 +364,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       type="button" 
       class="w-full fld-add-btn" 
       command="--add-field"
-      appearance="outline"
+      variant="outline"
       size="small"
     >
       ${t('Add')}

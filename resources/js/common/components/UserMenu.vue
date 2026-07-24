@@ -66,7 +66,7 @@
         slot="invoker"
         type="button"
         aria-label="User menu"
-        appearance="none"
+        variant="none"
       >
         <UserThumbnail />
       </craft-button>

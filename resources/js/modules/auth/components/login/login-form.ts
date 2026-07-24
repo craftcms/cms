@@ -308,7 +308,7 @@ export default class CraftLoginForm extends LitElement {
                     <craft-button
                       type="button"
                       size="small"
-                      appearance="plain"
+                      variant="link"
                       @click="${this.#showResetPasswordForm}"
                       style="margin-block-start: var(--c-spacing-sm)"
                     >

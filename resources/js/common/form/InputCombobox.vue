@@ -212,7 +212,7 @@
         v-if="canClear"
         class="absolute inset-y-1 right-7 flex items-center"
         type="button"
-        appearance="plain"
+        variant="plain"
         size="small"
         icon
         :aria-label="`Clear ${label}`"

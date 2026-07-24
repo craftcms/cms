@@ -195,7 +195,7 @@
       <craft-button
         type="button"
         size="small"
-        appearance="plain"
+        variant="plain"
         @click="emit('clear')"
       >
         {{ t('Clear selection') }}

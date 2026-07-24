@@ -527,7 +527,7 @@ class CraftLinkField extends LitElement {
         <div class="buttons right">
           <craft-button
             type="button"
-            appearance="plain"
+            variant="plain"
             size="small"
             @click=${this.cancel}
           >

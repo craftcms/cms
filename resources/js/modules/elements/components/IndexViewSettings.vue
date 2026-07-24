@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {ref, watch} from 'vue';
-  import {Appearance, t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {CheckboxOption} from '@/common/types';
@@ -77,7 +77,7 @@
       type="button"
       slot="invoker"
       icon="sliders"
-      :appearance="Appearance.Fill"
+      :variant="ButtonVariant.Fill"
     >
       {{ t('View') }}
     </craft-button>
@@ -100,7 +100,7 @@
               icon="asc"
               value="asc"
               :aria-label="t('Sort ascending')"
-              :appearance="Appearance.Fill"
+              :variant="ButtonVariant.Fill"
               :active="sortDirection === 'asc'"
             ></craft-button>
             <craft-button
@@ -108,7 +108,7 @@
               icon="desc"
               value="desc"
               :aria-label="t('Sort descending')"
-              :appearance="Appearance.Fill"
+              :variant="ButtonVariant.Fill"
               :active="sortDirection === 'desc'"
             ></craft-button>
           </craft-button-group>
@@ -130,7 +130,7 @@
       <craft-button
         type="button"
         @click="closePopover"
-        :appearance="Appearance.Fill"
+        :variant="ButtonVariant.Fill"
         >{{ t('Close') }}</craft-button
       >
     </div>
