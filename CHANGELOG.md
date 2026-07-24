@@ -24,6 +24,7 @@
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. [GHSA-2mx8-9ww7-p27x](https://github.com/craftcms/cms/security/advisories/GHSA-2mx8-9ww7-p27x)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) potential path traversal vulnerability.
 
