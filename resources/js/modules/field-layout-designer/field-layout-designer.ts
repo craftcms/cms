@@ -14,6 +14,7 @@ import {ElementDrag, TabDrag} from './drags';
 import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
 import {ButtonVariant, t} from '@craftcms/ui';
+import {Slideout} from '@/modules/slideout';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
@@ -543,23 +544,20 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     $flexGrow.className = 'flex-grow';
     $footer.appendChild($flexGrow);
 
-    // Craft.ui returns jQuery — unwrap to native at the seam.
-    const $cancelBtn = Craft.ui.createButton({
-      label: Craft.t('app', 'Close'),
-      spinner: true,
-    })[0];
-    $footer.appendChild($cancelBtn);
-    $footer.appendChild(
-      Craft.ui.createSubmitButton({
-        class: 'secondary',
-        label: Craft.t('app', 'Apply'),
-        spinner: true,
-      })[0]
-    );
+    const cancelBtn = document.createElement('craft-button');
+    cancelBtn.type = 'button';
+    cancelBtn.variant = ButtonVariant.Fill;
+    cancelBtn.innerText = t('Close');
+    $footer.appendChild(cancelBtn);
+
+    const submitBtn = document.createElement('craft-button');
+    submitBtn.variant = ButtonVariant.Primary;
+    submitBtn.innerText = t('Apply');
+    $footer.appendChild(submitBtn);
 
     // Craft.Slideout is a jQuery widget — pass a jQuery wrapper at the seam.
-    const slideout = new Craft.Slideout(
-      $([$body, $footer]),
+    const slideout = new Slideout(
+      [$body, $footer],
       Object.assign(
         {
           containerElement: 'form',
@@ -573,6 +571,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         settings
       )
     );
+
     slideout.on('open', () => {
       // Hold off a sec until it's positioned...
       requestAnimationFrame(() => {
@@ -583,7 +582,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       });
     });
 
-    $cancelBtn.addEventListener('click', () => {
+    cancelBtn.addEventListener('click', () => {
       slideout.close();
     });
 

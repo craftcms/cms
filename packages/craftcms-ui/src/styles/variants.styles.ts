@@ -1,7 +1,7 @@
 import {css} from 'lit';
 
 export default css`
-  :host([variant='accent']) {
+  :host([variant~='accent']) {
     --c-color-fill-loud: var(--c-color-accent-fill-loud);
     --c-color-fill-normal: var(--c-color-accent-fill-normal);
     --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
@@ -25,7 +25,19 @@ export default css`
     --c-color-on-quiet: var(--c-color-neutral-on-quiet);
   }
 
-  :host([variant='danger']) {
+  :host([variant~='accent']) {
+    --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
+    --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-on-loud: var(--c-color-accent-on-loud);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
+  }
+
+  :host([variant~='danger']) {
     --c-color-fill-loud: var(--c-color-danger-fill-loud);
     --c-color-fill-normal: var(--c-color-danger-fill-normal);
     --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
@@ -37,7 +49,7 @@ export default css`
     --c-color-on-quiet: var(--c-color-danger-on-quiet);
   }
 
-  :host([variant='info']) {
+  :host([variant~='info']) {
     --c-color-fill-loud: var(--c-color-info-fill-loud);
     --c-color-fill-normal: var(--c-color-info-fill-normal);
     --c-color-fill-quiet: var(--c-color-info-fill-quiet);
@@ -49,7 +61,7 @@ export default css`
     --c-color-on-quiet: var(--c-color-info-on-quiet);
   }
 
-  :host([variant='warning']) {
+  :host([variant~='warning']) {
     --c-color-fill-loud: var(--c-color-warning-fill-loud);
     --c-color-fill-normal: var(--c-color-warning-fill-normal);
     --c-color-fill-quiet: var(--c-color-warning-fill-quiet);
@@ -61,7 +73,7 @@ export default css`
     --c-color-on-quiet: var(--c-color-warning-on-quiet);
   }
 
-  :host([variant='success']) {
+  :host([variant~='success']) {
     --c-color-fill-loud: var(--c-color-success-fill-loud);
     --c-color-fill-normal: var(--c-color-success-fill-normal);
     --c-color-fill-quiet: var(--c-color-success-fill-quiet);

@@ -5,6 +5,8 @@ import {html} from 'lit';
 import './button-group.js';
 import '../button/button.js';
 import '../icon/icon.js';
+import '../action-menu/action-menu.js';
+import '../action-item/action-item.js';
 
 const meta = {
   title: 'Components/Button Group',
@@ -135,5 +137,27 @@ export const FormAssociated: Story = {
       </craft-button-group>
       <craft-button type="submit" variant="fill">Submit</craft-button>
     </form>
+  `,
+};
+
+export const WithActions: Story = {
+  name: 'With Actions',
+  render: () => html`
+    <craft-button-group name="view" value="list">
+      <craft-button value="table">New Entry</craft-button>
+      <craft-action-menu>
+        <craft-button
+          type="button"
+          slot="invoker"
+          icon="chevron-down"
+          aria-label="Actions"
+        ></craft-button>
+
+        <div slot="content">
+          <craft-action-item>Action Item 1</craft-action-item>
+          <craft-action-item>Action Item 2</craft-action-item>
+        </div>
+      </craft-action-menu>
+    </craft-button-group>
   `,
 };

@@ -58,7 +58,7 @@ trait SetUserValueTrait
 
             $user->{$this->craftProperty} = $value;
         } else {
-            Craft::warning(sprintf("User field '%s' was not found", $this->craftProperty), 'auth');
+            Log::warning(sprintf("User field '%s' was not found", $this->craftProperty), ['auth']);
         }
     }
 

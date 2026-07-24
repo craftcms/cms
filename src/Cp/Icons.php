@@ -141,9 +141,14 @@ readonly class Icons
 
     public static function resolveIconData(string $icon): array
     {
+        // Resolve the family from the resolved name, not the raw one — an
+        // alias can point at a custom icon (e.g. `move` → `grip-dots`), whose
+        // family would otherwise resolve as if it were a system icon.
+        $name = self::resolveIconName($icon);
+
         return [
-            'name' => self::resolveIconName($icon),
-            'family' => self::resolveIconFamily($icon),
+            'name' => $name,
+            'family' => self::resolveIconFamily($name),
         ];
     }
 
