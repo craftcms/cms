@@ -75,8 +75,18 @@ fieldset {
 }
 
 .cp-icon {
-  width: 1em;
-  height: 1em;
+  --_icon-size: var(--c-icon-size, 1em);
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+  max-width: var(--_icon-size);
+  display: inline-flex;
+
+  svg {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    max-width: var(--icon-size) !important;
+    max-height: var(--icon-size) !important;
+  }
 }
 
 hr {

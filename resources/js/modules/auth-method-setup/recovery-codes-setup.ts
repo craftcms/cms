@@ -1,16 +1,35 @@
-/** global: Craft */
-/** global: Garnish */
-Craft.RecoveryCodesSetup = Garnish.Base.extend({
-  init(containerId) {
-    const slideout = Craft.Slideout.instances[containerId];
+/**
+ * RecoveryCodesSetup — drives the recovery-codes setup screen inside an
+ * {@link AuthMethodSetupSlideout}: generates the codes on submit, shows them
+ * in the success state, and offers a download. Booted by the
+ * `RecoveryCodes/setup` template with the slideout's container id.
+ */
+
+import {Base} from '@craftcms/garnish';
+import {Slideout} from '@/modules/slideout';
+import type {AuthMethodSetupSlideout} from './auth-method-setup-slideout';
+
+declare const Craft: any;
+declare const $: any;
+
+export class RecoveryCodesSetup extends Base {
+  constructor(containerId?: string) {
+    super();
+    if (new.target === RecoveryCodesSetup) {
+      this.init(containerId!);
+    }
+  }
+
+  init(containerId: string): void {
+    const slideout = Slideout.instances[containerId] as AuthMethodSetupSlideout;
     const button = slideout.$container.find('button.submit');
 
-    button.on('activate', () => {
+    this.addListener(button, 'activate', () => {
       button.addClass('loading');
       Craft.cp.announce(Craft.t('app', 'Loading'));
 
       Craft.sendActionRequest('post', 'auth/generate-recovery-codes')
-        .then(({data}) => {
+        .then(({data}: any) => {
           slideout.showSuccess();
           Craft.authMethodSetup.refresh();
 
@@ -42,22 +61,17 @@ Craft.RecoveryCodesSetup = Garnish.Base.extend({
             $downloadBtn.addClass('loading');
             Craft.cp.announce(Craft.t('app', 'Loading'));
 
-            const data = Craft.filterObject({
+            const params = Craft.filterObject({
               [Craft.csrfTokenName]: Craft.csrfTokenValue,
             });
 
             Craft.downloadFromUrl(
               'post',
               Craft.getActionUrl('auth/download-recovery-codes'),
-              data
+              params
             )
-              .catch((error) => {
-                Craft.cp.displayError(
-                  error &&
-                    error.response &&
-                    error.response.data &&
-                    error.response.data.message
-                );
+              .catch((error: any) => {
+                Craft.cp.displayError(error?.response?.data?.message);
               })
               .finally(() => {
                 $downloadBtn.removeClass('loading');
@@ -70,5 +84,7 @@ Craft.RecoveryCodesSetup = Garnish.Base.extend({
           Craft.cp.announce(Craft.t('app', 'Loading complete'));
         });
     });
-  },
-});
+  }
+}
+
+export default RecoveryCodesSetup;

@@ -8,6 +8,7 @@ export default css`
     );
     --_active-color: var(--c-color-on-loud);
     --_active-border-color: var(--c-color-border-loud);
+    --_button-radius: var(--c-button-radius, var(--c-form-control-radius));
     --_focus-outline-color: transparent;
     cursor: pointer;
     font: inherit;
@@ -15,7 +16,26 @@ export default css`
     justify-content: center;
     gap: var(--c-spacing-sm);
     align-items: center;
-    border-radius: var(--c-button-radius, var(--c-form-control-radius));
+    /* Per-corner radius so a parent (e.g. craft-button-group) can square off
+       individual corners via inherited custom properties — including on a
+       button nested inside a slotted craft-action-menu, which ::slotted()
+       cannot reach. Each corner falls back to the single --_button-radius. */
+    border-start-start-radius: var(
+      --c-button-radius-start-start,
+      var(--_button-radius)
+    );
+    border-start-end-radius: var(
+      --c-button-radius-start-end,
+      var(--_button-radius)
+    );
+    border-end-start-radius: var(
+      --c-button-radius-end-start,
+      var(--_button-radius)
+    );
+    border-end-end-radius: var(
+      --c-button-radius-end-end,
+      var(--_button-radius)
+    );
     padding-inline: var(
       --c-button-spacing-inline,
       var(--c-form-control-spacing-inline)

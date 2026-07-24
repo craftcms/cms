@@ -149,9 +149,7 @@
     ],
     "serve": [
       "Composer\\Config::disableProcessTimeout",
-      "@php vendor/bin/testbench package:sync-skeleton --ansi",
-      "@build",
-      "@php vendor/bin/testbench serve --ansi"
+      "@php vendor/bin/testbench workbench:serve --ansi"
     ],
     "ci": [
       "@php pint --parallel",

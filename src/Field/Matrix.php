@@ -801,7 +801,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $items = [];
 
-        // Expand/Collapse all
+        // Expand/Collapse all. These operate on the field's input, so they're
+        // excluded from chip menus, where the input may not be present (e.g.
+        // the field layout designer's field-settings slideout).
         $expandAllId = sprintf('expand-all-%s', mt_rand());
         $collapseAllId = sprintf('collapse-all-%s', mt_rand());
         $items[] = [
@@ -810,6 +812,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'label' => mb_ucfirst(t('Expand all blocks', [
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
+            'showInChips' => false,
         ];
         $items[] = [
             'id' => $collapseAllId,
@@ -817,6 +820,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'label' => mb_ucfirst(t('Collapse all blocks', [
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
+            'showInChips' => false,
         ];
         HtmlStack::jsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
 (() => {
@@ -929,6 +933,9 @@ JS, [
             'label' => mb_ucfirst(t('Copy all {type}', [
                 'type' => $type,
             ])),
+            // Operates on the field's input, which isn't present where chips
+            // render (e.g. the field layout designer's settings slideout)
+            'showInChips' => false,
         ];
     }
 

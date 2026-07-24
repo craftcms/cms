@@ -291,17 +291,18 @@ export default class CraftField extends FormControlMixin(LitElement) {
     if (!this.__hasLightChild(kind)) {
       return nothing;
     }
+
     const isTip = kind === 'tip';
+
     return html`
       <craft-callout
         class="field-notice"
         variant=${isTip ? 'info' : 'warning'}
-        icon=${ifDefined(isTip ? 'lightbulb' : undefined)}
         appearance="plain"
       >
-        <span class="cp-visually-hidden"
-          >${isTip ? t('Tip:') : t('Warning:')}
-        </span>
+        <craft-visually-hidden>
+          ${isTip ? t('Tip:') : t('Warning:')}
+        </craft-visually-hidden>
         <slot name=${kind}></slot>
       </craft-callout>
     `;

@@ -3418,35 +3418,6 @@ table:not(.cp-table) {
   }
 }
 
-.cp-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--icon-size);
-  height: var(--icon-size);
-  max-width: var(--icon-size);
-
-  svg {
-    width: var(--icon-size);
-    height: var(--icon-size);
-    max-width: var(--icon-size) !important;
-    max-height: var(--icon-size) !important;
-    @include mixins.svg-mask(var(--icon-color, var(--ui-control-color)));
-  }
-
-  &.large {
-    --icon-size: calc(20rem / 16);
-  }
-
-  &.small {
-    --icon-size: calc(14rem / 16);
-  }
-
-  &.puny {
-    --icon-size: calc(12rem / 16);
-  }
-}
-
 .chips,
 .cards {
   display: flex;
@@ -6915,48 +6886,8 @@ table.editable {
   }
 }
 
-.text,
-.passwordwrapper,
-.border-box,
-.selectize.multiselect .selectize-input,
-.multiselect > select,
-.CodeMirror {
-  @include mixins.input-styles;
-}
-
-.text,
-.passwordwrapper,
-.border-box,
-.selectize.multiselect .selectize-input {
-  &.focus {
-    @include mixins.input-focused-styles;
-  }
-
-  &:focus-visible {
-    @include mixins.input-focused-styles;
-  }
-}
-
-input.text,
-textarea.text,
-.text > input,
-.text > textarea,
-table.editable textarea,
-.selectize.multiselect .selectize-input {
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-color);
-  min-height: 3px;
-  box-sizing: border-box;
-  appearance: none;
-}
-
 .selectize.multiselect .selectize-input {
   line-height: 18px;
-}
-
-textarea.text.fullwidth {
-  display: block;
 }
 
 .multitext .multitextrow {
