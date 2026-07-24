@@ -1955,8 +1955,7 @@ $.extend(Craft, {
 
     /**
      * Swap any instruction text with info icons but avoid those with the class
-     * visually-hidden as those have already been swapped
-     * This needs to happen before the `infoicon` method
+     * visually-hidden as those have already been swapped.
      *
      * The primary place this happens is in the advanced settings of the link field
      * */
@@ -1974,8 +1973,6 @@ $.extend(Craft, {
         // Keep the original element around in case an aria-describedby attribute is referencing it
         $instructions.addClass('sr-only');
       });
-
-    $('.info', $container).infoicon();
 
     // Open outbound links in new windows
     // hat tip: https://stackoverflow.com/a/2911045/1688568
@@ -3096,12 +3093,6 @@ $.extend($.fn, {
       }
 
       new Craft.Grid(this, settings);
-    });
-  },
-
-  infoicon: function () {
-    return this.each(function () {
-      new Craft.InfoIcon(this);
     });
   },
 

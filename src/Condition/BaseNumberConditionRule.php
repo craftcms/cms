@@ -104,7 +104,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
                 'autocomplete' => false,
                 'class' => 'flex-grow flex-shrink',
             ]).
-            Html::tag('span', t('The values are matched inclusively.'), ['class' => 'info']),
+            Html::tag('craft-info-icon', t('The values are matched inclusively.')),
             ['class' => 'flex flex-center']
         );
     }
