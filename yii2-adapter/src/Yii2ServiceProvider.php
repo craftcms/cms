@@ -35,6 +35,7 @@ use CraftCms\Yii2Adapter\Http\HandleYiiSiteRouteFallback;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
+use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
@@ -116,7 +117,7 @@ class Yii2ServiceProvider extends ServiceProvider
     {
         Event::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event): void {
             $event->roots[''] ??= [];
-            $event->roots[''] = array_merge((array)$event->roots[''], [base_path('templates')]);
+            $event->roots[''] = array_merge((array) $event->roots[''], [base_path('templates')]);
         });
     }
 
@@ -214,6 +215,11 @@ class Yii2ServiceProvider extends ServiceProvider
         $kernel->prependMiddleware(CaptureOriginalActionRequestUri::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft', PrepareLegacyCraftApp::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft.web', HandleYiiSiteRouteFallback::class);
+        $this->app->make(Router::class)->pushMiddlewareToGroup('craft.cp', RegisterLegacyCompatAssets::class);
+
+        $this->publishes([
+            __DIR__ . '/../legacy/web/assets/cpcompat' => public_path('vendor/craft/adapter/cpcompat'),
+        ], ['craftcms', 'craftcms-assets']);
 
         $this->commands([
             AddCategoriesSupportCommand::class,
