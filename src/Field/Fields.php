@@ -15,13 +15,10 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
-use CraftCms\Cms\Field\Addresses as AddressesField;
-use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\FieldMergeResult;
-use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
@@ -34,11 +31,6 @@ use CraftCms\Cms\Field\Events\FieldLayoutSaving;
 use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
-use CraftCms\Cms\Field\Events\FieldTypesResolving;
-use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
-use CraftCms\Cms\Field\Matrix as MatrixField;
-use CraftCms\Cms\Field\Table as TableField;
-use CraftCms\Cms\Field\Users as UsersField;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -104,6 +96,8 @@ class Fields
 
     public function __construct(
         private readonly ElementCaches $elementCaches,
+        private readonly FieldTypes $fieldTypes,
+        private readonly NestedEntryFieldTypes $nestedEntryFieldTypes,
     ) {}
 
     // Handle Registry
@@ -222,38 +216,7 @@ class Fields
      */
     public function getAllFieldTypes(): Collection
     {
-        $fieldTypes = collect([
-            AddressesField::class,
-            AssetsField::class,
-            ButtonGroup::class,
-            Checkboxes::class,
-            Color::class,
-            ContentBlock::class,
-            Country::class,
-            Date::class,
-            Dropdown::class,
-            Email::class,
-            EntriesField::class,
-            Icon::class,
-            Json::class,
-            Lightswitch::class,
-            Link::class,
-            Markdown::class,
-            MatrixField::class,
-            Money::class,
-            MultiSelect::class,
-            Number::class,
-            PlainText::class,
-            RadioButtons::class,
-            Range::class,
-            TableField::class,
-            Time::class,
-            UsersField::class,
-        ]);
-
-        event($event = new FieldTypesResolving($fieldTypes));
-
-        return $event->types;
+        return $this->fieldTypes->types();
     }
 
     /**
@@ -341,13 +304,7 @@ class Fields
      */
     public function getNestedEntryFieldTypes(): Collection
     {
-        $fieldTypes = collect([
-            MatrixField::class,
-        ]);
-
-        event($event = new NestedEntryFieldTypesResolving($fieldTypes));
-
-        return $event->types;
+        return $this->nestedEntryFieldTypes->types();
     }
 
     /**
