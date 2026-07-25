@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Controllers\Users\AddressesController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -30,6 +31,20 @@ test('index', function () {
     get(action([AddressesController::class, 'index']))
         ->assertOk()
         ->assertSee(t('Addresses'));
+});
+
+test('index renders the Inertia addresses page', function () {
+    get(action([AddressesController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Addresses')
+            ->where('userId', auth()->id())
+            ->where('showIndex', false)
+            ->where('title', t('My Account'))
+            ->has('crumbs', 2)
+            ->has('subnav')
+            ->has('details')
+            ->where('contentFragment.html', fn (string $html): bool => $html !== ''));
 });
 
 test('store & destroy', function () {
