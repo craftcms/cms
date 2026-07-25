@@ -16,6 +16,7 @@ use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
@@ -425,12 +426,11 @@ JS, [
             ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
             ($showEditButton ? Button::make()
                 ->icon('edit')
+                ->appearance(Appearance::Plain)
+                ->size('small')
                 ->attributes([
-                    'class' => ['chromeless', 'small', 'edit-btn'],
+                    'class' => ['edit-btn'],
                     'id' => $editId,
-                    'title' => mb_ucfirst(t('Edit {type}', [
-                        'type' => $element::lowerDisplayName(),
-                    ])),
                     'aria' => [
                         'label' => mb_ucfirst(t('Edit {type}', [
                             'type' => $element::lowerDisplayName(),
