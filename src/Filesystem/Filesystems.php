@@ -8,11 +8,9 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
-use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -50,6 +48,7 @@ class Filesystems
         private readonly ProjectConfig $projectConfig,
         private readonly ConfigRepository $config,
         private readonly FilesystemManager $filesystemManager,
+        private readonly FilesystemTypes $filesystemTypes,
     ) {}
 
     public function createFilesystemConfig(FsInterface $fs): array
@@ -78,13 +77,7 @@ class Filesystems
      */
     public function getAllFilesystemTypes(): Collection
     {
-        $event = new FilesystemTypesResolving(Collection::make([
-            Local::class,
-        ]));
-
-        event($event);
-
-        return $event->types->values();
+        return $this->filesystemTypes->types();
     }
 
     /**
