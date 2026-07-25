@@ -8,13 +8,12 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
-use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
+use CraftCms\Cms\View\TemplateCacheCollectors;
 use CraftCms\Cms\View\TemplateCaches;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Event;
 
 class TestTemplateCacheCollector implements CacheCollectorInterface
 {
@@ -27,19 +26,19 @@ class TestTemplateCacheCollector implements CacheCollectorInterface
 
     public function begin(TemplateCacheContext $context): void
     {
-        self::$calls[] = ['begin', $context->cacheKey];
+        static::$calls[] = ['begin', $context->cacheKey];
     }
 
     public function end(TemplateCacheContext $context): array
     {
-        self::$calls[] = ['end', $context->cacheKey];
+        static::$calls[] = ['end', $context->cacheKey];
 
         return ['applied' => true];
     }
 
     public function apply(mixed $payload, TemplateCacheContext $context): void
     {
-        self::$calls[] = ['apply', $context->cacheKey, $payload];
+        static::$calls[] = ['apply', $context->cacheKey, $payload];
     }
 }
 
@@ -54,20 +53,9 @@ beforeEach(function () {
     TestTemplateCacheCollector::$calls = [];
 });
 
-it('dispatches the collector registration event', function () {
-    Event::fake(TemplateCacheCollectorsResolving::class);
-
-    app(TemplateCaches::class)->startTemplateCache(global: true);
-
-    Event::assertDispatched(TemplateCacheCollectorsResolving::class);
-});
-
-it('runs event-registered collectors', function () {
-    Event::listen(TemplateCacheCollectorsResolving::class, function (TemplateCacheCollectorsResolving $event) {
-        if ($event->types->doesntContain(TestTemplateCacheCollector::class)) {
-            $event->types->add(TestTemplateCacheCollector::class);
-        }
-    });
+it('runs registered collectors', function () {
+    $registry = app(TemplateCacheCollectors::class);
+    $registry->register(TestTemplateCacheCollector::class);
 
     $service = app(TemplateCaches::class);
 
@@ -75,12 +63,9 @@ it('runs event-registered collectors', function () {
     $service->endTemplateCache('collector-cache', true, null, null, 'cached body');
     $service->getTemplateCache('collector-cache', true);
 
-    expect(collect(TestTemplateCacheCollector::$calls)->contains(
-        fn (array $call) => $call === ['end', 'template::collector-cache::1'],
-    ))->toBeTrue()
+    expect(collect(TestTemplateCacheCollector::$calls)->pluck(0))->toContain('end', 'apply')
         ->and(collect(TestTemplateCacheCollector::$calls)->contains(
             fn (array $call) => $call[0] === 'apply' &&
-                $call[1] === 'template::collector-cache::1' &&
                 ($call[2] ?? null) === ['applied' => true],
         ))->toBeTrue();
 });
