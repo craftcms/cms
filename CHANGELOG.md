@@ -25,7 +25,7 @@
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. [GHSA-596p-6jv8-775v](https://github.com/craftcms/cms/security/advisories/GHSA-596p-6jv8-775v)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. [GHSA-2mx8-9ww7-p27x](https://github.com/craftcms/cms/security/advisories/GHSA-2mx8-9ww7-p27x)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. [GHSA-957r-qf9p-67xw](https://github.com/craftcms/cms/security/advisories/GHSA-957r-qf9p-67xw)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) potential path traversal vulnerability. [GHSA-7hxc-f267-h5q7](https://github.com/craftcms/cms/security/advisories/GHSA-7hxc-f267-h5q7)
 
 ## 4.18.1 - 2026-05-22
