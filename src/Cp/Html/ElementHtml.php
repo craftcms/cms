@@ -24,9 +24,11 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -334,6 +336,14 @@ readonly class ElementHtml
      * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
      * - `selectable` – Whether the card should include a checkbox input
      * - `showActionMenu` – Whether the card should include an action menu
+     * - `showNestedActions` – Whether the action menu should include
+     *   behavior-less Duplicate/Delete items (marked
+     *   `data-duplicate-action`/`data-delete-action`) for the hosting
+     *   controller to wire up. A server-side signal — set by the render
+     *   paths that know the card belongs to a nested-element context
+     *   ({@see NestedElementManager::getCardsHtml()},
+     *   `app/render-elements`), never by client-supplied configs — with each
+     *   item gated on the current user's permissions
      * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      */
@@ -427,7 +437,7 @@ JS, [
                         ])),
                     ],
                 ]) : '').
-            ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton) : '').
+            ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton, $this->nestedCardActionItems($element, $config)) : '').
             ($config['sortable'] ? Button::make()
                 ->icon('move')
                 ->attributes([
@@ -542,6 +552,7 @@ JS, [
             'inputName' => null,
             'selectable' => false,
             'showActionMenu' => false,
+            'showNestedActions' => false,
             'showEditButton' => true,
             'sortable' => false,
         ];
@@ -552,6 +563,75 @@ JS, [
         }
 
         return $config;
+    }
+
+    /**
+     * Builds the server-rendered nested-context items for a card's action
+     * menu.
+     *
+     * `showNestedActions` requests Move forward/backward (when `sortable`),
+     * Duplicate, and Delete items — marked with `data-move-forward-action`,
+     * `data-move-backward-action`, `data-duplicate-action`, and
+     * `data-delete-action` — for the hosting controller (e.g. the nested
+     * element manager) to wire up; the items carry no behavior of their own.
+     * The permission-bound items only render when the current user passes
+     * the corresponding gate (mirroring the card's
+     * `data-duplicatable`/`data-deletable` attributes), so client-supplied
+     * render configs (`app/render-elements`) can request them but never
+     * grant them.
+     */
+    private function nestedCardActionItems(ElementInterface $element, array $config): array
+    {
+        if (! $config['showNestedActions'] || ! Gate::check('view', $element)) {
+            return [];
+        }
+
+        $items = [];
+
+        if ($config['sortable']) {
+            $showInGrid = $config['showInGrid'] ?? false;
+            $ltr = I18N::getLocale()->getOrientation() === 'ltr';
+
+            $items[] = [
+                'icon' => $showInGrid ? ($ltr ? 'arrow-left' : 'arrow-right') : 'arrow-up',
+                'label' => $showInGrid ? t('Move forward') : t('Move up'),
+                'attributes' => [
+                    'data' => ['move-forward-action' => true],
+                ],
+            ];
+            $items[] = [
+                'icon' => $showInGrid ? ($ltr ? 'arrow-right' : 'arrow-left') : 'arrow-down',
+                'label' => $showInGrid ? t('Move backward') : t('Move down'),
+                'attributes' => [
+                    'data' => ['move-backward-action' => true],
+                ],
+            ];
+        }
+
+        if (Gate::check('duplicate', $element)) {
+            $items[] = [
+                'icon' => 'clone',
+                'label' => t('Duplicate'),
+                'attributes' => [
+                    'data' => ['duplicate-action' => true],
+                ],
+            ];
+        }
+
+        if (Gate::check('delete', $element)) {
+            $items[] = [
+                'icon' => 'trash',
+                'label' => mb_ucfirst(t('Delete {type}', [
+                    'type' => $element::lowerDisplayName(),
+                ])),
+                'destructive' => true,
+                'attributes' => [
+                    'data' => ['delete-action' => true],
+                ],
+            ];
+        }
+
+        return $items;
     }
 
     /**
@@ -808,10 +888,10 @@ JS, [
      * `Craft.addActionsToChip()`) always has a `[slot="content"]` container
      * to inject into.
      */
-    private function componentActionMenu(Actionable $component, bool $withEdit = true): string
+    private function componentActionMenu(Actionable $component, bool $withEdit = true, array $extraItems = []): string
     {
         return InputNamespace::namespaceInputs(
-            function () use ($component, $withEdit): string {
+            function () use ($component, $withEdit, $extraItems): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
                     fn (array $item) => $item['showInChips'] ?? ! ($item['destructive'] ?? false)
@@ -833,7 +913,10 @@ JS, [
                 // `disclosureMenuItems()` normalizes types, moves destructive
                 // items to the end (behind an `hr`), and trims leading/
                 // trailing/repeated `hr`s — all still desirable here.
-                $items = $this->menuHtml->disclosureMenuItems($actionMenuItems);
+                $items = $this->menuHtml->disclosureMenuItems([
+                    ...$actionMenuItems,
+                    ...$extraItems,
+                ]);
 
                 $invokerHtml = Html::tag('craft-button', Html::tag('craft-icon', '', [
                     'name' => 'ellipsis',

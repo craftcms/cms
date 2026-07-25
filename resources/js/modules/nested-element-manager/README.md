@@ -19,6 +19,16 @@ PHP `NestedElementManager::getCardsHtml()` / `getIndexHtml()` surface).
 - Card multi-selection and drag-sorting use modern `@craftcms/garnish`
   `Select` / `DragSort` (same options the legacy `Garnish.Select` /
   `Garnish.DragSort` calls passed).
+- The card action-menu items the legacy class injected client-side
+  (move up/down, duplicate, copy, delete) now come down **server-rendered**
+  with `data-*-action` markers (`ElementHtml::nestedCardActionItems()`,
+  requested via the internal `showNestedActions` card config that
+  `getCardsHtml()` and `app/render-elements` set); `initElement()` only
+  wires their behavior. Copy is the element's own server-wired item,
+  intercepted in bulk mode. Paste — clipboard-dependent — is the one
+  client-injected item (`Craft.addActionsToChip`). Position/limit/clipboard
+  gating is re-synced on every state change (`#syncCardActionItems()`)
+  instead of at menu-open time.
 - The jQuery `.data('nestedElementManager')` back-reference became the
   `support.ts` WeakMap, keyed by the cards/index container `div`.
 - `destroy()` now actually tears down (activate handlers, card listeners,

@@ -92,8 +92,12 @@ export interface NestedElementManagerSettings extends GarnishBaseSettings {
  * jQuery `Craft.NestedElementManager`, orchestrating the server-rendered
  * markup from PHP `NestedElementManager::getCardsHtml()` /
  * `getIndexHtml()`: a card grid (`ul.elements > li > .element`) or an
- * embedded element index, plus the client-built New/Paste buttons and each
- * card's action menu (move/duplicate/copy/paste/delete).
+ * embedded element index, plus the client-built New/Paste buttons. Each
+ * card's action-menu items (move/duplicate/copy/delete) come down
+ * server-rendered with `data-*-action` markers (see
+ * `ElementHtml::nestedCardActionItems()`) and are wired to their nested
+ * flows in {@link initElement}; only the clipboard-dependent Paste item is
+ * client-injected (via `Craft.addActionsToChip`).
  *
  * Setup lives in {@link init}, invoked from the constructor only for the leaf
  * class (`new.target` guard) — the construction contract shared by every
@@ -161,6 +165,8 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
 
   /** jQuery create buttons whose `activate` handlers need teardown. */
   #activateBound: any[] = [];
+  /** Teardown callbacks for per-card native listeners (delete items, …). */
+  #disposers: Array<() => void> = [];
   #afterInitTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -251,6 +257,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       if (this.$pasteBtn && buttonLabel) {
         this.$pasteBtn.find('.label').text(buttonLabel);
       }
+      this.#syncCardActionItems();
     });
   }
 
@@ -418,6 +425,8 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
   }
 
   updateCreateBtn(): void {
+    this.#syncCardActionItems();
+
     if (!this.$createBtn) {
       return;
     }
@@ -458,7 +467,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       this.$elements = $('<ul/>', {
         class: `elements ${this.settings.showInGrid ? 'card-grid' : 'cards'}`,
       }).prependTo(this.container);
-      $(this.container).children('.zilch').addClass('hidden');
+      $(this.container).children('craft-empty').addClass('hidden');
     }
 
     if (this.settings.selectable) {
@@ -535,7 +544,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     this.$elements = null;
     this.elementSort?.destroy();
     this.elementSort = null;
-    $(this.container).children('.zilch').removeClass('hidden');
+    $(this.container).children('craft-empty').removeClass('hidden');
   }
 
   // --- Index mode ------------------------------------------------------------
@@ -634,6 +643,9 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
   async onSortChange(
     draggee: HTMLElement | HTMLElement[] | any
   ): Promise<void> {
+    // The DOM order just changed — re-gate the cards' Move items.
+    this.#syncCardActionItems();
+
     const $draggee = $(draggee);
     const elementIds = $draggee
       .find('.element')
@@ -1000,10 +1012,15 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         'app/render-elements',
         {
           data: {
+            // `ownerId`/`fieldId` scope the element query; the server also
+            // derives which actions (e.g. Delete) belong in the card menus
+            // from that ownership — the client never decides.
             elements: elements.map((element) => ({
               type: this.elementType,
               id: element.id,
               siteId: element.siteId,
+              ownerId: this.settings.ownerId,
+              fieldId: this.settings.fieldId,
               instances: [
                 {
                   context: 'field',
@@ -1091,258 +1108,177 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         });
       }
 
-      const actionDisclosure = $element
-        .find('.action-btn')
-        .removeClass('hidden')
-        .disclosureMenu()
-        .data('disclosureMenu');
+      // Server-rendered nested action items (`showNestedActions` card
+      // config): the menu items carry no behavior of their own — wire them
+      // to the nested move/duplicate/delete flows here. (Copy comes down as
+      // the element's own item; we only intercept it for bulk mode. Paste is
+      // client-injected below, since it depends on clipboard state.)
+      const wireItem = (
+        selector: string,
+        handler: (ev: Event) => void,
+        options?: AddEventListenerOptions
+      ) => {
+        const item = element.querySelector<HTMLElement>(
+          `craft-action-menu [${selector}]`
+        );
+        if (item) {
+          item.addEventListener('click', handler, options);
+          this.#disposers.push(() =>
+            item.removeEventListener('click', handler, options)
+          );
+        }
+        return item;
+      };
 
-      if (actionDisclosure) {
-        this.#initElementActionMenu(element, actionDisclosure);
+      wireItem('data-move-forward-action', () => {
+        const li = element.closest('li');
+        const prev = li?.previousElementSibling;
+        if (li && prev) {
+          prev.before(li);
+          this.onSortChange($(li));
+        }
+      });
+
+      wireItem('data-move-backward-action', () => {
+        const li = element.closest('li');
+        const next = li?.nextElementSibling;
+        if (li && next) {
+          next.after(li);
+          this.onSortChange($(li));
+        }
+      });
+
+      wireItem('data-duplicate-action', () => {
+        if (!this.canCreate()) {
+          return;
+        }
+        if (this.bulkActionMode(element)) {
+          this.duplicateElements(this.elementSelect!.getSelectedItems());
+        } else {
+          this.duplicateElement(element);
+        }
+      });
+
+      // The element's own Copy item is fully wired server-side for the
+      // single-element case; in bulk mode, take over and copy the selection
+      // instead (capture phase, so the server-bound handler never runs).
+      wireItem(
+        'data-copy-action',
+        (ev) => {
+          if (this.bulkActionMode(element)) {
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+            Craft.cp.copyElements($(this.elementSelect!.getSelectedItems()));
+            element
+              .querySelector('[data-copy-action]')
+              ?.dispatchEvent(new Event('close-overlay', {bubbles: true}));
+          }
+        },
+        {capture: true}
+      );
+
+      wireItem('data-delete-action', () => {
+        if (this.bulkActionMode(element)) {
+          if (confirm(this.settings.bulkDeleteConfirmationMessage!)) {
+            this.deleteElements(this.elementSelect!.getSelectedItems());
+          }
+        } else if (confirm(this.settings.deleteConfirmationMessage!)) {
+          this.deleteElement(element);
+        }
+      });
+
+      // Paste depends on clipboard state, so it's client-injected into the
+      // (always-rendered) menu rather than server-rendered. Guard against
+      // re-wiring the same card on a re-boot.
+      if (
+        this.settings.canPaste &&
+        !element.querySelector('[data-paste-action]')
+      ) {
+        Craft.addActionsToChip(element, [
+          {
+            icon: 'duplicate',
+            label: this.#pasteItemLabel(Craft.cp.getCopiedElements()),
+            attributes: {
+              data: {'paste-action': true},
+              'icon-color': 'fuchsia',
+            },
+            onActivate: async () => {
+              if (this.canPaste(Craft.cp.getCopiedElements())) {
+                await this.pasteElements($element.parent());
+              }
+            },
+          },
+        ]);
       }
+
+      // Items are in place (paste injection resolves async) — sync their
+      // visibility/labels against the current state.
+      setTimeout(() => this.#syncCardActionItems());
     }, 1);
   }
 
-  #initElementActionMenu(element: HTMLElement, actionDisclosure: any): void {
-    const $element = $(element);
-    const $actionMenu = actionDisclosure.$container;
+  /** The Paste item label for the current clipboard contents. */
+  #pasteItemLabel(copiedElements: any[]): string {
+    const nameIndex = copiedElements.length === 1 ? 2 : 3;
 
-    const destructiveGroup = actionDisclosure.getFirstDestructiveGroup();
-    let moveUpButton: any,
-      moveDownButton: any,
-      duplicateButton: any,
-      copyButton: any,
-      pasteButton: any,
-      deleteButton: any;
+    return this.settings.showInGrid
+      ? Craft.t('app', 'Paste {type} before', {
+          type: typeName(this.elementType, nameIndex),
+        })
+      : Craft.t('app', 'Paste {type} above', {
+          type: typeName(this.elementType, nameIndex),
+        });
+  }
 
-    const $li = $element.parent();
-    const getPrev = () => $li.prev('li');
-    const getNext = () => $li.next('li');
-
-    if (this.settings.sortable) {
-      this.elementSort?.addItems($li[0]);
-
-      const ul = actionDisclosure.addGroup(null, true, destructiveGroup);
-
-      // Move up/forward
-      moveUpButton = actionDisclosure.addItem(
-        {
-          icon: async () =>
-            await Craft.ui.icon(
-              this.settings.showInGrid
-                ? Craft.orientation === 'ltr'
-                  ? 'arrow-left'
-                  : 'arrow-right'
-                : 'arrow-up'
-            ),
-          label: this.settings.showInGrid
-            ? Craft.t('app', 'Move forward')
-            : Craft.t('app', 'Move up'),
-          onActivate: () => {
-            const $prev = getPrev();
-            if ($prev.length) {
-              $li.insertBefore($prev);
-              this.onSortChange($li);
-            }
-          },
-        },
-        ul
-      );
-
-      // Move down/backward
-      moveDownButton = actionDisclosure.addItem(
-        {
-          icon: async () =>
-            await Craft.ui.icon(
-              this.settings.showInGrid
-                ? Craft.orientation === 'ltr'
-                  ? 'arrow-right'
-                  : 'arrow-left'
-                : 'arrow-down'
-            ),
-          label: this.settings.showInGrid
-            ? Craft.t('app', 'Move backward')
-            : Craft.t('app', 'Move down'),
-          onActivate: () => {
-            const $next = getNext();
-            if ($next.length) {
-              $li.insertAfter($next);
-              this.onSortChange($li);
-            }
-          },
-        },
-        ul
-      );
+  /**
+   * Syncs the cards' action-menu items with the current state: Duplicate
+   * against the max-elements limit, Move forward/backward against each
+   * card's position, and Paste against the clipboard (legacy parity: the
+   * injected menu toggled these at open time; the server/injected items are
+   * static, so they're re-synced whenever the state changes instead).
+   */
+  #syncCardActionItems(): void {
+    if (this.settings.mode !== 'cards' || !this.$elements?.length) {
+      return;
     }
 
-    const duplicatable = hasAttr(element, 'data-duplicatable');
-    const copyable = hasAttr(element, 'data-copyable');
+    const list = this.$elements[0] as HTMLElement;
+    const canCreate = this.canCreate();
+    const copiedElements = Craft.cp.getCopiedElements();
+    const showPaste =
+      copiedElements.length > 0 && this.canPaste(copiedElements);
+    const pasteLabel = this.#pasteItemLabel(copiedElements);
 
-    if (duplicatable || copyable) {
-      const ul = actionDisclosure.addGroup(null, true, destructiveGroup);
+    for (const li of Array.from(list.children)) {
+      const item = (selector: string) =>
+        li.querySelector<HTMLElement>(`craft-action-menu [${selector}]`);
 
-      if (duplicatable) {
-        // Duplicate
-        duplicateButton = actionDisclosure.addItem(
-          {
-            icon: async () => await Craft.ui.icon('clone'),
-            label: Craft.t('app', 'Duplicate'),
-            onActivate: () => {
-              if (this.bulkActionMode(element)) {
-                this.duplicateElements(this.elementSelect!.getSelectedItems());
-              } else {
-                this.duplicateElement(element);
-              }
-            },
-          },
-          ul
-        );
+      const forward = item('data-move-forward-action');
+      if (forward) {
+        forward.hidden = !li.previousElementSibling;
       }
 
-      if (copyable) {
-        // Copy
-        const $oldCopyBtn = $actionMenu.find('[data-copy-action]');
-        if ($oldCopyBtn.length) {
-          actionDisclosure.removeItem($oldCopyBtn[0]);
+      const backward = item('data-move-backward-action');
+      if (backward) {
+        backward.hidden = !li.nextElementSibling;
+      }
+
+      const duplicate = item('data-duplicate-action');
+      if (duplicate) {
+        duplicate.hidden = !canCreate;
+      }
+
+      const paste = item('data-paste-action');
+      if (paste) {
+        paste.hidden = !showPaste;
+        const textNode = Array.from(paste.childNodes).find(
+          (node) => node.nodeType === Node.TEXT_NODE
+        );
+        if (textNode) {
+          textNode.nodeValue = pasteLabel;
         }
-
-        copyButton = actionDisclosure.addItem(
-          {
-            icon: async () => await Craft.ui.icon('clone-dashed'),
-            iconColor: 'fuchsia',
-            label: Craft.t('app', 'Copy'),
-            onActivate: () => {
-              if (this.bulkActionMode(element)) {
-                Craft.cp.copyElements(
-                  $(this.elementSelect!.getSelectedItems())
-                );
-              } else {
-                Craft.cp.copyElements($element);
-              }
-            },
-          },
-          ul
-        );
       }
-
-      // Paste
-      pasteButton = actionDisclosure.addItem(
-        {
-          icon: async () => await Craft.ui.icon('duplicate'),
-          iconColor: 'fuchsia',
-          label: this.settings.showInGrid
-            ? Craft.t('app', 'Paste {type} before', {
-                type: typeName(this.elementType, 3),
-              })
-            : Craft.t('app', 'Paste {type} above', {
-                type: typeName(this.elementType, 3),
-              }),
-          onActivate: async () => {
-            if (this.canPaste(Craft.cp.getCopiedElements())) {
-              await this.pasteElements($element.parent());
-            }
-          },
-        },
-        ul
-      );
     }
-
-    if (hasAttr(element, 'data-deletable')) {
-      const ul = actionDisclosure.addGroup();
-      deleteButton = actionDisclosure.addItem(
-        {
-          icon: async () => await Craft.ui.icon('trash'),
-          label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
-          destructive: true,
-          onActivate: () => {
-            if (this.bulkActionMode(element)) {
-              if (confirm(this.settings.bulkDeleteConfirmationMessage!)) {
-                this.deleteElements(this.elementSelect!.getSelectedItems());
-              }
-            } else {
-              if (confirm(this.settings.deleteConfirmationMessage!)) {
-                this.deleteElement(element);
-              }
-            }
-          },
-        },
-        ul
-      );
-    }
-
-    actionDisclosure.on('show', () => {
-      const bulk = this.bulkActionMode(element);
-
-      if (moveUpButton) {
-        actionDisclosure.toggleItem(moveUpButton, getPrev().length);
-      }
-
-      if (moveDownButton) {
-        actionDisclosure.toggleItem(moveDownButton, getNext().length);
-      }
-
-      if (duplicateButton) {
-        actionDisclosure.toggleItem(duplicateButton, this.canCreate());
-
-        $(duplicateButton)
-          .children('.menu-item-label')
-          .text(
-            bulk
-              ? Craft.t('app', 'Duplicate selected {type}', {
-                  type: typeName(this.elementType, 3),
-                })
-              : Craft.t('app', 'Duplicate')
-          );
-      }
-
-      if (copyButton) {
-        $(copyButton)
-          .children('.menu-item-label')
-          .text(
-            bulk
-              ? Craft.t('app', 'Copy selected {type}', {
-                  type: typeName(this.elementType, 3),
-                })
-              : Craft.t('app', 'Copy')
-          );
-      }
-
-      const copiedElements = Craft.cp.getCopiedElements();
-      const showPasteButton =
-        copiedElements.length && this.canPaste(copiedElements);
-      actionDisclosure.toggleItem(pasteButton, showPasteButton);
-      if (showPasteButton) {
-        $(pasteButton)
-          .children('.menu-item-label')
-          .text(
-            this.settings.showInGrid
-              ? Craft.t('app', 'Paste {type} before', {
-                  type: typeName(
-                    this.elementType,
-                    copiedElements.length === 1 ? 2 : 3
-                  ),
-                })
-              : Craft.t('app', 'Paste {type} above', {
-                  type: typeName(
-                    this.elementType,
-                    copiedElements.length === 1 ? 2 : 3
-                  ),
-                })
-          );
-      }
-
-      if (deleteButton) {
-        $(deleteButton)
-          .children('.menu-item-label')
-          .text(
-            bulk
-              ? Craft.t('app', 'Delete selected {type}', {
-                  type: typeName(this.elementType, 3),
-                })
-              : Craft.t('app', 'Delete')
-          );
-      }
-    });
   }
 
   createElementEditor(element: HTMLElement): void {
@@ -1406,6 +1342,10 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       $bound.off('activate');
     }
     this.#activateBound = [];
+    for (const dispose of this.#disposers) {
+      dispose();
+    }
+    this.#disposers = [];
     this.$elements?.children().children('.element').off('.nem');
 
     this.elementSort?.destroy();

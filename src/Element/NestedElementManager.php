@@ -339,6 +339,7 @@ class NestedElementManager extends Component
                         fn (ElementInterface $element) => Html::li(app(ElementHtml::class)->elementCardHtml($element, [
                             'context' => 'field',
                             'showActionMenu' => true,
+                            'showNestedActions' => true,
                             'selectable' => $config['selectable'],
                             'sortable' => $config['sortable'],
                             'showInGrid' => $config['showInGrid'] ?? false,

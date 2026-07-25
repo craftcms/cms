@@ -33,6 +33,23 @@ test('index', function () {
         ->assertSee(t('Addresses'));
 });
 
+test('index cards include the server-rendered nested actions', function () {
+    postJson(action([AddressesController::class, 'store']), [
+        'userId' => auth()->id(),
+        'title' => 'Home',
+        'addressLine1' => '123 Fake Street',
+        'administrativeArea' => 'CA',
+        'locality' => 'San Francisco',
+        'postalCode' => '94107',
+    ])->assertOk();
+
+    get(action([AddressesController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Addresses')
+            ->where('contentFragment.html', fn (string $html): bool => str_contains($html, 'data-duplicate-action') && str_contains($html, 'data-delete-action')));
+});
+
 test('index renders the Inertia addresses page', function () {
     get(action([AddressesController::class, 'index']))
         ->assertOk()
