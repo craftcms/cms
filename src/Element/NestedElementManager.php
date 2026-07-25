@@ -351,13 +351,8 @@ class NestedElementManager extends Component
                     )->render();
                 }
 
-                $html .= Html::tag('craft-pane', t('Nothing yet.'), [
-                    'appearance' => 'plain',
+                $html .= Html::tag('craft-empty', t('Nothing yet.'), [
                     'class' => array_keys(array_filter([
-                        'pane' => true,
-                        'no-border' => true,
-                        'zilch' => true,
-                        'small' => true,
                         'hidden' => ! empty($elements),
                     ])),
                 ]);
