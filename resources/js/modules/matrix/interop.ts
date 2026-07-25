@@ -125,7 +125,6 @@ export interface LegacyCraftRuntime {
     ): void;
     pasteElements(params: Record<string, unknown>): Promise<{id: number}[]>;
   };
-  ui: {createPasteButton(): unknown};
   Tabs: new (tabs: unknown) => LegacyTabs;
   FormObserver: new (
     container: unknown,

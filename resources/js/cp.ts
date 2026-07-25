@@ -20,6 +20,7 @@ import './modules/queue';
 import './modules/slideout';
 import './modules/auth-method-setup';
 import './modules/nested-element-manager';
+import './modules/ui';
 
 window.Cp = Cp as unknown as typeof window.Cp;
 
