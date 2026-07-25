@@ -9,8 +9,6 @@ namespace craft\utilities;
 
 use craft\base\Utility;
 use craft\events\RegisterCacheOptionsEvent;
-use CraftCms\Cms\Utility\Events\ClearCachesOptionsResolving;
-use CraftCms\Cms\Utility\Events\ClearCachesTagOptionsResolving;
 use yii\base\Event;
 
 /**
@@ -104,28 +102,18 @@ class ClearCaches extends Utility
 
     public static function registerEvents(): void
     {
-        // Fire a 'registerCacheOptions' event
-        \Illuminate\Support\Facades\Event::listen(ClearCachesOptionsResolving::class, function(ClearCachesOptionsResolving $event) {
-            $yiiEvent = new RegisterCacheOptionsEvent(['options' => $event->options]);
+        \CraftCms\Cms\Utility\Utilities\ClearCaches::transformOptions(function(array $options): array {
+            $yiiEvent = new RegisterCacheOptionsEvent(['options' => $options]);
             Event::trigger(self::class, self::EVENT_REGISTER_CACHE_OPTIONS, $yiiEvent);
 
-            $event->options = $yiiEvent->options;
-
-            if ($yiiEvent->handled) {
-                return false;
-            }
+            return $yiiEvent->options;
         });
 
-        // Fire a 'registerTagOptions' event
-        \Illuminate\Support\Facades\Event::listen(ClearCachesTagOptionsResolving::class, function(ClearCachesTagOptionsResolving $event) {
-            $yiiEvent = new RegisterCacheOptionsEvent(['options' => $event->options]);
+        \CraftCms\Cms\Utility\Utilities\ClearCaches::transformTagOptions(function(array $options): array {
+            $yiiEvent = new RegisterCacheOptionsEvent(['options' => $options]);
             Event::trigger(self::class, self::EVENT_REGISTER_TAG_OPTIONS, $yiiEvent);
 
-            $event->options = $yiiEvent->options;
-
-            if ($yiiEvent->handled) {
-                return false;
-            }
+            return $yiiEvent->options;
         });
     }
 }

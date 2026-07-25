@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Events\ClearCachesOptionsResolving]] or [[\CraftCms\Cms\Utility\Events\ClearCachesTagOptionsResolving]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\ClearCaches::add()]] or [[\CraftCms\Cms\Utility\Utilities\ClearCaches::addTag()]] should be used instead.
  */
 class RegisterCacheOptionsEvent extends Event
 {
