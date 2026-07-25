@@ -29,8 +29,8 @@ use CraftCms\Cms\Field\Events\FieldLayoutSaving;
 use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
-use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
 use CraftCms\Cms\Field\FieldTypes;
+use CraftCms\Cms\Field\NestedEntryFieldTypes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -718,6 +718,7 @@ class Fields extends Component
     public static function finalizeRegistrationEvents(): void
     {
         TypeRegistryCompatibility::reconcile(app(FieldTypes::class), Craft::$app->getFields(), self::EVENT_REGISTER_FIELD_TYPES);
+        TypeRegistryCompatibility::reconcile(app(NestedEntryFieldTypes::class), Craft::$app->getFields(), self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES);
     }
 
     public static function registerEvents(): void
@@ -727,14 +728,6 @@ class Fields extends Component
                 $yiiEvent = new DefineCompatibleFieldTypesEvent(['field' => $event->field, 'compatibleTypes' => $event->compatibleTypes->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
                 $event->compatibleTypes = new Collection($yiiEvent->compatibleTypes);
-            }
-        });
-
-        Event::listen(function(NestedEntryFieldTypesResolving $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES)) {
-                $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
-                Craft::$app->getFields()->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $yiiEvent);
-                $event->types = new Collection($yiiEvent->types);
             }
         });
 

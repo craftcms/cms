@@ -7,8 +7,10 @@ namespace CraftCms\Yii2Adapter\Gql;
 use Craft;
 use craft\events\RegisterGqlTypesEvent;
 use craft\services\Gql as LegacyGqlService;
+use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\GqlTypes;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Override;
 
 /** @internal */
@@ -27,6 +29,18 @@ class LegacyGqlTypes extends GqlTypes
         $event = new RegisterGqlTypesEvent(['types' => $types->all()]);
         $service->trigger(LegacyGqlService::EVENT_REGISTER_GQL_TYPES, $event);
 
-        return new Collection($event->types);
+        return collect($event->types)
+            ->map(fn(mixed $type) => $this->normalizeType($type))
+            ->values();
+    }
+
+    /** @return class-string<SingularTypeInterface> */
+    private function normalizeType(mixed $type): string
+    {
+        if (is_string($type) && is_a($type, SingularTypeInterface::class, true)) {
+            return $type;
+        }
+
+        throw new InvalidArgumentException('Legacy GraphQL types must implement ' . SingularTypeInterface::class . '.');
     }
 }

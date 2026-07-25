@@ -62,7 +62,7 @@ class NativeFields
     {
         foreach ($this->providers as $handle => $provider) {
             $fields = $this->container->call($provider, [
-                'fieldLayout' => $fieldLayout,
+                FieldLayout::class => $fieldLayout,
                 'fields' => $fields,
             ]);
 

@@ -183,6 +183,7 @@ readonly class EventCompatibility
     public function finalizeRegistrationEvents(): void
     {
         LegacyField::finalizeRegistrationEvents();
+        Auth::finalizeRegistrationEvents();
         Elements::finalizeRegistrationEvents();
         Fields::finalizeRegistrationEvents();
         Fs::finalizeRegistrationEvents();

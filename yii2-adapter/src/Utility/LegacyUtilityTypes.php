@@ -11,6 +11,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\Utility\UtilityTypes;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Override;
 
 /** @internal */
@@ -31,8 +32,18 @@ class LegacyUtilityTypes extends UtilityTypes
         $disabledUtilities = array_flip(Cms::config()->disabledUtilities);
 
         return collect($event->types)
-            /** @var class-string<Utility> $type */
+            ->map(fn(mixed $type) => $this->normalizeType($type))
             ->filter(fn(string $type) => !isset($disabledUtilities[$type::id()]) && $type::isSelectable())
             ->values();
+    }
+
+    /** @return class-string<Utility> */
+    private function normalizeType(mixed $type): string
+    {
+        if (is_string($type) && is_a($type, Utility::class, true)) {
+            return $type;
+        }
+
+        throw new InvalidArgumentException('Legacy utility types must extend ' . Utility::class . '.');
     }
 }

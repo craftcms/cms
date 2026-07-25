@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use craft\base\Event as YiiEvent;
+use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Link as LegacyLink;
+use craft\helpers\Assets as LegacyAssets;
+use craft\services\Auth as LegacyAuth;
 use craft\services\Dashboard as LegacyDashboard;
 use craft\services\Elements as LegacyElements;
 use craft\services\Fields as LegacyFields;
@@ -12,6 +15,10 @@ use craft\services\Fs as LegacyFilesystems;
 use craft\services\ImageTransforms as LegacyImageTransforms;
 use craft\services\Utilities as LegacyUtilities;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\AssetFileKinds;
+use CraftCms\Cms\Auth\AuthMethodCatalog;
+use CraftCms\Cms\Auth\AuthMethods;
+use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
@@ -28,6 +35,8 @@ use CraftCms\Cms\Field\FieldTypes;
 use CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Field\LinkTypes\Asset as LinkAsset;
 use CraftCms\Cms\Field\LinkTypes\Url;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\NestedEntryFieldTypes;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
@@ -49,16 +58,44 @@ beforeEach(function() {
 
 afterEach(function() {
     foreach ([
-        LegacyElements::class => LegacyElements::EVENT_REGISTER_ELEMENT_TYPES,
-        LegacyFields::class => LegacyFields::EVENT_REGISTER_FIELD_TYPES,
-        LegacyDashboard::class => LegacyDashboard::EVENT_REGISTER_WIDGET_TYPES,
-        LegacyUtilities::class => LegacyUtilities::EVENT_REGISTER_UTILITIES,
-        LegacyFilesystems::class => LegacyFilesystems::EVENT_REGISTER_FILESYSTEM_TYPES,
-        LegacyImageTransforms::class => LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS,
-        LegacyLink::class => LegacyLink::EVENT_REGISTER_LINK_TYPES,
-    ] as $class => $event) {
+        [LegacyAssets::class, LegacyAssets::EVENT_REGISTER_FILE_KINDS],
+        [LegacyAuth::class, LegacyAuth::EVENT_REGISTER_METHODS],
+        [LegacyElements::class, LegacyElements::EVENT_REGISTER_ELEMENT_TYPES],
+        [LegacyFields::class, LegacyFields::EVENT_REGISTER_FIELD_TYPES],
+        [LegacyFields::class, LegacyFields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES],
+        [LegacyDashboard::class, LegacyDashboard::EVENT_REGISTER_WIDGET_TYPES],
+        [LegacyUtilities::class, LegacyUtilities::EVENT_REGISTER_UTILITIES],
+        [LegacyFilesystems::class, LegacyFilesystems::EVENT_REGISTER_FILESYSTEM_TYPES],
+        [LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS],
+        [LegacyLink::class, LegacyLink::EVENT_REGISTER_LINK_TYPES],
+    ] as [$class, $event]) {
         YiiEvent::off($class, $event);
     }
+});
+
+it('applies legacy asset file kind listeners to the current definitions', function() {
+    $fileKinds = app(AssetFileKinds::class);
+    $fileKinds->register('modern', [
+        'label' => 'Modern',
+        'extensions' => ['modern'],
+    ]);
+    $calls = 0;
+
+    YiiEvent::on(LegacyAssets::class, LegacyAssets::EVENT_REGISTER_FILE_KINDS, function(RegisterAssetFileKindsEvent $event) use (&$calls) {
+        $calls++;
+        expect($event->fileKinds)->toHaveKey('modern');
+        $event->fileKinds = [
+            'legacy' => [
+                'label' => 'Legacy',
+                'extensions' => ['legacy'],
+            ],
+        ];
+    });
+
+    expect($fileKinds->fileKinds())->toHaveKey('legacy')
+        ->not()->toHaveKey('modern')
+        ->and($fileKinds->fileKinds())->toHaveKey('legacy')
+        ->and($calls)->toBe(2);
 });
 
 it('exposes Craft 5 element aliases through the legacy service and event', function() {
@@ -246,6 +283,26 @@ it('applies legacy type registration events to a fresh modern registry snapshot'
         PlainText::class,
         Color::class,
     ],
+    'authentication methods' => [
+        AuthMethodCatalog::class,
+        AdapterRegistryAuthMethod::class,
+        LegacyAuth::class,
+        LegacyAuth::EVENT_REGISTER_METHODS,
+        AuthMethods::class,
+        'types',
+        AdapterRetainedAuthMethod::class,
+        TOTP::class,
+    ],
+    'nested entry fields' => [
+        NestedEntryFieldTypes::class,
+        AdapterRegistryNestedEntryField::class,
+        LegacyFields::class,
+        LegacyFields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES,
+        Fields::class,
+        'getNestedEntryFieldTypes',
+        AdapterRetainedNestedEntryField::class,
+        Matrix::class,
+    ],
     'widgets' => [
         WidgetTypes::class,
         AdapterRegistryWidget::class,
@@ -283,6 +340,30 @@ abstract class AdapterRegistryElement extends Element
 }
 
 abstract class AdapterRegistryField extends Field
+{
+}
+
+class AdapterRegistryAuthMethod extends TOTP
+{
+    public static function handle(): string
+    {
+        return 'adapter-registry';
+    }
+}
+
+class AdapterRetainedAuthMethod extends TOTP
+{
+    public static function handle(): string
+    {
+        return 'adapter-retained';
+    }
+}
+
+abstract class AdapterRegistryNestedEntryField extends Matrix
+{
+}
+
+abstract class AdapterRetainedNestedEntryField extends Matrix
 {
 }
 
