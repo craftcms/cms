@@ -297,7 +297,7 @@
 - Fixed a bug where element thumbnails weren’t always getting loaded when they became visible.
 - Fixed a bug where two-step verification setup was working even if the user failed to re-authenticate, if they already had an elevated session. ([#18753](https://github.com/craftcms/cms/pull/18753))
 - Fixed a bug where changes to Table fields’ “Table Columns” settings would cause existing data to be lost, if the “Static Rows” setting was enabled. ([#18764](https://github.com/craftcms/cms/issues/18764))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7h62-6v23-v8fm)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-7h62-6v23-v8fm](https://github.com/craftcms/cms/security/advisories/GHSA-7h62-6v23-v8fm))
 
 ## 5.9.21 - 2026-04-23
 
@@ -310,9 +310,9 @@
 - Fixed a bug where it wasn’t always possible to sign into a user account that had the same email address as an inactive user. ([#18723](https://github.com/craftcms/cms/issues/18723))
 - Fixed a bug where relational fields’ element query results weren’t always limited to the selected relations if the `id` param was overridden. ([#15570](https://github.com/craftcms/cms/issues/15570))
 - Fixed an error that could occur when executing a queue job. ([#18739](https://github.com/craftcms/cms/issues/18739))
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-x5m4-g2cq-52pq)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-qq2c-2q8j-jh27, GHSA-43cq-c2gq-pfpw)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. ([GHSA-x5m4-g2cq-52pq](https://github.com/craftcms/cms/security/advisories/GHSA-x5m4-g2cq-52pq))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. ([GHSA-3w32-23wj-rxg3](https://github.com/craftcms/cms/security/advisories/GHSA-3w32-23wj-rxg3), [GHSA-qh45-9g5p-m2v4](https://github.com/craftcms/cms/security/advisories/GHSA-qh45-9g5p-m2v4))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. ([GHSA-qq2c-2q8j-jh27](https://github.com/craftcms/cms/security/advisories/GHSA-qq2c-2q8j-jh27), [GHSA-43cq-c2gq-pfpw](https://github.com/craftcms/cms/security/advisories/GHSA-43cq-c2gq-pfpw))
 
 ## 5.9.20 - 2026-04-14
 
@@ -652,11 +652,11 @@
 - Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17794](https://github.com/craftcms/cms/pull/17794))
 - Environmental settings can now reference `CRAFT_SITE` (the current site’s handle) and `CRAFT_SITE_UPPER` (the current site’s handle in UPPER_SNAKE_CASE) environment variables, which are defined at runtime. ([#17794](https://github.com/craftcms/cms/pull/17794))
 - It’s now possible to create unpublished drafts via GraphQL. ([#17805](https://github.com/craftcms/cms/pull/17805))
-- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function, which fixes a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSTI issue. (GHSA-94rc-cqvm-m4pw)
+- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function, which fixes a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSTI issue. ([GHSA-94rc-cqvm-m4pw](https://github.com/craftcms/cms/security/advisories/GHSA-94rc-cqvm-m4pw))
 - Added the `randomString()` Twig function. ([#18020](https://github.com/craftcms/cms/discussions/18020))
 - Added the `uuid()` Twig function.
 - The Twig `hash` filter now supports passing a hashing algorithm, such as `'md5'` or `'sha256'`. ([#17885](https://github.com/craftcms/cms/issues/17885))
-- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema, which fixes a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) IDOR issue. (GHSA-7x43-mpfg-r9wj)
+- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema, which fixes a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) IDOR issue. ([GHSA-7x43-mpfg-r9wj](https://github.com/craftcms/cms/security/advisories/GHSA-7x43-mpfg-r9wj))
 - GraphQL API requests can now identify themselves as preview requests by passing an `X-Craft-Preview-Token` header, set to the `x-craft-preview`/`x-craft-live-preview` query param in the preview target URL.
 - Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17949](https://github.com/craftcms/cms/pull/17949))
 - It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function. ([GHSA-94rc-cqvm-m4pw](https://github.com/craftcms/cms/security/advisories/GHSA-94rc-cqvm-m4pw))
@@ -800,12 +800,12 @@
 - Fixed a bug where generated field values weren’t always up-to-date if their template referenced nested elements. ([#17938](https://github.com/craftcms/cms/issues/17938))
 - Fixed a bug where ineditable fields appeared to be editable via the inline editing mode on element indexes. ([#18291](https://github.com/craftcms/cms/pull/18291))
 - Fixed a bug where Addresses fields weren’t working properly when editing elements for non-primary sites. ([#18306](https://github.com/craftcms/cms/issues/18306))
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. (GHSA-4mgv-366x-qxvx)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-v47q-jxvr-p68x)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-2xfc-g69j-x2mp, GHSA-jxm3-pmm2-9gf6)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF and SSTI vulnerability. (GHSA-5fvc-7894-ghp4)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSTI vulnerability. (GHSA-qc86-q28f-ggww)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. (GHSA-234q-vvw3-mrfq)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. ([GHSA-4mgv-366x-qxvx](https://github.com/craftcms/cms/security/advisories/GHSA-4mgv-366x-qxvx))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-v47q-jxvr-p68x](https://github.com/craftcms/cms/security/advisories/GHSA-v47q-jxvr-p68x))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. ([GHSA-2xfc-g69j-x2mp](https://github.com/craftcms/cms/security/advisories/GHSA-2xfc-g69j-x2mp), [GHSA-jxm3-pmm2-9gf6](https://github.com/craftcms/cms/security/advisories/GHSA-jxm3-pmm2-9gf6))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF and SSTI vulnerability. ([GHSA-5fvc-7894-ghp4](https://github.com/craftcms/cms/security/advisories/GHSA-5fvc-7894-ghp4))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSTI vulnerability. ([GHSA-qc86-q28f-ggww](https://github.com/craftcms/cms/security/advisories/GHSA-qc86-q28f-ggww))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. ([GHSA-234q-vvw3-mrfq](https://github.com/craftcms/cms/security/advisories/GHSA-234q-vvw3-mrfq))
 
 ## 5.8.23 - 2026-01-20
 
@@ -814,7 +814,7 @@
 - Fixed a bug where custom Login page logos could be sized incorrectly. ([#18229](https://github.com/craftcms/cms/pull/18229))
 - Fixed a bug where element index pages weren’t preserving “Trashed” status selections between page loads. ([#18230](https://github.com/craftcms/cms/issues/18230))
 - Fixed a bug where it was possible to suspend SSO-based user accounts.
-- Fixed an error that could occur a nested element’s field layout no longer existed. ([#18246](https://github.com/craftcms/cms/issues/18246))
+- Fixed an error that could occur when a nested element’s field layout no longer existed. ([#18246](https://github.com/craftcms/cms/issues/18246))
 - Fixed a bug where selecting new elements within relation fields could cause multiple draft saves in quick succession.
 - Fixed a bug where verification emails weren’t getting sent when a user without the “Administrate users” permission changed a user account’s email address.
 - Fixed a bug where MP3 files weren’t always being properly recognized. ([#18243](https://github.com/craftcms/cms/issues/18243))
