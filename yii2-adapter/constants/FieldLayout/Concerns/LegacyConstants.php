@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
 use craft\base\Event as YiiEvent;
@@ -13,17 +14,20 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
-use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\FieldLayout\NativeFields;
 use Deprecated;
 use Generator;
 use Illuminate\Support\Facades\Event;
 
 /**
  * @internal
+ *
  * @deprecated 6.0.0
+ *
  * @mixin \CraftCms\Cms\FieldLayout\FieldLayout
+ *
  * @phpstan-ignore trait.unused
  */
 trait LegacyConstants
@@ -133,15 +137,19 @@ trait LegacyConstants
             }
         });
 
-        Event::listen(function(NativeFieldsResolving $event) {
-            if (YiiEvent::hasHandlers(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS)) {
-                $yiiEvent = new DefineFieldLayoutFieldsEvent(['fields' => $event->fields]);
-                $yiiEvent->sender = $event->fieldLayout;
-
-                YiiEvent::trigger(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, $yiiEvent);
-
-                $event->fields = $yiiEvent->fields;
+        $nativeFields = app(NativeFields::class);
+        $nativeFields->remove('yii2-adapter:legacy-events');
+        $nativeFields->register('yii2-adapter:legacy-events', function(\CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout, array $fields): array {
+            if (!YiiEvent::hasHandlers(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS)) {
+                return $fields;
             }
+
+            $yiiEvent = new DefineFieldLayoutFieldsEvent(['fields' => $fields]);
+            $yiiEvent->sender = $fieldLayout;
+
+            YiiEvent::trigger(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, $yiiEvent);
+
+            return $yiiEvent->fields;
         });
 
         Event::listen(function(FieldLayoutUIElementsResolving $event) {
