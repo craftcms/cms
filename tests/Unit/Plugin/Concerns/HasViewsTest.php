@@ -52,6 +52,25 @@ it('does not register a template root when no templates directory exists', funct
     File::deleteDirectory(dirname($emptyPluginPath, 2));
 });
 
+it('registers configured site template roots', function () {
+    $plugin = TestPlugin::create([
+        'handle' => 'test-plugin',
+        'name' => 'Test Plugin',
+    ]);
+
+    $plugin->setSiteTemplateRoots([
+        '' => '/global',
+        'test-plugin' => ['/one', '/two'],
+    ]);
+    $plugin->bootHasViews();
+
+    expect(TemplateMode::Site->templateRoots())
+        ->toMatchArray([
+            '' => ['/global'],
+            'test-plugin' => ['/one', '/two'],
+        ]);
+});
+
 it('renders plugin templates with Laravel namespaced view syntax', function () {
     $plugin = TestPlugin::create([
         'handle' => 'test-plugin',
