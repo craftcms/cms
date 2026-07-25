@@ -182,7 +182,7 @@ class CpHelperTest extends TestCase
             ['<select', 'selectFieldHtml'],
             ['type="text"', 'textFieldHtml'],
             [
-                '<div class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', [
+                '<div slot="suffix" class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', [
                     'unit' => 'Test unit',
                 ],
             ],

@@ -5,6 +5,8 @@ import {html} from 'lit';
 import './button-group.js';
 import '../button/button.js';
 import '../icon/icon.js';
+import '../action-menu/action-menu.js';
+import '../action-item/action-item.js';
 
 const meta = {
   title: 'Components/Button Group',
@@ -75,7 +77,7 @@ export const RadioModeAppearances: Story = {
   name: 'Radio mode — appearances',
   render: () => html`
     <div style="display:flex;flex-direction:column;gap:1rem">
-      ${(['accent', 'filled', 'plain', 'dashed'] as const).map(
+      ${(['fill', 'plain'] as const).map(
         (appearance) => html`
           <div style="display:flex;align-items:center;gap:1rem">
             <span style="width:4rem;font-size:0.75rem;color:var(--c-text-muted)"
@@ -141,5 +143,27 @@ export const FormAssociated: Story = {
       </craft-button-group>
       <craft-button type="submit" appearance="filled">Submit</craft-button>
     </form>
+  `,
+};
+
+export const WithActions: Story = {
+  name: 'With Actions',
+  render: () => html`
+    <craft-button-group name="view" value="list">
+      <craft-button value="table">New Entry</craft-button>
+      <craft-action-menu>
+        <craft-button
+          type="button"
+          slot="invoker"
+          icon="chevron-down"
+          aria-label="Actions"
+        ></craft-button>
+
+        <div slot="content">
+          <craft-action-item>Action Item 1</craft-action-item>
+          <craft-action-item>Action Item 2</craft-action-item>
+        </div>
+      </craft-action-menu>
+    </craft-button-group>
   `,
 };

@@ -25,9 +25,12 @@ class ComponentRegistry
         'checkbox-select' => CheckboxSelect::class,
         'field' => Field::class,
         'field-group' => FieldGroup::class,
+        'icon' => Icon::class,
+        'input' => Input::class,
         'lightswitch' => Lightswitch::class,
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,
+        'textarea' => Textarea::class,
     ];
 
     /**

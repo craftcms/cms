@@ -15,6 +15,7 @@ use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\Components\Icon;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
@@ -133,7 +134,7 @@ readonly class ElementHtml
                 /** @var Chippable&Iconic $component */
                 $icon = $component->getIcon();
                 if ($icon || $icon === '0') {
-                    $html .= Html::tag('craft-icon', '', Icons::resolveIconData($icon));
+                    $html .= Icon::make()->name($icon)->slot('icon');
                 }
             }
         }

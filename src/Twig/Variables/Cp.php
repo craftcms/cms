@@ -320,6 +320,22 @@ class Cp extends Component
     }
 
     /**
+     * Renders a text input's HTML from the legacy text variables.
+     */
+    public function text(array $config = []): string
+    {
+        return FormFields::textFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a textarea's HTML from the legacy textarea variables.
+     */
+    public function textarea(array $config = []): string
+    {
+        return FormFields::textareaFromConfig($config)->toHtml();
+    }
+
+    /**
      * Renders a lightswitch's HTML from the legacy lightswitch variables.
      */
     public function lightswitch(array $config = []): string

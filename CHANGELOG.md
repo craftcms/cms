@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed a styling issue. ([#19296](https://github.com/craftcms/cms/pull/19296))
+
+## 6.0.0-alpha.14 - 2026-07-22
+
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19263](https://github.com/craftcms/cms/pull/19263) for details.
 
@@ -9,6 +13,7 @@
 - Removed automatic plugin trait lifecycle hooks. ([#19263](https://github.com/craftcms/cms/pull/19263))
 - Added `CraftCms\Cms\Cp\Components\Button`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Components\ButtonGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Callout::hideIcon()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
 - Added `CraftCms\Cms\Cp\Components\Callout`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Components\Checkbox`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Components\CheckboxGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
@@ -17,9 +22,12 @@
 - Added `CraftCms\Cms\Cp\Components\ComponentRegistry`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Components\Field`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Components\FieldGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Icon`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Cp\Components\Input`. ([#19297](https://github.com/craftcms/cms/pull/19297))
 - Added `CraftCms\Cms\Cp\Components\Lightswitch`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Components\Radio`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Components\RadioGroup`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\Components\Textarea`. ([#19297](https://github.com/craftcms/cms/pull/19297))
 - Added `CraftCms\Cms\Cp\Components\ViewComponent`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Concerns\EvaluatesClosures`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\Concerns\HasAppearance`. ([#19248](https://github.com/craftcms/cms/pull/19248))
@@ -39,6 +47,8 @@
 - Added `CraftCms\Cms\Cp\FormFields::radioFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\FormFields::radioGroupFieldHtml()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Cp\FormFields::radioGroupFromConfig()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Cp\FormFields::textareaFromConfig()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Cp\FormFields::textFromConfig()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
 - Added `CraftCms\Cms\Support\Facades\Template`. ([#19290](https://github.com/craftcms/cms/pull/19290))
 - Added `CraftCms\Cms\Twig\Contracts\TwigRendererInterface`. ([#19290](https://github.com/craftcms/cms/pull/19290))
 - Added `CraftCms\Cms\Twig\Variables\Cp::button()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
@@ -49,6 +59,8 @@
 - Added `CraftCms\Cms\Twig\Variables\Cp::lightswitch()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Twig\Variables\Cp::radio()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\Twig\Variables\Cp::radioGroup()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
+- Added `CraftCms\Cms\Twig\Variables\Cp::text()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
+- Added `CraftCms\Cms\Twig\Variables\Cp::textarea()`. ([#19297](https://github.com/craftcms/cms/pull/19297))
 - Added `CraftCms\Cms\ui()`. ([#19248](https://github.com/craftcms/cms/pull/19248))
 - Added `CraftCms\Cms\View\TemplateManager`. ([#19290](https://github.com/craftcms/cms/pull/19290))
 - `template()` and `pageTemplate()` now accept an optional template renderer name. ([#19290](https://github.com/craftcms/cms/pull/19290))
@@ -63,6 +75,7 @@
 - Fixed a bug where failed password and passkey login attempts incremented invalid-login counters twice. ([#19283](https://github.com/craftcms/cms/pull/19283))
 - Fixed bugs that could prevent authored content from being deleted or reassigned safely when deleting users. ([#19273](https://github.com/craftcms/cms/pull/19273))
 - Fixed an issue where disabled and archived user accounts could still authenticate. ([#19265](https://github.com/craftcms/cms/pull/19265))
+- Fixed a bug where one-time two-factor authentication credentials could be accepted by concurrent login attempts. ([#19282](https://github.com/craftcms/cms/pull/19282))
 - Fixed issues with `craft:users:set-password` password validation, exit statuses, and session invalidation. ([#19272](https://github.com/craftcms/cms/pull/19272))
 - Fixed a bug where selected GraphQL mutations could be mistaken for cacheable queries. ([#19284](https://github.com/craftcms/cms/pull/19284))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
