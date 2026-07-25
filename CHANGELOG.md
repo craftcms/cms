@@ -63,11 +63,11 @@
 ## 4.17.15 - 2026-04-29
 
 - Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7h62-6v23-v8fm)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-7h62-6v23-v8fm](https://github.com/craftcms/cms/security/advisories/GHSA-7h62-6v23-v8fm))
 
 ## 4.17.14 - 2026-04-23
 
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. ([GHSA-3w32-23wj-rxg3](https://github.com/craftcms/cms/security/advisories/GHSA-3w32-23wj-rxg3), [GHSA-qh45-9g5p-m2v4](https://github.com/craftcms/cms/security/advisories/GHSA-qh45-9g5p-m2v4))
 
 ## 4.17.13.1 - 2026-04-14
 
@@ -106,7 +106,7 @@
 - Fixed a bug where SVG files missing their `width` and `height` attributes weren’t getting them set as expected.
 - Fixed an error that occurred if a template referenced a preloaded Single entry followed by a null coalescing operator. ([#18503](https://github.com/craftcms/cms/issues/18503))
 - Fixed a bug where links within Redactor fields were getting `target="_blank"` added to them. ([#18500](https://github.com/craftcms/cms/issues/18500))
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-3m9m-24vh-39wx, GHSA-95wr-3f2v-v2wh)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. ([GHSA-3m9m-24vh-39wx](https://github.com/craftcms/cms/security/advisories/GHSA-3m9m-24vh-39wx), [GHSA-95wr-3f2v-v2wh](https://github.com/craftcms/cms/security/advisories/GHSA-95wr-3f2v-v2wh))
 
 ## 4.17.8 - 2026-02-25
 
