@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\AuthMethods;
-use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Edition;
@@ -104,14 +103,21 @@ test('methods are sorted with RecoveryCodes last', function () {
 test('custom methods can be registered', function () {
     $user = User::factory()->createElement();
 
-    Event::listen(AuthMethodsResolving::class, function (AuthMethodsResolving $event) {
-        $event->methods->push(TOTP::class);
-    });
+    app(AuthMethods::class)->register(CustomAuthMethod::class);
 
     $methods = $this->auth->getAllMethods($user);
 
-    expect($methods)->not()->toBeEmpty();
+    expect($methods->map(fn ($method) => $method::class))->toContain(CustomAuthMethod::class);
 });
+
+class CustomAuthMethod extends TOTP
+{
+    #[Override]
+    public static function handle(): string
+    {
+        return 'custom';
+    }
+}
 
 test('is2faRequired returns false for Solo', function () {
     ProjectConfig::set('users.require2fa', 'all');

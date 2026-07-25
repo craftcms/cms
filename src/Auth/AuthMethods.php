@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Auth\Enums\AuthError;
-use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
 use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
-use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
@@ -31,13 +29,22 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
-use RuntimeException;
 use SensitiveParameter;
 use Webauthn\Exception\InvalidUserHandleException;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
+/**
+ * Resolves authentication methods for users and registers additional method types.
+ *
+ * ```php
+ * public function boot(AuthMethods $authMethods): void
+ * {
+ *     $authMethods->register(MyAuthMethod::class);
+ * }
+ * ```
+ */
 #[Scoped]
 class AuthMethods
 {
@@ -59,6 +66,7 @@ class AuthMethods
         private readonly Hasher $hasher,
         private readonly Passkeys $passkeys,
         private readonly ProjectConfig $projectConfig,
+        private readonly AuthMethodCatalog $authMethodCatalog,
     ) {
         $this->methods = new Collection;
     }
@@ -80,18 +88,7 @@ class AuthMethods
             return $this->methods[$user->id];
         }
 
-        $methods = new Collection([
-            TOTP::class,
-            RecoveryCodes::class,
-        ]);
-
-        event($event = new AuthMethodsResolving($methods));
-
-        $this->methods[$user->id] = $event->methods->map(function (string $class) use ($user) {
-            if (! is_subclass_of($class, AuthMethodInterface::class)) {
-                throw new RuntimeException("$class must implement ".AuthMethodInterface::class);
-            }
-
+        $this->methods[$user->id] = $this->authMethodCatalog->types()->map(function (string $class) use ($user) {
             /** @var AuthMethodInterface $method */
             $method = app()->make($class);
             $method->setUser($user);
@@ -113,6 +110,24 @@ class AuthMethods
         });
 
         return $this->methods[$user->id];
+    }
+
+    /** @param class-string<AuthMethodInterface> ...$types */
+    public function register(string ...$types): void
+    {
+        $this->authMethodCatalog->register(...$types);
+    }
+
+    /** @param class-string<AuthMethodInterface> ...$types */
+    public function remove(string ...$types): void
+    {
+        $this->authMethodCatalog->remove(...$types);
+    }
+
+    /** @return Collection<int, class-string<AuthMethodInterface>> */
+    public function types(): Collection
+    {
+        return $this->authMethodCatalog->types();
     }
 
     /**
