@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
+use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
+use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
+use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
+use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
+use CraftCms\Cms\FieldLayout\LayoutElements\Template;
+use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -285,6 +293,121 @@ class FieldLayoutTab extends FieldLayoutComponent
         if (isset($this->_layout)) {
             $this->_layout->reset();
         }
+    }
+
+    public function name(string|Closure $name): static
+    {
+        $this->name = $this->evaluate($name);
+
+        return $this;
+    }
+
+    /**
+     * Adds elements to the tab.
+     *
+     * Multi-instance custom fields need a unique handle override when included more than once.
+     */
+    public function add(FieldLayoutElement ...$elements): static
+    {
+        $fieldUids = array_fill_keys(array_map(
+            fn (CustomField $element) => $element->getFieldUid(),
+            $this->getLayout()->getElementsByType(CustomField::class),
+        ), true);
+
+        foreach ($elements as $element) {
+            if ($element instanceof CustomField) {
+                $fieldUid = $element->getFieldUid();
+
+                if (isset($fieldUids[$fieldUid]) && ! $element->isMultiInstance()) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The field "%s" is already included in this field layout.',
+                        $element->attribute(),
+                    ));
+                }
+
+                $fieldUids[$fieldUid] = true;
+            }
+        }
+
+        foreach ($elements as $element) {
+            $element->dateAdded ??= now();
+        }
+
+        $this->setElements([...$this->getElements(), ...$elements]);
+
+        return $this;
+    }
+
+    /** @param (Closure(CustomField): mixed)|null $configure */
+    public function field(FieldInterface|string|Closure $field, ?Closure $configure = null): static
+    {
+        $element = CustomField::make($this->evaluate($field));
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Heading): mixed)|null $configure */
+    public function heading(string|Closure $heading, ?Closure $configure = null): static
+    {
+        $element = Heading::make($heading);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Tip): mixed)|null $configure */
+    public function tip(string|Closure $tip, ?Closure $configure = null): static
+    {
+        $element = Tip::make($tip);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Tip): mixed)|null $configure */
+    public function warning(string|Closure $warning, ?Closure $configure = null): static
+    {
+        $element = Tip::make($warning)->warning();
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Markdown): mixed)|null $configure */
+    public function markdown(string|Closure $content, ?Closure $configure = null): static
+    {
+        $element = Markdown::make($content);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(Template): mixed)|null $configure */
+    public function template(string|Closure $template, ?Closure $configure = null): static
+    {
+        $element = Template::make($template);
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(HorizontalRule): mixed)|null $configure */
+    public function horizontalRule(?Closure $configure = null): static
+    {
+        $element = HorizontalRule::make();
+        $configure?->__invoke($element);
+
+        return $this->add($element);
+    }
+
+    /** @param (Closure(LineBreak): mixed)|null $configure */
+    public function lineBreak(?Closure $configure = null): static
+    {
+        $element = LineBreak::make();
+        $configure?->__invoke($element);
+
+        return $this->add($element);
     }
 
     public function getHtmlId(): string

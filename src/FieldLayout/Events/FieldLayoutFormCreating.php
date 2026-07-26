@@ -34,10 +34,8 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
  *                 'attribute' => 'myTextField',
  *                 'label' => 'My Text Field',
  *             ]),
- *             new HorizontalRule(),
- *             new Template([
- *                 'template' => '_layout-elements/info'
- *             ]),
+ *             HorizontalRule::make(),
+ *             Template::make('_layout-elements/info'),
  *         ],
  *     ]);
  * });
