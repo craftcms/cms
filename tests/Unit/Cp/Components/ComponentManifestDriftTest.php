@@ -211,6 +211,18 @@ function cpDriftExpectedPhpOnly(): array
 
         // craft-switch: native input state / a slot, not declared manifest attributes.
         'craft-switch' => ['checked', 'disabled', 'label'],
+
+        // craft-input / craft-textarea: Lion-inherited control properties
+        // (not in the manifest, which only lists own declarations). They must
+        // live on the host because Lion pushes them onto the slotted control
+        // on upgrade (LionInput/LionTextarea `updated()`), clobbering
+        // server-rendered attributes with its defaults otherwise.
+        'craft-input' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
+        'craft-textarea' => ['placeholder', 'name', 'disabled', 'readonly', 'rows'],
+
+        // craft-icon: `data-color` is the global palette-scoping attribute
+        // (colorable.css), not a declared component property.
+        'craft-icon' => ['data-color'],
     ];
 }
 

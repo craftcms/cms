@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
@@ -184,10 +185,16 @@ abstract class BaseField extends FieldLayoutElement
         $label = $this->selectorLabel();
         $icon = $this->selectorIcon();
 
-        $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('div', Icons::svg($indicator['icon'], altText: $indicator['label']), [
-            'class' => ['cp-icon', 'w-[0.75em]', 'text-fill-normal'],
+        // $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('craft-icon', Icons::svg($indicator['icon'], altText: $indicator['label']), [
+        //     'class' => ['cp-icon', 'w-[0.75em]', 'text-fill-normal'],
+        //     'data-color' => $indicator['iconColor'] ?? null,
+        //     'title' => $indicator['label'],
+        // ]), $this->selectorIndicators()));
+
+        $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('craft-icon', '', [
+            'name' => $indicator['icon'],
+            'label' => $indicator['label'],
             'data-color' => $indicator['iconColor'] ?? null,
-            'title' => $indicator['label'],
         ]), $this->selectorIndicators()));
 
         if ($label !== null) {
@@ -212,7 +219,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($indicatorHtml) {
             $innerHtml .= Html::tag('div', $indicatorHtml, [
-                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-2'],
+                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-1', 'mt-1'],
             ]);
         }
 

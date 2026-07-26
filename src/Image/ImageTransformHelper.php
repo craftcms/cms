@@ -274,6 +274,10 @@ class ImageTransformHelper
         }
 
         if (is_array($transform)) {
+            if (isset($transform['class'])) {
+                throw new InvalidArgumentException('Invalid transform config.');
+            }
+
             if (! empty($transform['width']) && ! is_numeric($transform['width'])) {
                 Log::warning("Invalid transform width: {$transform['width']}", [__METHOD__]);
                 $transform['width'] = null;

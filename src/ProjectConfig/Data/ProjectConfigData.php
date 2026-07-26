@@ -49,7 +49,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
 
         $valueChanged = (
             $triggerUpdate ||
-            $this->projectConfig->forceUpdate ||
+            ($this->projectConfig->forceUpdate && ($oldValue !== null || $newValue !== null)) ||
             ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue)
         );
 

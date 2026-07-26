@@ -406,6 +406,7 @@
   }
 
   .cp__header {
+    --c-color-focus-outline: var(--color-blue-300);
     color: var(--color-slate-200);
     background-color: var(--color-slate-950);
   }

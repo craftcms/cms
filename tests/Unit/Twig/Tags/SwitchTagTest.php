@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
+use CraftCms\Cms\View\TemplateManager;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 });
 
 it('renders the matching case body', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% switch var %}{% case "foo" %}matched{% endswitch %}',
         ['var' => 'foo'],
     );
@@ -18,7 +18,7 @@ it('renders the matching case body', function () {
 });
 
 it('renders nothing when no case matches and no default exists', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% switch var %}{% case "foo" %}Foo{% case "bar" %}Bar{% endswitch %}',
         ['var' => 'baz'],
     );
@@ -27,7 +27,7 @@ it('renders nothing when no case matches and no default exists', function () {
 });
 
 it('renders the default case when no case matches', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% switch var %}{% case "foo" %}Foo{% default %}Default{% endswitch %}',
         ['var' => 'baz'],
     );
@@ -36,7 +36,7 @@ it('renders the default case when no case matches', function () {
 });
 
 it('renders the first matching case only', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% switch var %}{% case "foo" %}First{% case "foo" %}Second{% endswitch %}',
         ['var' => 'foo'],
     );
@@ -45,7 +45,7 @@ it('renders the first matching case only', function () {
 });
 
 it('supports or values in a case', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% switch var %}{% case "foo" or "bar" %}Matched{% default %}Default{% endswitch %}',
         ['var' => 'bar'],
     );
@@ -54,7 +54,7 @@ it('supports or values in a case', function () {
 });
 
 it('works with integer values', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% switch var %}{% case 1 %}One{% case 2 %}Two{% default %}Other{% endswitch %}',
         ['var' => 2],
     );
@@ -63,7 +63,7 @@ it('works with integer values', function () {
 });
 
 it('renders case body with template expressions', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% switch type %}{% case "greeting" %}Hello, {{ name }}!{% endswitch %}',
         ['type' => 'greeting', 'name' => 'World'],
     );

@@ -6,12 +6,12 @@ namespace CraftCms\Cms\Config;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 use Override;
 
 class ConfigServiceProvider extends ServiceProvider
@@ -128,18 +128,19 @@ class ConfigServiceProvider extends ServiceProvider
 
     private function loadHtmlSanitizers(): void
     {
-        $path = config_path('craft/sanitizers');
+        $sanitizers = $this->app->make(HtmlSanitizerManager::class);
+        $definitions = $this->app->make(ConfigRepository::class)->get('craft.sanitizers', []);
 
-        if (! File::isDirectory($path)) {
-            return;
+        if (! is_array($definitions)) {
+            throw new InvalidArgumentException('The [craft.sanitizers] configuration must be an array.');
         }
 
-        $sanitizers = $this->app->make(HtmlSanitizers::class);
-
-        foreach (File::files($path) as $file) {
-            if ($file->getExtension() === 'php') {
-                $sanitizers->register($file->getFilenameWithoutExtension(), require $file->getRealPath());
+        foreach ($definitions as $name => $definition) {
+            if (! is_string($name) || ! is_array($definition)) {
+                throw new InvalidArgumentException('HTML sanitizer configuration definitions must be named arrays.');
             }
+
+            $sanitizers->extend($name, $definition);
         }
     }
 }
