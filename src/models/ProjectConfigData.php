@@ -63,7 +63,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
 
         $valueChanged = (
             $triggerUpdate ||
-            $this->projectConfig->forceUpdate ||
+            ($this->projectConfig->forceUpdate && $oldValue !== null && $newValue !== null) ||
             ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue)
         );
 
@@ -80,7 +80,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
                 } elseif ($oldValue === null && $newValue !== null) {
                     // Fire an 'addItem' event
                     $this->projectConfig->trigger(ProjectConfigService::EVENT_ADD_ITEM, $event);
-                } elseif ($oldValue !== null && $newValue !== null) {
+                } else {
                     // Fire an 'updateItem' event
                     $this->projectConfig->trigger(ProjectConfigService::EVENT_UPDATE_ITEM, $event);
                 }
