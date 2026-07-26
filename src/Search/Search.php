@@ -12,8 +12,9 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Search\Events\KeywordsIndexing;
-use CraftCms\Cms\Search\Events\ScoringResults;
 use CraftCms\Cms\Search\Events\SearchPerformed;
+use CraftCms\Cms\Search\Events\SearchResultsResolving;
+use CraftCms\Cms\Search\Events\SearchScoresResolving;
 use CraftCms\Cms\Search\Events\SearchStarting;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Support\Arr;
@@ -337,14 +338,19 @@ class Search
             ->map(fn ($row) => (array) $row)
             ->all();
 
-        $scores = $this->scoreResults($results, $searchQuery, $elementQuery);
+        event($event = new SearchResultsResolving($elementQuery, $searchQuery, $results));
 
-        event($event = new SearchPerformed($elementQuery, $searchQuery, $results, $scores));
+        $results = $event->results;
+        $scores = $this->scoreResults($results);
 
-        $scores = $event->scores ?? $scores;
+        event($event = new SearchScoresResolving($elementQuery, $searchQuery, $results, $scores));
+
+        $scores = $event->scores;
 
         ksort($scores, SORT_NATURAL);
         arsort($scores);
+
+        event(new SearchPerformed($elementQuery, $searchQuery, $results, $scores));
 
         return $scores;
     }
@@ -385,18 +391,8 @@ class Search
         return $query;
     }
 
-    private function scoreResults(array $results, SearchQuery $searchQuery, ElementQueryInterface $elementQuery): array
+    private function scoreResults(array $results): array
     {
-        event($event = new ScoringResults($elementQuery, $searchQuery, $results));
-
-        if ($event->scores !== null) {
-            return $event->scores;
-        }
-
-        if ($event->results !== null) {
-            $results = $event->results;
-        }
-
         $scores = [];
 
         foreach ($results as $row) {
