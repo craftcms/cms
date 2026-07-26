@@ -162,9 +162,6 @@
         show-all-on-empty
         :options="timezoneOptions"
       >
-        <template #item="{item}">
-          {{ item.label }}{{ item.data?.hint ? ` — ${item.data.hint}` : '' }}
-        </template>
         <template #after>
           <craft-callout
             variant="info"
