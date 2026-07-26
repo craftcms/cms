@@ -43,7 +43,7 @@ class CpAsset implements LegacyAssetInterface
     public function register(HtmlStack $htmlStack): void
     {
         // CP
-        $htmlStack->cssFile(craftAsset('legacy/cp/dist/css/cp.css'));
+        // $htmlStack->cssFile(craftAsset('legacy/cp/dist/css/cp.css'));
         $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));
 
         $htmlStack->icons([
