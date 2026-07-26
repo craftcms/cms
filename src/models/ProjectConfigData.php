@@ -80,7 +80,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
                 } elseif ($oldValue === null && $newValue !== null) {
                     // Fire an 'addItem' event
                     $this->projectConfig->trigger(ProjectConfigService::EVENT_ADD_ITEM, $event);
-                } else {
+                } elseif ($oldValue !== null && $newValue !== null) {
                     // Fire an 'updateItem' event
                     $this->projectConfig->trigger(ProjectConfigService::EVENT_UPDATE_ITEM, $event);
                 }
