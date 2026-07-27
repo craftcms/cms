@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessages;
-use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
@@ -14,31 +14,59 @@ beforeEach(function () {
     $this->systemMessages = app(SystemMessages::class);
 });
 
-it('retrieves all the default system messages', function () {
-    $messages = $this->systemMessages->getAllDefaultMessages();
+it('resolves registered messages in the site locale', function () {
+    $localeBeforeTest = app()->getLocale();
+    $unsupportedLocale = 'zz-ZZ';
+    app()->setLocale($unsupportedLocale);
 
-    expect($messages->has('account_activation'))->toBeTrue();
-    expect($this->systemMessages->getDefaultMessage('account_activation'))->not()->toBeNull();
-    expect($messages->has('verify_new_email'))->toBeTrue();
-    expect($this->systemMessages->getDefaultMessage('verify_new_email'))->not()->toBeNull();
-    expect($messages->has('forgot_password'))->toBeTrue();
-    expect($this->systemMessages->getDefaultMessage('forgot_password'))->not()->toBeNull();
-    expect($messages->has('test_email'))->toBeTrue();
-    expect($this->systemMessages->getDefaultMessage('test_email'))->not()->toBeNull();
-});
+    $resolvedLocale = null;
+    app(SystemMessages::class)->register('modern', function () use (&$resolvedLocale) {
+        $resolvedLocale = app()->getLocale();
 
-it('can add additional messages through an event', function () {
-    Event::listen(SystemMessagesResolving::class, function (SystemMessagesResolving $event) {
-        $event->messages->push(new SystemMessage([
-            'key' => 'foo',
-            'heading' => 'A test system message',
-            'subject' => 'A test system message',
-            'body' => 'A test system message',
-        ]));
+        return new SystemMessage([
+            'key' => 'modern',
+            'heading' => 'Modern message',
+            'subject' => 'Modern message',
+            'body' => 'Modern message',
+        ]);
     });
 
-    expect($this->systemMessages->getAllDefaultMessages()->has('foo'))->toBeTrue();
-    expect($this->systemMessages->getDefaultMessage('foo'))->not()->toBeNull();
+    try {
+        expect($this->systemMessages->getAllDefaultMessages())->toHaveKey('modern')
+            ->and($resolvedLocale)->toBe(Sites::getPrimarySite()->getLanguage())
+            ->and(app()->getLocale())->toBe($unsupportedLocale);
+    } finally {
+        app()->setLocale($localeBeforeTest);
+    }
+});
+
+it('caches defaults within a scope and resolves them again for the next locale scope', function () {
+    $originalLocale = app()->getLocale();
+    I18N::shouldReceive('getSiteLocaleIds')->andReturn(collect(['en-US', 'fr']));
+    I18N::shouldReceive('translate')->andReturnUsing(fn (string $message) => $message);
+    app(SystemMessages::class)->register('scoped', fn () => new SystemMessage([
+        'key' => 'scoped',
+        'heading' => app()->getLocale(),
+        'subject' => app()->getLocale(),
+        'body' => app()->getLocale(),
+    ]));
+
+    try {
+        app()->setLocale('en-US');
+        $systemMessages = app(SystemMessages::class);
+
+        expect($systemMessages->getAllDefaultMessages()['scoped']->subject)->toBe('en-US');
+
+        app()->setLocale('fr');
+
+        expect($systemMessages->getAllDefaultMessages()['scoped']->subject)->toBe('en-US');
+
+        app()->forgetScopedInstances();
+
+        expect(app(SystemMessages::class)->getAllDefaultMessages()['scoped']->subject)->toBe('fr');
+    } finally {
+        app()->setLocale($originalLocale);
+    }
 });
 
 it('can get messages including overrides', function () {

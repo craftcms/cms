@@ -13,7 +13,6 @@ use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
-use CraftCms\Cms\Image\Events\ImageTransformersResolving;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
@@ -45,6 +44,7 @@ class ImageTransforms
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly ElementCaches $elementCaches,
+        private readonly ImageTransformers $imageTransformerTypes,
     ) {}
 
     /**
@@ -306,13 +306,7 @@ class ImageTransforms
      */
     public function getAllImageTransformers(): array
     {
-        $transformers = [
-            ImageTransformer::class,
-        ];
-
-        event($event = new ImageTransformersResolving(types: $transformers));
-
-        return $event->types;
+        return $this->imageTransformerTypes->types()->all();
     }
 
     /**

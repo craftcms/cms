@@ -17,8 +17,6 @@ use craft\events\RegisterCpSettingsEvent;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
-use CraftCms\Cms\Cp\Events\RegisterCpSettings;
-use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -149,26 +147,6 @@ class Cp extends Component
     {
         \CraftCms\Cms\Twig\Variables\Cp::macro('fieldLayoutDesigner', function(FieldLayout $fieldLayout, array $config = []) {
             return app(FieldLayoutDesigner::class)->html($fieldLayout, $config);
-        });
-
-        Event::listen(function(RegisterCpSettings $event) {
-            if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_CP_SETTINGS)) {
-                $yiiEvent = new RegisterCpSettingsEvent(['settings' => $event->settings]);
-
-                \yii\base\Event::trigger(self::class, self::EVENT_REGISTER_CP_SETTINGS, $yiiEvent);
-
-                $event->settings = $yiiEvent->settings;
-            }
-        });
-
-        Event::listen(function(RegisterReadonlyCpSettings $event) {
-            if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS)) {
-                $yiiEvent = new RegisterCpSettingsEvent(['settings' => $event->settings]);
-
-                \yii\base\Event::trigger(self::class, self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS, $yiiEvent);
-
-                $event->settings = $yiiEvent->settings;
-            }
         });
 
         Event::listen(function(CpNavItemsResolving $event) {

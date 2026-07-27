@@ -15,8 +15,8 @@ use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User as UserModel;
-use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateRoots;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -32,9 +32,7 @@ beforeEach(function () {
     TemplateMode::set(TemplateMode::Site);
     Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
 
-    Event::listen(function (SiteTemplateRootsResolving $event) {
-        $event->roots[''] = dirname(__DIR__, 3).'/Support/templates';
-    });
+    app(TemplateRoots::class)->register(TemplateMode::Site, '', dirname(__DIR__, 3).'/Support/templates');
 
 });
 

@@ -10,6 +10,7 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -183,8 +184,9 @@ readonly class SchemasController extends GqlController
         return $this->permissionGroups($schemaComponents['queries'])
             ->merge($this->permissionGroups($schemaComponents['mutations']))
             ->push(new PermissionGroup(
-                t('Optional Features'),
-                $this->permissionList($optionalPermissions),
+                handle: 'optionalFeatures',
+                heading: t('Optional Features'),
+                permissions: $this->permissionList($optionalPermissions),
             ));
     }
 
@@ -194,8 +196,9 @@ readonly class SchemasController extends GqlController
         return collect($categories)
             ->filter()
             ->map(fn (array $permissions, string $heading) => new PermissionGroup(
-                $heading,
-                $this->permissionList($permissions),
+                handle: Str::toHandle($heading),
+                heading: $heading,
+                permissions: $this->permissionList($permissions),
             ))
             ->values();
     }

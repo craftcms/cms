@@ -6,6 +6,19 @@ namespace CraftCms\Cms\Gql;
 
 use CraftCms\Cms\Cms;
 
+/**
+ * Stores generated GraphQL entities for reuse while building a schema.
+ *
+ * ```php
+ * public static function create(): ObjectType
+ * {
+ *     return GqlEntityRegistry::getOrCreate('Product', fn () => new ObjectType([
+ *         'name' => 'Product',
+ *         'fields' => [],
+ *     ]));
+ * }
+ * ```
+ */
 class GqlEntityRegistry
 {
     private static array $_entities = [];

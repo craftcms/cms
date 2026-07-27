@@ -5,13 +5,13 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Filesystem\FilesystemTypes;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -29,16 +29,15 @@ it('is a singleton and is available via the facade', function () {
         ->and($this->service)->toBe(FilesystemsFacade::getFacadeRoot());
 });
 
-it('can register extra filesystem types through an event', function () {
-    expect($this->service->getAllFilesystemTypes())
-        ->toBeInstanceOf(Collection::class)
-        ->not()->toContain(Temp::class);
+it('uses the current registry types', function () {
+    $registry = app(FilesystemTypes::class);
+    $registry->register(Temp::class);
 
-    Event::listen(FilesystemTypesResolving::class, function (FilesystemTypesResolving $event) {
-        $event->types->add(Temp::class);
-    });
+    expect($this->service->getAllFilesystemTypes())->toContain(Local::class, Temp::class);
 
-    expect($this->service->getAllFilesystemTypes())->toContain(Temp::class);
+    $registry->remove(Temp::class);
+
+    expect($this->service->getAllFilesystemTypes())->not()->toContain(Temp::class);
 });
 
 it('returns filesystems as a collection', function () {

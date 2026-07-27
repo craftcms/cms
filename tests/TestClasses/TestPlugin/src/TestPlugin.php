@@ -10,6 +10,12 @@ use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
+use CraftCms\Cms\Gql\Directives\Directive;
+use CraftCms\Cms\Gql\Mutations\Mutation;
+use CraftCms\Cms\Gql\Queries\Query;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Utility\Utility;
@@ -45,7 +51,18 @@ class TestPlugin extends Plugin
 
     public ?Migrator $customMigrator = null;
 
+    public ?Closure $customNativeFields = null;
+
     public ?string $customSettingsHtml = null;
+
+    /** @var array<string, array|Closure> */
+    public array $customCacheOptions = [];
+
+    /** @var array<string, string|Closure> */
+    public array $customCacheTags = [];
+
+    /** @var array<string, Closure> */
+    public array $customSystemMessages = [];
 
     public bool $didCallBeforeInstall = false;
 
@@ -102,6 +119,47 @@ class TestPlugin extends Plugin
         $this->fieldTypes = $fieldTypes;
     }
 
+    /** @param array<int, class-string<FsInterface>> $filesystemTypes */
+    public function setFilesystemTypes(array $filesystemTypes): void
+    {
+        $this->filesystemTypes = $filesystemTypes;
+    }
+
+    /** @param array<int, class-string<SingularTypeInterface>> $gqlTypes */
+    public function setGqlTypes(array $gqlTypes): void
+    {
+        $this->gqlTypes = $gqlTypes;
+    }
+
+    /** @param array<int, class-string<Query>> $gqlQueries */
+    public function setGqlQueries(array $gqlQueries): void
+    {
+        $this->gqlQueries = $gqlQueries;
+    }
+
+    /** @param array<int, class-string<Mutation>> $gqlMutations */
+    public function setGqlMutations(array $gqlMutations): void
+    {
+        $this->gqlMutations = $gqlMutations;
+    }
+
+    /** @param array<int, class-string<Directive>> $gqlDirectives */
+    public function setGqlDirectives(array $gqlDirectives): void
+    {
+        $this->gqlDirectives = $gqlDirectives;
+    }
+
+    /** @param array<int, class-string<BaseLinkType>> $linkTypes */
+    public function setLinkTypes(array $linkTypes): void
+    {
+        $this->linkTypes = $linkTypes;
+    }
+
+    public function setNativeFields(Closure $nativeFields): void
+    {
+        $this->customNativeFields = $nativeFields;
+    }
+
     /** @param array<string, class-string|array<int, class-string>> $events */
     public function setListeners(array $events): void
     {
@@ -112,6 +170,30 @@ class TestPlugin extends Plugin
     public function setUtilities(array $utilities): void
     {
         $this->utilities = $utilities;
+    }
+
+    /** @param array<string, array|Closure> $cacheOptions */
+    public function setCacheOptions(array $cacheOptions): void
+    {
+        $this->customCacheOptions = $cacheOptions;
+    }
+
+    /** @param array<string, string|Closure> $cacheTags */
+    public function setCacheTags(array $cacheTags): void
+    {
+        $this->customCacheTags = $cacheTags;
+    }
+
+    /** @param array<string, Closure> $systemMessages */
+    public function setSystemMessages(array $systemMessages): void
+    {
+        $this->customSystemMessages = $systemMessages;
+    }
+
+    /** @param array<string, string|string[]> $siteTemplateRoots */
+    public function setSiteTemplateRoots(array $siteTemplateRoots): void
+    {
+        $this->siteTemplateRoots = $siteTemplateRoots;
     }
 
     /** @param array<int, class-string<WidgetInterface>> $widgets */
@@ -205,6 +287,30 @@ class TestPlugin extends Plugin
     protected function getPermissions(): array
     {
         return $this->customPermissions;
+    }
+
+    #[Override]
+    protected function getNativeFields(): ?Closure
+    {
+        return $this->customNativeFields;
+    }
+
+    #[Override]
+    protected function getCacheOptions(): array
+    {
+        return $this->customCacheOptions;
+    }
+
+    #[Override]
+    protected function getCacheTags(): array
+    {
+        return $this->customCacheTags;
+    }
+
+    #[Override]
+    protected function getSystemMessages(): array
+    {
+        return $this->customSystemMessages;
     }
 
     #[Override]
