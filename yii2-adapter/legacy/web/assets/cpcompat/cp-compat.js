@@ -26,6 +26,7 @@
     registerPasswordInputClass($);
     registerColorInputClass($);
     registerSlidePickerClass($);
+    registerTooltipClass($);
     autoUpgrade($);
   }
 
@@ -644,6 +645,106 @@
     };
 
     Craft.SlidePicker = SlidePicker;
+  }
+
+  /**
+   * BC replacement for the removed `Craft.Tooltip` class. Warns once, then
+   * delegates to a `<craft-tooltip>` web component pointed at the trigger (by
+   * id), so `new Craft.Tooltip(trigger, message)` keeps showing the message on
+   * hover/focus. Exposes the legacy surface (message/$trigger/show/hide/toggle).
+   */
+  function registerTooltipClass($) {
+    var Craft = window.Craft;
+    if (!Craft || Craft.Tooltip) {
+      return;
+    }
+
+    var warned = false;
+
+    function Tooltip(trigger, message) {
+      if (!(this instanceof Tooltip)) {
+        return new Tooltip(trigger, message);
+      }
+      if (!warned) {
+        warned = true;
+        console.warn(
+          'Craft.Tooltip is deprecated. Emit <craft-tooltip for="…"> directly instead.'
+        );
+      }
+      this.$el = null;
+      this.setTrigger(trigger);
+      this.message = message;
+    }
+
+    Tooltip.prototype = {
+      constructor: Tooltip,
+
+      setTrigger: function (trigger) {
+        var $trigger = $(trigger);
+        this._$trigger = $trigger;
+        var el = $trigger[0];
+        if (!el) {
+          return;
+        }
+        if (!el.id) {
+          el.id = 'tooltip-trigger-' + Math.floor(Math.random() * 1000000);
+        }
+        if (!this.$el) {
+          this.$el = $('<craft-tooltip/>')
+            .attr('for', el.id)
+            .appendTo(document.body);
+        } else {
+          this.$el.attr('for', el.id);
+        }
+      },
+
+      get $trigger() {
+        return this._$trigger;
+      },
+      set $trigger(value) {
+        this.setTrigger(value);
+      },
+
+      get message() {
+        return this._message;
+      },
+      set message(value) {
+        this._message = value;
+        if (this.$el) {
+          this.$el.text(value == null ? '' : value);
+        }
+      },
+
+      get showing() {
+        return !!(this.$el && this.$el[0] && this.$el[0].opened);
+      },
+
+      show: function () {
+        if (this.$el && this.$el[0] && typeof this.$el[0].show === 'function') {
+          this.$el[0].show();
+        }
+      },
+      hide: function () {
+        if (this.$el && this.$el[0] && typeof this.$el[0].hide === 'function') {
+          this.$el[0].hide();
+        }
+      },
+      toggle: function () {
+        if (this.showing) {
+          this.hide();
+        } else {
+          this.show();
+        }
+      },
+      destroy: function () {
+        if (this.$el) {
+          this.$el.remove();
+          this.$el = null;
+        }
+      },
+    };
+
+    Craft.Tooltip = Tooltip;
   }
 
   /**

@@ -56,7 +56,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
-    activityTooltips: null,
     _checkActivityTimeout: null,
 
     get tipDismissBtn() {
@@ -299,8 +298,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         });
       }
-
-      this.activityTooltips = {};
 
       if (this.isFullPage) {
         Craft.ui.setFocusOnErrorSummary(this.$container);
@@ -2371,13 +2368,14 @@ Craft.ElementEditor = Garnish.Base.extend(
               },
             })
               .then(({data}) => {
-                let focusedTooltip = null;
-                if (this.activityTooltips) {
-                  const tooltips = Object.values(this.activityTooltips);
-                  focusedTooltip = tooltips.find(
-                    (t) => t.$trigger[0] === document.activeElement
-                  );
-                }
+                // Preserve keyboard focus across the re-render: which activity
+                // button (by user) is focused right now?
+                const activeEl = document.activeElement;
+                const focusedUserId =
+                  activeEl instanceof HTMLElement &&
+                  activeEl.classList.contains('activity-btn')
+                    ? activeEl.getAttribute('data-user-id')
+                    : null;
 
                 this.$activityContainer
                   .html('')
@@ -2392,14 +2390,16 @@ Craft.ElementEditor = Garnish.Base.extend(
                   const $ul = $('<ul/>').appendTo(this.$activityContainer);
                   for (let i = 0; i < data.activity.length; i++) {
                     const activity = data.activity[i];
+                    const triggerId = `activity-tooltip-${activity.userId}`;
                     const $li = $('<li/>').appendTo($ul);
                     const $button = $('<button/>', {
                       type: 'button',
+                      id: triggerId,
                       class: 'activity-btn',
+                      'data-user-id': activity.userId,
                       'aria-label': Craft.t('app', '{name} active, more info', {
                         name: activity.userName,
                       }),
-                      'aria-expanded': 'false',
                     }).appendTo($li);
                     const $thumb = $(activity.userThumb)
                       .addClass('elementthumb')
@@ -2409,34 +2409,21 @@ Craft.ElementEditor = Garnish.Base.extend(
                     Craft.cp.elementThumbLoader.load($li);
                     $thumb.find('title').remove();
 
+                    // <craft-tooltip> replaces the legacy Craft.Tooltip
+                    // toggletip; it shows the activity message on hover/focus of
+                    // the button. Recreated alongside the button each poll.
+                    $('<craft-tooltip/>')
+                      .attr('for', triggerId)
+                      .text(activity.message)
+                      .appendTo($li);
+
+                    // Maintain keyboard focus across the re-render.
                     if (
-                      typeof this.activityTooltips[activity.userId] ===
-                      'undefined'
+                      focusedUserId !== null &&
+                      activity.userId == focusedUserId
                     ) {
-                      this.activityTooltips[activity.userId] =
-                        new Craft.Tooltip($button, activity.message);
-                    } else {
-                      this.activityTooltips[activity.userId].$trigger = $button;
-                      this.activityTooltips[activity.userId].message =
-                        activity.message;
-
-                      // maintain trigger focus
-                      if (
-                        this.activityTooltips[activity.userId] ===
-                        focusedTooltip
-                      ) {
-                        this.activityTooltips[activity.userId].$trigger.focus();
-                      }
+                      $button.focus();
                     }
-                  }
-                }
-
-                // hide any tooltips that are no longer relevant
-                for (const userId of Object.keys(this.activityTooltips)) {
-                  if (
-                    !data.activity.find((activity) => activity.userId == userId)
-                  ) {
-                    this.activityTooltips[userId].hide();
                   }
                 }
 
