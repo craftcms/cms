@@ -1940,7 +1940,6 @@ $.extend(Craft, {
     $('.grid', $container).grid();
     $('.cp-checkbox-select', $container).checkboxselect();
     $('.fieldtoggle', $container).fieldtoggle();
-    $('.lightswitch', $container).lightswitch();
     $('.nicetext', $container).nicetext();
     $('.datetimewrapper', $container).datetime();
     $(
@@ -3118,47 +3117,6 @@ $.extend($.fn, {
         new Craft.FieldToggle(this);
       }
     });
-  },
-
-  lightswitch: function (settings, settingName, settingValue) {
-    // param mapping
-    if (settings === 'settings') {
-      if (typeof settingName === 'string') {
-        settings = {};
-        settings[settingName] = settingValue;
-      } else {
-        settings = settingName;
-      }
-
-      return this.each(function () {
-        var obj = $.data(this, 'lightswitch');
-        if (obj) {
-          obj.setSettings(settings);
-        }
-      });
-    } else {
-      if (!$.isPlainObject(settings)) {
-        settings = {};
-      }
-
-      return this.each(function () {
-        var thisSettings = $.extend({}, settings);
-
-        if (Garnish.hasAttr(this, 'data-value')) {
-          thisSettings.value = $(this).attr('data-value');
-        }
-
-        if (Garnish.hasAttr(this, 'data-indeterminate-value')) {
-          thisSettings.indeterminateValue = $(this).attr(
-            'data-indeterminate-value'
-          );
-        }
-
-        if (!$.data(this, 'lightswitch')) {
-          new Craft.LightSwitch(this, thisSettings);
-        }
-      });
-    }
   },
 
   nicetext: function () {

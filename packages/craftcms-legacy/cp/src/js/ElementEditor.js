@@ -553,7 +553,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         })
         .insertBefore($enabledForSiteField);
       $globalField.find('label').css('font-weight', 'bold');
-      this.$globalLightswitch = $globalField.find('.lightswitch');
+      this.$globalLightswitch = $globalField.find('craft-switch');
 
       if (!this.settings.revisionId) {
         this._showField($globalField);
@@ -573,7 +573,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         (this.settings.enabledForSite ? '1' : '');
 
       this.$siteLightswitches = $enabledForSiteField
-        .find('.lightswitch')
+        .find('craft-switch')
         .on('change', this._updateGlobalStatus.bind(this));
 
       this._getOtherSupportedSites().forEach((s) =>
@@ -584,7 +584,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         encodeURIComponent(this.namespaceInputName('enabled')) +
         `=${originalEnabledValue}`;
       for (let i = 0; i < this.$siteLightswitches.length; i++) {
-        const $input = this.$siteLightswitches.eq(i).data('lightswitch').$input;
+        const $input = this.$siteLightswitches
+          .eq(i)
+          .find('input[type="hidden"]');
         serializedStatuses +=
           '&' + encodeURIComponent($input.attr('name')) + '=' + $input.val();
       }
@@ -754,7 +756,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       let allEnabled = true,
         allDisabled = true;
       this.$siteLightswitches.each(function () {
-        const enabled = $(this).data('lightswitch').on;
+        const enabled = this.on;
         if (enabled) {
           allDisabled = false;
         } else {
@@ -765,21 +767,21 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       });
       if (allEnabled) {
-        this.$globalLightswitch.data('lightswitch').turnOn(true);
+        this.$globalLightswitch[0].turnOn(true);
       } else if (allDisabled) {
-        this.$globalLightswitch.data('lightswitch').turnOff(true);
+        this.$globalLightswitch[0].turnOff(true);
       } else {
-        this.$globalLightswitch.data('lightswitch').turnIndeterminate(true);
+        this.$globalLightswitch[0].turnIndeterminate(true);
       }
     },
 
     _updateSiteStatuses: function () {
-      const enabled = this.$globalLightswitch.data('lightswitch').on;
+      const enabled = this.$globalLightswitch[0].on;
       this.$siteLightswitches.each(function () {
         if (enabled) {
-          $(this).data('lightswitch').turnOn(true);
+          this.turnOn(true);
         } else {
-          $(this).data('lightswitch').turnOff(true);
+          this.turnOff(true);
         }
       });
     },
@@ -807,7 +809,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (!this.settings.revisionId) {
         $field.addClass('nested');
         const $lightswitch = $field
-          .find('.lightswitch')
+          .find('craft-switch')
           .on('change', this._updateGlobalStatus.bind(this));
         this.$siteLightswitches = this.$siteLightswitches.add($lightswitch);
       }

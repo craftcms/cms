@@ -17,6 +17,8 @@
     }
 
     registerInfoIcon($);
+    registerLightswitch($);
+    autoUpgrade($);
   }
 
   /**
@@ -51,28 +53,88 @@
       }
       return this.each(upgrade);
     };
+  }
 
-    // Preserve BC auto-upgrade of legacy third-party `.info` markup injected
-    // after load (fires the warning only when such markup exists).
+  /**
+   * `$.fn.lightswitch` — upgrades legacy `.lightswitch` button markup to the
+   * `<craft-switch>` web component. Core now emits the element directly (and
+   * Craft.ui.createLightswitch builds it), so this only runs for third-party
+   * `.lightswitch` markup, and warns when it does. The conversion reuses
+   * Craft.ui.createLightswitch so the mapping stays in one place.
+   */
+  function registerLightswitch($) {
+    if ($.fn.lightswitch) {
+      return;
+    }
+
+    var warned = false;
+
+    $.fn.lightswitch = function () {
+      if (!warned) {
+        warned = true;
+        console.warn(
+          '$(…).lightswitch() is deprecated. Emit <craft-switch> directly instead.'
+        );
+      }
+      return this.each(function () {
+        if (
+          this.tagName === 'CRAFT-SWITCH' ||
+          !window.Craft ||
+          !Craft.ui ||
+          typeof Craft.ui.createLightswitch !== 'function'
+        ) {
+          return;
+        }
+        var $old = $(this);
+        var $input = $old.find('input[type="hidden"]').first();
+        var $switch = Craft.ui.createLightswitch({
+          on: $old.hasClass('on'),
+          indeterminate: $old.hasClass('indeterminate'),
+          small: $old.hasClass('small'),
+          disabled: $old.hasClass('disabled') || $input.prop('disabled'),
+          value: $old.attr('data-value') || '1',
+          indeterminateValue: $old.attr('data-indeterminate-value') || '-',
+          name: $input.attr('name'),
+          id: $old.attr('id'),
+          labelId: $old.attr('aria-labelledby'),
+          toggle: $old.attr('data-target'),
+          reverseToggle: $old.attr('data-reverse-target'),
+        });
+        $old.replaceWith($switch);
+      });
+    };
+  }
+
+  /**
+   * Preserves the legacy auto-upgrade of third-party `.info`/`.lightswitch`
+   * markup: sweep on load and whenever Craft.initUiElements runs on injected
+   * content. The deprecation warnings fire only when such markup exists.
+   */
+  function autoUpgrade($) {
+    function sweep($container) {
+      try {
+        $('.info', $container).infoicon();
+      } catch (e) {
+        // no-op
+      }
+      try {
+        $('.lightswitch', $container).lightswitch();
+      } catch (e) {
+        // no-op
+      }
+    }
+
     if (window.Craft && typeof Craft.initUiElements === 'function') {
       var initUiElements = Craft.initUiElements;
       Craft.initUiElements = function ($container) {
         var result = initUiElements.apply(this, arguments);
-        try {
-          $('.info', $container || document).infoicon();
-        } catch (e) {
-          // no-op
-        }
+        sweep($container || document);
         return result;
       };
     }
 
-    // Initial pass for legacy `.info` already present in the DOM.
-    try {
-      $('.info').infoicon();
-    } catch (e) {
-      // no-op
-    }
+    // Initial pass for markup already present in the DOM.
+    sweep(document);
   }
 
   // Run after the DOM is ready so jQuery and Craft (both loaded via blocking

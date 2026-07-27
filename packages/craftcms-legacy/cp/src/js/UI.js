@@ -644,69 +644,99 @@ Craft.ui = {
   },
 
   createLightswitch: function (config) {
+    // Builds a <craft-switch> web component, mirroring the server-rendered
+    // CraftCms\Cms\Cp\Components\Lightswitch. The switch button and hidden
+    // input live in the light DOM so input namespacing and legacy
+    // Craft.FieldToggle hooks keep working.
     var value = config.value || '1';
     var indeterminateValue = config.indeterminateValue || '-';
+    var on = !!config.on;
+    var indeterminate = !on && !!config.indeterminate;
+    var size = config.small ? 'small' : 'medium';
 
-    var $container = $('<button/>', {
-      type: 'button',
-      class: 'lightswitch',
-      'data-value': value,
-      'data-indeterminate-value': indeterminateValue,
+    // Host <craft-switch> (mirrors Lightswitch::hostAttributes()).
+    var $switch = $('<craft-switch/>');
+    if (on) {
+      $switch.attr('checked', '');
+    }
+    if (indeterminate) {
+      $switch.attr('indeterminate', '');
+    }
+    if (config.disabled) {
+      $switch.attr('disabled', '');
+    }
+    if (config.small) {
+      $switch.attr('size', 'small');
+    }
+    if (value !== '1') {
+      $switch.attr('value', value);
+    }
+    if (indeterminateValue !== '-') {
+      $switch.attr('indeterminate-value', indeterminateValue);
+    }
+    if (config.label) {
+      $switch.attr('label', config.label);
+    }
+    if (config.onLabel && config.onLabel !== config.label) {
+      $switch.attr('on-label', config.onLabel);
+    }
+    if (config.offLabel) {
+      $switch.attr('off-label', config.offLabel);
+    }
+
+    // Switch button in the light DOM (mirrors Lightswitch::switchButtonHtml()).
+    var $button = $('<craft-switch-button/>', {
+      slot: 'input',
       id: config.id,
       role: 'switch',
-      'aria-checked': config.on
-        ? 'true'
-        : config.indeterminate
-          ? 'mixed'
-          : 'false',
-      'aria-labelledby': config.labelId,
-      'data-target': config.toggle,
-      'data-reverse-target': config.reverseToggle,
+      size: size,
+      'data-tag-name': 'craft-switch-button',
+      'aria-checked': on ? 'true' : indeterminate ? 'mixed' : 'false',
     });
-
-    if (config.on) {
-      $container.addClass('on');
-    } else if (config.indeterminate) {
-      $container.addClass('indeterminate');
+    if (on) {
+      $button.attr('checked', '');
     }
-
-    if (config.small) {
-      $container.addClass('small');
+    if (indeterminate) {
+      $button.attr('indeterminate', '');
     }
-
     if (config.disabled) {
-      $container.addClass('disabled');
+      $button.attr('disabled', '');
     }
+    if (config.labelId) {
+      $button.attr('aria-labelledby', config.labelId);
+    }
+    if (config.toggle) {
+      $button.attr('data-target', config.toggle);
+    }
+    if (config.reverseToggle) {
+      $button.attr('data-reverse-target', config.reverseToggle);
+    }
+    if (config.toggle || config.reverseToggle) {
+      $button.addClass('fieldtoggle');
+    }
+    $button.appendTo($switch);
 
-    $(
-      '<div class="lightswitch-container">' +
-        '<div class="handle"></div>' +
-        '</div>'
-    ).appendTo($container);
-
+    // Hidden input posting the state (mirrors Lightswitch::hiddenInputHtml()).
     if (config.name) {
       $('<input/>', {
         type: 'hidden',
+        slot: 'hidden-input',
         name: config.name,
-        value: config.on
-          ? value
-          : config.indeterminate
-            ? indeterminateValue
-            : '',
-        disabled: config.disabled,
-      }).appendTo($container);
+        value: on ? value : indeterminate ? indeterminateValue : '',
+      })
+        .prop('disabled', !!config.disabled)
+        .appendTo($switch);
     }
 
-    if (config.toggle || config.reverseToggle) {
-      $container.addClass('fieldtoggle');
-      new Craft.FieldToggle($container);
+    // Legacy Craft.LightSwitch invoked settings.onChange(on); the element
+    // dispatches a native change event that bubbles to the host.
+    if (config.onChange) {
+      $switch.on('change', function () {
+        config.onChange(this.on);
+      });
     }
 
-    new Craft.LightSwitch($container, {
-      onChange: config.onChange || $.noop,
-    });
-
-    return $container;
+    return $switch;
   },
 
   createLightswitchField: function (config) {
