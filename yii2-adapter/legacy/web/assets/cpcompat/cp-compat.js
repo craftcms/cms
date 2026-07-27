@@ -25,6 +25,7 @@
     registerLightSwitchClass($);
     registerPasswordInputClass($);
     registerColorInputClass($);
+    registerSlidePickerClass($);
     autoUpgrade($);
   }
 
@@ -499,6 +500,146 @@
     }
 
     Craft.ColorInput = ColorInput;
+  }
+
+  /**
+   * BC replacement for `Craft.SlidePicker`. Keeps the legacy constructor shape
+   * (`new Craft.SlidePicker(value, settings)`) while rendering a
+   * `<craft-slide-picker>` element under `this.$container`.
+   */
+  function registerSlidePickerClass($) {
+    var Craft = window.Craft;
+    if (!Craft || Craft.SlidePicker) {
+      return;
+    }
+
+    var warned = false;
+
+    function warnOnce() {
+      if (!warned) {
+        warned = true;
+        console.warn(
+          'Craft.SlidePicker is deprecated. Emit <craft-slide-picker> directly instead (or use Craft.ui.createSlidePicker).'
+        );
+      }
+    }
+
+    function SlidePicker(value, settings) {
+      if (!(this instanceof SlidePicker)) {
+        return new SlidePicker(value, settings);
+      }
+
+      warnOnce();
+
+      this.settings = $.extend(
+        {
+          min: 0,
+          max: 100,
+          step: 10,
+          valueLabel: null,
+          onChange: $.noop,
+          readOnly: false,
+          label: null,
+          describedBy: null,
+        },
+        settings || {}
+      );
+
+      this.value = null;
+      this.min = null;
+      this.max = null;
+      this.totalSteps = null;
+      this.$buttons = $();
+      this.$container = $('<craft-slide-picker/>');
+
+      this.refresh();
+      this.setValue(value, false);
+
+      var self = this;
+      this.$container.on('value-change', function (event) {
+        if (
+          event &&
+          event.originalEvent &&
+          event.originalEvent.detail &&
+          typeof event.originalEvent.detail.value === 'number'
+        ) {
+          self.setValue(event.originalEvent.detail.value);
+        }
+      });
+    }
+
+    SlidePicker.prototype.refresh = function () {
+      this.min = this._min();
+      this.max = this._max();
+      this.totalSteps = (this.max - this.min) / this.settings.step;
+
+      if (!Number.isInteger(this.totalSteps)) {
+        throw 'Invalid SlidePicker config';
+      }
+
+      var el = this.$container[0];
+      el.min = this.min;
+      el.max = this.max;
+      el.step = this.settings.step;
+      el.valueLabel =
+        this.settings.valueLabel ||
+        function (value) {
+          return String(value);
+        };
+      el.label = this.settings.label || Craft.t('app', 'Number of columns');
+
+      if (this.settings.describedBy) {
+        el.setAttribute('described-by', this.settings.describedBy);
+      } else {
+        el.removeAttribute('described-by');
+      }
+
+      if (this.settings.readOnly) {
+        el.setAttribute('read-only', '');
+      } else {
+        el.removeAttribute('read-only');
+      }
+
+      this.$buttons = this.$container.find('.slide-picker__segment');
+
+      if (this.value !== null) {
+        var value = this.value;
+        this.value = null;
+        this.setValue(value, false);
+      }
+    };
+
+    SlidePicker.prototype.setValue = function (value, triggerEvent) {
+      value = Math.max(Math.min(value, this.max), this.min);
+      value = Math.round(value / this.settings.step) * this.settings.step;
+
+      if (this.value === (this.value = value)) {
+        return;
+      }
+
+      this.$container[0].value = this.value;
+      this.$buttons = this.$container.find('.slide-picker__segment');
+
+      if (triggerEvent !== false) {
+        this.settings.onChange(value);
+      }
+    };
+
+    SlidePicker.prototype._min = function () {
+      if (typeof this.settings.min === 'function') {
+        return this.settings.min();
+      }
+      return this.settings.min;
+    };
+
+    SlidePicker.prototype._max = function () {
+      if (typeof this.settings.max === 'function') {
+        return this.settings.max();
+      }
+      return this.settings.max;
+    };
+
+    Craft.SlidePicker = SlidePicker;
   }
 
   /**

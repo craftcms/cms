@@ -816,6 +816,85 @@ Craft.ui = {
     );
   },
 
+  createSlidePicker: function (config) {
+    // Builds a <craft-slide-picker> web component directly (the same element
+    // Dashboard/field-layout-designer emit), replacing the legacy Craft.SlidePicker
+    // JS. A hidden input carries the value for form posting.
+    config = config || {};
+    const min = typeof config.min === 'function' ? config.min() : config.min ?? 0;
+    const max = typeof config.max === 'function' ? config.max() : config.max ?? 100;
+    const step = typeof config.step !== 'undefined' ? config.step : 10;
+    const value = typeof config.value === 'number' ? config.value : min;
+    const readOnly = !!(config.readOnly || config.disabled || config.static);
+
+    const $el = $('<craft-slide-picker/>');
+    const el = $el[0];
+    el.min = min;
+    el.max = max;
+    el.step = step;
+    el.value = value || 0;
+    el.label = config.label || Craft.t('app', 'Number of columns');
+    el.valueLabel =
+      config.valueLabel ||
+      ((value) => {
+        return `${value}`;
+      });
+    if (config.describedBy) {
+      el.setAttribute('described-by', config.describedBy);
+    }
+    if (readOnly) {
+      el.setAttribute('read-only', '');
+    }
+    if (config.id) {
+      $el.attr('id', config.id);
+    }
+    if (config.class) {
+      $el.addClass(config.class);
+    }
+
+    let $input = null;
+    if (config.name) {
+      $input = $('<input/>', {
+        type: 'hidden',
+        name: config.name,
+        value: el.value,
+      })
+        .prop('disabled', !!config.disabled)
+        .appendTo($el);
+    }
+
+    $el.on('value-change', (event) => {
+      const value = event.originalEvent?.detail?.value;
+      if (typeof value !== 'number') {
+        return;
+      }
+      if ($input) {
+        $input.val(value);
+      }
+      if (config.onChange) {
+        config.onChange(value);
+      }
+    });
+
+    return $el;
+  },
+
+  createSlidePickerField: function (config) {
+    if (!config.id) {
+      config.id = 'slidepicker' + Math.floor(Math.random() * 1000000000);
+    }
+    if (!config.labelId) {
+      config.labelId = `${config.id}-label`;
+    }
+    if (!config.describedBy) {
+      config.describedBy = config.labelId;
+    }
+
+    return this.createField(this.createSlidePicker(config), config).addClass(
+      'slidepicker-field'
+    );
+  },
+
   createColorInput: function (config) {
     // Builds a <craft-input-color> web component (mirrors the server-rendered
     // CraftCms\Cms\Cp\Components\InputColor) — a hex input paired with a native
