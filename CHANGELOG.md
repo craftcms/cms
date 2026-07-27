@@ -533,7 +533,7 @@ Craft’s Mutex classes have been deprecated. [Laravel’s atomic locking](https
 
 ##### Events
 
-- Deprecated `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES`. `CraftCms\Cms\Dashboard\WidgetTypes::register()` should be used instead.
+- Deprecated `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES`. `CraftCms\Cms\Dashboard\Events\WidgetTypesResolving` should be used instead.
 - Deprecated `craft\events\WidgetEvent` in favor of the following new events:
   - `craft\services\Dashboard::EVENT_BEFORE_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaving`
   - `craft\services\Dashboard::EVENT_AFTER_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaved`
@@ -952,7 +952,7 @@ Craft 6 introduces a new validation system that uses Laravel’s Validator inste
 - Deprecated `craft\events\CreateFieldLayoutFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating` should be used instead.
 - Deprecated `craft\events\DefineFieldLayoutCustomFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving` should be used instead.
 - Deprecated `craft\events\DefineFieldLayoutElementsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving` should be used instead.
-- Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\NativeFields` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving` should be used instead.
 - Deprecated `craft\events\DefineShowFieldLayoutComponentInFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving` should be used instead.
 - Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving` should be used instead.
 
@@ -1397,13 +1397,14 @@ Moved the following controllers:
 - Added `CraftCms\Cms\View\DeltaRegistry`.
 - Added `CraftCms\Cms\Support\Facades\DeltaRegistry`.
 - Added `CraftCms\Cms\View\TemplateMode` enum.
-- Added `CraftCms\Cms\View\TemplateRoots`.
+- Added `CraftCms\Cms\View\Events\CpTemplateRootsResolving`.
+- Added `CraftCms\Cms\View\Events\SiteTemplateRootsResolving`.
 - Added `CraftCms\Cms\View\TemplateCaches`.
 - Added `CraftCms\Cms\View\CacheCollectors\DependencyCollector`.
 - Added `CraftCms\Cms\View\CacheCollectors\ResourceCollector`.
 - Added `CraftCms\Cms\View\Contracts\CacheCollectorInterface`.
 - Added `CraftCms\Cms\View\Data\TemplateCacheContext`.
-- Added `CraftCms\Cms\View\TemplateCacheCollectors`.
+- Added `CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving`.
 - Deprecated `craft\services\TemplateCaches`. `CraftCms\Cms\View\TemplateCaches` should be used instead.
 - Deprecated `craft\web\View::registerJs()`. `CraftCms\Cms\View\HtmlStack::js()` should be used instead.
 - Deprecated `craft\web\View::registerJsWithVars()`. `CraftCms\Cms\View\HtmlStack::jsWithVars()` should be used instead.
@@ -1446,8 +1447,8 @@ Moved the following controllers:
 - Deprecated `craft\web\View::getTemplatesPath()`. `CraftCms\Cms\View\TemplateMode::templatesPath()` should be used instead.
 - Deprecated `craft\web\View::getCpTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
 - Deprecated `craft\web\View::getSiteTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
-- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\TemplateRoots::register()` should be used instead.
-- Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\TemplateRoots::register()` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\CpTemplateRootsResolving` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\SiteTemplateRootsResolving` should be used instead.
 - Deprecated `craft\web\View::registerDeltaName()`. `CraftCms\Cms\View\DeltaRegistry::registerName()` should be used instead.
 - Deprecated `craft\web\View::getDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getNames()` should be used instead.
 - Deprecated `craft\web\View::getModifiedDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getModifiedNames()` should be used instead.
