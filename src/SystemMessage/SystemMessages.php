@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage;
 
+use Closure;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Tpetry\QueryExpressions\Language\CaseGroup;
@@ -19,13 +18,47 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
-use function CraftCms\Cms\t;
-
-#[Singleton]
+/**
+ * Manages system messages and registers additional lazily resolved messages.
+ *
+ * ```php
+ * public function boot(SystemMessages $systemMessages): void
+ * {
+ *     $systemMessages->register('order_shipped', fn () => new SystemMessage([
+ *         'key' => 'order_shipped',
+ *         'heading' => 'Order shipped',
+ *         'subject' => 'Your order has shipped',
+ *         'body' => 'Your order is on its way.',
+ *     ]));
+ * }
+ * ```
+ */
+#[Scoped]
 class SystemMessages
 {
     /** @var Collection<SystemMessage>|null */
     private ?Collection $defaultMessages = null;
+
+    public function __construct(
+        private readonly SystemMessageCatalog $messageCatalog,
+    ) {}
+
+    /** @param Closure $resolve A container-invoked factory that returns a system message. */
+    public function register(string $key, Closure $resolve): void
+    {
+        $this->messageCatalog->register($key, $resolve);
+    }
+
+    public function remove(string ...$keys): void
+    {
+        $this->messageCatalog->remove(...$keys);
+    }
+
+    /** @return Collection<string, SystemMessage> */
+    public function messages(): Collection
+    {
+        return $this->messageCatalog->messages();
+    }
 
     /**
      * Returns all the default system email messages, without subject/body overrides.
@@ -38,57 +71,7 @@ class SystemMessages
             return $this->defaultMessages;
         }
 
-        // If the current language isn't one of the site's languages, switch to the primary site's language
-        $language = app()->getLocale();
-        if (I18N::getSiteLocaleIds()->doesntContain($language)) {
-            app()->setLocale(Sites::getPrimarySite()->getLanguage());
-        }
-
-        $messages = collect([
-            new SystemMessage([
-                'key' => 'account_activation',
-                'heading' => t('account_activation_heading'),
-                'subject' => t('account_activation_subject'),
-                'body' => t('account_activation_body'),
-            ]),
-            new SystemMessage([
-                'key' => 'verify_new_email',
-                'heading' => t('verify_new_email_heading'),
-                'subject' => t('verify_new_email_subject'),
-                'body' => t('verify_new_email_body'),
-            ]),
-            new SystemMessage([
-                'key' => 'forgot_password',
-                'heading' => t('forgot_password_heading'),
-                'subject' => t('forgot_password_subject'),
-                'body' => t('forgot_password_body'),
-            ]),
-            new SystemMessage([
-                'key' => 'test_email',
-                'heading' => t('test_email_heading'),
-                'subject' => t('test_email_subject'),
-                'body' => t('test_email_body'),
-            ]),
-        ]);
-
-        event($event = new SystemMessagesResolving($messages));
-
-        // Sort them all by key
-        $messages = $event->messages
-            ->keyBy('key')
-            ->sortBy('key');
-
-        // Make sure they're SystemMessage objects
-        foreach ($messages as $key => $message) {
-            if (is_array($message)) {
-                $messages[$key] = new SystemMessage($message);
-            }
-        }
-
-        // Put the original language back
-        app()->setLocale($language);
-
-        return $this->defaultMessages = $messages;
+        return $this->defaultMessages = $this->messages();
     }
 
     /**

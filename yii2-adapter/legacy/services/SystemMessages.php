@@ -8,9 +8,7 @@
 namespace craft\services;
 
 use craft\events\RegisterEmailMessagesEvent;
-use CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
-use Illuminate\Support\Facades\Event;
 use yii\base\Component;
 
 /**
@@ -125,25 +123,5 @@ class SystemMessages extends Component
         app(\CraftCms\Cms\SystemMessage\SystemMessages::class)->saveMessage($message, $language);
 
         return true;
-    }
-
-    public static function registerEvents(): void
-    {
-        Event::listen(SystemMessagesResolving::class, function(SystemMessagesResolving $event) {
-            $messages = $event->messages->map(function(SystemMessage $message) {
-                return $message->toArray();
-            })->all();
-
-            $yiiEvent = new RegisterEmailMessagesEvent(['messages' => $messages]);
-
-            app('Craft')->getSystemMessages()->trigger(self::EVENT_REGISTER_MESSAGES, $yiiEvent);
-
-            $event->messages = collect($yiiEvent->messages)->map(function($message) {
-                return match (true) {
-                    is_array($message) => new SystemMessage($message),
-                    default => $message,
-                };
-            });
-        });
     }
 }

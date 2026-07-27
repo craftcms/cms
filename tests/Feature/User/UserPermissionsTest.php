@@ -7,6 +7,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
@@ -23,6 +24,26 @@ beforeEach(function () {
 
 test('getAllPermissions', function () {
     expect($this->userPermissions->getAllPermissions())->not()->toBeEmpty();
+});
+
+test('permission groups can be registered and removed', function () {
+    $this->userPermissions->registerPermissionGroup('plugin:modern', fn () => new PermissionGroup(
+        handle: 'plugin:modern',
+        heading: 'Modern plugin',
+        permissions: collect([new Permission('manageModernPlugin', 'Manage modern plugin')]),
+    ));
+
+    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeTrue();
+
+    app()->forgetScopedInstances();
+    $this->userPermissions = app(UserPermissions::class);
+
+    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeTrue();
+
+    $this->userPermissions->removePermissionGroups('plugin:modern');
+    $this->userPermissions->reset();
+
+    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeFalse();
 });
 
 test('getAllPermissions contains headings', function (string $heading) {
@@ -48,6 +69,17 @@ test('getAllPermissions contains headings', function (string $heading) {
     'Volume - Assets',
     'Utilities',
 ]);
+
+test('permission group handles are independent from display headings', function () {
+    $firstSection = Section::factory()->create(['name' => 'Shared heading']);
+    $secondSection = Section::factory()->create(['name' => 'Shared heading']);
+
+    $handles = ["section:$firstSection->uid", "section:$secondSection->uid"];
+    $groups = $this->userPermissions->getAllPermissions()->whereIn('handle', $handles);
+
+    expect($groups)->toHaveCount(2)
+        ->and($groups->pluck('heading')->unique())->toHaveCount(1);
+});
 
 test('getAssignablePermissions', function () {
     $admin = User::find()->one();

@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\PlainText;
-use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -17,11 +16,11 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
+use CraftCms\Cms\FieldLayout\NativeFields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Support\Facades\Event;
 
 function fluentField(string $handle = 'body'): PlainText
 {
@@ -37,11 +36,13 @@ it('creates a layout for an element type', function () {
 });
 
 it('uses the translated default tab name', function () {
-    Event::listen(NativeFieldsResolving::class, function (NativeFieldsResolving $event) {
-        $event->fields[] = new TextField([
+    app(NativeFields::class)->register('translated-default-tab-test', function (FieldLayout $fieldLayout, array $fields) {
+        $fields[] = new TextField([
             'attribute' => 'title',
             'mandatory' => true,
         ]);
+
+        return $fields;
     });
 
     I18N::withLocale('de', null, function () {
@@ -306,11 +307,13 @@ it('removes a field from every tab', function () {
 });
 
 it('removes tabs and rehomes mandatory fields', function () {
-    Event::listen(NativeFieldsResolving::class, function (NativeFieldsResolving $event) {
-        $event->fields[] = new TextField([
+    app(NativeFields::class)->register('rehome-mandatory-fields-test', function (FieldLayout $fieldLayout, array $fields) {
+        $fields[] = new TextField([
             'attribute' => 'title',
             'mandatory' => true,
         ]);
+
+        return $fields;
     });
 
     $layout = new FieldLayout;

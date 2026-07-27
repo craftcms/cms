@@ -2,19 +2,15 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
-use CraftCms\Cms\Utility\Events\UtilitiesResolving;
-use CraftCms\Cms\Utility\Utilities\PhpInfo;
-use Illuminate\Contracts\Events\Dispatcher;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Collection;
 
 beforeEach(function () {
     app()->forgetInstance(TestPlugin::class);
-});
-
-afterEach(function () {
-    app(Dispatcher::class)->forget(UtilitiesResolving::class);
-    app()->forgetInstance(TestPlugin::class);
+    Volumes::shouldReceive('getAllVolumes')->andReturn(Collection::make());
 });
 
 it('registers configured utility types', function () {
@@ -23,25 +19,26 @@ it('registers configured utility types', function () {
         'name' => 'Test Plugin',
     ]);
 
-    $plugin->setUtilities([PhpInfo::class]);
+    $plugin->setUtilities([TestPluginUtilityType::class]);
     $plugin->bootHasUtilities();
 
-    $event = new UtilitiesResolving(new Collection);
-    event($event);
-
-    expect($event->types->all())->toContain(PhpInfo::class);
+    expect(app(Utilities::class)->getAllUtilityTypes())->toContain(TestPluginUtilityType::class);
 });
 
-it('does not register utility listeners when none are configured', function () {
-    $plugin = TestPlugin::create([
-        'handle' => 'test-plugin',
-        'name' => 'Test Plugin',
-    ]);
+class TestPluginUtilityType extends Utility
+{
+    public static function displayName(): string
+    {
+        return 'Test plugin utility';
+    }
 
-    $plugin->bootHasUtilities();
+    public static function id(): string
+    {
+        return 'test-plugin-utility';
+    }
 
-    $event = new UtilitiesResolving(new Collection);
-    event($event);
-
-    expect($event->types->all())->toBe([]);
-});
+    public static function contentHtml(): string
+    {
+        return '';
+    }
+}

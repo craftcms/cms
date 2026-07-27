@@ -15,10 +15,11 @@ This is a large codebase with some large files. Search narrowly before reading f
 ### PHP
 
 ```bash
-composer tests                # Run all Pest tests
+composer tests                # Run main tests only (tests/)
 composer tests-adapter        # Run yii2-adapter tests only
-./vendor/bin/pest path/to/TestFile.php          # Run a single test file
-./vendor/bin/pest --filter "test description"   # Run tests matching a name
+./vendor/bin/pest tests/path/to/TestFile.php     # Run a main test file
+composer tests-adapter -- yii2-adapter/tests-laravel/path/to/TestFile.php
+composer tests-adapter -- --filter "test description"
 composer fix-cs               # Run Rector + Pint + ECS (auto-fixes code style)
 composer phpstan              # Run PHPStan static analysis (level 5)
 composer ci                   # Full CI pipeline: pint, rector, phpstan, tests, tests-adapter
@@ -44,6 +45,7 @@ npm run test:ui       # Vitest tests for the @craftcms/ui package
 
 ## Testing
 
+- Main and adapter tests are separate Pest suites. Never mix `tests/...` and `yii2-adapter/tests-laravel/...` in one Pest invocation. Run adapter tests through `composer tests-adapter`; passing the adapter PHPUnit configuration alone is insufficient because Pest also needs the adapter test directory to load `yii2-adapter/tests-laravel/Pest.php`.
 - Pest tests using `tests/TestCase.php` or `yii2-adapter/tests-laravel/TestCase.php` share a database lock. If another process has the lock, the next process will wait and print `Another Pest process is already using the shared test database. Waiting for the lock...`.
 - `tests/Unit/` tests using `UnitTestCase` do not take that lock and can still run concurrently.
 - When writing tests, prefer real code paths, or use Laravel facades to set up service mocks.
