@@ -37,8 +37,9 @@ export default class CraftLoginResetPassword extends LitElement {
   }
 
   #setError(message: string) {
-    this._error = message.trim();
-    useAnnouncer().announce(message);
+    const trimmedMessage = message.trim();
+    this._error = trimmedMessage;
+    useAnnouncer().announce(trimmedMessage);
   }
 
   async #onSubmit(event: Event) {
