@@ -20,6 +20,7 @@ import './modules/slideout/index';
 import './modules/auth-method-setup/index';
 import './modules/input-generators/index';
 import './modules/icon-picker/index';
+import './modules/field-toggle/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 

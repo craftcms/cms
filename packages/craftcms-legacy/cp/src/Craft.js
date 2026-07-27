@@ -57,7 +57,6 @@ import './js/EntrySelectInput.js';
 import './js/EntryMover.js';
 import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
-import './js/FieldToggle.js';
 import './js/Grid.js';
 import './js/ImageUpload.js';
 import './js/IntervalManager.js';
