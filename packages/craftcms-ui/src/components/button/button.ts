@@ -1,6 +1,7 @@
 import {LionButtonSubmit} from '@lion/ui/button.js';
 import {html, nothing} from 'lit';
-import {property, state} from 'lit/decorators.js';
+import {property, state, query} from 'lit/decorators.js';
+import {t} from '@src/utilities/translate';
 import styles from './button.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
@@ -62,7 +63,23 @@ export default class CraftButton extends LionButtonSubmit {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
       this.syncLinkHostState();
+    } else if (changedProperties.has('loading')) {
+      if (this.loading) {
+        this.announceLoading();
+      }
     }
+  }
+
+  private announceLoading() {
+    this.liveRegion.textContent = t('Loading');
+
+    if (this.announcementTimer) {
+      clearTimeout(this.announcementTimer);
+    }
+
+    this.announcementTimer = setTimeout(() => {
+      this.liveRegion.textContent = '';
+    }, 5000);
   }
 
   private syncLinkHostState() {
@@ -156,10 +173,14 @@ export default class CraftButton extends LionButtonSubmit {
   @property({attribute: 'icon-position'}) iconPosition: 'prefix' | 'suffix' =
     'prefix';
 
+  @query('[data-live-region]') liveRegion: HTMLElement;
+
   @state()
   private _hasAccessibilityError: boolean = false;
 
   private linkHostStateApplied = false;
+
+  private announcementTimer: ReturnType<typeof setTimeout> | null = null;
 
   private get isLink(): boolean {
     return !!this.href && !this.disabled;
@@ -200,6 +221,7 @@ export default class CraftButton extends LionButtonSubmit {
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`
         : nothing}
+      <span role="status" style="outline: 1px solid black; padding: 3px; background-color: turquoise;" data-live-region></span>
     `;
 
     if (this.isLink) {
