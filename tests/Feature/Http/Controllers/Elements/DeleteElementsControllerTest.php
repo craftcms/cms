@@ -78,6 +78,7 @@ describe('deletionBlockers', function () {
             'hardDelete' => true,
         ])->assertOk()
             ->assertJsonCount(1, 'blockers')
+            ->assertJsonPath('totalElements', 1)
             ->assertJsonPath('blockers.0.summary', 'Active blocker')
             ->assertJsonPath('blockers.0.details', '<p>Details</p>')
             ->assertJsonPath('blockers.0.actions.0.label', 'Resolve')
