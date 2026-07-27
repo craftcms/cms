@@ -838,39 +838,16 @@ Craft.ui = {
   },
 
   createColorInput: function (config) {
+    // Builds a <craft-input-color> web component (mirrors the server-rendered
+    // CraftCms\Cms\Cp\Components\InputColor) — a hex input paired with a native
+    // color-picker swatch, replacing the legacy .color-container markup + the
+    // Craft.ColorInput JS. The native input lives in the light DOM as the
+    // component's form control.
     const id = config.id || 'color' + Math.floor(Math.random() * 1000000000);
-    const containerId = config.containerId || id + '-container';
     const name = config.name || null;
     const value = config.value || null;
-    const small = config.small || false;
     const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
     const disabled = config.disabled || false;
-
-    const $container = $('<div/>', {
-      id: containerId,
-      class: 'flex color-container',
-    });
-
-    const $colorPreviewContainer = $('<div/>', {
-      class: 'color static' + (small ? ' small' : ''),
-    }).appendTo($container);
-
-    const $colorPreview = $('<div/>', {
-      class: 'color-preview',
-      style: config.value ? {backgroundColor: config.value} : null,
-    }).appendTo($colorPreviewContainer);
-
-    const $inputContainer = $('<div/>', {
-      class: 'color-input-container',
-    })
-      .append(
-        $('<div/>', {
-          class: 'color-hex-indicator light code',
-          'aria-hidden': 'true',
-          text: '#',
-        })
-      )
-      .appendTo($container);
 
     const $input = this.createTextInput({
       id: id,
@@ -881,15 +858,28 @@ Craft.ui = {
       autofocus: autofocus,
       disabled: disabled,
       'aria-label': Craft.t('app', 'Color hex value'),
-    }).appendTo($inputContainer);
+    });
 
-    new Craft.ColorInput($container);
-    return $container;
+    const $el = $('<craft-input-color/>');
+    // Lion pushes these control props onto the slotted input on upgrade, so they
+    // must live on the host too (mirrors InputColor::hostAttributes()).
+    if (name) {
+      $el.attr('name', name);
+    }
+    if (this.getDisabledValue(disabled)) {
+      $el.attr('disabled', '');
+    }
+    if (config.presets && config.presets.length) {
+      $el.attr('presets', JSON.stringify(config.presets));
+    }
+
+    $input.attr('slot', 'input').appendTo($el);
+
+    return $el;
   },
 
   createColorField: function (config) {
     config.fieldset = true;
-    o;
     if (!config.id) {
       config.id = 'color' + Math.floor(Math.random() * 1000000000);
     }

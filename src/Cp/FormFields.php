@@ -14,6 +14,7 @@ use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Input;
+use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
@@ -640,7 +641,33 @@ readonly class FormFields
 
     public static function colorHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/color', $config);
+        return self::colorFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy color config surface onto the {@see InputColor} component
+     * — the PHP twin of the `_includes/forms/color` glue template. The value is
+     * stored as bare hex (the component renders its own leading `#`, swatch, and
+     * native picker, replacing the legacy Craft.ColorInput markup + JS), and
+     * `presets` pass through to the picker datalist. The legacy `.color-input`
+     * input class is preserved for any CSS/JS still keyed on it.
+     */
+    public static function colorFromConfig(array $config): InputColor
+    {
+        $value = $config['value'] ?? null;
+        $classes = Html::explodeClass($config['class'] ?? []);
+        $classes[] = 'color-input';
+
+        $input = InputColor::make();
+        self::textFromConfig(array_merge($config, [
+            'value' => $value !== null ? ltrim((string) $value, '#') : null,
+            'size' => $config['size'] ?? 10,
+            'class' => $classes,
+            'autocorrect' => false,
+            'autocapitalize' => false,
+        ]), $input);
+
+        return $input->presets($config['presets'] ?? []);
     }
 
     public static function colorFieldHtml(array $config): string
@@ -648,7 +675,10 @@ readonly class FormFields
         $config['id'] ??= 'color'.mt_rand();
         $config['fieldset'] = true;
 
-        return self::fieldHtml('template:_includes/forms/color', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::colorFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     public static function colorSelectFieldHtml(array $config): string

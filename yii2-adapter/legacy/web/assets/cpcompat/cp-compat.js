@@ -24,6 +24,7 @@
     registerLightswitch($);
     registerLightSwitchClass($);
     registerPasswordInputClass($);
+    registerColorInputClass($);
     autoUpgrade($);
   }
 
@@ -430,6 +431,70 @@
     };
 
     Craft.PasswordInput = PasswordInput;
+  }
+
+  /**
+   * BC replacement for the removed `Craft.ColorInput` class. Warns once, then
+   * upgrades a legacy `.color-container` (its `.color-input` text field, swatch,
+   * and `#` indicator) into a `<craft-input-color>`, which provides the picker,
+   * swatch, and hex handling natively — so `new Craft.ColorInput(container,
+   * {presets})` keeps producing a working color input.
+   */
+  function registerColorInputClass($) {
+    var Craft = window.Craft;
+    if (!Craft || Craft.ColorInput) {
+      return;
+    }
+
+    var warned = false;
+
+    function ColorInput(container, settings) {
+      if (!(this instanceof ColorInput)) {
+        return new ColorInput(container, settings);
+      }
+      if (!warned) {
+        warned = true;
+        console.warn(
+          'Craft.ColorInput is deprecated. Emit <craft-input-color> directly instead.'
+        );
+      }
+
+      this.settings = $.extend({presets: []}, settings || {});
+
+      var $container = $(container);
+      this.$container = $container;
+      var $input = $container.find('.color-input').first();
+      this.$input = $input;
+
+      // Already upgraded (server-rendered craft-input-color)? Nothing to do.
+      if ($input.closest('craft-input-color').length) {
+        return;
+      }
+
+      var $el = $('<craft-input-color/>');
+      var el = $input[0];
+      if (el) {
+        // Lion pushes these control props onto the slotted input on upgrade, so
+        // mirror them onto the host (see InputColor::hostAttributes()). The
+        // legacy .color-input value is already bare hex (# stripped).
+        if (el.name) {
+          $el.attr('name', el.name);
+        }
+        if (el.disabled) {
+          $el.attr('disabled', '');
+        }
+      }
+      if (this.settings.presets && this.settings.presets.length) {
+        $el.attr('presets', JSON.stringify(this.settings.presets));
+      }
+
+      $input.attr('slot', 'input').appendTo($el);
+      $container.replaceWith($el);
+
+      this.$el = $el;
+    }
+
+    Craft.ColorInput = ColorInput;
   }
 
   /**
