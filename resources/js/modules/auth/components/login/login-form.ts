@@ -208,7 +208,7 @@ export default class CraftLoginForm extends LitElement {
   #setError(message: string) {
     const { announce } = useAnnouncer();
     this._error = message.trim();
-    announce(message);
+    announce(this._error);
   }
 
   #handleSuccess(returnUrl: string) {
