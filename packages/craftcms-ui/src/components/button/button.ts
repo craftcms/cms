@@ -64,7 +64,9 @@ export default class CraftButton extends LionButtonSubmit {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
       this.syncLinkHostState();
-    } else if (changedProperties.has('loading')) {
+    }
+
+    if (changedProperties.has('loading')) {
       if (this.loading) {
         this.announceLoading();
       }
