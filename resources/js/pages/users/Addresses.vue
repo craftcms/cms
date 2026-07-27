@@ -1,9 +1,10 @@
 <script setup lang="ts">
-  import {usePage} from '@inertiajs/vue3';
-  import {t} from '@craftcms/ui';
-  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
+  import {router, usePage} from '@inertiajs/vue3';
+  import {attrs, t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Pane from '@/common/components/Pane.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   defineOptions({
     inheritAttrs: false,
@@ -14,14 +15,143 @@
       details?: string | null;
     };
 
-  const props = usePage<UserAddressesPageProps>().props;
+  // Read props through the page object (not a captured `page.props`
+  // reference) so partial reloads — which replace `page.props` wholesale —
+  // stay reactive.
+  const page = usePage<UserAddressesPageProps>();
+  const props = computed(() => page.props);
+
+  // `data` is a mode-discriminated union; only cards mode carries `elements`.
+  const cardsData = computed(() =>
+    page.props.data.mode === 'cards' ? page.props.data : null
+  );
+
+  const createBtn = ref<HTMLElement | null>(null);
+  const creating = ref(false);
+
+  // Mirrors the legacy manager's `canCreate()`: permission, plus room under
+  // `maxElements`.
+  const canCreateMore = computed(() => {
+    const data = cardsData.value;
+
+    if (!data?.canCreate) {
+      return false;
+    }
+
+    return !data.maxElements || data.elements.length < data.maxElements;
+  });
+
+  /**
+   * The legacy `NestedElementManager.createElement()` flow: create a fresh
+   * nested element via `elements/create`, edit it in an element editor
+   * slideout, and refresh the cards once it's saved.
+   */
+  const createNestedElement = async () => {
+    const data = cardsData.value;
+
+    if (!data || creating.value || !canCreateMore.value) {
+      return;
+    }
+
+    creating.value = true;
+
+    try {
+      const {data: response} = await Craft.sendActionRequest(
+        'POST',
+        'elements/create',
+        {
+          data: {
+            elementType: data.elementType,
+            ownerId: data.ownerId,
+            fieldId: data.fieldId,
+            siteId: data.ownerSiteId,
+            // Grouped create attributes (arrays) drive a disclosure menu in
+            // the legacy manager; only a plain attributes object applies here.
+            ...(typeof data.createAttributes === 'object' &&
+            data.createAttributes !== null &&
+            !Array.isArray(data.createAttributes)
+              ? data.createAttributes
+              : {}),
+          },
+        }
+      );
+
+      const slideout = Craft.createElementEditor(data.elementType, {
+        siteId: response.element.siteId,
+        elementId: response.element.id,
+        draftId: response.element.draftId,
+        params: {fresh: 1},
+      });
+
+      slideout.on('submit', () => {
+        router.reload({only: ['data']});
+      });
+
+      slideout.on('close', () => {
+        createBtn.value?.focus();
+      });
+    } catch (error) {
+      Craft.cp?.displayError?.(
+        (error as {response?: {data?: {message?: string}}})?.response?.data
+          ?.message
+      );
+    } finally {
+      creating.value = false;
+    }
+  };
+
+  // Refresh the cards when an editor slideout saves an element.
+  const onElementSaved = () => {
+    router.reload({only: ['data']});
+  };
+
+  onMounted(() => {
+    window.addEventListener('craft:element-saved', onElementSaved);
+  });
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('craft:element-saved', onElementSaved);
+  });
 </script>
 
 <template>
   <Pane appearance="raised">
     <div class="grid gap-3">
       <h2 v-if="!props.showIndex" class="text-lg m-0!">{{ t('Addresses') }}</h2>
-      <HtmlFragmentRenderer :fragment="props.contentFragment" />
+
+      <div class="card-grid">
+        <template v-for="element in cardsData?.elements" :key="element.id">
+          <craft-card
+            v-bind="attrs(element.cardAttributes, {exclude: ['class']})"
+            :thumb-alignment="element.thumbAlignment"
+          >
+            <div slot="label">
+              <DynamicHtmlRenderer :html="element.cardLabelHtml" />
+            </div>
+            <div slot="actions">
+              <DynamicHtmlRenderer :html="element.cardActionsHtml" />
+            </div>
+            <div v-if="element.cardThumbHtml" slot="thumbnail">
+              <DynamicHtmlRenderer :html="element.cardThumbHtml" />
+            </div>
+            <DynamicHtmlRenderer :html="element.cardContentHtml" />
+          </craft-card>
+        </template>
+      </div>
+
+      <div v-if="cardsData?.canCreate" class="flex">
+        <craft-button
+          ref="createBtn"
+          class="add-btn"
+          icon="plus"
+          appearance="outline"
+          :loading="creating"
+          :disabled="!canCreateMore"
+          @click="createNestedElement"
+        >
+          {{ cardsData.createButtonLabel }}
+        </craft-button>
+      </div>
     </div>
   </Pane>
 
@@ -29,3 +159,17 @@
     <div v-html="props.details"></div>
   </LayoutSlot>
 </template>
+
+<style scoped lang="scss">
+  .card-grid {
+    display: grid;
+    gap: var(--c-spacing-md);
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  /* The dashed "add" affordance the legacy `.btn.add.icon.dashed` styles gave
+     the create button. */
+  .add-btn {
+    --c-button-border-style: dashed;
+  }
+</style>

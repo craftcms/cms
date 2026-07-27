@@ -1085,7 +1085,11 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         // "Edit" button
         const $editBtn = $element.find('.edit-btn');
         if ($editBtn.length) {
-          // Override the default event listener
+          // Strip the button's default `craft:edit-element` action — the
+          // manager opens the editor itself, with nested-draft handling the
+          // generic listener doesn't have.
+          $editBtn.removeAttr('action');
+          ($editBtn[0] as any).action = null;
           $editBtn.off('activate');
           $editBtn.on('activate', (ev: any) => {
             // focus on the button so that when the slideout is closed, it's returned to the button

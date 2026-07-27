@@ -28,7 +28,6 @@ use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
@@ -354,11 +353,11 @@ readonly class ElementHtml
 
         $attributes = $this->cardAttributes($element, $config);
 
-        $html = Html::beginTag('div', $attributes).
+        $html = Html::beginTag('craft-card', $attributes).
             $this->elementCardHeaderHtml($element, $config).
             $this->elementCardContentHtml($element, $config).
             $this->elementCardFooterHtml($element, $config).
-            Html::endTag('div'); // .card
+            Html::endTag('craft-card'); // .card
 
         event($event = new ElementCardHtmlResolving($element, $config['context'], $html));
 
@@ -374,32 +373,75 @@ readonly class ElementHtml
     {
         $config = $this->normalizeCardConfig($element, $config);
 
+        [$showEditButton, $editAction] = $this->cardEditButtonConfig($element, $config);
+
+        return Html::beginTag('div', ['class' => 'card-titlebar']).
+            $this->elementCardLabelHtml($element, $config).
+            Html::beginTag('div', ['class' => 'card-actions-container']).
+            Html::beginTag('div', ['class' => 'card-actions']).
+            ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
+            $this->cardActionsHtml($element, $config, $showEditButton, $editAction).
+            Html::endTag('div'). // .card-actions
+            Html::endTag('div'). // .card-actions-container
+            Html::endTag('div'); // .card-titlebar
+    }
+
+    /**
+     * Renders the label portion of an element’s card header: its icon, card
+     * title, and modified-status badge. Suited to a card component's `label`
+     * slot. Accepts the same `$config` settings as {@see elementCardHtml()}.
+     */
+    public function elementCardLabelHtml(ElementInterface $element, array $config = []): string
+    {
+        $icon = $element instanceof Iconic ? $element->getIcon() : null;
+        $title = $element->getCardTitle();
+
+        return Html::beginTag('div', [
+            'class' => ['flex', 'flex-nowrap', 'gap-1', 'grow-1', 'items-center'],
+        ]).
+            ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
+            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
+            Html::endTag('div'). // .flex
+            $this->cardModifiedStatusHtml($element);
+    }
+
+    /**
+     * Renders the actions portion of an element’s card header — the edit
+     * button, action menu, and (when sortable) drag handle — as a plain
+     * fragment, suited to a card component's `actions` slot. Accepts the
+     * same `$config` settings as {@see elementCardHtml()}.
+     */
+    public function elementCardActionsHtml(ElementInterface $element, array $config = []): string
+    {
+        $config = $this->normalizeCardConfig($element, $config);
+
+        [$showEditButton, $editAction] = $this->cardEditButtonConfig($element, $config);
+
+        return $this->cardActionsHtml($element, $config, $showEditButton, $editAction);
+    }
+
+    /**
+     * Resolves whether the card gets an edit button and, when it does, the
+     * `craft:edit-element` event action it should run — handled by the
+     * slideout module's window listener, which opens an element editor
+     * slideout (or the element's edit page on ctrl-click).
+     *
+     * @return array{0: bool, 1: array<string, mixed>|null} `[showEditButton, editAction]`
+     */
+    private function cardEditButtonConfig(ElementInterface $element, array $config): array
+    {
         $showEditButton = $config['showEditButton'] && Gate::check('view', $element);
 
-        $editId = null;
-        if ($showEditButton) {
-            $editId = sprintf('action-edit-%s', mt_rand());
-            HtmlStack::jsWithVars(fn ($id, $elementType, $settings, $cpEditUrl) => <<<JS
-$('#' + $id).on('activate', (ev) => {
-  if ($cpEditUrl && Garnish.isCtrlKeyPressed(ev.originalEvent)) {
-    window.open($cpEditUrl)
-  } else {
-    // focus on the button so that when the slideout is closed, it's returned to the button
-    $(ev.currentTarget).focus();
+        if (! $showEditButton) {
+            return [false, null];
+        }
 
-    const settings = $settings;
-    // if settings have draftId but the replaced card doesn't have the data-draft-id attribute anymore,
-    // remove the draftId from the settings before creating element editor, so the correct element can be retrieved
-    if (settings.draftId && !Garnish.hasAttr($(ev.currentTarget).parents('.card'), 'data-draft-id')) {
-      delete settings.draftId;
-    }
-    Craft.createElementEditor($elementType, settings)
-  }
-});
-JS, [
-                InputNamespace::namespaceId($editId),
-                $element::class,
-                [
+        return [true, [
+            'type' => 'event',
+            'name' => 'craft:edit-element',
+            'detail' => [
+                'elementType' => $element::class,
+                'settings' => [
                     'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
                     'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
                     'revisionId' => $element->revisionId,
@@ -407,36 +449,25 @@ JS, [
                     'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                 ],
                 'cpEditUrl' => $element->getCpEditUrl(),
-            ]);
-        }
+            ],
+        ]];
+    }
 
-        $icon = $element instanceof Iconic ? $element->getIcon() : null;
-        $title = $element->getCardTitle();
-
-        return Html::beginTag('div', ['class' => 'card-titlebar']).
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-nowrap', 'gap-1', 'items-center'],
-            ]).
-            ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
-            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
-            Html::endTag('div'). // .flex
-            $this->cardModifiedStatusHtml($element).
-            Html::beginTag('div', ['class' => 'card-actions-container']).
-            Html::beginTag('div', ['class' => 'card-actions']).
-            ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
-            ($showEditButton ? Button::make()
-                ->icon('edit')
-                ->appearance(Appearance::Plain)
-                ->size('small')
-                ->attributes([
-                    'class' => ['edit-btn'],
-                    'id' => $editId,
-                    'aria' => [
-                        'label' => mb_ucfirst(t('Edit {type}', [
-                            'type' => $element::lowerDisplayName(),
-                        ])),
-                    ],
-                ]) : '').
+    private function cardActionsHtml(ElementInterface $element, array $config, bool $showEditButton, ?array $editAction): string
+    {
+        return ($showEditButton ? Button::make()
+            ->icon('edit')
+            ->appearance(Appearance::Plain)
+            ->size('small')
+            ->action($editAction)
+            ->attributes([
+                'class' => ['edit-btn'],
+                'aria' => [
+                    'label' => mb_ucfirst(t('Edit {type}', [
+                        'type' => $element::lowerDisplayName(),
+                    ])),
+                ],
+            ]) : '').
             ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton, $this->nestedCardActionItems($element, $config)) : '').
             ($config['sortable'] ? Button::make()
                 ->icon('move')
@@ -448,10 +479,7 @@ JS, [
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
-                ]) : '').
-            Html::endTag('div'). // .card-actions
-            Html::endTag('div'). // .card-actions-container
-            Html::endTag('div'); // .card-titlebar
+                ]) : '');
     }
 
     /**
@@ -486,8 +514,15 @@ JS, [
             ($bodyContent !== '' ? Html::tag('div', $bodyContent, ['class' => 'card-body']) : '').
             Html::endTag('div'); // .card-content
 
-        $thumbHtml = $element->getThumbHtml(120);
-        $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
+        // Consumers that render the thumbnail themselves (e.g. a card
+        // component's `thumbnail` slot, via `elementCardThumbHtml()`) can
+        // opt out of the inline thumb.
+        if (! $config['withThumb']) {
+            return Html::beginTag('div', ['class' => 'card-main']).$contentHtml.Html::endTag('div');
+        }
+
+        $thumbHtml = $this->elementCardThumbHtml($element);
+        $thumbAlignment = $this->elementCardThumbAlignment($element);
 
         $html = Html::beginTag('div', ['class' => 'card-main']);
 
@@ -498,6 +533,27 @@ JS, [
         } // .card-main
 
         return $html.Html::endTag('div');
+    }
+
+    /**
+     * Renders an element card’s thumbnail, suited to a card component's
+     * `thumbnail` slot (pair with {@see elementCardThumbAlignment()}).
+     */
+    public function elementCardThumbHtml(ElementInterface $element): string
+    {
+        return $element->getThumbHtml(120) ?? '';
+    }
+
+    /**
+     * The card thumbnail alignment configured by the element’s field layout.
+     *
+     * @return 'start'|'end'
+     */
+    public function elementCardThumbAlignment(ElementInterface $element): string
+    {
+        $alignment = $element->getFieldLayout()?->getCardThumbAlignment();
+
+        return $alignment === 'start' ? 'start' : 'end';
     }
 
     /**
@@ -554,6 +610,7 @@ JS, [
             'showActionMenu' => false,
             'showNestedActions' => false,
             'showEditButton' => true,
+            'withThumb' => true,
             'sortable' => false,
         ];
 

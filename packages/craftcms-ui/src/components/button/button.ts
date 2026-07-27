@@ -7,6 +7,7 @@ import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
 import variantsStyles from '@src/styles/variants.styles';
+import {type BaseAction, normalizeAction, runAction} from '@src/actions';
 
 export const ButtonAppearance = {
   Solid: 'solid',
@@ -56,7 +57,34 @@ export default class CraftButton extends LionButtonSubmit {
     }
     super.connectedCallback();
     this.syncLinkHostState();
+    this.addEventListener('click', this.#handleActionClick);
   }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('click', this.#handleActionClick);
+  }
+
+  #handleActionClick = async (event: Event) => {
+    const action = normalizeAction(this.action);
+
+    if (!action || this.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+
+    // Only show the spinner for http requests, matching craft-action-item.
+    if (action.type === 'http') {
+      this.loading = true;
+    }
+
+    try {
+      await runAction(action, {trigger: this, sourceEvent: event});
+    } finally {
+      this.loading = false;
+    }
+  };
 
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
@@ -139,6 +167,15 @@ export default class CraftButton extends LionButtonSubmit {
 
   /** Icon to be rendered within the content. */
   @property() icon: string | null = null;
+
+  /**
+   * Declarative action to run when the button is clicked, as a JSON `action`
+   * attribute — the same primitives `craft-action-item` supports
+   * (`http`/`event`/`clipboard`/`download`, run via `runAction()`). A raw
+   * JSON string is accepted too (Vue's in-DOM compiler sets attribute
+   * values as string properties on upgraded elements).
+   */
+  @property({type: Object}) action: BaseAction | string | null = null;
 
   /** When set, the button renders as a link to this URL. */
   @property({reflect: true}) href: string | null = null;

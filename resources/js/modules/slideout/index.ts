@@ -1,4 +1,4 @@
-import {Garnish, HUD} from '@craftcms/garnish';
+import {Garnish, HUD, isCtrlKeyPressed} from '@craftcms/garnish';
 import {compatify} from '@craftcms/garnish/compat';
 import {Slideout, type SlideoutSettings} from './slideout';
 import {
@@ -63,6 +63,50 @@ Object.assign(CompatElementEditorSlideout, {
 });
 
 craft.ElementEditorSlideout = CompatElementEditorSlideout;
+
+// `craft:edit-element` — the action-system event carried by element edit
+// buttons (see `ElementHtml::cardEditButtonConfig()`). Opens an element
+// editor slideout for the element, or its edit page in a new window on
+// ctrl-click. Contexts that need richer editor wiring (e.g. the nested
+// element manager's draft handling) strip the button's `action` and attach
+// their own behavior instead.
+window.addEventListener('craft:edit-element', ((ev: CustomEvent) => {
+  const {elementType, settings, cpEditUrl, trigger, sourceEvent} =
+    ev.detail ?? {};
+
+  if (cpEditUrl && sourceEvent && isCtrlKeyPressed(sourceEvent)) {
+    window.open(cpEditUrl);
+    return;
+  }
+
+  // Focus the trigger so that when the slideout is closed, focus is
+  // returned to it.
+  (trigger as HTMLElement | undefined)?.focus();
+
+  const editorSettings = {...(settings ?? {}), elementType};
+  // If the settings have a draftId but the (possibly since-replaced) card no
+  // longer has a `data-draft-id` attribute, drop it so the editor retrieves
+  // the current element.
+  if (
+    editorSettings.draftId &&
+    trigger instanceof Element &&
+    !trigger.closest('[data-draft-id]')
+  ) {
+    delete editorSettings.draftId;
+  }
+
+  const slideout = new ElementEditorSlideout(null, editorSettings);
+
+  // Re-announce saves as a window event, so hosts that render element data
+  // themselves (e.g. Inertia pages) can refresh it.
+  slideout.on('submit', (submitEv: any) => {
+    window.dispatchEvent(
+      new CustomEvent('craft:element-saved', {
+        detail: {element: submitEv?.response?.data?.element ?? null},
+      })
+    );
+  });
+}) as EventListener);
 
 // Reposition any open HUDs whenever a slideout opens or closes. Registered
 // against the modern `Slideout` class: the class-event dispatch is an

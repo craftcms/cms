@@ -17,7 +17,7 @@ export default class CraftEmpty extends LitElement {
       }
 
       .cp-empty__content {
-        display: grid; 
+        display: grid;
         gap: var(--c-spacing-md);
         justify-items: center;
         max-width: 60ch;

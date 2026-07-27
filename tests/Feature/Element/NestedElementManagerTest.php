@@ -300,6 +300,105 @@ it('saves nested provisional draft ownership for derivative and primary owners',
         ->not->toBeNull();
 });
 
+it('provides index data matching the rendered index settings', function () {
+    $user = UserModel::factory()->createElement();
+    $manager = $user->getAddressManager();
+
+    $data = $manager->getIndexData($user, ['sortable' => true]);
+
+    expect($data)->not->toBeNull()
+        ->and($data['mode'])->toBe('index')
+        ->and($data['ownerId'])->toBe($user->id)
+        ->and($data['elementType'])->toBe(AddressElement::class)
+        ->and($data['attribute'])->toBe('addresses')
+        ->and($data['indexSettings']['criteria']['ownerId'])->toBe($user->id)
+        ->and($data['indexSettings']['actions'])->toHaveCount(3);
+
+    // The data payload matches what the HTML path encodes into the
+    // <craft-nested-element-manager settings> attribute. Namespace-derived
+    // keys differ (the HTML path computes inside its input namespace) and
+    // the action configs carry per-render markup, so both are normalized
+    // out of the comparison.
+    $html = $manager->getIndexHtml($user, ['sortable' => true]);
+    expect(preg_match('/settings="([^"]+)"/', (string) $html, $matches))->toBe(1);
+    $encoded = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
+    expect($encoded['indexSettings']['actions'])->toHaveCount(3);
+
+    $normalize = function (array $settings): array {
+        // `elementType` is a data-path addition (the HTML path passes it as
+        // the `element-type` attribute instead).
+        unset(
+            $settings['baseInputName'],
+            $settings['elementType'],
+            $settings['indexSettings']['namespace'],
+            $settings['indexSettings']['actions'],
+        );
+
+        return $settings;
+    };
+
+    expect($normalize($data))->toBe($normalize($encoded));
+});
+
+it('provides cards data matching the rendered cards settings', function () {
+    $user = UserModel::factory()->createElement();
+    $address = AddressModel::factory()->createElement([
+        'primaryOwnerId' => $user->id,
+    ]);
+
+    DB::table(Table::ELEMENTS_OWNERS)->insert([
+        'elementId' => $address->id,
+        'ownerId' => $user->id,
+        'sortOrder' => 1,
+    ]);
+
+    $manager = $user->getAddressManager();
+    $data = $manager->getCardsData($user, ['showInGrid' => true]);
+
+    expect($data)->not->toBeNull()
+        ->and($data['mode'])->toBe('cards')
+        ->and($data['ownerId'])->toBe($user->id)
+        ->and($data['elementType'])->toBe(AddressElement::class)
+        ->and($data['showInGrid'])->toBeTrue()
+        ->and($data['elements'])->toHaveCount(1);
+
+    $card = $data['elements'][0];
+    expect($card['id'])->toBe($address->id)
+        ->and($card['cardAttributes'])->toBeArray()
+        ->and($card['cardLabelHtml'])->toBeString()
+        ->and($card['cardActionsHtml'])->toBeString()
+        ->and($card['cardContentHtml'])->not->toBe('')
+        // The thumb is provided separately for a card component's thumbnail
+        // slot; the content part omits it.
+        ->and($card['cardContentHtml'])->not->toContain('thumb')
+        ->and($card['cardThumbHtml'])->toBeString()
+        ->and($card['thumbAlignment'])->toBeIn(['start', 'end']);
+
+    // The settings match what the HTML path encodes into the
+    // <craft-nested-element-manager settings> attribute; `elements` is the
+    // data path's addition, and `baseInputName` is namespace-derived.
+    $html = $manager->getCardsHtml($user, ['showInGrid' => true]);
+    expect(preg_match('/settings="([^"]+)"/', (string) $html, $matches))->toBe(1);
+    $encoded = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
+
+    $normalize = function (array $settings): array {
+        unset($settings['baseInputName'], $settings['elementType'], $settings['elements']);
+
+        return $settings;
+    };
+
+    expect($normalize($data))->toBe($normalize($encoded));
+});
+
+it('returns no index or cards data for unsaved owners', function () {
+    $user = UserModel::factory()->createElement();
+
+    expect($user->getAddressManager()->getIndexData(new User))->toBeNull()
+        ->and($user->getAddressManager()->getIndexData(null))->toBeNull()
+        ->and($user->getAddressManager()->getCardsData(new User))->toBeNull()
+        ->and($user->getAddressManager()->getCardsData(null))->toBeNull();
+});
+
 it('deletes and restores attribute-backed user addresses with owner state', function () {
     $user = UserModel::factory()->createElement();
     $address = AddressModel::factory()->createElement([
