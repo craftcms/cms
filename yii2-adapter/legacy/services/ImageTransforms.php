@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -15,14 +17,15 @@ use craft\events\RegisterComponentTypesEvent;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
-use CraftCms\Cms\Image\Events\ImageTransformersResolving;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
 use CraftCms\Cms\Image\Events\TransformSaving;
+use CraftCms\Cms\Image\ImageTransformers;
 use CraftCms\Cms\Image\ImageTransforms as ImageTransformsService;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
 use Illuminate\Support\Facades\Event as EventFacade;
 use yii\base\Component;
 
@@ -32,7 +35,9 @@ use yii\base\Component;
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->getImageTransforms()`]].
  *
  * @property-read ImageTransformData[] $allTransforms
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  * @deprecated 6.0.0 use {@see ImageTransformsService} instead.
  */
@@ -93,9 +98,6 @@ class ImageTransforms extends Component
 
     /**
      * Returns an asset transform by its handle.
-     *
-     * @param string $handle
-     * @return ImageTransformData|null
      */
     public function getTransformByHandle(string $handle): ?ImageTransformData
     {
@@ -104,9 +106,6 @@ class ImageTransforms extends Component
 
     /**
      * Returns an asset transform by its ID.
-     *
-     * @param int $id
-     * @return ImageTransformData|null
      */
     public function getTransformById(int $id): ?ImageTransformData
     {
@@ -115,9 +114,6 @@ class ImageTransforms extends Component
 
     /**
      * Returns an asset transform by its UID.
-     *
-     * @param string $uid
-     * @return ImageTransformData|null
      */
     public function getTransformByUid(string $uid): ?ImageTransformData
     {
@@ -127,9 +123,8 @@ class ImageTransforms extends Component
     /**
      * Saves an asset transform.
      *
-     * @param ImageTransformData $transform The transform to be saved
-     * @param bool $runValidation Whether the transform should be validated
-     * @return bool
+     * @param  ImageTransformData  $transform  The transform to be saved
+     * @param  bool  $runValidation  Whether the transform should be validated
      */
     public function saveTransform(ImageTransformData $transform, bool $runValidation = true): bool
     {
@@ -138,8 +133,6 @@ class ImageTransforms extends Component
 
     /**
      * Handle transform change.
-     *
-     * @param ConfigEvent $event
      */
     public function handleChangedTransform(ConfigEvent $event): void
     {
@@ -149,7 +142,7 @@ class ImageTransforms extends Component
     /**
      * Deletes an asset transform by its ID.
      *
-     * @param int $transformId The transform's ID
+     * @param  int  $transformId  The transform's ID
      * @return bool Whether the transform was deleted.
      */
     public function deleteTransformById(int $transformId): bool
@@ -160,7 +153,7 @@ class ImageTransforms extends Component
     /**
      * Deletes an asset transform.
      *
-     * @param ImageTransformData $transform The transform
+     * @param  ImageTransformData  $transform  The transform
      * @return bool Whether the transform was deleted
      */
     public function deleteTransform(ImageTransformData $transform): bool
@@ -170,8 +163,6 @@ class ImageTransforms extends Component
 
     /**
      * Handle transform being deleted.
-     *
-     * @param ConfigEvent $event
      */
     public function handleDeletedTransform(ConfigEvent $event): void
     {
@@ -181,8 +172,8 @@ class ImageTransforms extends Component
     /**
      * Eager-loads transform indexes the given list of assets.
      *
-     * @param array $assets The assets or asset data to eager-load transforms for
-     * @param array $transforms The transform definitions to eager-load
+     * @param  array  $assets  The assets or asset data to eager-load transforms for
+     * @param  array  $transforms  The transform definitions to eager-load
      */
     public function eagerLoadTransforms(array $assets, array $transforms): void
     {
@@ -191,8 +182,8 @@ class ImageTransforms extends Component
 
     /**
      * @template T of ImageTransformerInterface
-     * @param class-string<T> $type
-     * @param array $config
+     *
+     * @param  class-string<T>  $type
      * @return T
      */
     public function getImageTransformer(string $type, array $config = []): ImageTransformerInterface
@@ -202,8 +193,6 @@ class ImageTransforms extends Component
 
     /**
      * Delete *ALL* transform data (including thumbs and sources) associated with the Asset.
-     *
-     * @param Asset $asset
      */
     public function deleteAllTransformData(Asset $asset): void
     {
@@ -212,8 +201,6 @@ class ImageTransforms extends Component
 
     /**
      * Delete all the generated thumbnails for the Asset.
-     *
-     * @param Asset $asset
      */
     public function deleteResizedAssetVersion(Asset $asset): void
     {
@@ -222,8 +209,6 @@ class ImageTransforms extends Component
 
     /**
      * Delete created transforms for an Asset.
-     *
-     * @param Asset $asset
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
@@ -234,6 +219,7 @@ class ImageTransforms extends Component
      * Return all available image transformers.
      *
      * @return string[]
+     *
      * @phpstan-return class-string<ImageTransformerInterface>[]
      */
     public function getAllImageTransformers(): array
@@ -304,16 +290,12 @@ class ImageTransforms extends Component
                 'asset' => $event->asset,
             ]));
         });
+    }
 
-        EventFacade::listen(ImageTransformersResolving::class, function(ImageTransformersResolving $event) {
-            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
-                return;
-            }
-
-            $legacyEvent = new RegisterComponentTypesEvent(['types' => $event->types]);
-            Craft::$app->getImageTransforms()->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $legacyEvent);
-            $event->types = $legacyEvent->types;
-        });
+    /** @internal */
+    public static function finalizeRegistrationEvents(): void
+    {
+        TypeRegistryCompatibility::reconcile(app(ImageTransformers::class), Craft::$app->getImageTransforms(), self::EVENT_REGISTER_IMAGE_TRANSFORMERS);
     }
 
     private function service(): ImageTransformsService

@@ -17,7 +17,6 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
-use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -561,10 +560,8 @@ class FieldLayout extends Component
 
         $this->_availableNativeFields = [];
 
-        event($event = new NativeFieldsResolving($this, $this->_availableNativeFields));
-
         // Instantiate them
-        foreach ($event->fields as $field) {
+        foreach (app(NativeFields::class)->apply($this, $this->_availableNativeFields) as $field) {
             $field = match (true) {
                 is_string($field) => app()->make($field),
                 is_array($field) => app()->make(Arr::pull($field, 'class'), ['config' => $field]),

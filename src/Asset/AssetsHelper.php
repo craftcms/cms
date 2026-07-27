@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\AssetFileKindsResolving;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -18,7 +17,6 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -42,20 +40,6 @@ use function CraftCms\Cms\renderObjectTemplate;
 class AssetsHelper
 {
     public const string INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
-
-    /**
-     * @var array|null Supported file kinds
-     *
-     * @see getFileKinds()
-     */
-    private static ?array $_fileKinds;
-
-    /**
-     * @var array|null Allowed file kinds
-     *
-     * @see getAllowedFileKinds()
-     */
-    private static ?array $_allowedFileKinds;
 
     /**
      * Get a temporary file path.
@@ -319,7 +303,7 @@ class AssetsHelper
      */
     public static function getFileKinds(): array
     {
-        return self::fileKinds();
+        return app(AssetFileKinds::class)->fileKinds();
     }
 
     /**
@@ -329,24 +313,20 @@ class AssetsHelper
      */
     public static function getAllowedFileKinds(): array
     {
-        if (isset(self::$_allowedFileKinds)) {
-            return self::$_allowedFileKinds;
-        }
-
-        self::$_allowedFileKinds = [];
+        $allowedFileKinds = [];
         $allowedExtensions = array_flip(Cms::config()->allowedFileExtensions);
 
         foreach (static::getFileKinds() as $kind => $info) {
             foreach ($info['extensions'] as $extension) {
                 if (isset($allowedExtensions[$extension])) {
-                    self::$_allowedFileKinds[$kind] = $info;
+                    $allowedFileKinds[$kind] = $info;
 
                     continue 2;
                 }
             }
         }
 
-        return self::$_allowedFileKinds;
+        return $allowedFileKinds;
     }
 
     /**
@@ -354,7 +334,7 @@ class AssetsHelper
      */
     public static function getFileKindLabel(string $kind): string
     {
-        return self::fileKinds()[$kind]['label'] ?? FileKind::Unknown->value;
+        return self::getFileKinds()[$kind]['label'] ?? FileKind::Unknown->value;
     }
 
     /**
@@ -392,34 +372,6 @@ class AssetsHelper
         [, $folderId, $filename] = $matches;
 
         return [(int) $folderId, $filename];
-    }
-
-    /**
-     * Builds the internal file kinds array, if it hasn't been built already.
-     */
-    private static function fileKinds(): array
-    {
-        if (isset(self::$_fileKinds)) {
-            return self::$_fileKinds;
-        }
-
-        self::$_fileKinds = collect(FileKind::cases())
-            ->filter(fn (FileKind $kind) => $kind !== FileKind::Unknown)
-            ->mapWithKeys(fn (FileKind $kind) => [$kind->value => $kind->toArray()])
-            ->all();
-
-        // Merge with the extraFileKinds setting
-        self::$_fileKinds = Arr::merge(self::$_fileKinds, Cms::config()->extraFileKinds);
-
-        event($event = new AssetFileKindsResolving(self::$_fileKinds));
-
-        return self::$_fileKinds = Arr::sort($event->fileKinds, 'label');
-    }
-
-    public static function clear(): void
-    {
-        self::$_fileKinds = null;
-        self::$_allowedFileKinds = null;
     }
 
     /**

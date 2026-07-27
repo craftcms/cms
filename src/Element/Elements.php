@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
-use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
@@ -39,11 +36,6 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 class Elements
 {
-    /**
-     * @var string[]
-     */
-    private array $elementTypesByRefHandle = [];
-
     public const string REF_TAG_PATTERN = '/
         \{                                      # Tags always begin with a `{`
             (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
@@ -56,6 +48,7 @@ class Elements
 
     public function __construct(
         private readonly ElementPlaceholders $placeholders,
+        private readonly ElementTypes $elementTypes,
     ) {}
 
     /**
@@ -116,16 +109,7 @@ class Elements
      */
     public function getAllElementTypes(): array
     {
-        $elementTypes = [
-            Address::class,
-            Asset::class,
-            Entry::class,
-            User::class,
-        ];
-
-        event($event = new ElementTypesResolving($elementTypes));
-
-        return $event->types;
+        return $this->elementTypes->types()->all();
     }
 
     /**
@@ -136,18 +120,14 @@ class Elements
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
-        if (! isset($this->elementTypesByRefHandle[$refHandle])) {
-            $class = $this->elementTypeByRefHandle($refHandle);
+        $class = $this->elementTypeByRefHandle($refHandle);
 
-            // Special cases for categories/tags/globals, if they've been removed
-            if ($class === false && in_array($refHandle, ['category', 'tag', 'globalset'])) {
-                $class = Entry::class;
-            }
-
-            $this->elementTypesByRefHandle[$refHandle] = $class;
+        // Special cases for categories/tags/globals, if they've been removed
+        if ($class === false && in_array($refHandle, ['category', 'tag', 'globalset'])) {
+            $class = Entry::class;
         }
 
-        return $this->elementTypesByRefHandle[$refHandle] ?: null;
+        return $class ?: null;
     }
 
     private function elementTypeByRefHandle(string $refHandle): string|false
@@ -156,16 +136,7 @@ class Elements
             return $refHandle;
         }
 
-        foreach ($this->getAllElementTypes() as $class) {
-            if (
-                ($elementRefHandle = $class::refHandle()) !== null &&
-                strcasecmp($elementRefHandle, $refHandle) === 0
-            ) {
-                return $class;
-            }
-        }
-
-        return false;
+        return $this->elementTypes->typeByRefHandle($refHandle) ?? false;
     }
 
     /**
