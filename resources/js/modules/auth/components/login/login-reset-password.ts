@@ -2,7 +2,7 @@ import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {actionClient, t} from '@craftcms/ui';
 import componentStyles from './login-form.styles.js';
-import { useAnnouncer} from '@/common/composables/useAnnouncer';
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 
 /**
  * @summary Password-reset request form. Fires `reset-back` when the user

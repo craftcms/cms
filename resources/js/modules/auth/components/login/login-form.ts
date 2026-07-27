@@ -15,7 +15,7 @@ import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';
 import './login-reset-password.js';
-import { useAnnouncer } from '@/common/composables/useAnnouncer';
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 type View = 'login' | 'reset-password' | 'challenge';
 
 /**
