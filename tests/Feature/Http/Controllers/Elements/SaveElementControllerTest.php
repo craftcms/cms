@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -446,6 +450,30 @@ describe('store', function () {
                 ->where('type', ElementActivityType::Save->value)
                 ->exists())
             ->toBeTrue();
+    });
+
+    it('can clear asset alt text', function () {
+        config()->set('filesystems.disks.save-element-controller-test', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/save-element-controller-test'),
+        ]);
+
+        $volume = Volume::factory()->create(['fs' => 'disk:save-element-controller-test']);
+        $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'alt' => 'Existing alt text',
+        ]);
+
+        postJson(action([SaveElementController::class, 'store']), [
+            'elementType' => Asset::class,
+            'elementId' => $asset->id,
+            'siteId' => $asset->siteId,
+            'alt' => '',
+        ])->assertOk();
+
+        expect(Asset::find()->id($asset->id)->one()->alt)->toBe('');
     });
 
     it('marks nested elements to update their owner search index before saving', function () {
