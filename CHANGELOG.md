@@ -74,6 +74,7 @@
 - Removed `CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving`. `CraftCms\Cms\View\TemplateCacheCollectors::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Fixed a styling issue. ([#19296](https://github.com/craftcms/cms/pull/19296))
 - Fixed a bug where Yii adapter plugins could cause legacy Control Panel assets to be omitted. ([#19302](https://github.com/craftcms/cms/pull/19302))
+- Fixed a bug where assets’ Alternative Text values could not be cleared. ([#19310](https://github.com/craftcms/cms/issues/19310))
 
 ## 6.0.0-alpha.14 - 2026-07-22
 
