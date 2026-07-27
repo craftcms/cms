@@ -10,13 +10,9 @@ use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
-use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport as CraftSupportWidget;
 use CraftCms\Cms\Dashboard\Widgets\Custom as CustomWidget;
 use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
-use CraftCms\Cms\Dashboard\Widgets\MyDrafts;
-use CraftCms\Cms\Dashboard\Widgets\NewUsers as NewUsersWidget;
-use CraftCms\Cms\Dashboard\Widgets\QuickPost as QuickPostWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
@@ -43,27 +39,6 @@ readonly class Dashboard
     public function __construct(
         private CustomWidgets $customWidgets,
     ) {}
-
-    /**
-     * @return Collection<class-string<WidgetInterface>>
-     */
-    public function getAllWidgetTypes(): Collection
-    {
-        /** @var Collection<int, class-string<WidgetInterface>> $widgetTypes */
-        $widgetTypes = Collection::make([
-            FeedWidget::class,
-            CraftSupportWidget::class,
-            NewUsersWidget::class,
-            QuickPostWidget::class,
-            RecentEntriesWidget::class,
-            MyDrafts::class,
-            UpdatesWidget::class,
-        ]);
-
-        event($event = new WidgetTypesResolving($widgetTypes));
-
-        return $event->types;
-    }
 
     /**
      * Creates a widget with a given config.

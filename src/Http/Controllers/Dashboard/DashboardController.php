@@ -10,6 +10,7 @@ use CraftCms\Cms\Dashboard\CustomWidgets;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Data\CustomWidgetDefinition;
 use CraftCms\Cms\Dashboard\Widgets\Custom;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
@@ -28,6 +29,7 @@ readonly class DashboardController
         private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
         private CustomWidgets $customWidgets,
+        private WidgetTypes $widgetTypes,
     ) {}
 
     public function index()
@@ -37,7 +39,7 @@ readonly class DashboardController
         /** @var Collection<string, class-string<WidgetInterface>|array{type: class-string<Custom>, settings: array{definitionId: string}}> $widgetConfigs */
         $widgetConfigs = Collection::make();
 
-        foreach ($this->dashboard->getAllWidgetTypes() as $widgetType) {
+        foreach ($this->widgetTypes->types() as $widgetType) {
             if ($widgetType::isSelectable()) {
                 $widgetConfigs->put($widgetType, $widgetType);
             }

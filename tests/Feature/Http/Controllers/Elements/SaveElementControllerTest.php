@@ -2,11 +2,16 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements as ElementsService;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
@@ -303,7 +308,7 @@ describe('store', function () {
             ]);
         $entry->errors()->add('title', 'Title is invalid.');
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -342,7 +347,7 @@ describe('store', function () {
                 'slug' => 'canonical-title',
             ]);
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -382,7 +387,7 @@ describe('store', function () {
         app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
         actingAs(UserModel::findOrFail(auth()->id()));
 
-        $elements = new class(app(ElementPlaceholders::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
         {
             public ?bool $capturedCrossSiteValidate = null;
 
@@ -448,10 +453,34 @@ describe('store', function () {
             ->toBeTrue();
     });
 
+    it('can clear asset alt text', function () {
+        config()->set('filesystems.disks.save-element-controller-test', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/save-element-controller-test'),
+        ]);
+
+        $volume = Volume::factory()->create(['fs' => 'disk:save-element-controller-test']);
+        $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'alt' => 'Existing alt text',
+        ]);
+
+        postJson(action([SaveElementController::class, 'store']), [
+            'elementType' => Asset::class,
+            'elementId' => $asset->id,
+            'siteId' => $asset->siteId,
+            'alt' => '',
+        ])->assertOk();
+
+        expect(Asset::find()->id($asset->id)->one()->alt)->toBe('');
+    });
+
     it('marks nested elements to update their owner search index before saving', function () {
         $fixture = createSaveElementMatrixFixture();
 
-        $elements = new class(app(ElementPlaceholders::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
         {
             public bool $capturedNestedOwnerIndexFlag = false;
 
@@ -614,7 +643,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 
@@ -666,7 +695,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 

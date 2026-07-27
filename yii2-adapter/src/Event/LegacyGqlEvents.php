@@ -8,16 +8,13 @@ use craft\base\Event as YiiEvent;
 use craft\events\DefineGqlArgumentsEvent;
 use craft\events\DefineGqlTypeFieldsEvent;
 use craft\events\MutationPopulateElementEvent;
-use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\events\RegisterGqlEagerLoadableFields as LegacyRegisterGqlEagerLoadableFields;
-use craft\gql\ArgumentManager as LegacyArgumentManager;
 use craft\gql\base\ElementArguments as LegacyElementArguments;
 use craft\gql\base\ElementMutationResolver as LegacyElementMutationResolver;
 use craft\gql\ElementQueryConditionBuilder as LegacyElementQueryConditionBuilder;
 use craft\gql\TypeManager as LegacyTypeManager;
 use CraftCms\Cms\Gql\Events\ElementPopulated;
 use CraftCms\Cms\Gql\Events\ElementPopulating;
-use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
 use CraftCms\Cms\Gql\Events\GqlArgumentsResolving;
 use CraftCms\Cms\Gql\Events\GqlEagerLoadableFieldsResolving;
 use CraftCms\Cms\Gql\Events\GqlTypeFieldsResolving;
@@ -38,18 +35,6 @@ class LegacyGqlEvents
             ]);
             YiiEvent::trigger(LegacyTypeManager::class, LegacyTypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, $yiiEvent);
             $event->fields = $yiiEvent->fields;
-        });
-
-        Event::listen(GqlArgumentHandlersResolving::class, function(GqlArgumentHandlersResolving $event) {
-            if (!YiiEvent::hasHandlers(LegacyArgumentManager::class, LegacyArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS)) {
-                return;
-            }
-
-            $yiiEvent = new RegisterGqlArgumentHandlersEvent([
-                'handlers' => $event->handlers,
-            ]);
-            YiiEvent::trigger(LegacyArgumentManager::class, LegacyArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS, $yiiEvent);
-            $event->handlers = $yiiEvent->handlers;
         });
 
         Event::listen(GqlEagerLoadableFieldsResolving::class, function(GqlEagerLoadableFieldsResolving $event) {

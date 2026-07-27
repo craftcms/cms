@@ -8,6 +8,7 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\CustomWidgets;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\Custom;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,7 @@ readonly class WidgetsController
         private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
         private CustomWidgets $customWidgets,
+        private WidgetTypes $widgetTypes,
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -34,7 +36,7 @@ readonly class WidgetsController
         ]);
 
         $type = (string) $data['type'];
-        $widgetType = $this->dashboard->getAllWidgetTypes()->first(fn (string $widgetType) => $widgetType === $type);
+        $widgetType = $this->widgetTypes->types()->first(fn (string $widgetType) => $widgetType === $type);
         $customDefinition = $widgetType ? null : $this->customWidgets->fromType($type);
 
         if (! $widgetType && ! $customDefinition) {

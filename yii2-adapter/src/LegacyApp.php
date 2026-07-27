@@ -63,7 +63,8 @@ readonly class LegacyApp
              * Every legacy class that fires Yii events should listen to
              * the relevant Laravel event and trigger the Yii event.
              */
-            new EventCompatibility()->boot();
+            $eventCompatibility = new EventCompatibility();
+            $eventCompatibility->boot();
 
             foreach ($laravelApp->make(Plugins::class)->getAllPlugins() as $plugin) {
                 if ($plugin instanceof Module) {
@@ -74,9 +75,18 @@ readonly class LegacyApp
             /**
              * Globals, Categories, Tags
              */
+            DeprecatedConcepts::resetSupport();
             new DeprecatedConcepts()->boot();
 
             DeprecatedConcepts::bootYiiEvents();
+
+            $laravelApp->booted(function() use ($eventCompatibility) {
+                if (!Cms::isInstalled(strict: true)) {
+                    return;
+                }
+
+                $eventCompatibility->finalizeRegistrationEvents();
+            });
 
             return $craftApp;
         });
