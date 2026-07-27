@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Plugin\Plugin;
-use CraftCms\Cms\Utility\Events\UtilitiesResolving;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Support\Facades\Event;
+use CraftCms\Cms\Utility\UtilityTypes;
 
 /**
  * @mixin Plugin
@@ -25,12 +24,6 @@ trait HasUtilities
 
     public function bootHasUtilities(): void
     {
-        if (! $this->utilities) {
-            return;
-        }
-
-        Event::listen(UtilitiesResolving::class, function (UtilitiesResolving $event) {
-            $event->types->push(...$this->utilities);
-        });
+        $this->app->make(UtilityTypes::class)->register(...$this->utilities);
     }
 }

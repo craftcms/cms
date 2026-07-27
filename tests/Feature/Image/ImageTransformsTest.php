@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\ImageTransformersResolving;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
 use CraftCms\Cms\Image\Events\TransformSaving;
 use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Image\ImageTransformers;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\Support\Facades\ImageTransforms as ImageTransformsFacade;
@@ -346,38 +345,16 @@ describe('deleteTransform', function () {
 });
 
 describe('getAllImageTransformers', function () {
-    it('includes the default ImageTransformer', function () {
-        $transformers = $this->service->getAllImageTransformers();
+    it('uses the current registry types', function () {
+        $registry = app(ImageTransformers::class);
+        $registry->register(RegisteredImageTransformer::class);
 
-        expect($transformers)->toContain(ImageTransformer::class);
-    });
+        expect($this->service->getAllImageTransformers())
+            ->toContain(ImageTransformer::class, RegisteredImageTransformer::class);
 
-    it('fires ImageTransformersResolving event', function () {
-        Event::fake([ImageTransformersResolving::class]);
+        $registry->remove(RegisteredImageTransformer::class);
 
-        $this->service->getAllImageTransformers();
-
-        Event::assertDispatchedOnce(ImageTransformersResolving::class);
-    });
-
-    it('allows adding custom transformers via event', function () {
-        $customTransformer = (new class implements ImageTransformerInterface
-        {
-            public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
-            {
-                return '';
-            }
-
-            public function invalidateAssetTransforms(Asset $asset): void {}
-        })::class;
-
-        Event::listen(ImageTransformersResolving::class, function (ImageTransformersResolving $event) use ($customTransformer) {
-            $event->types[] = $customTransformer;
-        });
-
-        $transformers = $this->service->getAllImageTransformers();
-
-        expect($transformers)->toContain($customTransformer);
+        expect($this->service->getAllImageTransformers())->not()->toContain(RegisteredImageTransformer::class);
     });
 });
 
@@ -416,3 +393,5 @@ describe('reset', function () {
         expect($this->service->getAllTransforms())->toBeEmpty();
     });
 });
+
+abstract class RegisteredImageTransformer implements ImageTransformerInterface {}

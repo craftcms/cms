@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -31,6 +32,33 @@ class Tip extends BaseUiElement
      * @var self::STYLE_TIP|self::STYLE_WARNING The tip style (`tip` or `warning`)
      */
     public string $style = self::STYLE_TIP;
+
+    public static function make(string|Closure $tip): static
+    {
+        return app(static::class)->tip($tip);
+    }
+
+    public function tip(string|Closure $tip): static
+    {
+        $this->tip = $this->evaluate($tip);
+
+        return $this;
+    }
+
+    public function dismissible(bool|Closure $dismissible = true): static
+    {
+        $this->dismissible = $this->evaluate($dismissible);
+
+        return $this;
+    }
+
+    public function warning(bool|Closure $warning = true): static
+    {
+        $warning = $this->evaluate($warning);
+        $this->style = $warning ? self::STYLE_WARNING : self::STYLE_TIP;
+
+        return $this;
+    }
 
     protected function selectorLabel(): string
     {

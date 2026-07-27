@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
+use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -11,21 +12,42 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Utility\Events\ClearCachesOptionsResolving;
-use CraftCms\Cms\Utility\Events\ClearCachesTagOptionsResolving;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Override;
 use Symfony\Component\Filesystem\Path;
 
 use function CraftCms\Cms\t;
 
 /**
- * ClearCaches represents a ClearCaches dashboard widget.
+ * Provides cache-clearing actions and registers additional cache options.
+ *
+ * ```php
+ * public function boot(): void
+ * {
+ *     ClearCaches::add('my-plugin', [
+ *         'label' => 'My Plugin caches',
+ *         'action' => MyCache::clear(...),
+ *     ]);
+ * }
+ * ```
  */
 class ClearCaches extends Utility
 {
+    /** @var array<string, array|Closure> */
+    private static array $additionalCacheOptions = [];
+
+    /** @var array<string, string|Closure> */
+    private static array $additionalTagOptions = [];
+
+    /** @var (Closure(array): array)|null */
+    private static ?Closure $optionTransformer = null;
+
+    /** @var (Closure(array): array)|null */
+    private static ?Closure $tagTransformer = null;
+
     #[Override]
     public static function displayName(): string
     {
@@ -78,16 +100,77 @@ class ClearCaches extends Utility
      */
     public static function cacheOptions(): array
     {
-        /**
-         * TODO: Remove this when dependency on app('Craft') is gone.
-         */
-        if (app()->runningUnitTests()) {
-            return [];
+        $options = app()->runningUnitTests() ? [] : array_column(self::defaultCacheOptions(), null, 'key');
+
+        foreach (self::$additionalCacheOptions as $key => $option) {
+            $option = $option instanceof Closure ? app()->call($option) : $option;
+            $action = $option['action'] ?? null;
+
+            if (! isset($option['label']) ||
+                ! is_string($option['label']) ||
+                (! is_string($action) && ! is_callable($action))
+            ) {
+                throw new InvalidArgumentException("Invalid cache option [$key].");
+            }
+
+            $options[$key] = [...$option, 'key' => $key];
         }
 
+        $options = array_values($options);
+
+        if (isset(self::$optionTransformer)) {
+            $options = app()->call(self::$optionTransformer, ['options' => $options]);
+        }
+
+        return Arr::sort($options, 'label');
+    }
+
+    /**
+     * @param  array{label:string, action:callable|string, info?:string, params?:array}|Closure():array{label:string, action:callable|string, info?:string, params?:array}  $option
+     */
+    public static function add(string $key, array|Closure $option): void
+    {
+        if ($key === '') {
+            throw new InvalidArgumentException('Cache option keys cannot be empty.');
+        }
+
+        self::$additionalCacheOptions[$key] = $option;
+    }
+
+    public static function addTag(string $tag, string|Closure $label): void
+    {
+        if ($tag === '') {
+            throw new InvalidArgumentException('Cache tags cannot be empty.');
+        }
+
+        self::$additionalTagOptions[$tag] = $label;
+    }
+
+    /** @internal */
+    public static function transformOptions(Closure $transformer): void
+    {
+        self::$optionTransformer = $transformer;
+    }
+
+    /** @internal */
+    public static function transformTagOptions(Closure $transformer): void
+    {
+        self::$tagTransformer = $transformer;
+    }
+
+    public static function flushState(): void
+    {
+        self::$additionalCacheOptions = [];
+        self::$additionalTagOptions = [];
+        self::$optionTransformer = null;
+        self::$tagTransformer = null;
+    }
+
+    private static function defaultCacheOptions(): array
+    {
         $pathService = app(\CraftCms\Cms\Support\Path::class);
 
-        $options = [
+        return [
             [
                 'key' => 'data',
                 'label' => t('Data caches'),
@@ -165,10 +248,6 @@ class ClearCaches extends Utility
                 },
             ],
         ];
-
-        event($event = new ClearCachesOptionsResolving($options));
-
-        return Arr::sort($event->options, 'label');
     }
 
     /**
@@ -177,21 +256,32 @@ class ClearCaches extends Utility
     public static function tagOptions(): array
     {
         $options = [
-            [
-                'tag' => 'template',
-                'label' => t('Template caches'),
-            ],
+            'template' => t('Template caches'),
         ];
 
         if (Cms::config()->enableGql) {
-            $options[] = [
-                'tag' => 'graphql',
-                'label' => t('GraphQL queries'),
-            ];
+            $options['graphql'] = t('GraphQL queries');
         }
 
-        event($event = new ClearCachesTagOptionsResolving($options));
+        foreach (self::$additionalTagOptions as $tag => $label) {
+            $label = $label instanceof Closure ? app()->call($label) : $label;
 
-        return Arr::sort($event->options, 'label');
+            if (! is_string($label)) {
+                throw new InvalidArgumentException("Invalid cache tag label [$tag].");
+            }
+
+            $options[$tag] = $label;
+        }
+
+        $options = collect($options)
+            ->map(fn (string $label, string $tag) => compact('tag', 'label'))
+            ->values()
+            ->all();
+
+        if (isset(self::$tagTransformer)) {
+            $options = app()->call(self::$tagTransformer, ['options' => $options]);
+        }
+
+        return Arr::sort($options, 'label');
     }
 }

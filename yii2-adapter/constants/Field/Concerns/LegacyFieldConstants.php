@@ -44,7 +44,8 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
-use CraftCms\Cms\Field\Events\LinkTypesResolving;
+use CraftCms\Cms\Field\LinkTypes;
+use CraftCms\Cms\Field\LinkTypes\Url;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Event;
 use yii\base\InvalidConfigException;
@@ -152,8 +153,13 @@ trait LegacyFieldConstants
         self::assetsEvents();
         self::optionsFieldEvents();
         self::relationFieldEvents();
-        self::linkEvents();
         self::matrixEvents();
+    }
+
+    /** @internal */
+    public static function finalizeRegistrationEvents(): void
+    {
+        self::linkEvents();
     }
 
     /**
@@ -253,19 +259,16 @@ trait LegacyFieldConstants
 
     private static function linkEvents(): void
     {
-        Event::listen(function(LinkTypesResolving $event) {
-            if (!YiiEvent::hasHandlers(Link::class, Link::EVENT_REGISTER_LINK_TYPES)) {
-                return;
-            }
+        if (!YiiEvent::hasHandlers(Link::class, Link::EVENT_REGISTER_LINK_TYPES)) {
+            return;
+        }
 
-            $yiiEvent = new RegisterComponentTypesEvent([
-                'types' => $event->types,
-            ]);
-
-            YiiEvent::trigger(Link::class, Link::EVENT_REGISTER_LINK_TYPES, $yiiEvent);
-
-            $event->types = $yiiEvent->types;
-        });
+        $registry = app(LinkTypes::class);
+        $types = $registry->types()->reject(fn(string $type) => $type === Url::class);
+        $yiiEvent = new RegisterComponentTypesEvent(['types' => $types->all()]);
+        YiiEvent::trigger(Link::class, Link::EVENT_REGISTER_LINK_TYPES, $yiiEvent);
+        $registry->remove(...$types->diff($yiiEvent->types));
+        $registry->register(...collect($yiiEvent->types)->diff($types));
     }
 
     /**
