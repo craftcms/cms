@@ -110,6 +110,31 @@ MD);
         ->getTitle()->toBeNull();
 });
 
+it('coerces scalar frontmatter values', function () {
+    File::put("$this->widgetsPath/widget.md", <<<'MD'
+---
+label: 123
+icon: 456
+maxColspan: '2'
+title: true
+subtitle: 1.5
+showByDefault: 'yes'
+---
+
+# Widget
+MD);
+
+    $definition = app(CustomWidgets::class)->all()->sole();
+
+    expect($definition)
+        ->label->toBe('123')
+        ->icon->toBe('456')
+        ->maxColspan->toBe(2)
+        ->title->toBe('1')
+        ->subtitle->toBe('1.5')
+        ->showByDefault->toBeTrue();
+});
+
 it('rejects invalid widget definitions', function (string $source, string $message) {
     File::put("$this->widgetsPath/invalid.md", $source);
 
@@ -117,8 +142,12 @@ it('rejects invalid widget definitions', function (string $source, string $messa
         ->toThrow(InvalidArgumentException::class, $message);
 })->with([
     'invalid handle' => ["---\nhandle: invalid-handle\n---\n", 'invalid handle'],
+    'numeric handle' => ["---\nhandle: 123\n---\n", 'invalid handle'],
     'reserved handle' => ["---\nhandle: fields\n---\n", 'invalid handle'],
+    'array label' => ["---\nlabel: [Widget]\n---\n", 'frontmatter property [label] must be a string or null'],
     'invalid colspan' => ["---\nmaxColspan: 5\n---\n", 'must be an integer between 1 and 4'],
+    'fractional colspan' => ["---\nmaxColspan: '2.5'\n---\n", 'must be an integer between 1 and 4'],
+    'invalid default visibility' => ["---\nshowByDefault: sometimes\n---\n", 'frontmatter property [showByDefault] must be a boolean'],
 ]);
 
 it('rejects duplicate handles case-insensitively', function () {

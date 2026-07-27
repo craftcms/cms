@@ -84,18 +84,43 @@ class CustomWidgets
 
         $parsed = $this->frontMatterParser->parse($contents);
         $metadata = (array) $parsed->getFrontMatter();
-        $handle = $metadata['handle'] ?? null;
+
+        $string = function (string $property) use ($filename, $metadata): ?string {
+            $value = $metadata[$property] ?? null;
+
+            if ($value === null || is_scalar($value)) {
+                return $value === null ? null : (string) $value;
+            }
+
+            throw new InvalidArgumentException("Custom widget file [$filename] frontmatter property [$property] must be a string or null.");
+        };
+
+        $maxColspan = $metadata['maxColspan'] ?? null;
+
+        if ($maxColspan !== null) {
+            $maxColspan = filter_var($maxColspan, FILTER_VALIDATE_INT);
+
+            if ($maxColspan === false) {
+                throw new InvalidArgumentException("Custom widget file [$filename] frontmatter property [maxColspan] must be an integer between 1 and 4, or null.");
+            }
+        }
+
+        $showByDefault = filter_var($metadata['showByDefault'] ?? false, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+
+        if ($showByDefault === null) {
+            throw new InvalidArgumentException("Custom widget file [$filename] frontmatter property [showByDefault] must be a boolean.");
+        }
 
         return new CustomWidgetDefinition(
             filename: $filename,
-            handle: $handle,
-            label: $metadata['label'] ?? null,
-            icon: $metadata['icon'] ?? null,
-            maxColspan: $metadata['maxColspan'] ?? null,
-            title: $metadata['title'] ?? null,
+            handle: $string('handle'),
+            label: $string('label'),
+            icon: $string('icon'),
+            maxColspan: $maxColspan,
+            title: $string('title'),
             titleFromLabel: ! array_key_exists('title', $metadata),
-            subtitle: $metadata['subtitle'] ?? null,
-            showByDefault: $metadata['showByDefault'] ?? false,
+            subtitle: $string('subtitle'),
+            showByDefault: $showByDefault,
             body: $parsed->getContent(),
         );
     }
