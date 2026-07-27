@@ -12,12 +12,12 @@ use craft\services\Gql as LegacyGql;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
-use CraftCms\Cms\Tests\TestCase;
+use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 
-uses(TestCase::class);
+uses(DatabaseTestCase::class);
 
 beforeEach(function() {
     app(\CraftCms\Cms\Gql\Gql::class)->flushCaches();

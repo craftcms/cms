@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Cp\Concerns;
+namespace CraftCms\Cms\Support\Concerns;
 
 use Closure;
 use ReflectionFunction;
 use ReflectionNamedType;
 
 /**
- * Filament-style callback properties: any configurable value may be a Closure,
- * resolved at render time. Closure parameters are injected by name first, then
- * by type, then from the container, so callers can type-hint whatever they
- * need:
+ * Resolves Filament-style callback properties. Closure parameters are injected
+ * by name first, then by type, then from the container, so callers can type-hint
+ * whatever they need. View components resolve values at render time, while
+ * persisted builders can resolve them eagerly:
  *
  *     Field::make()->label(fn (Field $field) => ...)
  *     Field::make()->required(fn (GeneralConfig $config) => ...)

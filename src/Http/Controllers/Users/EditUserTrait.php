@@ -168,18 +168,18 @@ trait EditUserTrait
             'items' => $sidebarItems,
         ])->subnav($subnavItems);
 
-        if ($screen !== self::SCREEN_PROFILE) {
-            $response->crumbs([
-                ...$user->getCrumbs(),
-                [
-                    'html' => app(ElementHtml::class)->elementChipHtml($user, [
-                        'showDraftName' => false,
-                        'class' => 'chromeless',
-                    ]),
-                    'current' => true,
-                ],
-            ]);
+        $response->crumbs([
+            ...$user->getCrumbs(),
+            [
+                'html' => app(ElementHtml::class)->elementChipHtml($user, [
+                    'showDraftName' => false,
+                    'class' => 'chromeless',
+                ]),
+                'current' => true,
+            ],
+        ]);
 
+        if ($screen !== self::SCREEN_PROFILE) {
             $response->addAltAction(t('Save and continue editing'), [
                 'redirect' => $this->editUserScreenUrl($user, $screen),
                 'shortcut' => true,

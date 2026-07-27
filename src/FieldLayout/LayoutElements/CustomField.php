@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use Closure;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
@@ -30,6 +31,7 @@ use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
+use InvalidArgumentException;
 use Override;
 use RuntimeException;
 use Throwable;
@@ -45,6 +47,8 @@ use function CraftCms\Cms\template;
  * @property FieldInterface $field The custom field this layout field is based on
  * @property string $fieldUid The UID of the field this layout field is based on
  * @property UserCondition|null $editCondition The user condition which determines who can edit this field
+ *
+ * @phpstan-consistent-constructor
  */
 class CustomField extends BaseField implements ImportableFieldLayoutElementInterface
 {
@@ -117,6 +121,70 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         if ($field) {
             $this->setField($field);
         }
+    }
+
+    public static function make(FieldInterface|string $field): static
+    {
+        if (is_string($field)) {
+            $field = Fields::getFieldByHandle($field)
+                ?? throw new InvalidArgumentException(sprintf('Unknown field handle: %s', $field));
+        }
+
+        return new static($field);
+    }
+
+    #[Override]
+    public function label(string|Closure|null $label = null): static|string|null
+    {
+        if (func_num_args() === 0) {
+            return parent::label();
+        }
+
+        parent::label($label);
+
+        if ($this->_field !== null) {
+            $this->_field->name = $this->label ?? $this->_originalName;
+        }
+
+        return $this;
+    }
+
+    #[Override]
+    public function instructions(string|Closure|null $instructions): static
+    {
+        parent::instructions($instructions);
+
+        if ($this->_field !== null) {
+            $this->_field->instructions = $this->instructions ?? $this->_originalInstructions;
+        }
+
+        return $this;
+    }
+
+    public function handle(string|Closure|null $handle): static
+    {
+        $handle = $this->evaluate($handle);
+        $this->handle = $handle;
+
+        if ($this->_field !== null) {
+            $this->_field->handle = $handle ?? $this->_originalHandle;
+        }
+
+        return $this;
+    }
+
+    public function editCondition(mixed $editCondition): static
+    {
+        $this->setEditCondition($this->evaluate($editCondition));
+
+        return $this;
+    }
+
+    public function elementEditCondition(mixed $elementEditCondition): static
+    {
+        $this->setElementEditCondition($this->evaluate($elementEditCondition));
+
+        return $this;
     }
 
     #[Override]

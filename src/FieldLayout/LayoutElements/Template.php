@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Twig;
@@ -44,6 +45,28 @@ class Template extends BaseUiElement
      * @var string The template mode to use when loading the template.
      */
     public string $templateMode = TemplateMode::Site->value;
+
+    public static function make(string|Closure $template): static
+    {
+        return app(static::class)->template($template);
+    }
+
+    public function template(string|Closure $template): static
+    {
+        $this->template = $this->evaluate($template);
+
+        return $this;
+    }
+
+    public function templateMode(TemplateMode|string|Closure $templateMode): static
+    {
+        $templateMode = $this->evaluate($templateMode);
+        $this->templateMode = $templateMode instanceof TemplateMode
+            ? $templateMode->value
+            : TemplateMode::from($templateMode)->value;
+
+        return $this;
+    }
 
     protected function selectorLabel(): string
     {

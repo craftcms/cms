@@ -56,7 +56,7 @@ class AffiliatedSiteField extends BaseNativeField implements ImportableFieldLayo
     }
 
     #[Override]
-    protected function instructions(?ElementInterface $element = null, bool $static = false): ?string
+    protected function instructionsText(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Determines which site the user will receive emails from, when sent via the control panel.');
     }

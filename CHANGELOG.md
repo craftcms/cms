@@ -2,7 +2,13 @@
 
 ## Unreleased
 
+- Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements, including dependency-injected closure values.
+- Added support for configuring field layout field instruction positions.
+- Moved `CraftCms\Cms\Cp\Concerns\EvaluatesClosures` to `CraftCms\Cms\Support\Concerns\EvaluatesClosures`.
+- Changed `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::label()` to accept an optional label and return the field layout element when one is passed. Overrides must accept the new optional argument.
+- Renamed the protected `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::instructions()`, `tip()`, and `warning()` methods to `instructionsText()`, `tipText()`, and `warningText()`.
 - Fixed a styling issue. ([#19296](https://github.com/craftcms/cms/pull/19296))
+- Fixed a bug where Yii adapter plugins could cause legacy Control Panel assets to be omitted. ([#19302](https://github.com/craftcms/cms/pull/19302))
 
 ## 6.0.0-alpha.14 - 2026-07-22
 

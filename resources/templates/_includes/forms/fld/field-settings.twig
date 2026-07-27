@@ -54,6 +54,17 @@
         'error-key': 'instructions'
       },
     }) }}
+
+    {{ forms.selectField({
+      label: 'Instructions position'|t('app'),
+      id: 'instructions-position',
+      name: 'instructionsPosition',
+      value: field.instructionsPosition,
+      options: [
+        {label: 'Before the input'|t('app'), value: 'before'},
+        {label: 'After the input'|t('app'), value: 'after'},
+      ],
+    }) }}
   {% endblock %}
 
   {% block tipField %}
