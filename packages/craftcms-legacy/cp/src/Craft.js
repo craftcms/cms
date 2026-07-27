@@ -18,7 +18,6 @@ import './js/BaseElementIndex.js';
 import './js/BaseElementIndexView.js';
 import './js/BaseElementSelectInput.js';
 import './js/BaseElementSelectorModal.js';
-import './js/BaseInputGenerator.js';
 import './js/BaseUploader.js';
 
 // Modals
@@ -48,7 +47,6 @@ import './js/ContentBlockEditor.js';
 import './js/CustomizeSourcesModal.js';
 import './js/DataTableSorter.js';
 import './js/DeleteUserModal.js';
-import './js/DynamicGenerator.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';
@@ -61,7 +59,6 @@ import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
 import './js/Grid.js';
-import './js/HandleGenerator.js';
 import './js/IconPicker.js';
 import './js/ImageUpload.js';
 import './js/IntervalManager.js';
@@ -75,7 +72,6 @@ import './js/ProgressBar.js';
 import './js/PromptHandler.js';
 import './js/SlidePicker.js';
 import './js/SlideRuleInput.js';
-import './js/SlugGenerator.js';
 import './js/Structure.js';
 import './js/StructureDrag.js';
 import './js/TableElementIndexView.js';
@@ -83,7 +79,6 @@ import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/Tooltip.js';
 import './js/Uploader.js';
-import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 
 // Custom elements
