@@ -696,6 +696,10 @@ readonly class FormFields
     public static function iconPickerFieldHtml(array $config): string
     {
         $config['id'] ??= 'iconpicker'.mt_rand();
+        // The <craft-icon-picker> control has no single labelable input (preview +
+        // buttons), so label the group with a fieldset legend rather than a
+        // `for=` label — and keep the component itself label-less.
+        $config['fieldset'] = true;
 
         return self::fieldHtml('template:_includes/forms/iconPicker', $config);
     }

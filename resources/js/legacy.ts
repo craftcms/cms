@@ -19,6 +19,7 @@ import './modules/queue/index';
 import './modules/slideout/index';
 import './modules/auth-method-setup/index';
 import './modules/input-generators/index';
+import './modules/icon-picker/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 

@@ -48,6 +48,10 @@
       'EnvVarGenerator',
       'Craft.EnvVarGenerator has been removed. It was an unused legacy input generator with no replacement.'
     );
+    defineRemovedClass(
+      'IconPicker',
+      'Craft.IconPicker has been removed. Emit <craft-icon-picker> directly instead (or use Craft.ui.createIconPicker).'
+    );
   }
 
   /**

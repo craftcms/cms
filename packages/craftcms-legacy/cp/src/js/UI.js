@@ -775,54 +775,33 @@ Craft.ui = {
   },
 
   createIconPicker: function (config) {
-    const $container = $('<div/>', {
-      id: config.id,
-      class: 'icon-picker',
-    });
-
-    const $iconContainer = $('<div/>', {
-      class: 'icon-picker--icon',
-      lang: Craft.language,
-    }).appendTo($container);
-
-    if (config.small) {
-      $container.addClass('small');
-      $iconContainer.addClass('small');
+    // Builds a <craft-icon-picker> web component, which mounts the Vue IconPicker
+    // (resources/js/common/form/IconPicker.vue), replacing the legacy jQuery
+    // Craft.IconPicker widget. The component renders its own form-postable
+    // control. (`small` isn't a component prop yet — see
+    // resources/js/modules/icon-picker/README.md.)
+    const $el = $('<craft-icon-picker/>');
+    if (config.name) {
+      $el.attr('name', config.name);
     }
-
-    if (!config.static) {
-      const $chooseBtn = this.createButton({
-        class: 'icon-picker--choose-btn',
-        label: Craft.t('app', 'Choose'),
-      }).appendTo($container);
-
-      const $removeBtn = this.createButton({
-        class: 'icon-picker--remove-btn hidden',
-        label: Craft.t('app', 'Remove'),
-      }).appendTo($container);
-
-      if (config.small) {
-        $chooseBtn.addClass('small');
-        $removeBtn.addClass('small');
-      }
-
-      if (config.name) {
-        $('<input/>', {
-          type: 'hidden',
-          name: config.name,
-        }).appendTo($container);
-      }
-    }
-
-    const iconPicker = new Craft.IconPicker($container, {
-      freeOnly: config.freeOnly,
-    });
-
     if (config.value) {
-      iconPicker.selectIcon(config.value);
+      $el.attr('value', config.value);
+    }
+    if (config.freeOnly) {
+      $el.attr('free-only', '');
+    }
+    if (config.static || config.disabled) {
+      $el.attr('disabled', '');
+    }
+    const labelledBy = config.labelledBy || config.labelId;
+    if (labelledBy) {
+      $el.attr('labelled-by', labelledBy);
+    }
+    if (config.describedBy) {
+      $el.attr('described-by', config.describedBy);
     }
 
-    return $container;
+    return $el;
   },
 
   createIconPickerField: function (config) {

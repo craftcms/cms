@@ -16,6 +16,7 @@ import './modules/editable-table';
 import './modules/generated-fields';
 import './modules/component-select';
 import './modules/input-generators';
+import './modules/icon-picker';
 import './modules/grouped-entry-type-manager';
 import './modules/queue';
 import './modules/slideout';
