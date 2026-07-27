@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Dashboard\CustomWidgets;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Dashboard\Widgets\Custom;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +23,7 @@ readonly class WidgetsController
     public function __construct(
         private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
+        private CustomWidgets $customWidgets,
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -30,10 +33,11 @@ readonly class WidgetsController
             'settings' => ['nullable', 'array'],
         ]);
 
-        /** @var class-string<WidgetInterface> $type */
-        $type = $data['type'];
+        $type = (string) $data['type'];
+        $widgetType = $this->dashboard->getAllWidgetTypes()->first(fn (string $widgetType) => $widgetType === $type);
+        $customDefinition = $widgetType ? null : $this->customWidgets->fromType($type);
 
-        if (! in_array($type, $this->dashboard->getAllWidgetTypes()->all())) {
+        if (! $widgetType && ! $customDefinition) {
             throw ValidationException::withMessages([
                 'type' => 'Invalid widget type.',
             ]);
@@ -45,10 +49,17 @@ readonly class WidgetsController
             $settings = $request->input($request->input('settingsNamespace'));
         }
 
-        $widget = $this->dashboard->createWidget([
-            'type' => $type,
-            'settings' => $settings,
-        ]);
+        $widget = $customDefinition
+            ? $this->dashboard->createWidget([
+                'type' => Custom::class,
+                'settings' => [
+                    'definitionId' => $customDefinition->id,
+                ],
+            ])
+            : $this->dashboard->createWidget([
+                'type' => $widgetType,
+                'settings' => $settings,
+            ]);
 
         return $this->saveAndReturnWidget($widget);
     }
@@ -66,7 +77,9 @@ readonly class WidgetsController
         $widget = $this->dashboard->getWidgetById($request->integer('widgetId'));
 
         // Create a new widget model with the new settings
-        $settings = $request->input("widget{$widget->id}-settings");
+        $settings = $widget instanceof Custom
+            ? $widget->getSettings()
+            : $request->input("widget{$widget->id}-settings");
 
         Validator::validate($settings, $widget->getRules());
 

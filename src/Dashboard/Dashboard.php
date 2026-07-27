@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Dashboard\Data\CustomWidgetDefinition;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
 use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport as CraftSupportWidget;
+use CraftCms\Cms\Dashboard\Widgets\Custom as CustomWidget;
 use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
 use CraftCms\Cms\Dashboard\Widgets\MyDrafts;
 use CraftCms\Cms\Dashboard\Widgets\NewUsers as NewUsersWidget;
@@ -38,6 +40,10 @@ use function CraftCms\Cms\currentUser;
 #[Singleton]
 readonly class Dashboard
 {
+    public function __construct(
+        private CustomWidgets $customWidgets,
+    ) {}
+
     /**
      * @return Collection<class-string<WidgetInterface>>
      */
@@ -291,6 +297,8 @@ readonly class Dashboard
     private function addDefaultUserWidgets(): void
     {
         $user = currentUser();
+        $customWidgets = $this->customWidgets->all()
+            ->filter(fn (CustomWidgetDefinition $definition) => $definition->showByDefault);
 
         // Recent Entries widget
         $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
@@ -313,6 +321,15 @@ readonly class Dashboard
                 'title' => 'Craft News',
             ],
         ]));
+
+        $customWidgets->each(function (CustomWidgetDefinition $definition) {
+            $this->saveWidget($this->createWidget([
+                'type' => CustomWidget::class,
+                'settings' => [
+                    'definitionId' => $definition->id,
+                ],
+            ]));
+        });
 
         User::where('id', $user->getCraftUserId())->update([
             'hasDashboard' => true,
