@@ -34,7 +34,7 @@
 
   const form = useForm({
     name: props.system.name ?? '',
-    live: props.system.live,
+    live: props.system.live ? 'true' : 'false',
     retryDuration: props.system.retryDuration,
     timeZone: props.system.timeZone,
   });
@@ -162,9 +162,6 @@
         show-all-on-empty
         :options="timezoneOptions"
       >
-        <template #item="{item}">
-          {{ item.label }}{{ item.data?.hint ? ` — ${item.data.hint}` : '' }}
-        </template>
         <template #after>
           <craft-callout
             variant="info"

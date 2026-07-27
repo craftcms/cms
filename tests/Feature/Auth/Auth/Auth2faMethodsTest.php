@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\AuthMethods;
-use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
 use CraftCms\Cms\Auth\Methods\BaseAuthMethod;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
@@ -150,23 +149,26 @@ test('methods are sorted with RecoveryCodes last', function () {
 test('custom methods can be registered', function () {
     $user = User::factory()->createElement();
 
-    Event::listen(AuthMethodsResolving::class, function (AuthMethodsResolving $event) {
-        $event->methods->push(TOTP::class);
-    });
+    app(AuthMethods::class)->register(CustomAuthMethod::class);
 
     $methods = $this->auth->getAllMethods($user);
 
-    expect($methods)->not()->toBeEmpty();
+    expect($methods->map(fn ($method) => $method::class))->toContain(CustomAuthMethod::class);
 });
 
-test('verifyMethod runs verification in a dedicated database transaction', function () {
-    Event::fakeExcept(AuthMethodsResolving::class);
-    Event::listen(AuthMethodsResolving::class, function (AuthMethodsResolving $event) {
-        $event->methods->push(TransactionAwareAuthMethod::class);
-    });
+class CustomAuthMethod extends TOTP
+{
+    #[Override]
+    public static function handle(): string
+    {
+        return 'custom';
+    }
+}
 
+test('verifyMethod runs verification in a dedicated database transaction', function () {
     $user = User::factory()->createElement();
     $auth = app(AuthMethods::class);
+    $auth->register(TransactionAwareAuthMethod::class);
     $auth->setUser($user);
     TransactionAwareAuthMethod::$transactionLevel = null;
     $transactionLevel = DB::transactionLevel();

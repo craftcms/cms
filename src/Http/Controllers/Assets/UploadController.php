@@ -174,8 +174,8 @@ readonly class UploadController
 
     public function replaceFile(Request $request): Response
     {
-        $assetId = $request->input('assetId');
-        $sourceAssetId = $request->input('sourceAssetId');
+        $assetId = $request->integer('assetId');
+        $sourceAssetId = $request->integer('sourceAssetId');
         $targetFilename = $request->input('targetFilename');
 
         if (

@@ -134,6 +134,13 @@ export class ElevatedSessionForm {
       return;
     }
 
+    // The guard only gates native form submissions. If an earlier listener
+    // already canceled the submit (e.g. an Inertia page that intercepts the
+    // form and confirms the session itself), there is nothing to resume.
+    if (event.defaultPrevented) {
+      return;
+    }
+
     if (!this.inputsChanged()) {
       return;
     }

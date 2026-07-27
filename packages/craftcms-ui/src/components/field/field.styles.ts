@@ -116,6 +116,10 @@ export default css`
   .input-group__input {
     flex: 1;
     display: flex;
+    /* Let the chrome shrink below its content's intrinsic width (e.g. a
+       slotted input with a large size attribute), instead of blowing out
+       of the column. */
+    min-width: 0;
   }
 
   .input-group__container > .input-group__input ::slotted(.form-control) {
