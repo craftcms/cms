@@ -77,7 +77,7 @@ class Flash
     public static function getNotice(): ?string
     {
         if (request()->isCpRequest()) {
-            return session()->get('cp-notification-notice')[0] ?? null;
+            return session()->get('cp-notification-notice')[0] ?? session()->get('notice');
         }
 
         return session()->get('notice');
@@ -86,7 +86,7 @@ class Flash
     public static function getSuccess(): ?string
     {
         if (request()->isCpRequest()) {
-            return session()->get('cp-notification-success')[0] ?? null;
+            return session()->get('cp-notification-success')[0] ?? session()->get('success');
         }
 
         return session()->get('success');
@@ -95,7 +95,7 @@ class Flash
     public static function getError(): ?string
     {
         if (request()->isCpRequest()) {
-            return session()->get('cp-notification-error')[0] ?? null;
+            return session()->get('cp-notification-error')[0] ?? session()->get('error');
         }
 
         return session()->get('error');

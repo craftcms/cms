@@ -2,7 +2,61 @@
 
 ## Unreleased
 
+- Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements, including dependency-injected closure values.
+- Added support for configuring field layout field instruction positions.
+- Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Asset\AssetFileKinds`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Cp\Settings::registerSetting()` and `registerReadOnlySetting()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Dashboard\WidgetTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Database\Commands\MigrateCommand::registerMigrator()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Element\ElementTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Field\FieldTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Field\LinkTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Field\NestedEntryFieldTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\FieldLayout\NativeFields`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Filesystem\FilesystemTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlArguments`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlDirectives`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlMutations`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlQueries`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Gql\GqlTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Image\ImageTransformers`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Support\Facades\AuthMethods`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\SystemMessage\SystemMessages::register()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\User\UserPermissions::registerPermissionGroup()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Utility\Utilities\ClearCaches::add()` and `addTag()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Utility\UtilityTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\View\TemplateCacheCollectors`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\View\TemplateRoots`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Moved `CraftCms\Cms\Cp\Concerns\EvaluatesClosures` to `CraftCms\Cms\Support\Concerns\EvaluatesClosures`.
+- Changed `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::label()` to accept an optional label and return the field layout element when one is passed. Overrides must accept the new optional argument.
+- Renamed the protected `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::instructions()`, `tip()`, and `warning()` methods to `instructionsText()`, `tipText()`, and `warningText()`.
+- Removed `CraftCms\Cms\Asset\Events\AssetFileKindsResolving`. `CraftCms\Cms\Asset\AssetFileKinds::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Auth\Events\AuthMethodsResolving`. `CraftCms\Cms\Auth\AuthMethods::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Cp\Events\RegisterCpSettings` and `CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings`. `CraftCms\Cms\Cp\Settings::registerSetting()` and `registerReadOnlySetting()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Dashboard\Events\WidgetTypesResolving`. `CraftCms\Cms\Dashboard\WidgetTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Database\Events\MigratorsResolving`. `CraftCms\Cms\Database\Commands\MigrateCommand::registerMigrator()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Element\Events\ElementResaveCommandsResolving`. A normal Artisan command in the `craft:resave` namespace should be registered instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Element\Events\ElementTypesResolving`. `CraftCms\Cms\Element\ElementTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Field\Events\FieldTypesResolving`. `CraftCms\Cms\Field\FieldTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Field\Events\LinkTypesResolving`. `CraftCms\Cms\Field\LinkTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving`. `CraftCms\Cms\Field\NestedEntryFieldTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving`. `CraftCms\Cms\FieldLayout\NativeFields::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving`. `CraftCms\Cms\Filesystem\FilesystemTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving`. `CraftCms\Cms\Gql\GqlArguments::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlDirectivesResolving`. `CraftCms\Cms\Gql\GqlDirectives::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlMutationsResolving`. `CraftCms\Cms\Gql\GqlMutations::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlQueriesResolving`. `CraftCms\Cms\Gql\GqlQueries::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Gql\Events\GqlTypesResolving`. `CraftCms\Cms\Gql\GqlTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Image\Events\ImageTransformersResolving`. `CraftCms\Cms\Image\ImageTransformers::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving`. `CraftCms\Cms\SystemMessage\SystemMessages::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\User\Events\UserPermissionsResolving`. `CraftCms\Cms\User\UserPermissions::registerPermissionGroup()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Utility\Events\ClearCachesOptionsResolving` and `CraftCms\Cms\Utility\Events\ClearCachesTagOptionsResolving`. `CraftCms\Cms\Utility\Utilities\ClearCaches::add()` and `addTag()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Utility\Events\UtilitiesResolving`. `CraftCms\Cms\Utility\UtilityTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\View\Events\CpTemplateRootsResolving` and `CraftCms\Cms\View\Events\SiteTemplateRootsResolving`. `CraftCms\Cms\View\TemplateRoots::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving`. `CraftCms\Cms\View\TemplateCacheCollectors::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Fixed a styling issue. ([#19296](https://github.com/craftcms/cms/pull/19296))
+- Fixed a bug where Yii adapter plugins could cause legacy Control Panel assets to be omitted. ([#19302](https://github.com/craftcms/cms/pull/19302))
 
 ## 6.0.0-alpha.14 - 2026-07-22
 
@@ -527,7 +581,7 @@ Craft’s Mutex classes have been deprecated. [Laravel’s atomic locking](https
 
 ##### Events
 
-- Deprecated `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES`. `CraftCms\Cms\Dashboard\WidgetTypes::register()` should be used instead.
+- Deprecated `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES`. `CraftCms\Cms\Dashboard\Events\WidgetTypesResolving` should be used instead.
 - Deprecated `craft\events\WidgetEvent` in favor of the following new events:
   - `craft\services\Dashboard::EVENT_BEFORE_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaving`
   - `craft\services\Dashboard::EVENT_AFTER_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaved`
@@ -946,7 +1000,7 @@ Craft 6 introduces a new validation system that uses Laravel’s Validator inste
 - Deprecated `craft\events\CreateFieldLayoutFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating` should be used instead.
 - Deprecated `craft\events\DefineFieldLayoutCustomFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving` should be used instead.
 - Deprecated `craft\events\DefineFieldLayoutElementsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving` should be used instead.
-- Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\NativeFields` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving` should be used instead.
 - Deprecated `craft\events\DefineShowFieldLayoutComponentInFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving` should be used instead.
 - Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving` should be used instead.
 
@@ -1391,13 +1445,14 @@ Moved the following controllers:
 - Added `CraftCms\Cms\View\DeltaRegistry`.
 - Added `CraftCms\Cms\Support\Facades\DeltaRegistry`.
 - Added `CraftCms\Cms\View\TemplateMode` enum.
-- Added `CraftCms\Cms\View\TemplateRoots`.
+- Added `CraftCms\Cms\View\Events\CpTemplateRootsResolving`.
+- Added `CraftCms\Cms\View\Events\SiteTemplateRootsResolving`.
 - Added `CraftCms\Cms\View\TemplateCaches`.
 - Added `CraftCms\Cms\View\CacheCollectors\DependencyCollector`.
 - Added `CraftCms\Cms\View\CacheCollectors\ResourceCollector`.
 - Added `CraftCms\Cms\View\Contracts\CacheCollectorInterface`.
 - Added `CraftCms\Cms\View\Data\TemplateCacheContext`.
-- Added `CraftCms\Cms\View\TemplateCacheCollectors`.
+- Added `CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving`.
 - Deprecated `craft\services\TemplateCaches`. `CraftCms\Cms\View\TemplateCaches` should be used instead.
 - Deprecated `craft\web\View::registerJs()`. `CraftCms\Cms\View\HtmlStack::js()` should be used instead.
 - Deprecated `craft\web\View::registerJsWithVars()`. `CraftCms\Cms\View\HtmlStack::jsWithVars()` should be used instead.
@@ -1440,8 +1495,8 @@ Moved the following controllers:
 - Deprecated `craft\web\View::getTemplatesPath()`. `CraftCms\Cms\View\TemplateMode::templatesPath()` should be used instead.
 - Deprecated `craft\web\View::getCpTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
 - Deprecated `craft\web\View::getSiteTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
-- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\TemplateRoots::register()` should be used instead.
-- Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\TemplateRoots::register()` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\CpTemplateRootsResolving` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\SiteTemplateRootsResolving` should be used instead.
 - Deprecated `craft\web\View::registerDeltaName()`. `CraftCms\Cms\View\DeltaRegistry::registerName()` should be used instead.
 - Deprecated `craft\web\View::getDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getNames()` should be used instead.
 - Deprecated `craft\web\View::getModifiedDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getModifiedNames()` should be used instead.

@@ -17,6 +17,11 @@ use function CraftCms\Cms\t;
  */
 class LineBreak extends FieldLayoutElement
 {
+    public static function make(): static
+    {
+        return app(static::class);
+    }
+
     #[Override]
     public function isMultiInstance(): bool
     {
