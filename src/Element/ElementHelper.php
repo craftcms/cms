@@ -43,8 +43,12 @@ class ElementHelper
     /**
      * Returns whether the given slug is temporary.
      */
-    public static function isTempSlug(string $slug): bool
+    public static function isTempSlug(?string $slug): bool
     {
+        if ($slug === null) {
+            return false;
+        }
+
         return str_starts_with($slug, '__temp_');
     }
 
