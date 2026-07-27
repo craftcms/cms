@@ -1,5 +1,12 @@
 /** global: Craft */
 /** global: Garnish */
+import {
+  createSwitch as uiCreateSwitch,
+  createInputColor as uiCreateInputColor,
+  createInputPassword as uiCreateInputPassword,
+  createSlidePicker as uiCreateSlidePicker,
+} from '@craftcms/ui/factory';
+
 Craft.ui = {
   createButton: function (config) {
     const $btn = $('<button/>', {
@@ -179,38 +186,9 @@ Craft.ui = {
   },
 
   createPasswordInput(config) {
-    // Builds a <craft-input-password> web component (mirrors the server-rendered
-    // CraftCms\Cms\Cp\Components\InputPassword) — a text input with a built-in
-    // show/hide reveal toggle, replacing the legacy Craft.PasswordInput JS. The
-    // native input lives in the light DOM as the component's form control.
-    var $inner = this.createTextInput(
-      Object.assign({}, config, {
-        type: 'password',
-      })
-    );
-    // createTextInput wraps password inputs in a legacy .passwordwrapper; unwrap
-    // to the native input for the web component's `input` slot.
-    var $input = $inner.is('input') ? $inner : $inner.find('input').first();
-
-    var $el = $('<craft-input-password/>');
-    // Lion pushes these control props onto the slotted input on upgrade, so they
-    // must live on the host too (mirrors InputPassword::hostAttributes()).
-    if (config.name) {
-      $el.attr('name', config.name);
-    }
-    if (config.placeholder) {
-      $el.attr('placeholder', config.placeholder);
-    }
-    if (this.getDisabledValue(config.disabled)) {
-      $el.attr('disabled', '');
-    }
-    if (config.readonly) {
-      $el.attr('readonly', '');
-    }
-
-    $input.attr('slot', 'input').appendTo($el);
-
-    return $el;
+    // Delegates to @craftcms/ui's createInputPassword; jQuery-wraps for legacy
+    // callers.
+    return $(uiCreateInputPassword(config));
   },
 
   createPasswordField(config) {
@@ -667,99 +645,9 @@ Craft.ui = {
   },
 
   createLightswitch: function (config) {
-    // Builds a <craft-switch> web component, mirroring the server-rendered
-    // CraftCms\Cms\Cp\Components\Lightswitch. The switch button and hidden
-    // input live in the light DOM so input namespacing and legacy
-    // Craft.FieldToggle hooks keep working.
-    var value = config.value || '1';
-    var indeterminateValue = config.indeterminateValue || '-';
-    var on = !!config.on;
-    var indeterminate = !on && !!config.indeterminate;
-    var size = config.small ? 'small' : 'medium';
-
-    // Host <craft-switch> (mirrors Lightswitch::hostAttributes()).
-    var $switch = $('<craft-switch/>');
-    if (on) {
-      $switch.attr('checked', '');
-    }
-    if (indeterminate) {
-      $switch.attr('indeterminate', '');
-    }
-    if (config.disabled) {
-      $switch.attr('disabled', '');
-    }
-    if (config.small) {
-      $switch.attr('size', 'small');
-    }
-    if (value !== '1') {
-      $switch.attr('value', value);
-    }
-    if (indeterminateValue !== '-') {
-      $switch.attr('indeterminate-value', indeterminateValue);
-    }
-    if (config.label) {
-      $switch.attr('label', config.label);
-    }
-    if (config.onLabel && config.onLabel !== config.label) {
-      $switch.attr('on-label', config.onLabel);
-    }
-    if (config.offLabel) {
-      $switch.attr('off-label', config.offLabel);
-    }
-
-    // Switch button in the light DOM (mirrors Lightswitch::switchButtonHtml()).
-    var $button = $('<craft-switch-button/>', {
-      slot: 'input',
-      id: config.id,
-      role: 'switch',
-      size: size,
-      'data-tag-name': 'craft-switch-button',
-      'aria-checked': on ? 'true' : indeterminate ? 'mixed' : 'false',
-    });
-    if (on) {
-      $button.attr('checked', '');
-    }
-    if (indeterminate) {
-      $button.attr('indeterminate', '');
-    }
-    if (config.disabled) {
-      $button.attr('disabled', '');
-    }
-    if (config.labelId) {
-      $button.attr('aria-labelledby', config.labelId);
-    }
-    if (config.toggle) {
-      $button.attr('data-target', config.toggle);
-    }
-    if (config.reverseToggle) {
-      $button.attr('data-reverse-target', config.reverseToggle);
-    }
-    if (config.toggle || config.reverseToggle) {
-      $button.addClass('fieldtoggle');
-    }
-    $button.appendTo($switch);
-
-    // Hidden input posting the state (mirrors Lightswitch::hiddenInputHtml()).
-    if (config.name) {
-      $('<input/>', {
-        type: 'hidden',
-        slot: 'hidden-input',
-        name: config.name,
-        value: on ? value : indeterminate ? indeterminateValue : '',
-      })
-        .prop('disabled', !!config.disabled)
-        .appendTo($switch);
-    }
-
-    // Legacy Craft.LightSwitch invoked settings.onChange(on); the element
-    // dispatches a native change event that bubbles to the host.
-    if (config.onChange) {
-      $switch.on('change', function () {
-        config.onChange(this.on);
-      });
-    }
-
-    return $switch;
+    // The element-building logic now lives in @craftcms/ui's createSwitch; this
+    // thin shim wraps the returned element in jQuery for legacy callers.
+    return $(uiCreateSwitch(config));
   },
 
   createLightswitchField: function (config) {
@@ -817,66 +705,9 @@ Craft.ui = {
   },
 
   createSlidePicker: function (config) {
-    // Builds a <craft-slide-picker> web component directly (the same element
-    // Dashboard/field-layout-designer emit), replacing the legacy Craft.SlidePicker
-    // JS. A hidden input carries the value for form posting.
-    config = config || {};
-    const min = typeof config.min === 'function' ? config.min() : config.min ?? 0;
-    const max = typeof config.max === 'function' ? config.max() : config.max ?? 100;
-    const step = typeof config.step !== 'undefined' ? config.step : 10;
-    const value = typeof config.value === 'number' ? config.value : min;
-    const readOnly = !!(config.readOnly || config.disabled || config.static);
-
-    const $el = $('<craft-slide-picker/>');
-    const el = $el[0];
-    el.min = min;
-    el.max = max;
-    el.step = step;
-    el.value = value || 0;
-    el.label = config.label || Craft.t('app', 'Number of columns');
-    el.valueLabel =
-      config.valueLabel ||
-      ((value) => {
-        return `${value}`;
-      });
-    if (config.describedBy) {
-      el.setAttribute('described-by', config.describedBy);
-    }
-    if (readOnly) {
-      el.setAttribute('read-only', '');
-    }
-    if (config.id) {
-      $el.attr('id', config.id);
-    }
-    if (config.class) {
-      $el.addClass(config.class);
-    }
-
-    let $input = null;
-    if (config.name) {
-      $input = $('<input/>', {
-        type: 'hidden',
-        name: config.name,
-        value: el.value,
-      })
-        .prop('disabled', !!config.disabled)
-        .appendTo($el);
-    }
-
-    $el.on('value-change', (event) => {
-      const value = event.originalEvent?.detail?.value;
-      if (typeof value !== 'number') {
-        return;
-      }
-      if ($input) {
-        $input.val(value);
-      }
-      if (config.onChange) {
-        config.onChange(value);
-      }
-    });
-
-    return $el;
+    // Delegates to @craftcms/ui's createSlidePicker; jQuery-wraps for legacy
+    // callers.
+    return $(uiCreateSlidePicker(config));
   },
 
   createSlidePickerField: function (config) {
@@ -896,44 +727,9 @@ Craft.ui = {
   },
 
   createColorInput: function (config) {
-    // Builds a <craft-input-color> web component (mirrors the server-rendered
-    // CraftCms\Cms\Cp\Components\InputColor) — a hex input paired with a native
-    // color-picker swatch, replacing the legacy .color-container markup + the
-    // Craft.ColorInput JS. The native input lives in the light DOM as the
-    // component's form control.
-    const id = config.id || 'color' + Math.floor(Math.random() * 1000000000);
-    const name = config.name || null;
-    const value = config.value || null;
-    const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
-    const disabled = config.disabled || false;
-
-    const $input = this.createTextInput({
-      id: id,
-      name: name,
-      value: Craft.ltrim(value, '#'),
-      size: 10,
-      class: 'color-input',
-      autofocus: autofocus,
-      disabled: disabled,
-      'aria-label': Craft.t('app', 'Color hex value'),
-    });
-
-    const $el = $('<craft-input-color/>');
-    // Lion pushes these control props onto the slotted input on upgrade, so they
-    // must live on the host too (mirrors InputColor::hostAttributes()).
-    if (name) {
-      $el.attr('name', name);
-    }
-    if (this.getDisabledValue(disabled)) {
-      $el.attr('disabled', '');
-    }
-    if (config.presets && config.presets.length) {
-      $el.attr('presets', JSON.stringify(config.presets));
-    }
-
-    $input.attr('slot', 'input').appendTo($el);
-
-    return $el;
+    // Delegates to @craftcms/ui's createInputColor; jQuery-wraps for legacy
+    // callers.
+    return $(uiCreateInputColor(config));
   },
 
   createColorField: function (config) {
