@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use DateTimeInterface;
 use Override;
@@ -49,6 +50,13 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
     public function hasCustomWidth(): bool
     {
         return false;
+    }
+
+    public function width(int|Closure $width): static
+    {
+        $this->width = $this->evaluate($width);
+
+        return $this;
     }
 
     /**

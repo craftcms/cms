@@ -23,14 +23,14 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
-use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
+use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 
-uses(TestCase::class);
+uses(DatabaseTestCase::class);
 
 beforeEach(function() {
     app(Gql::class)->flushCaches();
