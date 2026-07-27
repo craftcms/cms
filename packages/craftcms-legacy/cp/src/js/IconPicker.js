@@ -2,8 +2,21 @@
 /** global: Garnish */
 /**
  * Icon Picker
+ *
+ * NOTE: this is a Garnish.Base widget, not an input generator — it overrides
+ * init() entirely and uses no source/target generation. It historically extended
+ * Craft.BaseInputGenerator, but that only ever provided Garnish.Base
+ * infrastructure (addListener/trigger/setSettings/destroy). Now that the
+ * generators are ported to modern TS (resources/js/modules/input-generators),
+ * Craft.BaseInputGenerator is a plain ES class with no legacy .extend(), so this
+ * extends Garnish.Base directly.
+ *
+ * The modern replacement is the Vue component resources/js/common/form/IconPicker.vue
+ * (used by the migrated entry-types Edit page); this legacy widget stays until
+ * its remaining jQuery/Twig surfaces (editableTable, CustomizeSourcesModal) move
+ * to Vue.
  */
-Craft.IconPicker = Craft.BaseInputGenerator.extend(
+Craft.IconPicker = Garnish.Base.extend(
   {
     $container: null,
     $preview: null,
