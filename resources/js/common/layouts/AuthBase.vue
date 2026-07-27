@@ -3,7 +3,7 @@
   import useCraftData from '@/common/composables/useCraftData';
   import craftCmsLogoUrl from '@public/images/craftcms.svg';
   import {t} from '@craftcms/ui';
-  import GlobalLiveRegion from '@/common/components/GlobalLiveRegion.vue';
+  import LiveRegion from '@/common/components/LiveRegion.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -20,7 +20,7 @@
 <template>
   <Head :title="props.title"></Head>
   <main class="cp-login">
-    <GlobalLiveRegion />
+    <LiveRegion />
     <div class="cp-login__wrapper grid gap-3 justify-items-center">
       <h1 class="flex justify-center">
         <img

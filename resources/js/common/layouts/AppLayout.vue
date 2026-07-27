@@ -9,7 +9,7 @@
   import FlashMessages from '@/common/components/FlashMessages.vue';
   import FormActions from '@/common/components/FormActions.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
-  import GlobalLiveRegion from '@/common/components/GlobalLiveRegion.vue';
+  import LiveRegion from '@/common/components/LiveRegion.vue';
   import Pane from '@/common/components/Pane.vue';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
   import SystemInfo from '@/common/components/SystemInfo.vue';
@@ -194,7 +194,7 @@
 
 <template>
   <Head :title="pageTitle" />
-  <GlobalLiveRegion />
+  <LiveRegion />
   <div class="cp">
     <header class="cp__header">
       <a
