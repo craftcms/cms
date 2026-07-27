@@ -66,7 +66,7 @@ class EmailField extends TextField
     }
 
     #[Override]
-    protected function warning(?ElementInterface $element = null, bool $static = false): ?string
+    protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
     {
         /** @var User $element */
         if (

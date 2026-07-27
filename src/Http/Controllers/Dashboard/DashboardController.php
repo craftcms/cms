@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
@@ -24,6 +25,7 @@ readonly class DashboardController
     public function __construct(
         private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
+        private WidgetTypes $widgetTypes,
     ) {}
 
     public function index()
@@ -31,7 +33,7 @@ readonly class DashboardController
         /**
          * @var Collection<string, array{iconSvg: mixed, name: string, maxColspan: int|null, settingsHtml?: string, settingsJs?: mixed, selectable: bool}> $widgetTypeInfo
          */
-        $widgetTypeInfo = $this->dashboard->getAllWidgetTypes()
+        $widgetTypeInfo = $this->widgetTypes->types()
             /** @var class-string<WidgetInterface> $widgetType */
             ->filter(fn (string $widgetType) => $widgetType::isSelectable())
             /** @phpstan-ignore argument.unresolvableType */

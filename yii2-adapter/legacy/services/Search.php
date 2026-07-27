@@ -18,8 +18,8 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Search\Events\KeywordsIndexing;
-use CraftCms\Cms\Search\Events\ScoringResults;
-use CraftCms\Cms\Search\Events\SearchPerformed;
+use CraftCms\Cms\Search\Events\SearchResultsResolving;
+use CraftCms\Cms\Search\Events\SearchScoresResolving;
 use CraftCms\Cms\Search\Events\SearchStarting;
 use CraftCms\Cms\Search\Search as LaravelSearch;
 use CraftCms\Cms\Search\SearchQuery;
@@ -33,6 +33,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use WeakMap;
 use yii\base\Component;
 use yii\db\Expression;
 
@@ -47,6 +48,9 @@ use yii\db\Expression;
  */
 class Search extends Component
 {
+    /** @var WeakMap<ElementQueryInterface,array<string,int>>|null */
+    private static ?WeakMap $legacyScores = null;
+
     /**
      * @event IndexKeywordsEvent The event that is triggered before keywords are indexed for an element attribute or field.
      *
@@ -321,7 +325,7 @@ class Search extends Component
             }
         });
 
-        Event::listen(ScoringResults::class, function(ScoringResults $event) {
+        Event::listen(SearchResultsResolving::class, function(SearchResultsResolving $event) {
             if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {
                 $yiiEvent = new SearchEvent([
                     'elementQuery' => $event->elementQuery,
@@ -332,7 +336,8 @@ class Search extends Component
                 Craft::$app->getSearch()->trigger(self::EVENT_BEFORE_SCORE_RESULTS, $yiiEvent);
 
                 if ($yiiEvent->scores !== null) {
-                    $event->scores = $yiiEvent->scores;
+                    self::$legacyScores ??= new WeakMap();
+                    self::$legacyScores[$event->elementQuery] = $yiiEvent->scores;
                 }
 
                 if ($yiiEvent->results !== null) {
@@ -341,7 +346,12 @@ class Search extends Component
             }
         });
 
-        Event::listen(SearchPerformed::class, function(SearchPerformed $event) {
+        Event::listen(SearchScoresResolving::class, function(SearchScoresResolving $event) {
+            if (isset(self::$legacyScores[$event->elementQuery])) {
+                $event->scores = self::$legacyScores[$event->elementQuery];
+                unset(self::$legacyScores[$event->elementQuery]);
+            }
+
             if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
                 $yiiEvent = new SearchEvent([
                     'elementQuery' => $event->elementQuery,

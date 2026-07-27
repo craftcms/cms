@@ -578,7 +578,7 @@ JS,
      */
     protected function slugFieldHtml(bool $static): string|Stringable
     {
-        $slug = isset($this->slug) && ! ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
+        $slug = ! ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
         return FormFields::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),

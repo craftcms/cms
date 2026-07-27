@@ -8,13 +8,13 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
+use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
-uses(TestCase::class);
+uses(DatabaseTestCase::class);
 
 afterEach(function() {
     DeprecatedConcepts::resetSupport();

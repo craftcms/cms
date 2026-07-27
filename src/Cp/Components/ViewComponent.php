@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use CraftCms\Cms\Cp\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Htmlable;

@@ -9,6 +9,9 @@ use Override;
 
 /**
  * @method static \Illuminate\Support\Collection getAllMethods(\CraftCms\Cms\User\Contracts\CraftUser|null $user = null)
+ * @method static void register(string ...$types)
+ * @method static void remove(string ...$types)
+ * @method static \Illuminate\Support\Collection types()
  * @method static \Illuminate\Support\Collection getAvailableMethods(\CraftCms\Cms\User\Contracts\CraftUser|null $user = null)
  * @method static bool hasActiveMethod(\CraftCms\Cms\User\Contracts\CraftUser|null $user = null)
  * @method static \Illuminate\Support\Collection getActiveMethods(\CraftCms\Cms\User\Contracts\CraftUser|null $user = null)
