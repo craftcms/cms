@@ -11,6 +11,9 @@
   'use strict';
 
   function init() {
+    // Class stubs don't need jQuery, so register them before the guard below.
+    registerRemovedClassStubs();
+
     var $ = window.jQuery;
     if (!$) {
       return;
@@ -19,6 +22,60 @@
     registerInfoIcon($);
     registerLightswitch($);
     autoUpgrade($);
+  }
+
+  /**
+   * Deprecation stubs for legacy Craft CP classes that have been removed from
+   * the core bundle. Core has no callers, but a third-party plugin might still
+   * `new Craft.<Class>()` — without a stub that fails as an opaque
+   * "undefined is not a constructor". Each stub warns once (matching the CP's
+   * console.warn deprecation idiom) and is otherwise inert.
+   */
+  function registerRemovedClassStubs() {
+    if (!window.Craft) {
+      return;
+    }
+
+    defineRemovedClass(
+      'Accordion',
+      'Craft.Accordion has been removed. It was an unused legacy CP UI widget with no replacement.'
+    );
+    defineRemovedClass(
+      'EnvVarGenerator',
+      'Craft.EnvVarGenerator has been removed. It was an unused legacy input generator with no replacement.'
+    );
+  }
+
+  /**
+   * Defines Craft.<name> as an inert Garnish.Base subclass that warns once when
+   * instantiated or subclassed, preserving the extend()/new shape the removed
+   * class had. Skips if something already defines the name.
+   */
+  function defineRemovedClass(name, message) {
+    var Craft = window.Craft;
+    if (Craft[name]) {
+      return;
+    }
+
+    var warned = false;
+    function warnOnce() {
+      if (!warned) {
+        warned = true;
+        console.warn(message);
+      }
+    }
+
+    if (window.Garnish && Garnish.Base && Garnish.Base.extend) {
+      Craft[name] = Garnish.Base.extend({
+        init: function () {
+          warnOnce();
+        },
+      });
+    } else {
+      Craft[name] = function () {
+        warnOnce();
+      };
+    }
   }
 
   /**

@@ -31,7 +31,6 @@ import './js/Tabs.js';
 import './js/ElementThumbLoader.js';
 
 // Finally load the remaining files
-import './js/Accordion';
 import './js/AdminTable.js';
 import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
@@ -58,7 +57,6 @@ import './js/ElementFieldSettings.js';
 import './js/ElementTableSorter.js';
 import './js/EntryIndex.js';
 import './js/EntrySelectInput.js';
-import './js/EnvVarGenerator.js';
 import './js/EntryMover.js';
 import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
