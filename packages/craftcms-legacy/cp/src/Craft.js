@@ -69,7 +69,6 @@ import './js/Preview.js';
 import './js/PreviewFileModal.js';
 import './js/ProgressBar.js';
 import './js/PromptHandler.js';
-import './js/SlideRuleInput.js';
 import './js/Structure.js';
 import './js/StructureDrag.js';
 import './js/TableElementIndexView.js';

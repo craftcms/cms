@@ -53,6 +53,10 @@
       'IconPicker',
       'Craft.IconPicker has been removed. Emit <craft-icon-picker> directly instead (or use Craft.ui.createIconPicker).'
     );
+    defineRemovedClass(
+      'SlideRuleInput',
+      'Craft.SlideRuleInput has been removed. Emit <craft-slide-rule> directly instead.'
+    );
   }
 
   /**

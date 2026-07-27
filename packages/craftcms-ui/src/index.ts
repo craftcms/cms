@@ -59,6 +59,7 @@ export {default as CraftSelectedFileList} from './components/input-file/selected
 export {default as CraftSelect} from './components/select/select.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
 export {default as CraftSlidePicker} from './components/slide-picker/slide-picker.js';
+export {default as CraftSlideRule} from './components/slide-rule/slide-rule.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftStatus} from './components/status/status.js';
 export {default as CraftSwitchButton} from './components/switch-button/switch-button.js';
