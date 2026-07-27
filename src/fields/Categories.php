@@ -9,9 +9,13 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\behaviors\EventBehavior;
+use craft\db\FixedOrderExpression;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
+use craft\elements\db\ElementQuery;
 use craft\elements\ElementCollection;
+use craft\events\CancelableEvent;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -105,27 +109,36 @@ class Categories extends BaseRelationField
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if (is_array($value) && $this->maintainHierarchy) {
-            /** @var Category[] $categories */
-            $categories = Category::find()
-                ->siteId($this->targetSiteId($element))
-                ->id(array_values(array_filter($value)))
-                ->status(null)
-                ->all();
+        $query = parent::normalizeValue($value, $element);
 
-            // Fill in any gaps
-            $structuresService = Craft::$app->getStructures();
-            $structuresService->fillGapsInElements($categories);
+        // Fill in gaps and enforce the branch limit, but only once this query actually gets
+        // executed on its own - if it's about to be discarded in favor of eager-loaded results
+        // (e.g. via `.eagerly()`), there's no point doing this work just to throw it away.
+        if (is_array($value) && $this->maintainHierarchy && $query instanceof ElementQuery) {
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(CancelableEvent $event, ElementQuery $query) use ($element) {
+                    /** @var Category[] $categories */
+                    $categories = Category::find()
+                        ->siteId($this->targetSiteId($element))
+                        ->id($query->where['elements.id'] ?? [])
+                        ->status(null)
+                        ->all();
 
-            // Enforce the branch limit
-            if ($this->branchLimit) {
-                $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
-            }
+                    $structuresService = Craft::$app->getStructures();
+                    $structuresService->fillGapsInElements($categories);
 
-            $value = array_map(fn(Category $category) => $category->id, $categories);
+                    if ($this->branchLimit) {
+                        $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
+                    }
+
+                    $finalIds = array_map(fn(Category $category) => $category->id, $categories);
+                    $query->where(['elements.id' => $finalIds]);
+                    $query->orderBy([new FixedOrderExpression('elements.id', $finalIds, Craft::$app->getDb())]);
+                },
+            ]));
         }
 
-        return parent::normalizeValue($value, $element);
+        return $query;
     }
 
     /**
