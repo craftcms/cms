@@ -14,6 +14,7 @@ use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Input;
+use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
@@ -815,14 +816,14 @@ readonly class FormFields
      * A `maxlength` alone keeps the legacy full-width behavior unless a
      * `width` is configured, since the web component would otherwise shrink.
      */
-    public static function textFromConfig(array $config): Input
+    public static function textFromConfig(array $config, ?Input $input = null): Input
     {
         $inputAttributes = $config['inputAttributes'] ?? [];
         $size = ($config['size'] ?? false) ?: null;
         $maxlength = ($config['maxlength'] ?? false) ?: null;
         $value = $config['value'] ?? null;
 
-        return Input::make()
+        return ($input ?? Input::make())
             ->id($config['id'] ?? 'text'.mt_rand())
             ->type($config['type'] ?? 'text')
             ->name($config['name'] ?? null)
@@ -862,6 +863,42 @@ readonly class FormFields
 
         return self::fieldHtml(
             fn (array $c): string => self::textFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    public static function passwordHtml(array $config): string
+    {
+        return self::passwordFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy password config surface onto the {@see InputPassword}
+     * component — the PHP twin of the `_includes/forms/password` glue template.
+     * A password input is a text input with a fixed type plus the component's
+     * built-in reveal toggle (which replaces the legacy Craft.PasswordInput JS),
+     * so this reuses the text mapping and swaps the component. The legacy
+     * `.password` input class is preserved for any CSS/JS still keyed on it.
+     */
+    public static function passwordFromConfig(array $config): InputPassword
+    {
+        $config['type'] = 'password';
+        $classes = Html::explodeClass($config['class'] ?? []);
+        $classes[] = 'password';
+        $config['class'] = $classes;
+
+        $input = InputPassword::make();
+        self::textFromConfig($config, $input);
+
+        return $input;
+    }
+
+    public static function passwordFieldHtml(array $config): string
+    {
+        $config['id'] ??= 'password'.mt_rand();
+
+        return self::fieldHtml(
+            fn (array $c): string => self::passwordFromConfig($c)->toHtml(),
             $config,
         );
     }

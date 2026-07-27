@@ -218,6 +218,10 @@ function cpDriftExpectedPhpOnly(): array
         // on upgrade (LionInput/LionTextarea `updated()`), clobbering
         // server-rendered attributes with its defaults otherwise.
         'craft-input' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
+        // craft-input-password extends LionInput directly (no craft-input host
+        // props), so it only carries the Lion-pushed control props; `type` is
+        // owned by the component's reveal toggle, not server-set.
+        'craft-input-password' => ['placeholder', 'name', 'disabled', 'readonly'],
         'craft-textarea' => ['placeholder', 'name', 'disabled', 'readonly', 'rows'],
 
         // craft-icon: `data-color` is the global palette-scoping attribute

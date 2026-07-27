@@ -23,6 +23,7 @@
     registerInfoIconClass($);
     registerLightswitch($);
     registerLightSwitchClass($);
+    registerPasswordInputClass($);
     autoUpgrade($);
   }
 
@@ -323,6 +324,112 @@
     };
 
     Craft.LightSwitch = LightSwitch;
+  }
+
+  /**
+   * BC replacement for the removed `Craft.PasswordInput` class. Warns once, then
+   * upgrades a legacy `<input type="password">` (and its `.passwordwrapper`) into
+   * a `<craft-input-password>`, which provides the show/hide reveal toggle
+   * natively — so `new Craft.PasswordInput(el, settings)` keeps producing a
+   * working, toggleable password field. Exposes the legacy programmatic surface
+   * (togglePassword etc.) as thin delegates to the element.
+   */
+  function registerPasswordInputClass($) {
+    var Craft = window.Craft;
+    if (!Craft || Craft.PasswordInput) {
+      return;
+    }
+
+    var warned = false;
+
+    function PasswordInput(passwordInput, settings) {
+      if (!(this instanceof PasswordInput)) {
+        return new PasswordInput(passwordInput, settings);
+      }
+      if (!warned) {
+        warned = true;
+        console.warn(
+          'Craft.PasswordInput is deprecated. Emit <craft-input-password> directly instead.'
+        );
+      }
+
+      this.settings = $.extend({onToggleInput: $.noop}, settings || {});
+
+      var $input = $(passwordInput);
+      this.$passwordInput = $input;
+
+      // Already inside a craft-input-password (e.g. server-rendered)? Just adopt
+      // it — nothing to upgrade.
+      var $existing = $input.closest('craft-input-password');
+      if ($existing.length) {
+        this.$input = $existing;
+
+        return;
+      }
+
+      var $el = $('<craft-input-password/>');
+      var el = $input[0];
+      if (el) {
+        // Lion pushes these control props onto the slotted input on upgrade, so
+        // mirror them onto the host (see InputPassword::hostAttributes()).
+        if (el.name) {
+          $el.attr('name', el.name);
+        }
+        if (el.placeholder) {
+          $el.attr('placeholder', el.placeholder);
+        }
+        if (el.disabled) {
+          $el.attr('disabled', '');
+        }
+        if (el.readOnly) {
+          $el.attr('readonly', '');
+        }
+      }
+
+      // Upgrade the legacy .passwordwrapper if present, else the bare input.
+      var $wrapper = $input.parent('.passwordwrapper');
+      var $target = $wrapper.length ? $wrapper : $input;
+      $input.attr({type: 'password', slot: 'input'}).appendTo($el);
+      $target.replaceWith($el);
+
+      this.$input = $el;
+    }
+
+    PasswordInput.prototype = {
+      constructor: PasswordInput,
+
+      togglePassword: function () {
+        var el = this.$input && this.$input[0];
+        if (el && typeof el.reveal === 'function') {
+          el.reveal();
+        }
+        this.settings.onToggleInput(this.$passwordInput);
+      },
+
+      // The web component owns the reveal state; these route through the same
+      // toggle, but only when a change is actually needed (`type === 'text'`
+      // means currently revealed).
+      showPassword: function () {
+        this._reveal(true);
+      },
+      hidePassword: function () {
+        this._reveal(false);
+      },
+      _reveal: function (show) {
+        var el = this.$input && this.$input[0];
+        if (!el || typeof el.reveal !== 'function') {
+          return;
+        }
+        if ((el.type === 'text') !== show) {
+          el.reveal();
+        }
+        this.settings.onToggleInput(this.$passwordInput);
+      },
+      updateToggleLabel: function () {},
+      destroy: function () {},
+    };
+
+    Craft.PasswordInput = PasswordInput;
   }
 
   /**

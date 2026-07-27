@@ -27,6 +27,7 @@ class ComponentRegistry
         'field-group' => FieldGroup::class,
         'icon' => Icon::class,
         'input' => Input::class,
+        'input-password' => InputPassword::class,
         'lightswitch' => Lightswitch::class,
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,

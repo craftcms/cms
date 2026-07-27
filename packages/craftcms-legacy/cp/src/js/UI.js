@@ -179,19 +179,42 @@ Craft.ui = {
   },
 
   createPasswordInput(config) {
-    return this.createTextInput(
+    // Builds a <craft-input-password> web component (mirrors the server-rendered
+    // CraftCms\Cms\Cp\Components\InputPassword) — a text input with a built-in
+    // show/hide reveal toggle, replacing the legacy Craft.PasswordInput JS. The
+    // native input lives in the light DOM as the component's form control.
+    var $inner = this.createTextInput(
       Object.assign({}, config, {
         type: 'password',
       })
     );
+    // createTextInput wraps password inputs in a legacy .passwordwrapper; unwrap
+    // to the native input for the web component's `input` slot.
+    var $input = $inner.is('input') ? $inner : $inner.find('input').first();
+
+    var $el = $('<craft-input-password/>');
+    // Lion pushes these control props onto the slotted input on upgrade, so they
+    // must live on the host too (mirrors InputPassword::hostAttributes()).
+    if (config.name) {
+      $el.attr('name', config.name);
+    }
+    if (config.placeholder) {
+      $el.attr('placeholder', config.placeholder);
+    }
+    if (this.getDisabledValue(config.disabled)) {
+      $el.attr('disabled', '');
+    }
+    if (config.readonly) {
+      $el.attr('readonly', '');
+    }
+
+    $input.attr('slot', 'input').appendTo($el);
+
+    return $el;
   },
 
   createPasswordField(config) {
-    return this.createTextField(
-      Object.assign({}, config, {
-        type: 'password',
-      })
-    );
+    return this.createField(this.createPasswordInput(config), config);
   },
 
   createCopyTextInput: function (config) {
