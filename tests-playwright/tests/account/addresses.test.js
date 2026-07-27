@@ -4,6 +4,15 @@ const {test, expect} = require('../../index');
 
 const slideoutLocator = '.slideout-container:not(.hidden)';
 
+/**
+ * Address labels are made unique per run so leftover cards from an earlier
+ * run (e.g. when the database isn't restored between runs) can't collide
+ * with this run's locators.
+ */
+function uniqueLabel(name) {
+  return `${name} ${Date.now()}`;
+}
+
 test.beforeAll(async ({craftSetup}) => {
   await craftSetup.cleanAll();
 });
@@ -63,7 +72,7 @@ test.describe('Creating addresses', () => {
   });
 
   test('A created address appears as a card', async ({page}) => {
-    const label = 'Created address';
+    const label = uniqueLabel('Created address');
 
     await createAddress(page, label);
 
@@ -77,8 +86,8 @@ test.describe('Editing addresses', () => {
   test('Edits made in the slideout show on the card after saving', async ({
     page,
   }) => {
-    const label = 'Edit target';
-    const editedLabel = 'Edit target (edited)';
+    const label = uniqueLabel('Edit target');
+    const editedLabel = label + ' (edited)';
 
     await createAddress(page, label);
 
@@ -102,7 +111,8 @@ test.describe('Editing addresses', () => {
   });
 
   test('Cancelling an edit leaves the card unchanged', async ({page}) => {
-    const label = 'Cancelled edit';
+    const label = uniqueLabel('Cancelled edit');
+    const discardedLabel = label + ' (discarded)';
 
     await createAddress(page, label);
 
@@ -112,18 +122,21 @@ test.describe('Editing addresses', () => {
       .click();
     await slideout.waitFor();
 
-    await slideout.locator('input[name$="[title]"]').fill('Discarded label');
+    await slideout.locator('input[name$="[title]"]').fill(discardedLabel);
+
+    // Cancelling a dirty editor asks whether to discard the changes.
+    page.once('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', {name: 'Cancel'}).click();
     await slideout.waitFor({state: 'hidden'});
 
     await expect(cardByLabel(page, label)).toBeVisible();
-    await expect(cardByLabel(page, 'Discarded label')).toHaveCount(0);
+    await expect(cardByLabel(page, discardedLabel)).toHaveCount(0);
   });
 });
 
 test.describe('Deleting addresses', () => {
   test('Deleting an address removes its card', async ({page}) => {
-    const label = 'Delete target';
+    const label = uniqueLabel('Delete target');
 
     await createAddress(page, label);
 
@@ -138,7 +151,7 @@ test.describe('Deleting addresses', () => {
   });
 
   test('Dismissing the confirmation keeps the address', async ({page}) => {
-    const label = 'Kept address';
+    const label = uniqueLabel('Kept address');
 
     await createAddress(page, label);
 
@@ -156,7 +169,7 @@ test.describe('Duplicating addresses', () => {
   test('Duplicating an address adds a second card with the same content', async ({
     page,
   }) => {
-    const label = 'Duplicate target';
+    const label = uniqueLabel('Duplicate target');
 
     await createAddress(page, label);
 
@@ -170,7 +183,7 @@ test.describe('Duplicating addresses', () => {
 
 test.describe('Copying addresses', () => {
   test('Copying an address shows a copied notification', async ({page}) => {
-    const label = 'Copy target';
+    const label = uniqueLabel('Copy target');
 
     await createAddress(page, label);
 
@@ -182,7 +195,7 @@ test.describe('Copying addresses', () => {
   });
 
   test('A copied address can be pasted as a new card', async ({page}) => {
-    const label = 'Paste source';
+    const label = uniqueLabel('Paste source');
 
     await createAddress(page, label);
 
