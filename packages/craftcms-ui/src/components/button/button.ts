@@ -3,6 +3,7 @@ import {html, nothing} from 'lit';
 import {property, state, query} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 import styles from './button.styles.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
@@ -45,7 +46,7 @@ export type ButtonAppearance =
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
-    return [...super.styles, variantsStyles, styles];
+    return [...super.styles, visuallyHiddenStyles, variantsStyles, styles];
   }
 
   override connectedCallback() {
@@ -221,7 +222,7 @@ export default class CraftButton extends LionButtonSubmit {
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`
         : nothing}
-      <span role="status" style="outline: 1px solid black; padding: 3px; background-color: turquoise;" data-live-region></span>
+      <span class="cp-visually-hidden" role="status" data-live-region></span>
     `;
 
     if (this.isLink) {
