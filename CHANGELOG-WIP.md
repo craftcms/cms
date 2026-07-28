@@ -415,6 +415,11 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 - Deprecated `craft\events\RegisterConditionRulesEvent`. `CraftCms\Cms\Condition\Events\ConditionRulesResolving` should be used instead.
 
+### Control Panel
+
+- Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#XXXXX](https://github.com/craftcms/cms/pull/XXXXX))
+- Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. 
+
 ### Drafts
 
 - Deprecated `craft\services\Drafts`. `CraftCms\Cms\Element\Drafts` should be used instead.

@@ -24,4 +24,3 @@ import './modules/slideout';
 import './modules/auth-method-setup';
 
 window.Cp = Cp as unknown as typeof window.Cp;
-
