@@ -24,5 +24,6 @@ import './modules/slideout';
 import './modules/auth-method-setup';
 import './modules/proxy-scrollbar';
 import './modules/element-label';
+import './modules/form-observer';
 
 window.Cp = Cp as unknown as typeof window.Cp;
