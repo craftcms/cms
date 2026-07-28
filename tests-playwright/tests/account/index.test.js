@@ -13,16 +13,10 @@ test('The My Account page exists', async ({page, baseURL}) => {
 });
 
 test('The active page has an accessible state', async ({page, baseURL}) => {
-  // In the redesigned CP the account sub-nav ("Profile", "Permissions", …)
-  // moved into the user-menu web component, and its items currently expose
-  // no link/menuitem roles for an aria-current assertion to attach to.
-  test.fixme(
-    true,
-    'Account sub-nav items are not exposed to the accessibility tree in the redesigned CP'
-  );
-
+  // The nav items are `craft-nav-item` web components whose label is slotted;
+  // locate the link by its accessible name (which resolves through the slot).
   const activeLink = page
-    .getByRole('link')
-    .filter({hasText: 'Profile', hasClass: 'sel'});
+    .getByRole('navigation', {name: 'Secondary'})
+    .getByRole('link', {name: 'Profile'});
   await expect(activeLink).toHaveAttribute('aria-current', 'page');
 });

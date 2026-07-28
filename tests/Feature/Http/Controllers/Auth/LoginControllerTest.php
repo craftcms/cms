@@ -40,6 +40,18 @@ test('showLogin shows the login form for guests', function () {
         ->assertOk();
 });
 
+test('showLogin posts the CP login form to the CP login path', function () {
+    // `attemptLogin` is routed at the site login path, the CP login path, and
+    // `actions/users/login` — the CP page must target the CP path
+    // specifically, so the post-login redirect resolves to the CP dashboard
+    // (a CP request) rather than the site.
+    get(cp_url(CpAuthPath::Login->value))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('auth/Login')
+            ->where('action', cp_url(CpAuthPath::Login->value)));
+});
+
 test('showLogin includes configured OAuth buttons', function () {
     Edition::set(Edition::Pro);
 

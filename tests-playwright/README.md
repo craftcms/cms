@@ -55,16 +55,16 @@ The test suites under `tests/` were written for the ddev harness against the Cra
 CP. Suites not yet runnable in workbench mode are listed in `testIgnore` in
 `packages/craftcms-playwright/src/playwright/config/workbench.js`:
 
-| Suite            | Status in workbench mode                                          |
-| ---------------- | ----------------------------------------------------------------- |
-| `smoke.test.ts`  | ✅ runs                                                            |
-| `account/`       | ✅ runs (one `fixme`: user-menu items lack accessible roles)       |
-| `navigation/`    | ⛔ blocked: `/admin/dashboard` 500s (`Sites` twig global missing)  |
-| `settings/`      | ⛔ assumes an empty install; workbench seeds sections/entry types  |
-| `elementindex/`  | ⛔ needs Codeception fixtures (`testSorting` section)              |
-| `elements/`      | ⛔ needs Codeception fixtures                                      |
-| `matrix/`        | ⛔ needs Codeception fixtures (`testMatrix` section)               |
-| `pluginstore/`   | ⛔ needs installed plugins + external network                      |
+| Suite           | Status in workbench mode                                         |
+|-----------------|------------------------------------------------------------------|
+| `smoke.test.ts` | ✅ runs                                                           |
+| `account/`      | ✅ runs                                                           |
+| `navigation/`   | ⛔ blocked: `/admin/dashboard` 500s (`Sites` twig global missing) |
+| `settings/`     | ⛔ assumes an empty install; workbench seeds sections/entry types |
+| `elementindex/` | ⛔ needs Codeception fixtures (`testSorting` section)             |
+| `elements/`     | ⛔ needs Codeception fixtures                                     |
+| `matrix/`       | ⛔ needs Codeception fixtures (`testMatrix` section)              |
+| `pluginstore/`  | ⛔ needs installed plugins + external network                     |
 
 To migrate a suite: make the workbench seeder provide the content it needs (or create it
 in the test), update selectors for the redesigned CP, then remove it from `testIgnore`.
