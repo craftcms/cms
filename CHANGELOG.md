@@ -6,6 +6,7 @@
 - Fixed an error that could occur when applying a draft. ([#19277](https://github.com/craftcms/cms/issues/19277))
 - Fixed an error that could occur when running `project-config/apply --force`. ([#19300](https://github.com/craftcms/cms/issues/19300))
 - Fixed a bug where compiled templates could be missing the injected `{{ head() }}`, `{{ beginBody() }}`, or `{{ endBody() }}` tags. ([#19304](https://github.com/craftcms/cms/issues/19304))
+- Fixed an error that could occur when listing an element without a slug in an element index.
 
 ## 5.10.12 - 2026-07-22
 
