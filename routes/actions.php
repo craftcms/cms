@@ -86,11 +86,6 @@ use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
-use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
-use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
-use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
-use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
-use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
@@ -218,22 +213,10 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);
         Route::post('auth/download-recovery-codes', [RecoveryCodesController::class, 'download']);
 
-        // ClearCaches
-        Route::post('utilities/clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
-        Route::post('utilities/invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
-
         // Conditions
         Route::post('conditions/render', [ConditionsController::class, 'show']);
         Route::post('conditions/add-rule', [ConditionsController::class, 'store']);
         Route::post('conditions/remove-rule', [ConditionsController::class, 'destroy']);
-
-        // DbBackup
-        Route::post('utilities/db-backup-perform-action', DbBackupController::class);
-
-        // DeprecationErrors
-        Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
-        Route::post('utilities/delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
-        Route::post('utilities/delete-all-deprecation-errors', [DeprecationErrorsController::class, 'deleteAllDeprecationErrors']);
 
         // Edition
         Route::middleware([RequireAdmin::class])->group(function () {
@@ -320,16 +303,10 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::get('fields/table-data', [FieldsController::class, 'tableData']);
         });
 
-        // FindAndReplace
-        Route::post('utilities/find-and-replace-perform-action', FindAndReplaceController::class);
-
         // Matrix
         Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
         Route::post('matrix/create-entry', [MatrixController::class, 'createEntry']);
         Route::post('matrix/render-blocks', [MatrixController::class, 'renderBlocks']);
-
-        // Migrations
-        Route::post('utilities/apply-new-migrations', MigrationsController::class);
 
         // Nested entries
         Route::post('nested-elements/reorder', [NestedElementsController::class, 'reorder']);

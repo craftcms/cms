@@ -53,7 +53,11 @@ use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
+use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
+use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
+use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
+use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
@@ -116,6 +120,12 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('utilities/deprecation-errors/{logId}', [DeprecationErrorsController::class, 'show'])->whereNumber('logId')->name('utilities.deprecation-errors.show');
     Route::delete('utilities/deprecation-errors/{logId}', [DeprecationErrorsController::class, 'destroy']);
     Route::delete('utilities/deprecation-errors', [DeprecationErrorsController::class, 'destroyAll']);
+
+    Route::post('utilities/migrations/apply', MigrationsController::class);
+    Route::post('utilities/clear-caches', [ClearCachesController::class, 'clearCaches']);
+    Route::post('utilities/clear-caches/invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
+    Route::post('utilities/db-backup', DbBackupController::class);
+    Route::post('utilities/find-and-replace', FindAndReplaceController::class);
 
     Route::prefix('utilities/project-config')->group(function () {
         Route::get('diff', [ProjectConfigController::class, 'diff']);
