@@ -53,6 +53,7 @@ use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
+use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
@@ -114,6 +115,13 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('utilities/deprecation-errors/{logId}', [DeprecationErrorsController::class, 'show'])->whereNumber('logId')->name('utilities.deprecation-errors.show');
     Route::delete('utilities/deprecation-errors/{logId}', [DeprecationErrorsController::class, 'destroy']);
     Route::delete('utilities/deprecation-errors', [DeprecationErrorsController::class, 'destroyAll']);
+
+    Route::prefix('utilities/project-config')->group(function () {
+        Route::get('diff', [ProjectConfigController::class, 'diff']);
+        Route::post('rebuild', [ProjectConfigController::class, 'rebuild']);
+        Route::post('discard', [ProjectConfigController::class, 'discard']);
+        Route::get('download', [ProjectConfigController::class, 'download']);
+    });
 
     // The rest of the utilities
     Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])

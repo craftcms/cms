@@ -91,7 +91,6 @@ use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
-use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
@@ -393,12 +392,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('volumes/save-volume', [VolumesController::class, 'save']);
             Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
         });
-
-        // Project config utility
-        Route::post('project-config/rebuild', [ProjectConfigController::class, 'rebuild']);
-        Route::get('project-config/diff', [ProjectConfigController::class, 'diff']);
-        Route::post('project-config/discard', [ProjectConfigController::class, 'discard']);
-        Route::get('project-config/download', [ProjectConfigController::class, 'download']);
 
         // Sections
         Route::get('sections/table-data', [SectionsController::class, 'tableData']);
