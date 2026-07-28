@@ -11,17 +11,10 @@ export default css`
     gap: var(--c-spacing-md);
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    text-decoration: none;
-    color: inherit;
     padding-inline: var(--_padding-inline);
     padding-block: var(--_padding-block);
     border-radius: var(--c-radius-md);
     position: relative;
-    border: none;
-    background: none;
-    font-family: inherit;
-    font-size: 100%;
-    line-height: inherit;
   }
   
   craft-badge-indicator {
@@ -74,6 +67,25 @@ export default css`
   
   .nav-item__suffix {
     justify-self: end;
+  }
+  
+  .nav-item__action-item {
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 100%;
+    line-height: inherit;
+    color: inherit;
+    text-decoration: none;
+    
+    &::after {
+      position: absolute;
+      content: '';
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
   }
 
   .active-indicator {
