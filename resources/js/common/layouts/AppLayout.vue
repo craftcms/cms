@@ -321,7 +321,7 @@
                   'content-layout--details': hasDetails,
                 }"
               >
-                <aside
+                <div
                   v-show="hasSidebar"
                   id="secondary-nav"
                   tabindex="-1"
@@ -341,7 +341,7 @@
                       </SecondaryNav>
                     </slot>
                   </LayoutSlotOutlet>
-                </aside>
+                </div>
                 <div class="content-layout__main">
                   <div
                     v-show="hasContentNotice"
