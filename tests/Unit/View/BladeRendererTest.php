@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Support\File as Path;
 use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateManager;
@@ -80,7 +81,7 @@ it('preserves logical view names for Craft-resolved Blade templates', function (
 
     View::composer('index-view', function (LaravelView $view) use (&$viewName, &$viewPath) {
         $viewName = $view->name();
-        $viewPath = $view->getPath();
+        $viewPath = Path::normalizePath($view->getPath());
         $view->with('name', 'Composed');
     });
 
@@ -88,7 +89,7 @@ it('preserves logical view names for Craft-resolved Blade templates', function (
 
     expect($output)->toBe('Indexed Composed')
         ->and($viewName)->toBe('index-view')
-        ->and($viewPath)->toBe($this->tempDir.'/index-view/index.blade.php');
+        ->and($viewPath)->toBe(Path::normalizePath($this->tempDir.'/index-view/index.blade.php'));
 });
 
 it('runs creators for Craft-resolved Blade templates', function () {
