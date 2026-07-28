@@ -219,10 +219,7 @@
   </LayoutSlot>
 
   <LayoutSlot name="sidebar">
-    <nav aria-labelledby="source-heading">
-      <h2 id="source-heading" class="sr-only">
-        {{ t('Sources') }}
-      </h2>
+    <nav :aria-label="t('Secondary')">
       <ElementSources
         :sources="sources"
         :route="route"
