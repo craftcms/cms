@@ -80,9 +80,7 @@ function resetBackgroundLayerVisibility(): void {
  * clones) into whichever container most recently initialized, since screen
  * readers only announce one status region at a time.
  */
-const $sharedLiveRegion = $(
-  '<span class="visually-hidden" role="status"></span>'
-);
+let $sharedLiveRegion: any = null;
 
 /**
  * Settings accepted by {@link Slideout}. Pass a `Partial<SlideoutSettings>` to
@@ -253,7 +251,9 @@ export class Slideout extends Base<SlideoutSettings> {
 
     Craft.trapFocusWithin(this.$container);
 
-    this.$liveRegion = $sharedLiveRegion;
+    this.$liveRegion = $sharedLiveRegion ??= $(
+      '<span class="visually-hidden" role="status"></span>'
+    );
     this.$liveRegion.appendTo(this.$container);
 
     if (this.settings!.autoOpen) {
