@@ -55,15 +55,21 @@ readonly class LoginController extends AuthenticationController
             $oauth->getLoginButtons(),
         );
 
+        // `action([self::class, 'attemptLogin'])` is ambiguous here — the
+        // method is routed at the site login path, the CP login path, and
+        // `actions/users/login`, and Laravel resolves to whichever registered
+        // last. The CP page must post to the CP login path specifically, so
+        // the request counts as a CP request and the post-login redirect
+        // resolves to the CP dashboard rather than the site.
         return $this->renderViewWithFallback(
             inertiaComponent: 'auth/Login',
             inertiaProps: [
                 'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
                 'oauthLoginButtons' => $oauthLoginButtons,
-                'action' => $request->isCpRequest() ? action([self::class, 'attemptLogin']) : action_url('users/login'),
+                'action' => $request->isCpRequest() ? cp_url(CpAuthPath::Login->value) : action_url('users/login'),
             ],
             data: [
-                'action' => action([self::class, 'attemptLogin']),
+                'action' => action_url('users/login'),
                 'oauthLoginButtons' => $oauthLoginButtons,
             ],
         );
@@ -98,7 +104,7 @@ readonly class LoginController extends AuthenticationController
         }
 
         $html = template('_special/login-modal', [
-            'action' => action([LoginController::class, 'attemptLogin']),
+            'action' => cp_url(CpAuthPath::Login->value),
             'staticEmail' => $staticEmail,
             'forElevatedSession' => $forElevatedSession,
         ], templateMode: TemplateMode::Cp);

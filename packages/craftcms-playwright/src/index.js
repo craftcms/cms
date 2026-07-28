@@ -1,6 +1,7 @@
 /* jshint esversion: 9, strict: false */
 const base = require('@playwright/test');
 const baseConfig = require('./playwright/config/config');
+const {getWorkbenchConfig} = require('./playwright/config/workbench');
 const events = require('./playwright/events');
 const {Setup} = require('./playwright/fixtures/setup');
 const {Entry} = require('./playwright/fixtures/entry');
@@ -55,6 +56,7 @@ module.exports = {
   getConfig: (config = {}) => {
     return {...baseConfig, ...config};
   },
+  getWorkbenchConfig,
   test: test,
   expect: base.expect,
   events,

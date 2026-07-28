@@ -13,8 +13,10 @@ test('The My Account page exists', async ({page, baseURL}) => {
 });
 
 test('The active page has an accessible state', async ({page, baseURL}) => {
+  // The nav items are `craft-nav-item` web components whose label is slotted;
+  // locate the link by its accessible name (which resolves through the slot).
   const activeLink = page
-    .getByRole('link')
-    .filter({hasText: 'Profile', hasClass: 'sel'});
+    .getByRole('navigation', {name: 'Secondary'})
+    .getByRole('link', {name: 'Profile'});
   await expect(activeLink).toHaveAttribute('aria-current', 'page');
 });

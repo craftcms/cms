@@ -13,10 +13,15 @@ module.exports = async (config) => {
   const page = await context.newPage();
 
   await page.goto(new URL('./login', baseURL).href);
-  await page.fill('.login-username', username);
-  await page.fill('.login-password', password);
 
-  await page.click('.login-form button[type="submit"]');
+  // The login form is the `craft-login-form` web component; its inputs are
+  // nested inside `craft-input`/`craft-input-password`, which also carry the
+  // `name` attribute themselves — target the native `<input>`s specifically
+  // (Playwright's CSS engine pierces the shadow DOM to reach them).
+  await page.fill('input[name="username"]', username);
+  await page.fill('input[name="password"]', password);
+
+  await page.click('[type="submit"]');
   await page.waitForURL('**/admin/dashboard');
 
   const title = page.locator('h1');

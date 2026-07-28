@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\View\HtmlStack;
@@ -12,6 +13,8 @@ use CraftCms\Cms\View\TemplateGlobals;
 use CraftCms\Cms\View\TemplateHooks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
+use function CraftCms\Cms\cp_url;
 
 readonly class SessionInfoController
 {
@@ -83,7 +86,11 @@ readonly class SessionInfoController
         $loginName = (string) ($user->email ?? $user->username);
         $context = [
             ...$templateGlobals->resolve(),
-            'action' => action([LoginController::class, 'attemptLogin']),
+            // Deliberately the CP login path — `action()` is ambiguous for
+            // `attemptLogin` (also routed at the site login path and
+            // `actions/users/login`), and the CP path is what keeps the
+            // re-login counting as a CP request.
+            'action' => cp_url(CpAuthPath::Login->value),
             'forElevatedSession' => true,
             'generalConfig' => $generalConfig,
             'staticEmail' => $loginName,

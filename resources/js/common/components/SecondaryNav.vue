@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import CpLink from '@/common/components/CpLink.vue';
   import {computed, ref, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
 
@@ -64,33 +63,26 @@
               <span class="nav-heading-label">{{ item.label }}</span>
 
               <craft-nav-list>
-                <template
+                <craft-nav-item
                   v-for="(subitem, subindex) in item.subnav"
                   :key="subindex"
+                  :active="subitem.selected"
+                  :href="subitem.url"
+                  flush
                 >
-                  <CpLink
-                    as="craft-nav-item"
-                    :active="subitem.selected"
-                    :href="subitem.url"
-                    block
-                    flush
-                  >
-                    {{ subitem.label }}
-                  </CpLink>
-                </template>
+                  {{ subitem.label }}
+                </craft-nav-item>
               </craft-nav-list>
             </li>
 
-            <CpLink
+            <craft-nav-item
               v-else
-              as="craft-nav-item"
               :active="item.selected"
               :href="item.url"
-              block
               flush
             >
               {{ item.label }}
-            </CpLink>
+            </craft-nav-item>
           </template>
         </craft-nav-list>
       </slot>
