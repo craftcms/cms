@@ -26,11 +26,16 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\UrlValidator\UrlValidationException;
+use CraftCms\UrlValidator\UrlValidator;
 use DateTimeInterface;
 use Exception;
+use GuzzleHttp\RequestOptions;
+use GuzzleHttp\TransferStats;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 use Throwable;
 use Twig\Error\RuntimeError;
@@ -594,5 +599,46 @@ class AssetsHelper
         ]);
 
         return [$subpath, $folder];
+    }
+
+    /**
+     * Downloads a remote file to a temp path, pinning the connection to a set of
+     * pre-validated IP addresses so cURL can’t re-resolve the hostname to a
+     * different (potentially internal) address between validation and download.
+     *
+     * @throws InvalidArgumentException if the connection still resolves to a disallowed IP
+     */
+    public static function downloadUrl(string $url, string $tempPath): void
+    {
+        $urlValidator = new UrlValidator;
+
+        // Validate the URL and resolve it to a known-good set of IPs *before*
+        // opening any connection (guards against SSRF + DNS rebinding).
+        try {
+            $ips = $urlValidator->validate($url);
+        } catch (UrlValidationException $e) {
+            throw new InvalidArgumentException("$url is invalid.", previous: $e);
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        $port = parse_url($url, PHP_URL_PORT)
+            ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
+
+        Http::create()->withOptions([
+            RequestOptions::ALLOW_REDIRECTS => false,
+            RequestOptions::SINK => $tempPath,
+            // Pin the connection to the IPs we already validated, so cURL doesn’t
+            // re-resolve the hostname to a different address (DNS rebinding).
+            'curl' => [
+                CURLOPT_RESOLVE => ["$host:$port:".implode(',', $ips)],
+            ],
+            RequestOptions::ON_STATS => function (TransferStats $stats) use ($url, $urlValidator) {
+                // Validate the IP, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
+                $ip = $stats->getHandlerStat('primary_ip');
+                if ($ip && ! $urlValidator->validateIp($ip)) {
+                    throw new InvalidArgumentException("$url is invalid.");
+                }
+            },
+        ])->get($url)->throw();
     }
 }

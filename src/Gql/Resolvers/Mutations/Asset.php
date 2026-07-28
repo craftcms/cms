@@ -20,7 +20,6 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
-use CraftCms\UrlValidator\UrlValidationException;
 use CraftCms\UrlValidator\UrlValidator;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
@@ -229,17 +228,8 @@ class Asset extends ElementMutationResolver
                 ]));
             }
 
-            // Validate the URL and resolve it to a known-good set of IPs *before*
-            // opening any connection (guards against SSRF + DNS rebinding).
-            try {
-                $ips = $this->urlValidator()->validate($url);
-            } catch (UrlValidationException $e) {
-                throw new UserError("$url is invalid.", previous: $e);
-            }
-
-            // Download the file, pinning the connection to the validated IPs
             $tempPath = AssetsHelper::tempFilePath($extension);
-            $this->downloadUrl($url, $ips, $tempPath);
+            AssetsHelper::downloadUrl($url, $tempPath);
         }
 
         if (! $tempPath || ! $filename) {
