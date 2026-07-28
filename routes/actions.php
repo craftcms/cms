@@ -59,7 +59,6 @@ use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
 use CraftCms\Cms\Http\Controllers\IconController;
-use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\NestedElementsController;
@@ -180,11 +179,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
     /**
      * Actions not needing auth
      */
-    Route::post('install/validate-db', [InstallController::class, 'validateDb']);
-    Route::post('install/validate-account', [InstallController::class, 'validateAccount']);
-    Route::post('install/validate-site', [InstallController::class, 'validateSite']);
-    Route::post('install/install', [InstallController::class, 'install']);
-
     Route::any('app/api-headers', [ApiController::class, 'headers']);
     Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);

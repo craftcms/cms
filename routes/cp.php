@@ -67,7 +67,13 @@ use function CraftCms\Cms\cp_url;
 /**
  * Admin requests that do not require a login
  */
-Route::get('install', [InstallController::class, 'index']);
+Route::prefix('install')->group(function () {
+    Route::get('/', [InstallController::class, 'index']);
+    Route::post('/', [InstallController::class, 'install']);
+    Route::post('validate-db', [InstallController::class, 'validateDb']);
+    Route::post('validate-account', [InstallController::class, 'validateAccount']);
+    Route::post('validate-site', [InstallController::class, 'validateSite']);
+});
 
 Route::prefix('updates')->name('updates.')->group(function () {
     Route::post('/', [UpdaterController::class, 'index'])->name('index');
