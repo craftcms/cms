@@ -5,6 +5,7 @@ import {
   createInputColor as uiCreateInputColor,
   createInputPassword as uiCreateInputPassword,
   createSlidePicker as uiCreateSlidePicker,
+  createTextInput as uiCreateTextInput,
 } from '@craftcms/ui/factory';
 
 Craft.ui = {
@@ -108,64 +109,20 @@ Craft.ui = {
       },
       config
     );
-    var $input = $('<input/>', {
-      attr: {
-        class: 'text',
-        type: config.type || 'text',
-        inputmode: config.inputmode,
-        id: config.id,
-        size: config.size,
-        name: config.name,
-        value: config.value,
-        maxlength: config.maxlength,
-        autofocus: this.getAutofocusValue(config.autofocus),
-        autocomplete:
-          typeof config.autocomplete === 'boolean'
-            ? config.autocomplete
-              ? 'on'
-              : 'off'
-            : config.autocomplete,
-        disabled: this.getDisabledValue(config.disabled),
-        'aria-describedby': this.getDescribedByValue(config),
-        readonly: config.readonly,
-        title: config.title,
-        placeholder: config.placeholder,
-        step: config.step,
-        min: config.min,
-        max: config.max,
-      },
-    });
 
-    if (config.class) {
-      $input.addClass(config.class);
-    }
-    if (config.placeholder) {
-      $input.addClass('nicetext');
-    }
-    if (config.type === 'password') {
-      $input.addClass('password');
-    }
-    if (config.disabled) {
-      $input.addClass('disabled');
-    }
-    if (!config.size) {
-      $input.addClass('fullwidth');
-    }
-    if (config.describedBy) {
-      $input.attr('aria-describedby', config.describedBy);
-    }
-    if (config.inputAttributes) {
-      this.addAttributes($input, config.inputAttributes);
-    }
-
-    if (config.showCharsLeft && config.maxlength) {
-      $input
-        .attr('data-show-chars-left')
-        .css(
-          'padding-' + (Craft.orientation === 'ltr' ? 'right' : 'left'),
-          7.2 * config.maxlength.toString().length + 14 + 'px'
-        );
-    }
+    // The markup is built jQuery-free by @craftcms/ui/factory. This shim keeps
+    // the Garnish-specific pieces the factory deliberately leaves out: mobile
+    // autofocus suppression, the NiceText enhancement (placeholder animation /
+    // chars-left counter), the `.passwordwrapper` wrapper, and the legacy
+    // jQuery return type.
+    const $input = $(
+      uiCreateTextInput(
+        $.extend({}, config, {
+          autofocus: !!this.getAutofocusValue(config.autofocus),
+          describedBy: config.describedBy || this.getDescribedByValue(config),
+        })
+      )
+    );
 
     if (config.placeholder || config.showCharsLeft) {
       new Garnish.NiceText($input);
@@ -173,9 +130,9 @@ Craft.ui = {
 
     if (config.type === 'password') {
       return $('<div class="passwordwrapper"/>').append($input);
-    } else {
-      return $input;
     }
+
+    return $input;
   },
 
   createTextField: function (config) {
