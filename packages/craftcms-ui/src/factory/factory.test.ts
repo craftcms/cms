@@ -5,10 +5,54 @@ import {
   createInputColor,
   createInputPassword,
   createTextInput,
+  createCopyTextPrompt,
 } from './index.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+describe('createCopyTextPrompt', () => {
+  it('opens a craft-dialog with a readonly input and a copy button', () => {
+    const dialog = createCopyTextPrompt({
+      label: 'Full URL',
+      value: 'https://x',
+    });
+
+    expect(dialog.tagName.toLowerCase()).toBe('craft-dialog');
+    expect(dialog.getAttribute('label')).toBe('Full URL');
+    expect(dialog.hasAttribute('open')).toBe(true);
+    // appended to the document
+    expect(dialog.isConnected).toBe(true);
+
+    const input = dialog.querySelector<HTMLInputElement>(
+      '.copytext input.text'
+    );
+    expect(input?.getAttribute('value')).toBe('https://x');
+    expect(input?.readOnly).toBe(true);
+
+    const copyBtn = dialog.querySelector('craft-copy-button');
+    expect(copyBtn?.getAttribute('value')).toBe('https://x');
+  });
+
+  it('renders a textarea when config.textarea is set', () => {
+    const dialog = createCopyTextPrompt({
+      label: 'composer.json',
+      value: '{"a":1}',
+      textarea: true,
+      class: 'code',
+      rows: 10,
+    });
+
+    const textarea = dialog.querySelector<HTMLTextAreaElement>(
+      '.copytext textarea.text.code'
+    );
+    expect(textarea).not.toBeNull();
+    // happy-dom reflects `rows` as a string; real browsers return a number.
+    expect(Number(textarea?.rows)).toBe(10);
+    expect(textarea?.readOnly).toBe(true);
+    expect(textarea?.value).toBe('{"a":1}');
+  });
 });
 
 describe('createTextInput', () => {

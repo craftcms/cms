@@ -4,6 +4,10 @@
 export {createSwitch, type SwitchConfig} from './create-switch.js';
 export {createTextInput, type TextInputConfig} from './create-text-input.js';
 export {
+  createCopyTextPrompt,
+  type CopyTextPromptConfig,
+} from './create-copy-text-prompt.js';
+export {
   createSlidePicker,
   type SlidePickerConfig,
 } from './create-slide-picker.js';
