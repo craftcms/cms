@@ -53,7 +53,6 @@ import './js/ElementFieldSettings.js';
 import './js/ElementTableSorter.js';
 import './js/EntryIndex.js';
 import './js/EntrySelectInput.js';
-import './js/EntryMover.js';
 import './js/VolumeFolderSelectorModal.js';
 import './js/Grid.js';
 import './js/ImageUpload.js';
