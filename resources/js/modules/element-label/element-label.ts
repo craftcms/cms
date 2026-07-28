@@ -1,29 +1,23 @@
-// jQuery survives ONLY at the legacy `#tabs` `.data('tabs')` seam: the tab set
-// is still the legacy `Craft.Tabs` instance, stashed in jQuery's data cache, so
-// there's no jQuery-free way to read it until Tabs is ported. Everything else
-// is plain DOM.
-
-/** The jQuery global, if present (the CP always loads it). */
-function jq(): any {
-  return (window as any).jQuery ?? null;
-}
-
 /**
  * Element label
  *
  * Displays a tooltip (`<craft-tooltip>`) when the label link overflows its
  * container.
  *
- * Ported out of the legacy CP bundle (`CraftElementLabel.js`); the `$('#tabs')`
- * tab-change subscription and `$(ready)` deferral were converted to the `jq()`
- * seam + a native document-ready check.
+ * Ported out of the legacy CP bundle (`CraftElementLabel.js`) and made fully
+ * jQuery-free. The legacy version hooked the `Craft.Tabs` `selectTab` event
+ * (read via jQuery's `.data('tabs')` cache) to re-measure once a label inside a
+ * `display: none` tab became visible, and re-ran on `$(ready)` for labels
+ * rendered too early (e.g. in a dashboard widget). Both are replaced by a
+ * `ResizeObserver` on the element: it fires when the label (or an ancestor,
+ * such as a tab pane) transitions out of `display: none` and on any later size
+ * change, with no coupling to `Craft.Tabs`.
  *
  * @example <craft-element-label><a href="#" class="label-link">Label</a></craft-element-label>
  */
 export class ElementLabel extends HTMLElement {
   private tooltip: HTMLElement | null = null;
-  /** The legacy `Craft.Tabs` instance this label lives inside, if any. */
-  private tabs: any = null;
+  private resizeObserver: ResizeObserver | null = null;
   private desiredWidth = 0;
   private hasOverflow = false;
 
@@ -41,27 +35,14 @@ export class ElementLabel extends HTMLElement {
       return;
     }
 
-    // When the element is inside a tab, we need to listen for tab changes.
-    // Tabs are initially rendered as `display: none`, which would give the
-    // label a width of 0.
-    const $ = jq();
-    const tabsEl = document.getElementById('tabs');
-    if ($ && tabsEl) {
-      this.tabs = $(tabsEl).data('tabs') ?? null;
-      this.tabs?.on('selectTab', () => {
-        this.update();
-      });
-    }
-
     this.update();
 
-    // Update again once the document is ready. This is currently necessary
-    // inside a dashboard widget, where this component is rendered too early.
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.update());
-    } else {
-      this.update();
-    }
+    // Re-measure whenever the label gains or changes size. This covers a label
+    // that starts inside a `display: none` tab pane (width 0 until shown) and
+    // one rendered before layout has settled — the cases the legacy class used
+    // the `Craft.Tabs` `selectTab` hook and `$(ready)` for.
+    this.resizeObserver = new ResizeObserver(() => this.update());
+    this.resizeObserver.observe(this);
   }
 
   update(): void {
@@ -114,6 +95,9 @@ export class ElementLabel extends HTMLElement {
   }
 
   disconnectedCallback(): void {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+
     // Put the `.label-link` back into `<craft-element-label>` so that when
     // `connectedCallback()` runs again after an insertBefore/insertAfter move,
     // everything can re-initialise as expected. `Element.moveBefore`/`moveAfter`
@@ -124,7 +108,6 @@ export class ElementLabel extends HTMLElement {
     }
 
     this.tooltip?.remove();
-    this.tabs?.off('selectTab');
   }
 
   calculateWidth(text: string): number {
