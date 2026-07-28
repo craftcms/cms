@@ -26,6 +26,7 @@ import './modules/element-label/index';
 import './modules/form-observer/index';
 import './modules/interval-manager/index';
 import './modules/entry-mover/index';
+import './modules/prompt-handler/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
