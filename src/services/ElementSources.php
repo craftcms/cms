@@ -247,7 +247,7 @@ class ElementSources extends Component
     {
         $pages = [];
 
-        foreach ($this->_sourceConfigs($elementType) ?? [] as $source) {
+        foreach ($this->getSources($elementType) as $source) {
             // divide all sources into pages
             if (isset($source['page'])) {
                 $pages[$source['page']][] = $source;

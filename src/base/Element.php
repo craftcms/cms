@@ -6146,7 +6146,7 @@ JS,
                     return '';
                 }
 
-                return Html::encode($this->slug);
+                return Html::encode($this->slug ?? '');
 
             case 'revisionNotes':
                 $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
@@ -6483,7 +6483,7 @@ JS,
      */
     protected function slugFieldHtml(bool $static): string
     {
-        $slug = isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
+        $slug = !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
         return Cp::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
@@ -6545,7 +6545,7 @@ JS,
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => Craft::t('site', $this->getSite()->getName()),
+                'label' => Html::encode(Craft::t('site', $this->getSite()->getName())),
                 'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
