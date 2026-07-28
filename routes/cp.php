@@ -29,6 +29,7 @@ use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
+use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
@@ -121,6 +122,13 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('rebuild', [ProjectConfigController::class, 'rebuild']);
         Route::post('discard', [ProjectConfigController::class, 'discard']);
         Route::get('download', [ProjectConfigController::class, 'download']);
+    });
+
+    Route::prefix('utilities/queue-manager')->group(function () {
+        Route::post('release-all', [QueueController::class, 'cancelAll']);
+        Route::post('retry-all', [QueueController::class, 'retryAll']);
+        Route::post('{id}/release', [QueueController::class, 'cancel']);
+        Route::post('{id}/retry', [QueueController::class, 'retry']);
     });
 
     // The rest of the utilities

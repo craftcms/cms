@@ -154,6 +154,11 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
 
         // GQL API
         Route::any('graphql/api', GqlApiController::class);
+
+        // Queue
+        Route::any('queue/run', [QueueController::class, 'run']);
+        Route::middleware(['auth', 'can:accessCp'])
+            ->get('queue/get-job-info', [QueueController::class, 'jobInfo']);
     });
 }
 
@@ -359,14 +364,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);
-
-        // Queue
-        Route::post('queue/run', [QueueController::class, 'run']);
-        Route::get('queue/get-job-info', [QueueController::class, 'jobInfo']);
-        Route::post('queue/release', [QueueController::class, 'cancel']);
-        Route::post('queue/release-all', [QueueController::class, 'cancelAll']);
-        Route::post('queue/retry', [QueueController::class, 'retry']);
-        Route::post('queue/retry-all', [QueueController::class, 'retryAll']);
 
         // Relational fields
         Route::post('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
