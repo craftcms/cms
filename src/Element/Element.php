@@ -754,4 +754,11 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         // by default, this does nothing
         return $this;
     }
+
+    #[Override]
+    public function setAttributesForImport(array $attributes): void
+    {
+        // by default, simply set the attributes
+        $this->setAttributesFromRequest($attributes);
+    }
 }

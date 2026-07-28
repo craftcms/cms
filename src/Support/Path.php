@@ -249,6 +249,44 @@ class Path
         return true;
     }
 
+    /**
+     * Returns a normalized path or false, if realpath fails.
+     */
+    public static function normalizePath(string|false $path): string|false
+    {
+        if (! $path || ! ($path = realpath($path))) {
+            return false;
+        }
+
+        return File::normalizePath($path).DIRECTORY_SEPARATOR;
+    }
+
+    public static function isPathWithinRoots(string $path, array $allowedRoots): bool
+    {
+        $inAllowedRoot = false;
+        foreach ($allowedRoots as [$root, $isTempDir]) {
+            $root = self::normalizePath($root);
+            if ($root !== false && str_starts_with($path, $root)) {
+                // If this is a known temp dir, we’re good here
+                if ($isTempDir) {
+                    return true;
+                }
+                $inAllowedRoot = true;
+                break;
+            }
+        }
+        if (! $inAllowedRoot) {
+            return false;
+        }
+
+        // Make sure it's *not* within a system directory though
+        $systemDirs = self::system();
+        $systemDirs = array_map(self::normalizePath(...), $systemDirs);
+        $systemDirs = array_filter($systemDirs, fn ($value) => $value !== false);
+
+        return array_all($systemDirs, fn ($dir) => ! str_starts_with($path, (string) $dir));
+    }
+
     private function aliasOrDefault(string $alias, string $path): string
     {
         return File::normalizePath(Aliases::get($alias, false) ?: $path);

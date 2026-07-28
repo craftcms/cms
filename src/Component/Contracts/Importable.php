@@ -26,4 +26,9 @@ interface Importable
      * Prepares a new element instance for import.
      */
     public function prepareNewElementForImport(BaseImporter $config, array &$data): self;
+
+    /**
+     * Sets element's importable attributes.
+     */
+    public function setAttributesForImport(array $attributes): void;
 }

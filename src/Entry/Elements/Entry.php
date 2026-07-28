@@ -2793,4 +2793,13 @@ JS;
 
         return $this;
     }
+
+    #[Override]
+    public function setAttributesForImport(array $attributes): void
+    {
+        // ensure we're not changing type ID compared to what we chose in the field layout provider step
+        unset($attributes['typeId']);
+
+        parent::setAttributesForImport($attributes);
+    }
 }

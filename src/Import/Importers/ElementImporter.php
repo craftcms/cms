@@ -250,21 +250,25 @@ class ElementImporter extends BaseImporter
     public function getAvailableFieldLayoutProviders(): array
     {
         $element = (new $this->className);
-        $fieldLayout = $element->getFieldLayout();
 
-        // if we were able to get the field layout this way, then there can only be one for the element;
-        // like there's only one for Address or User element
-        if ($fieldLayout) {
-            return [
-                [
-                    'label' => $element::displayName(),
-                    'value' => $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type,
-                ],
-            ];
-        }
-
-        // otherwise, get them all
+        // first try to get all field layouts
         $fieldLayouts = $element::fieldLayouts(null);
+
+        // if we got zero results - try with a singular method
+        if (count($fieldLayouts) === 0) {
+            $fieldLayout = $element->getFieldLayout();
+
+            // if we were able to get the field layout this way, then there can only be one for the element;
+            // like there's only one for Address or User element
+            if ($fieldLayout) {
+                return [
+                    [
+                        'label' => $element::displayName(),
+                        'value' => $fieldLayout->id ? $fieldLayout->uid : $fieldLayout->type,
+                    ],
+                ];
+            }
+        }
 
         $providers = [
             [
@@ -335,13 +339,14 @@ class ElementImporter extends BaseImporter
 
         $item = app(Import::class)->processData($this, $data, $element);
 
+        // normalization and validation of attributes happens in the transformer and in the setAttributesForImport() method
         $attributeHandles = $element->attributes();
         // $fieldHandles has custom and native fields - basically all field layout elements
         $fieldHandles = array_diff(array_keys($item), $attributeHandles);
         $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
         $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
 
-        $element->setAttributesFromRequest($attributes);
+        $element->setAttributesForImport($attributes);
 
         // TODO: make the match criteria work for nested elements too!
         $fields = $this->normalizeFields($element, $fields);

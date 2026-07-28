@@ -15,19 +15,19 @@ class ElementTransformer extends BaseTransformer
 
     /**
      * This method is called automatically by Fractal when transforming an item.
-     * It's responsible for converting the feed data (e.g. from the json file)
+     * It's responsible for converting the incoming data (e.g. from the json file)
      * into an array that's understood and can be imported into an Element.
      *
      * This is where you can manipulate the data before it's imported.
      * For example, you can choose to uppercase the text, concatenate it or do whatever you want.
      *
-     * If you use field handles as keys in the feed data, the mapping will happen automatically.
+     * If you use field handles as keys in the incoming data, the mapping will happen automatically.
      * But if you don't, this is where you can also set that up.
      * For example, if you have a 'myPlainTextField' custom field that you know is available on the element you're importing into,
-     * and the feed data has a 'myContent' key, you can map it to that field.
+     * and the incoming data has a 'myContent' key, you can map it to that field.
      *
      * Note: with automatic handle matching, if the handle is overwritten in the field layout, that's what's used;
-     * it doesn't fall back to the original handle.
+     * it *doesn't* fall back to the original handle.
      *
      * @throws \ReflectionException
      */
@@ -42,6 +42,7 @@ class ElementTransformer extends BaseTransformer
         }
 
         $array = [];
+
         foreach ($this->props as $prop) {
             if (array_key_exists((string) $prop['name'], $item)) {
                 $array[$prop['name']] = $this->normalizePropertyValue($item, $prop, $element);
