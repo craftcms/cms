@@ -1,25 +1,9 @@
 import {Base, type GarnishEvent} from '@craftcms/garnish';
 import {serializeFormInputs} from '@craftcms/ui';
-
-/** A container argument: a selector, an element, or an array-like (incl. jQuery). */
-type ContainerInput = string | HTMLElement | ArrayLike<HTMLElement> | null;
+import {resolveElement, type ElementArg} from '@/common/utils/dom';
 
 /** Called with the previous serialized form data when the form changes. */
 type FormObserverCallback = (formData: string | null) => void;
-
-function resolveElement(input: ContainerInput): HTMLElement | null {
-  if (!input) {
-    return null;
-  }
-  if (typeof input === 'string') {
-    return document.querySelector<HTMLElement>(input);
-  }
-  if (input instanceof Element) {
-    return input as HTMLElement;
-  }
-  // jQuery object / array-like
-  return input[0] ?? Array.from(input)[0] ?? null;
-}
 
 /**
  * FormObserver — a port of `Craft.FormObserver` onto `@craftcms/garnish` `Base`.
@@ -48,14 +32,14 @@ export class FormObserver extends Base {
     return this.#pauseLevel === 0;
   }
 
-  constructor(container?: ContainerInput, callback?: FormObserverCallback) {
+  constructor(container?: ElementArg, callback?: FormObserverCallback) {
     super();
     if (new.target === FormObserver) {
       this.init(container ?? null, callback ?? (() => {}));
     }
   }
 
-  init(container: ContainerInput, callback: FormObserverCallback): void {
+  init(container: ElementArg, callback: FormObserverCallback): void {
     this.container = resolveElement(container);
     if (!this.container) {
       return;
