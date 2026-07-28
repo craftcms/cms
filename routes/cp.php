@@ -360,6 +360,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->name('settings.sections.index');
         Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/sections/{section}', [SectionsController::class, 'destroy']);
         Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
 
         // Volumes

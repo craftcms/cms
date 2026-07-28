@@ -393,12 +393,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // Sections
         Route::get('sections/table-data', [SectionsController::class, 'tableData']);
         Route::get('sections/edit/{section}', [SectionsController::class, 'edit']);
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            // Route::post('sections/save-section', [SectionsController::class, 'store']);
-            Route::post('sections/delete-section', [SectionsController::class, 'destroy']);
-        });
 
         // Structures
         Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
