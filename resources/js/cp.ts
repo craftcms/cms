@@ -28,5 +28,6 @@ import './modules/form-observer';
 import './modules/interval-manager';
 import './modules/entry-mover';
 import './modules/prompt-handler';
+import './modules/link-field';
 
 window.Cp = Cp as unknown as typeof window.Cp;
