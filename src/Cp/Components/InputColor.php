@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
+use CraftCms\Cms\Support\Json;
 
 /**
  * PHP counterpart to the `<craft-input-color>` web component — a hex text input
@@ -60,7 +61,7 @@ class InputColor extends Input
         }
 
         $presets = array_values(array_filter((array) $this->evaluate($this->presets)));
-        $attributes['presets'] = $presets !== [] ? json_encode($presets) : null;
+        $attributes['presets'] = $presets !== [] ? Json::encode($presets) : null;
 
         return $attributes;
     }
