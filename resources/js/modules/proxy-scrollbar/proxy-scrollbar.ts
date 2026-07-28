@@ -1,32 +1,36 @@
 /**
  * Proxy scrollbar
  *
- * Display a scrollbar that is synced with another element
+ * Displays a scrollbar that is synced with another element — a proxy that
+ * mirrors the horizontal scroll position of a `scroller` containing overflow
+ * `content`.
  *
- * @property {string} scroller - The selector of the element that will be scrolled
- * @property {string} content - The selector of the element within the scroller containing the overflow content
- * @property {boolean} hidden - Whether the scrollbar should be hidden
- * @property {HTMLElement} proxy - The element that represents the scrollbar
- * @property {HTMLElement} scroller - The element that will be scrolled
- * @property {HTMLElement} content - The element within the scroller containing the overflow content
+ * Ported verbatim (jQuery-free already) out of the legacy CP bundle
+ * (`CraftProxyScrollbar.js`).
+ *
+ * @example
+ * <craft-proxy-scrollbar scroller="#foo" content="#foo .inner"></craft-proxy-scrollbar>
  */
-class CraftProxyScrollbar extends HTMLElement {
+export class ProxyScrollbar extends HTMLElement {
   static observedAttributes = ['hidden'];
 
-  get hidden() {
-    return this.getAttribute('hidden');
+  private ignoreScrollEvent = false;
+  private animation: number | false = false;
+
+  scroller: HTMLElement | null = null;
+  content: HTMLElement | null = null;
+  proxy: HTMLDivElement | null = null;
+
+  get hasOverflow(): boolean {
+    return (this.content?.scrollWidth ?? 0) > (this.scroller?.clientWidth ?? 0);
   }
 
-  get hasOverflow() {
-    return this.content?.scrollWidth > this.scroller?.clientWidth;
-  }
-
-  connectedCallback() {
+  connectedCallback(): void {
     this.ignoreScrollEvent = false;
     this.animation = false;
 
-    this.scroller = document.querySelector(this.getAttribute('scroller'));
-    this.content = document.querySelector(this.getAttribute('content'));
+    this.scroller = document.querySelector(this.getAttribute('scroller') ?? '');
+    this.content = document.querySelector(this.getAttribute('content') ?? '');
 
     if (!this.scroller || !this.content) {
       return;
@@ -51,13 +55,17 @@ class CraftProxyScrollbar extends HTMLElement {
     });
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
+  attributeChangedCallback(
+    name: string,
+    _oldValue: string | null,
+    newValue: string | null
+  ): void {
     if (name === 'hidden') {
       this.style.display = newValue ? 'none' : 'block';
     }
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     this.proxy?.remove();
 
     this.scroller?.removeEventListener(
@@ -72,7 +80,11 @@ class CraftProxyScrollbar extends HTMLElement {
     window.removeEventListener('resize', this.handleResize.bind(this));
   }
 
-  handleResize() {
+  handleResize(): void {
+    if (!this.proxy || !this.content) {
+      return;
+    }
+
     this.proxy.style.width = this.content.getBoundingClientRect().width + 'px';
 
     if (this.hasOverflow) {
@@ -82,10 +94,10 @@ class CraftProxyScrollbar extends HTMLElement {
     }
   }
 
-  syncScroll(a, b) {
+  syncScroll(a: HTMLElement, b: HTMLElement): () => void {
     return () => {
       if (this.ignoreScrollEvent) {
-        return false;
+        return;
       }
 
       if (this.animation) {
@@ -100,5 +112,3 @@ class CraftProxyScrollbar extends HTMLElement {
     };
   }
 }
-
-customElements.define('craft-proxy-scrollbar', CraftProxyScrollbar);
