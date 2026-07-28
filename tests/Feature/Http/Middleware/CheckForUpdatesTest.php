@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+use function CraftCms\Cms\cp_url;
+
 beforeEach(function () {
     $this->updates = $this->mock(Updates::class);
     $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(true)->byDefault();
@@ -96,7 +98,10 @@ it('renders db update page for cp request when craft update pending', function (
 
     $response = $middleware->handle($request, fn () => 'passed');
 
-    expect($response->getContent())->toContain('Complete the Update');
+    expect($response->getContent())
+        ->toContain('Complete the Update')
+        ->toContain(sprintf('action="%s"', cp_url('updates')))
+        ->not->toContain('name="action"');
 });
 
 it('renders db update page for cp request when plugin update pending', function () {

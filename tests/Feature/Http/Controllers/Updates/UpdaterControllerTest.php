@@ -47,6 +47,12 @@ it('uses normal CP routes', function (string $action) {
         ->toStartWith(parse_url(cp_url('updates'), PHP_URL_PATH));
 })->with('routes');
 
+it('allows the index route without authentication', function () {
+    auth()->logout();
+
+    post(action([UpdaterController::class, 'index']))->assertOk();
+});
+
 test('all routes validate data', function (string $action) {
     if ($action === 'index') {
         postJson(action([UpdaterController::class, $action]), [

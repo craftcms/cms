@@ -70,6 +70,7 @@ use function CraftCms\Cms\cp_url;
 Route::get('install', [InstallController::class, 'index']);
 
 Route::prefix('updates')->name('updates.')->group(function () {
+    Route::post('/', [UpdaterController::class, 'index'])->name('index');
     Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate'])->name('force-update');
     Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup'])->name('backup');
     Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck'])->name('server-check');
@@ -413,6 +414,4 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::delete('{handle}', [FilesystemsController::class, 'destroy']);
         });
     });
-
-    Route::post('updates', [UpdaterController::class, 'index'])->name('updates.index');
 });
