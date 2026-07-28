@@ -7,6 +7,7 @@
 ### Extensibility
 - Added `craft\helpers\UrlHelper::removeAllParams()`. ([#19102](https://github.com/craftcms/cms/pull/19102))
 - Added `craft\helpers\UrlHelper::removeParams()`. ([#19102](https://github.com/craftcms/cms/pull/19102))
+- Added `craft\services\Elements::reorderNestedElements()`. ([#19321](https://github.com/craftcms/cms/issues/19321))
 - The `$params` argument of `craft\helpers\UrlHelper::url()` now accepts `false` to remove all params from the passed-in URL. ([#19102](https://github.com/craftcms/cms/pull/19102))
 
 ### System
