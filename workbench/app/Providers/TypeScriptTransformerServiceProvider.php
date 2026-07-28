@@ -17,6 +17,7 @@ use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Route\Data\Route;
+use CraftCms\Cms\Update\Data\UpdaterState;
 use CraftCms\Cms\Update\Data\Updates;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -52,6 +53,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     PermissionGroup::class,
                     Route::class,
                     Updates::class,
+                    UpdaterState::class,
                     HtmlFragment::class,
                     FieldEditViewModel::class,
                     UserPermissionsViewModel::class,

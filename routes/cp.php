@@ -10,6 +10,8 @@ use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
@@ -26,6 +28,7 @@ use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
@@ -66,6 +69,19 @@ use function CraftCms\Cms\cp_url;
  */
 Route::get('install', [InstallController::class, 'index']);
 
+Route::prefix('updates')->name('updates.')->group(function () {
+    Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate'])->name('force-update');
+    Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup'])->name('backup');
+    Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck'])->name('server-check');
+    Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert'])->name('revert');
+    Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate'])->name('migrate');
+    Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck'])->name('precheck');
+    Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [UpdaterController::class, 'recheckComposer'])->name('recheck-composer');
+    Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall'])->name('composer-install');
+    Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [UpdaterController::class, 'composerRemove'])->name('composer-remove');
+    Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish'])->name('finish');
+});
+
 Route::middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
     Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
@@ -104,6 +120,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::get('settings/addresses', [AddressSettingsController::class, 'index']);
         Route::post('settings/addresses', [AddressSettingsController::class, 'store']);
+    });
+
+    Route::prefix('pluginstore/remove')->middleware(RequireAdminChanges::class)->group(function () {
+        Route::post('/', [RemoveController::class, 'index']);
+        Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);
+        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [RemoveController::class, 'composerInstall']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [RemoveController::class, 'composerRemove']);
+        Route::post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
     });
 
     /**
@@ -185,6 +210,20 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::middleware([
         RequireAdmin::class,
     ])->group(function () {
+        Route::prefix('config-sync')->group(function () {
+            Route::post('/', [ConfigSyncController::class, 'index']);
+            Route::post(ConfigSyncController::ACTION_RETRY, [ConfigSyncController::class, 'retry']);
+            Route::post(ConfigSyncController::ACTION_APPLY_YAML_CHANGES, [ConfigSyncController::class, 'applyYamlChanges']);
+            Route::post(ConfigSyncController::ACTION_REGENERATE_YAML, [ConfigSyncController::class, 'regenerateYaml']);
+            Route::post(ConfigSyncController::ACTION_UNINSTALL_PLUGIN, [ConfigSyncController::class, 'uninstallPlugin']);
+            Route::post(ConfigSyncController::ACTION_INSTALL_PLUGIN, [ConfigSyncController::class, 'installPlugin']);
+            Route::post(BaseUpdaterController::ACTION_PRECHECK, [ConfigSyncController::class, 'precheck']);
+            Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
+            Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
+            Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
+            Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+        });
+
         // Index page
         Route::get('settings', SettingsIndexController::class)
             ->name('settings.index');
@@ -375,5 +414,5 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
     });
 
-    Route::post('updates', [UpdaterController::class, 'index']);
+    Route::post('updates', [UpdaterController::class, 'index'])->name('updates.index');
 });

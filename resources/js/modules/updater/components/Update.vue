@@ -107,11 +107,7 @@
           <!-- Update button -->
           <Form
             v-else
-            :action="
-              UpdaterController.index[
-                '/{cpTrigger?}/{actionTrigger?}/updater'
-              ]()
-            "
+            :action="UpdaterController.index()"
             method="post"
             v-slot="{processing}"
           >

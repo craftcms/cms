@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 beforeEach(function () {
@@ -134,11 +135,12 @@ it('aborts 503 for site request when plugin update pending', function () {
     $middleware->handle($request, fn () => 'passed');
 })->throws(HttpException::class);
 
-it('allows updater action requests when update pending', function () {
+it('allows updater CP routes when update pending', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/actions/updater/migrate');
+    $request = Request::create('/'.Cms::config()->cpTrigger.'/updates/migrate');
+    $request->setRouteResolver(fn () => Route::getRoutes()->getByName('craft.cp.updates.migrate'));
 
     $result = $middleware->handle($request, fn () => 'passed');
 

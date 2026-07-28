@@ -10,6 +10,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
@@ -28,22 +29,27 @@ beforeEach(function () {
 });
 
 dataset('routes', [
-    [UpdaterController::class, 'index'],
-    [UpdaterController::class, 'forceUpdate'],
-    [UpdaterController::class, 'backup'],
-    [UpdaterController::class, 'serverCheck'],
-    [UpdaterController::class, 'revert'],
-    [UpdaterController::class, 'migrate'],
-    [UpdaterController::class, 'precheck'],
-    [UpdaterController::class, 'recheckComposer'],
-    [UpdaterController::class, 'composerInstall'],
-    [UpdaterController::class, 'composerRemove'],
-    [UpdaterController::class, 'finish'],
+    'index',
+    'forceUpdate',
+    'backup',
+    'serverCheck',
+    'revert',
+    'migrate',
+    'precheck',
+    'recheckComposer',
+    'composerInstall',
+    'composerRemove',
+    'finish',
 ]);
 
-test('all routes validate data', function (string $controller, string $action) {
+it('uses normal CP routes', function (string $action) {
+    expect(parse_url(action([UpdaterController::class, $action]), PHP_URL_PATH))
+        ->toStartWith(parse_url(cp_url('updates'), PHP_URL_PATH));
+})->with('routes');
+
+test('all routes validate data', function (string $action) {
     if ($action === 'index') {
-        postJson(action([$controller, $action]), [
+        postJson(action([UpdaterController::class, $action]), [
             'install' => [],
         ])->assertJsonValidationErrors([
             'packageNames',
@@ -52,7 +58,7 @@ test('all routes validate data', function (string $controller, string $action) {
         return;
     }
 
-    postJson(action([$controller, $action]), [
+    postJson(action([UpdaterController::class, $action]), [
         'data' => 'invalid-data',
     ])->assertJsonValidationErrors([
         'data',
@@ -86,7 +92,8 @@ test('index returns Inertia Updater page', function () {
             ->component('updater/Index')
             ->has('title')
             ->has('initialState')
-            ->has('actionPrefix')
+            ->where('initialState.nextUrl', action([UpdaterController::class, 'precheck']))
+            ->where('initialState.finishUrl', action([UpdaterController::class, 'finish']))
             ->has('returnUrl')
         );
 });

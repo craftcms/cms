@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\Update\Data\UpdaterState;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\UpdaterAsset;
@@ -21,6 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,6 +51,8 @@ abstract class BaseUpdaterController
 
     /** @var array The data associated with the current update */
     protected array $data = [];
+
+    protected bool $usesStepUrls = true;
 
     public function __construct(
         protected Request $request,
@@ -310,7 +314,38 @@ abstract class BaseUpdaterController
         // Encode and hash the data
         $state['data'] = $this->hashedData();
 
-        return new JsonResponse($state);
+        if (! $this->usesStepUrls) {
+            return new JsonResponse($state);
+        }
+
+        return new JsonResponse($this->clientState($state)->toArray());
+    }
+
+    protected function clientState(array $state): UpdaterState
+    {
+        if (isset($state['nextAction'])) {
+            $state['nextUrl'] = $this->stepUrl($state['nextAction']);
+            unset($state['nextAction']);
+        }
+
+        foreach ($state['options'] ?? [] as $index => $option) {
+            if (! isset($option['nextAction'])) {
+                continue;
+            }
+
+            $option['nextUrl'] = $this->stepUrl($option['nextAction']);
+            unset($option['nextAction']);
+            $state['options'][$index] = $option;
+        }
+
+        $state['finishUrl'] = $this->stepUrl(self::ACTION_FINISH);
+
+        return UpdaterState::fromArray($state);
+    }
+
+    private function stepUrl(string $action): string
+    {
+        return action([static::class, Str::camel($action)]);
     }
 
     /**
