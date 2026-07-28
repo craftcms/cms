@@ -6,6 +6,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Pane from '@/common/components/Pane.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
 
   defineOptions({
     inheritAttrs: false,
@@ -25,6 +26,13 @@
   // `data` is a mode-discriminated union; only cards mode carries `elements`.
   const cardsData = computed(() =>
     page.props.data.mode === 'cards' ? page.props.data : null
+  );
+
+  // Past the card limit the server switches to index mode; the embedded
+  // element index arrives as a server-rendered fragment whose
+  // `<craft-nested-element-manager>` wrapper initializes itself once injected.
+  const indexFragment = computed(() =>
+    page.props.data.mode === 'index' ? page.props.contentFragment : null
   );
 
   const createBtn = ref<HTMLElement | null>(null);
@@ -127,6 +135,8 @@
   <Pane appearance="raised">
     <div ref="cardsContainer" class="grid gap-3">
       <h2 v-if="!props.showIndex" class="text-lg m-0!">{{ t('Addresses') }}</h2>
+
+      <HtmlFragmentRenderer v-if="indexFragment" :fragment="indexFragment" />
 
       <craft-empty v-if="cardsData && !cardsData.elements.length">
         {{ t('Nothing yet.') }}
