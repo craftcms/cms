@@ -314,14 +314,24 @@ class NestedElementManager extends Component
         $settings['elementType'] = $this->elementType;
 
         $elementHtml = app(ElementHtml::class);
-        $settings['elements'] = array_map(function (ElementInterface $element) use ($elementHtml, $config): array {
+        $settings['elements'] = array_map(function (ElementInterface $element) use ($elementHtml, $config, $owner, $attribute): array {
             // A per-element `id` is shared across the card parts so they line
             // up when recomposed client-side, while staying unique per card.
             // The thumb is provided separately (for a card component's
             // `thumbnail` slot), so the content part omits it.
+            // Unlike the HTML view (where a hosting `Craft.NestedElementManager`
+            // wires the nested action markers itself), the data path has no
+            // manager — passing the owner context makes the Delete item a
+            // self-contained HTTP action.
             $cardConfig = $this->cardConfig($config) + [
                 'id' => sprintf('card-%s', mt_rand()),
                 'withThumb' => false,
+            ];
+            $cardConfig['showNestedActions'] = [
+                'ownerElementType' => $owner::class,
+                'ownerId' => $owner->id,
+                'ownerSiteId' => $owner->siteId,
+                'attribute' => $attribute,
             ];
 
             return [

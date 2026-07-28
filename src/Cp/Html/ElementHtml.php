@@ -343,7 +343,12 @@ readonly class ElementHtml
      *   paths that know the card belongs to a nested-element context
      *   ({@see NestedElementManager::getCardsHtml()},
      *   `app/render-elements`), never by client-supplied configs — with each
-     *   item gated on the current user's permissions
+     *   item gated on the current user's permissions. May also be the owner
+     *   context as an array (`ownerElementType`/`ownerId`/`ownerSiteId`/
+     *   `attribute` — {@see NestedElementManager::getCardsData()}), in which
+     *   case the Duplicate and Delete items carry self-contained
+     *   `elements/duplicate`/`nested-elements/delete` actions instead of
+     *   relying on a hosting manager
      * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      */
@@ -666,17 +671,33 @@ readonly class ElementHtml
         }
 
         if (Gate::check('duplicate', $element)) {
-            $items[] = [
+            $item = [
                 'icon' => 'clone',
                 'label' => t('Duplicate'),
                 'attributes' => [
                     'data' => ['duplicate-action' => true],
                 ],
             ];
+
+            // With a known owner context (`showNestedActions` as an array —
+            // the data path, where no `Craft.NestedElementManager` wires the
+            // markers), the item carries a self-contained duplicate action,
+            // mirroring the legacy manager's `duplicateElement()` request.
+            if (is_array($config['showNestedActions'])) {
+                $item['action'] = 'elements/duplicate';
+                $item['params'] = [
+                    'elementType' => $element::class,
+                    'elementId' => $element->id,
+                    'ownerId' => $config['showNestedActions']['ownerId'],
+                    'siteId' => $config['showNestedActions']['ownerSiteId'],
+                ];
+            }
+
+            $items[] = $item;
         }
 
         if (Gate::check('delete', $element)) {
-            $items[] = [
+            $item = [
                 'icon' => 'trash',
                 'label' => mb_ucfirst(t('Delete {type}', [
                     'type' => $element::lowerDisplayName(),
@@ -686,6 +707,19 @@ readonly class ElementHtml
                     'data' => ['delete-action' => true],
                 ],
             ];
+
+            // With a known owner context (`showNestedActions` as an array —
+            // the data path, where no `Craft.NestedElementManager` wires the
+            // markers), the item carries a self-contained delete action.
+            if (is_array($config['showNestedActions'])) {
+                $item['action'] = 'nested-elements/delete';
+                $item['params'] = $config['showNestedActions'] + ['elementId' => $element->id];
+                $item['confirm'] = t('Are you sure you want to delete the selected {type}?', [
+                    'type' => $element::lowerDisplayName(),
+                ]);
+            }
+
+            $items[] = $item;
         }
 
         return $items;

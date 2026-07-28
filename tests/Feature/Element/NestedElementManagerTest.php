@@ -399,6 +399,44 @@ it('provides cards data matching the rendered cards settings', function () {
     expect($normalize($data))->toBe($normalize($encoded));
 });
 
+it('gives cards-data menu items self-contained duplicate/delete actions', function () {
+    $user = UserModel::factory()->createElement();
+    $address = AddressModel::factory()->createElement([
+        'primaryOwnerId' => $user->id,
+    ]);
+
+    DB::table(Table::ELEMENTS_OWNERS)->insert([
+        'elementId' => $address->id,
+        'ownerId' => $user->id,
+        'sortOrder' => 1,
+    ]);
+
+    $manager = $user->getAddressManager();
+
+    // The data path has no hosting manager to wire the delete marker, so the
+    // item carries the full HTTP action, targeting the owner context.
+    $data = $manager->getCardsData($user, ['showInGrid' => true]);
+    $actionsHtml = $data['elements'][0]['cardActionsHtml'];
+    expect($actionsHtml)->toContain('data-delete-action')
+        ->and($actionsHtml)->toContain('nested-elements/delete')
+        ->and($actionsHtml)->toContain(sprintf('elementId&quot;:%d', $address->id))
+        ->and($actionsHtml)->toContain(sprintf('ownerId&quot;:%d', $user->id))
+        ->and($actionsHtml)->toContain('attribute&quot;:&quot;addresses&quot;');
+
+    // Same for the duplicate marker.
+    expect($actionsHtml)->toContain('data-duplicate-action')
+        ->and($actionsHtml)->toContain('elements/duplicate');
+
+    // The HTML view keeps the markers behavior-less — the hosting
+    // `Craft.NestedElementManager` wires them (with draft handling the
+    // static actions can't know about).
+    $html = $manager->getCardsHtml($user, ['showInGrid' => true]);
+    expect($html)->toContain('data-delete-action')
+        ->and($html)->not->toContain('nested-elements/delete')
+        ->and($html)->toContain('data-duplicate-action')
+        ->and($html)->not->toContain('elements/duplicate');
+});
+
 it('returns no index or cards data for unsaved owners', function () {
     $user = UserModel::factory()->createElement();
 

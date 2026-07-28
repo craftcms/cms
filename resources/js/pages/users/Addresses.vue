@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
+  import {computed, ref} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
+  import {useEventListener} from '@vueuse/core';
   import {attrs, t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Pane from '@/common/components/Pane.vue';
@@ -101,25 +102,37 @@
   };
 
   // Refresh the cards when an editor slideout saves an element.
-  const onElementSaved = () => {
+  useEventListener(window, 'craft:element-saved', () => {
     router.reload({only: ['data']});
-  };
-
-  onMounted(() => {
-    window.addEventListener('craft:element-saved', onElementSaved);
   });
 
-  onBeforeUnmount(() => {
-    window.removeEventListener('craft:element-saved', onElementSaved);
+  // The listener lives on the cards' stable wrapper (not the grid itself,
+  // which is `v-if`-ed away when the last card is deleted).
+  const cardsContainer = ref<HTMLElement | null>(null);
+
+  // The cards' server-provided action items (e.g. Delete) run their HTTP
+  // request themselves via the action system and announce progress through
+  // bubbling `action:change-state` events — refresh the cards once one
+  // succeeds.
+  useEventListener(cardsContainer, 'action:change-state', (event: Event) => {
+    const detail = (event as CustomEvent).detail;
+
+    if (detail?.state === 'success' && detail?.actionType === 'http') {
+      router.reload({only: ['data']});
+    }
   });
 </script>
 
 <template>
   <Pane appearance="raised">
-    <div class="grid gap-3">
+    <div ref="cardsContainer" class="grid gap-3">
       <h2 v-if="!props.showIndex" class="text-lg m-0!">{{ t('Addresses') }}</h2>
 
-      <div class="card-grid">
+      <craft-empty v-if="cardsData && !cardsData.elements.length">
+        {{ t('Nothing yet.') }}
+      </craft-empty>
+
+      <div v-if="cardsData?.elements.length" class="card-grid">
         <template v-for="element in cardsData?.elements" :key="element.id">
           <craft-card
             v-bind="attrs(element.cardAttributes, {exclude: ['class']})"

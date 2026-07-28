@@ -47,6 +47,7 @@ test('index cards include the server-rendered nested actions', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('users/Addresses')
+            ->where('data.elements.0.cardActionsHtml', fn (string $html): bool => str_contains($html, 'data-duplicate-action') && str_contains($html, 'data-delete-action'))
             ->where('contentFragment.html', fn (string $html): bool => str_contains($html, 'data-duplicate-action') && str_contains($html, 'data-delete-action')));
 });
 
@@ -61,6 +62,7 @@ test('index renders the Inertia addresses page', function () {
             ->has('crumbs', 2)
             ->has('subnav')
             ->has('details')
+            ->where('data.mode', 'cards')
             ->where('contentFragment.html', fn (string $html): bool => $html !== ''));
 });
 
