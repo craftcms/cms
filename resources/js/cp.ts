@@ -26,5 +26,6 @@ import './modules/proxy-scrollbar';
 import './modules/element-label';
 import './modules/form-observer';
 import './modules/interval-manager';
+import './modules/entry-mover';
 
 window.Cp = Cp as unknown as typeof window.Cp;
