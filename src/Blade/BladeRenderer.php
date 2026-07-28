@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Blade;
 
-use CraftCms\Cms\View\BaseTemplateRenderer;
+use CraftCms\Cms\View\Contracts\TemplateRendererInterface;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Blade;
 
-#[Scoped]
-class BladeRenderer extends BaseTemplateRenderer
+class BladeRenderer implements TemplateRendererInterface
 {
     public function supports(string $file): bool
     {
@@ -19,18 +17,13 @@ class BladeRenderer extends BaseTemplateRenderer
 
     public function renderTemplate(
         string $template,
-        array $variables,
+        array $variables = [],
         ?TemplateMode $templateMode = null,
         ?string $resolvedTemplate = null,
     ): string {
-        return $this->renderInternal(
-            template: $template,
-            variables: $variables,
-            templateMode: $templateMode,
-            render: fn (string $template, array $variables) => $resolvedTemplate
-                ? view()->file($resolvedTemplate, $variables)->render()
-                : view($template, $variables)->render()
-        );
+        return $resolvedTemplate
+            ? view()->file($resolvedTemplate, $variables)->render()
+            : view($template, $variables)->render();
     }
 
     public function renderString(
@@ -38,11 +31,6 @@ class BladeRenderer extends BaseTemplateRenderer
         array $variables = [],
         TemplateMode $templateMode = TemplateMode::Site,
     ): string {
-        return $this->renderInternal(
-            'string:'.$template,
-            $variables,
-            $templateMode,
-            fn () => Blade::render($template, $variables),
-        );
+        return Blade::render($template, $variables);
     }
 }

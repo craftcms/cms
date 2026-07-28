@@ -1,10 +1,10 @@
 import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {JobStatus} from '@craftcms/cp/types/queue.js';
-import type {JobInfo, JobUpdateDetail} from '@craftcms/cp';
+import {JobStatus} from '@/modules/queue/types';
+import type {JobInfo, JobUpdateDetail} from '@/modules/queue/types';
 
-import '@craftcms/cp/components/progress/progress.ts.mjs';
-import {QueueService} from '@craftcms/cp';
+import '@craftcms/ui/components/progress/progress';
+import {QueueService} from '@/modules/queue/queue';
 
 @customElement('cp-queue-indicator')
 class CpQueueIndicator extends LitElement {
@@ -109,7 +109,7 @@ class CpQueueIndicator extends LitElement {
       return null;
     }
 
-    return window.Craft.getCpUrl('utilities/queue-manager');
+    return Craft.getCpUrl('utilities/queue-manager');
   }
 
   protected override render() {

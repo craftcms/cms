@@ -21,11 +21,6 @@ import './js/BaseElementSelectorModal.js';
 import './js/BaseInputGenerator.js';
 import './js/BaseUploader.js';
 
-// Slideouts
-import './js/Slideout.js';
-import './js/CpScreenSlideout.js';
-import './js/ElementEditorSlideout.js';
-
 // Modals
 import './js/CpModal.js';
 
@@ -61,19 +56,14 @@ import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/ElementTableSorter.js';
-import './js/ElevatedSessionForm.js';
-import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
 import './js/EntrySelectInput.js';
-import './js/EntryTypeSelectInput.js';
 import './js/EnvVarGenerator.js';
 import './js/EntryMover.js';
 import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
 import './js/FieldToggle.js';
 import './js/Grid.js';
-import './js/GroupedEntryTypeManager.js';
-import './js/GroupedEntryTypeSelectInput.js';
 import './js/HandleGenerator.js';
 import './js/IconPicker.js';
 import './js/ImageUpload.js';
@@ -103,8 +93,5 @@ import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 
 // Custom elements
-import './js/CraftGlobalSidebar.js';
-import './js/CraftDisclosure.js';
-import './js/CraftTooltip.js';
 import './js/CraftElementLabel';
 import './js/CraftProxyScrollbar';

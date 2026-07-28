@@ -6,9 +6,11 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
@@ -48,6 +50,15 @@ readonly class OAuthController extends AuthenticationController
         try {
             $socialiteUser = $oauthManager->buildProvider($definition, $isCpRequest)->user();
             $identity = $oauthManager->resolveIdentity($definition, $socialiteUser);
+
+            if ($connectRequest = $this->pullConnectRequest($request)) {
+                try {
+                    return $this->connectResponse($request, $connectRequest, $definition, $identity, $oauthManager);
+                } catch (Throwable $e) {
+                    return $this->connectFailedResponse(t('Authentication failed.'), $e);
+                }
+            }
+
             $user = $oauthManager->resolveUser($definition, $socialiteUser, $identity);
             $email = $socialiteUser->getEmail();
 
@@ -91,17 +102,21 @@ readonly class OAuthController extends AuthenticationController
                 $users->activateUser($user);
             }
 
-            $oauthManager->linkIdentity($user, $definition, $identity);
+            $authError = $this->getAuthError($user, $isCpRequest);
 
-            if ($isNew) {
-                $groupIds = $oauthManager->resolveGroupIds($definition, $socialiteUser, $user, $identity);
+            if (! $authError || $isNew) {
+                $oauthManager->linkIdentity($user, $definition, $identity);
 
-                if ($groupIds !== []) {
-                    $users->assignUserToGroups($user->id, $groupIds);
+                if ($isNew) {
+                    $groupIds = $oauthManager->resolveGroupIds($definition, $socialiteUser, $user, $identity);
+
+                    if ($groupIds !== []) {
+                        $users->assignUserToGroups($user->id, $groupIds);
+                    }
                 }
             }
 
-            if ($authError = $this->getAuthError($user, $isCpRequest)) {
+            if ($authError) {
                 return $this->failedResponse(
                     $isCpRequest,
                     $this->auth->getLoginFailureInfo($authError, $user)[1],
@@ -120,8 +135,95 @@ readonly class OAuthController extends AuthenticationController
                 previous: $e,
             );
         } catch (Throwable $e) {
+            if ($this->pullConnectRequest($request) !== null) {
+                return $this->connectFailedResponse(t('Authentication failed.'), $e);
+            }
+
             return $this->failedResponse($isCpRequest, t('Authentication failed.'), previous: $e);
         }
+    }
+
+    /**
+     * @param  array{provider?: string, userId?: int}  $connectRequest
+     */
+    private function connectResponse(
+        Request $request,
+        array $connectRequest,
+        ProviderDefinition $definition,
+        string $identity,
+        OAuth $oauthManager,
+    ): Response {
+        if (($connectRequest['provider'] ?? null) !== $definition->handle) {
+            return $this->connectFailedResponse(t('Authentication failed.'));
+        }
+
+        if ($definition->stateless) {
+            return $this->connectFailedResponse(t('This OAuth provider cannot be connected to an account.'));
+        }
+
+        $user = $request->craftUser()?->asElement();
+
+        if (! $user || $user->id !== (int) ($connectRequest['userId'] ?? 0)) {
+            return $this->connectFailedResponse(t('Authentication failed.'));
+        }
+
+        $currentIdentity = $oauthManager->identityFor($user, $definition);
+
+        if ($currentIdentity === $identity) {
+            return $this->connectSuccessResponse(t('{provider} is already connected.', [
+                'provider' => $definition->name,
+            ]));
+        }
+
+        if ($currentIdentity !== null) {
+            return $this->connectFailedResponse(t('Disconnect {provider} before connecting a different account.', [
+                'provider' => $definition->name,
+            ]));
+        }
+
+        $linkedUserId = $oauthManager->linkedUserId($definition, $identity);
+
+        if ($linkedUserId !== null && $linkedUserId !== $user->id) {
+            return $this->connectFailedResponse(t('{provider} is already connected to another user.', [
+                'provider' => $definition->name,
+            ]));
+        }
+
+        $oauthManager->linkIdentity($user, $definition, $identity);
+
+        return $this->connectSuccessResponse(t('{provider} connected.', [
+            'provider' => $definition->name,
+        ]));
+    }
+
+    /**
+     * @return array{provider?: string, userId?: int}|null
+     */
+    private function pullConnectRequest(Request $request): ?array
+    {
+        $connectRequest = $request->session()->pull(OAuth::CONNECT_SESSION_KEY);
+
+        return is_array($connectRequest) ? $connectRequest : null;
+    }
+
+    private function connectSuccessResponse(string $message): Response
+    {
+        Flash::success($message);
+
+        return to_action([SignInProvidersController::class, 'index'])->with('success', $message);
+    }
+
+    private function connectFailedResponse(
+        string $message,
+        ?Throwable $previous = null,
+    ): Response {
+        if ($previous) {
+            Log::warning($message, [__METHOD__, 'exception' => $previous]);
+        }
+
+        Flash::error($message);
+
+        return to_action([SignInProvidersController::class, 'index'])->with('error', $message);
     }
 
     private function failedResponse(
@@ -178,7 +280,7 @@ readonly class OAuthController extends AuthenticationController
             User::STATUS_PENDING => AuthError::PendingVerification,
             User::STATUS_SUSPENDED => AuthError::AccountSuspended,
             User::STATUS_ACTIVE => $this->getCpAuthError($user),
-            default => null,
+            default => AuthError::InvalidCredentials,
         };
     }
 

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import AppLayout from '@/common/layouts/AppLayout.vue';
   import type {
     CmsLicenseData,
     PluginInfo,
@@ -60,7 +59,5 @@
 </script>
 
 <template>
-  <AppLayout>
-    <PluginsList :read-only="readOnly" :plugin-info="fullPluginInfo" />
-  </AppLayout>
+  <PluginsList :read-only="readOnly" :plugin-info="fullPluginInfo" />
 </template>

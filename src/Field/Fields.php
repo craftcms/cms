@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
-use CraftCms\Cms\Field\Addresses as AddressesField;
-use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
+use CraftCms\Cms\Field\Data\FieldMergeResult;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
@@ -30,11 +31,6 @@ use CraftCms\Cms\Field\Events\FieldLayoutSaving;
 use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
-use CraftCms\Cms\Field\Events\FieldTypesResolving;
-use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
-use CraftCms\Cms\Field\Matrix as MatrixField;
-use CraftCms\Cms\Field\Table as TableField;
-use CraftCms\Cms\Field\Users as UsersField;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -45,6 +41,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Query;
@@ -99,6 +96,8 @@ class Fields
 
     public function __construct(
         private readonly ElementCaches $elementCaches,
+        private readonly FieldTypes $fieldTypes,
+        private readonly NestedEntryFieldTypes $nestedEntryFieldTypes,
     ) {}
 
     // Handle Registry
@@ -217,38 +216,7 @@ class Fields
      */
     public function getAllFieldTypes(): Collection
     {
-        $fieldTypes = collect([
-            AddressesField::class,
-            AssetsField::class,
-            ButtonGroup::class,
-            Checkboxes::class,
-            Color::class,
-            ContentBlock::class,
-            Country::class,
-            Date::class,
-            Dropdown::class,
-            Email::class,
-            EntriesField::class,
-            Icon::class,
-            Json::class,
-            Lightswitch::class,
-            Link::class,
-            Markdown::class,
-            MatrixField::class,
-            Money::class,
-            MultiSelect::class,
-            Number::class,
-            PlainText::class,
-            RadioButtons::class,
-            Range::class,
-            TableField::class,
-            Time::class,
-            UsersField::class,
-        ]);
-
-        event($event = new FieldTypesResolving($fieldTypes));
-
-        return $event->types;
+        return $this->fieldTypes->types();
     }
 
     /**
@@ -336,13 +304,7 @@ class Fields
      */
     public function getNestedEntryFieldTypes(): Collection
     {
-        $fieldTypes = collect([
-            MatrixField::class,
-        ]);
-
-        event($event = new NestedEntryFieldTypesResolving($fieldTypes));
-
-        return $event->types;
+        return $this->nestedEntryFieldTypes->types();
     }
 
     /**
@@ -799,6 +761,89 @@ class Fields
                 $layoutField instanceof CustomField &&
                 $layoutField->getFieldUid() === $field->uid
             )));
+    }
+
+    public function merge(
+        FieldInterface&MergeableFieldInterface $persistingField,
+        FieldInterface&MergeableFieldInterface $outgoingField,
+    ): FieldMergeResult {
+        $projectConfigService = app(ProjectConfig::class);
+        $muteEvents = $projectConfigService->muteEvents;
+        $updatedLayouts = 0;
+
+        $projectConfigService->muteEvents = true;
+
+        try {
+            foreach ($this->findFieldUsages($outgoingField) as $layout) {
+                $changed = false;
+
+                foreach ($layout->getCustomFieldElements() as $layoutElement) {
+                    if ($layoutElement->getFieldUid() !== $outgoingField->uid) {
+                        continue;
+                    }
+
+                    $layoutElement->label = $this->layoutElementOverride($persistingField->name, $outgoingField->name, $layoutElement->label);
+                    $layoutElement->handle = $this->layoutElementOverride($persistingField->handle, $outgoingField->handle, $layoutElement->handle);
+                    $layoutElement->instructions = $this->layoutElementOverride($persistingField->instructions, $outgoingField->instructions, $layoutElement->instructions);
+
+                    $layoutElement->setField($persistingField);
+                    $changed = true;
+                }
+
+                if (! $changed) {
+                    continue;
+                }
+
+                $layout->id ??= DB::table(Table::FIELDLAYOUTS)->idByUid($layout->uid);
+
+                if ($layout->id) {
+                    $this->saveLayout($layout);
+                }
+
+                if ($layout->uid) {
+                    $projectConfigOccurrences = $projectConfigService->find(fn (array $item) => isset($item[$layout->uid]));
+
+                    foreach ($projectConfigOccurrences as $path => $item) {
+                        $projectConfigService->set("$path.$layout->uid", $layout->getConfig());
+                    }
+                }
+
+                $updatedLayouts++;
+            }
+        } finally {
+            $projectConfigService->muteEvents = $muteEvents;
+        }
+
+        $this->deleteField($outgoingField);
+
+        $migrationName = sprintf('%s_merge_%s_into_%s', now('UTC')->format('Y_m_d_His'), $outgoingField->handle, $persistingField->handle);
+        $migrationPath = database_path("migrations/{$migrationName}.php");
+
+        ob_start();
+        File::getRequire(Aliases::get('@craftcms/stubs/field-merge.php.stub'), [
+            'persistingFieldUid' => $persistingField->uid,
+            'outgoingFieldUid' => $outgoingField->uid,
+        ]);
+        $content = ob_get_clean();
+
+        File::put($migrationPath, $content);
+
+        app(Migrator::class)->track('content')->run();
+
+        return new FieldMergeResult(
+            updatedLayouts: $updatedLayouts,
+            migrationPath: $migrationPath,
+        );
+    }
+
+    private function layoutElementOverride(?string $persistingFieldValue, ?string $outgoingFieldValue, ?string $override): ?string
+    {
+        $persistingFieldValue = ($persistingFieldValue === '' ? null : $persistingFieldValue);
+        $outgoingFieldValue = ($outgoingFieldValue === '' ? null : $outgoingFieldValue);
+        $override = ($override === '' ? null : $override);
+        $expected = $override ?? $outgoingFieldValue;
+
+        return $persistingFieldValue !== $expected ? $expected : null;
     }
 
     /**

@@ -2,7 +2,7 @@
   import {Head} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
   import craftCmsLogoUrl from '@public/images/craftcms.svg';
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
 
   const props = withDefaults(
     defineProps<{
@@ -82,7 +82,7 @@
   .cp-login__powered-by {
     display: block;
     margin-block-start: calc(70rem / 16);
-    opacity: 0.8;
+    opacity: 0.92;
     text-align: center;
 
     &:hover,

@@ -7,14 +7,14 @@ namespace CraftCms\Cms;
 use BackedEnum;
 use Closure;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Twig\TwigRenderer as TwigTemplateRenderer;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateMode;
-use CraftCms\Cms\View\TemplateRenderer;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -204,39 +204,47 @@ function silence(Closure|string $callable, ?int $mask = null): mixed
     }
 }
 
-function template(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
-{
-    return app(TemplateRenderer::class)->renderTemplate($template, $variables, $templateMode);
+function template(
+    string $template,
+    array $variables = [],
+    ?TemplateMode $templateMode = null,
+    TemplateEngine|string|null $renderer = null,
+): string {
+    return Template::renderTemplate($template, $variables, $templateMode, renderer: $renderer);
 }
 
 function sandboxedTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
 {
-    return app(TwigTemplateRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode);
+    return Template::renderSandboxedTemplate($template, $variables, $templateMode);
 }
 
-function pageTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
-{
-    return app(TemplateRenderer::class)->renderPageTemplate($template, $variables, $templateMode);
+function pageTemplate(
+    string $template,
+    array $variables = [],
+    ?TemplateMode $templateMode = null,
+    TemplateEngine|string|null $renderer = null,
+): string {
+    return Template::renderPageTemplate($template, $variables, $templateMode, renderer: $renderer);
 }
 
 function renderString(string $template, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, bool $escapeHtml = false): string
 {
-    return app(TwigTemplateRenderer::class)->renderString($template, $variables, $templateMode, $escapeHtml);
+    return Template::renderTwigString($template, $variables, $templateMode, $escapeHtml);
 }
 
 function renderSandboxedString(string $template, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, bool $escapeHtml = false): string
 {
-    return app(TwigTemplateRenderer::class)->renderSandboxedString($template, $variables, $templateMode, $escapeHtml);
+    return Template::renderSandboxedString($template, $variables, $templateMode, $escapeHtml);
 }
 
 function renderObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
 {
-    return app(TwigTemplateRenderer::class)->renderObjectTemplate($template, $object, $variables, $templateMode);
+    return Template::renderObjectTemplate($template, $object, $variables, $templateMode);
 }
 
 function renderSandboxedObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
 {
-    return app(TwigTemplateRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, $templateMode);
+    return Template::renderSandboxedObjectTemplate($template, $object, $variables, $templateMode);
 }
 
 /**
@@ -263,4 +271,15 @@ function backTraceAsString(int $limit = 0): string
     }
 
     return $trace;
+}
+
+/**
+ * Creates a UI component by its registered name, applying the given config
+ * via its fluent setters.
+ *
+ *     ui('callout', ['variant' => 'warning'])->content(t('Careful!'));
+ */
+function ui(string $name, array $config = []): Cp\Components\ViewComponent
+{
+    return app(Cp\Components\ComponentRegistry::class)->make($name, $config);
 }

@@ -264,33 +264,43 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         Craft.addActionsToChip($component, actions);
 
         const disclosureMenu = this.getDisclosureMenu($component);
-        const moveForwardBtn = disclosureMenu.$container.find(
-          '[data-move-forward]'
-        )[0];
-        const moveBackwardBtn = disclosureMenu.$container.find(
-          '[data-move-backward]'
-        )[0];
 
-        disclosureMenu.on('show', () => {
-          const $li = $component.parent();
-          const $prev = $li.prev('li:has(.chip)');
-          const $next = $li.next('li:has(.chip)');
+        if (disclosureMenu) {
+          const moveForwardBtn = disclosureMenu.$container.find(
+            '[data-move-forward]'
+          )[0];
+          const moveBackwardBtn = disclosureMenu.$container.find(
+            '[data-move-backward]'
+          )[0];
 
-          if (moveForwardBtn) {
-            disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
-          }
-          if (moveBackwardBtn) {
-            disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
-          }
-        });
+          // On the modern craft-action-menu shape, `on()`/`toggleItem()` are
+          // no-ops (see `getDisclosureMenu()`) — there's no real
+          // `Garnish.DisclosureMenu` "show" event to hook, so the move
+          // items just stay visible rather than toggling based on
+          // position. Move actions aren't part of the new self-booting
+          // `<craft-component-select>` at all; this only matters for
+          // legacy-path (`jsClass`) selects.
+          disclosureMenu.on('show', () => {
+            const $li = $component.parent();
+            const $prev = $li.prev('li:has(.chip)');
+            const $next = $li.next('li:has(.chip)');
 
-        this.addListener($component, 'dblclick,taphold', (ev) => {
-          // don't open the edit slideout if we are tapholding to drag
-          if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
-            return;
-          }
-          disclosureMenu.$container.find('[data-edit-action]').click();
-        });
+            if (moveForwardBtn) {
+              disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
+            }
+            if (moveBackwardBtn) {
+              disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
+            }
+          });
+
+          this.addListener($component, 'dblclick,taphold', (ev) => {
+            // don't open the edit slideout if we are tapholding to drag
+            if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
+              return;
+            }
+            disclosureMenu.$container.find('[data-edit-action]').click();
+          });
+        }
       }
 
       if (this.settings.sortable && Craft.hasMousePointerEvents()) {
@@ -327,12 +337,17 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
             axis === 'y'
               ? Craft.t('app', 'Move up')
               : Craft.t('app', 'Move forward'),
-          onActivate: (el) => {
-            // don't use `this` in case the chip ends up getting assigned to a different component select
-            $(el)
-              .closest('.menu')
-              .data('disclosureMenu')
-              .$trigger.closest('.componentselect')
+          onActivate: () => {
+            // Resolve from `$component` (the chip), not `this` — in case the
+            // chip ends up getting assigned to a different component select.
+            // `$component` stays put in the DOM even when the menu it's
+            // opened from gets relocated (both the legacy
+            // `Garnish.DisclosureMenu` and Lion's overlay, which backs
+            // `craft-action-menu`, move their open content elsewhere in the
+            // document), so traversing from it — rather than from the
+            // clicked item — works for either action-menu shape.
+            $component
+              .closest('.componentselect')
               .data('componentSelect')
               .moveComponentForward($component);
           },
@@ -353,12 +368,10 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
             axis === 'y'
               ? Craft.t('app', 'Move down')
               : Craft.t('app', 'Move backward'),
-          onActivate: (el) => {
-            // don't use `this` in case the chip ends up getting assigned to a different component select
-            $(el)
-              .closest('.menu')
-              .data('disclosureMenu')
-              .$trigger.closest('.componentselect')
+          onActivate: () => {
+            // See the Move-forward comment above.
+            $component
+              .closest('.componentselect')
               .data('componentSelect')
               .moveComponentBackward($component);
           },
@@ -371,12 +384,10 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       actions.push({
         icon: async () => await Craft.ui.icon('remove'),
         label: Craft.t('app', 'Remove'),
-        onActivate: (el) => {
-          // don't use `this` in case the chip ends up getting assigned to a different component select
-          $(el)
-            .closest('.menu')
-            .data('disclosureMenu')
-            .$trigger.closest('.componentselect')
+        onActivate: () => {
+          // See the Move-forward comment above.
+          $component
+            .closest('.componentselect')
             .data('componentSelect')
             .removeComponent($component);
         },
@@ -398,11 +409,65 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       return actions;
     },
 
+    /**
+     * Resolves the chip's action menu, in whichever shape it's in.
+     *
+     * For the legacy disclosure-menu shape (old `div.chip`, or a
+     * `[data-disclosure-trigger]` a plugin still renders into the suffix
+     * slot), this returns the real `Garnish.DisclosureMenu` instance.
+     *
+     * For the modern self-booting `<craft-action-menu>` (what
+     * `ElementHtml::componentActionMenu()` renders now), there's no
+     * `Garnish.DisclosureMenu` to return — this returns a minimal shim
+     * instead, covering what this class actually relies on:
+     *
+     * - `$container`: the `[slot="content"]` node, for
+     *   `[data-edit-action]`/`[data-move-forward]`/`[data-move-backward]`
+     *   lookups.
+     * - `hideItem(el)`: functional — sets the modern `hidden` attribute
+     *   (the same consumer-owned-visibility channel used elsewhere), since
+     *   `EntryTypeSelectInput` calls it synchronously to hide the edit
+     *   action.
+     * - `on()`/`off()`/`toggleItem()`: no-ops. There's no real "show" event
+     *   to hook (`craft-action-menu` doesn't fire a Garnish-style `show`),
+     *   so the move-item visibility toggling in `addComponentInternal()`
+     *   simply never runs — the move items just stay visible. Move actions
+     *   aren't part of the new `<craft-component-select>` at all; this only
+     *   affects legacy-path (`jsClass`) selects using the modern chip
+     *   markup.
+     */
     getDisclosureMenu: function ($component) {
-      return $component
-        .find('> .chip-content > .chip-actions .action-btn')
-        .disclosureMenu()
-        .data('disclosureMenu');
+      const $trigger = $component
+        .find(
+          '> .chip-content > .chip-actions .action-btn, [slot="suffix"] [data-disclosure-trigger]'
+        )
+        .first();
+
+      if ($trigger.length) {
+        return $trigger.disclosureMenu().data('disclosureMenu');
+      }
+
+      const actionMenu = $component
+        .find('[slot="suffix"] craft-action-menu')
+        .get(0);
+      if (!actionMenu) {
+        return null;
+      }
+
+      let $content = $(actionMenu).children('[slot="content"]').first();
+      if (!$content.length) {
+        $content = $(actionMenu);
+      }
+
+      return {
+        $container: $content,
+        on: () => {},
+        off: () => {},
+        toggleItem: () => {},
+        hideItem: (el) => {
+          $(el).attr('hidden', '');
+        },
+      };
     },
 
     onChange() {
@@ -565,7 +630,10 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
 
-      if (this.settings.showDescription && $item) {
+      if ($item) {
+        // Initialize the chip's UI elements (its action menu's
+        // disclosure trigger, info icons, …). Chips rendered with the
+        // page get this from the global boot pass; fetched chips don't.
         Craft.initUiElements($item);
       }
     },

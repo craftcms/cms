@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import {computed, h} from 'vue';
   import Pane from '@/common/components/Pane.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';

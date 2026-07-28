@@ -10,6 +10,8 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Models\User;
@@ -22,18 +24,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Timebox;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpFoundation\Response;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\site_url;
 use function CraftCms\Cms\template;
 
 readonly class LoginController extends AuthenticationController
 {
-    public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods): Response|View|\Inertia\Response
+    public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods, OAuth $oauth): Response|View|\Inertia\Response
     {
         // see if they're already logged in
         if ($user = $request->craftUser()) {
@@ -45,10 +50,23 @@ readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return $this->renderViewWithFallback(cpTemplate: 'login', inertiaComponent: 'auth/Login', inertiaProps: [
-            'action' => action([LoginController::class, 'attemptLogin']),
-            'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
-        ]);
+        $oauthLoginButtons = array_map(
+            static fn (HtmlString $button): string => (string) $button,
+            $oauth->getLoginButtons(),
+        );
+
+        return $this->renderViewWithFallback(
+            inertiaComponent: 'auth/Login',
+            inertiaProps: [
+                'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
+                'oauthLoginButtons' => $oauthLoginButtons,
+                'action' => $request->isCpRequest() ? action([self::class, 'attemptLogin']) : action_url('users/login'),
+            ],
+            data: [
+                'action' => action([self::class, 'attemptLogin']),
+                'oauthLoginButtons' => $oauthLoginButtons,
+            ],
+        );
     }
 
     /**
@@ -92,7 +110,7 @@ readonly class LoginController extends AuthenticationController
         ]);
     }
 
-    public function attemptLogin(Request $request, Impersonation $impersonation): Response
+    public function attemptLogin(Request $request, Impersonation $impersonation, LoginRateLimiter $loginRateLimiter): Response
     {
         $request->validate([
             'loginName' => [
@@ -111,7 +129,7 @@ readonly class LoginController extends AuthenticationController
 
         $user = $this->retrieveLoginUser($request->input('loginName'));
 
-        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation) {
+        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation, $loginRateLimiter) {
             if (! $user || $user->getAuthPassword() === null) {
                 return $this->handleLoginFailure($request, AuthError::InvalidCredentials);
             }
@@ -121,16 +139,26 @@ readonly class LoginController extends AuthenticationController
             }
 
             // Valid credentials
+            $loginRateLimiter->clear($request);
+
             if (config('hashing.rehash_on_login', true) && $user instanceof Model) {
                 $provider->rehashPasswordIfRequired($user, ['password' => $request->input('password')]);
             }
 
-            // if we're impersonating, pass the user we're impersonating to the complete method
+            $loginUser = $user;
+            $remember = $request->boolean('rememberMe');
+
             if ($impersonation->isImpersonating()) {
-                $user = $request->craftUser() ?? $user;
+                $loginUser = $request->craftUser() ?? $user;
+                $remember = false;
             }
 
-            return $this->finalizeLogin($request, $user, $request->boolean('rememberMe'));
+            return $this->finalizeLogin(
+                $request,
+                $user,
+                $remember,
+                loginUser: $loginUser,
+            );
         }, 30_000);
     }
 
@@ -165,8 +193,6 @@ readonly class LoginController extends AuthenticationController
             return redirect(cp_url(CpAuthPath::Login->value));
         }
 
-        return $this->asSuccess(
-            redirect: $this->generalConfig->getPostLogoutRedirect(),
-        );
+        return redirect(site_url($this->generalConfig->getPostLogoutRedirect()));
     }
 }

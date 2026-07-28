@@ -14,8 +14,6 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\User\Validation\UserRules;
-use CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,8 +42,6 @@ readonly class PasswordController
         $user = $currentUser->asElement();
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
-
-        app(InternalAssetRegistry::class)->register(AuthMethodSetupAsset::class);
 
         $response->action('users/save-password');
         $response->contentTemplate('users/_password', compact('user'));
@@ -100,6 +96,10 @@ readonly class PasswordController
         $user = $users->getUserById($validated['userId']);
 
         abort_if(is_null($user), 400, 'User not found');
+
+        if ($user->admin) {
+            $this->requireAdmin();
+        }
 
         try {
             $url = $users->getPasswordResetUrl($user);

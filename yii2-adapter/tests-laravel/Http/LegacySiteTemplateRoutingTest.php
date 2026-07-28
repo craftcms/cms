@@ -6,7 +6,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Once;
 
 it('resolves legacy site templates from the base templates directory after resource views', function() {
     $templatesPath = base_path('templates');
@@ -18,7 +17,6 @@ it('resolves legacy site templates from the base templates directory after resou
     File::put("$templatesPath/shared.twig", 'legacy-shared-route');
     File::put("$resourcesPath/shared.twig", 'resource-shared-route');
     Cms::setIsInstalled(false);
-    Once::flush();
 
     try {
         $resolver = app(TemplateResolver::class);

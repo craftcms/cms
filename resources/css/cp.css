@@ -4,8 +4,8 @@ CP Styles
 @layer theme, base, components, cp, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
-@import '@craftcms/cp/styles/cp.css' layer(cp);
-@import '@craftcms/cp/tailwind.css' layer(theme);
+@import '@craftcms/ui/styles/cp.css' layer(cp);
+@import '@craftcms/ui/tailwind.css' layer(theme);
 
 @import './fld.css';
 @import './cvd.css';
@@ -154,8 +154,8 @@ Form controls
   overflow: clip;
 }
 
-/**
-Select
- */
-.cp-form-control--select {
+.selectize-dropdown.cp-form-control {
+  position: absolute;
+  min-height: 0;
+  overflow: visible;
 }

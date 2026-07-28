@@ -74,6 +74,7 @@ class FieldLayoutFormTab extends Component
     {
         $components = [];
 
+        $html = Html::beginTag('craft-field-group');
         foreach ($this->elements as $formElement) {
             if (is_array($formElement)) {
                 $components[] = $formElement[2] ?? null;
@@ -93,7 +94,8 @@ class FieldLayoutFormTab extends Component
                 ]);
             }
         }
+        $html .= implode("\n", $components);
 
-        return implode("\n", $components);
+        return $html.Html::endTag('craft-field-group');
     }
 }

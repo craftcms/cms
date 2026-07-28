@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate';
   import Release from '@/modules/updater/components/Release.vue';
   import {computed, ref} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';

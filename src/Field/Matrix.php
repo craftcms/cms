@@ -561,7 +561,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'renderDefaultInput' => false,
             'allowOverrides' => true,
             'create' => true,
-            'jsClass' => 'Craft.GroupedEntryTypeSelectInput',
+            // No jsClass → componentSelect.twig renders the self-booting
+            // `<craft-component-select>`, orchestrated by
+            // `<craft-entry-type-manager>` (resources/js/modules/entry-types).
+            'jsClass' => false,
             'errors' => $this->errors()->get('entryTypes'),
             'data' => [
                 'error-key' => 'entryTypes',
@@ -570,16 +573,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
 
         if (! $readOnly) {
+            // The select template for new groups, with TEMP_ID placeholder ids
+            // the manager swaps client-side. Rendered with NO ambient namespace
+            // so the markup stays raw (a clean TEMP_ID and un-namespaced input
+            // names); the field settings' own namespace pass then namespaces the
+            // whole settings HTML — including this `<template>`'s contents —
+            // exactly once, the same single pass the inline group selects get.
+            // Applying `namespaceInputs()` here too would double it up, breaking
+            // the TEMP_ID swap and producing over-nested `entryTypes[]` names
+            // (which fail to save as unknown `types` properties).
+            // The JS buffer only guards against stray registered JS leaking
+            // TEMP_ID references into the page — the web-component path registers
+            // none, so it's discarded.
             HtmlStack::startJsBuffer();
-            $namespace = InputNamespace::get();
             $entryTypeSelectHtml = InputNamespace::with(
                 namespace: null,
-                callback: fn () => InputNamespace::namespaceInputs(fn () => FormFields::entryTypeSelectHtml([
+                callback: fn () => FormFields::entryTypeSelectHtml([
                     ...$entryTypeSelectConfig,
                     'id' => 'TEMP_ID',
-                ]), $namespace),
+                ]),
             );
-            $entryTypeSelectJs = HtmlStack::clearJsBuffer();
+            HtmlStack::clearJsBuffer();
         }
 
         app(InternalAssetRegistry::class)->register(CpAsset::class);
@@ -589,7 +603,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'entryTypes' => $entryTypes,
             'entryTypeSelectConfig' => $entryTypeSelectConfig,
             'entryTypeSelectHtml' => $entryTypeSelectHtml ?? null,
-            'entryTypeSelectJs' => $entryTypeSelectJs ?? null,
             'defaultTableColumnOptions' => self::defaultTableColumnOptions($this->_entryTypes),
             'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
             'indexViewModes' => array_filter(
@@ -623,7 +636,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
-        if ($value === '') {
+        // An empty POST value means every entry was removed. It arrives as
+        // null rather than '' because of Laravel's ConvertEmptyStringsToNull
+        // middleware — and delta ensures the value is only applied from the
+        // request when the field was actually modified.
+        if ($value === '' || ($fromRequest && $value === null)) {
             $query->setResultOverride([]);
         } elseif ($value === '*') {
             // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
@@ -772,7 +789,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $items = [];
 
-        // Expand/Collapse all
+        // Expand/Collapse all. These operate on the field's input, so they're
+        // excluded from chip menus, where the input may not be present (e.g.
+        // the field layout designer's field-settings slideout).
         $expandAllId = sprintf('expand-all-%s', mt_rand());
         $collapseAllId = sprintf('collapse-all-%s', mt_rand());
         $items[] = [
@@ -781,6 +800,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'label' => mb_ucfirst(t('Expand all blocks', [
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
+            'showInChips' => false,
         ];
         $items[] = [
             'id' => $collapseAllId,
@@ -788,6 +808,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             'label' => mb_ucfirst(t('Collapse all blocks', [
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
+            'showInChips' => false,
         ];
         HtmlStack::jsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
 (() => {
@@ -900,6 +921,9 @@ JS, [
             'label' => mb_ucfirst(t('Copy all {type}', [
                 'type' => $type,
             ])),
+            // Operates on the field's input, which isn't present where chips
+            // render (e.g. the field layout designer's settings slideout)
+            'showInChips' => false,
         ];
     }
 
@@ -980,7 +1004,7 @@ JS, [
             )
         );
 
-        app(InternalAssetRegistry::class)->register(MatrixAsset::class);
+        // app(InternalAssetRegistry::class)->register(MatrixAsset::class);
 
         $settings = [
             'fieldId' => $this->id,
@@ -994,13 +1018,6 @@ JS, [
             'staticEntries' => $staticEntries,
         ];
 
-        $js = 'const input = new Craft.MatrixInput('.
-            '"'.InputNamespace::namespaceId($id).'", '.
-            Json::encode($entryTypeInfo).', '.
-            '"'.InputNamespace::namespaceInputName($this->handle).'", '.
-            Json::encode($settings).
-            ');';
-
         // Safe to create the default entries?
         if ($createDefaultEntries && count($value) < $this->minEntries) {
             // @link https://github.com/craftcms/cms/issues/12973
@@ -1010,33 +1027,13 @@ JS, [
             // and so not passed to PHP for save
             DeltaRegistry::setInitialValue($this->handle, null);
 
-            $js .= "\n".<<<'JS'
-input.on('afterInit', async () => {
-  if (input.elementEditor) {
-    await input.elementEditor.pause();
-  }
-JS."\n";
-
-            $entryTypeJs = Json::encode($entryTypes[0]->handle);
-            for ($i = count($value); $i < $this->minEntries; $i++) {
-                $js .= <<<JS
-  await input.addEntry($entryTypeJs, null, false)
-JS."\n";
-            }
-
-            $js .= <<<'JS'
-  setTimeout(() => {
-    Garnish.requestAnimationFrame(() => {
-      input.elementEditor?.resume();
-    });
-  }, 100);
-})
-JS;
+            $settings['addDefaultEntries'] = [
+                'type' => $entryTypes[0]->handle,
+                'count' => $this->minEntries - count($value),
+            ];
         }
 
-        HtmlStack::js("(() => {\n$js\n})();");
-
-        return template('_components/fieldtypes/Matrix/input', [
+        $inputHtml = template('_components/fieldtypes/Matrix/input', [
             'id' => $id,
             'field' => $this,
             'name' => $this->handle,
@@ -1046,6 +1043,17 @@ JS;
             'staticEntries' => $staticEntries,
             'createButtonLabel' => $this->createButtonLabel(),
             'labelId' => $this->getLabelId(),
+        ]);
+
+        // The `<craft-matrix-input>` element (resources/js/modules/matrix)
+        // boots the MatrixInput controller from these attributes, replacing the
+        // imperative `new Craft.MatrixInput(...)` boot script. The attribute
+        // values are written fully namespaced, since the outer namespacing pass
+        // only rewrites name/id-style attributes.
+        return Html::tag('craft-matrix-input', $inputHtml, [
+            'entry-types' => Json::encode($entryTypeInfo),
+            'input-name-prefix' => InputNamespace::namespaceInputName($this->handle),
+            'settings' => Json::encode($settings),
         ]);
     }
 

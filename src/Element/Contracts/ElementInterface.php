@@ -408,6 +408,22 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     ): string|Stringable;
 
     /**
+     * Returns the element index data (the template variables backing [[indexHtml()]]).
+     *
+     * @param  int[]|null  $disabledElementIds
+     * @return array The element index template variables
+     */
+    public static function indexData(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $selectable,
+        bool $sortable,
+    ): array;
+
+    /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.
      */
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int;
@@ -1509,10 +1525,10 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns any attributes that should be included in the element’s chips and cards.
      *
-     * The attribute HTML will be rendered with [[\yii\helpers\BaseHtml::renderTagAttributes()]].
+     * The attribute HTML will be rendered with [[\CraftCms\Cms\Support\Html::renderTagAttributes()]].
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::htmlAttributes()]]
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override [[\CraftCms\Cms\Element\Element::htmlAttributes()]]
      * instead of this method.
      * :::
      *

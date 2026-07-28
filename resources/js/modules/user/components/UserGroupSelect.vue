@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {computed, ref} from 'vue';
   import {router} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import {t} from '@craftcms/ui';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
   import Text from '@/common/components/Text.vue';
   import Tooltip from '@/common/components/Tooltip.vue';
@@ -75,28 +75,26 @@
 </script>
 
 <template>
-  <div class="grid gap-2 mr-auto">
+  <div class="grid gap-2">
     <div class="user-group-list">
       <craft-chip v-for="group in selectedGroups" :key="group.id">
-        <div class="grid gap-1 justify-items-start">
+        <div class="grid gap-1">
           <div class="flex gap-1">
             <div class="font-bold">{{ groupLabel(group) }}</div>
             <Tooltip v-if="group.description">{{ group.description }}</Tooltip>
           </div>
-          <div class="cp-code">{{ group.handle }}</div>
         </div>
 
         <craft-button
           slot="suffix"
-          icon
+          icon="x"
           type="button"
           appearance="plain"
+          size="small"
           @click="removeGroup(group.id)"
+          aria-label="t('Remove {name}', {name: groupLabel(group)})"
+          variant="danger"
         >
-          <craft-icon
-            name="x"
-            :label="t('Remove {name}', {name: groupLabel(group)})"
-          ></craft-icon>
         </craft-button>
       </craft-chip>
     </div>
@@ -157,8 +155,8 @@
 
 <style scoped lang="scss">
   .user-group-list {
-    display: inline-flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--c-spacing-sm);
   }
 </style>

@@ -10,10 +10,10 @@ use CraftCms\Cms\Gql\Resources\GqlTokenResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -114,7 +114,7 @@ readonly class TokensController extends GqlController
         }
 
         if (! $this->gql->saveToken($token)) {
-            return $this->asModelFailure($token, t('Couldn’t save token.'), 'token');
+            throw ValidationException::withMessages($token->errors()->getMessages());
         }
 
         return $this->asModelSuccess(
@@ -146,15 +146,7 @@ readonly class TokensController extends GqlController
                 'token' => $this->tokenData($token),
                 'accessToken' => $accessToken,
                 'schemaOptions' => $this->schemaOptions($token),
-            ])
-            ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                HtmlStack::jsWithVars(
-                    fn ($containerId) => <<<JS
-                        new Craft.ElevatedSessionForm('#' + $containerId);
-                    JS,
-                    [$containerId],
-                );
-            });
+            ]);
     }
 
     private function tokenData(GqlToken $token): array

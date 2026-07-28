@@ -72,8 +72,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         AuthenticationException::redirectUsing(function () {
-            if (! request()->isCpRequest() && Cms::config()->loginPath !== false) {
-                return Url::siteUrl(Cms::config()->getLoginPath());
+            $loginPath = Cms::config()->getLoginPath();
+
+            if (! request()->isCpRequest() && $loginPath !== false) {
+                return Url::siteUrl($loginPath);
             }
 
             return Url::cpUrl(CpAuthPath::Login->value);
@@ -108,8 +110,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
-                // Possibly run garbage collection
-                app(GarbageCollection::class)->run();
+                app(GarbageCollection::class)->queue();
             }
         });
 

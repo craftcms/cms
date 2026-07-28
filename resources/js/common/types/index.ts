@@ -1,4 +1,4 @@
-import type {VariantKey} from '@craftcms/cp';
+import type {VariantKey} from '@craftcms/ui';
 import type {Component} from 'vue';
 
 export interface BaseOption {
@@ -7,6 +7,8 @@ export interface BaseOption {
 }
 export interface CheckboxOption extends BaseOption {
   info?: string;
+  checked?: boolean;
+  disabled?: boolean;
 }
 export interface SelectOption<
   T = Record<string, any> | null | undefined,
@@ -177,7 +179,6 @@ export type EditableTableCellType =
  * @TODO this could probably be a more generic `spacing` constant
  */
 export const TableSpacing = {
-  Relaxed: 'relaxed',
   Compact: 'compact',
   Spacious: 'spacious',
 } as const;

@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Pagination\Paginator;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
     Cms::config()->pageTrigger = 'p';
 });
 
@@ -17,7 +17,7 @@ afterEach(function () {
 });
 
 it('paginates a query with two-variable syntax', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% paginate query as pageInfo, items %}{{ pageInfo.total }}:{{ items|length }}',
         ['query' => User::query()],
     );
@@ -29,7 +29,7 @@ it('paginates a query with two-variable syntax', function () {
 it('paginates with limit', function () {
     User::factory()->count(4)->create();
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% paginate query as pageInfo, items %}total:{{ pageInfo.total }},page:{{ items|length }}',
         ['query' => tap(User::query(), fn ($query) => $query->getModel()->setPerPage(2))],
     );
@@ -40,7 +40,7 @@ it('paginates with limit', function () {
 });
 
 it('uses paginate as default info variable with single-variable syntax', function () {
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% paginate query as items %}{{ paginate.total }}',
         ['query' => User::query()],
     );
@@ -51,7 +51,7 @@ it('uses paginate as default info variable with single-variable syntax', functio
 it('calculates totalPages correctly', function () {
     User::factory()->count(9)->create();
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% paginate query as pageInfo, items %}{{ pageInfo.totalPages }}',
         ['query' => tap(User::query(), fn ($query) => $query->getModel()->setPerPage(5))],
     );
@@ -64,7 +64,7 @@ it('uses query-string pagination urls', function () {
     User::factory()->count(9)->create();
     swapUrlRequest('/users?p=2');
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% paginate query as pageInfo, items %}{{ pageInfo.prevUrl }}|{{ pageInfo.nextUrl }}|{{ pageInfo.firstUrl }}|{{ pageInfo.lastUrl }}',
         ['query' => tap(User::query(), fn ($query) => $query->getModel()->setPerPage(3))],
     );
@@ -80,7 +80,7 @@ it('uses the configured pageTrigger query param in twig pagination', function ()
     Cms::config()->pageTrigger = '?page=';
     swapUrlRequest('/users?page=2');
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% paginate query as pageInfo, items %}{{ pageInfo.nextUrl }}',
         ['query' => tap(User::query(), fn ($query) => $query->getModel()->setPerPage(3))],
     );
@@ -92,7 +92,7 @@ it('does not treat old path-style urls as paginated requests', function () {
     User::factory()->count(4)->create();
     swapUrlRequest('/users/p2');
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% paginate query as pageInfo, items %}{{ pageInfo.currentPage }}',
         ['query' => tap(User::query(), fn ($query) => $query->getModel()->setPerPage(2))],
     );
@@ -105,7 +105,7 @@ it('uses the paginator current page resolver', function () {
     swapUrlRequest('/users?page=1');
     Paginator::currentPageResolver(fn () => 2);
 
-    $result = $this->renderer->renderString(
+    $result = $this->manager->renderString(
         '{% paginate query as pageInfo, items %}{{ pageInfo.currentPage }}:{{ items|length }}',
         ['query' => tap(User::query(), fn ($query) => $query->getModel()->setPerPage(2))],
     );

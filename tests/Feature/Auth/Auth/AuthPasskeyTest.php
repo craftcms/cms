@@ -10,19 +10,29 @@ use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Auth\Passkeys\WebauthnServer;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\Uid\Uuid;
-use Webauthn\PublicKeyCredentialSource;
+use Webauthn\CredentialRecord;
 use Webauthn\TrustPath\EmptyTrustPath;
 
 beforeEach(function () {
     Cms::config()->isSystemLive = true;
 });
 
-test('authenticateWithPasskey with valid response', function () {
-    $user = User::factory()->withPasskey('valid-credential-id')->createElement();
+test('authenticateWithPasskey enforces user status after a valid response', function (
+    array $elementAttributes,
+    bool $expectedResult,
+    ?AuthError $expectedError,
+) {
+    $user = User::factory()->withPasskey('valid-credential-id')->create();
+
+    if ($elementAttributes !== []) {
+        $user->element->update($elementAttributes);
+    }
+
     $updatedCredentialSource = authPasskeyCredentialSource('valid-credential-id');
 
     $requestOptions = Json::encode(['challenge' => 'test-challenge']);
@@ -51,7 +61,7 @@ test('authenticateWithPasskey with valid response', function () {
     $passkeys
         ->shouldReceive('verifyPasskey')
         ->once()
-        ->with($user, $requestOptions, $response)
+        ->with(Mockery::type(UserElement::class), $requestOptions, $response)
         ->andReturn(true);
     $passkeys
         ->shouldReceive('webauthnServer')
@@ -60,10 +70,14 @@ test('authenticateWithPasskey with valid response', function () {
 
     $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
-    expect($result)->toBeTrue();
-    expect(app(AuthMethods::class)->authError)->toBeNull();
+    expect($result)->toBe($expectedResult);
+    expect(app(AuthMethods::class)->authError)->toBe($expectedError);
     expect(Session::has($passkeys->passkeyCredSourceParam))->toBeFalse();
-});
+})->with([
+    'active' => [[], true, null],
+    'disabled' => [['enabled' => false], false, AuthError::InvalidCredentials],
+    'archived' => [['archived' => true], false, AuthError::InvalidCredentials],
+]);
 
 test('authenticateWithPasskey with mismatched credential', function () {
     $user = User::factory()->withPasskey('user-credential-id')->createElement();
@@ -152,9 +166,9 @@ function mockAuthPasskeys(): Passkeys
     return $passkeys;
 }
 
-function authPasskeyCredentialSource(string $credentialId): PublicKeyCredentialSource
+function authPasskeyCredentialSource(string $credentialId): CredentialRecord
 {
-    return PublicKeyCredentialSource::create(
+    return CredentialRecord::create(
         publicKeyCredentialId: $credentialId,
         type: 'public-key',
         transports: [],

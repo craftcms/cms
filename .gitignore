@@ -2,6 +2,7 @@
 .env
 .php-cs-fixer.cache
 .phpunit.cache
+.claude/settings.local.json
 Source/.idea/*
 *.log
 *.bak
@@ -38,3 +39,7 @@ cms-assets/resources/hot
 cms-assets/resources/legacy
 cms-assets/resources/icons/*
 !cms-assets/resources/icons/custom-icons
+
+# Storybook build output
+/storybook-static
+resources/build

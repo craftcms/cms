@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
+use Closure;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -26,13 +27,12 @@ use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
-use CraftCms\Cms\User\Events\UserPermissionsResolving;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
 use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +43,21 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-#[Singleton]
+/**
+ * Manages user permissions and registers additional permission groups.
+ *
+ * ```php
+ * public function boot(UserPermissions $userPermissions): void
+ * {
+ *     $userPermissions->registerPermissionGroup('plugin:my-plugin', fn () => new PermissionGroup(
+ *         handle: 'plugin:my-plugin',
+ *         heading: 'My Plugin',
+ *         permissions: collect([new Permission('manageMyPlugin', 'Manage My Plugin')]),
+ *     ));
+ * }
+ * ```
+ */
+#[Scoped]
 class UserPermissions
 {
     /**
@@ -69,6 +83,21 @@ class UserPermissions
      * @var Collection<int, Collection<string>>
      */
     private Collection $permissionsByUserId;
+
+    public function __construct(
+        private readonly PermissionGroupCatalog $permissionGroupCatalog,
+    ) {}
+
+    /** @param Closure(): (PermissionGroup|null) $factory */
+    public function registerPermissionGroup(string $handle, Closure $factory): void
+    {
+        $this->permissionGroupCatalog->register($handle, $factory);
+    }
+
+    public function removePermissionGroups(string ...$handles): void
+    {
+        $this->permissionGroupCatalog->remove(...$handles);
+    }
 
     /**
      * Returns all of the known permissions, divided into groups.
@@ -104,9 +133,7 @@ class UserPermissions
         $this->volumePermissions($this->allPermissions);
         $this->utilityPermissions($this->allPermissions);
 
-        event($event = new UserPermissionsResolving($this->allPermissions));
-
-        return $event->permissions;
+        return $this->allPermissions = $this->permissionGroupCatalog->apply($this->allPermissions);
     }
 
     /**
@@ -417,6 +444,7 @@ class UserPermissions
         }
 
         $permissions->add(new PermissionGroup(
+            handle: 'general',
             heading: t('General'),
             permissions: $generalPermissions,
         ));
@@ -438,6 +466,7 @@ class UserPermissions
         }
 
         $permissions->add(new PermissionGroup(
+            handle: 'users',
             heading: t('Users'),
             permissions: collect([
                 new Permission(
@@ -486,6 +515,7 @@ class UserPermissions
         }
 
         $permissions->add(new PermissionGroup(
+            handle: 'sites',
             heading: t('Sites'),
             permissions: Sites::getAllSites(true)->map(fn (Site $site) => new Permission(
                 key: "editSite:$site->uid",
@@ -518,6 +548,7 @@ class UserPermissions
             [$section, $sectionPermission] = $result;
 
             return new PermissionGroup(
+                handle: "section:$section->uid",
                 heading: t('Section - {section}', [
                     'section' => t($section->name, category: 'site'),
                 ]),
@@ -678,6 +709,7 @@ class UserPermissions
 
         foreach ($volumes as $volume) {
             $permissions->add(new PermissionGroup(
+                handle: "volume:$volume->uid",
                 heading: t('Volume - {volume}', [
                     'volume' => t($volume->name, category: 'site'),
                 ]),
@@ -715,6 +747,7 @@ class UserPermissions
     private function utilityPermissions(Collection $permissions): void
     {
         $permissions->add(new PermissionGroup(
+            handle: 'utilities',
             heading: t('Utilities'),
             permissions: app(Utilities::class)->getAllUtilityTypes()->map(function (string $class) {
                 /** @var class-string<Utility> $class */

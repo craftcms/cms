@@ -32,7 +32,7 @@ class GenerateImageTransform extends BaseJob
      */
     public function execute($queue): void
     {
-        new \CraftCms\Cms\Image\Jobs\GenerateImageTransform($this->transformId, $this->description)->handle();
+        app()->call([new \CraftCms\Cms\Image\Jobs\GenerateImageTransform($this->transformId, $this->description), 'handle']);
     }
 
     /**

@@ -34,16 +34,19 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
+      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./compat": {
+      "development": "./src/compat.ts",
       "types": "./dist/compat.d.ts",
       "import": "./dist/compat.js"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "peerDependencies": {
     "jquery": "^3.5.0"
@@ -66,12 +69,12 @@
     "@storybook/html-vite": "^10.4.1",
     "@total-typescript/tsconfig": "^1.0.4",
     "@types/node": "^25.6.0",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/coverage-v8": "^4.1.10",
     "happy-dom": "^20.9.0",
     "storybook": "^10.4.1",
     "tsdown": "^0.21.10",
     "typescript": "^6.0.3",
     "vite": "^7.1.5",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.10"
   }
 }

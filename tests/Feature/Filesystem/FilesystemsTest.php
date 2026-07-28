@@ -5,18 +5,20 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Filesystem\FilesystemTypes;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Filesystems as FilesystemsFacade;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->service = app(Filesystems::class);
@@ -27,16 +29,15 @@ it('is a singleton and is available via the facade', function () {
         ->and($this->service)->toBe(FilesystemsFacade::getFacadeRoot());
 });
 
-it('can register extra filesystem types through an event', function () {
-    expect($this->service->getAllFilesystemTypes())
-        ->toBeInstanceOf(Collection::class)
-        ->not()->toContain(Temp::class);
+it('uses the current registry types', function () {
+    $registry = app(FilesystemTypes::class);
+    $registry->register(Temp::class);
 
-    Event::listen(FilesystemTypesResolving::class, function (FilesystemTypesResolving $event) {
-        $event->types->add(Temp::class);
-    });
+    expect($this->service->getAllFilesystemTypes())->toContain(Local::class, Temp::class);
 
-    expect($this->service->getAllFilesystemTypes())->toContain(Temp::class);
+    $registry->remove(Temp::class);
+
+    expect($this->service->getAllFilesystemTypes())->not()->toContain(Temp::class);
 });
 
 it('returns filesystems as a collection', function () {
@@ -312,6 +313,42 @@ it('syncs stale craft disk registrations when handling delete config changes', f
         ->and(config('filesystems.disks.'.Filesystems::DISK_PREFIX.'stale-handle'))->toBeNull();
 });
 
+it('scopes disk operations to an environment-backed prefix', function () {
+    config()->set('filesystems.disks.scoped-manual', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/fs-service/scoped-manual'),
+    ]);
+    putenv('CRAFT_TEST_FS_PREFIX=nested');
+    Storage::disk('scoped-manual')->deleteDirectory('nested');
+
+    try {
+        $disk = $this->service->disk('disk:scoped-manual', '$CRAFT_TEST_FS_PREFIX');
+        $disk->put('file.txt', 'contents');
+
+        expect(Storage::disk('scoped-manual')->get('nested/file.txt'))->toBe('contents');
+    } finally {
+        putenv('CRAFT_TEST_FS_PREFIX');
+        Storage::disk('scoped-manual')->deleteDirectory('nested');
+    }
+});
+
+it('fails when a manual disk uses the generated disk prefix', function () {
+    config()->set('filesystems.disks.craft-fs-manual', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/fs-service/collision'),
+    ]);
+
+    $this->service->syncDisks();
+})->throws(FilesystemException::class);
+
+it('fails when a filesystem returns an invalid disk configuration', function () {
+    $this->service->registerDisk('invalid-disk', [
+        'name' => 'Invalid Disk',
+        'type' => InvalidDiskFilesystem::class,
+        'settings' => [],
+    ]);
+})->throws(FilesystemException::class);
+
 function createServiceLocalFilesystem(
     Filesystems $service,
     string $handle,
@@ -340,4 +377,13 @@ function createServiceLocalFilesystem(
     expect($service->saveFilesystem($filesystem, false))->toBeTrue();
 
     return $filesystem;
+}
+
+class InvalidDiskFilesystem extends Local
+{
+    #[Override]
+    public function getDiskConfig(): array
+    {
+        return [];
+    }
 }

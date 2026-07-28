@@ -9,12 +9,10 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\DefaultableFieldInterface;
-use craft\base\Event as YiiEvent;
 use craft\base\FieldInterface;
 use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\Tag;
-use craft\events\DefineConsoleActionsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\helpers\Console;
 use craft\models\CategoryGroup;
@@ -26,7 +24,6 @@ use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -39,7 +36,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\console\ExitCode;
 
@@ -483,6 +479,12 @@ class ResaveController extends Controller
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
+        if ($this->batchSize < 1) {
+            $this->stderr('--batch-size must be at least 1.' . PHP_EOL, Console::FG_RED);
+
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {
@@ -524,40 +526,6 @@ class ResaveController extends Controller
 
         Typecast::configure($query, $this->_baseCriteria());
         return $this->_resaveElements($query);
-    }
-
-    public static function registerEvents(): void
-    {
-        Event::listen(ElementResaveCommandsResolving::class, function(ElementResaveCommandsResolving $event) {
-            if (DeprecatedConcepts::supportsCategories()) {
-                $event->commands['craft:resave:categories'] = [
-                    'description' => 'Re-saves categories.',
-                ];
-            }
-
-            if (DeprecatedConcepts::supportsTags()) {
-                $event->commands['craft:resave:tags'] = [
-                    'description' => 'Re-saves tags.',
-                ];
-            }
-
-            if (!YiiEvent::hasHandlers(self::class, Controller::EVENT_DEFINE_ACTIONS)) {
-                return;
-            }
-
-            $yiiEvent = new DefineConsoleActionsEvent();
-            YiiEvent::trigger(self::class, Controller::EVENT_DEFINE_ACTIONS, $yiiEvent);
-
-            foreach ($yiiEvent->actions as $id => $action) {
-                if (!isset($action['action'])) {
-                    continue;
-                }
-
-                $event->commands["craft:resave:$id"] = [
-                    'description' => $action['helpSummary'] ?? '',
-                ];
-            }
-        });
     }
 
     /**

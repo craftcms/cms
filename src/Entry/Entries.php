@@ -26,7 +26,9 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -165,6 +167,12 @@ class Entries
             throw new Exception('Attempting to move a nested element.');
         }
 
+        $sectionEntryTypeIds = array_map(fn ($entryType) => $entryType->id, $section->getEntryTypes());
+
+        if (! in_array($entry->typeId, $sectionEntryTypeIds, true)) {
+            throw new Exception('Entry type is not supported by the target section.');
+        }
+
         // Ensure all fields have been normalized
         $entry->getFieldValues();
 
@@ -295,12 +303,21 @@ class Entries
     {
         $oldUserIds = Arr::wrap($oldUserId);
 
+        if (in_array($newUserId, $oldUserIds, true)) {
+            throw new InvalidArgumentException('The new author must be different from the old author.');
+        }
+
         $count = DB::table(Table::ENTRIES_AUTHORS)
             ->whereIn('authorId', $oldUserIds)
-            ->whereNotIn('entryId', DB::table(Table::ENTRIES_AUTHORS)
-                ->where('authorId', $newUserId)
-                ->pluck('entryId')
-            )
+            ->whereNotIn('entryId', function (Builder $query) use ($newUserId) {
+                // Wrap the subquery in an extra derived table so MySQL doesn't
+                // treat it as selecting from the table being updated.
+                $query->fromSub(function (Builder $query) use ($newUserId) {
+                    $query->select('entryId')
+                        ->from(Table::ENTRIES_AUTHORS, 'ea2')
+                        ->where('authorId', $newUserId);
+                }, 'ea2');
+            })
             ->update([
                 'authorId' => $newUserId,
             ]);

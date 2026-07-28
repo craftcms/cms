@@ -9,26 +9,21 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController;
-use CraftCms\Cms\Search\Search as SearchService;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    if (DB::isMysql()) {
-        app(SearchService::class)->useFullText = false;
-    }
-
     $this->entryType = EntryTypeModel::factory()
         ->withFieldLayout()
         ->create([
@@ -301,7 +296,7 @@ it('passes the reference element context into element conditions', function () {
         }
     };
 
-    $elements = new class(app(ElementPlaceholders::class), $referenceEntry) extends Elements
+    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), $referenceEntry) extends Elements
     {
         public ?int $requestedElementId = null;
 
@@ -311,9 +306,10 @@ it('passes the reference element context into element conditions', function () {
 
         public function __construct(
             ElementPlaceholders $placeholders,
+            ElementTypes $elementTypes,
             private readonly Entry $referenceEntry,
         ) {
-            parent::__construct($placeholders);
+            parent::__construct($placeholders, $elementTypes);
         }
 
         public function getElementById(

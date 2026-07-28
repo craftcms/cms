@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use Closure;
 use craft\base\Event;
 use craft\gql\base\ArgumentHandlerInterface;
 
@@ -15,12 +16,12 @@ use craft\gql\base\ArgumentHandlerInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\GqlArguments::register()} instead.
  */
 class RegisterGqlArgumentHandlersEvent extends Event
 {
     /**
-     * @var array<string,class-string<ArgumentHandlerInterface>|ArgumentHandlerInterface> List of Argument handler class names.
+     * @var array<string,class-string<ArgumentHandlerInterface>|Closure|ArgumentHandlerInterface> List of argument handlers.
      */
     public array $handlers = [];
 }

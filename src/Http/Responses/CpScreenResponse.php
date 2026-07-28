@@ -138,7 +138,7 @@ class CpScreenResponse implements Responsable
     /**
      * @var array Custom attributes to add to the `<main>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
      * This will only be used by full-page screens.
      *
@@ -149,7 +149,7 @@ class CpScreenResponse implements Responsable
     /**
      * @var array Custom attributes to add to the `<form>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
      * @see formAttributes()
      */
@@ -443,7 +443,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets custom attributes that should be added to the `<main>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
      * This will only be used by full-page screens.
      */
@@ -457,7 +457,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets custom attributes that should be added to the `<form>` tag.
      *
-     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      */
     public function formAttributes(array $value): self
     {

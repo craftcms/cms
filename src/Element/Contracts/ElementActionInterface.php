@@ -17,6 +17,11 @@ interface ElementActionInterface extends ComponentInterface, ConfigurableCompone
     public static function isDownload(): bool;
 
     /**
+     * Returns whether this action can be performed on more than one selected element at once.
+     */
+    public static function supportsBulk(): bool;
+
+    /**
      * @param  class-string<ElementInterface>  $elementType
      */
     public function setElementType(string $elementType): void;

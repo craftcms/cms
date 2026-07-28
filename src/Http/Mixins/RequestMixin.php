@@ -153,19 +153,7 @@ class RequestMixin
 
     public function getHadToken(): Closure
     {
-        return function (): bool {
-            /**
-             * @var Request $request
-             *
-             * @phpstan-ignore-next-line
-             */
-            $request = $this;
-            if ($request->getToken() !== null) {
-                return true;
-            }
-
-            return Context::hasHidden(HandleTokenRequest::HAD_TOKEN_KEY);
-        };
+        return fn (): bool => Context::getHidden(HandleTokenRequest::HAD_TOKEN_KEY) === true;
     }
 
     public function siteToken(): Closure

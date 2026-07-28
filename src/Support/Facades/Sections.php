@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Support\Collection getEditableSectionIds()
  * @method static \Illuminate\Support\Collection getAllSections()
  * @method static \Illuminate\Support\Collection getEditableSections()
+ * @method static \Illuminate\Support\Collection getPublishableSections()
  * @method static array getAvailableEntryMoveTargetSections(array $entryTypeIds, int $siteId, string $currentSectionUid)
  * @method static \Illuminate\Support\Collection getSectionsByType(\CraftCms\Cms\Section\Enums\SectionType $type)
  * @method static int getTotalSections()

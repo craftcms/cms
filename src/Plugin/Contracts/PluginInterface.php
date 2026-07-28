@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -154,6 +155,15 @@ interface PluginInterface
 
     public function uninstall(): void;
 
+    /** @internal */
+    public function bootPlugin(Plugins $plugins): void;
+
+    /** @internal */
+    public function publishAssets(): void;
+
+    /** @internal */
+    public function removeAssets(): void;
+
     /**
      * @return Migrator The plugin’s migrator
      */
@@ -227,7 +237,7 @@ interface PluginInterface
     /**
      * Returns the settings page response.
      *
-     * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
+     * @return mixed The response returned by [[\CraftCms\Cms\Http\Controllers\PluginsController::editSettings()]]
      */
     public function getSettingsResponse(): mixed;
 
@@ -236,7 +246,7 @@ interface PluginInterface
      *
      * This method is called when admin changes are disallowed, if [[$hasReadOnlyCpSettings]] is `true`.
      *
-     * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
+     * @return mixed The response returned by [[\CraftCms\Cms\Http\Controllers\PluginsController::editSettings()]]
      */
     public function getReadOnlySettingsResponse(): mixed;
 

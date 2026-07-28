@@ -578,7 +578,7 @@ JS,
      */
     protected function slugFieldHtml(bool $static): string|Stringable
     {
-        $slug = isset($this->slug) && ! ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
+        $slug = ! ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
         return FormFields::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
@@ -636,7 +636,7 @@ JS,
 
             $statusField = FormFields::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => t($this->getSite()->getName(), category: 'site'),
+                'label' => Html::encode(t($this->getSite()->getName(), category: 'site')),
                 'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),

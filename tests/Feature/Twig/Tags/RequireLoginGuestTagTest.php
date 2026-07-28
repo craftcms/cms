@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\TwigRenderer;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Support\Facades\Auth;
 use Twig\Error\RuntimeError;
 
@@ -11,7 +11,7 @@ use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->renderer = app(TwigRenderer::class);
+    $this->manager = app(TemplateManager::class);
 
     // Ensure request()->craftUser() delegates to the Auth guard,
     // which is needed by the yii2-adapter's Controller::requireLogin().
@@ -22,19 +22,19 @@ describe('requireLogin', function () {
     it('renders normally when user is logged in', function () {
         actingAs(User::find()->one());
 
-        $result = $this->renderer->renderString('{% requireLogin %}Protected content');
+        $result = $this->manager->renderString('{% requireLogin %}Protected content');
 
         expect(trim($result))->toBe('Protected content');
     });
 
     it('throws when user is a guest', function () {
-        $this->renderer->renderString('{% requireLogin %}');
+        $this->manager->renderString('{% requireLogin %}');
     })->throws(RuntimeError::class);
 });
 
 describe('requireGuest', function () {
     it('renders normally when user is a guest', function () {
-        $result = $this->renderer->renderString('{% requireGuest %}Guest content');
+        $result = $this->manager->renderString('{% requireGuest %}Guest content');
 
         expect(trim($result))->toBe('Guest content');
     });
@@ -42,6 +42,6 @@ describe('requireGuest', function () {
     it('throws when user is logged in', function () {
         actingAs(User::find()->one());
 
-        $this->renderer->renderString('{% requireGuest %}');
+        $this->manager->renderString('{% requireGuest %}');
     })->throws(RuntimeError::class);
 });

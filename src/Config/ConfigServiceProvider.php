@@ -6,15 +6,13 @@ namespace CraftCms\Cms\Config;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 use Override;
-use Throwable;
 
 class ConfigServiceProvider extends ServiceProvider
 {
@@ -32,7 +30,15 @@ class ConfigServiceProvider extends ServiceProvider
 
         $this->loadEnvironmentVariablesWhenConfigIsCached();
 
-        $this->app->singleton(GeneralConfig::class, fn () => $this->app->make(ConfigRepository::class)->get('craft.general'));
+        if (! $this->app->bound('config')) {
+            return;
+        }
+
+        $this->app->singleton(GeneralConfig::class, function () {
+            $repository = $this->app->make(ConfigRepository::class);
+
+            return $this->loadGeneralConfig($repository);
+        });
 
         collect($this->configFiles)->each(function (string $file) {
             if ($file === 'general') {
@@ -45,8 +51,9 @@ class ConfigServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->app->make(GeneralConfig::class);
+
         $this->bootPublishables();
-        $this->loadGeneralConfig();
         $this->loadHtmlSanitizers();
     }
 
@@ -76,62 +83,64 @@ class ConfigServiceProvider extends ServiceProvider
         });
     }
 
-    private function loadGeneralConfig(): void
+    private function loadGeneralConfig(ConfigRepository $repository): GeneralConfig
     {
-        $generalConfig = Config::get('craft.general', []);
+        /** @var GeneralConfig|array $staticConfig */
+        $staticConfig = $repository->get('craft.general', []);
 
-        /**
-         * When the configuration is a simple array config, load it into
-         * the GeneralConfig object and replace the configuration key.
-         */
-        if (! $generalConfig instanceof GeneralConfig) {
-            $generalConfig = GeneralConfig::__set_state($generalConfig);
+        if ($staticConfig instanceof GeneralConfig) {
+            $config = clone $staticConfig;
+        } else {
+            Typecast::properties(GeneralConfig::class, $staticConfig);
+            $config = GeneralConfig::create();
 
-            Config::set('craft.general', $generalConfig);
+            foreach ($staticConfig as $setting => $value) {
+                $this->applyGeneralConfigSetting($config, $setting, $value);
+            }
         }
 
-        $configClass = $generalConfig::class;
+        $envConfig = Env::config($config::class, 'CRAFT_');
+        Typecast::properties($config::class, $envConfig);
 
-        // Get any environment value overrides
-        $envConfig = Env::config($configClass, 'CRAFT_');
-
-        Typecast::properties($configClass, $envConfig);
-
-        foreach ($envConfig as $name => $value) {
-            // Use the fluent methods when possible, in case it has any value normalization logic
-            if (! method_exists($generalConfig, $name)) {
-                continue;
-            }
-
-            try {
-                $generalConfig->$name($value);
-
-                continue;
-            } catch (Throwable) {
-            }
-
-            $generalConfig->$name = $value;
+        foreach ($envConfig as $setting => $value) {
+            $this->applyGeneralConfigSetting($config, $setting, $value);
         }
 
-        foreach ($generalConfig->aliases as $name => $value) {
+        foreach ($config->aliases as $name => $value) {
             Aliases::set($name, $value);
         }
+
+        $repository->set('craft.general', $config);
+
+        return $config;
+    }
+
+    private function applyGeneralConfigSetting(GeneralConfig $config, string $setting, mixed $value): void
+    {
+        if (method_exists($config, $setting)) {
+            $config->{$setting}($value);
+
+            return;
+        }
+
+        $config->{$setting} = $value;
     }
 
     private function loadHtmlSanitizers(): void
     {
-        $path = config_path('craft/sanitizers');
+        $sanitizers = $this->app->make(HtmlSanitizerManager::class);
+        $definitions = $this->app->make(ConfigRepository::class)->get('craft.sanitizers', []);
 
-        if (! File::isDirectory($path)) {
-            return;
+        if (! is_array($definitions)) {
+            throw new InvalidArgumentException('The [craft.sanitizers] configuration must be an array.');
         }
 
-        $sanitizers = $this->app->make(HtmlSanitizers::class);
-
-        foreach (File::files($path) as $file) {
-            if ($file->getExtension() === 'php') {
-                $sanitizers->register($file->getFilenameWithoutExtension(), require $file->getRealPath());
+        foreach ($definitions as $name => $definition) {
+            if (! is_string($name) || ! is_array($definition)) {
+                throw new InvalidArgumentException('HTML sanitizer configuration definitions must be named arrays.');
             }
+
+            $sanitizers->extend($name, $definition);
         }
     }
 }

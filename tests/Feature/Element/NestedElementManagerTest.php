@@ -8,18 +8,25 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +48,7 @@ function createMatrixEntryType(): EntryTypeModel
         ]);
 }
 
-function createMatrixOwnerFixture(): array
+function createMatrixOwnerFixture(array $fieldSettings = []): array
 {
     $entryType = createMatrixEntryType();
     $ownerType = createMatrixEntryType();
@@ -49,7 +56,7 @@ function createMatrixOwnerFixture(): array
     $result = EntryModel::factory()
         ->forSection($section)
         ->forEntryType($ownerType)
-        ->withField('matrixField', Matrix::class, ['entryTypes' => [$entryType->id]])
+        ->withField('matrixField', Matrix::class, [...$fieldSettings, 'entryTypes' => [$entryType->id]])
         ->createElementWithFields();
 
     Sections::refreshSections();
@@ -67,9 +74,11 @@ function createMatrixOwnerFixture(): array
     ];
 }
 
-function createMatrixNestedEntry(EntryElement $owner, Matrix $field, EntryTypeModel $entryType, int $sortOrder, string $title): EntryElement
+function createMatrixNestedEntry(EntryElement $owner, Matrix $field, EntryTypeModel $entryType, int $sortOrder, string $title, ?SectionModel $section = null): EntryElement
 {
-    $section = SectionModel::query()->findOrFail($owner->sectionId);
+    // Nested owners (e.g. a Matrix block used as the owner of a further-nested Matrix field)
+    // have no sectionId of their own, so the section must be passed in explicitly for them.
+    $section ??= SectionModel::query()->findOrFail($owner->sectionId);
     $section->entryTypes()->syncWithoutDetaching([$entryType->id => ['sortOrder' => 2]]);
 
     $entry = EntryModel::factory()
@@ -485,4 +494,323 @@ it('creates eager-loaded field addresses with the requested source owner', funct
     $created = $map['createElement']($query, $result, $firstEntry);
 
     expect($created)->toBe($address);
+});
+
+// Regression coverage ported from craftcms/cms commit 2df11c4b (NestedElementManager tests).
+// Guards a set of historical bugs; each is annotated with what it exercises in this codebase.
+
+it('reports translatability for Custom propagation without throwing when no key format is set', function () {
+    $manager = new NestedElementManager(
+        AddressElement::class,
+        fn () => AddressElement::find(),
+        [
+            'attribute' => 'addresses',
+            'propagationMethod' => PropagationMethod::Custom,
+            'propagationKeyFormat' => null,
+        ],
+    );
+
+    $owner = UserModel::factory()->createElement();
+
+    expect($manager->getIsTranslatable($owner))->toBeTrue()
+        ->and($manager->getIsTranslatable())->toBeTrue();
+});
+
+it('includes nested entry field content in search keywords', function () {
+    $textFieldModel = Field::factory()->create([
+        'name' => 'Text',
+        'handle' => 'nemText',
+        'type' => PlainText::class,
+        'searchable' => true,
+    ]);
+    $entryType = EntryTypeModel::factory()
+        ->withField($textFieldModel)
+        ->create(['name' => 'Block', 'handle' => 'block', 'hasTitleField' => true]);
+    $ownerType = createMatrixEntryType();
+    $section = SectionModel::factory()->withEntryTypes($ownerType, $entryType)->create();
+    $result = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->withField('matrixField', Matrix::class, ['entryTypes' => [$entryType->id]])
+        ->createElementWithFields();
+
+    Sections::refreshSections();
+    Fields::refreshFields();
+
+    /** @var Matrix $field */
+    $field = Fields::getFieldById($result->field('matrixField')->id);
+    $owner = EntryElement::find()->id($result->element->id)->one();
+
+    $nested = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Block', $section);
+    $nested->setFieldValue('nemText', 'FindThisUniqueString');
+    app(Elements::class)->saveElement($nested);
+
+    $manager = createMatrixManager($field);
+    $keywords = $manager->getSearchKeywords($owner);
+
+    expect($keywords)->toContain('FindThisUniqueString');
+});
+
+it('keeps a deleted nested entry deleted after resaving the owner with no changes', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'manager' => $manager] = createMatrixOwnerFixture();
+
+    $nested = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Only block');
+
+    $query = createMatrixQuery($field, $owner);
+    $query->setResultOverride([]);
+    $owner->setFieldValue($field->handle, $query);
+    $manager->maintainNestedElements($owner, false);
+
+    expect(DB::table(Table::ELEMENTS)->where('id', $nested->id)->value('dateDeleted'))->not->toBeNull();
+
+    // Resave again with the same already-fetched empty result. Guards the intent of the historical
+    // "!$query->getCachedResult() treats an already-fetched empty array as unfetched" fix; in this
+    // port both the query layer's own null-check (getModels()) and this class's `$elements !== null`
+    // check are already strict, so reverting the local check alone doesn't reproduce a failure here -
+    // this is general coverage for "deleted stays deleted", not a proof of one specific line.
+    $owner2 = EntryElement::find()->id($owner->id)->one();
+    $query2 = createMatrixQuery($field, $owner2);
+    $query2->setResultOverride([]);
+    $owner2->setFieldValue($field->handle, $query2);
+    $manager->maintainNestedElements($owner2, false);
+
+    expect(DB::table(Table::ELEMENTS)->where('id', $nested->id)->value('dateDeleted'))->not->toBeNull();
+});
+
+it('keeps a new nested entry owned when added while the owner is resaving', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'manager' => $manager] = createMatrixOwnerFixture();
+
+    $existing = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Original block');
+
+    $new = new EntryElement([
+        'fieldId' => $field->id,
+        'typeId' => $entryType->id,
+        'title' => 'Added during resave',
+        'siteId' => $owner->siteId,
+    ]);
+
+    $query = createMatrixQuery($field, $owner);
+    $query->setResultOverride([$existing, $new]);
+    $owner->setFieldValue($field->handle, $query);
+    $owner->resaving = true;
+
+    $manager->maintainNestedElements($owner, false);
+
+    $added = EntryElement::find()
+        ->fieldId($field->id)
+        ->ownerId($owner->id)
+        ->title('Added during resave')
+        ->status(null)
+        ->one();
+
+    expect($added)->not->toBeNull()
+        ->and(DB::table(Table::ELEMENTS_OWNERS)
+            ->where('elementId', $added->id)
+            ->where('ownerId', $owner->id)
+            ->exists())
+        ->toBeTrue();
+});
+
+// General coverage for order-preserving duplication (historically fixed by e5d6cd8/3b0ede5).
+// sortOrder is derived from more than one place in this port's duplicateNestedElements(), so
+// blanking the explicit `sortOrder` attribute alone didn't reproduce a failure here.
+it('preserves nested entry sort order across three duplicated entries', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'ownerType' => $ownerType, 'section' => $section, 'manager' => $manager] = createMatrixOwnerFixture();
+
+    $first = createMatrixNestedEntry($owner, $field, $entryType, 1, 'First');
+    $second = createMatrixNestedEntry($owner, $field, $entryType, 2, 'Second');
+    $third = createMatrixNestedEntry($owner, $field, $entryType, 3, 'Third');
+
+    $target = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->createElement();
+
+    $query = createMatrixQuery($field, $owner);
+    $query->setResultOverride([$first, $second, $third]);
+    $owner->setFieldValue($field->handle, $query);
+
+    $manager->duplicateNestedElements($owner, $target);
+
+    $duplicated = EntryElement::find()
+        ->fieldId($field->id)
+        ->ownerId($target->id)
+        ->status(null)
+        ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
+        ->all();
+
+    expect($duplicated)->toHaveCount(3)
+        ->and(array_map(fn (EntryElement $e) => $e->title, $duplicated))->toBe(['First', 'Second', 'Third']);
+});
+
+it('ignores in-memory unsaved elements without an id when duplicating', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'ownerType' => $ownerType, 'section' => $section, 'manager' => $manager] = createMatrixOwnerFixture();
+
+    $saved = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Saved block');
+
+    $unsaved = new EntryElement([
+        'fieldId' => $field->id,
+        'typeId' => $entryType->id,
+    ]);
+    expect($unsaved->id)->toBeNull();
+
+    $target = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->createElement();
+
+    $query = createMatrixQuery($field, $owner);
+    $query->setResultOverride([$saved, $unsaved]);
+    $owner->setFieldValue($field->handle, $query);
+
+    $manager->duplicateNestedElements($owner, $target);
+
+    $duplicated = EntryElement::find()
+        ->fieldId($field->id)
+        ->ownerId($target->id)
+        ->status(null)
+        ->all();
+
+    expect($duplicated)->toHaveCount(1)
+        ->and($duplicated[0]->title)->toBe('Saved block');
+});
+
+// Models the historical "repeatedly editing a nested element inside a draft, then applying the
+// draft, churns the nested element's canonical ID" bug class (2-level-nested Matrix, matching the
+// original report). This reproduces the scenario end-to-end; it's general regression coverage for
+// the bug class rather than a proof that reverting any single line breaks it.
+it('keeps the same canonical id after repeatedly editing a nested draft entry then applying it', function () {
+    // Leaf block entry type (used for the innermost, 2nd-level nested entry).
+    $leafEntryType = createMatrixEntryType();
+
+    // Inner Matrix field + the entry type that owns it (used for the 1st-level nested entry).
+    $innerFieldModel = Field::factory()->create([
+        'name' => 'Inner Matrix',
+        'handle' => 'innerMatrix',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$leafEntryType->id]],
+    ]);
+    $middleEntryType = EntryTypeModel::factory()
+        ->withField($innerFieldModel)
+        ->create(['name' => 'BlockWithInner', 'handle' => 'blockWithInner', 'hasTitleField' => true]);
+
+    $ownerType = createMatrixEntryType();
+    $section = SectionModel::factory()->withEntryTypes($ownerType, $middleEntryType, $leafEntryType)->create();
+
+    $result = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->withField('matrixField', Matrix::class, ['entryTypes' => [$middleEntryType->id]])
+        ->createElementWithFields();
+
+    Sections::refreshSections();
+    Fields::refreshFields();
+
+    /** @var Matrix $field */
+    $field = Fields::getFieldById($result->field('matrixField')->id);
+    /** @var Matrix $innerField */
+    $innerField = Fields::getFieldById($innerFieldModel->id);
+    $owner = EntryElement::find()->id($result->element->id)->one();
+
+    $blockA = createMatrixNestedEntry($owner, $field, $middleEntryType, 1, 'A', $section);
+    $blockB = createMatrixNestedEntry($blockA, $innerField, $leafEntryType, 1, 'v1', $section);
+    $originalNestedId = $blockB->id;
+
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($owner, auth()->id());
+    $draftBlockA = EntryElement::find()->fieldId($field->id)->ownerId($draft->id)->status(null)->one();
+
+    $draftBlockB = EntryElement::find()->fieldId($innerField->id)->ownerId($draftBlockA->id)->status(null)->one();
+    $draftBlockA->setFieldValue('innerMatrix', [
+        $draftBlockB->id => ['title' => 'v2'],
+    ]);
+    app(Elements::class)->saveElement($draftBlockA);
+
+    $draftBlockB = EntryElement::find()->fieldId($innerField->id)->ownerId($draftBlockA->id)->status(null)->one();
+    $draftBlockA->setFieldValue('innerMatrix', [
+        $draftBlockB->id => ['title' => 'v3'],
+    ]);
+    app(Elements::class)->saveElement($draftBlockA);
+
+    app(Drafts::class)->applyDraft($draft);
+
+    $owner = EntryElement::find()->id($owner->id)->one();
+    $finalBlockA = EntryElement::find()->fieldId($field->id)->ownerId($owner->id)->status(null)->one();
+    $finalBlockB = EntryElement::find()->fieldId($innerField->id)->ownerId($finalBlockA->id)->status(null)->one();
+
+    expect($finalBlockB->id)->toBe($originalNestedId)
+        ->and($finalBlockB->title)->toBe('v3');
+});
+
+it('duplicates nested entries into a new site without losing existing site content', function () {
+    // A more restrictive propagation method than the owner's is required to exercise the
+    // "other sites" duplication branch in NestedElementManager::saveNestedElements().
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'section' => $section, 'manager' => $manager] = createMatrixOwnerFixture(['propagationMethod' => 'none']);
+
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $section->id,
+        'siteId' => $secondSite->id,
+        'hasUrls' => true,
+        'dateCreated' => $section->dateCreated,
+        'dateUpdated' => $section->dateUpdated,
+    ]);
+    Sections::refreshSections();
+
+    $nested = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Default site content');
+
+    app(Elements::class)->propagateElement($owner, $secondSite->id);
+
+    $ownerInNewSite = EntryElement::find()->id($owner->id)->siteId($secondSite->id)->status(null)->one();
+    expect($ownerInNewSite)->not->toBeNull();
+
+    // Mark the new site as newly added on the default-site owner - this is what tells
+    // NestedElementManager::saveNestedElements() to duplicate the field's content into it.
+    // The manager needs a field instance resolved through the owner's field layout (so
+    // `layoutElement` is populated) rather than a bare `Fields::getFieldById()` lookup, since
+    // `propagateRequired()` dereferences it unconditionally in the "other sites" branch.
+    $layoutField = $owner->getFieldLayout()->getFieldByHandle($field->handle);
+    $manager = createMatrixManager($layoutField);
+
+    $owner->newSiteIds = [$secondSite->id];
+    $query = createMatrixQuery($field, $owner);
+    $query->setResultOverride([$nested]);
+    $owner->setFieldValue($field->handle, $query);
+    $owner->setDirtyFields([$field->handle]);
+    $manager->maintainNestedElements($owner, false);
+
+    $defaultSiteNested = EntryElement::find()->fieldId($field->id)->ownerId($owner->id)->siteId($owner->siteId)->status(null)->all();
+    $newSiteNested = EntryElement::find()->fieldId($field->id)->ownerId($ownerInNewSite->id)->siteId($secondSite->id)->status(null)->all();
+
+    expect($defaultSiteNested)->toHaveCount(1)
+        ->and($defaultSiteNested[0]->title)->toBe('Default site content')
+        ->and($newSiteNested)->toHaveCount(1)
+        ->and($newSiteNested[0]->title)->toBe('Default site content')
+        ->and($newSiteNested[0]->id)->not->toBe($defaultSiteNested[0]->id);
+});
+
+it('restores a nested entry when reverting to an old revision without an integrity error', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'manager' => $manager] = createMatrixOwnerFixture();
+
+    createMatrixNestedEntry($owner, $field, $entryType, 1, 'Revision 1 content');
+
+    $revisionId = app(Revisions::class)->createRevision($owner);
+    $v1 = EntryElement::find()->id($revisionId)->revisions()->status(null)->one();
+    expect($v1)->not->toBeNull();
+
+    // Remove the nested block and save again, creating a second state without it
+    $query = createMatrixQuery($field, $owner);
+    $query->setResultOverride([]);
+    $owner->setFieldValue($field->handle, $query);
+    $manager->maintainNestedElements($owner, false);
+
+    // Reverting to the first revision must not throw, and must bring the nested block back
+    app(Revisions::class)->revertToRevision($v1, auth()->id());
+
+    $owner = EntryElement::find()->id($owner->id)->one();
+    $restoredNested = EntryElement::find()->fieldId($field->id)->ownerId($owner->id)->status(null)->all();
+
+    expect($restoredNested)->toHaveCount(1)
+        ->and($restoredNested[0]->title)->toBe('Revision 1 content');
 });

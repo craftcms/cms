@@ -5,19 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
-use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\t;
 
@@ -42,7 +36,7 @@ readonly class PreviewController
         };
 
         $token = $tokens->createPreviewToken([
-            route('craft.actions.preview', absolute: false), [
+            ActionRoute::uriForSegments(['preview', 'preview'], false), [
                 'elementType' => $tokenData->elementType,
                 'canonicalId' => $tokenData->getCanonicalId(),
                 'siteId' => $tokenData->siteId,
@@ -59,60 +53,5 @@ readonly class PreviewController
         }
 
         return new JsonResponse(compact('token'));
-    }
-
-    public function preview(Request $request, Kernel $kernel, Elements $elements): mixed
-    {
-        $tokenData = new RouteToken($request->all());
-        $tokenData->validate(throw: true);
-
-        $query = $tokenData->elementType::find()
-            ->siteId($tokenData->siteId)
-            ->status(null);
-
-        $elementFn = match (true) {
-            ! is_null($tokenData->draftId) => fn () => $query->draftId($tokenData->draftId)->one(),
-            ! is_null($tokenData->revisionId) => fn () => $query->revisionId($tokenData->revisionId)->one(),
-            ! is_null($tokenData->userId) => function () use ($tokenData, $query) {
-                Context::addHidden(Drafts::CONTEXT_PREVIEW_USER_ID, $tokenData->userId);
-
-                $element = (clone $query)
-                    ->draftOf($tokenData->canonicalId)
-                    ->provisionalDrafts()
-                    ->draftCreator($tokenData->userId)
-                    ->one();
-
-                return $element ?? $query->id($tokenData->canonicalId)->one();
-            },
-            default => fn () => null,
-        };
-
-        if ($element = $elementFn()) {
-            if (! $element->lft && $element->getIsDerivative()) {
-                // See if we can add structure data to it
-                $canonical = $element->getCanonical(true);
-                $element->structureId = $canonical->structureId;
-                $element->root = $canonical->root;
-                $element->lft = $canonical->lft;
-                $element->rgt = $canonical->rgt;
-                $element->level = $canonical->level;
-            }
-
-            $element->previewing = true;
-            $elements->setPlaceholderElement($element);
-        }
-
-        /** @var Uri $originalUri */
-        $originalUri = Context::pullHidden(HandleTokenRequest::ORIGINAL_URI_KEY);
-
-        $response = $kernel->handle($request->duplicateWithUri(
-            newUri: $originalUri->value(),
-            query: $originalUri->query()->all()
-        ));
-
-        return match (true) {
-            $response instanceof Response => $response->setNoCacheHeaders(),
-            default => $response,
-        };
     }
 }

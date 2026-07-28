@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
@@ -12,11 +12,13 @@
   import DeleteSiteButton from '@/modules/sites/components/DeleteSiteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import Badge from '@/common/components/Badge.vue';
-  import InputCombobox from '@/common/form/InputCombobox.vue';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
+  import CraftCombobox from '@/common/form/CraftCombobox.vue';
+  import Pane from '@/common/components/Pane.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import Empty from '@/common/components/Empty.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   const props = defineProps<{
     group: SiteGroup | null;
@@ -208,89 +210,85 @@
 
     return t('Sites');
   });
+
+  useAppLayout(() => ({fullWidth: true, title: pageTitle.value}));
 </script>
 
 <template>
-  <IndexLayout :full-width="true" :title="pageTitle">
-    <template #title>
-      <div class="flex gap-2 items-center">
-        <h1 class="title text-xl">
-          {{ pageTitle }}
-        </h1>
+  <LayoutSlot name="title">
+    <div class="flex gap-2 items-center">
+      <h1 class="title text-xl">
+        {{ pageTitle }}
+      </h1>
 
-        <craft-action-menu v-if="group?.id && !readOnly">
-          <craft-button type="button" icon size="small" slot="invoker">
-            <craft-icon
-              name="gear"
-              :label="t('Site group Actions')"
-            ></craft-icon>
-          </craft-button>
-
-          <div slot="content">
-            <craft-action-item @click.prevent="openModal('update')">
-              {{ t('Rename Group') }}
-            </craft-action-item>
-            <craft-action-item
-              variant="danger"
-              :disabled="sites.length > 0"
-              @click.prevent="handleDeleteClick"
-            >
-              {{ t('Delete Group') }}
-            </craft-action-item>
-          </div>
-        </craft-action-menu>
-      </div>
-    </template>
-    <template #actions>
-      <CpLink
-        v-if="!readOnly"
-        as="craft-button"
-        :href="create({}, {query: {groupId: group?.id}}).url"
-        variant="accent"
-        appearance="button"
-      >
-        <craft-icon name="plus" slot="prefix"></craft-icon>
-        {{ t('New Site') }}
-      </CpLink>
-    </template>
-
-    <template #subnav-actions>
-      <div class="mt-4 flex gap-2" v-if="!readOnly">
-        <craft-button type="button" @click="openModal('create')" size="small">
-          <craft-icon name="plus" slot="prefix"></craft-icon>
-          {{ t('New Group') }}
+      <craft-action-menu v-if="group?.id && !readOnly">
+        <craft-button type="button" icon size="small" slot="invoker">
+          <craft-icon name="gear" :label="t('Site group Actions')"></craft-icon>
         </craft-button>
-      </div>
+
+        <div slot="content">
+          <craft-action-item @click.prevent="openModal('update')">
+            {{ t('Rename Group') }}
+          </craft-action-item>
+          <craft-action-item
+            variant="danger"
+            :disabled="sites.length > 0"
+            @click.prevent="handleDeleteClick"
+          >
+            {{ t('Delete Group') }}
+          </craft-action-item>
+        </div>
+      </craft-action-menu>
+    </div>
+  </LayoutSlot>
+  <LayoutSlot name="actions">
+    <CpLink
+      v-if="!readOnly"
+      as="craft-button"
+      :href="create({}, {query: {groupId: group?.id}}).url"
+      variant="accent"
+      appearance="button"
+    >
+      <craft-icon name="plus" slot="prefix"></craft-icon>
+      {{ t('New Site') }}
+    </CpLink>
+  </LayoutSlot>
+
+  <LayoutSlot name="subnav-actions">
+    <div class="mt-4 flex gap-2" v-if="!readOnly">
+      <craft-button type="button" @click="openModal('create')" size="small">
+        <craft-icon name="plus" slot="prefix"></craft-icon>
+        {{ t('New Group') }}
+      </craft-button>
+    </div>
+  </LayoutSlot>
+
+  <Pane appearance="raised" :padding="0" class="@container">
+    <template v-if="readOnly">
+      <CalloutReadOnly />
     </template>
 
-    <div>
-      <template v-if="readOnly">
-        <CalloutReadOnly />
+    <AdminTable
+      :table="sitesTable"
+      :read-only="readOnly"
+      :reorderable="!!group?.id"
+      @reorder="handleReorder"
+    >
+      <template #empty-row>
+        <Empty icon="light/earth-americas" :label="t('No sites exist yet.')">
+          <CpLink
+            v-if="!readOnly"
+            as="craft-button"
+            :href="create({}, {query: {groupId: group?.id}}).url"
+            appearance="button"
+          >
+            <craft-icon name="plus" slot="prefix"></craft-icon>
+            {{ t('New Site') }}
+          </CpLink>
+        </Empty>
       </template>
-
-      <AdminTable
-        :table="sitesTable"
-        :read-only="readOnly"
-        :reorderable="!!group?.id"
-        spacing="relaxed"
-        @reorder="handleReorder"
-      >
-        <template #empty-row>
-          <Empty icon="light/earth-americas" :label="t('No sites exist yet.')">
-            <CpLink
-              v-if="!readOnly"
-              as="craft-button"
-              :href="create({}, {query: {groupId: group?.id}}).url"
-              appearance="button"
-            >
-              <craft-icon name="plus" slot="prefix"></craft-icon>
-              {{ t('New Site') }}
-            </CpLink>
-          </Empty>
-        </template>
-      </AdminTable>
-    </div>
-  </IndexLayout>
+    </AdminTable>
+  </Pane>
 
   <ModalForm
     :is-active="modalActive"
@@ -331,40 +329,17 @@
           </div>
         </craft-input>
       </template>
-      <craft-input
+      <CraftCombobox
         :label="t('Group Name')"
         id="name"
         name="name"
         required
         :help-text="t('What this group will be called in the control panel.')"
-        :has-feedback-for="form.errors?.name ? 'error' : ''"
-      >
-        <InputCombobox
-          :options="nameSuggestions"
-          v-model="form.name"
-          slot="input"
-        />
-        <div slot="after">
-          <craft-callout
-            variant="info"
-            appearance="plain"
-            class="p-0"
-            icon="lightbulb"
-          >
-            {{ t('This can begin with an environment variable.') }}
-            <a
-              href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-              >{{ t('Learn more') }}</a
-            >
-          </craft-callout>
-        </div>
-
-        <div slot="feedback">
-          <ul class="error-list" v-if="form.errors?.name">
-            <li>{{ form.errors.name }}</li>
-          </ul>
-        </div>
-      </craft-input>
+        :options="nameSuggestions"
+        v-model="form.name"
+        :error="form.errors?.name"
+        :callouts="['envVars']"
+      />
     </Deferred>
   </ModalForm>
 </template>

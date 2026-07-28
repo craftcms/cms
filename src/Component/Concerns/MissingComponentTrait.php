@@ -39,9 +39,6 @@ trait MissingComponentTrait
      */
     public function createFallback(string $type): ComponentInterface
     {
-        /** @phpstan-ignore function.alreadyNarrowedType */
-        assert(method_exists($this, 'toArray'));
-
         $config = $this->toArray();
         unset($config['expectedType'], $config['errorMessage'], $config['settings']);
         $config['type'] = $type;

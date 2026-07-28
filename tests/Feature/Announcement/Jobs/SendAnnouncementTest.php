@@ -80,7 +80,7 @@ it('creates announcements for users when executed', function () {
         body: 'Check out this awesome new feature!',
     );
 
-    $job->handle();
+    app()->call($job->handle(...));
 
     $newCount = DB::table(Table::ANNOUNCEMENTS)
         ->where('userId', $user->id)
@@ -106,7 +106,7 @@ it('handles invalid plugin handle gracefully', function () {
         pluginHandle: 'nonexistent-plugin-handle',
     );
 
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Should not create any announcements with invalid plugin handle
     $newCount = DB::table(Table::ANNOUNCEMENTS)->count();

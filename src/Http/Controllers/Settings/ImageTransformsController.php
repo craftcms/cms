@@ -18,6 +18,7 @@ use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Imagine\Image\Format;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -98,7 +99,7 @@ class ImageTransformsController
         }
 
         if (! $isValid || ! $imageTransforms->saveTransform($transform, runValidation: false)) {
-            return $this->asModelFailure($transform, modelName: 'transform');
+            throw ValidationException::withMessages($transform->errors()->getMessages());
         }
 
         return $this->asModelSuccess(

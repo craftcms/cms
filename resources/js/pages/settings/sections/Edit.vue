@@ -1,12 +1,12 @@
 <script setup lang="ts">
-  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
-  import {t, toHandle, toUriFormat} from '@craftcms/cp';
+  import {t, toHandle, toUriFormat} from '@craftcms/ui';
   import {computed} from 'vue';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
-  import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
+  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+  import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
   import EntryTypeSelect from '@/modules/entry-types/components/EntryTypeSelect.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import type {
@@ -113,69 +113,144 @@
   }
 
   const {save} = useSettingsSave(form, store);
+
+  useAppLayout(() => ({title: props.title, form, onSave: save}));
 </script>
 
 <template>
-  <AppLayout :title="title" :form="form" @save="save">
-    <Pane appearance="raised">
-      <div class="grid gap-3">
-        <input
-          v-if="section.id"
-          type="hidden"
-          name="sectionId"
-          :value="section.id"
-        />
+  <Pane appearance="raised">
+    <div class="grid gap-3">
+      <input
+        v-if="section.id"
+        type="hidden"
+        name="sectionId"
+        :value="section.id"
+      />
 
-        <!-- Name -->
-        <CraftInput
-          :label="t('Name')"
-          :help-text="
-            t('What this section will be called in the control panel.')
-          "
-          id="name"
-          name="name"
-          v-model="form.name"
-          :disabled="readOnly"
-          :error="errors?.name"
-          required
-          autofocus
-        />
+      <!-- Name -->
+      <CraftInput
+        :label="t('Name')"
+        :help-text="t('What this section will be called in the control panel.')"
+        id="name"
+        name="name"
+        v-model="form.name"
+        :disabled="readOnly"
+        :error="errors?.name"
+        required
+        autofocus
+      />
 
-        <!-- Handle -->
-        <CraftInputHandle
-          :label="t('Handle')"
-          :help-text="t(`How you'll refer to this section in the templates.`)"
-          id="handle"
-          name="handle"
-          v-model="form.handle"
-          :disabled="readOnly"
-          :error="errors?.handle"
-          required
-          @change="handleGenerator.markDirty()"
-        />
+      <!-- Handle -->
+      <CraftInputHandle
+        :label="t('Handle')"
+        :help-text="t(`How you'll refer to this section in the templates.`)"
+        id="handle"
+        name="handle"
+        v-model="form.handle"
+        :disabled="readOnly"
+        :error="errors?.handle"
+        required
+        @change="handleGenerator.markDirty()"
+      />
 
-        <!-- Enable Versioning -->
-        <CraftSwitch
-          :label="t('Enable versioning for entries in this section')"
-          id="enableVersioning"
-          name="enableVersioning"
-          :disabled="readOnly"
-          v-model="form.enableVersioning"
-        />
+      <!-- Enable Versioning -->
+      <CraftSwitch
+        :label="t('Enable versioning for entries in this section')"
+        id="enableVersioning"
+        name="enableVersioning"
+        :disabled="readOnly"
+        v-model="form.enableVersioning"
+      />
 
-        <!-- Section Type -->
+      <!-- Section Type -->
+      <CraftSelect
+        :label="t('Section Type')"
+        :help-text="t('What type of section is this?')"
+        id="type"
+        name="type"
+        v-model="form.type"
+        :disabled="readOnly"
+        :error="errors?.type"
+      >
+        <select slot="input">
+          <option
+            v-for="option in typeOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+
+        <div slot="after" v-if="section.id && form.type !== 'single'">
+          <craft-callout
+            variant="danger"
+            appearance="plain"
+            class="p-0"
+            icon="triangle-exclamation"
+          >
+            {{ t('Changing this may result in data loss.') }}
+          </craft-callout>
+        </div>
+      </CraftSelect>
+    </div>
+
+    <hr class="my-6" />
+
+    <!-- Entry Types -->
+    <div class="grid gap-3">
+      <div>
+        <h3 class="font-bold text-sm">{{ t('Entry Types') }}</h3>
+        <p class="text-sm text-neutral-500 mb-2">
+          {{
+            t(
+              'Choose the types of entries that can be included in this section.'
+            )
+          }}
+        </p>
+        <EntryTypeSelect :entry-types="entryTypes" v-model="form.entryTypes" />
+      </div>
+    </div>
+
+    <hr class="my-6" />
+
+    <!-- Site Settings -->
+    <div class="grid gap-6">
+      <div>
+        <h3 class="font-bold text-sm">{{ t('Site settings') }}</h3>
+        <p class="text-sm text-neutral-500 mb-2">
+          {{
+            t(
+              'Choose which sites this section should be available in, and configure the site-specific settings.'
+            )
+          }}
+        </p>
+
+        <SiteSettingsTable
+          :is-multisite="isMultiSite"
+          :is-headless="headlessMode"
+          :selected-type="form.type"
+          v-model="form.sites"
+        />
+      </div>
+
+      <!-- Propagation Method (multi-site only) -->
+      <template v-if="isMultiSite && isChannelOrStructure">
         <CraftSelect
-          :label="t('Section Type')"
-          :help-text="t('What type of section is this?')"
-          id="type"
-          name="type"
-          v-model="form.type"
+          :label="t('Propagation Method')"
+          :help-text="
+            t(
+              'Of the enabled sites above, which sites should entries in this section be saved to?'
+            )
+          "
+          id="propagationMethod"
+          name="propagationMethod"
+          v-model="form.propagationMethod"
           :disabled="readOnly"
-          :error="errors?.type"
         >
           <select slot="input">
             <option
-              v-for="option in typeOptions"
+              v-for="option in propagationOptions"
               :key="option.value"
               :value="option.value"
             >
@@ -183,7 +258,14 @@
             </option>
           </select>
 
-          <div slot="after" v-if="section.id && form.type !== 'single'">
+          <div
+            slot="after"
+            v-if="
+              section.id &&
+              section.propagationMethod !== 'none' &&
+              siteSettings.length > 1
+            "
+          >
             <craft-callout
               variant="danger"
               appearance="plain"
@@ -194,197 +276,108 @@
             </craft-callout>
           </div>
         </CraftSelect>
-      </div>
-
-      <hr class="my-6" />
-
-      <!-- Entry Types -->
-      <div class="grid gap-3">
-        <div>
-          <h3 class="font-bold text-sm">{{ t('Entry Types') }}</h3>
-          <p class="text-sm text-neutral-500 mb-2">
-            {{
-              t(
-                'Choose the types of entries that can be included in this section.'
-              )
-            }}
-          </p>
-          <EntryTypeSelect
-            :entry-types="entryTypes"
-            v-model="form.entryTypes"
-          />
-        </div>
-      </div>
-
-      <hr class="my-6" />
-
-      <!-- Site Settings -->
-      <div class="grid gap-6">
-        <div>
-          <h3 class="font-bold text-sm">{{ t('Site settings') }}</h3>
-          <p class="text-sm text-neutral-500 mb-2">
-            {{
-              t(
-                'Choose which sites this section should be available in, and configure the site-specific settings.'
-              )
-            }}
-          </p>
-
-          <SiteSettingsTable
-            :is-multisite="isMultiSite"
-            :is-headless="headlessMode"
-            :selected-type="form.type"
-            v-model="form.sites"
-          />
-        </div>
-
-        <!-- Propagation Method (multi-site only) -->
-        <template v-if="isMultiSite && isChannelOrStructure">
-          <CraftSelect
-            :label="t('Propagation Method')"
-            :help-text="
-              t(
-                'Of the enabled sites above, which sites should entries in this section be saved to?'
-              )
-            "
-            id="propagationMethod"
-            name="propagationMethod"
-            v-model="form.propagationMethod"
-            :disabled="readOnly"
-          >
-            <select slot="input">
-              <option
-                v-for="option in propagationOptions"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </option>
-            </select>
-
-            <div
-              slot="after"
-              v-if="
-                section.id &&
-                section.propagationMethod !== 'none' &&
-                siteSettings.length > 1
-              "
-            >
-              <craft-callout
-                variant="danger"
-                appearance="plain"
-                class="p-0"
-                icon="triangle-exclamation"
-              >
-                {{ t('Changing this may result in data loss.') }}
-              </craft-callout>
-            </div>
-          </CraftSelect>
-        </template>
-      </div>
-
-      <!-- Structure settings -->
-      <template v-if="isStructure">
-        <hr class="my-6" />
-        <div class="grid gap-3">
-          <CraftInput
-            :label="t('Max Levels')"
-            :help-text="
-              t('The maximum number of levels this section can have.')
-            "
-            id="maxLevels"
-            name="maxLevels"
-            v-model="form.maxLevels"
-            :disabled="readOnly"
-            inputmode="numeric"
-            size="5"
-            :error="errors?.maxLevels"
-          />
-
-          <CraftSelect
-            :label="t('Default {type} Placement', {type: t('Entry')})"
-            :help-text="
-              t(
-                'Where new {type} should be placed by default in the structure.',
-                {type: t('entries')}
-              )
-            "
-            id="defaultPlacement"
-            name="defaultPlacement"
-            v-model="form.defaultPlacement"
-            :disabled="readOnly"
-          >
-            <select slot="input">
-              <option
-                v-for="option in placementOptions"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </option>
-            </select>
-          </CraftSelect>
-        </div>
       </template>
+    </div>
 
+    <!-- Structure settings -->
+    <template v-if="isStructure">
       <hr class="my-6" />
-
-      <!-- Preview Targets -->
       <div class="grid gap-3">
-        <div>
-          <h3 class="font-bold text-sm">{{ t('Preview Targets') }}</h3>
-          <p class="text-sm text-neutral-500 mb-2">
-            {{
-              t(
-                'Locations that should be available for previewing entries in this section.'
-              )
-            }}
-          </p>
-
-          <PreviewTargetsTable
-            v-model="form.previewTargets"
-            :disabled="readOnly"
-          />
-        </div>
-      </div>
-
-      <hr class="my-6" />
-
-      <div class="grid gap-3" v-if="isChannelOrStructure">
-        <!-- Min Authors -->
         <CraftInput
-          :label="t('Min Authors')"
-          :help-text="
-            t(
-              'The minimum number of authors that entries in this section can have.'
-            )
-          "
-          id="minAuthors"
-          name="minAuthors"
-          v-model="form.minAuthors"
+          :label="t('Max Levels')"
+          :help-text="t('The maximum number of levels this section can have.')"
+          id="maxLevels"
+          name="maxLevels"
+          v-model="form.maxLevels"
           :disabled="readOnly"
           inputmode="numeric"
-          maxlength="5"
-          :error="errors?.minAuthors"
+          size="5"
+          :error="errors?.maxLevels"
         />
 
-        <!-- Max Authors -->
-        <CraftInput
-          :label="t('Max Authors')"
+        <CraftSelect
+          :label="t('Default {type} Placement', {type: t('Entry')})"
           :help-text="
             t(
-              'The maximum number of authors that entries in this section can have.'
+              'Where new {type} should be placed by default in the structure.',
+              {type: t('entries')}
             )
           "
-          id="maxAuthors"
-          name="maxAuthors"
-          v-model="form.maxAuthors"
+          id="defaultPlacement"
+          name="defaultPlacement"
+          v-model="form.defaultPlacement"
           :disabled="readOnly"
-          inputmode="numeric"
-          maxlength="5"
-          :error="errors?.maxAuthors"
+        >
+          <select slot="input">
+            <option
+              v-for="option in placementOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </CraftSelect>
+      </div>
+    </template>
+
+    <hr class="my-6" />
+
+    <!-- Preview Targets -->
+    <div class="grid gap-3">
+      <div>
+        <h3 class="font-bold text-sm">{{ t('Preview Targets') }}</h3>
+        <p class="text-sm text-neutral-500 mb-2">
+          {{
+            t(
+              'Locations that should be available for previewing entries in this section.'
+            )
+          }}
+        </p>
+
+        <PreviewTargetsTable
+          v-model="form.previewTargets"
+          :disabled="readOnly"
         />
       </div>
-    </Pane>
-  </AppLayout>
+    </div>
+
+    <hr class="my-6" />
+
+    <div class="grid gap-3" v-if="isChannelOrStructure">
+      <!-- Min Authors -->
+      <CraftInput
+        :label="t('Min Authors')"
+        :help-text="
+          t(
+            'The minimum number of authors that entries in this section can have.'
+          )
+        "
+        id="minAuthors"
+        name="minAuthors"
+        v-model="form.minAuthors"
+        :disabled="readOnly"
+        inputmode="numeric"
+        maxlength="5"
+        :error="errors?.minAuthors"
+      />
+
+      <!-- Max Authors -->
+      <CraftInput
+        :label="t('Max Authors')"
+        :help-text="
+          t(
+            'The maximum number of authors that entries in this section can have.'
+          )
+        "
+        id="maxAuthors"
+        name="maxAuthors"
+        v-model="form.maxAuthors"
+        :disabled="readOnly"
+        inputmode="numeric"
+        maxlength="5"
+        :error="errors?.maxAuthors"
+      />
+    </div>
+  </Pane>
 </template>

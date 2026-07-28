@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
+  import {t} from '@craftcms/ui';
   import migrationsController from '@actions/Utilities/MigrationsController';
   import {
     createColumnHelper,

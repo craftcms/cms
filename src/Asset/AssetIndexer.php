@@ -41,7 +41,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use League\Flysystem\StorageAttributes;
 use Throwable;
+use Tpetry\QueryExpressions\Function\String\Concat;
 use Tpetry\QueryExpressions\Language\Alias;
+use Tpetry\QueryExpressions\Value\Value;
 
 #[Singleton]
 class AssetIndexer
@@ -65,8 +67,6 @@ class AssetIndexer
 
             return;
         }
-
-        $fsSubpath = $volume->getSubpath();
 
         try {
             foreach ($fileList as $listing) {
@@ -92,7 +92,7 @@ class AssetIndexer
                     'fileSize' => ! $listing->isDir() && method_exists($listing, 'fileSize') ? $listing->fileSize() : null,
                 ]);
 
-                $path = $listing->getAdjustedUri($fsSubpath);
+                $path = $listing->getUri();
                 $segments = preg_split('/\\\\|\//', $path);
                 $lastSegmentIndex = count($segments) - 1;
 
@@ -211,7 +211,6 @@ class AssetIndexer
     public function storeIndexList(Generator $indexList, int $sessionId, Volume $volume): int
     {
         $values = [];
-        $fsSubpath = $volume->getSubpath();
         $now = now();
 
         /** @var FsListing $volumeListing */
@@ -226,7 +225,7 @@ class AssetIndexer
             $values[] = [
                 'volumeId' => $volume->id,
                 'sessionId' => $sessionId,
-                'uri' => $volumeListing->getAdjustedUri($fsSubpath),
+                'uri' => $volumeListing->getUri(),
                 'size' => $volumeListing->getFileSize(),
                 'timestamp' => $timestamp,
                 'isDir' => $volumeListing->getIsDir(),
@@ -360,9 +359,13 @@ class AssetIndexer
             ->select([
                 'folders.path as path',
                 'volumes.name as volumeName',
-                'volumes.id as volumeId',
                 'folders.id as folderId',
             ])
+            ->selectSub($this->folderAssetCountQuery($session), 'assetCount')
+            ->when(
+                $session->listEmptyFolders,
+                fn (Builder $query) => $query->selectSub($this->folderAssetCountQuery($session, true), 'missingAssetCount'),
+            )
             ->leftJoin(new Alias(Table::VOLUMES, 'volumes'), 'volumes.id', 'folders.volumeId')
             ->where('folders.dateCreated', '<', $cutoff)
             ->whereIn('folders.volumeId', $volumeList)
@@ -408,26 +411,11 @@ class AssetIndexer
             ->get()
             ->map(fn (object $row) => (array) $row);
 
-        foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName, 'volumeId' => $volumeId]) {
-            $hasAssets = DB::table(Table::ASSETS, 'assets')
-                ->join(new Alias(Table::VOLUMEFOLDERS, 'folders'), 'folders.id', 'assets.folderId')
-                ->leftJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
-                ->where('assets.volumeId', $volumeId)
-                ->whereLike('folders.path', "$path%")
-                ->where(function (Builder $query) {
-                    $query->whereNull('elements.dateDeleted')
-                        ->orWhere('assets.keptFile', 1);
-                })
-                ->count();
+        foreach ($missingFolders as $folder) {
+            $hasAssets = (int) $folder['assetCount'];
 
-            if ($hasAssets === 0) {
-                $missing['folders'][$folderId] = "$volumeName/$path";
-            }
-
-            if ($session->listEmptyFolders && $hasAssets > 0) {
-                if ($hasAssets === $missingFiles->filter(fn ($file) => str_starts_with((string) $file['path'], (string) $path))->count()) {
-                    $missing['folders'][$folderId] = "$volumeName/$path";
-                }
+            if ($hasAssets === 0 || ($session->listEmptyFolders && $hasAssets === (int) $folder['missingAssetCount'])) {
+                $missing['folders'][$folder['folderId']] = "{$folder['volumeName']}/{$folder['path']}";
             }
         }
 
@@ -436,6 +424,30 @@ class AssetIndexer
         }
 
         return $missing;
+    }
+
+    private function folderAssetCountQuery(IndexingSession $session, bool $missing = false): Builder
+    {
+        $query = DB::table(Table::ASSETS, 'countedAssets')
+            ->selectRaw('count(*)')
+            ->join(new Alias(Table::VOLUMEFOLDERS, 'countedFolders'), 'countedFolders.id', 'countedAssets.folderId')
+            ->leftJoin(new Alias(Table::ELEMENTS, 'countedElements'), 'countedElements.id', 'countedAssets.id')
+            ->whereColumn('countedAssets.volumeId', 'folders.volumeId')
+            ->where('countedFolders.path', 'like', new Concat(['folders.path', new Value('%')]));
+
+        if (! $missing) {
+            return $query->where(fn (Builder $query) => $query
+                ->whereNull('countedElements.dateDeleted')
+                ->orWhere('countedAssets.keptFile', 1));
+        }
+
+        return $query
+            ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'countedIndexData'), fn (JoinClause $join) => $join
+                ->whereColumn('countedAssets.id', 'countedIndexData.recordId')
+                ->where('countedIndexData.isDir', false))
+            ->where('countedAssets.dateCreated', '<', $session->dateCreated)
+            ->whereNull('countedElements.dateDeleted')
+            ->whereNull('countedIndexData.id');
     }
 
     public function getNextIndexEntry(IndexingSession $session): ?AssetIndexEntry
@@ -513,7 +525,7 @@ class AssetIndexer
         $indexEntry = new AssetIndexEntry([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
-            'uri' => $listing->getAdjustedUri($volume->getSubpath()),
+            'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
@@ -541,7 +553,7 @@ class AssetIndexer
         $indexEntry = new AssetIndexEntry([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
-            'uri' => $listing->getAdjustedUri($volume->getSubpath()),
+            'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),

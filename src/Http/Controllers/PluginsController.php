@@ -146,12 +146,14 @@ readonly class PluginsController
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
         $requestClass = $plugin->getSettingsRequestClass();
+        $settings = $request->input('settings', []);
 
         if (is_subclass_of($requestClass, FormRequest::class)) {
             $request = app($requestClass);
+            $settings = $request->safe()->input('settings', []);
         }
 
-        $success = $this->plugins->savePluginSettings($plugin, $request->input('settings', []));
+        $success = $this->plugins->savePluginSettings($plugin, $settings);
 
         return $success
             ? $this->asSuccess(t('Plugin settings saved.'))

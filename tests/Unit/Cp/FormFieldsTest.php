@@ -6,6 +6,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
@@ -28,15 +29,18 @@ describe('fieldHtml', function () {
         $labelHtml = FormFields::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']);
         $blankLabelHtml = FormFields::fieldHtml('<input>', ['label' => '__blank__']);
 
-        expect($html)->toContain('<div class="input ltr"><input></div>')
-            ->and($labelHtml)->toContain('<label id="id-label" for="id">Label</label>')
-            ->and($blankLabelHtml)->not->toContain('<label');
+        expect($html)->toContain('<craft-field class="field"')
+            ->and($html)->toContain('orientation="ltr"')
+            ->and($html)->toContain('<input slot="input">')
+            ->and($labelHtml)->toContain('label="Label"')
+            ->and($labelHtml)->toContain('id="id-field"')
+            ->and($blankLabelHtml)->not->toContain('label=');
     });
 
     it('renders markup input', function () {
         $html = FormFields::fieldHtml(new Markup('<input name="title">', 'UTF-8'));
 
-        expect($html)->toContain('<div class="input ltr"><input name="title"></div>');
+        expect($html)->toContain('<input name="title" slot="input">');
     });
 
     it('throws for an invalid site id in multi-site mode', function () {
@@ -53,48 +57,83 @@ describe('fieldHtml', function () {
     it('supports fieldsets with grouped label semantics', function () {
         $html = FormFields::fieldHtml('<input>', ['fieldset' => true, 'label' => 'Label']);
 
-        expect($html)->toContain('aria-labelledby="')
-            ->and($html)->toContain('role="group"');
+        expect($html)->toContain(' fieldset')
+            ->and($html)->toContain('label="Label"');
     });
 
     it('renders instructions, tip, warning, and errors', function () {
         $withInstructions = FormFields::fieldHtml('<input>', [
-            'instructionsId' => 'inst-id',
             'instructions' => '**Test**',
         ]);
         $withTip = FormFields::fieldHtml('<input>', [
-            'tipId' => 'tip',
             'tip' => '**Test**',
         ]);
         $withWarning = FormFields::fieldHtml('<input>', [
-            'warningId' => 'warning',
             'warning' => '**Test**',
         ]);
         $withErrors = FormFields::fieldHtml('<input>', [
             'errors' => ['Very bad', 'Very, very bad'],
         ]);
 
-        expect($withInstructions)->toContain('id="inst-id"')
+        expect($withInstructions)->toContain('slot="help-text"')
             ->and($withInstructions)->toContain('<p><strong>Test</strong></p>')
-            ->and($withTip)->toContain('<p id="tip" class="notice has-icon">')
-            ->and($withWarning)->toContain('<p id="warning" class="warning has-icon">')
-            ->and($withErrors)->toContain('has-errors')
-            ->and((bool) preg_match('/<ul id="[\w\-]+" class="errors">/', $withErrors))->toBeTrue();
+            ->and($withTip)->toContain('slot="tip"')
+            ->and($withTip)->toContain('<strong>Test</strong>')
+            ->and($withWarning)->toContain('slot="warning"')
+            ->and($withErrors)->toContain(' has-errors')
+            ->and($withErrors)->toContain('slot="feedback"')
+            ->and($withErrors)->toContain('class="error-list"')
+            ->and($withErrors)->toContain('<li>Very bad</li>');
     });
 
     it('renders markup warnings', function () {
         $html = FormFields::fieldHtml('<input>', [
-            'warningId' => 'warning',
             'warning' => new Markup('Config warning', 'UTF-8'),
         ]);
 
-        expect($html)->toContain('<p id="warning" class="warning has-icon">')
+        expect($html)->toContain('slot="warning"')
             ->and($html)->toContain('Config warning');
     });
 
     it('throws for invalid template paths', function () {
         expect(fn () => FormFields::fieldHtml('template:invalid/template.twig', []))
             ->toThrow(TemplateLoaderException::class);
+    });
+});
+
+describe('config deprecations', function () {
+    it('logs a deprecation for unsupported legacy config keys', function (string $method, array $config, string $needle) {
+        $logged = false;
+
+        $mock = Mockery::mock(Deprecator::class);
+        $mock->shouldReceive('log')
+            ->once()
+            ->withArgs(function (string $key, string $message) use (&$logged, $needle) {
+                $logged = true;
+
+                return str_contains($message, $needle);
+            });
+        app()->scoped(Deprecator::class, fn () => $mock);
+
+        FormFields::$method($config);
+
+        expect($logged)->toBeTrue();
+    })->with([
+        'lightswitch descriptionId' => ['lightswitchFromConfig', ['descriptionId' => 'custom'], 'descriptionId'],
+        'button spinner' => ['buttonFromConfig', ['label' => 'Save', 'spinner' => true], 'spinner'],
+    ]);
+
+    it('logs nothing for faithfully mapped configs', function () {
+        $mock = Mockery::mock(Deprecator::class);
+        $mock->shouldNotReceive('log');
+        app()->scoped(Deprecator::class, fn () => $mock);
+
+        FormFields::lightswitchFromConfig(['id' => 'ls', 'on' => true, 'label' => 'Enabled']);
+        FormFields::buttonFromConfig(['label' => 'Save', 'type' => 'submit', 'busyMessage' => 'Saving…']);
+        FormFields::checkboxFromConfig(['id' => 'cb', 'label' => 'Agree', 'checked' => true]);
+        FormFields::buttonGroupFromConfig(['options' => [['label' => 'A', 'value' => 'a']], 'static' => true]);
+
+        expect(true)->toBeTrue();
     });
 });
 
@@ -110,7 +149,8 @@ describe('field helper methods', function () {
         ['lightswitch', 'lightswitchFieldHtml'],
         ['<select', 'selectFieldHtml'],
         ['type="text"', 'textFieldHtml'],
-        ['<div class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', ['unit' => 'Test unit']],
+        ['slot="suffix"', 'textFieldHtml', ['unit' => 'Test unit']],
+        ['>Test unit</div>', 'textFieldHtml', ['unit' => 'Test unit']],
         ['<textarea', 'textareaFieldHtml'],
     ]);
 });
@@ -122,8 +162,8 @@ describe('addressFieldsHtml', function () {
 
         $html = FormFields::addressFieldsHtml($address);
 
-        expect((bool) preg_match('/id="addressLine1-label".*?<span class="visually-hidden">Required<\/span>.*?<span class="required"/s', $html))->toBeTrue()
-            ->and((bool) preg_match('/id="sortingCode-label".*?<span class="visually-hidden">Required<\/span>/s', $html))->toBeFalse()
+        expect((bool) preg_match('/<craft-field[^>]*data-attribute="addressLine1"[^>]*\brequired\b/', $html))->toBeTrue()
+            ->and((bool) preg_match('/<craft-field[^>]*data-attribute="sortingCode"[^>]*\brequired\b/', $html))->toBeFalse()
             ->and($address->ruleset->getScenario())->toBe($originalScenario);
     });
 });

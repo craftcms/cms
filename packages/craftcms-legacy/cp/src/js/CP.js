@@ -1,8 +1,3 @@
-// Import from the deep service module rather than the package root. The root
-// entry (`@craftcms/cp`) side-effect-registers WebAwesome components (e.g.
-// `wa-icon`); pulling that into this separately-webpacked legacy bundle causes
-// a duplicate custom-element registration when it loads alongside the Vite app.
-import {QueueService} from '@craftcms/cp/services/Queue.ts.mjs';
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */
@@ -81,8 +76,19 @@ Craft.CP = Garnish.Base.extend(
 
     resizeTimeout: null,
 
-    /** @type QueueService */
-    QueueService: QueueService.getInstance(),
+    // Lazy so this bundle doesn't need its own copy of the queue service.
+    // `Craft.QueueService` is assigned by the Vite-side `modules/queue` shim,
+    // whose deferred module scripts run after this bundle evaluates but before
+    // anything can call the queue delegates — every caller fires on user
+    // interaction or later.
+    get QueueService() {
+      if (!Craft.QueueService) {
+        throw new Error(
+          'Craft.QueueService is not available. The queue service is provided by the modern CP bundle (modules/queue).'
+        );
+      }
+      return Craft.QueueService.getInstance();
+    },
 
     init: function () {
       this.elementThumbLoader = new Craft.ElementThumbLoader();

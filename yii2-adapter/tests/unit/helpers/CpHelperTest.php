@@ -122,37 +122,38 @@ class CpHelperTest extends TestCase
 
     public function test_field_html(): void
     {
-        self::assertStringContainsString('<div class="input ltr"><input></div>', Cp::fieldHtml('<input>'));
-        self::assertStringContainsString('<label id="id-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
-        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__']));
+        self::assertStringContainsString('<input slot="input"></craft-field>', Cp::fieldHtml('<input>'));
+        $withLabel = Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']);
+        self::assertStringContainsString('id="id-field"', $withLabel);
+        self::assertStringContainsString('label="Label"', $withLabel);
+        self::assertStringNotContainsString('label="', Cp::fieldHtml('<input>', ['label' => '__blank__']));
         // invalid site ID
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Cp::fieldHtml('<input>', ['siteId' => -1]);
         });
-        // fieldset + legend
+        // fieldset
         $fieldset = Cp::fieldHtml('<input>', ['fieldset' => 'true', 'label' => 'Label']);
-        self::assertStringContainsString('aria-labelledby="', $fieldset);
-        self::assertStringContainsString('role="group"', $fieldset);
+        self::assertMatchesRegularExpression('/<craft-field [^>]*\bfieldset\b/', $fieldset);
+        self::assertStringContainsString('label="Label"', $fieldset);
         // translatable
-        self::assertStringContainsString('class="t9n-indicator prevent-autofocus"', Cp::fieldHtml('<input>', ['label' => 'Label', 'translatable' => true]));
+        self::assertMatchesRegularExpression('/<craft-field [^>]*\btranslatable\b/', Cp::fieldHtml('<input>', ['label' => 'Label', 'translatable' => true]));
         // instructions
-        $withInstructions = Cp::fieldHtml('<input>', ['instructionsId' => 'inst-id', 'instructions' => '**Test**']);
-        self::assertStringContainsString('id="inst-id"', $withInstructions);
+        $withInstructions = Cp::fieldHtml('<input>', ['instructions' => '**Test**']);
+        self::assertStringContainsString('<div slot="help-text">', $withInstructions);
         self::assertStringContainsString('<p><strong>Test</strong></p>', $withInstructions);
         // tip
-        self::assertStringContainsString('<p id="tip" class="notice has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><span><strong>Test</strong></span></p>', Cp::fieldHtml('<input>', [
-            'tipId' => 'tip',
+        self::assertStringContainsString('<span slot="tip"><strong>Test</strong></span>', Cp::fieldHtml('<input>', [
             'tip' => '**Test**',
         ]));
         // warning
-        self::assertStringContainsString('<p id="warning" class="warning has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><span><strong>Test</strong></span></p>', Cp::fieldHtml('<input>', [
-            'warningId' => 'warning',
+        self::assertStringContainsString('<span slot="warning"><strong>Test</strong></span>', Cp::fieldHtml('<input>', [
             'warning' => '**Test**',
         ]));
         // errors
         $withErrors = Cp::fieldHtml('<input>', ['errors' => ['Very bad', 'Very, very bad']]);
         self::assertStringContainsString('has-errors', $withErrors);
-        self::assertRegExp('/<ul id="[\w\-]+" class="errors">/', $withErrors);
+        self::assertMatchesRegularExpression('/<ul [^>]*class="error-list"/', $withErrors);
+        self::assertStringContainsString('<li>Very bad</li>', $withErrors);
         // invalid template path
         $this->tester->expectThrowable(TemplateLoaderException::class, function() {
             Cp::fieldHtml('template:invalid/template.twig', []);
@@ -181,7 +182,7 @@ class CpHelperTest extends TestCase
             ['<select', 'selectFieldHtml'],
             ['type="text"', 'textFieldHtml'],
             [
-                '<div class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', [
+                '<div slot="suffix" class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', [
                     'unit' => 'Test unit',
                 ],
             ],

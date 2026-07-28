@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {
     createColumnHelper,
@@ -18,6 +17,8 @@
   import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
   import Empty from '@/common/components/Empty.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   type FieldRow = {
     id: number;
@@ -210,41 +211,38 @@
     ...paginationConfig,
     ...sortingConfig,
   });
+
+  useAppLayout({title: props.title});
 </script>
 
 <template>
-  <AppLayout :title="title">
-    <template #actions>
-      <CpLink
-        :inertia="false"
-        appearance="button"
-        variant="accent"
-        :href="create()"
-        icon="plus"
-      >
-        {{ t('New field') }}
-      </CpLink>
-    </template>
+  <LayoutSlot name="actions">
+    <CpLink
+      :inertia="false"
+      appearance="button"
+      variant="accent"
+      :href="create()"
+      icon="plus"
+    >
+      {{ t('New field') }}
+    </CpLink>
+  </LayoutSlot>
 
-    <Pane :padding="0" appearance="raised">
-      <AdminTable
-        :table="table"
-        :reorderable="false"
-        :from="pagination.from"
-        :to="pagination.to"
-        :total="pagination.total"
-        :enable-adjust-page-size="true"
-      >
-        <template #empty-row>
-          <Empty
-            icon="light/pen-to-square"
-            :label="t('No fields exist yet.')"
-          />
-        </template>
-        <template #search-form>
-          <SearchForm v-model="searchTerm" />
-        </template>
-      </AdminTable>
-    </Pane>
-  </AppLayout>
+  <Pane :padding="0" appearance="raised">
+    <AdminTable
+      :table="table"
+      :reorderable="false"
+      :from="pagination.from"
+      :to="pagination.to"
+      :total="pagination.total"
+      :enable-adjust-page-size="true"
+    >
+      <template #empty-row>
+        <Empty icon="light/pen-to-square" :label="t('No fields exist yet.')" />
+      </template>
+      <template #search-form>
+        <SearchForm v-model="searchTerm" />
+      </template>
+    </AdminTable>
+  </Pane>
 </template>

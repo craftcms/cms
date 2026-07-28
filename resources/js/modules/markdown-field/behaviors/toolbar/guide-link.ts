@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import {t} from '@craftcms/ui';
 import type {OverType as OverTypeInstance} from 'overtype';
 
 const markdownGuideUrl = 'https://www.markdownguide.org/basic-syntax/';

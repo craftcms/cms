@@ -10,8 +10,8 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\InvalidUserToken;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
@@ -28,8 +28,6 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
-
-use function CraftCms\Cms\cp_url;
 
 abstract readonly class AuthenticationController
 {
@@ -66,13 +64,16 @@ abstract readonly class AuthenticationController
         CraftUser $user,
         bool $remember,
         bool $skipTwoFactor = false,
+        ?CraftUser $loginUser = null,
     ): Response {
+        $loginUser ??= $user;
+
         if (! $skipTwoFactor && ! $this->generalConfig->disable2fa && $this->auth->hasActiveMethod($user)) {
-            $this->auth->setUser($user);
+            $this->auth->setUser($user, $remember, $loginUser);
 
             if (! $request->isCpRequest() && ! $request->wantsJson()) {
                 if (! $loginPath = $this->generalConfig->getLoginPath()) {
-                    $request->session()->forget('user.id');
+                    $this->auth->setUser(null);
                     throw new RuntimeException('User requires two-step verification, but the loginPath config setting is disabled.');
                 }
 
@@ -85,7 +86,7 @@ abstract readonly class AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return $this->completeLogin($request, $user, $remember);
+        return $this->completeLogin($request, $loginUser, $remember);
     }
 
     protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?CraftUser $user = null): Response
@@ -101,23 +102,29 @@ abstract readonly class AuthenticationController
         return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
-    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = null): View|InertiaResponse|Response
+    protected function renderViewWithFallback(string $inertiaComponent, ?array $inertiaProps = null, array $data = []): View|InertiaResponse|Response
     {
-        if ($inertiaComponent !== null && request()->isCpRequest()) {
-            return Inertia::render($inertiaComponent, $inertiaProps ?? $data);
-        }
+        $request = request();
 
-        if (view()->exists(request()->craftPath())) {
-            return view(request()->craftPath(), $data);
+        // if this is a front-end request and a template exists for the requested path, render it
+        if (! $request->isCpRequest() && view()->exists($request->craftPath())) {
+            return view($request->craftPath(), $data);
         }
 
         TemplateMode::set(TemplateMode::Cp);
 
-        if (! view()->exists('craftcms::'.$cpTemplate)) {
-            return redirect(cp_url($cpTemplate));
+        if ($request->isCpRequest()) {
+            return Inertia::render($inertiaComponent, $inertiaProps ?? $data);
         }
 
-        return view('craftcms::'.Str::start($cpTemplate, ''), $data);
+        // Front-end requests don't run through the `craft.cp` middleware group, so
+        // `HandleInertiaRequests` never gets a chance to prep the Inertia root view
+        // (headHtml/bodyHtml, shared props, etc). Invoke it manually since we're
+        // falling back to an Inertia-rendered response.
+        return app(HandleInertiaRequests::class)->handle(
+            $request,
+            fn (Request $request): Response => Inertia::render($inertiaComponent, $inertiaProps ?? $data)->toResponse($request),
+        );
     }
 
     protected function processTokenRequest(Request $request): Response|array

@@ -1,10 +1,10 @@
 <script setup lang="ts" generic="T">
-  import {t, toEnvVar} from '@craftcms/cp';
+  import {t, toEnvVar} from '@craftcms/ui';
   import {type InertiaForm, usePage} from '@inertiajs/vue3';
   import {computed} from 'vue';
   import type {SelectItem, SelectOption, Site} from '@/common/types';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
-  import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
+  import {toHandle} from '@craftcms/ui/utilities/string';
   import useCraftData from '@/common/composables/useCraftData';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import {transformBooleanOptions} from '@/common/utils/transformBooleanOptions';

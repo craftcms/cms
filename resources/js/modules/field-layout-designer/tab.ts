@@ -7,7 +7,7 @@ import {
   fldTabData,
   hudData,
 } from './support';
-import type {ActionMenuItem} from '@craftcms/cp';
+import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
 
 declare const Craft: any;
 declare const $: any;
@@ -229,8 +229,7 @@ export class Tab extends Base {
         elementType: this.designer.settings!.elementType,
         config,
         settingsNamespace: this.settingsNamespace,
-        // .serialize() is a jQuery-only form helper — keep it at the seam.
-        settings: this.slideout.$container.serialize(),
+        settings: serializeFormInputs(this.slideout.$container[0]),
       },
     })
       .then((response: any) => {

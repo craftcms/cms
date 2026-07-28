@@ -10,7 +10,7 @@ import {
   t,
   visuallyHiddenStyles,
   ConfigService,
-} from '@craftcms/cp';
+} from '@craftcms/ui';
 import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';
@@ -82,6 +82,16 @@ export default class CraftLoginForm extends LitElement {
     if (this.showPasskeyBtn && browserSupportsWebAuthn()) {
       this._canUsePasskey = await platformAuthenticatorIsAvailable();
     }
+  }
+
+  override focus(options?: FocusOptions): void {
+    void this.updateComplete.then(() => {
+      const input = this.staticEmail
+        ? this._passwordInput
+        : (this._usernameInput ?? this._passwordInput);
+
+      input?.focus(options);
+    });
   }
 
   #usernameLabel() {

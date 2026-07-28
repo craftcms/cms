@@ -18,14 +18,16 @@ use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-readonly class TemplateGlobals
+class TemplateGlobals
 {
+    private ?array $globals = null;
+
     public function __construct(
-        private Application $app,
-        private GeneralConfig $generalConfig,
-        private Sites $sites,
-        private Updates $updates,
-        private CraftVariable $craftVariable,
+        private readonly Application $app,
+        private readonly GeneralConfig $generalConfig,
+        private readonly Sites $sites,
+        private readonly Updates $updates,
+        private readonly CraftVariable $craftVariable,
     ) {}
 
     /**
@@ -35,6 +37,10 @@ readonly class TemplateGlobals
      */
     public function resolve(): array
     {
+        if (isset($this->globals)) {
+            return $this->globals;
+        }
+
         $isInstalled = Cms::isInstalled();
         $setPasswordRequestPath = $this->generalConfig->getSetPasswordRequestPath();
 
@@ -57,11 +63,11 @@ readonly class TemplateGlobals
             'language' => app()->getLocale(),
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
-            'loginUrl' => $this->generalConfig->loginPath !== false
-                ? Url::siteUrl($this->generalConfig->getLoginPath())
+            'loginUrl' => is_string($loginPath = $this->generalConfig->getLoginPath())
+                ? Url::siteUrl($loginPath)
                 : null,
-            'logoutUrl' => $this->generalConfig->logoutPath !== false
-                ? Url::siteUrl($this->generalConfig->getLogoutPath())
+            'logoutUrl' => is_string($logoutPath = $this->generalConfig->getLogoutPath())
+                ? Url::siteUrl($logoutPath)
                 : null,
             'setPasswordUrl' => $setPasswordRequestPath !== null ? Url::siteUrl($setPasswordRequestPath) : null,
             'now' => now(),
@@ -72,6 +78,6 @@ readonly class TemplateGlobals
 
         event($event = new TemplateGlobalsResolving($globals));
 
-        return $event->globals;
+        return $this->globals = $event->globals;
     }
 }

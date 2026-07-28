@@ -2,24 +2,29 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Color;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
-use CraftCms\Cms\Field\Events\FieldTypesResolving;
-use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\FieldTypes;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
+use CraftCms\Cms\Field\NestedEntryFieldTypes;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -41,25 +46,6 @@ it('can get and set context', function () {
     expect($this->fields->fieldContext)->toBe('foo');
 });
 
-it('can get all field types', function () {
-    expect($this->fields->getAllFieldTypes())->not()->toBeEmpty();
-
-    foreach ($this->fields->getAllFieldTypes() as $type) {
-        expect($type)->toExtend(Field::class);
-    }
-});
-
-it('can add extra field types through an event', function () {
-    class CustomField extends Field {}
-
-    Event::listen(
-        FieldTypesResolving::class,
-        fn (FieldTypesResolving $event) => $event->types->add(CustomField::class),
-    );
-
-    expect($this->fields->getAllFieldTypes())->toContain(CustomField::class);
-});
-
 it('can get all field types that have content', function () {
     class CustomFieldWithoutContent extends Field
     {
@@ -70,10 +56,7 @@ it('can get all field types that have content', function () {
         }
     }
 
-    Event::listen(
-        FieldTypesResolving::class,
-        fn (FieldTypesResolving $event) => $event->types->add(CustomFieldWithoutContent::class),
-    );
+    app(FieldTypes::class)->register(CustomFieldWithoutContent::class);
 
     expect($this->fields->getFieldTypesWithContent())->toContain(PlainText::class);
     expect($this->fields->getFieldTypesWithContent())->not()->toContain(CustomFieldWithoutContent::class);
@@ -109,15 +92,12 @@ it('can determine if two field types are compatible', function () {
 });
 
 it('can get nested entry field types', function () {
-    class CustomNestedEntryField extends Field {}
+    class CustomNestedEntryField extends Matrix {}
 
     expect($this->fields->getNestedEntryFieldTypes())->toContain(Matrix::class);
     expect($this->fields->getNestedEntryFieldTypes())->not()->toContain(CustomNestedEntryField::class);
 
-    Event::listen(
-        NestedEntryFieldTypesResolving::class,
-        fn (NestedEntryFieldTypesResolving $event) => $event->types->add(CustomNestedEntryField::class),
-    );
+    app(NestedEntryFieldTypes::class)->register(CustomNestedEntryField::class);
 
     expect($this->fields->getNestedEntryFieldTypes())->toContain(CustomNestedEntryField::class);
 });
@@ -167,16 +147,6 @@ it('creates a missing field if the field isnt recognized', function () {
 it('can get all fields', function () {
     expect($this->fields->getAllFields())->toBeEmpty();
 
-    $this->fields->saveField($this->fields->createField([
-        'type' => PlainText::class,
-        'name' => 'Plain Text',
-        'handle' => 'plainText',
-    ]));
-
-    expect($this->fields->getAllFields())->not()->toBeEmpty();
-});
-
-it('can get all fields with content', function () {
     $this->fields->saveField($this->fields->createField([
         'type' => PlainText::class,
         'name' => 'Plain Text',
@@ -313,23 +283,10 @@ it('can hard delete a field layout by id', function () {
         'handle' => 'plainTextLayoutField',
         'type' => PlainText::class,
     ]);
+    FieldsFacade::refreshFields();
 
-    $layout = $this->fields->createLayout([
-        'type' => EntryElement::class,
-        'tabs' => [
-            [
-                'uid' => Str::uuid()->toString(),
-                'name' => 'Content',
-                'elements' => [
-                    [
-                        'uid' => Str::uuid()->toString(),
-                        'type' => CustomFieldElement::class,
-                        'fieldUid' => $field->uid,
-                    ],
-                ],
-            ],
-        ],
-    ]);
+    $layout = FieldLayout::make(EntryElement::class)
+        ->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::make($field->handle)));
 
     expect($this->fields->saveLayout($layout))->toBeTrue();
 
@@ -341,10 +298,146 @@ it('can hard delete a field layout by id', function () {
         ->and($this->fields->getLayoutById($layout->id))->toBeNull();
 });
 
+it('rejects saving a content block field whose nested layout references itself', function () {
+    $fieldUid = (string) Str::uuid();
+
+    $field = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Recursive Block',
+        'handle' => 'recursiveBlock',
+        'uid' => $fieldUid,
+        'settings' => [
+            'viewMode' => 'grouped',
+            'fieldLayouts' => [
+                (string) Str::uuid() => [
+                    'tabs' => [[
+                        'uid' => (string) Str::uuid(),
+                        'elements' => [[
+                            'type' => CustomFieldElement::class,
+                            'uid' => (string) Str::uuid(),
+                            'width' => 100,
+                            'required' => false,
+                            'fieldUid' => $fieldUid,
+                        ]],
+                    ]],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveField($field))->toBeFalse()
+        ->and($field->errors()->first('fieldLayout'))->toBe('Including a Content Block field recursively is not allowed.')
+        ->and(FieldModel::count())->toBe(0);
+});
+
+it('rejects re-saving a content block field with its own layout element added', function () {
+    $field = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Recursive Block',
+        'handle' => 'recursiveBlock',
+    ]);
+
+    expect($this->fields->saveField($field))->toBeTrue();
+
+    $field->setFieldLayouts([
+        (string) Str::uuid() => [
+            'tabs' => [[
+                'uid' => (string) Str::uuid(),
+                'elements' => [[
+                    'type' => CustomFieldElement::class,
+                    'uid' => (string) Str::uuid(),
+                    'fieldUid' => $field->uid,
+                ]],
+            ]],
+        ],
+    ]);
+
+    expect($this->fields->saveField($field))->toBeFalse()
+        ->and($field->errors()->first('fieldLayout'))->toBe('Including a Content Block field recursively is not allowed.');
+});
+
+it('allows nesting a different content block field', function () {
+    $innerField = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Inner Block',
+        'handle' => 'innerBlock',
+    ]);
+
+    expect($this->fields->saveField($innerField))->toBeTrue();
+
+    $outerField = $this->fields->createField([
+        'type' => ContentBlock::class,
+        'name' => 'Outer Block',
+        'handle' => 'outerBlock',
+        'settings' => [
+            'fieldLayouts' => [
+                (string) Str::uuid() => [
+                    'tabs' => [[
+                        'uid' => (string) Str::uuid(),
+                        'elements' => [[
+                            'type' => CustomFieldElement::class,
+                            'uid' => (string) Str::uuid(),
+                            'fieldUid' => $innerField->uid,
+                        ]],
+                    ]],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveField($outerField))->toBeTrue()
+        ->and(FieldModel::count())->toBe(2);
+});
+
 it('can find field usages', function () {
     expect($this->fields->findFieldUsages(new PlainText))->toBeEmpty();
 
     $this->markTestIncomplete('Add test with field usage');
+});
+
+it('can merge fields', function () {
+    $this->fields->saveField($this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Persisting Text',
+        'handle' => 'persistingText',
+    ]));
+
+    $this->fields->saveField($this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Outgoing Text',
+        'handle' => 'outgoingText',
+    ]));
+
+    $persistingField = $this->fields->getFieldByHandle('persistingText');
+    $outgoingField = $this->fields->getFieldByHandle('outgoingText');
+
+    $layoutModel = FieldLayoutModel::factory()
+        ->forField(FieldModel::firstWhere('handle', 'outgoingText'))
+        ->create();
+
+    EntryType::factory()->create([
+        'fieldLayoutId' => $layoutModel->id,
+    ]);
+
+    $migrationPath = null;
+
+    try {
+        $result = $this->fields->merge($persistingField, $outgoingField);
+        $migrationPath = $result->migrationPath;
+
+        $layout = $this->fields->getLayoutById($layoutModel->id);
+        $layoutElement = $layout->getCustomFieldElements()[0];
+
+        expect($result->updatedLayouts)->toBe(1)
+            ->and($this->fields->getFieldByHandle('outgoingText'))->toBeNull()
+            ->and($layoutElement->getFieldUid())->toBe($persistingField->uid)
+            ->and($migrationPath)->toBeFile()
+            ->and(DB::table(Table::MIGRATIONS)->where('migration', basename((string) $migrationPath, '.php'))->exists())->toBeTrue();
+    } finally {
+        if ($migrationPath) {
+            @unlink($migrationPath);
+        }
+    }
 });
 
 it('returns laravel-style pagination metadata for table data', function () {
@@ -377,24 +470,10 @@ test('field layouts', function () {
         'handle' => 'plainTextLayoutField',
         'type' => PlainText::class,
     ]);
+    FieldsFacade::refreshFields();
 
-    $layout = $this->fields->createLayout([
-        'uid' => Str::uuid()->toString(),
-        'type' => EntryElement::class,
-        'tabs' => [
-            [
-                'uid' => Str::uuid()->toString(),
-                'name' => 'Content',
-                'elements' => [
-                    [
-                        'uid' => Str::uuid()->toString(),
-                        'type' => CustomFieldElement::class,
-                        'fieldUid' => $field->uid,
-                    ],
-                ],
-            ],
-        ],
-    ]);
+    $layout = FieldLayout::make(EntryElement::class)
+        ->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::make($field->handle)));
 
     expect($this->fields->saveLayout($layout))->toBeTrue()
         ->and($layout->id)->toBeInt()
@@ -402,14 +481,14 @@ test('field layouts', function () {
         ->and($this->fields->getLayoutByUid($layout->uid)?->id)->toBe($layout->id)
         ->and($this->fields->getLayoutByType(EntryElement::class, false)?->id)->toBe($layout->id);
 
-    $layout->setTabs([
-        new FieldLayoutTab([
-            'layout' => $layout,
-            'uid' => Str::uuid()->toString(),
-            'name' => 'Updated',
-        ]),
-    ]);
+    $layout
+        ->removeTab(FieldLayout::defaultTabName())
+        ->tab('Updated', fn (FieldLayoutTab $tab) => $tab->add(CustomFieldElement::make($field->handle)));
 
-    expect($this->fields->saveLayout($layout))->toBeTrue()
-        ->and($this->fields->getLayoutById($layout->id)?->getTabs()[0]->name)->toBe('Updated');
+    expect($this->fields->saveLayout($layout))->toBeTrue();
+
+    $savedLayout = $this->fields->getLayoutById($layout->id);
+
+    expect($savedLayout?->getTabs())->toHaveCount(1)
+        ->and($savedLayout?->getTab('Updated'))->toBeInstanceOf(FieldLayoutTab::class);
 });

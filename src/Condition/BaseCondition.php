@@ -331,6 +331,8 @@ JS, [InputNamespace::namespaceId($this->id)]);
                                 'id' => $labelId,
                             ]).
                             $this->_ruleTypeMenu($selectableRules, $rule, $ruleValue, [
+                                'icon' => 'chevron-down',
+                                'icon-position' => 'suffix',
                                 'aria' => [
                                     'labelledby' => $labelId,
                                 ],
@@ -338,18 +340,19 @@ JS, [InputNamespace::namespaceId($this->id)]);
                             Html::endTag('div').
                             // Rule HTML
                             Html::tag('div', $rule->getHtml(), [
-                                'class' => ['rule-body', 'flex-grow'],
+                                'class' => ['rule-body', 'flex items-center gap-1 flex-grow'],
                             ]).
                             // Remove button
                             Html::beginTag('div', [
                                 'class' => ['rule-actions'],
                             ]).
-                            Html::button('', [
-                                'class' => ['delete', 'icon'],
-                                'title' => t('Remove'),
-                                'aria' => [
-                                    'label' => t('Remove'),
-                                ],
+                            Html::tag('craft-button', '', [
+                                'type' => 'button',
+                                'icon' => 'x',
+                                'aria-label' => t('Remove'),
+                                'appearance' => 'plain',
+                                'variant' => 'danger',
+                                'size' => 'small',
                                 'hx' => [
                                     'vals' => ['uid' => $rule->uid],
                                     'post' => Url::actionUrl('conditions/remove-rule'),
@@ -381,8 +384,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                     'post' => Url::actionUrl('conditions/render'),
                     'trigger' => 'end', // sortable library triggers this event
                 ],
-            ]
-            );
+            ]);
 
             $html .=
                 Html::beginTag('div', [
@@ -390,10 +392,10 @@ JS, [InputNamespace::namespaceId($this->id)]);
                 ]).
                 $this->_ruleTypeMenu($selectableRules, buttonAttributes: [
                     'class' => array_filter([
-                        'add',
-                        'icon',
                         empty($selectableRules) ? 'disabled' : null,
                     ]),
+                    'icon' => 'plus',
+                    'disabled' => empty($selectableRules),
                     'aria' => [
                         'label' => $this->addRuleLabel,
                     ],
@@ -492,7 +494,7 @@ JS,
             }
         }
 
-        // Sort by group label, and then option label
+        // Sort by group label, and then option label within each group
         ksort($groupedRuleTypeOptions);
         if (isset($groupedRuleTypeOptions['__UNGROUPED__']) && count($groupedRuleTypeOptions) > 1) {
             $ungroupedRuleTypeOptions = $groupedRuleTypeOptions;
@@ -500,40 +502,10 @@ JS,
             $groupedRuleTypeOptions = array_merge(['__UNGROUPED__' => $ungroupedRuleTypeOptions], $groupedRuleTypeOptions);
         }
 
-        $optionsHtml = '';
-
         foreach ($groupedRuleTypeOptions as $groupLabel => $groupRuleTypeOptions) {
-            if ($groupLabel !== '__UNGROUPED__') {
-                $optionsHtml .= Html::tag('hr', attributes: ['class' => 'padded']).
-                    Html::tag('h6', Html::encode($groupLabel), ['class' => 'padded']);
-            }
-            $groupRuleTypeOptions = Collection::make($groupRuleTypeOptions)
+            $groupedRuleTypeOptions[$groupLabel] = Collection::make($groupRuleTypeOptions)
                 ->sortBy(['label', 'hint'])
                 ->all();
-            $optionsHtml .=
-                Html::beginTag('ul', ['class' => 'padded']).
-                implode("\n", array_map(function (array $option) use ($ruleValue) {
-                    $html = Html::beginTag('li');
-
-                    $label = Html::encode($option['label']);
-                    if ($option['showHint'] && $option['hint'] !== null) {
-                        $label .= ' '.
-                            Html::tag('span', sprintf('– %s', Html::encode($option['hint'])), [
-                                'class' => 'light',
-                            ]);
-                    }
-
-                    $html .= Html::a($label, options: [
-                        'class' => $option['value'] === $ruleValue ? 'sel' : false,
-                        'data' => [
-                            'value' => $option['value'],
-                        ],
-                    ]);
-
-                    return $html.Html::endTag('li');
-                },
-                    $groupRuleTypeOptions)).
-                Html::endTag('ul');
         }
 
         $buttonId = "$this->id-type-btn";
@@ -541,40 +513,50 @@ JS,
         $inputId = "$this->id-type-input";
 
         HtmlStack::jsWithVars(
-            fn ($buttonId, $inputId) => <<<JS
+            fn ($menuId, $buttonId, $inputId) => <<<JS
 Garnish.requestAnimationFrame(() => {
-  const \$button = $('#' + $buttonId);
-  \$button.menubtn().data('menubtn').on('optionSelect', event => {
-    const \$option = $(event.option);
-    \$button.text(\$option.text()).removeClass('add');
-    // Don't use data('value') here because it could result in an object if data-value is JSON
-    const \$input = $('#' + $inputId).val(\$option.attr('data-value'));
-    htmx.trigger(\$input[0], 'change');
-  });
+  const menu = document.querySelector('#' + $menuId);
+  const input = document.querySelector('#' + $inputId);
+  
+  menu.addEventListener('change', (event) => {
+      const item = event.detail?.item;
+      if (!item) {
+        return;
+      }
+      
+      input.value = item?.getAttribute('data-value');
+      htmx.trigger(input, 'change');
+  })
 });
 JS,
             [
+                InputNamespace::namespaceId($menuId),
                 InputNamespace::namespaceId($buttonId),
                 InputNamespace::namespaceId($inputId),
             ]
         );
 
-        return
-            Html::button(Html::encode($rule?->getLabel() ?? $this->addRuleLabel), Arr::merge([
+        return view('c::condition.rule-type-menu', [
+            'groupedRuleTypeOptions' => $groupedRuleTypeOptions,
+            'ruleValue' => $ruleValue,
+            'buttonId' => $buttonId,
+            'menuId' => $menuId,
+            'inputId' => $inputId,
+            'buttonLabel' => $rule?->getLabel() ?? $this->addRuleLabel,
+            'buttonAttributes' => Arr::merge([
                 'id' => $buttonId,
-                'class' => ['btn', 'menubtn', 'wrap'],
+                'type' => 'button',
+                'appearance' => 'fill',
                 'autofocus' => $rule?->getAutofocus(),
-            ], $buttonAttributes)).
-            Html::tag('div', $optionsHtml, [
-                'id' => $menuId,
-                'class' => 'menu',
-            ]).
-            Html::hiddenInput($rule ? 'type' : 'new-rule-type', $ruleValue, [
+            ], $buttonAttributes),
+            'inputName' => $rule ? 'type' : 'new-rule-type',
+            'inputAttributes' => [
                 'id' => $inputId,
                 'hx' => [
                     'post' => Url::actionUrl('conditions/render'),
                 ],
-            ]);
+            ],
+        ])->render();
     }
 
     #[Override]

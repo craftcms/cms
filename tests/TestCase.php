@@ -18,6 +18,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
@@ -78,6 +79,14 @@ class TestCase extends Orchestra
 
         // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
+
+        // MySQL InnoDB fulltext indexes are not transactional — data inserted
+        // within a transaction is invisible to MATCH...AGAINST queries. Since
+        // RefreshDatabase wraps each test in a transaction, disable fulltext
+        // so searches fall back to LIKE and can see the test's own rows.
+        if (DB::isMysql()) {
+            app(Search::class)->useFullText = false;
+        }
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
@@ -227,7 +236,7 @@ class TestCase extends Orchestra
             $driver = $config->get("database.connections.{$connection}.driver");
 
             $config->set('database.default', $connection);
-            $config->set("database.connections.{$connection}.database", env('DB_DATABASE', ':memory:'));
+            $config->set("database.connections.{$connection}.database", env('DB_DATABASE', database_path('craft_tests.sqlite')));
             $config->set("database.connections.{$connection}.host", env('DB_HOST', '127.0.0.1'));
             $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));
             $config->set("database.connections.{$connection}.password", env('DB_PASSWORD', ''));

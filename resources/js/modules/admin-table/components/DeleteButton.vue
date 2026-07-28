@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {t} from '@craftcms/ui/utilities/translate';
 
   const emit = defineEmits<{
     (e: 'click'): void;

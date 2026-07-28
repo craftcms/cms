@@ -68,7 +68,7 @@
     "tpetry/laravel-query-expressions": "^1.5",
     "twig/twig": "~3.28.0",
     "voku/portable-ascii": "^2.0",
-    "web-auth/webauthn-lib": "~5.2.4",
+    "web-auth/webauthn-lib": "~5.3.5",
     "webonyx/graphql-php": "~15.33.1",
     "yiisoft/arrays": "^3.2",
     "yiisoft/html": "^4.1",
@@ -142,15 +142,16 @@
     ],
     "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
     "prepare": "@php vendor/bin/testbench package:discover --ansi",
-    "build": "@php vendor/bin/testbench workbench:build --ansi",
+    "build": [
+      "@php vendor/bin/testbench package:create-sqlite-db --ansi",
+      "@php vendor/bin/testbench workbench:build --ansi"
+    ],
     "serve": [
       "Composer\\Config::disableProcessTimeout",
-      "@php vendor/bin/testbench package:sync-skeleton --ansi",
-      "@build",
-      "@php vendor/bin/testbench serve --ansi"
+      "@php vendor/bin/testbench workbench:serve --ansi"
     ],
     "ci": [
-      "@php pint",
+      "@php pint --parallel",
       "@rector",
       "@phpstan",
       "@tests",
@@ -216,6 +217,7 @@
         "SiteGroups": "CraftCms\\Cms\\Support\\Facades\\SiteGroups",
         "Sites": "CraftCms\\Cms\\Support\\Facades\\Sites",
         "Structures": "CraftCms\\Cms\\Support\\Facades\\Structures",
+        "Template": "CraftCms\\Cms\\Support\\Facades\\Template",
         "TemplateHooks": "CraftCms\\Cms\\Support\\Facades\\TemplateHooks",
         "Twig": "CraftCms\\Cms\\Support\\Facades\\Twig",
         "Updates": "CraftCms\\Cms\\Support\\Facades\\Updates",

@@ -63,6 +63,7 @@
                 name: 'minRelations',
                 value: field.minRelations,
                 size: 2,
+                maxlength: 2,
                 errors: field.errors.get('minRelations'),
                 data: {'error-key': 'minRelations'},
             }) }}
@@ -76,6 +77,7 @@
                 name: 'maxRelations',
                 value: field.maxRelations,
                 size: 2,
+                maxlength: 2,
                 errors: field.errors.get('maxRelations'),
                 data: {'error-key': 'maxRelations'},
             }) }}
@@ -149,25 +151,23 @@
     {% block advancedSettings %}
         <hr>
 
-        <button type="button" class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</button>
-        <div id="advanced" class="hidden">
+      <craft-disclosure label="{{ "Advanced"|t('app') }}">
+        <div slot="content">
+          {{ forms.lightswitchField({
+            label: 'Allow self relations'|t('app'),
+            instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
+            id: 'allow-self-relations',
+            name: 'allowSelfRelations',
+            on: field.allowSelfRelations,
+          }) }}
 
-            {{ forms.lightswitchField({
-                label: 'Allow self relations'|t('app'),
-                instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
-                id: 'allow-self-relations',
-                name: 'allowSelfRelations',
-                on: field.allowSelfRelations,
-            }) }}
-
-            {% if Sites.isMultiSite() %}
-
-                {% block targetSiteField %}
-                    {{ field.getTargetSiteFieldHtml()|raw }}
-                {% endblock %}
-            {% endif %}
-
+          {% if Sites.isMultiSite() %}
+            {% block targetSiteField %}
+              {{ field.getTargetSiteFieldHtml()|raw }}
+            {% endblock %}
+          {% endif %}
         </div>
+        </craft-disclosure>
     {% endblock %}
 {% endblock %}
 

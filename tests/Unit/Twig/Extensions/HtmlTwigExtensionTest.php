@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Twig\Extensions\HtmlTwigExtension;
 use CraftCms\Cms\Twig\Twig;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -74,7 +74,7 @@ describe('HtmlTwigExtension', function () {
     });
 
     it('sanitizes html with a registered sanitizer name', function () {
-        app(HtmlSanitizers::class)->register('links-only', new HtmlSanitizer((new HtmlSanitizerConfig)
+        HtmlSanitizers::extend('links-only', new HtmlSanitizer((new HtmlSanitizerConfig)
             ->allowElement('a')
             ->allowAttribute('href', ['a'])
         ));

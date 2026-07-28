@@ -32,15 +32,6 @@ body {
     cursor: move !important;
     cursor: grabbing !important;
   }
-
-  :focus {
-    outline-style: solid;
-    outline-color: transparent;
-  }
-
-  :focus-visible {
-    box-shadow: var(--focus-ring);
-  }
 }
 
 .skip-link {
@@ -1574,21 +1565,6 @@ li.breadcrumb-toggle-wrapper {
     position: absolute;
     margin-inline-start: -23px;
     margin-block-start: 1px;
-  }
-}
-
-/* grids */
-.grid {
-  position: relative;
-  min-height: 1px; // Required for Grid.js to run
-
-  &::after {
-    @include mixins.clearafter;
-  }
-
-  & > .item {
-    display: none;
-    box-sizing: border-box;
   }
 }
 

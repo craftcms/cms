@@ -115,6 +115,21 @@ it('cannot move a nested entry', function () {
     expect($this->entries->moveEntryToSection($entry, Sections::getAllSections()->first()));
 });
 
+it('cannot move an entry to a section that does not support its type', function () {
+    $entryType = EntryType::factory()->create();
+    $otherEntryType = EntryType::factory()->create();
+    $sourceSection = Section::factory()->withEntryTypes($entryType)->create();
+    $targetSection = Section::factory()->withEntryTypes($otherEntryType)->create();
+    $entry = Entry::factory()->forSection($sourceSection)->forEntryType($entryType)->create();
+
+    expect(fn () => $this->entries->moveEntryToSection(
+        $this->entries->getEntryById($entry->id),
+        Sections::getSectionById($targetSection->id),
+    ))->toThrow(Exception::class, 'Entry type is not supported by the target section.');
+
+    expect($this->entries->getEntryById($entry->id)->sectionId)->toBe($sourceSection->id);
+});
+
 it('can reassign entries to a new author', function () {
     Event::fake([ElementCachesInvalidated::class]);
 
@@ -143,6 +158,13 @@ it('can reassign entries to a new author', function () {
         ->all())->toBe([$unchangedAuthor->id]);
 
     Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->tags === ['element::'.EntryElement::class]);
+});
+
+it('cannot reassign entries to the same author', function () {
+    $author = User::factory()->create();
+
+    expect(fn () => $this->entries->reassignEntries($author->id, $author->id))
+        ->toThrow(InvalidArgumentException::class, 'The new author must be different from the old author.');
 });
 
 it('does not reassign entries that already have the new author', function () {

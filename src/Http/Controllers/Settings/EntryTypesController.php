@@ -32,6 +32,7 @@ use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -273,7 +274,7 @@ class EntryTypesController
         $entryType->validate(throw: true);
 
         if (! $this->fieldLayout->validate()) {
-            return $this->asModelFailure($entryType, t('Couldn’t save entry type.'), 'entryType');
+            throw ValidationException::withMessages($this->fieldLayout->errors()->getMessages());
         }
 
         if ($saveAsNew) {

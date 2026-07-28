@@ -122,12 +122,37 @@ readonly class ElementRefs
 
         $targetIds = [];
         $resolvedRefs = [];
+        $numericRefs = [];
 
         foreach ($matches as $match) {
+            if (ctype_digit($match['ref'])) {
+                $elementType = $this->elements->getElementTypeByRefHandle($match['elementType']);
+                $siteId = $this->siteIdForReference($match['site'] ?? null, $defaultSiteId);
+
+                if ($elementType !== null && $siteId !== false) {
+                    $numericRefs[$siteId ?? '*'][$elementType][(int) $match['ref']] = true;
+                }
+
+                continue;
+            }
+
             $targetId = $this->targetIdForRefTag($match, $defaultSiteId, $resolvedRefs);
 
             if ($targetId !== null) {
                 $targetIds[$targetId] = true;
+            }
+        }
+
+        foreach ($numericRefs as $siteId => $refsByType) {
+            foreach ($refsByType as $elementType => $refs) {
+                $query = $this->elements->createElementQuery($elementType)
+                    ->siteId($siteId === '*' ? null : $siteId)
+                    ->status(null)
+                    ->id(array_keys($refs));
+
+                foreach ($query->all() as $element) {
+                    $targetIds[$element->id] = true;
+                }
             }
         }
 

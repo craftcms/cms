@@ -7,14 +7,17 @@ use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\AssetIndexData;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Support\Facades\AssetIndexer as AssetIndexerFacade;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     config()->set('filesystems.disks.test-disk', [
@@ -256,6 +259,46 @@ it('returns empty missing entries for finished session with no actual content', 
     expect($missing['files'])->toBeEmpty();
 });
 
+it('finds missing entries with a fixed number of queries', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $rootFolder = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => null,
+        'path' => '',
+    ]);
+    $parentFolder = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $rootFolder->id,
+        'path' => 'images/',
+        'dateCreated' => now()->subMinute(),
+    ]);
+    $childFolder = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $parentFolder->id,
+        'path' => 'images/nested/',
+        'dateCreated' => now()->subMinute(),
+    ]);
+    $asset = Asset::factory()->create([
+        'volumeId' => $volume->id,
+        'folderId' => $childFolder->id,
+        'dateCreated' => now()->subMinute(),
+    ]);
+    $session = $this->indexer->createIndexingSession([$volumeData], listEmptyFolders: true);
+    $session->actionRequired = true;
+    $queryCount = 0;
+
+    DB::listen(function () use (&$queryCount): void {
+        $queryCount++;
+    });
+
+    $missing = $this->indexer->getMissingEntriesForSession($session);
+
+    expect($queryCount)->toBe(2)
+        ->and($missing['folders'])->toHaveKeys([$parentFolder->id, $childFolder->id])
+        ->and($missing['files'])->toHaveKey($asset->id);
+});
+
 it('stores session options correctly', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
@@ -333,6 +376,27 @@ it('sets processIfRootEmpty when volume has no files', function () {
     expect($session->processIfRootEmpty)->toBeTrue();
 });
 
+it('stores scoped disk listings as volume-relative paths', function () {
+    $volume = createIndexerTestVolume(['subpath' => 'assets']);
+    $volumeData = resolveIndexerVolumeData($volume);
+    Storage::disk('test-disk')->deleteDirectory('assets');
+
+    try {
+        $volumeData->sourceDisk()->put('photo.txt', 'content');
+
+        $session = $this->indexer->startIndexingSession(
+            volumes: [$volumeData->id],
+            cacheRemoteImages: false,
+            listEmptyFolders: false,
+        );
+
+        expect(AssetIndexData::where('sessionId', $session->id)->pluck('uri'))
+            ->toContain('photo.txt');
+    } finally {
+        Storage::disk('test-disk')->deleteDirectory('assets');
+    }
+});
+
 it('can get index list on volume', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
@@ -374,9 +438,12 @@ it('skips directories starting with underscore in index list', function () {
 
 // --- Helper functions ---
 
-function createIndexerTestVolume(): Volume
+function createIndexerTestVolume(array $attributes = []): Volume
 {
-    return Volume::factory()->create(['fs' => 'disk:test-disk']);
+    return Volume::factory()->create([
+        'fs' => 'disk:test-disk',
+        ...$attributes,
+    ]);
 }
 
 function resolveIndexerVolumeData(Volume $volume): VolumeData

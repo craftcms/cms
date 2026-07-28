@@ -1,12 +1,15 @@
 <script setup lang="ts">
   import CpLink from '@/common/components/CpLink.vue';
-  import {t} from '@craftcms/cp';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import {t} from '@craftcms/ui';
 
   withDefaults(
     defineProps<{
       items: Array<{
         url?: string | null;
-        label: string;
+        label?: string | null;
+        /** Server-rendered crumb content, e.g. an element chip. */
+        html?: string | null;
       }>;
       separator?: string;
     }>(),
@@ -27,7 +30,10 @@
           'breadcrumb-item--active': idx === items.length - 1,
         }"
       >
-        <template v-if="item.url">
+        <template v-if="item.html">
+          <DynamicHtmlRenderer :html="item.html" />
+        </template>
+        <template v-else-if="item.url">
           <CpLink :href="item.url">{{ item.label }}</CpLink>
         </template>
         <template v-else>
