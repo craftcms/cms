@@ -17,6 +17,11 @@ export default css`
     padding-block: var(--_padding-block);
     border-radius: var(--c-radius-md);
     position: relative;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 100%;
+    line-height: inherit;
   }
   
   craft-badge-indicator {

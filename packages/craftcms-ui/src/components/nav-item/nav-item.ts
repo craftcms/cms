@@ -1,4 +1,5 @@
-import {html, LitElement, nothing} from 'lit';
+import {LitElement, nothing} from 'lit';
+import {literal, html} from 'lit/static-html.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -173,8 +174,9 @@ export default class CraftNavItem extends LitElement {
   }
 
   renderItem(showToggle: boolean, hasPrefix: boolean = false) {
+    const tagName = this.href ? literal`a` : literal`button`;
     return html`
-      <a
+      <${tagName}
         class="${classMap({
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
@@ -190,7 +192,7 @@ export default class CraftNavItem extends LitElement {
           @slotchange="${() => this.requestUpdate()}"
         ></slot>
         ${this.renderSuffix(showToggle)}
-      </a>
+      </${tagName}>
     `;
   }
 
