@@ -30,10 +30,8 @@ use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\Events\PageTemplateRendered;
 use CraftCms\Cms\View\Events\PageTemplateRendering;
-use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
@@ -44,6 +42,7 @@ use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
+use CraftCms\Cms\View\TemplateRoots;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -90,14 +89,14 @@ class View extends \yii\web\View
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\CpTemplateRootsResolving} instead.
+     * @deprecated 6.0.0 use {@see TemplateRoots::register()} instead.
      */
     public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\SiteTemplateRootsResolving} instead.
+     * @deprecated 6.0.0 use {@see TemplateRoots::register()} instead.
      */
     public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
@@ -2224,26 +2223,6 @@ JS;
 
     public static function registerEvents(): void
     {
-        Event::listen(CpTemplateRootsResolving::class, function(CpTemplateRootsResolving $event) {
-            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS)) {
-                return;
-            }
-
-            $yiiEvent = new RegisterTemplateRootsEvent();
-            Craft::$app->getView()->trigger(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
-            $event->roots = array_merge($event->roots, $yiiEvent->roots);
-        });
-
-        Event::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event) {
-            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS)) {
-                return;
-            }
-
-            $yiiEvent = new RegisterTemplateRootsEvent();
-            Craft::$app->getView()->trigger(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
-            $event->roots = array_merge($event->roots, $yiiEvent->roots);
-        });
-
         Event::listen(function(TwigCreated $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
                 return;
@@ -2343,5 +2322,27 @@ JS;
         Event::listen(function(ViewAssetsRendering $event) {
             Craft::$app->getView()->flushPendingAssets();
         });
+    }
+
+    /** @internal */
+    public static function finalizeRegistrationEvents(): void
+    {
+        self::registerTemplateRoots(TemplateMode::Cp, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS);
+        self::registerTemplateRoots(TemplateMode::Site, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS);
+    }
+
+    private static function registerTemplateRoots(TemplateMode $mode, string $legacyEvent): void
+    {
+        if (!Craft::$app->getView()->hasEventHandlers($legacyEvent)) {
+            return;
+        }
+
+        $registry = app(TemplateRoots::class);
+        $yiiEvent = new RegisterTemplateRootsEvent();
+        Craft::$app->getView()->trigger($legacyEvent, $yiiEvent);
+
+        foreach ($yiiEvent->roots as $namespace => $paths) {
+            $registry->register($mode, $namespace, ...(array)$paths);
+        }
     }
 }

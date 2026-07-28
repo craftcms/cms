@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements as ElementsService;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Events\DefineDeletionBlockers;
 use CraftCms\Cms\Element\Events\ElementDeleting;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
@@ -78,6 +79,7 @@ describe('deletionBlockers', function () {
             'hardDelete' => true,
         ])->assertOk()
             ->assertJsonCount(1, 'blockers')
+            ->assertJsonPath('totalElements', 1)
             ->assertJsonPath('blockers.0.summary', 'Active blocker')
             ->assertJsonPath('blockers.0.details', '<p>Details</p>')
             ->assertJsonPath('blockers.0.actions.0.label', 'Resolve')
@@ -139,11 +141,14 @@ describe('destroy', function () {
             ->all();
 
         app()->bind(ElementsService::class, function () use (&$deletedIds) {
-            return new class(app(ElementPlaceholders::class), $deletedIds) extends ElementsService
+            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), $deletedIds) extends ElementsService
             {
-                public function __construct(ElementPlaceholders $placeholders, private array &$deletedIds)
-                {
-                    parent::__construct($placeholders);
+                public function __construct(
+                    ElementPlaceholders $placeholders,
+                    ElementTypes $elementTypes,
+                    private array &$deletedIds,
+                ) {
+                    parent::__construct($placeholders, $elementTypes);
                 }
 
                 public function deleteElement(ElementInterface $element, bool $hard = false): bool

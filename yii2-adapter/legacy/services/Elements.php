@@ -38,6 +38,7 @@ use CraftCms\Cms\Element\ElementActivity as ElementActivityService;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerging;
@@ -65,7 +66,6 @@ use CraftCms\Cms\Element\Events\ElementsPropagated;
 use CraftCms\Cms\Element\Events\ElementsPropagating;
 use CraftCms\Cms\Element\Events\ElementsResaved;
 use CraftCms\Cms\Element\Events\ElementsResaving;
-use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -1408,7 +1408,7 @@ class Elements extends Component
      */
     public function getAllElementTypes(): array
     {
-        return ElementsFacade::getAllElementTypes();
+        return array_map(self::legacyElementType(...), ElementsFacade::getAllElementTypes());
     }
 
     // Element Actions & Exporters
@@ -1738,6 +1738,51 @@ class Elements extends Component
         return $event->authorized;
     }
 
+    /** @internal */
+    public static function finalizeRegistrationEvents(): void
+    {
+        $service = Craft::$app->getElements();
+
+        if (!$service->hasEventHandlers(self::EVENT_REGISTER_ELEMENT_TYPES)) {
+            return;
+        }
+
+        $registry = app(ElementTypes::class);
+        $types = $registry->types();
+        $event = new RegisterComponentTypesEvent([
+            'types' => $types->map(self::legacyElementType(...))->all(),
+        ]);
+        $service->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $event);
+        $transformedTypes = collect($event->types)->map(self::modernElementType(...));
+
+        $registry->remove(...$types->diff($transformedTypes));
+        $registry->register(...$transformedTypes->diff($types));
+    }
+
+    /** @param class-string $type */
+    private static function legacyElementType(string $type): string
+    {
+        return match ($type) {
+            \CraftCms\Cms\Address\Elements\Address::class => \craft\elements\Address::class,
+            \CraftCms\Cms\Asset\Elements\Asset::class => \craft\elements\Asset::class,
+            \CraftCms\Cms\Entry\Elements\Entry::class => \craft\elements\Entry::class,
+            \CraftCms\Cms\User\Elements\User::class => \craft\elements\User::class,
+            default => $type,
+        };
+    }
+
+    /** @param class-string $type */
+    private static function modernElementType(string $type): string
+    {
+        return match ($type) {
+            \craft\elements\Address::class => \CraftCms\Cms\Address\Elements\Address::class,
+            \craft\elements\Asset::class => \CraftCms\Cms\Asset\Elements\Asset::class,
+            \craft\elements\Entry::class => \CraftCms\Cms\Entry\Elements\Entry::class,
+            \craft\elements\User::class => \CraftCms\Cms\User\Elements\User::class,
+            default => $type,
+        };
+    }
+
     public static function registerEvents(): void
     {
         Event::listen(function(BulkOpStarting $event) {
@@ -1956,18 +2001,6 @@ class Elements extends Component
                 'criteria' => $event->query,
                 'message' => $event->message,
             ]));
-        });
-
-        Event::listen(function(ElementTypesResolving $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_REGISTER_ELEMENT_TYPES)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $yiiEvent = new RegisterComponentTypesEvent([
-                'types' => $event->types,
-            ]));
-
-            $event->types = $yiiEvent->types;
         });
 
         Event::listen(function(ElementsEagerLoading $event) {
