@@ -74,7 +74,3 @@ import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/Uploader.js';
 import './js/UserIndex.js';
-
-// Custom elements
-import './js/CraftElementLabel';
-import './js/CraftProxyScrollbar';
