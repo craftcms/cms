@@ -6,6 +6,7 @@ import {
   createInputPassword as uiCreateInputPassword,
   createSlidePicker as uiCreateSlidePicker,
   createTextInput as uiCreateTextInput,
+  createCopyTextPrompt as uiCreateCopyTextPrompt,
 } from '@craftcms/ui/factory';
 
 Craft.ui = {
@@ -220,37 +221,11 @@ Craft.ui = {
     return this.createField(this.createCopyTextInput(config), config);
   },
 
-  createCopyTextPrompt: function (config) {
-    let $container = $('<div/>', {
-      class: 'modal fitted',
-    });
-    let $body = $('<div/>', {
-      class: 'body',
-    }).appendTo($container);
-    this.createCopyTextField(
-      $.extend(
-        {
-          size: Math.max(Math.min(config.value.length, 50), 25),
-        },
-        config
-      )
-    ).appendTo($body);
-
-    const $label = $body.find('label');
-
-    // Provide accessible name for modal dialog
-    if ($label.length > 0 && $label.attr('id')) {
-      $container.attr('aria-labelledby', $label.attr('id'));
-    }
-
-    let modal = new Garnish.Modal($container, {
-      closeOtherModals: false,
-    });
-    $container.on('copy', () => {
-      modal.hide();
-    });
-    return $container;
-  },
+  // The copy prompt is built jQuery-free by @craftcms/ui/factory on
+  // <craft-dialog> + <craft-copy-button> (which owns the clipboard copy and its
+  // own feedback). This shim jQuery-wraps the returned dialog for legacy
+  // callers, who use it fire-and-forget.
+  createCopyTextPrompt: (config) => $(uiCreateCopyTextPrompt(config)),
 
   createTextarea: function (config) {
     var $textarea = $('<textarea/>', {
