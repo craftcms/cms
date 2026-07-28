@@ -57,7 +57,6 @@ import './js/EntryMover.js';
 import './js/VolumeFolderSelectorModal.js';
 import './js/Grid.js';
 import './js/ImageUpload.js';
-import './js/IntervalManager.js';
 import './js/LinkField.js';
 import './js/LinkInput.js';
 import './js/LivePreview.js';
