@@ -69,7 +69,6 @@ use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
-use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
@@ -354,12 +353,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
         Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
-
-        // Filesystems
-        Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::get('fs/edit', [FilesystemsController::class, 'edit']);
-            Route::post('fs/save', [FilesystemsController::class, 'store']);
-        });
 
         // Volumes
         Route::middleware([RequireAdminChanges::class])->group(function () {
