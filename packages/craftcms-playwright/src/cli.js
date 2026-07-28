@@ -29,9 +29,15 @@ const logger = require('./playwright/logger');
     });
 
     pre.on('close', () => {
-      const tests = spawn('npx', ['playwright', 'test'].concat(args), {
-        stdio: 'inherit',
-      });
+      const tests = spawn(
+        'npx',
+        ['playwright', 'test', '--config=playwright.ddev.config.cjs'].concat(
+          args
+        ),
+        {
+          stdio: 'inherit',
+        }
+      );
 
       tests.on('error', (error) => {
         logger.fatal(error);

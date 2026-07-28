@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "check-prettier": "prettier --check ./resources",
+    "test:e2e": "playwright test",
+    "test:e2e:ddev": "craft-playwright test",
     "fix-prettier": "prettier --write ./resources",
     "prepare": "husky",
     "prebuild": "npm run fix-prettier",
