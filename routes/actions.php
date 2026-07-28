@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
 use CraftCms\Cms\Http\Controllers\App\LicensesController;
+use CraftCms\Cms\Http\Controllers\App\PluginsController;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
@@ -62,7 +63,6 @@ use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\NestedElementsController;
-use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
@@ -196,8 +196,8 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
         Route::post('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
         Route::post('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
-        Route::middleware(RequireAdmin::class)->post('app/get-plugin-license-info', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'getLicenseInfo']);
-        Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
+        Route::middleware(RequireAdmin::class)->post('app/get-plugin-license-info', [PluginsController::class, 'getLicenseInfo']);
+        Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [PluginsController::class, 'updateLicense']);
         Route::post('app/render-elements', [RenderController::class, 'elements']);
         Route::post('app/render-components', [RenderController::class, 'components']);
         Route::post('app/render-markdown', [RenderController::class, 'markdown']);
@@ -392,17 +392,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('volumes/save-volume', [VolumesController::class, 'save']);
             Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
-        });
-
-        // Plugins
-        Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('plugins/install-plugin', [PluginsController::class, 'install']);
-            Route::post('plugins/uninstall-plugin', [PluginsController::class, 'uninstall']);
-            Route::post('plugins/switch-edition', [PluginsController::class, 'switchEdition']);
-            Route::post('plugins/disable-plugin', [PluginsController::class, 'disable']);
-            Route::post('plugins/enable-plugin', [PluginsController::class, 'enable']);
-
-            Route::post('plugins/save-plugin-settings', [PluginsController::class, 'saveSettings']);
         });
 
         // Project config utility

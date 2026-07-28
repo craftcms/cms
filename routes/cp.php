@@ -297,8 +297,20 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
 
         // Plugins
-        Route::get('settings/plugins', [PluginsController::class, 'index']);
-        Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
+        Route::prefix('settings/plugins')->group(function () {
+            Route::get('/', [PluginsController::class, 'index']);
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::post('{handle}/install', [PluginsController::class, 'install']);
+                Route::post('{handle}/uninstall', [PluginsController::class, 'uninstall']);
+                Route::post('{handle}/enable', [PluginsController::class, 'enable']);
+                Route::post('{handle}/disable', [PluginsController::class, 'disable']);
+                Route::post('{handle}/switch-edition', [PluginsController::class, 'switchEdition']);
+                Route::post('{handle}', [PluginsController::class, 'saveSettings']);
+            });
+
+            Route::get('{handle}', [PluginsController::class, 'editSettings']);
+        });
         Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
 
         // Rebrand
