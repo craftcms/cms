@@ -1,6 +1,7 @@
 import {Group, GroupedEntryTypeManager} from './grouped-entry-type-manager';
 import CraftEntryTypeManager from '@/modules/grouped-entry-type-manager/grouped-entry-type-manager.ce';
 import {defineElement} from '@/common/web-components';
+import {registerCraftGlobals} from '@/common/craft-global';
 
 // Re-expose the Group sub-class on the constructor, as the legacy bundle did
 // (`Craft.GroupedEntryTypeManager.Group`).
@@ -14,8 +15,7 @@ import {defineElement} from '@/common/web-components';
 // the modern ES class directly. (`Craft.GroupedEntryTypeSelectInput` is gone
 // without replacement: the cross-group select behavior now lives in the
 // manager + `craft-component-select`, not a select subclass.)
-const craft = (window as any).Craft ?? ((window as any).Craft = {});
-craft.GroupedEntryTypeManager = GroupedEntryTypeManager;
+registerCraftGlobals({GroupedEntryTypeManager});
 
 defineElement('craft-entry-type-manager', CraftEntryTypeManager);
 

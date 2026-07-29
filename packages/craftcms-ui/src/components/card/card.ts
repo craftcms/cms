@@ -54,7 +54,8 @@ export default class CraftCard extends LitElement {
   @property({type: Boolean, reflect: true})
   active = false;
 
-  @property({attribute: 'show-thumb'}) showThumb: boolean = true;
+  /** Whether the thumbnail region renders at all, even with slotted content. */
+  @property({attribute: 'show-thumb', type: Boolean}) showThumb: boolean = true;
 
   @property({attribute: 'thumb-alignment'}) thumbAlignment: 'start' | 'end' =
     'start';
@@ -67,24 +68,60 @@ export default class CraftCard extends LitElement {
    */
   @state() private _hasThumbnail = false;
 
+  /**
+   * Whether header/footer content is currently slotted. The header and footer
+   * slots only render when filled, so (unlike the always-rendered thumbnail
+   * slot) their presence can't be tracked via `slotchange` — a light-DOM
+   * observer keeps them fresh when a consumer swaps slotted content.
+   */
+  @state() private _hasSlottedHeader = false;
+
+  @state() private _hasSlottedFooter = false;
+
+  private _lightDomObserver = new MutationObserver(() =>
+    this._syncSlotPresence()
+  );
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this._syncSlotPresence();
+    this._lightDomObserver.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['slot'],
+    });
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this._lightDomObserver.disconnect();
+  }
+
+  private _syncSlotPresence() {
+    this._hasSlottedHeader =
+      !!this.querySelector('[slot="header"]') ||
+      !!this.querySelector('[slot="label"]') ||
+      !!this.querySelector('[slot="actions"]');
+    this._hasSlottedFooter = !!this.querySelector('[slot="footer"]');
+    this._hasThumbnail = !!this.querySelector('[slot="thumbnail"]');
+  }
+
   private _handleThumbnailSlotChange(event: Event) {
     const slot = event.target as HTMLSlotElement;
     this._hasThumbnail = slot.assignedElements({flatten: true}).length > 0;
   }
 
   override render() {
-    const hasSlottedHeader =
-      !!this.label ||
-      !!this.querySelector('[slot="header"]') ||
-      !!this.querySelector('[slot="label"]') ||
-      !!this.querySelector('[slot="actions"]');
-    const hasSlottedFooter = !!this.querySelector('[slot="footer"]');
+    const hasSlottedHeader = !!this.label || this._hasSlottedHeader;
+    const hasSlottedFooter = this._hasSlottedFooter;
+    const showThumbnail = this.showThumb && this._hasThumbnail;
 
     return html`
       <div
         class="${classMap({
           card: true,
-          'card--has-thumbnail': this._hasThumbnail,
+          'card--has-thumbnail': showThumbnail,
         })}"
       >
         ${hasSlottedHeader
@@ -93,7 +130,7 @@ export default class CraftCard extends LitElement {
                 <slot name="label" class="card__label" part="label"
                   >${this.label}</slot
                 >
-                <slot name="actions"></slot>
+                <slot name="actions" class="card__actions"></slot>
               </slot>
             </div>`
           : nothing}
@@ -102,12 +139,12 @@ export default class CraftCard extends LitElement {
           class="${classMap({
             'card-body': true,
             'card-body--thumb-start':
-              this._hasThumbnail && this.thumbAlignment === 'start',
+              showThumbnail && this.thumbAlignment === 'start',
             'card-body--thumb-end':
-              this._hasThumbnail && this.thumbAlignment === 'end',
+              showThumbnail && this.thumbAlignment === 'end',
           })}"
         >
-          <div class="card-body__thumb">
+          <div class="card-body__thumb" ?hidden="${!showThumbnail}">
             <slot
               name="thumbnail"
               @slotchange="${this._handleThumbnailSlotChange}"

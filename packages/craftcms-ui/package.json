@@ -52,6 +52,15 @@
       "development": "./src/utilities/*.ts",
       "default": "./dist/utilities/*.ts.mjs"
     },
+    "./factory": {
+      "development": "./src/factory/index.ts",
+      "types": "./dist/factory/index.ts.d.mts",
+      "import": "./dist/factory/index.ts.mjs"
+    },
+    "./factory/*": {
+      "development": "./src/factory/*.ts",
+      "default": "./dist/factory/*.ts.mjs"
+    },
     "./styles/*": {
       "development": "./src/styles/*",
       "default": "./dist/styles/*"

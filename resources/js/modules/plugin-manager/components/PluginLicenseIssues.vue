@@ -30,8 +30,11 @@
         template="This license is for the {name} edition."
         :params="{name: editionName}"
       />
-      <Form :action="switchEdition()" method="post" v-slot="{processing}">
-        <input type="hidden" name="pluginHandle" :value="plugin.handle" />
+      <Form
+        :action="switchEdition({handle: plugin.handle})"
+        method="post"
+        v-slot="{processing}"
+      >
         <input type="hidden" name="edition" :value="plugin.licensedEdition" />
         <craft-button
           type="submit"

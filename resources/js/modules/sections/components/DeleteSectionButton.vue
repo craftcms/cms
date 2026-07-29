@@ -8,9 +8,7 @@
     section: SectionModel;
   }>();
 
-  const form = useForm({
-    id: props.section.id,
-  });
+  const form = useForm({});
 
   function handleDelete() {
     if (
@@ -23,7 +21,7 @@
       return;
     }
 
-    form.submit(destroy());
+    form.submit(destroy({section: props.section.id}));
   }
 </script>
 

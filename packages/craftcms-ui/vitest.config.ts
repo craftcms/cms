@@ -16,6 +16,9 @@ export default defineConfig({
   test: {
     projects: [
       {
+        resolve: {
+          tsconfigPaths: true,
+        },
         test: {
           name: 'utilities',
           root: './src/utilities',
@@ -39,6 +42,16 @@ export default defineConfig({
         test: {
           name: 'components',
           root: './src/components',
+          environment: 'happy-dom',
+        },
+      },
+      {
+        resolve: {
+          tsconfigPaths: true,
+        },
+        test: {
+          name: 'factory',
+          root: './src/factory',
           environment: 'happy-dom',
         },
       },

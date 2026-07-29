@@ -28,6 +28,7 @@ export {default as CraftCopyAttribute} from './components/copy-attribute/copy-at
 export {default as CraftCopyButton} from './components/copy-button/copy-button.js';
 export {default as CraftDialog} from './components/dialog/dialog.js';
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
+export {default as CraftEmpty} from './components/empty/empty.js';
 export {default as CraftField} from './components/field/field.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export {default as CraftIcon} from './components/icon/icon.js';
@@ -58,6 +59,8 @@ export {default as CraftSelectRich} from './components/select-rich/select-rich.j
 export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';
 export {default as CraftSelect} from './components/select/select.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
+export {default as CraftSlidePicker} from './components/slide-picker/slide-picker.js';
+export {default as CraftSlideRule} from './components/slide-rule/slide-rule.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftStatus} from './components/status/status.js';
 export {default as CraftSwitchButton} from './components/switch-button/switch-button.js';
@@ -82,6 +85,7 @@ export * from './utilities/string.js';
 export * from './utilities/dom.js';
 export * from './utilities/attrs.js';
 export * from './utilities/thumbnail-loader.js';
+export * from './utilities/create.js';
 
 // Services
 export {ConfigService} from './services/Config.js';

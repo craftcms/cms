@@ -1,12 +1,25 @@
 <?php
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Yii2Adapter\Http\ExcludeCsrfValidationForLegacyController;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Yii2Adapter\Http\SavePluginSettingsController;
 use Illuminate\Support\Facades\Route;
 
 $routes = app(CraftRoutes::class);
+
+Route::middleware([
+    'web',
+    'craft',
+    'craft.cp',
+    'auth',
+    'can:accessCp',
+    RequireAdminChanges::class,
+])
+    ->prefix($routes->cpActionTriggerRoutePrefix())
+    ->post('plugins/save-plugin-settings', SavePluginSettingsController::class);
 
 /**
  * Register the remaining legacy CP and action routes after the CMS package's
