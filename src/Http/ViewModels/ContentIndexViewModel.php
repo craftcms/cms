@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
@@ -744,9 +743,7 @@ abstract class ContentIndexViewModel extends ViewModel
             ...$this->extraRowData($element),
             'label' => $element->getUiLabel(),
             'url' => $element->getCpEditUrl(),
-            'thumbHtml' => $element instanceof Thumbable
-                ? $element->getThumbHtml(self::THUMB_SIZE)
-                : null,
+            'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE),
         ], $elements);
     }
 
