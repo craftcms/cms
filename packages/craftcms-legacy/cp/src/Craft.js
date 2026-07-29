@@ -40,8 +40,6 @@ import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';
 import './js/ContentBlockEditor.js';
 import './js/CustomizeSourcesModal.js';
-import './js/DataTableSorter.js';
-import './js/ElementActionTrigger.js';
 import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';

@@ -33,5 +33,7 @@ import './modules/cp-modal';
 import './modules/tabs';
 import './modules/grid';
 import './modules/chart';
+import './modules/data-table-sorter';
+import './modules/element-action-trigger';
 
 window.Cp = Cp as unknown as typeof window.Cp;

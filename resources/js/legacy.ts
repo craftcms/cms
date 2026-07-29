@@ -32,6 +32,8 @@ import './modules/cp-modal/index';
 import './modules/tabs/index';
 import './modules/grid/index';
 import './modules/chart/index';
+import './modules/data-table-sorter/index';
+import './modules/element-action-trigger/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
