@@ -34,6 +34,7 @@ export {default as CraftIcon} from './components/icon/icon.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';
 export {default as CraftInfoIcon} from './components/info-icon/info-icon.js';
 export {default as CraftInputColor} from './components/input-color/input-color.js';
+export {default as CraftInputCopy} from './components/input-copy/input-copy.js';
 export {default as CraftInputFile} from './components/input-file/input-file.js';
 export {default as CraftInputHandle} from './components/input-handle/input-handle.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
