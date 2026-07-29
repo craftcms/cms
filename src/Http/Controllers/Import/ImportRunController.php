@@ -10,9 +10,9 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Support\Facades\Importer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -132,7 +132,7 @@ class ImportRunController
         try {
             $this->importService->dispatchImport($run);
         } catch (Throwable $e) {
-            Log::warning("Import run failed: {$e->getMessage()}");
+            Importer::warning("Import run failed: {$e->getMessage()}");
 
             return $this->asFailure(t('Import could not be started.'));
         }

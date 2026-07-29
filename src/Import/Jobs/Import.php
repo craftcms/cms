@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Import\Jobs;
 
 use CraftCms\Cms\Import\Import as ImportService;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Support\Facades\Importer;
 use Illuminate\Bus\Batchable;
 use Override;
 
@@ -65,7 +66,12 @@ class Import extends Job
             }
 
             // import data
-            $importService->importItem($config, $data[$i]);
+            try {
+                $importService->importItem($config, $data[$i]);
+            } catch (\Exception $e) {
+                // log and proceed further
+                Importer::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['config' => $config, 'data' => $data[$i]]);
+            }
         }
 
         // if there's any data items left - add another job to the batch

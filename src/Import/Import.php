@@ -28,6 +28,7 @@ use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Importer;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
@@ -39,7 +40,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Item;
 use League\Fractal\Serializer\DataArraySerializer;
@@ -574,7 +574,7 @@ class Import
         try {
             $data = $dataTypes[$extension]::format($rawData);
         } catch (Throwable $e) {
-            Log::error($e->getMessage());
+            Importer::error($e->getMessage());
 
             return null;
         }
@@ -595,7 +595,7 @@ class Import
         try {
             $headings = $dataTypes[$extension]::getHeadings($rawData);
         } catch (Throwable $e) {
-            Log::error($e->getMessage());
+            Importer::error($e->getMessage());
 
             return null;
         }
