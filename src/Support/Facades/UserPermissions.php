@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
+ * @method static void registerPermissionGroup(string $handle, \Closure $factory)
+ * @method static void removePermissionGroups(string ...$handles)
  * @method static \Illuminate\Support\Collection getAllPermissions()
  * @method static \Illuminate\Support\Collection getAssignablePermissions(\CraftCms\Cms\User\Elements\User|null $user = null)
  * @method static \Illuminate\Support\Collection getPermissionsByGroupId(int $groupId)

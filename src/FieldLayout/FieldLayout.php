@@ -17,7 +17,6 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
-use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -28,6 +27,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -43,8 +43,10 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
+/** @phpstan-consistent-constructor */
 class FieldLayout extends Component
 {
+    use EvaluatesClosures;
     use LegacyConstants;
 
     public ?int $id = null;
@@ -152,6 +154,86 @@ class FieldLayout extends Component
         if (! isset($this->_cardThumbAlignment)) {
             $this->setCardThumbAlignment();
         }
+    }
+
+    public static function defaultTabName(): string
+    {
+        return t('Content');
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $type
+     */
+    public static function make(string $type): static
+    {
+        return new static(['type' => $type]);
+    }
+
+    /**
+     * Creates or modifies a tab by name.
+     *
+     * Use {@see defaultTabName()} to target the tab created for mandatory fields.
+     *
+     * @param  Closure(FieldLayoutTab): mixed|null  $configure
+     */
+    public function tab(string|Closure $name, ?Closure $configure = null): static
+    {
+        $name = $this->evaluate($name);
+        $tab = array_find($this->getTabs(), fn (FieldLayoutTab $tab) => $tab->name === $name);
+
+        if ($tab === null) {
+            $tab = new FieldLayoutTab([
+                'layout' => $this,
+                'name' => $name,
+                'elements' => [],
+            ]);
+            $this->setTabs([...$this->getTabs(), $tab]);
+        }
+
+        $configure?->__invoke($tab);
+
+        return $this;
+    }
+
+    public function getTab(string $name): FieldLayoutTab
+    {
+        return array_find($this->getTabs(), fn (FieldLayoutTab $tab) => $tab->name === $name)
+            ?? throw new InvalidArgumentException(sprintf('Unknown tab: %s', $name));
+    }
+
+    public function removeField(FieldInterface|string $field): static
+    {
+        if (is_string($field)) {
+            $field = Fields::getFieldByHandle($field)
+                ?? throw new InvalidArgumentException(sprintf('Unknown field handle: %s', $field));
+        }
+
+        foreach ($this->getTabs() as $tab) {
+            $elements = array_filter(
+                $tab->getElements(),
+                fn (FieldLayoutElement $element) => ! $element instanceof CustomField || $element->getFieldUid() !== $field->uid,
+            );
+
+            if (count($elements) !== count($tab->getElements())) {
+                $tab->setElements(array_values($elements));
+            }
+        }
+
+        return $this;
+    }
+
+    public function removeTab(string $name): static
+    {
+        $tabs = array_values(array_filter(
+            $this->getTabs(),
+            fn (FieldLayoutTab $tab) => $tab->name !== $name,
+        ));
+
+        if (count($tabs) !== count($this->getTabs())) {
+            $this->setTabs($tabs);
+        }
+
+        return $this;
     }
 
     /**
@@ -356,6 +438,13 @@ class FieldLayout extends Component
         $this->_generatedFields = array_values($fields);
     }
 
+    public function generatedFields(array|Closure|null $fields): static
+    {
+        $this->setGeneratedFields($this->evaluate($fields));
+
+        return $this;
+    }
+
     public function getCardView(): array
     {
         if (! isset($this->_cardView)) {
@@ -375,6 +464,20 @@ class FieldLayout extends Component
         $this->_cardView = array_values($items ?? []);
 
         $this->reset();
+    }
+
+    public function cardView(array|Closure|null $items): static
+    {
+        $this->setCardView($this->evaluate($items));
+
+        return $this;
+    }
+
+    public function thumbFieldKey(string|Closure|null $key): static
+    {
+        $this->thumbFieldKey = $this->evaluate($key);
+
+        return $this;
     }
 
     /**
@@ -405,6 +508,19 @@ class FieldLayout extends Component
         }
 
         $this->_cardThumbAlignment = $alignment ?? 'end';
+    }
+
+    public function cardThumbAlignment(string|Closure|null $alignment = null): static
+    {
+        $alignment = $this->evaluate($alignment);
+
+        if ($alignment !== null && ! in_array($alignment, ['start', 'end'], true)) {
+            throw new InvalidArgumentException("Invalid card thumbnail alignment: $alignment");
+        }
+
+        $this->setCardThumbAlignment($alignment);
+
+        return $this;
     }
 
     /**
@@ -444,10 +560,8 @@ class FieldLayout extends Component
 
         $this->_availableNativeFields = [];
 
-        event($event = new NativeFieldsResolving($this, $this->_availableNativeFields));
-
         // Instantiate them
-        foreach ($event->fields as $field) {
+        foreach (app(NativeFields::class)->apply($this, $this->_availableNativeFields) as $field) {
             $field = match (true) {
                 is_string($field) => app()->make($field),
                 is_array($field) => app()->make(Arr::pull($field, 'class'), ['config' => $field]),
@@ -484,8 +598,8 @@ class FieldLayout extends Component
         $elements = $event->elements;
 
         // HR and Line Break should always be last
-        $elements[] = new HorizontalRule;
-        $elements[] = new LineBreak;
+        $elements[] = HorizontalRule::make();
+        $elements[] = LineBreak::make();
 
         // Instantiate them
         foreach ($elements as &$element) {
@@ -817,7 +931,7 @@ class FieldLayout extends Component
             $this->_tabs[] = $tab = new FieldLayoutTab([
                 'layout' => $this,
                 'layoutId' => $this->id,
-                'name' => t('Content'),
+                'name' => static::defaultTabName(),
                 'sortOrder' => 1,
                 'elements' => [],
             ]);

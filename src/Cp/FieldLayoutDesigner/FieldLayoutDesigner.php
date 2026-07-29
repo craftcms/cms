@@ -42,7 +42,7 @@ class FieldLayoutDesigner
                 'uid' => Str::uuid()->toString(),
                 'layout' => $fieldLayout,
             ]);
-            $tab->name = $config['pretendTabName'] ?? t('Content');
+            $tab->name = $config['pretendTabName'] ?? FieldLayout::defaultTabName();
 
             // Any extra tabs?
             if (! empty($tabs)) {

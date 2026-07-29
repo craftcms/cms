@@ -3,12 +3,15 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Support\File as Path;
 use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\View;
+use Illuminate\View\View as LaravelView;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-blade-renderer-test-'.uniqid();
@@ -27,6 +30,8 @@ Hello, {{ $name }}!
 BLADE);
 
     File::put($this->tempDir.'/partial.blade.php', 'Named {{ $name }}');
+    File::ensureDirectoryExists($this->tempDir.'/index-view');
+    File::put($this->tempDir.'/index-view/index.blade.php', 'Indexed {{ $name }}');
     File::ensureDirectoryExists($this->tempDir.'/nested');
     File::put($this->tempDir.'/nested/partial.blade.php', 'Nested {{ $name }}');
     File::put($this->tempDir.'/twig-partial.twig', 'Twig {{ name }}');
@@ -68,6 +73,33 @@ it('renders named Laravel views', function () {
     $output = $this->bladeRenderer->renderTemplate('blade-test::partial', ['name' => 'Blade'], TemplateMode::Site);
 
     expect($output)->toBe('Named Blade');
+});
+
+it('preserves logical view names for Craft-resolved Blade templates', function () {
+    $viewName = null;
+    $viewPath = null;
+
+    View::composer('index-view', function (LaravelView $view) use (&$viewName, &$viewPath) {
+        $viewName = $view->name();
+        $viewPath = Path::normalizePath($view->getPath());
+        $view->with('name', 'Composed');
+    });
+
+    $output = $this->manager->renderTemplate('index-view', ['name' => 'Original'], renderer: TemplateEngine::Blade);
+
+    expect($output)->toBe('Indexed Composed')
+        ->and($viewName)->toBe('index-view')
+        ->and($viewPath)->toBe(Path::normalizePath($this->tempDir.'/index-view/index.blade.php'));
+});
+
+it('runs creators for Craft-resolved Blade templates', function () {
+    View::creator('index-view', function (LaravelView $view) {
+        $view->with('name', 'Created');
+    });
+
+    $output = $this->manager->renderTemplate('index-view', ['name' => 'Original'], renderer: TemplateEngine::Blade);
+
+    expect($output)->toBe('Indexed Created');
 });
 
 it('renders slash-style Laravel view names', function () {

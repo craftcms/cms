@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Support\Htmlable;

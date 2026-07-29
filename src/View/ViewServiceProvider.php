@@ -15,6 +15,7 @@ use CraftCms\Cms\Blade\Directives\ResponseDirective;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Foundation\Bootstrap\BootProviders;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -68,7 +69,7 @@ class ViewServiceProvider extends ServiceProvider
 
     private function registerTemplateRoots(): void
     {
-        $this->app->booted(function () {
+        $this->app->afterBootstrapping(BootProviders::class, function () {
             /** @var Factory $factory */
             $factory = $this->app->make(ViewFactory::class);
 

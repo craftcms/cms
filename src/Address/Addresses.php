@@ -232,7 +232,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
         if (! $firstTab) {
             $firstTab = new FieldLayoutTab([
                 'layout' => $fieldLayout,
-                'name' => t('Content'),
+                'name' => FieldLayout::defaultTabName(),
             ]);
             $fieldLayout->setTabs([$firstTab]);
         }
