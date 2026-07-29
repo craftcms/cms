@@ -75,24 +75,20 @@ function resetBackgroundLayerVisibility(): void {
   (legacy ?? resetModalBackgroundLayerVisibility)();
 }
 
-let $sharedLiveRegion: any = null;
-
 /**
  * A single status live region shared by every slideout — it moves (not
  * clones) into whichever container most recently initialized, since screen
  * readers only announce one status region at a time.
  *
- * Built on first use rather than at module scope: `cp.ts` imports this module
- * on every Inertia CP page, including ones that never load the legacy jQuery
- * bundle. Calling `$` while the module evaluates would throw there and abort
- * the whole CP bootstrap — by the time a slideout actually initializes, the
- * legacy stack (which `init` already depends on for `Craft` and `$`) is up.
+ * Built with the DOM API rather than `$('<span …>')` so that merely importing
+ * this module doesn't need jQuery: `cp.ts` pulls it in on every Inertia CP
+ * page, including ones that never load the legacy bundle, and a bare `$` at
+ * module scope would throw there and abort the whole CP bootstrap. Same
+ * construction as the modern Garnish `Modal` port's live region.
  */
-function sharedLiveRegion(): any {
-  return ($sharedLiveRegion ??= $(
-    '<span class="visually-hidden" role="status"></span>'
-  ));
-}
+const sharedLiveRegion = document.createElement('span');
+sharedLiveRegion.className = 'visually-hidden';
+sharedLiveRegion.setAttribute('role', 'status');
 
 /**
  * Settings accepted by {@link Slideout}. Pass a `Partial<SlideoutSettings>` to
@@ -263,7 +259,11 @@ export class Slideout extends Base<SlideoutSettings> {
 
     Craft.trapFocusWithin(this.$container);
 
-    this.$liveRegion = sharedLiveRegion();
+    // Wrapped, not re-created: `CP.js`'s announcer reads this off the instance
+    // (`$modal.find('.slideout').data('slideout').$liveRegion`) and calls
+    // `.empty()`/`.text()` on it, so it has to stay a jQuery collection.
+    // `appendTo` still moves the one shared node between containers.
+    this.$liveRegion = $(sharedLiveRegion);
     this.$liveRegion.appendTo(this.$container);
 
     if (this.settings!.autoOpen) {
