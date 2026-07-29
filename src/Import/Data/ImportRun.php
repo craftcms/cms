@@ -82,14 +82,14 @@ class ImportRun extends Component implements CpEditable, Validatable
                 function ($attribute, $value, Closure $fail, Validator $validator) {
                     $key = preg_match('/\d+/', $attribute, $matches) ? (int) $matches[0] : null;
                     $config = Import::getConfigByHandle($this->steps[$key]['config']) ?? Import::getConfigByUid($this->steps[$key]['config']);
-                    if ($config && ! $config->editable) {
+                    if ($config && ! $config->isEditable()) {
                         // if the config is not editable (file-based),
                         // then the file is required and has to be valid
                         return BaseImporter::validateFile($value, $attribute, $fail, $validator, 'steps');
                     }
 
                     // if config is editable, clear out the file value, just in case
-                    if ($config && $config->editable) {
+                    if ($config && $config->isEditable()) {
                         $this->steps[$key]['file'] = null;
                     }
 

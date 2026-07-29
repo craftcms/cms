@@ -517,7 +517,7 @@ class ImportConfigController
         $config = $this->importService->getConfigByUid($uid);
 
         abort_if(is_null($config), 404, "Invalid import config UID: $uid");
-        abort_if(! $config->editable, 400, "This import config is not editable, so it can’t be deleted via the Control Panel: $uid");
+        abort_if(! $config->isEditable(), 400, "This import config is not editable, so it can’t be deleted via the Control Panel: $uid");
 
         $this->importService->deleteConfig($config);
 
@@ -585,7 +585,7 @@ class ImportConfigController
             );
     }
 
-    // TODO: this might be deleted - currently only used for file-based config, to run it from the configs screen
+    // todo (iwona): this might be deleted - currently only used for file-based config, to run it from the configs screen
     public function run(): Response
     {
         $handle = $this->request->input('handle');

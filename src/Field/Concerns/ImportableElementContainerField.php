@@ -53,7 +53,11 @@ trait ImportableElementContainerField
         return ! empty($prefix) ? $prefix : '';
     }
 
-    // todo: maybe remove me - maybe I'm temporary?
+    /**
+     * By default, let mapping validation pass.
+     *
+     * @see ImportableElementContainerFieldInterface::validateMapping()
+     */
     public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
     {
         return true;

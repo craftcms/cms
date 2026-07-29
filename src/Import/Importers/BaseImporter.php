@@ -51,14 +51,10 @@ abstract class BaseImporter
 
     public ?string $uid = null;
 
-    // todo: this should probably go?
-    public bool $editable = false;
-
     public function __construct(?array $config = null)
     {
         if (! empty($config)) {
             $this->uid = $config['uid'] ?? null;
-            $this->editable = $config['editable'] ?? false;
         }
     }
 

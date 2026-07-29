@@ -118,7 +118,6 @@ class Import
             foreach ($fileConfigs as &$fileConfig) {
                 $fileConfig = $fileConfig();
 
-                // TODO: this might be wrong - think about it;
                 // if there's no transformer set, use the default one
                 if ($fileConfig->transformer === null) {
                     $fileConfig->transformer(null);
@@ -410,7 +409,7 @@ class Import
         $steps = $event->steps;
         $run = $event->run;
 
-        // TODO: think about scheduling batch pruning
+        // todo (iwona): think about scheduling batch pruning
 
         // we need to go through a single job because we want to name our chain
         dispatch(new ImportPipeline($steps, $run));
@@ -437,8 +436,9 @@ class Import
             $data = ImportHelper::remapData($config->map, $data);
         }
 
-        // TODO: if we decide to include the transformer matchCriteria later on (e.g. because we want it to be able to match directly to a value
-        // and not necessarily just the data key), then we might want to do this once per config and not for each root item that is being imported
+        // todo: if we decide to include the transformer matchCriteria later on
+        // (e.g. because we want it to be able to match directly to a value and not necessarily just the data key),
+        // then we might want to do this once per config and not for each root item that is being imported
         $matchCriteria = $this->normalizeMatchCriteria($config);
 
         // this should continue to be executed on per-item basis
@@ -522,7 +522,7 @@ class Import
         }
     }
 
-    // TODO: might be able to delete this; currently only used by ImportConfigController::run()
+    // todo (iwona): might be able to delete this; currently only used by ImportConfigController::run()
     public function import(BaseImporter $config): void
     {
         $filePath = BaseImporter::resolvedFilePath($config->file);
@@ -619,7 +619,7 @@ class Import
 
         $fractalData = $fractalManager->createData($resource);
 
-        // todo: ->toArray() freaks out if the transformer is null; not sure if that's expected or not
+        // note: ->toArray() freaks out if the transformer is null; not sure if that's expected or not
         if ($fractalData->getResource()->getTransformer() === null) {
             return $fractalData->getResource()->getData();
         }

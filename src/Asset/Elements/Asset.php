@@ -3568,7 +3568,7 @@ JS;
                     // log error
                     Log::warning("Couldn't download a file while importing an asset: ".$e->getMessage());
                 }
-                // todo: what about base64 - feed me supports it, but do we want it for the native import?
+                // todo (iwona): what about base64 - feed me supports it, but do we want it for the native import?
             }
         }
 

@@ -1862,7 +1862,7 @@ JS,
         // if we have a predefined sort order and entries were not a list - use that prefefined sortOrder
         if (! empty($value['sortOrder']) && ! $arrayIsList) {
             $normalizedValue['sortOrder'] = $value['sortOrder'];
-            // TODO: this doesn't seem needed;
+            // todo (iwona): this doesn't seem needed;
             // if we were to use it we should also array_intersect($normalizedValue['sortOrder'], $normalizedValue['entries']) or something like that
             // $normalizedValue['entries'] = array_replace(array_flip($normalizedValue['sortOrder']), $value['entries']);
         }
@@ -1933,7 +1933,7 @@ JS,
             return false;
         }
 
-        // TODO: validate that the fields in each provider are allowed
+        // todo (iwona): validate that the fields in each provider are allowed
         foreach ($providers as $provider) {
             $fieldLayout = $provider->getFieldLayout();
             // self::traitValidateMapping($value,  $attribute,  $fail,  $validator, $params);

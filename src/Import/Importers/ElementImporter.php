@@ -348,7 +348,7 @@ class ElementImporter extends BaseImporter
 
         $element->setAttributesForImport($attributes);
 
-        // TODO: make the match criteria work for nested elements too!
+        // todo (iwona): make the match criteria work for nested elements too!
         $fields = $this->normalizeFields($element, $fields);
 
         $element->setFieldValues($fields);

@@ -36,7 +36,7 @@ class Xml implements DataTypeInterface
         }
 
         // iterate through the array and get all unique properties;
-        // TODO: what about nested arrays?
+        // todo (iwona): what about nested arrays?
         return $array
                 |> (fn ($array) => array_map(array_keys(...), $array))
                 |> (fn ($keys) => array_merge(...$keys))

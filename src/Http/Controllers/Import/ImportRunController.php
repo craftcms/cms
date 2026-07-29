@@ -153,8 +153,8 @@ class ImportRunController
                 'configs' => $this->importService->getAllConfigs()
                     ->map(fn ($config) => [
                         'label' => $config->name,
-                        'value' => $config->editable ? $config->uid : $config->handle,
-                        'data' => ['editable' => $config->editable],
+                        'value' => $config->isEditable() ? $config->uid : $config->handle,
+                        'data' => ['editable' => $config->isEditable()],
                     ])
                     ->prepend(['label' => t('Please select'), 'value' => null])
                     ->all(),

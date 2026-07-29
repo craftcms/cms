@@ -43,7 +43,7 @@ class Element extends Command
                 options: collect(Elements::getAllElementTypes())
                     ->all()
             ), 'elementType')
-            // TODO: do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?
+            // todo (iwona): do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?
             ->addIf(! $this->option('file'), fn () => text(
                 label: 'The `@root`-relative path to the file containing the data you want to import',
                 required: true,
@@ -58,7 +58,7 @@ class Element extends Command
                     ->all(),
                 default: Sites::getPrimarySite()->handle,
             ), 'site')
-            // TODO: maybe change this to a select field and show all available transformers? but then we'd still have to allow for custom ones too
+            // todo (iwona): maybe change this to a select field and show all available transformers? but then we'd still have to allow for custom ones too
             ->addIf(! $this->option('transformer'), fn () => text(
                 label: 'The transformer you want to use to manipulate the data on import (fully qualified class name for the transformer)',
                 validate: [
