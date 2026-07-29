@@ -16,6 +16,9 @@ export default defineConfig({
   test: {
     projects: [
       {
+        resolve: {
+          tsconfigPaths: true,
+        },
         test: {
           name: 'utilities',
           root: './src/utilities',
