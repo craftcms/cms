@@ -32,5 +32,6 @@ import './modules/link-field';
 import './modules/cp-modal';
 import './modules/tabs';
 import './modules/grid';
+import './modules/chart';
 
 window.Cp = Cp as unknown as typeof window.Cp;

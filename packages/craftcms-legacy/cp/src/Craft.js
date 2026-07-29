@@ -38,7 +38,6 @@ import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';
-import './js/Chart.js';
 import './js/ContentBlockEditor.js';
 import './js/CustomizeSourcesModal.js';
 import './js/DataTableSorter.js';
