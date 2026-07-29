@@ -10,6 +10,7 @@ import {
   type ElementEditorSlideoutSettings,
 } from './element-editor-slideout';
 import {containerSlideouts} from './support';
+import {registerCraftGlobals} from '@/common/craft-global';
 
 /**
  * No custom element / `.ce.ts` here: slideouts are always constructed
@@ -39,8 +40,7 @@ Object.assign(CompatSlideout, {
   updateStyles: Slideout.updateStyles,
 });
 
-const craft = (window as any).Craft ?? ((window as any).Craft = {});
-craft.Slideout = CompatSlideout;
+registerCraftGlobals({Slideout: CompatSlideout});
 
 // Same reasoning one level down: plugins subclass CP screen slideouts via
 // the legacy `.extend()` API.
@@ -52,7 +52,7 @@ Object.assign(CompatCpScreenSlideout, {
   defaults: CpScreenSlideout.defaults,
 });
 
-craft.CpScreenSlideout = CompatCpScreenSlideout;
+registerCraftGlobals({CpScreenSlideout: CompatCpScreenSlideout});
 
 // And once more for element editors — nothing in core `.extend()`s this
 // anymore, but it stays compatified so plugin subclasses keep working.
@@ -62,7 +62,7 @@ Object.assign(CompatElementEditorSlideout, {
   defaults: ElementEditorSlideout.defaults,
 });
 
-craft.ElementEditorSlideout = CompatElementEditorSlideout;
+registerCraftGlobals({ElementEditorSlideout: CompatElementEditorSlideout});
 
 // `craft:edit-element` — the action-system event carried by element edit
 // buttons (see `ElementHtml::cardEditButtonConfig()`). Opens an element

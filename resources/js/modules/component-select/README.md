@@ -87,16 +87,20 @@ boot-order–sensitive in ways a controller reference can't paper over:
 
 The other ported modules (`GroupedEntryTypeManager`, `SortableCheckboxSelect`)
 assign their class onto `window.Craft.*` so old `new Craft.Whatever(...)`
-call sites keep working. This module doesn't, on purpose: the legacy
-`Craft.ComponentSelectInput` (and its `Craft.EntryTypeSelectInput` subclass)
-still ship in the legacy bundle for Twig surfaces that haven't been migrated to
-`<craft-component-select>` yet, so there's nothing to alias — providing
+call sites keep working. This module doesn't, on purpose: providing
 `window.Craft.ComponentSelect` would just be a second, incompatible
-implementation sitting next to the one legacy code actually calls. Migrated
-surfaces render the element instead of calling `new Craft.ComponentSelectInput(...)`,
-and the element (not this module's `ComponentSelect` controller) is the API
-they're written against. The module's "shim," such as it is, is that
-deliberate absence.
+implementation sitting next to `Craft.ComponentSelectInput`. Migrated surfaces
+render `<craft-component-select>` instead of calling
+`new Craft.ComponentSelectInput(...)`, and the element (not this module's
+`ComponentSelect` controller) is the API they're written against. The module's
+"shim," such as it is, is that deliberate absence.
+
+Core no longer instantiates `Craft.ComponentSelectInput` — every core CP
+surface renders `<craft-component-select>`. The legacy class no longer ships in
+the craftcms-legacy bundle either; it was relocated verbatim to
+`yii2-adapter/legacy/web/assets/cpcompat/component-select-input.js` (a real
+implementation, not a warn stub) purely so the `componentSelect.twig` `jsClass`
+escape hatch keeps booting plugin subclasses. See that file and `CpCompatAsset`.
 
 ## What deliberately stays jQuery / legacy seams
 

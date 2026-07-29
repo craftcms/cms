@@ -1,40 +1,12 @@
 import {Base} from '@craftcms/garnish';
 import {fieldToggleData} from './support';
+import {resolveElement, queryAll, type ElementArg} from '@/common/utils/dom';
+import {jq} from '@/common/utils/jquery';
 
 // jQuery survives ONLY at the legacy `.data('fieldtoggle')`/`.data('selectize')`
 // seam that still-legacy readers (LinkField, craft-switch's guard) depend on —
 // everything else is plain DOM. Mirrors the sortable-checkbox-select precedent.
 // `Garnish` (the `activate` custom event) stays a page global via addListener.
-
-/** The jQuery global, if present (the CP always loads it). */
-function jq(): any {
-  return (window as any).jQuery ?? null;
-}
-
-/** A toggle argument: a selector, an element, or an array-like (incl. jQuery). */
-type ToggleInput = string | Element | ArrayLike<Element> | null | undefined;
-
-function resolveElement(input: ToggleInput): HTMLElement | null {
-  if (input == null) {
-    return null;
-  }
-  if (typeof input === 'string') {
-    return document.querySelector<HTMLElement>(input);
-  }
-  if (input instanceof Element) {
-    return input as HTMLElement;
-  }
-  if (typeof (input as ArrayLike<Element>).length === 'number') {
-    return ((input as ArrayLike<Element>)[0] as HTMLElement) ?? null;
-  }
-  return null;
-}
-
-function queryAll(selector: string | null | undefined): HTMLElement[] {
-  return selector
-    ? Array.from(document.querySelectorAll<HTMLElement>(selector))
-    : [];
-}
 
 const ANIMATION_MS = 200;
 
@@ -57,14 +29,14 @@ export class FieldToggle extends Base {
   #target: HTMLElement[] = [];
   #reverseTarget: HTMLElement[] = [];
 
-  constructor(toggle?: ToggleInput) {
+  constructor(toggle?: ElementArg) {
     super();
     if (new.target === FieldToggle) {
       this.init(toggle);
     }
   }
 
-  init(toggle: ToggleInput): void {
+  init(toggle: ElementArg): void {
     this.toggle = resolveElement(toggle);
     if (!this.toggle) {
       return;

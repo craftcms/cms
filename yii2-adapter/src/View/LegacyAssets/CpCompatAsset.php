@@ -19,6 +19,12 @@ use function CraftCms\Cms\craftAsset;
  * shims live in legacy/web/assets/cpcompat/cp-compat.js (published to
  * public/vendor/craft/adapter/cpcompat). Loaded CP-wide via {@see RegisterLegacyCompatAssets}.
  *
+ * component-select-input.js is a related but distinct case: the real (not
+ * stubbed) legacy `Craft.ComponentSelectInput` implementation, relocated here
+ * so the core bundle can drop it while the `componentSelect.twig` `jsClass`
+ * escape hatch keeps working for plugin subclasses. It defines its class at
+ * top-level eval, so it is registered ahead of cp-compat.js.
+ *
  * @internal
  */
 class CpCompatAsset implements LegacyAssetInterface
@@ -27,6 +33,7 @@ class CpCompatAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
+        $htmlStack->jsFile(craftAsset('adapter/cpcompat/component-select-input.js'));
         $htmlStack->jsFile(craftAsset('adapter/cpcompat/cp-compat.js'));
     }
 }

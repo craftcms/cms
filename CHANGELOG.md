@@ -5,6 +5,7 @@
 - Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements, including dependency-injected closure values.
 - Added support for configuring field layout field instruction positions.
 - Added the `@craftcms/ui/factory` module, a jQuery-free layer of typed element factories that mirror the `src/Cp/Components` PHP builders. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `createTextInput()` and `createCopyTextPrompt()` to the `@craftcms/ui/factory` module. ([#19333](https://github.com/craftcms/cms/pull/19333))
 - Added `turnOn()`, `turnOff()`, and `turnIndeterminate()` methods to the `<craft-switch>` web component. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Fixed a bug where Blade templates rendered through Craft used path-based view names, preventing named Laravel view composers from running. ([#19177](https://github.com/craftcms/cms/issues/19177))
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
@@ -56,6 +57,7 @@
 - Added `CraftCms\Cms\View\TemplateCacheCollectors`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\View\TemplateRoots`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Moved `CraftCms\Cms\Cp\Concerns\EvaluatesClosures` to `CraftCms\Cms\Support\Concerns\EvaluatesClosures`.
+- Moved the `Craft.ComponentSelectInput` control panel JavaScript class out of the core bundle into a `yii2-adapter` compatibility asset, since `<craft-component-select>` is now used everywhere in core; the `componentSelect.twig` `jsClass` escape hatch still works for plugin subclasses. ([#19333](https://github.com/craftcms/cms/pull/19333))
 - Changed `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::label()` to accept an optional label and return the field layout element when one is passed. Overrides must accept the new optional argument.
 - Renamed the protected `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::instructions()`, `tip()`, and `warning()` methods to `instructionsText()`, `tipText()`, and `warningText()`.
 - Removed `CraftCms\Cms\Asset\Events\AssetFileKindsResolving`. `CraftCms\Cms\Asset\AssetFileKinds::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))

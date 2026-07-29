@@ -13,6 +13,8 @@
  * uses. As each one gets its own modern port, its interop type should die.
  */
 
+import {jq as jqGlobal} from '@/common/utils/jquery';
+
 /** The page's jQuery, when the legacy bundle has loaded. */
 type JQueryLike = ((input: unknown) => {
   data(key: string): unknown;
@@ -20,11 +22,8 @@ type JQueryLike = ((input: unknown) => {
 }) & {param(data: Record<string, unknown>): string};
 
 function jq(): JQueryLike | null {
-  return (
-    ((window as unknown as Record<string, unknown>).jQuery as
-      | JQueryLike
-      | undefined) ?? null
-  );
+  // Centralized jQuery seam; narrowed to the members Matrix interop uses.
+  return jqGlobal() as JQueryLike | null;
 }
 
 /**

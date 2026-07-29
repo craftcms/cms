@@ -4,10 +4,109 @@ import {
   createSlidePicker,
   createInputColor,
   createInputPassword,
+  createTextInput,
+  createCopyTextPrompt,
 } from './index.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+describe('createCopyTextPrompt', () => {
+  it('opens a craft-dialog with a readonly input and a copy button', () => {
+    const dialog = createCopyTextPrompt({
+      label: 'Full URL',
+      value: 'https://x',
+    });
+
+    expect(dialog.tagName.toLowerCase()).toBe('craft-dialog');
+    expect(dialog.getAttribute('label')).toBe('Full URL');
+    expect(dialog.hasAttribute('open')).toBe(true);
+    // appended to the document
+    expect(dialog.isConnected).toBe(true);
+
+    const input = dialog.querySelector<HTMLInputElement>(
+      '.copytext input.text'
+    );
+    expect(input?.getAttribute('value')).toBe('https://x');
+    expect(input?.readOnly).toBe(true);
+
+    const copyBtn = dialog.querySelector('craft-copy-button');
+    expect(copyBtn?.getAttribute('value')).toBe('https://x');
+  });
+
+  it('renders a textarea when config.textarea is set', () => {
+    const dialog = createCopyTextPrompt({
+      label: 'composer.json',
+      value: '{"a":1}',
+      textarea: true,
+      class: 'code',
+      rows: 10,
+    });
+
+    const textarea = dialog.querySelector<HTMLTextAreaElement>(
+      '.copytext textarea.text.code'
+    );
+    expect(textarea).not.toBeNull();
+    // happy-dom reflects `rows` as a string; real browsers return a number.
+    expect(Number(textarea?.rows)).toBe(10);
+    expect(textarea?.readOnly).toBe(true);
+    expect(textarea?.value).toBe('{"a":1}');
+  });
+});
+
+describe('createTextInput', () => {
+  it('builds a plain .text input with the mapped attributes', () => {
+    const el = createTextInput({
+      name: 'title',
+      value: 'hi',
+      id: 'foo',
+      maxlength: 10,
+      placeholder: 'Enter…',
+    });
+
+    expect(el.tagName).toBe('INPUT');
+    expect(el.type).toBe('text');
+    expect(el.classList.contains('text')).toBe(true);
+    // no explicit size → fullwidth; placeholder → nicetext marker
+    expect(el.classList.contains('fullwidth')).toBe(true);
+    expect(el.classList.contains('nicetext')).toBe(true);
+    expect(el.name).toBe('title');
+    expect(el.getAttribute('value')).toBe('hi');
+    expect(el.id).toBe('foo');
+    expect(el.getAttribute('maxlength')).toBe('10');
+    // autocomplete defaults off
+    expect(el.getAttribute('autocomplete')).toBe('off');
+  });
+
+  it('drops fullwidth when a size is given and marks password type', () => {
+    const el = createTextInput({type: 'password', size: 20, disabled: true});
+    expect(el.classList.contains('fullwidth')).toBe(false);
+    expect(el.classList.contains('password')).toBe(true);
+    expect(el.classList.contains('disabled')).toBe(true);
+    expect(el.disabled).toBe(true);
+    expect(el.getAttribute('size')).toBe('20');
+  });
+
+  it('applies inputAttributes: booleans, aria/data maps, and class objects', () => {
+    const el = createTextInput({
+      inputAttributes: {
+        required: true,
+        'aria-hidden': false,
+        aria: {label: 'Label', busy: true},
+        data: {foo: 'bar', config: {a: 1}},
+        class: {active: true, off: false},
+      },
+    });
+
+    expect(el.hasAttribute('required')).toBe(true);
+    expect(el.getAttribute('aria-label')).toBe('Label');
+    expect(el.getAttribute('aria-busy')).toBe('');
+    expect(el.getAttribute('data-foo')).toBe('bar');
+    expect(el.getAttribute('data-config')).toBe('{"a":1}');
+    expect(el.classList.contains('active')).toBe(true);
+    expect(el.classList.contains('off')).toBe(false);
+  });
 });
 
 describe('createSwitch', () => {

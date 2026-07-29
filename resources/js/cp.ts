@@ -22,6 +22,13 @@ import './modules/grouped-entry-type-manager';
 import './modules/queue';
 import './modules/slideout';
 import './modules/auth-method-setup';
+import './modules/proxy-scrollbar';
+import './modules/element-label';
+import './modules/form-observer';
+import './modules/interval-manager';
+import './modules/entry-mover';
+import './modules/prompt-handler';
+import './modules/link-field';
 import './modules/nested-element-manager';
 import './modules/ui';
 
