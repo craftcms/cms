@@ -22,8 +22,6 @@ import './js/BaseUploader.js';
 
 // Modals
 
-// Tabs
-import './js/Tabs.js';
 
 // Element thumb loader
 import './js/ElementThumbLoader.js';
