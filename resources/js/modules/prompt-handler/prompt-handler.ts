@@ -21,7 +21,10 @@ interface PromptItem {
 }
 
 type PromptBatchCallback = (returnData: PromptItem[]) => void;
-type PromptSelectionCallback = (choice: string, applyToRemaining: boolean) => void;
+type PromptSelectionCallback = (
+  choice: string,
+  applyToRemaining: boolean
+) => void;
 
 /**
  * PromptHandler — a port of `Craft.PromptHandler` onto `@craftcms/garnish`
@@ -136,7 +139,9 @@ export class PromptHandler extends Base {
       // is per-instance, so wire cancel-on-shade-click once here (paired with
       // hideOnShadeClick:false above).
       if (this.modal.$shade) {
-        this.addListener(this.modal.$shade, 'click', () => this._cancelPrompt());
+        this.addListener(this.modal.$shade, 'click', () =>
+          this._cancelPrompt()
+        );
       }
     }
 
