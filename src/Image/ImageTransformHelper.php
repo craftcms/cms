@@ -24,7 +24,6 @@ use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Imagine\Image\Format;
 use InvalidArgumentException;
 use Symfony\Component\Finder\Finder;
 
@@ -384,12 +383,7 @@ class ImageTransformHelper
         $format = $transform->format ?: self::detectTransformFormat($asset);
         $imagesService = app(Images::class);
 
-        $supported = match ($format) {
-            Format::ID_WEBP => $imagesService->getSupportsWebP(),
-            Format::ID_AVIF => $imagesService->getSupportsAvif(),
-            Format::ID_HEIC => $imagesService->getSupportsHeic(),
-            default => true,
-        };
+        $supported = $format === 'svg' || $imagesService->supportsFormat($format);
 
         if (! $supported) {
             throw new ImageTransformException("The `$format` format is not supported on this server.");
@@ -450,8 +444,7 @@ class ImageTransformHelper
 
         // Save it!
 
-        // It's important that the temp filename has the target file extension, as CraftCms\Cms\Image\Raster::saveAs() uses it
-        // to determine the options that should be passed to Imagine\Image\ManipulatorInterface::save().
+        // Raster::saveAs() uses the target extension to select the encoder.
         $tempFilename = File::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
         $tempPath = Path::temp($tempFilename);
         $image->saveAs($tempPath);
