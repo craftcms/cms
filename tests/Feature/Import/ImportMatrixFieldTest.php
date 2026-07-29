@@ -56,9 +56,9 @@ beforeEach(function () {
         ->withFieldLayout(
             FieldLayout::factory()
                 ->withContentTab([
-                    ['uid' => Str::uuid()->toString(), 'type' => EntryTitleField::class, 'required' => true],
-                    ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $plainTextField->uid, 'required' => false],
-                    ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $nestedMatrixField->uid, 'required' => false],
+                    new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]),
+                    CustomField::make($plainTextField->handle),
+                    CustomField::make($nestedMatrixField->handle),
                 ])
                 ->create()
         )
@@ -80,17 +80,8 @@ beforeEach(function () {
 
     $fieldLayout = FieldLayout::factory()
         ->withContentTab([
-            [
-                'uid' => Str::uuid()->toString(),
-                'type' => EntryTitleField::class,
-                'required' => true,
-            ],
-            [
-                'uid' => Str::uuid()->toString(),
-                'type' => CustomField::class,
-                'fieldUid' => $this->matrixField->uid,
-                'required' => false,
-            ],
+            new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]),
+            CustomField::make($this->matrixField->handle),
         ])
         ->create();
 

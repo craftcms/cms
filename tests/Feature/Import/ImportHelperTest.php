@@ -12,7 +12,6 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\ImportHelper;
-use CraftCms\Cms\Support\Str;
 
 it('returns an empty array when the field layout is null', function () {
     $result = ImportHelper::getDestinationColsForFieldLayout(null);
@@ -30,7 +29,7 @@ it('marks non-container fields as not a container', function () {
 
     $fieldLayoutModel = FieldLayout::factory()
         ->withContentTab([
-            ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $plainTextField->uid, 'required' => false],
+            CustomField::make($plainTextField->handle),
         ])
         ->create();
 
@@ -58,7 +57,7 @@ it('marks ImportableElementContainerFieldInterface fields as containers with a f
 
     $fieldLayoutModel = FieldLayout::factory()
         ->withContentTab([
-            ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $matrixFieldModel->uid, 'required' => false],
+            CustomField::make($matrixFieldModel->handle),
         ])
         ->create();
 
@@ -81,7 +80,7 @@ it('uses map[attr] as the prefixedHandleForMap for top-level fields without an o
 
     $fieldLayoutModel = FieldLayout::factory()
         ->withContentTab([
-            ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $plainTextField->uid, 'required' => false],
+            CustomField::make($plainTextField->handle),
         ])
         ->create();
 

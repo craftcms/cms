@@ -37,9 +37,9 @@ beforeEach(function () {
     $this->relatedUser = User::factory()->createElement();
     $this->relatedAsset = Asset::factory()->createElement();
 
-    $layoutElements = [['uid' => Str::uuid()->toString(), 'type' => EntryTitleField::class, 'required' => true]];
+    $layoutElements[] = new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]);
     foreach ($allFields as $field) {
-        $layoutElements[] = ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $field->uid, 'required' => false];
+        $layoutElements[] = CustomField::make($field->handle);
     }
 
     $fieldLayout = FieldLayout::factory()->withContentTab($layoutElements)->create();

@@ -57,17 +57,8 @@ beforeEach(function () {
 
     $fieldLayout = FieldLayout::factory()
         ->withContentTab([
-            [
-                'uid' => Str::uuid()->toString(),
-                'type' => EntryTitleField::class,
-                'required' => true,
-            ],
-            [
-                'uid' => Str::uuid()->toString(),
-                'type' => CustomField::class,
-                'fieldUid' => $contentBlockField->uid,
-                'required' => false,
-            ],
+            new EntryTitleField(['uid' => Str::uuid()->toString(), 'required' => true]),
+            CustomField::make($contentBlockField->handle),
         ])
         ->create();
 
