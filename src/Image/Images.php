@@ -197,9 +197,9 @@ class Images
                 return $this->encodingSupport[$format->name];
             }
 
-            $this->manager->createImage(1, 1)->encode($format->encoder());
+            $encoded = $this->manager->createImage(1, 1)->encode($format->encoder());
 
-            return $this->encodingSupport[$format->name] = true;
+            return $this->encodingSupport[$format->name] = $encoded->size() > 0;
         } catch (Throwable) {
             return false;
         }
