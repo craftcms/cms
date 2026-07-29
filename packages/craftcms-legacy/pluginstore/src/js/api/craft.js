@@ -115,15 +115,19 @@ export default {
    */
   switchPluginEdition(pluginHandle, edition) {
     return new Promise((resolve, reject) => {
-      const data = 'pluginHandle=' + pluginHandle + '&edition=' + edition;
+      const data = 'edition=' + edition;
 
-      api
-        .sendActionRequest('POST', 'plugins/switch-edition', {
+      axios
+        .post(
+          Craft.getCpUrl(`settings/plugins/${pluginHandle}/switch-edition`),
           data,
-          headers: {
-            'X-CSRF-Token': Craft.csrfTokenValue,
-          },
-        })
+          api.prepareOptions({
+            headers: {
+              'X-CSRF-Token': Craft.csrfTokenValue,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          })
+        )
         .then((response) => {
           Craft.clearCachedApiHeaders();
           resolve(response);

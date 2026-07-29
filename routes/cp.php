@@ -29,6 +29,7 @@ use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
+use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
@@ -52,7 +53,12 @@ use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
+use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
+use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
+use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
+use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
+use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
@@ -67,7 +73,13 @@ use function CraftCms\Cms\cp_url;
 /**
  * Admin requests that do not require a login
  */
-Route::get('install', [InstallController::class, 'index']);
+Route::prefix('install')->group(function () {
+    Route::get('/', [InstallController::class, 'index']);
+    Route::post('/', [InstallController::class, 'install']);
+    Route::post('validate-db', [InstallController::class, 'validateDb']);
+    Route::post('validate-account', [InstallController::class, 'validateAccount']);
+    Route::post('validate-site', [InstallController::class, 'validateSite']);
+});
 
 Route::prefix('updates')->name('updates.')->group(function () {
     Route::post('/', [UpdaterController::class, 'index'])->name('index');
@@ -108,6 +120,26 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('utilities/deprecation-errors/{logId}', [DeprecationErrorsController::class, 'show'])->whereNumber('logId')->name('utilities.deprecation-errors.show');
     Route::delete('utilities/deprecation-errors/{logId}', [DeprecationErrorsController::class, 'destroy']);
     Route::delete('utilities/deprecation-errors', [DeprecationErrorsController::class, 'destroyAll']);
+
+    Route::post('utilities/migrations/apply', MigrationsController::class);
+    Route::post('utilities/clear-caches', [ClearCachesController::class, 'clearCaches']);
+    Route::post('utilities/clear-caches/invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
+    Route::post('utilities/db-backup', DbBackupController::class);
+    Route::post('utilities/find-and-replace', FindAndReplaceController::class);
+
+    Route::prefix('utilities/project-config')->group(function () {
+        Route::get('diff', [ProjectConfigController::class, 'diff']);
+        Route::post('rebuild', [ProjectConfigController::class, 'rebuild']);
+        Route::post('discard', [ProjectConfigController::class, 'discard']);
+        Route::get('download', [ProjectConfigController::class, 'download']);
+    });
+
+    Route::prefix('utilities/queue-manager')->group(function () {
+        Route::post('release-all', [QueueController::class, 'cancelAll']);
+        Route::post('retry-all', [QueueController::class, 'retryAll']);
+        Route::post('{id}/release', [QueueController::class, 'cancel']);
+        Route::post('{id}/retry', [QueueController::class, 'retry']);
+    });
 
     // The rest of the utilities
     Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])
@@ -291,8 +323,20 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
 
         // Plugins
-        Route::get('settings/plugins', [PluginsController::class, 'index']);
-        Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
+        Route::prefix('settings/plugins')->group(function () {
+            Route::get('/', [PluginsController::class, 'index']);
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::post('{handle}/install', [PluginsController::class, 'install']);
+                Route::post('{handle}/uninstall', [PluginsController::class, 'uninstall']);
+                Route::post('{handle}/enable', [PluginsController::class, 'enable']);
+                Route::post('{handle}/disable', [PluginsController::class, 'disable']);
+                Route::post('{handle}/switch-edition', [PluginsController::class, 'switchEdition']);
+                Route::post('{handle}', [PluginsController::class, 'saveSettings']);
+            });
+
+            Route::get('{handle}', [PluginsController::class, 'editSettings']);
+        });
         Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
 
         // Rebrand
@@ -326,6 +370,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->name('settings.sections.index');
         Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/sections/{section}', [SectionsController::class, 'destroy']);
         Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
 
         // Volumes
@@ -410,7 +455,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
-            Route::post('{handle}', [FilesystemsController::class, 'store']);
+            Route::post('/', [FilesystemsController::class, 'store']);
             Route::delete('{handle}', [FilesystemsController::class, 'destroy']);
         });
     });
