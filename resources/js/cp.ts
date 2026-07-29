@@ -37,5 +37,7 @@ import './modules/data-table-sorter';
 import './modules/element-action-trigger';
 import './modules/element-thumb-loader';
 import './modules/element-table-sorter';
+import './modules/asset-mover';
+import './modules/element-deletion-manager';
 
 window.Cp = Cp as unknown as typeof window.Cp;

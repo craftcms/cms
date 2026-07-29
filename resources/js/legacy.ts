@@ -36,6 +36,8 @@ import './modules/data-table-sorter/index';
 import './modules/element-action-trigger/index';
 import './modules/element-thumb-loader/index';
 import './modules/element-table-sorter/index';
+import './modules/asset-mover/index';
+import './modules/element-deletion-manager/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
