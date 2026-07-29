@@ -51,7 +51,7 @@ export default css`
 
   .cp-chip[size='small'],
   .cp-chip--small {
-    /*padding-block: calc(var(--c-spacing-xs) / 2);*/
+    padding-block: calc(var(--c-spacing-xs) / 2);
   }
 
   .cp-chip[size='medium'],

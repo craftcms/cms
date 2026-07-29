@@ -194,7 +194,7 @@
 
 <template>
   <Head :title="pageTitle" />
-  <LiveRegion></LiveRegion>
+  <LiveRegion />
   <div class="cp">
     <header class="cp__header">
       <a
@@ -406,6 +406,7 @@
   }
 
   .cp__header {
+    --c-color-focus-outline: var(--color-blue-300);
     color: var(--color-slate-200);
     background-color: var(--color-slate-950);
   }

@@ -6,10 +6,10 @@ use craft\events\BulkOpEvent;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplayed;
-use CraftCms\Cms\Tests\TestCase as CmsTestCase;
+use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Illuminate\Support\Facades\DB;
 
-uses(CmsTestCase::class);
+uses(DatabaseTestCase::class);
 
 class AdapterDeferredBulkEvent
 {

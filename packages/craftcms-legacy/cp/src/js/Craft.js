@@ -3412,6 +3412,15 @@ Garnish.$doc.ready(function () {
 // `Craft.initUiElements()` pass), so it keeps working for fetched/injected
 // chips too — items with no `activate` listener just get a harmless no-op
 // trigger.
+//
+// When the legacy Garnish bundle is loaded, its `$.event.special.activate`
+// already synthesizes `activate` from clicks on any element with a jQuery
+// `activate` listener (its setup binds per-element click handlers at bind
+// time), so re-triggering here would fire the consumer twice — e.g. one
+// click on a field chip's "Field settings" item opening two slideouts.
+// Only bridge when that special event is absent.
 $(document).on('click', 'craft-action-item[id]', function () {
-  $(this).trigger('activate');
+  if (!$.event.special.activate) {
+    $(this).trigger('activate');
+  }
 });

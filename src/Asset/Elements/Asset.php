@@ -1156,10 +1156,8 @@ class Asset extends Element
     public function setAttributesFromRequest(array $values): void
     {
         // alt='' actually means something, so we should preserve it.
-        $alt = Arr::pull($values, 'alt');
-
-        if ($alt !== null) {
-            $this->alt = $alt;
+        if (Arr::has($values, 'alt')) {
+            $this->alt = Arr::pull($values, 'alt') ?? '';
         }
 
         parent::setAttributesFromRequest($values);

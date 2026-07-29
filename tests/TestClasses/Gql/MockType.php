@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\TestClasses\Gql;
 
+use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\ScalarType;
 
 /**
  * Class MockType
  */
-class MockType extends ScalarType
+class MockType extends ScalarType implements SingularTypeInterface
 {
     #[\Override]
     public string $name = 'mockType';

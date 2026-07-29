@@ -157,6 +157,10 @@ export default class CraftIcon extends LitElement {
           font-size: 0.8em;
         }
 
+        :host([data-color]) {
+          color: var(--c-color-fill-loud);
+        }
+
         svg,
         ::slotted(svg) {
           height: 1em;

@@ -22,40 +22,14 @@ use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Directives\Directive;
-use CraftCms\Cms\Gql\Directives\FormatDateTime;
-use CraftCms\Cms\Gql\Directives\Markdown;
-use CraftCms\Cms\Gql\Directives\Money;
-use CraftCms\Cms\Gql\Directives\ParseRefs;
-use CraftCms\Cms\Gql\Directives\StripTags;
-use CraftCms\Cms\Gql\Directives\Transform;
-use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
-use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
-use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
-use CraftCms\Cms\Gql\Events\GqlTypesResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
-use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
-use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressInterface;
-use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
-use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
-use CraftCms\Cms\Gql\Interfaces\Elements\User as UserInterface;
 use CraftCms\Cms\Gql\Models\GqlSchema as GqlSchemaModel;
 use CraftCms\Cms\Gql\Models\GqlToken as GqlTokenModel;
-use CraftCms\Cms\Gql\Mutations\Asset as AssetMutation;
-use CraftCms\Cms\Gql\Mutations\Entry as EntryMutation;
-use CraftCms\Cms\Gql\Mutations\Ping as PingMutation;
-use CraftCms\Cms\Gql\Queries\Address as AddressQuery;
-use CraftCms\Cms\Gql\Queries\Asset as AssetQuery;
-use CraftCms\Cms\Gql\Queries\Entry as EntryQuery;
-use CraftCms\Cms\Gql\Queries\Ping as PingQuery;
-use CraftCms\Cms\Gql\Queries\User as UserQuery;
-use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Mutation;
-use CraftCms\Cms\Gql\Types\Number;
 use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Gql\Types\Query;
 use CraftCms\Cms\Gql\Types\QueryArgument;
@@ -164,6 +138,10 @@ class Gql
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly ElementCaches $elementCaches,
+        private readonly GqlDirectives $gqlDirectives,
+        private readonly GqlTypes $gqlTypes,
+        private readonly GqlQueries $gqlQueries,
+        private readonly GqlMutations $gqlMutations,
     ) {}
 
     /**
@@ -1018,7 +996,7 @@ class Gql
         }
 
         // Do not cache mutations
-        if (preg_match('/^\s*mutation(?P<operationName>\s+\w+)?\s*(?P<variables>\(.*\))?\s*{/si', $query)) {
+        if (GqlHelper::isMutation($query, $operationName)) {
             return null;
         }
 
@@ -1044,27 +1022,22 @@ class Gql
         return $cacheKey;
     }
 
+    protected function queryDefinitions(): array
+    {
+        return $this->operationDefinitions($this->gqlQueries->types(), 'getQueries');
+    }
+
+    protected function mutationDefinitions(): array
+    {
+        return $this->operationDefinitions($this->gqlMutations->types(), 'getMutations');
+    }
+
     /**
      * @return array the list of registered types.
      */
     private function _registerGqlTypes(): array
     {
-        $types = [
-            // Scalars
-            DateTime::class,
-            Number::class,
-            QueryArgument::class,
-
-            // Interfaces
-            AddressInterface::class,
-            ElementInterface::class,
-            EntryInterface::class,
-            AssetInterface::class,
-            UserInterface::class,
-        ];
-
-        event($event = new GqlTypesResolving(types: $types));
-        $types = $event->types;
+        $types = $this->gqlTypes->types()->all();
 
         foreach ($types as $type) {
             /** @var class-string<SingularTypeInterface> $type */
@@ -1076,40 +1049,28 @@ class Gql
 
     private function _registerGqlQueries(): void
     {
-        $queryList = [
-            // Queries
-            AddressQuery::getQueries(),
-            PingQuery::getQueries(),
-            EntryQuery::getQueries(),
-            AssetQuery::getQueries(),
-            UserQuery::getQueries(),
-        ];
-
-        // Flatten them
-        $queries = array_merge(...$queryList);
-
-        event($event = new GqlQueriesResolving(queries: $queries));
-        $queries = $event->queries;
+        $queries = $this->queryDefinitions();
 
         TypeLoader::registerType('Query', fn () => call_user_func(Query::class.'::getType', $queries));
     }
 
     private function _registerGqlMutations(): void
     {
-        $mutationList = [
-            // Mutations
-            PingMutation::getMutations(),
-            EntryMutation::getMutations(),
-            AssetMutation::getMutations(),
-        ];
-
-        // Flatten them
-        $mutations = array_merge(...$mutationList);
-
-        event($event = new GqlMutationsResolving(mutations: $mutations));
-        $mutations = $event->mutations;
+        $mutations = $this->mutationDefinitions();
 
         TypeLoader::registerType('Mutation', fn () => call_user_func(Mutation::class.'::getType', $mutations));
+    }
+
+    /** @param iterable<class-string> $providers */
+    private function operationDefinitions(iterable $providers, string $method): array
+    {
+        $definitions = [];
+
+        foreach ($providers as $provider) {
+            $definitions = array_merge($definitions, $provider::$method());
+        }
+
+        return $definitions;
     }
 
     /**
@@ -1118,27 +1079,9 @@ class Gql
     private function _loadGqlDirectives(?GqlSchema $schema): array
     {
         /** @var class-string<Directive>[] $directiveClasses */
-        $directiveClasses = [
-            // Directives
-            FormatDateTime::class,
-            Markdown::class,
-            Money::class,
-            StripTags::class,
-            Trim::class,
-        ];
-
-        if ($schema !== null) {
-            if (in_array('directive:parseRefs', $schema->scope)) {
-                $directiveClasses[] = ParseRefs::class;
-            }
-
-            if (in_array('directive:transform', $schema->scope)) {
-                $directiveClasses[] = Transform::class;
-            }
-        }
-
-        event($event = new GqlDirectivesResolving(directives: $directiveClasses));
-        $directiveClasses = $event->directives;
+        $directiveClasses = $this->gqlDirectives
+            ->forSchema($schema)
+            ->all();
 
         $directives = GqlDirective::builtInDirectives();
 

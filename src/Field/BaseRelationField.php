@@ -71,6 +71,8 @@ use function CraftCms\Cms\template;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
+ *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
@@ -943,6 +945,8 @@ JS, [
     ): array {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
+        } elseif ($value instanceof ElementCollection) {
+            $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
         }
@@ -1029,6 +1033,13 @@ JS, [
         return $value->one()?->getThumbHtml($size);
     }
 
+    /**
+     * Relation fields always map to a single element type, so this returns one
+     * set of mappings rather than the list form the interface also allows.
+     *
+     * @param  ElementInterface[]  $sourceElements
+     * @return EagerLoadingMap|null|false
+     */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
         $sourceSiteId = $sourceElements[0]->siteId;
@@ -1090,7 +1101,6 @@ JS, [
             $criteria['orderBy'] = ['structureelements.lft' => SORT_ASC];
         }
 
-        /** @phpstan-ignore-next-line */
         return [
             'elementType' => static::elementType(),
             'map' => $map,

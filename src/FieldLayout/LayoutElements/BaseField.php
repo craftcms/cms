@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
@@ -17,6 +19,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -33,6 +36,11 @@ abstract class BaseField extends FieldLayoutElement
      * @var string|null The field’s instructions
      */
     public ?string $instructions = null;
+
+    /**
+     * @var string Whether the instructions should be displayed before or after the input.
+     */
+    public string $instructionsPosition = 'before';
 
     /**
      * @var string|null The field’s tip text
@@ -184,10 +192,16 @@ abstract class BaseField extends FieldLayoutElement
         $label = $this->selectorLabel();
         $icon = $this->selectorIcon();
 
-        $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('div', Icons::svg($indicator['icon'], altText: $indicator['label']), [
-            'class' => ['cp-icon', 'w-[0.75em]', 'text-fill-normal'],
+        // $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('craft-icon', Icons::svg($indicator['icon'], altText: $indicator['label']), [
+        //     'class' => ['cp-icon', 'w-[0.75em]', 'text-fill-normal'],
+        //     'data-color' => $indicator['iconColor'] ?? null,
+        //     'title' => $indicator['label'],
+        // ]), $this->selectorIndicators()));
+
+        $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('craft-icon', '', [
+            'name' => $indicator['icon'],
+            'label' => $indicator['label'],
             'data-color' => $indicator['iconColor'] ?? null,
-            'title' => $indicator['label'],
         ]), $this->selectorIndicators()));
 
         if ($label !== null) {
@@ -212,7 +226,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($indicatorHtml) {
             $innerHtml .= Html::tag('div', $indicatorHtml, [
-                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-2'],
+                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-1', 'mt-1'],
             ]);
         }
 
@@ -342,9 +356,9 @@ abstract class BaseField extends FieldLayoutElement
         $showStatus = $this->showStatus();
         $statusClass = $showStatus ? $this->statusClass($element, $static) : null;
         $label = $this->showLabel() ? $this->label() : null;
-        $instructions = $this->instructions($element, $static);
-        $tip = $this->tip($element, $static);
-        $warning = $this->warning($element, $static);
+        $instructions = $this->instructionsText($element, $static);
+        $tip = $this->tipText($element, $static);
+        $warning = $this->warningText($element, $static);
         $translatable = $this->translatable($element, $static);
         $actionMenuItems = $this->actionMenuItems($element, $static);
 
@@ -405,6 +419,7 @@ abstract class BaseField extends FieldLayoutElement
             'showAttribute' => $this->showAttribute(),
             'required' => ! $static && $this->required,
             'instructions' => $instructions !== null ? Html::encode($instructions) : null,
+            'instructionsPosition' => $this->instructionsPosition,
             'tip' => $tip !== null ? Html::encode($tip) : null,
             'warning' => $warning !== null ? Html::encode($warning) : null,
             'orientation' => $this->orientation($element, $static),
@@ -530,9 +545,9 @@ abstract class BaseField extends FieldLayoutElement
         $ids = array_filter([
             (! $static && $this->fieldErrors($element)) ? $this->errorsId() : null,
             $this->statusClass($element, $static) ? $this->statusId() : null,
-            $this->instructions($element, $static) ? $this->instructionsId() : null,
-            $this->tip($element, $static) ? $this->tipId() : null,
-            $this->warning($element, $static) ? $this->warningId() : null,
+            $this->instructionsText($element, $static) ? $this->instructionsId() : null,
+            $this->tipText($element, $static) ? $this->tipId() : null,
+            $this->warningText($element, $static) ? $this->warningId() : null,
         ]);
 
         return $ids ? implode(' ', $ids) : null;
@@ -588,15 +603,69 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
-     * Returns the field’s label.
+     * Returns or sets the field’s label.
      */
-    public function label(): ?string
+    public function label(string|Closure|null $label = null): static|string|null
     {
+        if (func_num_args() !== 0) {
+            $this->label = $this->evaluate($label);
+
+            return $this;
+        }
+
         if (isset($this->label) && $this->label !== '' && $this->label !== '__blank__') {
             return t($this->label, category: 'site');
         }
 
         return $this->defaultLabel();
+    }
+
+    public function instructions(string|Closure|null $instructions): static
+    {
+        $this->instructions = $this->evaluate($instructions);
+
+        return $this;
+    }
+
+    public function instructionsPosition(string|Closure $position): static
+    {
+        $position = $this->evaluate($position);
+
+        if (! in_array($position, ['before', 'after'], true)) {
+            throw new InvalidArgumentException("Invalid instructions position: $position");
+        }
+
+        $this->instructionsPosition = $position;
+
+        return $this;
+    }
+
+    public function tip(string|Closure|null $tip): static
+    {
+        $this->tip = $this->evaluate($tip);
+
+        return $this;
+    }
+
+    public function warning(string|Closure|null $warning): static
+    {
+        $this->warning = $this->evaluate($warning);
+
+        return $this;
+    }
+
+    public function required(bool|Closure $required = true): static
+    {
+        $this->required = $this->evaluate($required);
+
+        return $this;
+    }
+
+    public function labelHidden(bool|Closure $labelHidden = true): static
+    {
+        $labelHidden = $this->evaluate($labelHidden);
+
+        return $this->label($labelHidden ? '__blank__' : null);
     }
 
     /**
@@ -662,7 +731,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
-    protected function instructions(?ElementInterface $element = null, bool $static = false): ?string
+    protected function instructionsText(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->instructions ? t($this->instructions, category: 'site') : $this->defaultInstructions($element, $static);
     }
@@ -692,7 +761,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
-    protected function tip(?ElementInterface $element = null, bool $static = false): ?string
+    protected function tipText(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->tip ? t($this->tip, category: 'site') : null;
     }
@@ -703,7 +772,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
-    protected function warning(?ElementInterface $element = null, bool $static = false): ?string
+    protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->warning ? t($this->warning, category: 'site') : null;
     }

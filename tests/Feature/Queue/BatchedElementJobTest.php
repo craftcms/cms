@@ -68,6 +68,40 @@ it('respects criteria when loading elements', function () {
         ->and($job->processedElementIds)->toContain($targetEntry->id);
 });
 
+it('respects offset and limit criteria across batches', function () {
+    $entryIds = Entry::factory()
+        ->count(5)
+        ->create()
+        ->pluck('id')
+        ->sort()
+        ->values()
+        ->all();
+
+    Queue::fake();
+
+    $job = new TestBatchedElementJob(
+        EntryElement::class,
+        [
+            'id' => $entryIds,
+            'offset' => 1,
+            'limit' => 3,
+        ],
+    );
+    $job->batchSize = 2;
+
+    $job->handle();
+
+    expect($job->processedElementIds)->toBe(array_slice($entryIds, 1, 2));
+
+    Queue::assertPushed(TestBatchedElementJob::class, function (TestBatchedElementJob $nextJob) use ($entryIds) {
+        $nextJob->handle();
+
+        expect($nextJob->processedElementIds)->toBe(array_slice($entryIds, 1, 3));
+
+        return true;
+    });
+});
+
 it('spawns next batch for multi-batch element jobs', function () {
     // This test verifies that BatchedElementJob correctly inherits
     // the batch spawning behavior from BatchedJob.

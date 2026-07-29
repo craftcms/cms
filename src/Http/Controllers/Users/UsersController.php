@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\View\View;
@@ -73,6 +74,12 @@ readonly class UsersController
     public function edit(?int $userId = null): Response|CpScreenResponse
     {
         $user = $this->editedUser($userId);
+
+        if ($user->getIsCurrent()) {
+            return $this->asEditUserScreen($user, self::SCREEN_PROFILE)
+                ->redirectUrl('myaccount')
+                ->inertiaPage('users/Profile', new UserProfileViewModel($user));
+        }
 
         /**
          * Let the elements/edit action do most of the work

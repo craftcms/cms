@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Route\Data\Route;
@@ -61,6 +62,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     FieldEditViewModel::class,
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,
+                    UserProfileViewModel::class,
                     UserSettings::class,
                     UserSignInProvidersViewModel::class,
                 ],
