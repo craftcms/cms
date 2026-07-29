@@ -62,7 +62,7 @@
                 import.map) : null %}
 
             {% set nestedFieldValueForMatchCriteria = import.matchCriteria ? col.prefixedHandleAsArray|reduce(
-                (value, part) => value and value is iterable and value[part] is defined ? attribute(value, part) : null,
+                (value, part) => value and value is iterable and value[part] is defined ? attribute(value, part)|boolean : null,
                 import.matchCriteria) : null %}
 
             {% if col.isContainer %}
@@ -93,10 +93,10 @@
                 }) }}
 
                 {% if col.canBeMatchCriteria ?? false %}
-                    {{ forms.checkboxField({
+                    {{ ui('checkbox', {
                         name: col.prefixedHandleForMatchCriteria,
                         label: 'Use this field’s value to match against an existing element.'|t('app'),
-                        checked: nestedFieldValueForMatchCriteria,
+                        checked: nestedFieldValueForMatchCriteria ?? false,
                         value: 1,
                     }) }}
                 {% endif %}

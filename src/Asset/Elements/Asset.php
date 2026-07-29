@@ -300,7 +300,6 @@ class Asset extends Element
     /**
      * @var int|null Volume ID
      */
-    #[Importable('volumeId', 'Volume ID')]
     private ?int $_volumeId = null;
 
     /**
