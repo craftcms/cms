@@ -93,11 +93,11 @@
                 }) }}
 
                 {% if col.canBeMatchCriteria ?? false %}
-                    {{ ui('checkbox', {
-                        name: col.prefixedHandleForMatchCriteria,
-                        label: 'Use this field’s value to match against an existing element.'|t('app'),
-                        checked: nestedFieldValueForMatchCriteria ?? false,
-                        value: 1,
+                    {{ forms.checkboxField({
+                      name: col.prefixedHandleForMatchCriteria,
+                      label: 'Use this field’s value to match against an existing element.'|t('app'),
+                      checked: nestedFieldValueForMatchCriteria ?? false,
+                      value: 1,
                     }) }}
                 {% endif %}
                 {#{{ dump(col) }}#}
