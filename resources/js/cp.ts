@@ -39,6 +39,7 @@ import './modules/element-thumb-loader';
 import './modules/element-table-sorter';
 import './modules/asset-mover';
 import './modules/element-selector-modal';
+import './modules/element-select-input';
 import './modules/element-deletion-manager';
 import './modules/uploader';
 

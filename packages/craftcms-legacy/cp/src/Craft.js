@@ -16,7 +16,6 @@ import './js/Queue.js';
 // Then load all base scripts
 import './js/BaseElementIndex.js';
 import './js/BaseElementIndexView.js';
-import './js/BaseElementSelectInput.js';
 
 // Modals
 
@@ -38,7 +37,6 @@ import './js/CustomizeSourcesModal.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/EntryIndex.js';
-import './js/EntrySelectInput.js';
 import './js/ImageUpload.js';
 import './js/LivePreview.js';
 import './js/NestedElementManager.js';
@@ -48,6 +46,5 @@ import './js/ProgressBar.js';
 import './js/Structure.js';
 import './js/StructureDrag.js';
 import './js/TableElementIndexView.js';
-import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/UserIndex.js';
