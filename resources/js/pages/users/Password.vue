@@ -1,12 +1,12 @@
 <script setup lang="ts">
-  import {onBeforeUnmount, onMounted} from 'vue';
   import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
   import Pane from '@/common/components/Pane.vue';
   import CraftInputPassword from '@craftcms/ui/vue/CraftInputPassword.vue';
-  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import TwoStepVerification from '@/modules/two-step-verification/TwoStepVerification.vue';
+  import type {AuthMethod} from '@/modules/two-step-verification/types';
   import {store} from '@actions/Users/PasswordController';
 
   defineOptions({
@@ -14,7 +14,7 @@
   });
 
   const page = usePage<{
-    authMethods: CraftCms.Cms.View.HtmlFragment | null;
+    authMethods: AuthMethod[];
   }>();
 
   interface PasswordForm {
@@ -38,47 +38,6 @@
   });
 
   useAppLayout({form, onSave: save});
-
-  // The Two-Step Verification listing is server-rendered HTML (shared with the
-  // legacy 2FA screen). Boot the existing `AuthMethodSetup` module on it once
-  // HtmlFragmentRenderer has injected the `#auth-method-setup` markup.
-  let authMethodSetup: {destroy?: () => void} | null = null;
-
-  function waitForElement(selector: string, maxFrames = 180): Promise<boolean> {
-    return new Promise((resolve) => {
-      let frames = 0;
-      const check = () => {
-        if (document.querySelector(selector)) {
-          resolve(true);
-        } else if (++frames > maxFrames) {
-          resolve(false);
-        } else {
-          requestAnimationFrame(check);
-        }
-      };
-      check();
-    });
-  }
-
-  onMounted(async () => {
-    const craft = (window as any).Craft;
-    if (!craft?.AuthMethodSetup) {
-      return;
-    }
-
-    if (await waitForElement('#auth-method-setup')) {
-      authMethodSetup = new craft.AuthMethodSetup();
-      craft.authMethodSetup = authMethodSetup;
-    }
-  });
-
-  onBeforeUnmount(() => {
-    authMethodSetup?.destroy?.();
-    const craft = (window as any).Craft;
-    if (craft && craft.authMethodSetup === authMethodSetup) {
-      craft.authMethodSetup = null;
-    }
-  });
 </script>
 
 <template>
@@ -102,16 +61,18 @@
       <hr />
 
       <section class="grid gap-3">
-        <h2 class="text-base">{{ t('Two-Step Verification') }}</h2>
-        <p>
-          {{
-            t(
-              'Improve your account’s security by adding a second verification step when signing in.'
-            )
-          }}
-        </p>
+        <div>
+          <h2 class="text-base">{{ t('Two-Step Verification') }}</h2>
+          <p>
+            {{
+              t(
+                'Improve your account’s security by adding a second verification step when signing in.'
+              )
+            }}
+          </p>
+        </div>
 
-        <HtmlFragmentRenderer :fragment="page.props.authMethods" />
+        <TwoStepVerification :methods="page.props.authMethods" />
       </section>
     </div>
   </Pane>

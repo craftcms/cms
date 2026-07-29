@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -33,7 +34,7 @@ readonly class PasswordController
     use EditUserTrait;
     use RespondsWithFlash;
 
-    public function index(Request $request): CpScreenResponse
+    public function index(Request $request, AuthMethods $auth): CpScreenResponse
     {
         $currentUser = $request->craftUser();
         if (! $currentUser) {
@@ -43,7 +44,7 @@ readonly class PasswordController
         $user = $currentUser->asElement();
 
         return $this->asEditUserScreen($user, self::SCREEN_PASSWORD)
-            ->inertiaPage('users/Password', new UserPasswordViewModel($user));
+            ->inertiaPage('users/Password', new UserPasswordViewModel($user, $auth));
     }
 
     public function store(Request $request, Elements $elements): Response

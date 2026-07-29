@@ -81,7 +81,7 @@ function resetBackgroundLayerVisibility(): void {
  * readers only announce one status region at a time.
  */
 const $sharedLiveRegion = $(
-  '<span class="visually-hidden" role="status"></span>'
+  '<span class="sr-only" role="status"></span>'
 );
 
 /**
@@ -231,14 +231,14 @@ export class Slideout extends Base<SlideoutSettings> {
     this.setSettings(settings, Slideout.defaults);
 
     this.$outerContainer = $('<div/>', {
-      class: 'slideout-container cp-legacy hidden',
+      class: 'slideout-container hidden',
     });
     this.$container = $(
       `<${this.settings!.containerElement}/>`,
       this.settings!.containerAttributes
     )
       .attr('data-slideout', '')
-      .addClass('slideout cp-legacy')
+      .addClass('slideout')
       .append(contents)
       .data('slideout', this)
       .appendTo(this.$outerContainer);
