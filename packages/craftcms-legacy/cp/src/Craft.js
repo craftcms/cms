@@ -21,7 +21,6 @@ import './js/BaseElementSelectorModal.js';
 import './js/BaseUploader.js';
 
 // Modals
-import './js/CpModal.js';
 
 // Tabs
 import './js/Tabs.js';
