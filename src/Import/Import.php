@@ -488,7 +488,7 @@ class Import
     {
         $levelCriteria = [];
         foreach ($criteria as $key => $value) {
-            if ($value !== null && ! is_array($value) && array_key_exists($key, $data)) {
+            if ($value !== null && ! is_array($value) && isset($data[$key])/* array_key_exists($key, $data) */) {
                 $levelCriteria[$key] = $data[$key];
             }
         }
