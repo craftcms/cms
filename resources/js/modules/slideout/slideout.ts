@@ -13,11 +13,13 @@
  *   `new.target === Slideout` guard below), and `index.ts` assigns the
  *   global as `compatify(Slideout)` so `.extend()`/`this.base()` dispatch
  *   into it.
- * - **The `$`-prefixed members are public API and stay jQuery collections.**
- *   External code reads them directly (`ElementEditor.js`'s
- *   `this.$container.data('slideout')`, `CP.js`'s
- *   `$modal.find('.slideout').data('slideout')`, `CpScreenSlideout`'s
- *   chrome). `declare const $` / `declare const Craft` are page globals.
+ * - **The `$`-prefixed members are public API.** External code reads them
+ *   directly (`ElementEditor.js`'s `this.$container.data('slideout')`,
+ *   `CP.js`'s `$modal.find('.slideout').data('slideout')`,
+ *   `CpScreenSlideout`'s chrome), so the names stay. Most are still jQuery
+ *   collections; {@link Slideout.$liveRegion} is a plain element, matching the
+ *   ported Garnish `Modal` — `Craft.cp.announce()` normalizes either form.
+ *   `declare const $` / `declare const Craft` are page globals.
  */
 
 import {
@@ -208,7 +210,8 @@ export class Slideout extends Base<SlideoutSettings> {
   $outerContainer: any = null;
   $container: any = null;
   $shade: any = null;
-  $liveRegion: any = null;
+  /** Plain element, not a jQuery collection — see the class docblock. */
+  $liveRegion: HTMLElement | null = null;
   $triggerElement: any = null;
   isOpen = false;
   isOpening = false;
@@ -259,12 +262,9 @@ export class Slideout extends Base<SlideoutSettings> {
 
     Craft.trapFocusWithin(this.$container);
 
-    // Wrapped, not re-created: `CP.js`'s announcer reads this off the instance
-    // (`$modal.find('.slideout').data('slideout').$liveRegion`) and calls
-    // `.empty()`/`.text()` on it, so it has to stay a jQuery collection.
-    // `appendTo` still moves the one shared node between containers.
-    this.$liveRegion = $(sharedLiveRegion);
-    this.$liveRegion.appendTo(this.$container);
+    // `appendChild` moves the one shared node, same as `appendTo` did.
+    this.$liveRegion = sharedLiveRegion;
+    this.$container[0].appendChild(this.$liveRegion);
 
     if (this.settings!.autoOpen) {
       this.open();
