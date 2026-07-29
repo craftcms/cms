@@ -44,13 +44,26 @@ export const actionClient = axios.create();
 const csrf = new Csrf();
 
 actionClient.interceptors.request.use(async (config) => {
-  // Resolve the base URL lazily so it reflects the runtime CP trigger. Config
-  // isn't guaranteed to be initialized when this module is first imported.
-  // Use the origin only: the generated action routes already include the CP
-  // trigger + action trigger (e.g. `/admin/actions/fields/render-settings`),
-  // so the base only needs the scheme + host (+ port). `URL.origin` supplies
-  // all three without the `protocol` trailing-colon / port-doubling pitfalls.
-  config.baseURL = new URL(getActionUrl()).origin;
+  // Resolve the base URL lazily so it reflects the runtime CP trigger; the
+  // config isn't guaranteed to be initialized when this module is first
+  // imported. Request URLs come in two shapes, told apart by their leading
+  // character:
+  //
+  // - A route path starting with `/` (e.g. a Wayfinder-generated
+  //   `/admin/actions/fields/render-settings`) already carries the CP/action
+  //   triggers, so it resolves against the origin only. `URL.origin`
+  //   supplies scheme + host (+ port) without the `protocol` trailing-colon
+  //   / port-doubling pitfalls.
+  // - A bare action path (e.g. `users/confirm-password`) resolves against
+  //   the full action base URL (`Url::actionUrl()`), which carries the
+  //   triggers for it.
+  //
+  // Absolute URLs skip `baseURL` entirely, per axios semantics.
+  const actionUrl = getActionUrl();
+  config.baseURL =
+    config.url && !config.url.startsWith('/')
+      ? actionUrl.replace(/\/+$/, '')
+      : new URL(actionUrl).origin;
 
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');

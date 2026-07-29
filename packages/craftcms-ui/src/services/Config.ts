@@ -3,8 +3,12 @@ export class ConfigService {
 
   #config: Map<string, any> = new Map();
 
-  /** Get the singleton instance */
-  static getInstance(initialConfig = {}): ConfigService {
+  /**
+   * Get the singleton instance. Note this never initializes the config —
+   * call {@link initialize} with the CP config payload (the page bootstrap's
+   * job) before using the URL helpers.
+   */
+  static getInstance(): ConfigService {
     if (!ConfigService.#instance) {
       ConfigService.#instance = new ConfigService();
     }
@@ -29,12 +33,29 @@ export class ConfigService {
     return url.toString();
   }
 
+  /**
+   * A config value that must be present, with a diagnosable failure when the
+   * service was never initialized (rather than an opaque `Invalid URL`
+   * TypeError from `new URL(undefined)` downstream).
+   */
+  #require(key: string): string {
+    const value = this.#config.get(key);
+    if (!value) {
+      throw new Error(
+        `ConfigService: "${key}" is not configured. The page bootstrap must ` +
+          'call ConfigService.initialize() with the CP config payload before ' +
+          'URL helpers can be used.'
+      );
+    }
+    return value;
+  }
+
   getCpUrl(path: string) {
-    return this.#buildUrl(this.#config.get('baseCpUrl'), path);
+    return this.#buildUrl(this.#require('baseCpUrl'), path);
   }
 
   getActionUrl(path: string) {
-    return this.#buildUrl(this.#config.get('actionUrl'), path);
+    return this.#buildUrl(this.#require('actionUrl'), path);
   }
 
   all() {

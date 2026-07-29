@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ readonly class WidgetsController
     public function __construct(
         private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
+        private WidgetTypes $widgetTypes,
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -33,7 +35,7 @@ readonly class WidgetsController
         /** @var class-string<WidgetInterface> $type */
         $type = $data['type'];
 
-        if (! in_array($type, $this->dashboard->getAllWidgetTypes()->all())) {
+        if ($this->widgetTypes->types()->doesntContain($type)) {
             throw ValidationException::withMessages([
                 'type' => 'Invalid widget type.',
             ]);

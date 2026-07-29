@@ -49,9 +49,8 @@ describe('renderString', function () {
     it('short-circuits the null-safe operator instead of erroring', function (string $template, array $variables, string $expected) {
         config(['app.debug' => true]);
         app()->forgetScopedInstances();
-        $renderer = app(TwigRenderer::class);
 
-        $result = $renderer->renderString($template, $variables);
+        $result = $this->manager->renderTwigString($template, $variables);
 
         expect($result)->toBe($expected);
     })->with([

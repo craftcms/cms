@@ -25,6 +25,8 @@ export default class CraftCallout extends LitElement {
   /** Icon to display in the callout */
   @property() icon: string | null = null;
 
+  @property({type: Boolean, attribute: 'hide-icon'}) hideIcon: boolean = false;
+
   @property({reflect: true})
   rounded: 'all' | 'start' | 'end' | 'none' = 'all';
 
@@ -47,10 +49,8 @@ export default class CraftCallout extends LitElement {
   }
 
   protected override render(): unknown {
-    const hasIcon = !!this.icon || !!this.querySelector('[slot="icon"]');
-
     return html`
-      ${hasIcon
+      ${!this.hideIcon
         ? html`<slot name="icon" class="callout__icon">
             <craft-icon
               name="${this.getDefaultIcon()}"

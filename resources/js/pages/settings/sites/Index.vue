@@ -12,7 +12,7 @@
   import DeleteSiteButton from '@/modules/sites/components/DeleteSiteButton.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import Badge from '@/common/components/Badge.vue';
-  import InputCombobox from '@/common/form/InputCombobox.vue';
+  import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import Pane from '@/common/components/Pane.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -329,40 +329,17 @@
           </div>
         </craft-input>
       </template>
-      <craft-input
+      <CraftCombobox
         :label="t('Group Name')"
         id="name"
         name="name"
         required
         :help-text="t('What this group will be called in the control panel.')"
-        :has-feedback-for="form.errors?.name ? 'error' : ''"
-      >
-        <InputCombobox
-          :options="nameSuggestions"
-          v-model="form.name"
-          slot="input"
-        />
-        <div slot="after">
-          <craft-callout
-            variant="info"
-            appearance="plain"
-            class="p-0"
-            icon="lightbulb"
-          >
-            {{ t('This can begin with an environment variable.') }}
-            <a
-              href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-              >{{ t('Learn more') }}</a
-            >
-          </craft-callout>
-        </div>
-
-        <div slot="feedback">
-          <ul class="error-list" v-if="form.errors?.name">
-            <li>{{ form.errors.name }}</li>
-          </ul>
-        </div>
-      </craft-input>
+        :options="nameSuggestions"
+        v-model="form.name"
+        :error="form.errors?.name"
+        :callouts="['envVars']"
+      />
     </Deferred>
   </ModalForm>
 </template>

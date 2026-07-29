@@ -20,14 +20,8 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
-use CraftCms\Cms\Field\Events\LinkTypesResolving;
-use CraftCms\Cms\Field\LinkTypes\Asset;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
-use CraftCms\Cms\Field\LinkTypes\Email as EmailType;
-use CraftCms\Cms\Field\LinkTypes\Entry;
-use CraftCms\Cms\Field\LinkTypes\Phone;
-use CraftCms\Cms\Field\LinkTypes\Sms;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
@@ -53,8 +47,6 @@ use function CraftCms\Cms\template;
 class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
-
-    private static array $_types;
 
     #[Override]
     public static function displayName(): string
@@ -98,32 +90,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
      */
     public static function types(): array
     {
-        if (! isset(self::$_types)) {
-            /** @var class-string<BaseLinkType>[] $types */
-            $types = [
-                Asset::class,
-                EmailType::class,
-                Entry::class,
-                Phone::class,
-                Sms::class,
-            ];
-
-            // Fire a registerLinkTypes event
-            event($event = new LinkTypesResolving($types));
-
-            $types = $event->types;
-
-            // URL *has* to be there
-            /** @var class-string<BaseLinkType>[] $types */
-            $types[] = UrlType::class;
-
-            self::$_types = array_combine(
-                array_map(fn (string $type) => $type::id(), $types),
-                $types,
-            );
-        }
-
-        return self::$_types;
+        return app(LinkTypes::class)->typesById()->all();
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
@@ -24,6 +25,25 @@ class Markdown extends BaseUiElement
      * @var bool Whether the content should be displayed in a pane.
      */
     public bool $displayInPane = true;
+
+    public static function make(string|Closure $content): static
+    {
+        return app(static::class)->content($content);
+    }
+
+    public function content(string|Closure $content): static
+    {
+        $this->content = $this->evaluate($content);
+
+        return $this;
+    }
+
+    public function displayInPane(bool|Closure $displayInPane = true): static
+    {
+        $this->displayInPane = $this->evaluate($displayInPane);
+
+        return $this;
+    }
 
     protected function selectorLabel(): string
     {

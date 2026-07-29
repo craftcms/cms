@@ -149,7 +149,8 @@ describe('field helper methods', function () {
         ['lightswitch', 'lightswitchFieldHtml'],
         ['<select', 'selectFieldHtml'],
         ['type="text"', 'textFieldHtml'],
-        ['<div class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', ['unit' => 'Test unit']],
+        ['slot="suffix"', 'textFieldHtml', ['unit' => 'Test unit']],
+        ['>Test unit</div>', 'textFieldHtml', ['unit' => 'Test unit']],
         ['<textarea', 'textareaFieldHtml'],
     ]);
 });

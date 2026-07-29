@@ -20,6 +20,7 @@ const meta = {
     return html`<craft-input
       label="Craft Input"
       help-text="This is some instructions text"
+      placeholder="Placeholder value"
       .maxlength="${maxlength}"
     ></craft-input>`;
   },

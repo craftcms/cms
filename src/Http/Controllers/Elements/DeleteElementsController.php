@@ -77,6 +77,7 @@ readonly class DeleteElementsController
         return new JsonResponse([
             'blockers' => $blockers,
             'elementPreview' => $elementPreview,
+            'totalElements' => $elements->count(),
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ]);

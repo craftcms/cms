@@ -2,6 +2,7 @@
 .env
 .php-cs-fixer.cache
 .phpunit.cache
+.claude/settings.local.json
 Source/.idea/*
 *.log
 *.bak

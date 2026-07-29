@@ -926,7 +926,7 @@ readonly class ElementWrites
         }
 
         if (! $isNewElement) {
-            $elementModel = ElementModel::find($element->id);
+            $elementModel = ElementModel::withTrashed()->find($element->id);
 
             if (! $elementModel) {
                 throw new ElementNotFoundException("No element exists with the ID '$element->id'");

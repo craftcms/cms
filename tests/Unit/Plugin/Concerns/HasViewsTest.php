@@ -3,11 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
-use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Once;
 use Illuminate\View\Factory as ViewFactory;
 
 beforeEach(function () {
@@ -15,9 +12,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    app(Dispatcher::class)->forget(CpTemplateRootsResolving::class);
     app()->forgetInstance(TestPlugin::class);
-    Once::flush();
 });
 
 it('registers the plugin template roots when views or templates exist', function () {
@@ -29,12 +24,11 @@ it('registers the plugin template roots when views or templates exist', function
     $plugin->useBasePath(dirname(__DIR__, 3).'/TestClasses/TestPlugin/src');
     $plugin->bootHasViews();
 
-    $event = new CpTemplateRootsResolving;
-    event($event);
+    $roots = TemplateMode::Cp->templateRoots();
 
-    expect($event->roots)
+    expect($roots)
         ->toHaveKey('test-plugin')
-        ->and($event->roots['test-plugin'])
+        ->and($roots['test-plugin'])
         ->toBe([
             dirname(__DIR__, 3).'/TestClasses/TestPlugin/resources/views',
             dirname(__DIR__, 3).'/TestClasses/TestPlugin/resources/templates',
@@ -53,12 +47,28 @@ it('does not register a template root when no templates directory exists', funct
     $plugin->useBasePath($emptyPluginPath);
     $plugin->bootHasViews();
 
-    $event = new CpTemplateRootsResolving;
-    event($event);
-
-    expect($event->roots)->not->toHaveKey('other-plugin');
+    expect(TemplateMode::Cp->templateRoots())->not->toHaveKey('other-plugin');
 
     File::deleteDirectory(dirname($emptyPluginPath, 2));
+});
+
+it('registers configured site template roots', function () {
+    $plugin = TestPlugin::create([
+        'handle' => 'test-plugin',
+        'name' => 'Test Plugin',
+    ]);
+
+    $plugin->setSiteTemplateRoots([
+        '' => '/global',
+        'test-plugin' => ['/one', '/two'],
+    ]);
+    $plugin->bootHasViews();
+
+    expect(TemplateMode::Site->templateRoots())
+        ->toMatchArray([
+            '' => ['/global'],
+            'test-plugin' => ['/one', '/two'],
+        ]);
 });
 
 it('renders plugin templates with Laravel namespaced view syntax', function () {
@@ -70,7 +80,6 @@ it('renders plugin templates with Laravel namespaced view syntax', function () {
     $plugin->useBasePath(dirname(__DIR__, 3).'/TestClasses/TestPlugin/src');
     $plugin->bootHasViews();
 
-    Once::flush();
     TemplateMode::set(TemplateMode::Cp);
 
     /** @var ViewFactory $viewFactory */

@@ -269,14 +269,14 @@ readonly class SaveUserController
         if (! $success) {
             Log::info('User not saved due to validation error.', [__METHOD__]);
 
-            if ($isPublicRegistration) {
+            if ($isPublicRegistration && $user->errors()->has('newPassword')) {
                 // Move any 'newPassword' errors over to 'password'
                 $user->errors()->merge(['password' => $user->errors()->get('newPassword')]);
                 $user->errors()->forget('newPassword');
             }
 
             // Copy any 'unverifiedEmail' errors to 'email'
-            if (! $user->errors()->has('email')) {
+            if (! $user->errors()->has('email') && $user->errors()->has('unverifiedEmail')) {
                 $user->errors()->merge(['email' => $user->errors()->get('unverifiedEmail')]);
                 $user->errors()->forget('unverifiedEmail');
             }
@@ -364,7 +364,9 @@ readonly class SaveUserController
             'id' => $user->id,
         ]);
 
-        return $this->redirectToPostedUrl($user);
+        return $this->redirectToPostedUrl($user, $request->isCpRequest()
+            ? Url::cpUrl($user->getIsCurrent() ? 'myaccount' : "users/$user->id")
+            : null);
     }
 
     private function processUserPhoto(Request $request, Elements $elements, User $user, ?string $decodedUserPhoto): void

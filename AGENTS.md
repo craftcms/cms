@@ -15,10 +15,11 @@ This is a large codebase with some large files. Search narrowly before reading f
 ### PHP
 
 ```bash
-composer tests                # Run all Pest tests
+composer tests                # Run main tests only (tests/)
 composer tests-adapter        # Run yii2-adapter tests only
-./vendor/bin/pest path/to/TestFile.php          # Run a single test file
-./vendor/bin/pest --filter "test description"   # Run tests matching a name
+./vendor/bin/pest tests/path/to/TestFile.php     # Run a main test file
+composer tests-adapter -- yii2-adapter/tests-laravel/path/to/TestFile.php
+composer tests-adapter -- --filter "test description"
 composer fix-cs               # Run Rector + Pint + ECS (auto-fixes code style)
 composer phpstan              # Run PHPStan static analysis (level 5)
 composer ci                   # Full CI pipeline: pint, rector, phpstan, tests, tests-adapter
@@ -44,6 +45,7 @@ npm run test:ui       # Vitest tests for the @craftcms/ui package
 
 ## Testing
 
+- Main and adapter tests are separate Pest suites. Never mix `tests/...` and `yii2-adapter/tests-laravel/...` in one Pest invocation. Run adapter tests through `composer tests-adapter`; passing the adapter PHPUnit configuration alone is insufficient because Pest also needs the adapter test directory to load `yii2-adapter/tests-laravel/Pest.php`.
 - Pest tests using `tests/TestCase.php` or `yii2-adapter/tests-laravel/TestCase.php` share a database lock. If another process has the lock, the next process will wait and print `Another Pest process is already using the shared test database. Waiting for the lock...`.
 - `tests/Unit/` tests using `UnitTestCase` do not take that lock and can still run concurrently.
 - When writing tests, prefer real code paths, or use Laravel facades to set up service mocks.
@@ -93,6 +95,29 @@ partially migrated; full migration means converting the inner form to a Vue comp
 **Custom elements** (anything with a hyphen in the tag name) are treated as native web components by the Vue compiler —
 they pass through to the browser without Vue trying to resolve them as Vue components.
 
+### PHP UI Components
+
+Server-rendered CP UI is moving onto the `@craftcms/ui` web components via PHP component classes in
+`src/Cp/Components/`:
+
+- Each component (e.g. `Button`, `Checkbox`, `Lightswitch`, `Field`) extends `ViewComponent` and renders its custom
+  element tag (`<craft-button>`, `<craft-field>`, …) with typed fluent setters, named-slot handling, and lazily
+  evaluated Closure values (DI-resolved, Filament-style). Build instances with `Component::make()->…`;
+  `configure(array)` maps config-array keys (kebab/snake camelized) onto the setters.
+- `ComponentRegistry` (`#[Singleton]`, plugin-extensible) maps template-facing names to component classes and backs
+  the `ui()` PHP helper and the `ui` Twig function.
+- `CraftCms\Cms\Cp\FormFields` is the legacy shim layer. Its `*FromConfig()` methods translate the legacy Twig
+  config-array surface (the old `_includes/forms/*` option names) onto a component's fluent API, preserving legacy
+  semantics; keys the components no longer support get `Deprecator` warnings via `deprecateConfig()`. The
+  `*FieldHtml()` methods wrap an input in the `Field` component via `fieldHtml()`.
+- Migrated `resources/templates/_includes/forms/*.twig` templates are one-line delegates to the Twig `Cp` variable
+  (`craft.cp.button(_context)` → `FormFields::buttonFromConfig()`); inputs not yet ported still render their Twig
+  template via `FormFields::renderTemplate()`.
+
+When porting a form input to this pattern: add the component class to `src/Cp/Components/` (and register it), add a
+`FormFields::*FromConfig()` mapping that keeps the legacy config keys working, and reduce the Twig template to a
+delegate — don't drop legacy config support without a deprecation.
+
 When porting behavior out of the legacy jQuery bundle (`packages/craftcms-legacy/cp/src/js/*.js`) into modern TypeScript, follow the shared module pattern documented in `resources/js/modules/README.md` — a logic class (`<name>.ts` on `@craftcms/garnish` `Base`), a `ControllerElement` custom element (`<name>.ce.ts`), an instance-registry `support.ts` WeakMap, and an `index.ts` shim that registers the element and assigns the legacy `window.Craft.*` global. Note the source-vs-`dist` gotcha in that README: after editing `packages/craftcms-garnish/src` (or `@craftcms/cp`), rebuild the package's `dist` or `npm run typecheck` won't see the change.
 
 ## Adapter Work
@@ -106,3 +131,12 @@ When porting behavior out of the legacy jQuery bundle (`packages/craftcms-legacy
 - `declare(strict_types=1)` is required in PHP files.
 - Classes are non-final by default; use `readonly` when it fits.
 - You do not need to manually remove unused imports; Pint will fix them.
+
+## Pull Requests
+
+When creating a pull request, follow these steps:
+
+- Verify first that `composer ci` passes locally
+- Prefix the PR title with the origin branch, for example [6.x] or [5.x], omit if the origin branch does not look like a version.
+- Use a single `### Description` header with a to-the-point description of the PR and a `### Related issues` header only if there are any related issues being fixed or referenced. No other headers or content necessary. You must not add "Validated with.." statements
+- If related issues you find are Linear issues and you are on a branch referencing a Linear issue (xxx-1234-slug), there is no need to add that issue identifier to the related issues. Find the GitHub related issue instead and reference that.

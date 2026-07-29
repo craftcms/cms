@@ -12,7 +12,6 @@ use craft\events\DefineEditUserScreensEvent;
 use craft\events\FindLoginUserEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
-use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
@@ -134,8 +133,6 @@ class UsersController extends Controller
      */
     public function actionSetup2fa(): Response
     {
-        $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
-
         $this->response->setNoCacheHeaders();
         return $this->rendertemplate('_special/setup-2fa', templateMode: TemplateMode::Cp->value);
     }

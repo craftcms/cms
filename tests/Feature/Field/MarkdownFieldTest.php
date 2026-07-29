@@ -14,8 +14,8 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Markdown\Flavors\GfmFlavor;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Volumes;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\View\TemplateManager;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\NameNode;
@@ -294,7 +294,7 @@ it('can show editor stats', function () {
 });
 
 it('sanitizes rendered html with the configured html sanitizer', function () {
-    app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
+    HtmlSanitizers::extend('paragraphs-only', new HtmlSanitizer(
         (new HtmlSanitizerConfig)->allowElement('p')
     ));
 
@@ -306,15 +306,14 @@ it('sanitizes rendered html with the configured html sanitizer', function () {
     ]);
 
     $value = $field->normalizeValueFromRequest('<p onclick="bad()">Hi</p><h1>Heading</h1>', null);
-    $previewHtml = $field->getPreviewHtml($value, new Entry);
-    $inputHtml = $field->getInputHtml('**bold**', null);
+    $preview = new Crawler($field->getPreviewHtml($value, new Entry));
+    $input = new Crawler($field->getInputHtml('**bold**', null));
 
-    expect($field->validate())->toBeTrue()
-        ->and($value->getRaw())->toBe('<p onclick="bad()">Hi</p><h1>Heading</h1>')
-        ->and($value->getHtml())->toBe("<p>Hi</p>\n")
-        ->and($previewHtml)->toBe("<div class=\"markdown-field-preview\"><p>Hi</p>\n</div>")
-        ->and($inputHtml)->toContain('sanitize-html')
-        ->and($inputHtml)->toContain('html-sanitizer="paragraphs-only"');
+    expect($value->getHtml())->toBe("<p>Hi</p>\n")
+        ->and($preview->filter('.markdown-field-preview > p')->text())->toBe('Hi')
+        ->and($preview->filter('[onclick], h1')->count())->toBe(0)
+        ->and($input->filter('craft-markdown-field[sanitize-html]')->count())->toBe(1)
+        ->and($input->filter('craft-markdown-field')->attr('html-sanitizer'))->toBe('paragraphs-only');
 });
 
 it('preserves raw markdown syntax when html sanitization is enabled', function () {
@@ -360,7 +359,7 @@ it('can disable rendered html sanitization', function () {
 });
 
 it('validates and renders html sanitizer settings', function () {
-    app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
+    HtmlSanitizers::extend('paragraphs-only', new HtmlSanitizer(
         (new HtmlSanitizerConfig)->allowElement('p')
     ));
 
@@ -380,11 +379,11 @@ it('validates and renders html sanitizer settings', function () {
         'sanitizeHtml' => false,
         'htmlSanitizer' => 'missing',
     ]);
+    $settings = new Crawler($field->getSettingsHtml());
 
     expect($field->validate())->toBeTrue()
-        ->and($field->getSettingsHtml())->toContain('name="sanitizeHtml"')
-        ->and($field->getSettingsHtml())->toContain('name="htmlSanitizer"')
-        ->and($field->getSettingsHtml())->toContain('value="paragraphs-only" selected')
+        ->and($settings->filter('input[name="sanitizeHtml"]')->count())->toBe(1)
+        ->and($settings->filter('select[name="htmlSanitizer"] option[selected]')->attr('value'))->toBe('paragraphs-only')
         ->and($invalidField->validate())->toBeFalse()
         ->and($invalidField->errors()->has('htmlSanitizer'))->toBeTrue()
         ->and($disabledField->validate())->toBeTrue();

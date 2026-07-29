@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field\Data;
 
 use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
 use Illuminate\Contracts\Support\Htmlable;
@@ -64,7 +64,7 @@ readonly class MarkdownData implements Htmlable, SafeHtml, Serializable
             return $html;
         }
 
-        return app(HtmlSanitizers::class)->sanitize($html, $this->htmlSanitizer);
+        return HtmlSanitizers::sanitize($html, $this->htmlSanitizer);
     }
 
     #[AllowedInSandbox]
