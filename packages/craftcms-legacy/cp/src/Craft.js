@@ -18,7 +18,6 @@ import './js/BaseElementIndex.js';
 import './js/BaseElementIndexView.js';
 import './js/BaseElementSelectInput.js';
 import './js/BaseElementSelectorModal.js';
-import './js/BaseUploader.js';
 
 // Modals
 
@@ -54,5 +53,4 @@ import './js/StructureDrag.js';
 import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
-import './js/Uploader.js';
 import './js/UserIndex.js';

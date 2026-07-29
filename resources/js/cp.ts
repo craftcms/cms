@@ -39,5 +39,6 @@ import './modules/element-thumb-loader';
 import './modules/element-table-sorter';
 import './modules/asset-mover';
 import './modules/element-deletion-manager';
+import './modules/uploader';
 
 window.Cp = Cp as unknown as typeof window.Cp;

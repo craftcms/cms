@@ -90,7 +90,9 @@ export class AssetMover extends Base {
     if (allowUndo) {
       $undoBtn?.on('activate', async () => {
         // ask to confirm if they want to undo
-        if (confirm(Craft.t('app', 'Are you sure you want to undo the move?'))) {
+        if (
+          confirm(Craft.t('app', 'Are you sure you want to undo the move?'))
+        ) {
           // if yes, undo
           const totalFoldersMoved = await this.moveFolders(
             this.undoMovedFolders.folderIds,

@@ -370,7 +370,10 @@ export class ElementTableSorter extends DragSort {
    * Returns the min and max levels that the draggee could occupy between two
    * given rows, or false if it's not going to work out.
    */
-  _getLevelBounds($prevRow: any, $nextRow: any): {min: number; max: number} | false {
+  _getLevelBounds(
+    $prevRow: any,
+    $nextRow: any
+  ): {min: number; max: number} | false {
     if (this._loadingDraggeeLevelDelta) {
       return false;
     }
@@ -551,7 +554,10 @@ export class ElementTableSorter extends DragSort {
     }
 
     // Update the new ancestors
-    const newAncestors = this._getAncestors($(this.$targetItem), this._targetLevel);
+    const newAncestors = this._getAncestors(
+      $(this.$targetItem),
+      this._targetLevel
+    );
 
     for (let i = 0; i < newAncestors.length; i++) {
       const $ancestor = newAncestors[i];
