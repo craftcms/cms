@@ -65,6 +65,11 @@ export default class CraftButton extends LionButtonSubmit {
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('click', this.#handleActionClick);
+
+    if (this.announcementTimer) {
+      clearTimeout(this.announcementTimer);
+      this.announcementTimer = null;
+    }
   }
 
   #handleActionClick = async (event: Event) => {
@@ -87,16 +92,6 @@ export default class CraftButton extends LionButtonSubmit {
       this.loading = false;
     }
   };
-
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-
-    if (this.announcementTimer) {
-      clearTimeout(this.announcementTimer);
-      this.announcementTimer = null;
-    }
-  }
-
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
