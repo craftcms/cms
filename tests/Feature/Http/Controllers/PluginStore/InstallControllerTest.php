@@ -25,15 +25,15 @@ beforeEach(function () {
 });
 
 dataset('routes', [
-    [InstallController::class, 'index'],
-    [InstallController::class, 'craftInstall'],
-    [InstallController::class, 'enable'],
-    [InstallController::class, 'migrate'],
-    [InstallController::class, 'precheck'],
-    [InstallController::class, 'recheckComposer'],
-    [InstallController::class, 'composerInstall'],
-    [InstallController::class, 'composerRemove'],
-    [InstallController::class, 'finish'],
+    'index',
+    'craftInstall',
+    'enable',
+    'migrate',
+    'precheck',
+    'recheckComposer',
+    'composerInstall',
+    'composerRemove',
+    'finish',
 ]);
 
 it('aborts when allow updates is false', function () {
@@ -42,26 +42,26 @@ it('aborts when allow updates is false', function () {
     postJson(action([InstallController::class, 'index']))->assertForbidden();
 });
 
-it('requires authentication, adminChanges and admin for all routes', function (string $controller, string $action) {
+it('requires authentication, adminChanges and admin for all routes', function (string $action) {
     auth()->logout();
 
-    postJson(action([$controller, $action]))->assertUnauthorized();
+    postJson(action([InstallController::class, $action]))->assertUnauthorized();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
     actingAs(User::find()->one());
 
-    postJson(action([$controller, $action]))->assertForbidden();
+    postJson(action([InstallController::class, $action]))->assertForbidden();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
     actingAs(User::find()->one());
     Cms::config()->allowAdminChanges(false);
 
-    postJson(action([$controller, $action]))->assertForbidden();
+    postJson(action([InstallController::class, $action]))->assertForbidden();
 })->with('routes');
 
-test('all routes validate data', function (string $controller, string $action) {
+test('all routes validate data', function (string $action) {
     if ($action === 'index') {
-        postJson(action([$controller, $action]))
+        postJson(action([InstallController::class, $action]))
             ->assertJsonValidationErrors([
                 'packageName',
                 'handle',
@@ -72,7 +72,7 @@ test('all routes validate data', function (string $controller, string $action) {
         return;
     }
 
-    postJson(action([$controller, $action]), [
+    postJson(action([InstallController::class, $action]), [
         'data' => 'invalid-data',
     ])->assertJsonValidationErrors([
         'data',
