@@ -75,14 +75,24 @@ function resetBackgroundLayerVisibility(): void {
   (legacy ?? resetModalBackgroundLayerVisibility)();
 }
 
+let $sharedLiveRegion: any = null;
+
 /**
  * A single status live region shared by every slideout — it moves (not
  * clones) into whichever container most recently initialized, since screen
  * readers only announce one status region at a time.
+ *
+ * Built on first use rather than at module scope: `cp.ts` imports this module
+ * on every Inertia CP page, including ones that never load the legacy jQuery
+ * bundle. Calling `$` while the module evaluates would throw there and abort
+ * the whole CP bootstrap — by the time a slideout actually initializes, the
+ * legacy stack (which `init` already depends on for `Craft` and `$`) is up.
  */
-const $sharedLiveRegion = $(
-  '<span class="visually-hidden" role="status"></span>'
-);
+function sharedLiveRegion(): any {
+  return ($sharedLiveRegion ??= $(
+    '<span class="visually-hidden" role="status"></span>'
+  ));
+}
 
 /**
  * Settings accepted by {@link Slideout}. Pass a `Partial<SlideoutSettings>` to
@@ -253,7 +263,7 @@ export class Slideout extends Base<SlideoutSettings> {
 
     Craft.trapFocusWithin(this.$container);
 
-    this.$liveRegion = $sharedLiveRegion;
+    this.$liveRegion = sharedLiveRegion();
     this.$liveRegion.appendTo(this.$container);
 
     if (this.settings!.autoOpen) {
