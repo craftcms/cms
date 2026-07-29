@@ -7,6 +7,8 @@ import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
 import variantsStyles from '@src/styles/variants.styles';
+import {Actionable} from '@src/mixins/Actionable';
+import {AsyncStates} from '@src/types';
 
 export const ButtonAppearance = {
   Solid: 'solid',
@@ -42,7 +44,7 @@ export type ButtonAppearance =
  * @csspart spinner - Spinner that shows when the button is in a loading state.
  * @csspart link - The anchor element rendered when the button has an href.
  */
-export default class CraftButton extends LionButtonSubmit {
+export default class CraftButton extends Actionable(LionButtonSubmit) {
   static override get styles() {
     return [...super.styles, variantsStyles, styles];
   }
@@ -197,7 +199,7 @@ export default class CraftButton extends LionButtonSubmit {
             : nothing}
         </slot>
       </div>
-      ${this.loading
+      ${this.loading || this.actionState === AsyncStates.Loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`
         : nothing}
     `;
