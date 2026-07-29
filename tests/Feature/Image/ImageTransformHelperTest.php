@@ -6,6 +6,8 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem as Flysystem;
@@ -27,6 +29,8 @@ beforeEach(function () {
 
     $this->volume = Volume::factory()->create(['fs' => 'disk:image-transform-helper-test-remote-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
+
+    File::deleteDirectory(Path::assetSources());
 });
 
 test('re-downloads the cached source file when the remote object has changed since it was cached', function () {
