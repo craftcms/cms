@@ -1,7 +1,9 @@
 import {LionButtonSubmit} from '@lion/ui/button.js';
 import {html, nothing} from 'lit';
-import {property, state} from 'lit/decorators.js';
+import {property, state, query} from 'lit/decorators.js';
+import {t} from '@src/utilities/translate';
 import styles from './button.styles.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
@@ -45,7 +47,7 @@ export type ButtonAppearance =
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
-    return [...super.styles, variantsStyles, styles];
+    return [...super.styles, visuallyHiddenStyles, variantsStyles, styles];
   }
 
   override connectedCallback() {
@@ -86,11 +88,38 @@ export default class CraftButton extends LionButtonSubmit {
     }
   };
 
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+
+    if (this.announcementTimer) {
+      clearTimeout(this.announcementTimer);
+      this.announcementTimer = null;
+    }
+  }
+
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
       this.syncLinkHostState();
     }
+
+    if (changedProperties.has('loading')) {
+      if (this.loading) {
+        this.announceLoading();
+      }
+    }
+  }
+
+  private announceLoading() {
+    this.liveRegion.textContent = t('Loading');
+
+    if (this.announcementTimer) {
+      clearTimeout(this.announcementTimer);
+    }
+
+    this.announcementTimer = setTimeout(() => {
+      this.liveRegion.textContent = '';
+    }, 5000);
   }
 
   private syncLinkHostState() {
@@ -193,10 +222,14 @@ export default class CraftButton extends LionButtonSubmit {
   @property({attribute: 'icon-position'}) iconPosition: 'prefix' | 'suffix' =
     'prefix';
 
+  @query('[data-live-region]') liveRegion: HTMLElement;
+
   @state()
   private _hasAccessibilityError: boolean = false;
 
   private linkHostStateApplied = false;
+
+  private announcementTimer: ReturnType<typeof setTimeout> | null = null;
 
   private get isLink(): boolean {
     return !!this.href && !this.disabled;
@@ -237,6 +270,7 @@ export default class CraftButton extends LionButtonSubmit {
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`
         : nothing}
+      <span class="cp-visually-hidden" role="status" data-live-region></span>
     `;
 
     if (this.isLink) {
