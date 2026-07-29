@@ -27,7 +27,6 @@ use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
-use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
@@ -67,7 +66,6 @@ use CraftCms\Cms\Http\Controllers\NestedElementsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
-use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
@@ -76,7 +74,6 @@ use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
-use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Users\ActivateController;
 use CraftCms\Cms\Http\Controllers\Users\AuthMethodController;
@@ -193,21 +190,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
     Route::any('app/icon-svg', [IconController::class, 'svg']);
     Route::any('app/icon-picker-options', [IconController::class, 'pickerOptions']);
-
-    // Updater
-    Route::prefix('updater')->group(function () {
-        Route::post('/', [UpdaterController::class, 'index']);
-        Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate']);
-        Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup']);
-        Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck']);
-        Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert']);
-        Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate']);
-        Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck']);
-        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [UpdaterController::class, 'recheckComposer']);
-        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall']);
-        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [UpdaterController::class, 'composerRemove']);
-        Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish']);
-    });
 
     /**
      * Actions needing auth
@@ -435,21 +417,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('project-config/discard', [ProjectConfigController::class, 'discard']);
         Route::get('project-config/download', [ProjectConfigController::class, 'download']);
 
-        // Project Config sync
-        Route::prefix('config-sync')->middleware([RequireAdmin::class])->group(function () {
-            Route::post('/', [ConfigSyncController::class, 'index']);
-            Route::post(ConfigSyncController::ACTION_RETRY, [ConfigSyncController::class, 'retry']);
-            Route::post(ConfigSyncController::ACTION_APPLY_YAML_CHANGES, [ConfigSyncController::class, 'applyYamlChanges']);
-            Route::post(ConfigSyncController::ACTION_REGENERATE_YAML, [ConfigSyncController::class, 'regenerateYaml']);
-            Route::post(ConfigSyncController::ACTION_UNINSTALL_PLUGIN, [ConfigSyncController::class, 'uninstallPlugin']);
-            Route::post(ConfigSyncController::ACTION_INSTALL_PLUGIN, [ConfigSyncController::class, 'installPlugin']);
-            Route::post(BaseUpdaterController::ACTION_PRECHECK, [ConfigSyncController::class, 'precheck']);
-            Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
-            Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
-        });
-
         // Sections
         Route::get('sections/table-data', [SectionsController::class, 'tableData']);
         Route::get('sections/edit/{section}', [SectionsController::class, 'edit']);
@@ -520,15 +487,5 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post(BaseUpdaterController::ACTION_FINISH, [PluginStoreInstallController::class, 'finish']);
         });
 
-        Route::prefix('pluginstore/remove')->middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('/', [RemoveController::class, 'index']);
-            Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);
-            Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [RemoveController::class, 'composerInstall']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [RemoveController::class, 'composerRemove']);
-            Route::post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
-        });
     });
 });

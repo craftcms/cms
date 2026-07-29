@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Controllers\ConfigSyncController;
+use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
@@ -37,15 +39,21 @@ test('migrate action route is accessible during maintenance mode', function () {
     expect($response->status())->not->toBe(503);
 });
 
-test('updater action routes with query strings are accessible during maintenance mode', function () {
-    $cpTrigger = Cms::config()->cpTrigger;
-    $actionTrigger = Cms::config()->actionTrigger;
+test('updater routes with query strings are accessible during maintenance mode', function () {
     $data = Crypt::encrypt(Json::encode([
         'postPrecheckState' => [],
     ]));
 
-    $response = postJson("/{$cpTrigger}/{$actionTrigger}/updater/precheck?site=default", [
+    $response = postJson(action([UpdaterController::class, 'precheck']).'?site=default', [
         'data' => $data,
+    ]);
+
+    expect($response->status())->not->toBe(503);
+});
+
+test('config sync finish route is accessible during maintenance mode', function () {
+    $response = postJson(action([ConfigSyncController::class, 'finish']), [
+        'data' => Crypt::encrypt(Json::encode([])),
     ]);
 
     expect($response->status())->not->toBe(503);

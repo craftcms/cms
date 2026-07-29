@@ -70,8 +70,7 @@ class UpdaterController extends BaseUpdaterController
 
         return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
-            'initialState' => $state,
-            'actionPrefix' => 'updater',
+            'initialState' => $this->clientState($state),
             'returnUrl' => Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
         ])->toResponse($this->request);
     }
