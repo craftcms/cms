@@ -24,7 +24,6 @@ import './js/BaseUploader.js';
 
 
 // Element thumb loader
-import './js/ElementThumbLoader.js';
 
 // Finally load the remaining files
 import './js/AdminTable.js';

@@ -34,6 +34,7 @@ import './modules/grid/index';
 import './modules/chart/index';
 import './modules/data-table-sorter/index';
 import './modules/element-action-trigger/index';
+import './modules/element-thumb-loader/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
