@@ -14,6 +14,7 @@ use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Http\Controllers\NestedElementsController;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
@@ -226,6 +227,22 @@ it('reorders query-backed nested elements', function () {
         $second->id => 1,
         $first->id => 2,
         $third->id => 3,
+    ]);
+});
+
+it('reorders nested elements via Elements::reorderNestedElements() directly', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = nestedElementsControllerCreateMatrixOwnerFixture();
+
+    $first = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 1, 'First');
+    $second = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 2, 'Second');
+    $third = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 3, 'Third');
+
+    Elements::reorderNestedElements($owner, $owner->{'field:matrixField'}, [$third->id], 0);
+
+    expect(nestedElementsControllerOwnerSortOrders($owner->id))->toBe([
+        $third->id => 1,
+        $first->id => 2,
+        $second->id => 3,
     ]);
 });
 
