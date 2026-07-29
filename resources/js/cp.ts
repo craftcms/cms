@@ -15,6 +15,9 @@ import './modules/field-layout-designer';
 import './modules/editable-table';
 import './modules/generated-fields';
 import './modules/component-select';
+import './modules/input-generators';
+import './modules/icon-picker';
+import './modules/field-toggle';
 import './modules/grouped-entry-type-manager';
 import './modules/queue';
 import './modules/slideout';
@@ -23,5 +26,3 @@ import './modules/nested-element-manager';
 import './modules/ui';
 
 window.Cp = Cp as unknown as typeof window.Cp;
-
-console.log('window.Cp defined', window.Cp);

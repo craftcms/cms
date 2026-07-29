@@ -46,6 +46,16 @@ export default defineConfig({
         },
       },
       {
+        resolve: {
+          tsconfigPaths: true,
+        },
+        test: {
+          name: 'factory',
+          root: './src/factory',
+          environment: 'happy-dom',
+        },
+      },
+      {
         extends: true,
         plugins: [
           // The plugin will run tests for the stories defined in your Storybook config

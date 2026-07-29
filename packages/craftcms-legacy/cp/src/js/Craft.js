@@ -1940,7 +1940,6 @@ $.extend(Craft, {
     $('.grid', $container).grid();
     $('.cp-checkbox-select', $container).checkboxselect();
     $('.fieldtoggle', $container).fieldtoggle();
-    $('.lightswitch', $container).lightswitch();
     $('.nicetext', $container).nicetext();
     $('.datetimewrapper', $container).datetime();
     $(
@@ -1955,8 +1954,7 @@ $.extend(Craft, {
 
     /**
      * Swap any instruction text with info icons but avoid those with the class
-     * visually-hidden as those have already been swapped
-     * This needs to happen before the `infoicon` method
+     * visually-hidden as those have already been swapped.
      *
      * The primary place this happens is in the advanced settings of the link field
      * */
@@ -1974,8 +1972,6 @@ $.extend(Craft, {
         // Keep the original element around in case an aria-describedby attribute is referencing it
         $instructions.addClass('sr-only');
       });
-
-    $('.info', $container).infoicon();
 
     // Open outbound links in new windows
     // hat tip: https://stackoverflow.com/a/2911045/1688568
@@ -3099,12 +3095,6 @@ $.extend($.fn, {
     });
   },
 
-  infoicon: function () {
-    return this.each(function () {
-      new Craft.InfoIcon(this);
-    });
-  },
-
   /**
    * Sets the element as a container for a checkbox select.
    */
@@ -3127,47 +3117,6 @@ $.extend($.fn, {
         new Craft.FieldToggle(this);
       }
     });
-  },
-
-  lightswitch: function (settings, settingName, settingValue) {
-    // param mapping
-    if (settings === 'settings') {
-      if (typeof settingName === 'string') {
-        settings = {};
-        settings[settingName] = settingValue;
-      } else {
-        settings = settingName;
-      }
-
-      return this.each(function () {
-        var obj = $.data(this, 'lightswitch');
-        if (obj) {
-          obj.setSettings(settings);
-        }
-      });
-    } else {
-      if (!$.isPlainObject(settings)) {
-        settings = {};
-      }
-
-      return this.each(function () {
-        var thisSettings = $.extend({}, settings);
-
-        if (Garnish.hasAttr(this, 'data-value')) {
-          thisSettings.value = $(this).attr('data-value');
-        }
-
-        if (Garnish.hasAttr(this, 'data-indeterminate-value')) {
-          thisSettings.indeterminateValue = $(this).attr(
-            'data-indeterminate-value'
-          );
-        }
-
-        if (!$.data(this, 'lightswitch')) {
-          new Craft.LightSwitch(this, thisSettings);
-        }
-      });
-    }
   },
 
   nicetext: function () {
