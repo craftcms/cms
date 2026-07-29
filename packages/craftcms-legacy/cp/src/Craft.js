@@ -17,7 +17,6 @@ import './js/Queue.js';
 import './js/BaseElementIndex.js';
 import './js/BaseElementIndexView.js';
 import './js/BaseElementSelectInput.js';
-import './js/BaseElementSelectorModal.js';
 
 // Modals
 
@@ -29,7 +28,6 @@ import './js/AdminTable.js';
 import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
 import './js/AssetSelectInput.js';
-import './js/AssetSelectorModal.js';
 import './js/AssetsFieldSettings';
 import './js/AuthManager.js';
 import './js/CP.js';
@@ -41,7 +39,6 @@ import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/EntryIndex.js';
 import './js/EntrySelectInput.js';
-import './js/VolumeFolderSelectorModal.js';
 import './js/ImageUpload.js';
 import './js/LivePreview.js';
 import './js/NestedElementManager.js';
