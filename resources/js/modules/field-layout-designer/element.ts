@@ -97,23 +97,27 @@ export class Element extends Base {
       hasAttr(this.$container, 'data-has-custom-width');
 
     if (this.hasCustomWidth) {
-      const widthSlider = new Craft.SlidePicker(this.config.width || 100, {
-        min: 25,
-        max: 100,
-        step: 25,
-        valueLabel: (width: number) => {
-          return Craft.t('app', '{pct} width', {pct: `${width}%`});
-        },
-        onChange: (width: number) => {
-          this.updateConfig((config: any) => {
-            config.width = width;
-            return config;
-          });
-        },
-        readOnly: this.tab.designer.settings!.readOnly,
+      const widthSlider = document.createElement('craft-slide-picker');
+      widthSlider.setAttribute('label', Craft.t('app', 'Number of columns'));
+      widthSlider.setAttribute('value-unit', '%');
+      widthSlider.setAttribute('min', '25');
+      widthSlider.setAttribute('max', '100');
+      widthSlider.setAttribute('step', '25');
+      widthSlider.setAttribute('value', `${this.config.width || 100}`);
+
+      if (this.tab.designer.settings!.readOnly) {
+        widthSlider.setAttribute('read-only', '');
+      }
+
+      widthSlider.addEventListener('value-change', (event: Event) => {
+        const width = (event as CustomEvent<{value: number}>).detail.value;
+        this.updateConfig((config: any) => {
+          config.width = width;
+          return config;
+        });
       });
-      // Craft.SlidePicker exposes a jQuery $container — unwrap to native.
-      this.$container.appendChild(widthSlider.$container[0]);
+
+      this.$container.appendChild(widthSlider);
     }
 
     // create the action menu

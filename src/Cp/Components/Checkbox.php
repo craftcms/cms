@@ -330,7 +330,7 @@ class Checkbox extends ViewComponent
         $content = implode('', array_filter([
             (bool) $this->evaluate($this->custom) ? Html::encode($this->customLabelText()) : $this->labelContentHtml($label),
             $info !== ''
-                ? Html::tag('span', app(ContentHtml::class)->parseMarkdown($info), ['class' => 'info'])
+                ? Html::tag('craft-info-icon', app(ContentHtml::class)->parseMarkdown($info))
                 : '',
         ]));
 

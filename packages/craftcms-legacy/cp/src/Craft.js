@@ -18,7 +18,6 @@ import './js/BaseElementIndex.js';
 import './js/BaseElementIndexView.js';
 import './js/BaseElementSelectInput.js';
 import './js/BaseElementSelectorModal.js';
-import './js/BaseInputGenerator.js';
 import './js/BaseUploader.js';
 
 // Modals
@@ -31,7 +30,6 @@ import './js/Tabs.js';
 import './js/ElementThumbLoader.js';
 
 // Finally load the remaining files
-import './js/Accordion';
 import './js/AdminTable.js';
 import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
@@ -44,13 +42,11 @@ import './js/CP.js';
 import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';
 import './js/Chart.js';
-import './js/ColorInput.js';
 import './js/ComponentSelectInput.js';
 import './js/ContentBlockEditor.js';
 import './js/CustomizeSourcesModal.js';
 import './js/DataTableSorter.js';
 import './js/DeleteUserModal.js';
-import './js/DynamicGenerator.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';
@@ -58,38 +54,26 @@ import './js/ElementFieldSettings.js';
 import './js/ElementTableSorter.js';
 import './js/EntryIndex.js';
 import './js/EntrySelectInput.js';
-import './js/EnvVarGenerator.js';
 import './js/EntryMover.js';
 import './js/FormObserver.js';
 import './js/VolumeFolderSelectorModal.js';
-import './js/FieldToggle.js';
 import './js/Grid.js';
-import './js/HandleGenerator.js';
-import './js/IconPicker.js';
 import './js/ImageUpload.js';
-import './js/InfoIcon.js';
 import './js/IntervalManager.js';
-import './js/LightSwitch.js';
 import './js/LinkField.js';
 import './js/LinkInput.js';
 import './js/LivePreview.js';
 import './js/NestedElementManager.js';
-import './js/PasswordInput.js';
 import './js/Preview.js';
 import './js/PreviewFileModal.js';
 import './js/ProgressBar.js';
 import './js/PromptHandler.js';
-import './js/SlidePicker.js';
-import './js/SlideRuleInput.js';
-import './js/SlugGenerator.js';
 import './js/Structure.js';
 import './js/StructureDrag.js';
 import './js/TableElementIndexView.js';
 import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
-import './js/Tooltip.js';
 import './js/Uploader.js';
-import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 
 // Custom elements
