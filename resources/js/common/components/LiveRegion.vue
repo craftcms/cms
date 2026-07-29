@@ -1,21 +1,17 @@
 <script setup lang="ts">
+  /**
+   * A top-level live region that should only have one instance per layer.
+   *
+   */
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
-  import TransitionFade from '@/common/components/TransitionFade.vue';
 
   const {announcement} = useAnnouncer();
 </script>
 
 <template>
-  <TransitionFade>
-    <div
-      id="global-live-region"
-      class="sr-only"
-      role="status"
-      v-if="announcement"
-    >
-      {{ announcement }}
-    </div>
-  </TransitionFade>
+  <div class="sr-only" role="status">
+    {{ announcement }}
+  </div>
 </template>
 
 <style scoped lang="scss"></style>

@@ -56,6 +56,13 @@ class CraftElementLabel extends HTMLElement {
   }
 
   update() {
+    // Bail while the label isn't measurable (e.g. before a containing web
+    // component's first shadow render assigns its slots) — a 0-width label
+    // would always register as overflowing.
+    if (this.scrollWidth === 0) {
+      return;
+    }
+
     this.desiredWidth = this.calculateWidth(this.innerText);
     this.hasOverflow = this.desiredWidth > this.scrollWidth;
 

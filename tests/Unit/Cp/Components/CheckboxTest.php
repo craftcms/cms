@@ -107,7 +107,7 @@ describe('label', function () {
     it('renders markdown info beside the label', function () {
         $html = Checkbox::make()->id('cb')->label('Opt')->info('Some *info*')->toHtml();
 
-        expect($html)->toContain('class="info"')
+        expect($html)->toContain('<craft-info-icon>')
             ->and($html)->toContain('<em>info</em>');
     });
 });

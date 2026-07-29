@@ -3,7 +3,7 @@
   import CraftComboboxControl from '@craftcms/ui/vue/CraftCombobox.vue';
   import type {SelectItem} from '@/common/types';
 
-  const modelValue = defineModel<string | number | boolean>();
+  const modelValue = defineModel<string>();
   defineProps<{
     label: string;
     id?: string;

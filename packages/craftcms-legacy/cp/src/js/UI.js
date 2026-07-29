@@ -1,5 +1,12 @@
 /** global: Craft */
 /** global: Garnish */
+import {
+  createSwitch as uiCreateSwitch,
+  createInputColor as uiCreateInputColor,
+  createInputPassword as uiCreateInputPassword,
+  createSlidePicker as uiCreateSlidePicker,
+} from '@craftcms/ui/factory';
+
 Craft.ui = {
   createButton: function (config) {
     const $btn = $('<button/>', {
@@ -179,19 +186,13 @@ Craft.ui = {
   },
 
   createPasswordInput(config) {
-    return this.createTextInput(
-      Object.assign({}, config, {
-        type: 'password',
-      })
-    );
+    // Delegates to @craftcms/ui's createInputPassword; jQuery-wraps for legacy
+    // callers.
+    return $(uiCreateInputPassword(config));
   },
 
   createPasswordField(config) {
-    return this.createTextField(
-      Object.assign({}, config, {
-        type: 'password',
-      })
-    );
+    return this.createField(this.createPasswordInput(config), config);
   },
 
   createCopyTextInput: function (config) {
@@ -644,69 +645,9 @@ Craft.ui = {
   },
 
   createLightswitch: function (config) {
-    var value = config.value || '1';
-    var indeterminateValue = config.indeterminateValue || '-';
-
-    var $container = $('<button/>', {
-      type: 'button',
-      class: 'lightswitch',
-      'data-value': value,
-      'data-indeterminate-value': indeterminateValue,
-      id: config.id,
-      role: 'switch',
-      'aria-checked': config.on
-        ? 'true'
-        : config.indeterminate
-          ? 'mixed'
-          : 'false',
-      'aria-labelledby': config.labelId,
-      'data-target': config.toggle,
-      'data-reverse-target': config.reverseToggle,
-    });
-
-    if (config.on) {
-      $container.addClass('on');
-    } else if (config.indeterminate) {
-      $container.addClass('indeterminate');
-    }
-
-    if (config.small) {
-      $container.addClass('small');
-    }
-
-    if (config.disabled) {
-      $container.addClass('disabled');
-    }
-
-    $(
-      '<div class="lightswitch-container">' +
-        '<div class="handle"></div>' +
-        '</div>'
-    ).appendTo($container);
-
-    if (config.name) {
-      $('<input/>', {
-        type: 'hidden',
-        name: config.name,
-        value: config.on
-          ? value
-          : config.indeterminate
-            ? indeterminateValue
-            : '',
-        disabled: config.disabled,
-      }).appendTo($container);
-    }
-
-    if (config.toggle || config.reverseToggle) {
-      $container.addClass('fieldtoggle');
-      new Craft.FieldToggle($container);
-    }
-
-    new Craft.LightSwitch($container, {
-      onChange: config.onChange || $.noop,
-    });
-
-    return $container;
+    // The element-building logic now lives in @craftcms/ui's createSwitch; this
+    // thin shim wraps the returned element in jQuery for legacy callers.
+    return $(uiCreateSwitch(config));
   },
 
   createLightswitchField: function (config) {
@@ -722,54 +663,33 @@ Craft.ui = {
   },
 
   createIconPicker: function (config) {
-    const $container = $('<div/>', {
-      id: config.id,
-      class: 'icon-picker',
-    });
-
-    const $iconContainer = $('<div/>', {
-      class: 'icon-picker--icon',
-      lang: Craft.language,
-    }).appendTo($container);
-
-    if (config.small) {
-      $container.addClass('small');
-      $iconContainer.addClass('small');
+    // Builds a <craft-icon-picker> web component, which mounts the Vue IconPicker
+    // (resources/js/common/form/IconPicker.vue), replacing the legacy jQuery
+    // Craft.IconPicker widget. The component renders its own form-postable
+    // control. (`small` isn't a component prop yet — see
+    // resources/js/modules/icon-picker/README.md.)
+    const $el = $('<craft-icon-picker/>');
+    if (config.name) {
+      $el.attr('name', config.name);
     }
-
-    if (!config.static) {
-      const $chooseBtn = this.createButton({
-        class: 'icon-picker--choose-btn',
-        label: Craft.t('app', 'Choose'),
-      }).appendTo($container);
-
-      const $removeBtn = this.createButton({
-        class: 'icon-picker--remove-btn hidden',
-        label: Craft.t('app', 'Remove'),
-      }).appendTo($container);
-
-      if (config.small) {
-        $chooseBtn.addClass('small');
-        $removeBtn.addClass('small');
-      }
-
-      if (config.name) {
-        $('<input/>', {
-          type: 'hidden',
-          name: config.name,
-        }).appendTo($container);
-      }
-    }
-
-    const iconPicker = new Craft.IconPicker($container, {
-      freeOnly: config.freeOnly,
-    });
-
     if (config.value) {
-      iconPicker.selectIcon(config.value);
+      $el.attr('value', config.value);
+    }
+    if (config.freeOnly) {
+      $el.attr('free-only', '');
+    }
+    if (config.static || config.disabled) {
+      $el.attr('disabled', '');
+    }
+    const labelledBy = config.labelledBy || config.labelId;
+    if (labelledBy) {
+      $el.attr('labelled-by', labelledBy);
+    }
+    if (config.describedBy) {
+      $el.attr('described-by', config.describedBy);
     }
 
-    return $container;
+    return $el;
   },
 
   createIconPickerField: function (config) {
@@ -784,59 +704,36 @@ Craft.ui = {
     );
   },
 
+  createSlidePicker: function (config) {
+    // Delegates to @craftcms/ui's createSlidePicker; jQuery-wraps for legacy
+    // callers.
+    return $(uiCreateSlidePicker(config));
+  },
+
+  createSlidePickerField: function (config) {
+    if (!config.id) {
+      config.id = 'slidepicker' + Math.floor(Math.random() * 1000000000);
+    }
+    if (!config.labelId) {
+      config.labelId = `${config.id}-label`;
+    }
+    if (!config.describedBy) {
+      config.describedBy = config.labelId;
+    }
+
+    return this.createField(this.createSlidePicker(config), config).addClass(
+      'slidepicker-field'
+    );
+  },
+
   createColorInput: function (config) {
-    const id = config.id || 'color' + Math.floor(Math.random() * 1000000000);
-    const containerId = config.containerId || id + '-container';
-    const name = config.name || null;
-    const value = config.value || null;
-    const small = config.small || false;
-    const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
-    const disabled = config.disabled || false;
-
-    const $container = $('<div/>', {
-      id: containerId,
-      class: 'flex color-container',
-    });
-
-    const $colorPreviewContainer = $('<div/>', {
-      class: 'color static' + (small ? ' small' : ''),
-    }).appendTo($container);
-
-    const $colorPreview = $('<div/>', {
-      class: 'color-preview',
-      style: config.value ? {backgroundColor: config.value} : null,
-    }).appendTo($colorPreviewContainer);
-
-    const $inputContainer = $('<div/>', {
-      class: 'color-input-container',
-    })
-      .append(
-        $('<div/>', {
-          class: 'color-hex-indicator light code',
-          'aria-hidden': 'true',
-          text: '#',
-        })
-      )
-      .appendTo($container);
-
-    const $input = this.createTextInput({
-      id: id,
-      name: name,
-      value: Craft.ltrim(value, '#'),
-      size: 10,
-      class: 'color-input',
-      autofocus: autofocus,
-      disabled: disabled,
-      'aria-label': Craft.t('app', 'Color hex value'),
-    }).appendTo($inputContainer);
-
-    new Craft.ColorInput($container);
-    return $container;
+    // Delegates to @craftcms/ui's createInputColor; jQuery-wraps for legacy
+    // callers.
+    return $(uiCreateInputColor(config));
   },
 
   createColorField: function (config) {
     config.fieldset = true;
-    o;
     if (!config.id) {
       config.id = 'color' + Math.floor(Math.random() * 1000000000);
     }

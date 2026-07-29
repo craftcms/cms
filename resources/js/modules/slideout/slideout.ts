@@ -252,7 +252,7 @@ export class Slideout extends Base<SlideoutSettings> {
     Craft.trapFocusWithin(this.$container);
 
     this.$liveRegion = $sharedLiveRegion ??= $(
-      '<span class="visually-hidden" role="status"></span>'
+      '<span class="sr-only" role="status"></span>'
     );
     this.$liveRegion.appendTo(this.$container);
 
