@@ -36,5 +36,6 @@ import './modules/chart';
 import './modules/data-table-sorter';
 import './modules/element-action-trigger';
 import './modules/element-thumb-loader';
+import './modules/element-table-sorter';
 
 window.Cp = Cp as unknown as typeof window.Cp;

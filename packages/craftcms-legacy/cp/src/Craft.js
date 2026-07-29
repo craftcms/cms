@@ -42,7 +42,6 @@ import './js/CustomizeSourcesModal.js';
 import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
-import './js/ElementTableSorter.js';
 import './js/EntryIndex.js';
 import './js/EntrySelectInput.js';
 import './js/VolumeFolderSelectorModal.js';
