@@ -3527,6 +3527,12 @@ JS;
             $attributes['filename'] = AssetsHelper::prepareAssetName($attributes['filename']);
         }
 
+        // avoid filename conflicts
+        $suggestedFilename = AssetsService::getNameReplacementInFolder($attributes['filename'], $attributes['folderId']);
+        if ($suggestedFilename !== $attributes['filename'] && (! $this->id || $attributes['filename'] !== $this->_filename)) {
+            $attributes['filename'] = $suggestedFilename;
+        }
+
         // deduce extension and check if it's allowed
         $allowedExtensions = Cms::config()->allowedFileExtensions;
         $extension = strtolower(pathinfo($attributes['filename'], PATHINFO_EXTENSION));
