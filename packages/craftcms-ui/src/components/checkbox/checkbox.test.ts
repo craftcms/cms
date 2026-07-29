@@ -141,6 +141,32 @@ describe('SSR hydration', () => {
     expect(input.checked).toBe(true);
   });
 
+  it('ignores the always-post hidden input when adopting state', async () => {
+    // The PHP component nests the always-post hidden input in the host so the
+    // control slots into <craft-field> as a single element. It matches no
+    // slot, so it never renders — but it stays in the form's DOM and posts.
+    const element = await createFromMarkup(`
+      <craft-checkbox>
+        <input type="hidden" name="agree" value="">
+        <input slot="input" type="checkbox" id="cb" name="agree" value="1" checked>
+        <label slot="label" for="cb">I agree</label>
+      </craft-checkbox>
+    `);
+    const hidden = element.querySelector<HTMLInputElement>(
+      'input[type="hidden"]'
+    )!;
+    const input = element.querySelector<HTMLInputElement>(
+      'input[type="checkbox"]'
+    )!;
+
+    expect(element.name).toBe('agree');
+    expect(element.checked).toBe(true);
+    expect(input.value).toBe('1');
+    expect(hidden.value).toBe('');
+    // No default slot to fall into, so the hidden input is never rendered.
+    expect(element.shadowRoot!.querySelector('slot:not([name])')).toBeNull();
+  });
+
   it('remains client-drivable without slotted content', async () => {
     const element = await createFromMarkup(
       '<craft-checkbox name="agree" checked></craft-checkbox>'
