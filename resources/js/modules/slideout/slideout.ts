@@ -75,12 +75,19 @@ function resetBackgroundLayerVisibility(): void {
   (legacy ?? resetModalBackgroundLayerVisibility)();
 }
 
+function createLiveRegion(): HTMLSpanElement {
+  const liveRegion = document.createElement('span');
+  liveRegion.classList.add('sr-only');
+  liveRegion.role = 'status';
+  return liveRegion;
+}
+
 /**
  * A single status live region shared by every slideout — it moves (not
  * clones) into whichever container most recently initialized, since screen
  * readers only announce one status region at a time.
  */
-let $sharedLiveRegion: any = null;
+let $sharedLiveRegion: HTMLSpanElement | null = null;
 
 /**
  * Settings accepted by {@link Slideout}. Pass a `Partial<SlideoutSettings>` to
@@ -251,10 +258,8 @@ export class Slideout extends Base<SlideoutSettings> {
 
     Craft.trapFocusWithin(this.$container);
 
-    this.$liveRegion = $sharedLiveRegion ??= $(
-      '<span class="sr-only" role="status"></span>'
-    );
-    this.$liveRegion.appendTo(this.$container);
+    this.$liveRegion = $sharedLiveRegion ??= createLiveRegion();
+    this.$container.append(this.$liveRegion);
 
     if (this.settings!.autoOpen) {
       this.open();
