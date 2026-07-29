@@ -29,5 +29,7 @@ import './modules/interval-manager';
 import './modules/entry-mover';
 import './modules/prompt-handler';
 import './modules/link-field';
+import './modules/nested-element-manager';
+import './modules/ui';
 
 window.Cp = Cp as unknown as typeof window.Cp;

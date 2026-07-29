@@ -57,7 +57,6 @@ import './js/VolumeFolderSelectorModal.js';
 import './js/Grid.js';
 import './js/ImageUpload.js';
 import './js/LivePreview.js';
-import './js/NestedElementManager.js';
 import './js/Preview.js';
 import './js/PreviewFileModal.js';
 import './js/ProgressBar.js';

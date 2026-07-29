@@ -141,7 +141,9 @@ export class FormObserver extends Base {
     if (container.classList.contains('selectized')) {
       this.#initSelectizeInput(container);
     } else {
-      for (const input of Array.from(container.querySelectorAll('.selectized'))) {
+      for (const input of Array.from(
+        container.querySelectorAll('.selectized')
+      )) {
         this.#initSelectizeInput(input);
       }
     }

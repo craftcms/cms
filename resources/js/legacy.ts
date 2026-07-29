@@ -28,6 +28,8 @@ import './modules/interval-manager/index';
 import './modules/entry-mover/index';
 import './modules/prompt-handler/index';
 import './modules/link-field/index';
+import './modules/nested-element-manager/index';
+import './modules/ui/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
