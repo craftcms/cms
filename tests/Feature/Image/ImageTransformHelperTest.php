@@ -30,10 +30,7 @@ beforeEach(function () {
     $this->volume = Volume::factory()->create(['fs' => 'disk:image-transform-helper-test-remote-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 
-    // The local source cache is keyed by asset ID (Path::assetSources("{id}.ext")).
-    // Feature runs reuse auto-increment IDs across tests, so a prior test's cached
-    // file for the same ID would leak in here. Clear the cache dir for isolation.
-    File::cleanDirectory(Path::assetSources());
+    File::deleteDirectory(Path::assetSources());
 });
 
 test('re-downloads the cached source file when the remote object has changed since it was cached', function () {
