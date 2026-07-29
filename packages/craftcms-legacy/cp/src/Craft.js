@@ -63,7 +63,7 @@ import './js/IntervalManager.js';
 import './js/LinkField.js';
 import './js/LinkInput.js';
 import './js/LivePreview.js';
-import './js/NestedElementManager.js';
+import './js/PasswordInput.js';
 import './js/Preview.js';
 import './js/PreviewFileModal.js';
 import './js/ProgressBar.js';
