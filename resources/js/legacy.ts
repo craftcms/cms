@@ -30,6 +30,7 @@ import './modules/prompt-handler/index';
 import './modules/link-field/index';
 import './modules/cp-modal/index';
 import './modules/tabs/index';
+import './modules/grid/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
