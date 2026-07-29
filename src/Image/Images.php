@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use Imagick;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
+use Intervention\Image\Drivers\Vips\Driver as VipsDriver;
 use Intervention\Image\Exceptions\MissingDependencyException;
 use Intervention\Image\FileExtension;
 use Intervention\Image\Format;
@@ -215,14 +216,14 @@ class Images
 
     private function createManager(ImageDriver $driver): ImageManager
     {
-        if ($driver === ImageDriver::Vips && ! class_exists(\Intervention\Image\Drivers\Vips\Driver::class)) {
+        if ($driver === ImageDriver::Vips && ! class_exists(VipsDriver::class)) {
             throw new MissingDependencyException('The intervention/image-driver-vips package must be installed to use the Vips image driver.');
         }
 
         $driverClass = match ($driver) {
             ImageDriver::Gd => GdDriver::class,
             ImageDriver::Imagick => ImagickDriver::class,
-            ImageDriver::Vips => \Intervention\Image\Drivers\Vips\Driver::class,
+            ImageDriver::Vips => VipsDriver::class,
         };
 
         return new ImageManager(
