@@ -45,7 +45,6 @@ import './js/Chart.js';
 import './js/ContentBlockEditor.js';
 import './js/CustomizeSourcesModal.js';
 import './js/DataTableSorter.js';
-import './js/DeleteUserModal.js';
 import './js/ElementActionTrigger.js';
 import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';

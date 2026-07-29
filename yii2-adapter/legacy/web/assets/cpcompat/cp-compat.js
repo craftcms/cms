@@ -58,6 +58,10 @@
       'SlideRuleInput',
       'Craft.SlideRuleInput has been removed. Emit <craft-slide-rule> directly instead.'
     );
+    defineRemovedClass(
+      'DeleteUserModal',
+      'Craft.DeleteUserModal has been removed. It was deprecated in 5.10.0 and unused.'
+    );
   }
 
   /**
