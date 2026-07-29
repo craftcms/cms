@@ -64,10 +64,17 @@ export interface NestedElementManagerSettings extends GarnishBaseSettings {
   indexSettings: Record<string, unknown>;
   canCreate: boolean;
   /**
-   * Whether copied elements may be pasted here. May be a boolean, a predicate,
-   * or (legacy PHP settings) the *source string* of a predicate.
+   * Whether copied elements may be pasted here — a boolean, or a runtime
+   * predicate supplied by JS callers.
    */
-  canPaste: boolean | string | ((elementInfo: any[]) => boolean);
+  canPaste: boolean | ((elementInfo: any[]) => boolean);
+  /**
+   * Declarative paste constraint from server settings: a pasted element is
+   * only allowed when its `data[attribute]` is one of `values`. Lets PHP
+   * express a paste predicate as data instead of shipping predicate source
+   * code (which previously had to be `eval()`'d). `null` means no constraint.
+   */
+  pasteableData: {attribute: string; values: Array<string | number>} | null;
   minElements: number | null;
   maxElements: number | null;
   createButtonLabel: string;
@@ -122,6 +129,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     indexSettings: {},
     canCreate: false,
     canPaste: false,
+    pasteableData: null,
     minElements: null,
     maxElements: null,
     createButtonLabel: '',
@@ -735,13 +743,20 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       }
     }
 
-    if (typeof this.settings.canPaste === 'function') {
-      return this.settings.canPaste(elementInfo);
+    // Declarative server-supplied constraint (replaces the legacy eval'd
+    // predicate source): every pasted element's data[attribute] must be in the
+    // allowed value set.
+    const constraint = this.settings.pasteableData;
+    if (constraint) {
+      for (const e of elementInfo) {
+        if (!constraint.values.includes(e.data?.[constraint.attribute])) {
+          return false;
+        }
+      }
     }
 
-    if (typeof this.settings.canPaste === 'string') {
-      // Legacy parity: PHP settings may supply the predicate as source code.
-      return eval(this.settings.canPaste)(elementInfo);
+    if (typeof this.settings.canPaste === 'function') {
+      return this.settings.canPaste(elementInfo);
     }
 
     return true;

@@ -56,8 +56,6 @@ survive (via `declare const Craft/$`):
 
 ## Known warts kept for parity
 
-- `settings.canPaste` may arrive from PHP as predicate *source code* and is
-  `eval()`'d (legacy behavior).
 - `Craft.cp.onCopyElements()` has no unregister API, so the copy-listener
   callback keeps the instance reachable until page unload even after
   `destroy()` (legacy parity; the callback only touches the paste button).
