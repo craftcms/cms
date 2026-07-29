@@ -195,6 +195,7 @@ class Categories extends \CraftCms\Cms\Field\BaseRelationField
 
         $map['map'] = $newMap;
 
+        /** @phpstan-ignore-next-line */
         return $map;
     }
 
