@@ -3547,13 +3547,11 @@ JS;
 
                 if ($value === false || ! is_file($value)) {
                     $attributes['tempFilePath'] = null;
-                }
-
-                $value = File::normalizePath($value);
-                // Make sure it's within a known temp path, the project root, or storage/ folder
-                $allowedRoots = Asset::getAllowedTempFileRoots();
-                if (Path::isPathWithinRoots($value, $allowedRoots)) {
-                    $attributes['tempFilePath'] = $value;
+                } else {
+                    $value = File::normalizePath($value);
+                    // Make sure it's within a known temp path, the project root, or storage/ folder
+                    $allowedRoots = Asset::getAllowedTempFileRoots();
+                    $attributes['tempFilePath'] = Path::isPathWithinRoots($value, $allowedRoots) ? $value : null;
                 }
             } else {
                 // if it's an absolute URL, we need to download the file to a temp location

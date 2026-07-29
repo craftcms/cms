@@ -280,7 +280,7 @@ class Path
         }
 
         // Make sure it's *not* within a system directory though
-        $systemDirs = self::system();
+        $systemDirs = app(self::class)->system();
         $systemDirs = array_map(self::normalizePath(...), $systemDirs);
         $systemDirs = array_filter($systemDirs, fn ($value) => $value !== false);
 
