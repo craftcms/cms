@@ -16,7 +16,7 @@ declare const $: any;
  * `Craft.EntryTypeSelectInput.createSettings`/`applySettings` onto the
  * web-component `<craft-component-select>` path. POSTs the chip's current
  * `{id, group, name?, handle?, description?}` JSON to
- * the override-settings CP route, opens a `Craft.Slideout` with the
+ * the override-settings action route, opens a `Craft.Slideout` with the
  * returned settings form, and on submit applies the overrides back onto the
  * chip (label + indicators + hidden-input JSON) via {@link applyOverrides}.
  *

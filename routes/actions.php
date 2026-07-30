@@ -275,6 +275,14 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::any('entries/reassign-modal', [ReassignEntriesModalController::class, 'show']);
         Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 
+        // Entry Types
+        Route::middleware([
+            RequireAdminChanges::class,
+        ])->group(function () {
+            Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
+            Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
+        });
+
         // Fields
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
@@ -283,15 +291,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
             Route::post('fields/render-card-preview', [FieldsController::class, 'renderCardPreview']);
         });
-
-        // Entry types
-        Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
-            Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
-        });
-
-        // Volumes
-        Route::middleware([RequireAdminChanges::class])->post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
 
         // Matrix
         Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
@@ -344,6 +343,11 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
         Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
+
+        // Volumes
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
+        });
 
         // Structures
         Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
