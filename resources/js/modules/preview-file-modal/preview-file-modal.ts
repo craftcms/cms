@@ -54,7 +54,10 @@ export class PreviewFileModal extends Modal {
 
   constructor(assetId: number, elementSelectOrSettings?: any, settings?: any) {
     // (assetId, settings) overload
-    if (typeof settings === 'undefined' && $.isPlainObject(elementSelectOrSettings)) {
+    if (
+      typeof settings === 'undefined' &&
+      $.isPlainObject(elementSelectOrSettings)
+    ) {
       settings = elementSelectOrSettings;
       elementSelectOrSettings = null;
     }
@@ -71,7 +74,9 @@ export class PreviewFileModal extends Modal {
     }
     PreviewFileModal.openInstance = this;
 
-    this.#$container = $('<div class="modal previewmodal loading"/>').appendTo($(bod));
+    this.#$container = $('<div class="modal previewmodal loading"/>').appendTo(
+      $(bod)
+    );
     this.setContainer(this.#$container[0]);
 
     Craft.cp.announce(Craft.t('app', 'Loading'));
@@ -88,7 +93,11 @@ export class PreviewFileModal extends Modal {
     });
     this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
 
-    this.loadAsset(assetId, this.settings.startingWidth, this.settings.startingHeight);
+    this.loadAsset(
+      assetId,
+      this.settings.startingWidth,
+      this.settings.startingHeight
+    );
 
     this.addListener(this.#$container[0], 'keydown', ((ev: KeyboardEvent) => {
       switch (ev.keyCode) {
@@ -113,7 +122,9 @@ export class PreviewFileModal extends Modal {
   }
 
   getSelectItem(): any {
-    const $item = this.elementSelect?.$items.filter(`[data-id=${this.assetId}]`);
+    const $item = this.elementSelect?.$items.filter(
+      `[data-id=${this.assetId}]`
+    );
     return $item?.length ? $item : null;
   }
 
@@ -157,7 +168,9 @@ export class PreviewFileModal extends Modal {
   }
 
   _addBumperButtons(): void {
-    this.#$container.prepend(this.$bumperButtonStart).append(this.$bumperButtonEnd);
+    this.#$container
+      .prepend(this.$bumperButtonStart)
+      .append(this.$bumperButtonEnd);
   }
 
   _addModalName(): void {
@@ -347,7 +360,10 @@ export class PreviewFileModal extends Modal {
 
       if (
         containerWidth >
-        Math.min(containerWidth, $(window).width() - instance.settings.minGutter * 2)
+        Math.min(
+          containerWidth,
+          $(window).width() - instance.settings.minGutter * 2
+        )
       ) {
         containerWidth = Math.min(
           containerWidth,

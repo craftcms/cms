@@ -120,8 +120,15 @@ export class BaseElementSelectInput extends Base {
     let settings = initArgs[0];
     if (!$.isPlainObject(settings)) {
       const argNames = [
-        'id', 'name', 'elementType', 'sources', 'criteria',
-        'sourceElementId', 'limit', 'modalStorageKey', 'fieldId',
+        'id',
+        'name',
+        'elementType',
+        'sources',
+        'criteria',
+        'sourceElementId',
+        'limit',
+        'modalStorageKey',
+        'fieldId',
       ];
       const normalized: Record<string, any> = {};
       for (let i = 0; i < argNames.length; i++) {
@@ -381,10 +388,7 @@ export class BaseElementSelectInput extends Base {
       return this.$searchInput;
     }
 
-    if (
-      this.$addElementBtn.length &&
-      !this.$addElementBtn.hasClass('hidden')
-    ) {
+    if (this.$addElementBtn.length && !this.$addElementBtn.hasClass('hidden')) {
       return this.$addElementBtn;
     }
 
@@ -786,7 +790,10 @@ export class BaseElementSelectInput extends Base {
     }
   }
 
-  async animateElementAway($element: any, callback?: () => void): Promise<void> {
+  async animateElementAway(
+    $element: any,
+    callback?: () => void
+  ): Promise<void> {
     const offset = $element.offset();
     const width = $element.width();
 
@@ -800,8 +807,7 @@ export class BaseElementSelectInput extends Base {
 
     await Craft.animate($element, {
       opacity: -1,
-      left:
-        offset.left + 100 * (Craft.orientation === 'ltr' ? -1 : 1),
+      left: offset.left + 100 * (Craft.orientation === 'ltr' ? -1 : 1),
     });
 
     $element.remove();
@@ -1178,10 +1184,7 @@ export class BaseElementSelectInput extends Base {
       const $li = $allElements.first().parent().parent();
       const $ul = $li.parent();
       callback = () => {
-        if (
-          $ul[0] === this.$elementsContainer[0] ||
-          $li.siblings().length
-        ) {
+        if ($ul[0] === this.$elementsContainer[0] || $li.siblings().length) {
           $li.remove();
         } else {
           $ul.remove();
@@ -1232,9 +1235,7 @@ export class BaseElementSelectInput extends Base {
         case RETURN_KEY: {
           ev.preventDefault();
           if (this.searchMenu) {
-            this.selectSearchResult(
-              this.searchMenu.$options.filter('.hover')
-            );
+            this.selectSearchResult(this.searchMenu.$options.filter('.hover'));
           }
           return;
         }
@@ -1272,9 +1273,7 @@ export class BaseElementSelectInput extends Base {
               }
             } else {
               this.focusOption(
-                this.searchMenu.$options.eq(
-                  this.searchMenu.$options.length - 1
-                )
+                this.searchMenu.$options.eq(this.searchMenu.$options.length - 1)
               );
             }
           }

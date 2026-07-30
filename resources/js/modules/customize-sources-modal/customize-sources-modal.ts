@@ -100,14 +100,12 @@ export class CustomizeSourcesModal extends Modal {
     this.$sourcesHeader = $('<div class="cs-header"/>')
       .appendTo(this.$sourcesSidebar)
       .append(
-        $('<h2/>', {id: headerId, class: 'h3'}).text(
-          Craft.t('app', 'Sources')
-        )
+        $('<h2/>', {id: headerId, class: 'h3'}).text(Craft.t('app', 'Sources'))
       );
 
-    this.$sourcesSidebarContent = $('<div class="cs-sidebar-content"/>').appendTo(
-      this.$sourcesSidebar
-    );
+    this.$sourcesSidebarContent = $(
+      '<div class="cs-sidebar-content"/>'
+    ).appendTo(this.$sourcesSidebar);
     this.sourceContainers = [];
 
     this.$sourceSettingsOuterContainer = $(
@@ -298,9 +296,7 @@ export class CustomizeSourcesModal extends Modal {
     $('<div class="cs-header"/>')
       .appendTo(this.$pagesSidebar)
       .append(
-        $('<h2/>', {id: headerId, class: 'h3'}).text(
-          Craft.t('app', 'Pages')
-        )
+        $('<h2/>', {id: headerId, class: 'h3'}).text(Craft.t('app', 'Pages'))
       );
 
     this.$pagesSidebarContent = $('<div class="cs-sidebar-content"/>').appendTo(
@@ -324,7 +320,9 @@ export class CustomizeSourcesModal extends Modal {
       response.sources.map((s: any) => s.page)
     );
     for (const name of pageNames) {
-      const icon = response.pageSettings ? response.pageSettings[name]?.icon : null;
+      const icon = response.pageSettings
+        ? response.pageSettings[name]?.icon
+        : null;
       await this.addPage(name, icon);
     }
     if (!this.selectedPage && this.pages.length) {
@@ -365,7 +363,11 @@ export class CustomizeSourcesModal extends Modal {
     );
   }
 
-  async addPage(name: string, icon: string | null = null, isNew = false): Promise<any> {
+  async addPage(
+    name: string,
+    icon: string | null = null,
+    isNew = false
+  ): Promise<any> {
     const $item = $('<li class="cs-item"/>').appendTo(this.$pagesSidebarItems);
     const $itemButton = $('<div class="cs-item__btn cs-item__page-btn"/>')
       .attr({tabindex: '0', role: 'button'})
@@ -440,7 +442,8 @@ export class CustomizeSourcesModal extends Modal {
   }
 
   addSource(sourceData: any, isNew?: boolean): any {
-    const pageName = sourceData.page ?? this.selectedPage?.name ?? '__DEFAULT__';
+    const pageName =
+      sourceData.page ?? this.selectedPage?.name ?? '__DEFAULT__';
     sourceData.page = pageName;
     const isHeading = sourceData.type === 'heading';
 
@@ -481,13 +484,34 @@ export class CustomizeSourcesModal extends Modal {
         .attr('name', `sources[${sourceData.key}][heading]`)
         .val(sourceData.heading)
         .appendTo($item);
-      source = new Heading(this, $item, $itemButton, $itemInput, sourceData, isNew);
+      source = new Heading(
+        this,
+        $item,
+        $itemButton,
+        $itemInput,
+        sourceData,
+        isNew
+      );
       source.updateItemLabel(sourceData.heading);
     } else {
       if (sourceData.type === 'native') {
-        source = new Source(this, $item, $itemButton, $itemInput, sourceData, isNew);
+        source = new Source(
+          this,
+          $item,
+          $itemButton,
+          $itemInput,
+          sourceData,
+          isNew
+        );
       } else {
-        source = new CustomSource(this, $item, $itemButton, $itemInput, sourceData, isNew);
+        source = new CustomSource(
+          this,
+          $item,
+          $itemButton,
+          $itemInput,
+          sourceData,
+          isNew
+        );
       }
       source.updateItemLabel(sourceData.label);
       if (sourceData.data?.handle) {
@@ -654,9 +678,9 @@ export class PageSettingsModal extends Modal {
       })
       .appendTo($body);
 
-    const $footer = $('<div class="footer flex rightalign flex-nowrap"/>').appendTo(
-      this.#$container
-    );
+    const $footer = $(
+      '<div class="footer flex rightalign flex-nowrap"/>'
+    ).appendTo(this.#$container);
 
     const $cancelBtn = Craft.ui
       .createButton({label: Craft.t('app', 'Cancel')})
@@ -720,13 +744,13 @@ export class SourceDrag extends DragSort {
   activePage: any = null;
 
   constructor(modal: any, settings: any = {}) {
-    settings.filter = (function (this: SourceDrag) {
+    settings.filter = function (this: SourceDrag) {
       const $item = $(this.$targetItem as any);
       if ($item.hasClass('cs-item--heading')) {
         return $item.add($item.nextUntil('.cs-item--heading'));
       }
       return $item;
-    }) as any;
+    } as any;
 
     if (!modal.multiPage) {
       settings.axis = 'y' as const;
@@ -905,9 +929,13 @@ export class Page extends Base {
       onActivate: () => {
         if (
           confirm(
-            Craft.t('app', 'Are you sure you want to remove the page "{name}"?', {
-              name: this.name,
-            })
+            Craft.t(
+              'app',
+              'Are you sure you want to remove the page "{name}"?',
+              {
+                name: this.name,
+              }
+            )
           )
         ) {
           this.destroy();
@@ -1190,7 +1218,10 @@ export class BaseSource extends Base {
       let $ul = this.$actionMenu.find('[data-cs-multi-page-list]');
       if (!$ul.length) {
         this.actionMenu.addHr();
-        $ul = $(this.actionMenu.addList()).attr('data-cs-multi-page-list', 'true');
+        $ul = $(this.actionMenu.addList()).attr(
+          'data-cs-multi-page-list',
+          'true'
+        );
       }
       $ul.html('');
       this.modal.pages.forEach((page: any) => {
@@ -1368,7 +1399,9 @@ export class Source extends BaseSource {
         'aria-label': viewMode.title,
         'data-mode': viewMode.mode,
       }).appendTo($inputContainer);
-      $('<div/>', {class: 'cp-icon small'}).append(viewMode.iconSvg).appendTo($btn);
+      $('<div/>', {class: 'cp-icon small'})
+        .append(viewMode.iconSvg)
+        .appendTo($btn);
       if (viewMode.mode === defaultViewMode) {
         $btn.addClass('active').attr('aria-pressed', 'true');
       } else {
@@ -1431,9 +1464,7 @@ export class Source extends BaseSource {
           ...groups.structure,
           ...groups.attribute,
           ...groups.field,
-        ].map((o: any) =>
-          o.optgroup ? o : {label: o.label, value: o.attr}
-        ),
+        ].map((o: any) => (o.optgroup ? o : {label: o.label, value: o.attr})),
         value: this.sourceData.defaultSort[0],
       })
       .addClass('fullwidth')
@@ -1510,7 +1541,8 @@ export class Source extends BaseSource {
 
       const dir = useDefaultDir
         ? this.sourceData.defaultSort[1]
-        : this.sourceData.sortOptions.find((o: any) => o.attr === attr).defaultDir;
+        : this.sourceData.sortOptions.find((o: any) => o.attr === attr)
+            .defaultDir;
       this.sortDirectionListbox.select(dir === 'asc' ? 0 : 1);
     }
   }
@@ -1520,7 +1552,10 @@ export class Source extends BaseSource {
       (a: any, b: any) => (a[1] === b[1] ? 0 : a[1] < b[1] ? -1 : 1)
     );
 
-    if (!this.sourceData.tableAttributes.length && !availableTableAttributes.length) {
+    if (
+      !this.sourceData.tableAttributes.length &&
+      !availableTableAttributes.length
+    ) {
       return;
     }
 
@@ -1536,10 +1571,12 @@ export class Source extends BaseSource {
           'Choose which table columns should be visible for this source by default.'
         ),
         name,
-        options: availableTableAttributes.map(([key, label]: [string, string]) => ({
-          label,
-          value: key,
-        })),
+        options: availableTableAttributes.map(
+          ([key, label]: [string, string]) => ({
+            label,
+            value: key,
+          })
+        ),
         values: this.sourceData.tableAttributes.map(([key]: [string]) => key),
       })
       .appendTo($container);

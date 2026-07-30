@@ -34,7 +34,9 @@ export class AssetSelectInput extends BaseElementSelectInput {
 
     this.updateAddElementsBtn();
 
-    this.addListener(this.$elementsContainer[0], 'keydown', ((ev: KeyboardEvent) => {
+    this.addListener(this.$elementsContainer[0], 'keydown', ((
+      ev: KeyboardEvent
+    ) => {
       if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
         this.openPreview();
         ev.stopPropagation();
@@ -253,7 +255,9 @@ export class AssetSelectInput extends BaseElementSelectInput {
 
     filename = filename || data?.files?.[0]?.name;
 
-    const errorMessages: string[] = errors ? Object.values(errors).flat() as string[] : [];
+    const errorMessages: string[] = errors
+      ? (Object.values(errors).flat() as string[])
+      : [];
 
     if (!message) {
       if (errorMessages.length) {

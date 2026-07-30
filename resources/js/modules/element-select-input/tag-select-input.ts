@@ -112,9 +112,7 @@ export class TagSelectInput extends BaseElementSelectInput {
               if ($prev.length) this.#focusTagOption($prev);
             } else {
               this.#focusTagOption(
-                this.searchMenu.$options.eq(
-                  this.searchMenu.$options.length - 1
-                )
+                this.searchMenu.$options.eq(this.searchMenu.$options.length - 1)
               );
             }
           }
@@ -297,8 +295,12 @@ export class TagSelectInput extends BaseElementSelectInput {
       'data-editable': '1',
     }).appendTo($li);
 
-    const $chipContent = $('<div/>', {class: 'chip-content'}).appendTo($element);
-    const $titleContainer = $('<craft-element-label/>', {class: 'label'}).appendTo($chipContent);
+    const $chipContent = $('<div/>', {class: 'chip-content'}).appendTo(
+      $element
+    );
+    const $titleContainer = $('<craft-element-label/>', {
+      class: 'label',
+    }).appendTo($chipContent);
 
     $('<span/>', {class: 'label-link', text: title}).appendTo($titleContainer);
     $('<div/>', {class: 'chip-actions'}).appendTo($chipContent);

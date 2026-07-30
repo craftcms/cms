@@ -1,3 +1,4 @@
+import {registerCraftGlobals} from '@/common/craft-global';
 import {
   CustomizeSourcesModal,
   PageSettingsModal,
@@ -9,6 +10,20 @@ import {
   Heading,
 } from './customize-sources-modal';
 
+// Assign the legacy `Craft.CustomizeSourcesModal` global plus its nested classes
+// (`Craft.CustomizeSourcesModal.Page`, etc.) so PHP-emitted code and the
+// still-legacy cp bundle keep working.
+registerCraftGlobals({CustomizeSourcesModal});
+Object.assign(CustomizeSourcesModal, {
+  PageSettingsModal,
+  SourceDrag,
+  Page,
+  BaseSource,
+  Source,
+  CustomSource,
+  Heading,
+});
+
 export {
   CustomizeSourcesModal,
   PageSettingsModal,
@@ -19,17 +34,3 @@ export {
   CustomSource,
   Heading,
 };
-
-declare const window: any;
-
-export function registerCraftGlobals(): void {
-  const C = window.Craft;
-  C.CustomizeSourcesModal = CustomizeSourcesModal;
-  (C.CustomizeSourcesModal as any).PageSettingsModal = PageSettingsModal;
-  (C.CustomizeSourcesModal as any).SourceDrag = SourceDrag;
-  (C.CustomizeSourcesModal as any).Page = Page;
-  (C.CustomizeSourcesModal as any).BaseSource = BaseSource;
-  (C.CustomizeSourcesModal as any).Source = Source;
-  (C.CustomizeSourcesModal as any).CustomSource = CustomSource;
-  (C.CustomizeSourcesModal as any).Heading = Heading;
-}

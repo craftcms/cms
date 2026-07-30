@@ -15,7 +15,6 @@ const DEFAULTS = {
  * highlighted.
  */
 export class VolumeFolderSelectorModal extends BaseElementSelectorModal {
-
   constructor(settings?: any) {
     const merged = Object.assign({}, DEFAULTS, settings, {
       // showSiteMenu is always false for folder selection

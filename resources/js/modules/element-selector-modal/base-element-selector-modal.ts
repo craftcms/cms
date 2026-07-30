@@ -215,7 +215,11 @@ export class BaseElementSelectorModal extends Modal {
     ).appendTo(this.#$mainHeader);
 
     this.#$sidebarToggleBtn = Craft.ui
-      .createButton({toggle: true, controls: 'modal-sidebar', class: 'nav-toggle'})
+      .createButton({
+        toggle: true,
+        controls: 'modal-sidebar',
+        class: 'nav-toggle',
+      })
       .removeClass('btn')
       .attr('aria-label', Craft.t('app', 'Show sidebar'))
       .appendTo(this.#$mainHeader);
@@ -325,7 +329,7 @@ export class BaseElementSelectorModal extends Modal {
   }
 
   hasSelection(): boolean {
-    return !!(this.elementIndex?.getSelectedElements().length);
+    return !!this.elementIndex?.getSelectedElements().length;
   }
 
   #enableSelectBtn(): void {

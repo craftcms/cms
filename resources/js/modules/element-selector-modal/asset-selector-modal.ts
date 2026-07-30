@@ -57,15 +57,15 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
       text: Craft.t('app', 'Select transform'),
     }).appendTo($btnGroup);
 
-    const $menu = $(
-      '<div class="menu" data-align="right"></div>'
-    ).insertAfter(this.$selectTransformBtn);
+    const $menu = $('<div class="menu" data-align="right"></div>').insertAfter(
+      this.$selectTransformBtn
+    );
     const $menuList = $('<ul></ul>').appendTo($menu);
 
     for (const transform of transforms) {
-      $(`<li><a data-transform="${transform.handle}">${transform.name}</a></li>`).appendTo(
-        $menuList
-      );
+      $(
+        `<li><a data-transform="${transform.handle}">${transform.name}</a></li>`
+      ).appendTo($menuList);
     }
 
     const menuButton = new Garnish.MenuBtn(this.$selectTransformBtn, {
@@ -100,9 +100,7 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
   }
 
   #selectImagesWithTransform(transform: string): void {
-    if (
-      typeof AssetSelectorModal.transformUrls[transform] === 'undefined'
-    ) {
+    if (typeof AssetSelectorModal.transformUrls[transform] === 'undefined') {
       AssetSelectorModal.transformUrls[transform] = {};
     }
 
