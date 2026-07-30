@@ -216,6 +216,54 @@ describe('SlideoutPanel', () => {
     return {root, instance};
   }
 
+  it('spreads stacked panels across the space beside the newest one', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/screen',
+    });
+
+    const instance = await openSlideout('/screen');
+
+    const root = mount(
+      defineComponent({
+        // Second of two: sits flush against the edge, so the whole leftover
+        // width. The outer one gets half of it and peeks out behind.
+        render: () => h(SlideoutPanel, {instance, depth: 1, total: 2}),
+      })
+    );
+    await nextTick();
+
+    const panel = root.querySelector<HTMLElement>('.slideout-panel')!;
+
+    // Derived from the width rather than Craft 5's hard-coded `45vw`, so
+    // changing `--slideout-width` keeps the stack geometry correct.
+    expect(panel.getAttribute('style')).toContain(
+      'calc((100vw - var(--slideout-panel-width)) * 1)'
+    );
+  });
+
+  it('applies a per-panel width override', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/screen',
+    });
+
+    const instance = await openSlideout('/screen', {width: '40rem'});
+
+    const root = mount(
+      defineComponent({
+        render: () => h(SlideoutPanel, {instance, depth: 0, total: 1}),
+      })
+    );
+    await nextTick();
+
+    expect(
+      root.querySelector<HTMLElement>('.slideout-panel')!.getAttribute('style')
+    ).toContain('--slideout-width: 40rem');
+  });
+
   it('renders the page inside the slideout shell, not the full-page shell', async () => {
     const Page = defineComponent({
       render: () => h('div', {class: 'page-content'}, 'hello'),

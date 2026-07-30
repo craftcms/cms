@@ -51,6 +51,7 @@ export async function openSlideout(
     loading: true,
     error: null,
     opener,
+    width: options.width ?? null,
   });
 
   panels.push(panel);
