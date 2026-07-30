@@ -68,7 +68,7 @@ export function useElementIndexSort(
   const persistedSort = () => viewState.value.sources?.[sourceKey()]?.sort;
 
   function setPersistedSort(sort: Array<SortItem>): void {
-    const sources = {...(viewState.value.sources ?? {})};
+    const sources = {...viewState.value.sources};
     sources[sourceKey()] = {...sources[sourceKey()], sort};
     viewState.value.sources = sources;
   }

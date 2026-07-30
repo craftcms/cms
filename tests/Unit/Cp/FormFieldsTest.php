@@ -10,6 +10,8 @@ use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
+use CraftCms\Cms\View\TemplateManager;
+use CraftCms\Cms\View\TemplateMode;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Twig\Markup;
 
@@ -101,6 +103,36 @@ describe('fieldHtml', function () {
     });
 });
 
+describe('checkboxFieldHtml', function () {
+    it('slots the checkbox host, not its always-post hidden input', function () {
+        $html = FormFields::checkboxFieldHtml([
+            'id' => 'cb',
+            'name' => 'enabled',
+            'checkboxLabel' => 'Agree',
+        ]);
+
+        expect($html)->toContainTag('craft-checkbox', ['slot' => 'input'])
+            ->and($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'enabled', 'slot' => false])
+            ->and($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb']);
+    });
+
+    it('renders the checkbox label through the Twig macro', function () {
+        $html = app(TemplateManager::class)->renderString(
+            '{% import "_includes/forms" as forms %}'.
+            '{{ forms.checkboxField({id: "cb", name: "enabled", label: "Agree"}) }}',
+            [],
+            TemplateMode::Cp,
+        );
+
+        // The macro moves `label` onto the checkbox, so the field itself gets
+        // no label — only `fieldLabel` puts one on the <craft-field>.
+        expect($html)->toContainTag('craft-checkbox', ['slot' => 'input'])
+            ->and($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb'])
+            ->and($html)->toContain('>Agree</label>')
+            ->and($html)->toContainTag('craft-field', ['label' => false]);
+    });
+});
+
 describe('config deprecations', function () {
     it('logs a deprecation for unsupported legacy config keys', function (string $method, array $config, string $needle) {
         $logged = false;
@@ -147,6 +179,7 @@ describe('field helper methods', function () {
         ['color-input', 'colorFieldHtml'],
         ['editable', 'editableTableFieldHtml', ['name' => 'test']],
         ['lightswitch', 'lightswitchFieldHtml'],
+        ['<craft-input-password', 'passwordFieldHtml'],
         ['<select', 'selectFieldHtml'],
         ['type="text"', 'textFieldHtml'],
         ['slot="suffix"', 'textFieldHtml', ['unit' => 'Test unit']],

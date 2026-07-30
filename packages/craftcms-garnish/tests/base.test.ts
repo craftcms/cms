@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 import {Base} from '../src/base';
 import {garnishClassBus} from '../src/globals';
@@ -143,7 +143,9 @@ describe('Base DOM listeners + disabled gate', () => {
     obj.addListener(el, 'input', {type: 'singleline'}, (ev: any) => {
       received = ev;
     });
-    el.dispatchEvent(new InputEvent('input', {data: 'a', inputType: 'insertText'}));
+    el.dispatchEvent(
+      new InputEvent('input', {data: 'a', inputType: 'insertText'})
+    );
     expect(received.data).toEqual({type: 'singleline'});
   });
 

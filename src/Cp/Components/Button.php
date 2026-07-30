@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use Stringable;
@@ -57,6 +58,8 @@ class Button extends ViewComponent
     protected string|Closure|null $value = null;
 
     protected string|Closure|null $iconPosition = null;
+
+    protected array|Closure|null $action = null;
 
     protected function tagName(): string
     {
@@ -203,6 +206,18 @@ class Button extends ViewComponent
         return $this;
     }
 
+    /**
+     * Declarative action to run on click — the same `runAction()` primitives
+     * `craft-action-item` supports (`http`/`event`/`clipboard`/`download`),
+     * serialized onto the `action` attribute.
+     */
+    public function action(array|Closure|null $action): static
+    {
+        $this->action = $action;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -225,6 +240,9 @@ class Button extends ViewComponent
             'href' => $this->evaluate($this->href),
             'target' => $this->evaluate($this->target),
             'command' => $this->evaluate($this->command),
+            'action' => ($action = $this->evaluate($this->action)) !== null
+                ? Json::encode($action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                : null,
         ];
     }
 

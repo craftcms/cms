@@ -1,4 +1,5 @@
 import {elevatedSessionManager} from './manager';
+import {jq} from '@/common/utils/jquery';
 
 type FormTarget = HTMLFormElement | string | ArrayLike<HTMLFormElement>;
 type InputTarget = Element | string | ArrayLike<Element>;
@@ -51,7 +52,7 @@ function inputValue(input: Element): InputValue {
 }
 
 function passwordInput(input: Element): Element {
-  const jquery = (window as any).jQuery ?? (window as any).$;
+  const jquery = jq();
   const currentInput =
     jquery?.(input).data?.('passwordInput')?.$currentInput?.[0];
 
@@ -131,6 +132,13 @@ export class ElevatedSessionForm {
   private readonly handleSubmit = (event: SubmitEvent): void => {
     if (!this.enabled || this.resuming) {
       this.resuming = false;
+      return;
+    }
+
+    // The guard only gates native form submissions. If an earlier listener
+    // already canceled the submit (e.g. an Inertia page that intercepts the
+    // form and confirms the session itself), there is nothing to resume.
+    if (event.defaultPrevented) {
       return;
     }
 

@@ -25,6 +25,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
@@ -44,7 +45,8 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
-use CraftCms\Cms\Field\Events\LinkTypesResolving;
+use CraftCms\Cms\Field\LinkTypes;
+use CraftCms\Cms\Field\LinkTypes\Url;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Event;
 use yii\base\InvalidConfigException;
@@ -57,6 +59,16 @@ use yii\validators\Validator;
  */
 trait LegacyFieldConstants
 {
+    public const string TRANSLATION_METHOD_NONE = TranslationMethod::None->value;
+
+    public const string TRANSLATION_METHOD_SITE = TranslationMethod::Site->value;
+
+    public const string TRANSLATION_METHOD_SITE_GROUP = TranslationMethod::SiteGroup->value;
+
+    public const string TRANSLATION_METHOD_LANGUAGE = TranslationMethod::Language->value;
+
+    public const string TRANSLATION_METHOD_CUSTOM = TranslationMethod::Custom->value;
+
     public const string EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
 
     public const string EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
@@ -152,8 +164,13 @@ trait LegacyFieldConstants
         self::assetsEvents();
         self::optionsFieldEvents();
         self::relationFieldEvents();
-        self::linkEvents();
         self::matrixEvents();
+    }
+
+    /** @internal */
+    public static function finalizeRegistrationEvents(): void
+    {
+        self::linkEvents();
     }
 
     /**
@@ -253,19 +270,16 @@ trait LegacyFieldConstants
 
     private static function linkEvents(): void
     {
-        Event::listen(function(LinkTypesResolving $event) {
-            if (!YiiEvent::hasHandlers(Link::class, Link::EVENT_REGISTER_LINK_TYPES)) {
-                return;
-            }
+        if (!YiiEvent::hasHandlers(Link::class, Link::EVENT_REGISTER_LINK_TYPES)) {
+            return;
+        }
 
-            $yiiEvent = new RegisterComponentTypesEvent([
-                'types' => $event->types,
-            ]);
-
-            YiiEvent::trigger(Link::class, Link::EVENT_REGISTER_LINK_TYPES, $yiiEvent);
-
-            $event->types = $yiiEvent->types;
-        });
+        $registry = app(LinkTypes::class);
+        $types = $registry->types()->reject(fn(string $type) => $type === Url::class);
+        $yiiEvent = new RegisterComponentTypesEvent(['types' => $types->all()]);
+        YiiEvent::trigger(Link::class, Link::EVENT_REGISTER_LINK_TYPES, $yiiEvent);
+        $registry->remove(...$types->diff($yiiEvent->types));
+        $registry->register(...collect($yiiEvent->types)->diff($types));
     }
 
     /**

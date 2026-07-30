@@ -1,4 +1,4 @@
-import {build} from 'tsdown';
+import {build} from 'vite-plus/pack';
 import ora from 'ora';
 import {execSync} from 'node:child_process';
 import {mkdir} from 'fs/promises';
@@ -45,6 +45,7 @@ async function generateBundle(config = {}) {
         ...(await resolveFrom('./src/services/**/!(*.(styles|test)).ts')),
         ...(await resolveFrom('./src/utilities/**/!(*.(styles|test)).ts')),
         ...(await resolveFrom('./src/services/**/!(*.(styles|test)).ts')),
+        ...(await resolveFrom('./src/factory/**/!(*.(styles|test)).ts')),
       },
       minify: !isDeveloping,
       external: ['lit', '@lion/ui'],

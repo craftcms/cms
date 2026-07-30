@@ -89,7 +89,7 @@
           action: {
             ...item.action,
             detail: {
-              ...(item.action.detail ?? {}),
+              ...item.action.detail,
               elementType: props.elementType,
               elementIds: props.selectedIds,
             },
@@ -104,7 +104,7 @@
         action: {
           ...item.action,
           body: {
-            ...(item.action.body ?? {}),
+            ...item.action.body,
             elementType: props.elementType,
             source: props.source,
             context: props.context,

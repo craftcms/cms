@@ -1066,22 +1066,18 @@ JS, [
         ];
 
         if (! $static) {
-            $entryTypeIdsJs = Json::encode(array_map(fn (EntryType $entryType) => $entryType->id, $entryTypes));
             $config += [
                 'selectable' => true,
                 'sortable' => true,
                 'canCreate' => true,
-                'canPaste' => <<<JS
-(elementInfo) => {
-  const entryTypeIds = $entryTypeIdsJs;
-  for (const info of elementInfo) {
-    if (!entryTypeIds.includes(info.data.entryTypeId)) {
-      return false;
-    }
-  }
-  return true;
-}
-JS,
+                'canPaste' => true,
+                // A pasted entry is only allowed when its entry type belongs to
+                // this field. Expressed as data the client checks natively,
+                // rather than predicate source code the client would eval().
+                'pasteableData' => [
+                    'attribute' => 'entryTypeId',
+                    'values' => array_map(fn (EntryType $entryType) => $entryType->id, $entryTypes),
+                ],
                 'createAttributes' => array_map(fn (EntryType $entryType) => [
                     'group' => $entryType->group,
                     'icon' => $entryType->icon,

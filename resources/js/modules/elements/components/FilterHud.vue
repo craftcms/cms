@@ -1,10 +1,5 @@
 <script setup lang="ts">
-  import {
-    t,
-    appendBodyHtml,
-    appendHeadHtml,
-    ButtonVariant,
-  } from '@craftcms/ui';
+  import {t, appendBodyHtml, appendHeadHtml, ButtonVariant} from '@craftcms/ui';
   import {useHttp, usePage} from '@inertiajs/vue3';
   import {onMounted, onUnmounted, ref, useTemplateRef} from 'vue';
   import ElementIndexController from '@actions/Elements/ElementIndex/ElementIndexController';
@@ -111,11 +106,9 @@
               @click="() => emit('close')"
               >{{ t('Cancel') }}</craft-button
             >
-            <craft-button
-              type="submit"
-              :variant="ButtonVariant.Primary"
-              >{{ t('Apply') }}</craft-button
-            >
+            <craft-button type="submit" :variant="ButtonVariant.Primary">{{
+              t('Apply')
+            }}</craft-button>
           </div>
         </template>
       </form>

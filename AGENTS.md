@@ -15,10 +15,11 @@ This is a large codebase with some large files. Search narrowly before reading f
 ### PHP
 
 ```bash
-composer tests                # Run all Pest tests
+composer tests                # Run main tests only (tests/)
 composer tests-adapter        # Run yii2-adapter tests only
-./vendor/bin/pest path/to/TestFile.php          # Run a single test file
-./vendor/bin/pest --filter "test description"   # Run tests matching a name
+./vendor/bin/pest tests/path/to/TestFile.php     # Run a main test file
+composer tests-adapter -- yii2-adapter/tests-laravel/path/to/TestFile.php
+composer tests-adapter -- --filter "test description"
 composer fix-cs               # Run Rector + Pint + ECS (auto-fixes code style)
 composer phpstan              # Run PHPStan static analysis (level 5)
 composer ci                   # Full CI pipeline: pint, rector, phpstan, tests, tests-adapter
@@ -28,22 +29,23 @@ composer serve                # Start the testbench dev server
 ### Frontend
 
 ```bash
-npm run dev           # Vite dev server (HMR) for the Inertia/Vue CP
-npm run build         # Production Vite build (cp.ts + legacy.ts + cp.css)
-npm run build:all     # Build legacy bundles + CP component package + Vite
-npm run dev:bundles   # Webpack dev watch for legacy jQuery bundles
-npm run dev:ui        # Dev build for the @craftcms/ui component package
-npm run build:ui      # Production build for the @craftcms/ui component package
-npm run lint          # ESLint + Stylelint + TypeScript type-check
-npm run typecheck     # TypeScript type-check only (vue-tsc)
-npm run test:ui       # Vitest tests for the @craftcms/ui package
+vp dev                # Vite dev server (HMR) for the Inertia/Vue CP
+vp build              # Production Vite build (cp.ts + legacy.ts + cp.css)
+vp run build:all      # Build legacy bundles + CP component package + Vite
+vp run dev:bundles    # Webpack dev watch for legacy jQuery bundles
+vp run dev:ui         # Dev build for the @craftcms/ui component package
+vp run build:ui       # Production build for the @craftcms/ui component package
+vp check              # Oxfmt + Oxlint + TypeScript type-check
+vp run typecheck      # TypeScript type-check only (vue-tsc)
+vp run test:ui        # Vitest tests for the @craftcms/ui package
 ```
 
-> **Note:** `@craftcms/ui` must be built (`npm run build:ui`) before building or running the main Vite app if you've
+> **Note:** `@craftcms/ui` must be built (`vp run build:ui`) before building or running the main Vite app if you've
 > made changes to it.
 
 ## Testing
 
+- Main and adapter tests are separate Pest suites. Never mix `tests/...` and `yii2-adapter/tests-laravel/...` in one Pest invocation. Run adapter tests through `composer tests-adapter`; passing the adapter PHPUnit configuration alone is insufficient because Pest also needs the adapter test directory to load `yii2-adapter/tests-laravel/Pest.php`.
 - Pest tests using `tests/TestCase.php` or `yii2-adapter/tests-laravel/TestCase.php` share a database lock. If another process has the lock, the next process will wait and print `Another Pest process is already using the shared test database. Waiting for the lock...`.
 - `tests/Unit/` tests using `UnitTestCase` do not take that lock and can still run concurrently.
 - When writing tests, prefer real code paths, or use Laravel facades to set up service mocks.
@@ -67,6 +69,10 @@ The CP has two parallel rendering stacks that are actively being consolidated:
 **Inertia/Vue (new):** `resources/js/cp.ts` is the entrypoint. Inertia pages live in `resources/js/pages/`, shared Vue
 components in `resources/js/common/`. `HandleInertiaRequests` middleware provides shared CP config, navigation, and
 global props to all Inertia pages. The root Blade template is `resources/views/app.blade.php`.
+
+VueUse (`@vueuse/core`) is installed — before hand-rolling composable behavior in Vue code (event listeners with
+mount/unmount cleanup, media queries, storage, observers, etc.), check whether a VueUse utility already covers it
+(e.g. `useEventListener` accepts ref targets and cleans up automatically, `useMediaQuery`).
 
 **Legacy jQuery (old):** `resources/js/legacy.ts` loads the old surface. The individual jQuery modules live in
 `packages/craftcms-legacy/` and are bundled with webpack (separate from Vite). Pages still on this stack return `view()`

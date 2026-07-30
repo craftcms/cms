@@ -267,16 +267,22 @@ const SELECT_RICH_COMPONENT = {
   importPath: '../components/select-rich/select-rich',
 };
 
-// ─── Template Generators ────────────────────────────────────────────────────
+/**
+ * Combobox — uses modelValue like VALUE_COMPONENTS but needs a custom wrapper
+ * that passes `options` through as an array property (so the web component can
+ * filter and cap rendering itself).
+ */
+const COMBOBOX_COMPONENT = {
+  tagName: 'craft-combobox',
+  className: 'CraftCombobox',
+  fileName: 'CraftCombobox',
+  // Values are strings at the DOM level, but consumers bind number/boolean refs
+  // for env-backed fields; keep the model type permissive to match.
+  modelType: 'string | number | boolean',
+  importPath: '../components/combobox/combobox',
+};
 
-function generateSlotForwards(slots) {
-  return slots
-    .map(
-      (slot) =>
-        `    <slot name="${slot}"><template v-if="$slots['${slot}']"><template v-for="(_, name) in $slots" :key="name"><slot :name="name" v-if="name === '${slot}'"></slot></template></template></slot>`
-    )
-    .join('\n');
-}
+// ─── Template Generators ────────────────────────────────────────────────────
 
 /**
  * Actually, using Vue's slot forwarding with web component slots is tricky.
@@ -306,12 +312,22 @@ function generateValueWrapper(component) {
   defineProps<{
     error?: null | string
   }>()
+
+  function onModelValueChanged(event: Event) {
+    // Ignore Lion's initial model-value-changed (detail.initialize=true), which
+    // carries the element's default value before Vue's binding settles and would
+    // otherwise clobber the bound value on mount.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    model.value = (event.target as ${component.className})?.modelValue ?? undefined;
+  }
 </script>
 
 <template>
   <${component.tagName}
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -347,12 +363,21 @@ function generateCheckedWrapper(component) {
   const emit = defineEmits<{
     'update:modelValue': [value: boolean]
   }>();
+
+  function onModelValueChanged(event: Event) {
+    // Ignore Lion's initial model-value-changed (detail.initialize=true) so the
+    // element's default value can't clobber the bound value on mount.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    emit('update:modelValue', (event.target as ${component.className})?.checked ?? false);
+  }
 </script>
 
 <template>
   <${component.tagName}
     .checked="props.modelValue ?? false"
-    @model-value-changed="emit('update:modelValue', ($event.target as ${component.className})?.checked ?? false)"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -385,12 +410,21 @@ function generateGroupWrapper(component) {
   }>()
 
   const model = defineModel<${component.modelType}>();
+
+  function onModelValueChanged(event: Event) {
+    // Ignore Lion's initial model-value-changed (detail.initialize=true) so the
+    // element's default value can't clobber the bound value on mount.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    model.value = (event.target as ${component.className})?.modelValue ?? undefined;
+  }
 </script>
 
 <template>
   <${component.tagName}
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue ?? undefined"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
@@ -454,17 +488,26 @@ function generateSelectRichWrapper(component) {
   });
   
   const model = defineModel<${component.modelType}>();
-  
+
   defineProps<{
     error?: null | string
     options?: SelectRichOption[]
   }>()
+
+  function onModelValueChanged(event: Event) {
+    // Ignore Lion's initial model-value-changed (detail.initialize=true) so the
+    // element's default value can't clobber the bound value on mount.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    model.value = (event.target as ${component.className})?.modelValue;
+  }
 </script>
 
 <template>
   <${component.tagName}
     .modelValue="model"
-    @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
+    @model-value-changed="onModelValueChanged"
     :has-feedback-for="error ? 'error' : ''"
   >
     <craft-option
@@ -476,7 +519,91 @@ function generateSelectRichWrapper(component) {
         {{ option.label }}
       </slot>
     </craft-option>
-    
+
+    <div slot="feedback">
+      <ul class="error-list" v-if="error">
+        <li>{{ error }}</li>
+      </ul>
+    </div>
+  </${component.tagName}>
+</template>
+`;
+}
+
+function generateComboboxWrapper(component) {
+  return `<!--
+  Auto-generated Vue wrapper for <${component.tagName}>
+  Provides v-model support and passes options through as an array property so
+  the web component can filter and cap rendering itself (large-list performance).
+  Generated by: scripts/generate-vue-wrappers.js
+-->
+<script setup lang="ts">
+  import type ${component.className} from '${component.importPath}.ts.mjs';
+
+  export interface ComboboxOption {
+    label: string;
+    value: string;
+    type?: 'option';
+    data?: Record<string, any> | null;
+  }
+
+  export interface ComboboxOptGroup {
+    type: 'optgroup';
+    label: string;
+    options: ComboboxOption[];
+  }
+
+  export type ComboboxItem = ComboboxOption | ComboboxOptGroup;
+
+  defineOptions({
+    name: '${component.className}',
+  });
+
+  const model = defineModel<${component.modelType}>();
+
+  withDefaults(
+    defineProps<{
+      error?: null | string;
+      options?: ComboboxItem[];
+      requireOptionMatch?: boolean;
+      showAllOnEmpty?: boolean;
+      clearable?: boolean;
+      limit?: number;
+    }>(),
+    {
+      options: () => [],
+      requireOptionMatch: false,
+      showAllOnEmpty: false,
+      clearable: false,
+      limit: 150,
+    }
+  );
+
+  function onModelValueChanged(event: Event) {
+    // Lion fires an initial model-value-changed with detail.initialize=true and
+    // its default (empty) value while the element boots — before Vue's
+    // .modelValue binding has settled. Honoring that flag (as Lion's own
+    // form-group repropagation does) prevents it from clobbering a bound value.
+    if ((event as CustomEvent).detail?.initialize) {
+      return;
+    }
+    model.value = (event.target as ${component.className})?.modelValue ?? undefined;
+  }
+</script>
+
+<template>
+  <${component.tagName}
+    .options="options"
+    .requireOptionMatch="requireOptionMatch"
+    .showAllOnEmpty="showAllOnEmpty"
+    .clearable="clearable"
+    .limit="limit"
+    .modelValue="model"
+    @model-value-changed="onModelValueChanged"
+    :has-feedback-for="error ? 'error' : ''"
+  >
+    <slot></slot>
+
     <div slot="feedback">
       <ul class="error-list" v-if="error">
         <li>{{ error }}</li>
@@ -831,6 +958,19 @@ export default function main() {
   {
     const component = SELECT_RICH_COMPONENT;
     const content = generateSelectRichWrapper(component);
+    const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
+    writeFileSync(filePath, content);
+    const declContent = generateValueDeclaration(component);
+    const declPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
+    writeFileSync(declPath, declContent);
+    console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
+    count++;
+  }
+
+  // Generate combobox wrapper (overwrites the value wrapper written above)
+  {
+    const component = COMBOBOX_COMPONENT;
+    const content = generateComboboxWrapper(component);
     const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
     writeFileSync(filePath, content);
     const declContent = generateValueDeclaration(component);

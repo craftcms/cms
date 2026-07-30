@@ -83,7 +83,12 @@
 <template>
   <LayoutSlot name="actions">
     <Link :href="create()">
-      <craft-button v-if="!readOnly" type="button" icon="plus" :variant="ButtonVariant.Primary">
+      <craft-button
+        v-if="!readOnly"
+        type="button"
+        icon="plus"
+        :variant="ButtonVariant.Primary"
+      >
         {{ t('New route') }}
       </craft-button>
     </Link>

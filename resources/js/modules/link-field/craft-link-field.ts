@@ -140,7 +140,7 @@ class CraftLinkField extends LitElement {
       return;
     }
 
-    const config = {...(type.elementSelectConfig ?? {})};
+    const config = {...type.elementSelectConfig};
     delete config.elementType;
     delete config.limit;
     delete config.single;

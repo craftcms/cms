@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
@@ -7,15 +9,26 @@ use craft\events\ExceptionEvent;
 use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
+use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
+use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlArguments;
+use CraftCms\Cms\Gql\GqlDirectives;
+use CraftCms\Cms\Gql\GqlTypes;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
-use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
+use CraftCms\Cms\User\UserPermissions;
+use CraftCms\Cms\Utility\UtilityTypes;
+use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateRoots;
+use CraftCms\Yii2Adapter\Asset\LegacyAssetFileKinds;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
@@ -28,16 +41,25 @@ use CraftCms\Yii2Adapter\Console\LegacyCommandCompatibility;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
+use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
+use CraftCms\Yii2Adapter\Gql\LegacyGql;
+use CraftCms\Yii2Adapter\Gql\LegacyGqlArguments;
+use CraftCms\Yii2Adapter\Gql\LegacyGqlDirectives;
+use CraftCms\Yii2Adapter\Gql\LegacyGqlTypes;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Http\HandleYiiSiteRouteFallback;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
+use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
+use CraftCms\Yii2Adapter\SystemMessage\LegacySystemMessages;
+use CraftCms\Yii2Adapter\User\LegacyUserPermissions;
+use CraftCms\Yii2Adapter\Utility\LegacyUtilityTypes;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -47,6 +69,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Override;
 use PDOException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -58,6 +81,7 @@ use yii\web\NotFoundHttpException as YiiNotFoundHttpException;
 
 class Yii2ServiceProvider extends ServiceProvider
 {
+    #[Override]
     public function register(): void
     {
         new ClassAliases()->register();
@@ -74,7 +98,15 @@ class Yii2ServiceProvider extends ServiceProvider
         new LegacyApp()->register($this->app);
         new CompatibilityMixins()->register();
         new FilesystemCompatibility()->register($this->app);
-
+        $this->app->singleton(AssetFileKinds::class, LegacyAssetFileKinds::class);
+        $this->app->singleton(Settings::class, LegacySettings::class);
+        $this->app->singleton(GqlArguments::class, LegacyGqlArguments::class);
+        $this->app->singleton(GqlDirectives::class, LegacyGqlDirectives::class);
+        $this->app->singleton(GqlTypes::class, LegacyGqlTypes::class);
+        $this->app->scoped(Gql::class, LegacyGql::class);
+        $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
+        $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
+        $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
         /**
          * Load the legacy fallback route from booted() so it registers after
          * the CMS package's own Route::fallback(), ensuring that unmatched
@@ -114,10 +146,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
     private function registerLegacySiteTemplateRoot(): void
     {
-        Event::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event): void {
-            $event->roots[''] ??= [];
-            $event->roots[''] = array_merge((array)$event->roots[''], [base_path('templates')]);
-        });
+        $this->app->make(TemplateRoots::class)->register(TemplateMode::Site, '', base_path('templates'));
     }
 
     /**
@@ -214,6 +243,11 @@ class Yii2ServiceProvider extends ServiceProvider
         $kernel->prependMiddleware(CaptureOriginalActionRequestUri::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft', PrepareLegacyCraftApp::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft.web', HandleYiiSiteRouteFallback::class);
+        $this->app->make(Router::class)->pushMiddlewareToGroup('craft.cp', RegisterLegacyCompatAssets::class);
+
+        $this->publishes([
+            __DIR__ . '/../legacy/web/assets/cpcompat' => public_path('vendor/craft/adapter/cpcompat'),
+        ], ['craftcms', 'craftcms-assets']);
 
         $this->commands([
             AddCategoriesSupportCommand::class,

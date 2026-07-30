@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {ElevatedSessionForm} from './elevated-session-form';
 
 describe('ElevatedSessionForm', () => {
@@ -35,6 +35,24 @@ describe('ElevatedSessionForm', () => {
       '<input class="permission" name="permissions[]" value="edit">'
     );
     expect(elevatedForm.inputsChanged()).toBe(true);
+  });
+
+  it('stands down when an earlier listener already canceled the submit', async () => {
+    document.body.innerHTML = `
+      <form id="settings">
+        <input name="name" value="Original">
+      </form>
+    `;
+    const form = document.querySelector<HTMLFormElement>('#settings')!;
+    form.addEventListener('submit', (event) => event.preventDefault());
+    const manager = {require: vi.fn().mockResolvedValue(true)};
+    new ElevatedSessionForm(form, '[name="name"]', manager);
+    form.querySelector<HTMLInputElement>('[name="name"]')!.value = 'Changed';
+
+    form.requestSubmit();
+    await Promise.resolve();
+
+    expect(manager.require).not.toHaveBeenCalled();
   });
 
   it('resubmits with the original submitter after confirmation', async () => {

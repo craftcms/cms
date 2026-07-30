@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
 
@@ -172,5 +172,93 @@ describe('craft-button link semantics', () => {
 
     expect(element.getAttribute('role')).toBe('button');
     expect(element.tabIndex).toBe(0);
+  });
+});
+
+describe('craft-button actions', () => {
+  it('parses a JSON action attribute into the action property', async () => {
+    const element = await createButton({
+      action: '{"type":"event","name":"craft:test"}',
+    });
+    expect(element.action).toEqual({type: 'event', name: 'craft:test'});
+  });
+
+  it('runs an event action on click, with trigger and sourceEvent in the detail', async () => {
+    const element = await createButton({
+      action:
+        '{"type":"event","name":"craft:test-action","detail":{"foo":"bar"}}',
+    });
+
+    let detail: any = null;
+    window.addEventListener(
+      'craft:test-action',
+      ((ev: CustomEvent) => {
+        detail = ev.detail;
+      }) as EventListener,
+      {once: true}
+    );
+    element.click();
+
+    expect(detail).not.toBeNull();
+    expect(detail.foo).toBe('bar');
+    expect(detail.trigger).toBe(element);
+    expect(detail.sourceEvent).toBeInstanceOf(Event);
+  });
+
+  it('runs an action assigned as a raw JSON string property (Vue in-DOM compilation)', async () => {
+    const element = await createButton();
+    element.action = '{"type":"event","name":"craft:test-string"}';
+
+    let fired = false;
+    window.addEventListener(
+      'craft:test-string',
+      () => {
+        fired = true;
+      },
+      {once: true}
+    );
+    element.click();
+
+    expect(fired).toBe(true);
+  });
+
+  it('does not run the action when disabled', async () => {
+    const element = await createButton({
+      action: '{"type":"event","name":"craft:test-disabled"}',
+      disabled: '',
+    });
+
+    let fired = false;
+    window.addEventListener(
+      'craft:test-disabled',
+      () => {
+        fired = true;
+      },
+      {once: true}
+    );
+    element.click();
+
+    expect(fired).toBe(false);
+  });
+
+  it('stops running the action once it is removed', async () => {
+    const element = await createButton({
+      action: '{"type":"event","name":"craft:test-removed"}',
+    });
+    element.removeAttribute('action');
+    element.action = null;
+    await element.updateComplete;
+
+    let fired = false;
+    window.addEventListener(
+      'craft:test-removed',
+      () => {
+        fired = true;
+      },
+      {once: true}
+    );
+    element.click();
+
+    expect(fired).toBe(false);
   });
 });

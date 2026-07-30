@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -15,10 +17,10 @@ use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
-use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Dashboard\WidgetTypes;
+use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
 use DateTime;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Component;
@@ -29,6 +31,7 @@ use yii\base\Component;
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getDashboard()|`Craft::$app->getDashboard()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Dashboard\Dashboard::class)` instead.
  */
@@ -80,20 +83,23 @@ class Dashboard extends Component
      * Returns all available widget type classes.
      *
      * @return string[]
+     *
      * @phpstan-return class-string<WidgetInterface>[]
      */
     public function getAllWidgetTypes(): array
     {
-        return app(\CraftCms\Cms\Dashboard\Dashboard::class)->getAllWidgetTypes()->all();
+        return app(WidgetTypes::class)->types()->all();
     }
 
     /**
      * Creates a widget with a given config.
      *
      * @template T of WidgetInterface
-     * @param class-string<T>|array $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     *
+     * @param  class-string<T>|array  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int,dateCreated?:DateTime,dateUpdated?:DateTime,colspan?:int,settings?:array|string} $config
+     *
      * @return T
      */
     public function createWidget(mixed $config): WidgetInterface
@@ -114,8 +120,7 @@ class Dashboard extends Component
     /**
      * Returns whether the current user has a widget of the given type.
      *
-     * @param class-string<WidgetInterface> $type The widget type
-     *
+     * @param  class-string<WidgetInterface>  $type  The widget type
      * @return bool Whether the current user has a widget of the given type
      */
     public function doesUserHaveWidget(string $type): bool
@@ -126,8 +131,7 @@ class Dashboard extends Component
     /**
      * Returns a widget by its ID.
      *
-     * @param int $id The widget’s ID
-     *
+     * @param  int  $id  The widget’s ID
      * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
     public function getWidgetById(int $id): ?WidgetInterface
@@ -138,10 +142,10 @@ class Dashboard extends Component
     /**
      * Saves a widget for the current user.
      *
-     * @param WidgetInterface $widget The widget to be saved
-     * @param bool $runValidation Whether the widget should be validated
-     *
+     * @param  WidgetInterface  $widget  The widget to be saved
+     * @param  bool  $runValidation  Whether the widget should be validated
      * @return bool Whether the widget was saved successfully
+     *
      * @throws Throwable if reasons
      */
     public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
@@ -152,7 +156,7 @@ class Dashboard extends Component
     /**
      * Deletes a widget by its ID.
      *
-     * @param int $widgetId The widget’s ID
+     * @param  int  $widgetId  The widget’s ID
      * @return bool Whether the widget was deleted successfully
      */
     public function deleteWidgetById(int $widgetId): bool
@@ -163,9 +167,9 @@ class Dashboard extends Component
     /**
      * Deletes a widget.
      *
-     * @param WidgetInterface $widget The widget to be deleted
-     *
+     * @param  WidgetInterface  $widget  The widget to be deleted
      * @return bool Whether the widget was deleted successfully
+     *
      * @throws Throwable if reasons
      */
     public function deleteWidget(WidgetInterface $widget): bool
@@ -176,8 +180,9 @@ class Dashboard extends Component
     /**
      * Reorders widgets.
      *
-     * @param int[] $widgetIds The widget IDs
+     * @param  int[]  $widgetIds  The widget IDs
      * @return bool Whether the widgets were reordered successfully
+     *
      * @throws Throwable if reasons
      */
     public function reorderWidgets(array $widgetIds): bool
@@ -187,29 +192,20 @@ class Dashboard extends Component
 
     /**
      * Changes the colspan of a widget.
-     *
-     * @param int $widgetId
-     * @param int $colspan
-     * @return bool
      */
     public function changeWidgetColspan(int $widgetId, int $colspan): bool
     {
         return app(\CraftCms\Cms\Dashboard\Dashboard::class)->changeWidgetColspan($widgetId, $colspan);
     }
 
+    /** @internal */
+    public static function finalizeRegistrationEvents(): void
+    {
+        TypeRegistryCompatibility::reconcile(app(WidgetTypes::class), Craft::$app->getDashboard(), self::EVENT_REGISTER_WIDGET_TYPES);
+    }
+
     public static function registerEvents(): void
     {
-        // Fire a 'registerWidgetTypes' event
-        Event::listen(WidgetTypesResolving::class, function(WidgetTypesResolving $event) {
-            $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
-            Craft::$app->getDashboard()->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $yiiEvent);
-
-            /** @var array<class-string<WidgetInterface>> $types */
-            $types = $yiiEvent->types;
-
-            $event->types = Collection::make($types);
-        });
-
         // Fire a 'beforeSaveWidget' event
         Event::listen(WidgetSaving::class, function(WidgetSaving $event) {
             Craft::$app->getDashboard()->trigger(self::EVENT_BEFORE_SAVE_WIDGET, $yiiEvent = new WidgetEvent([

@@ -32,9 +32,14 @@ trait RespondsWithFlash
 
         request()->flash();
 
+        // Attributes with no messages must not reach the session error bag:
+        // Inertia's middleware resolves each entry's first message and 500s
+        // on an empty one.
+        $errors = array_filter($data['errors'] ?? []);
+
         return back()
             ->with('error', $message)
-            ->with($data)->withErrors($data['errors'] ?? []);
+            ->with($data)->withErrors($errors);
     }
 
     public function asJsonFailure(?string $message = null, array $data = []): JsonResponse

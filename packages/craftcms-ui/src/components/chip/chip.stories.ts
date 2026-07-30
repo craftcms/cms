@@ -81,11 +81,7 @@ export const Colors: Story = {
           ([name, value]) =>
             html`<craft-chip data-color="${value}">
               ${name}
-              <craft-button
-                size="small"
-                slot="suffix"
-                inherit
-                variant="plain"
+              <craft-button size="small" slot="suffix" inherit variant="plain"
                 >Button</craft-button
               >
             </craft-chip>`

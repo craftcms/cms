@@ -1156,10 +1156,8 @@ class Asset extends Element
     public function setAttributesFromRequest(array $values): void
     {
         // alt='' actually means something, so we should preserve it.
-        $alt = Arr::pull($values, 'alt');
-
-        if ($alt !== null) {
-            $this->alt = $alt;
+        if (Arr::has($values, 'alt')) {
+            $this->alt = Arr::pull($values, 'alt') ?? '';
         }
 
         parent::setAttributesFromRequest($values);
@@ -1578,16 +1576,15 @@ JS, [
                     'label' => t('Filesystem settings'),
                 ];
 
-                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
+                HtmlStack::jsWithVars(fn ($id, $url) => <<<JS
 (() => {
   $('#' + $id).on('activate', function() {
-    const params = $params;
-    new Craft.CpScreenSlideout('fs/edit', {params});
+    new Craft.CpScreenSlideout($url);
   });
 })();
 JS, [
                     InputNamespace::namespaceId($fsEditId),
-                    ['handle' => $fsHandle],
+                    Url::cpUrl("settings/filesystems/$fsHandle/edit"),
                 ]);
             }
         }

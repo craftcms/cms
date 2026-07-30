@@ -48,7 +48,11 @@
   // new identity (and order) whenever a checkbox toggles, and re-snapshotting
   // then would re-sort the list mid-edit.
   watch(
-    () => [...props.options.map((option) => option.value)].sort().join(','),
+    () =>
+      props.options
+        .map((option) => option.value)
+        .sort()
+        .join(','),
     () => takeSnapshot()
   );
 

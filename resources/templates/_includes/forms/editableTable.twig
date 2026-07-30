@@ -93,7 +93,7 @@
                 &nbsp;
               {%- endif %}
               {%- if col.info is defined -%}
-                <span class="info{% if static %} disabled{% endif %}"{% if static %} disabled=""{% endif %}>{{ col.info|md|raw }}</span>
+                <craft-info-icon{% if static %} disabled=""{% endif %}>{{ col.info|md|raw }}</craft-info-icon>
               {%- endif -%}
             </th>
           {% endfor %}

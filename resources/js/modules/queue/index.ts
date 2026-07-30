@@ -1,4 +1,5 @@
 import {QueueService} from './queue';
+import {registerCraftGlobals} from '@/common/craft-global';
 
 /**
  * Legacy and plugin code reaches the queue through the `Craft` global rather
@@ -10,8 +11,7 @@ import {QueueService} from './queue';
  * module scripts have run — so it imports `./queue` directly and bundles its
  * own copy.
  */
-const craft = (window as any).Craft ?? ((window as any).Craft = {});
-craft.QueueService = QueueService;
+registerCraftGlobals({QueueService});
 
 export {QueueService};
 export * from './types';

@@ -14,6 +14,8 @@ use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Input;
+use CraftCms\Cms\Cp\Components\InputColor;
+use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
@@ -639,7 +641,33 @@ readonly class FormFields
 
     public static function colorHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/color', $config);
+        return self::colorFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy color config surface onto the {@see InputColor} component
+     * — the PHP twin of the `_includes/forms/color` glue template. The value is
+     * stored as bare hex (the component renders its own leading `#`, swatch, and
+     * native picker, replacing the legacy Craft.ColorInput markup + JS), and
+     * `presets` pass through to the picker datalist. The legacy `.color-input`
+     * input class is preserved for any CSS/JS still keyed on it.
+     */
+    public static function colorFromConfig(array $config): InputColor
+    {
+        $value = $config['value'] ?? null;
+        $classes = Html::explodeClass($config['class'] ?? []);
+        $classes[] = 'color-input';
+
+        $input = InputColor::make();
+        self::textFromConfig(array_merge($config, [
+            'value' => $value !== null ? ltrim((string) $value, '#') : null,
+            'size' => $config['size'] ?? 10,
+            'class' => $classes,
+            'autocorrect' => false,
+            'autocapitalize' => false,
+        ]), $input);
+
+        return $input->presets($config['presets'] ?? []);
     }
 
     public static function colorFieldHtml(array $config): string
@@ -647,7 +675,10 @@ readonly class FormFields
         $config['id'] ??= 'color'.mt_rand();
         $config['fieldset'] = true;
 
-        return self::fieldHtml('template:_includes/forms/color', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::colorFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     public static function colorSelectFieldHtml(array $config): string
@@ -665,6 +696,10 @@ readonly class FormFields
     public static function iconPickerFieldHtml(array $config): string
     {
         $config['id'] ??= 'iconpicker'.mt_rand();
+        // The <craft-icon-picker> control has no single labelable input (preview +
+        // buttons), so label the group with a fieldset legend rather than a
+        // `for=` label — and keep the component itself label-less.
+        $config['fieldset'] = true;
 
         return self::fieldHtml('template:_includes/forms/iconPicker', $config);
     }
@@ -815,14 +850,14 @@ readonly class FormFields
      * A `maxlength` alone keeps the legacy full-width behavior unless a
      * `width` is configured, since the web component would otherwise shrink.
      */
-    public static function textFromConfig(array $config): Input
+    public static function textFromConfig(array $config, ?Input $input = null): Input
     {
         $inputAttributes = $config['inputAttributes'] ?? [];
         $size = ($config['size'] ?? false) ?: null;
         $maxlength = ($config['maxlength'] ?? false) ?: null;
         $value = $config['value'] ?? null;
 
-        return Input::make()
+        return ($input ?? Input::make())
             ->id($config['id'] ?? 'text'.mt_rand())
             ->type($config['type'] ?? 'text')
             ->name($config['name'] ?? null)
@@ -862,6 +897,42 @@ readonly class FormFields
 
         return self::fieldHtml(
             fn (array $c): string => self::textFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    public static function passwordHtml(array $config): string
+    {
+        return self::passwordFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy password config surface onto the {@see InputPassword}
+     * component — the PHP twin of the `_includes/forms/password` glue template.
+     * A password input is a text input with a fixed type plus the component's
+     * built-in reveal toggle (which replaces the legacy Craft.PasswordInput JS),
+     * so this reuses the text mapping and swaps the component. The legacy
+     * `.password` input class is preserved for any CSS/JS still keyed on it.
+     */
+    public static function passwordFromConfig(array $config): InputPassword
+    {
+        $config['type'] = 'password';
+        $classes = Html::explodeClass($config['class'] ?? []);
+        $classes[] = 'password';
+        $config['class'] = $classes;
+
+        $input = InputPassword::make();
+        self::textFromConfig($config, $input);
+
+        return $input;
+    }
+
+    public static function passwordFieldHtml(array $config): string
+    {
+        $config['id'] ??= 'password'.mt_rand();
+
+        return self::fieldHtml(
+            fn (array $c): string => self::passwordFromConfig($c)->toHtml(),
             $config,
         );
     }

@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftField from './field.js';
 import './field.js';
 
@@ -398,5 +398,43 @@ describe('craft-field heading prefix/suffix', () => {
     );
     expect(slotNames[0]).toBe('heading-prefix');
     expect(slotNames[slotNames.length - 1]).toBe('heading-suffix');
+  });
+});
+
+describe('craft-field control width mirroring', () => {
+  it('reflects the slotted control maxlength as has-maxlength', async () => {
+    const element = await createField(
+      {},
+      '<input slot="input" type="text" maxlength="255">'
+    );
+
+    expect(element.hasAttribute('has-maxlength')).toBe(true);
+  });
+
+  it('mirrors the slotted control width override onto the host', async () => {
+    const element = await createField(
+      {},
+      '<input slot="input" type="text" maxlength="255" width="full">'
+    );
+
+    expect(element.getAttribute('width')).toBe('full');
+  });
+
+  it('keeps an explicit host width over the control width', async () => {
+    const element = await createField(
+      {width: 'auto'},
+      '<input slot="input" type="text" width="full">'
+    );
+
+    expect(element.getAttribute('width')).toBe('auto');
+  });
+
+  it('does not set a width without a control override', async () => {
+    const element = await createField(
+      {},
+      '<input slot="input" type="text" maxlength="255">'
+    );
+
+    expect(element.hasAttribute('width')).toBe(false);
   });
 });
