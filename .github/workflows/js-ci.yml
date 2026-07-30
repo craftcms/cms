@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
   PHP_VERSION: '8.5'
 
 permissions:
@@ -34,11 +34,11 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: true
 
       - name: Compute cache key
         id: cache-key
@@ -47,7 +47,7 @@ jobs:
         # `testbench typescript:transform` and `testbench wayfinder:generate`
         # derive their output from controllers, DTOs, and routes in src/.
         run: |
-          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/tsdown.config.*', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
+          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore install + build + generated cache
         id: cache
@@ -69,9 +69,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: composer install --no-interaction --no-progress
 
-      - name: Install npm dependencies
+      - name: Install frontend dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: vp install --frozen-lockfile
         env:
           CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
@@ -80,29 +80,29 @@ jobs:
       # Without this the typecheck job fails to resolve the module.
       - name: Build @craftcms/garnish
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run build:garnish
+        run: vp run build:garnish
 
       - name: Build @craftcms/ui
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run build:ui
+        run: vp run build:ui
 
       # `build:cp` does not produce the Custom Elements Manifest (only the
       # Storybook pre-hooks do), so generate it explicitly — it lands in the
       # packages/craftcms-cp/dist cache path above for the downstream jobs.
       - name: Build Custom Elements Manifest
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cd ./packages/craftcms-ui && npm run build:manifest
+        run: vp run @craftcms/ui#build:manifest
 
       - name: Generate TypeScript types
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run generate:types
+        run: vp run generate:types
 
       - name: Generate Wayfinder routes
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run generate:wayfinder
+        run: vp run generate:wayfinder
 
   eslint:
-    name: 'Code Quality / ESLint'
+    name: 'Code Quality / Oxlint'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: setup
@@ -110,11 +110,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: true
 
       - name: Restore install + build + generated cache
         uses: actions/cache@v4
@@ -131,8 +131,8 @@ jobs:
             resources/js/generated
           key: ${{ needs.setup.outputs.cache-key }}
 
-      - name: Run ESLint
-        run: npm run lint:js
+      - name: Run Oxlint
+        run: vp lint resources/js/
 
   typecheck:
     name: 'Code Quality / TypeScript'
@@ -143,11 +143,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: true
 
       - name: Restore install + build + generated cache
         uses: actions/cache@v4
@@ -168,7 +168,7 @@ jobs:
       # generate:wayfinder, which need PHP/Composer that this job doesn't set
       # up — the setup job already produced and cached the output).
       - name: Run TypeScript type check
-        run: npm run typecheck
+        run: vp run typecheck
 
   test-ui:
     name: 'Tests / @craftcms/ui'
@@ -179,11 +179,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: true
 
       - name: Restore install + build + generated cache
         uses: actions/cache@v4
@@ -202,7 +202,7 @@ jobs:
 
       # The storybook tests run in real Chromium via @vitest/browser-playwright.
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: vp exec playwright install --with-deps chromium
 
       - name: Run @craftcms/ui tests
-        run: npm run test:ui
+        run: vp run test:ui

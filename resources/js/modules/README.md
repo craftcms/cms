@@ -94,7 +94,7 @@ reads it back through a settings callback).
 
 ## Verification
 
-- `npm run typecheck` (root) and `npx eslint` on the touched files; prettier.
+- `vp check` on the touched files.
 - Behavior is verified live against the dev install (the CP), since these manage
   real server-rendered markup — typecheck/lint alone can't catch a broken boot.
 

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
+- Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
+- Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
+- Added `CraftCms\Cms\Image\Raster::getInterventionImage()`.
+- Changed `CraftCms\Cms\Image\Raster::getTextBox()` to return a `width` and `height` array.
+- Removed `CraftCms\Cms\Image\Raster::getImagineImage()`.
+- Removed `CraftCms\Cms\Image\Images::MINIMUM_IMAGICK_VERSION` and `craft\services\Images::MINIMUM_IMAGICK_VERSION`.
 - Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements, including dependency-injected closure values.
 - Added support for configuring field layout field instruction positions.
 - Added the `@craftcms/ui/factory` module, a jQuery-free layer of typed element factories that mirror the `src/Cp/Components` PHP builders. ([#19323](https://github.com/craftcms/cms/pull/19323))
@@ -95,6 +102,7 @@
 - Fixed a bug where element deletion confirmation dialogs could display unresolved pluralization syntax. ([#19311](https://github.com/craftcms/cms/issues/19311))
 - Fixed a bug where replacing an asset would fail silently. ([#19312](https://github.com/craftcms/cms/issues/19312))
 - Fixed JavaScript errors that could occur throughout the control panel. ([#19313](https://github.com/craftcms/cms/issues/19313))
+- Fixed a bug where `forms.checkboxField()` and `CraftCms\Cms\Cp\FormFields::checkboxFieldHtml()` rendered an empty field. ([#19338](https://github.com/craftcms/cms/pull/19338))
 
 ## 6.0.0-alpha.14 - 2026-07-22
 

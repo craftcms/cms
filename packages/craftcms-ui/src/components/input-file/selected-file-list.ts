@@ -54,7 +54,7 @@ export default class CraftSelectedFileList extends LionSelectedFileList {
     ];
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // oxlint-disable-next-line no-unused-vars
   override _listItemAfterTemplate(file: InputFile, fileUuid: string) {
     return html`
       <craft-button
