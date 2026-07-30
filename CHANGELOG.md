@@ -102,6 +102,7 @@
 - Fixed a bug where element deletion confirmation dialogs could display unresolved pluralization syntax. ([#19311](https://github.com/craftcms/cms/issues/19311))
 - Fixed a bug where replacing an asset would fail silently. ([#19312](https://github.com/craftcms/cms/issues/19312))
 - Fixed JavaScript errors that could occur throughout the control panel. ([#19313](https://github.com/craftcms/cms/issues/19313))
+- Fixed a bug where `forms.checkboxField()` and `CraftCms\Cms\Cp\FormFields::checkboxFieldHtml()` rendered an empty field. ([#19338](https://github.com/craftcms/cms/pull/19338))
 
 ## 6.0.0-alpha.14 - 2026-07-22
 
