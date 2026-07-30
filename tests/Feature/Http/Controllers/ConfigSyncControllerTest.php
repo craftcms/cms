@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
@@ -28,33 +29,38 @@ beforeEach(function () {
 });
 
 dataset('routes', [
-    [ConfigSyncController::class, 'index'],
-    [ConfigSyncController::class, 'retry'],
-    [ConfigSyncController::class, 'applyYamlChanges'],
-    [ConfigSyncController::class, 'regenerateYaml'],
-    [ConfigSyncController::class, 'uninstallPlugin'],
-    [ConfigSyncController::class, 'installPlugin'],
-    [ConfigSyncController::class, 'precheck'],
-    [ConfigSyncController::class, 'recheckComposer'],
-    [ConfigSyncController::class, 'composerInstall'],
-    [ConfigSyncController::class, 'composerRemove'],
-    [ConfigSyncController::class, 'finish'],
+    'index',
+    'retry',
+    'applyYamlChanges',
+    'regenerateYaml',
+    'uninstallPlugin',
+    'installPlugin',
+    'precheck',
+    'recheckComposer',
+    'composerInstall',
+    'composerRemove',
+    'finish',
 ]);
 
-it('requires authentication all routes', function (string $controller, string $action) {
-    auth()->logout();
-
-    postJson(action([$controller, $action]))->assertUnauthorized();
+it('uses normal CP routes', function (string $action) {
+    expect(parse_url(action([ConfigSyncController::class, $action]), PHP_URL_PATH))
+        ->toStartWith(parse_url(cp_url('config-sync'), PHP_URL_PATH));
 })->with('routes');
 
-test('all routes validate data', function (string $controller, string $action) {
+it('requires authentication all routes', function (string $action) {
+    auth()->logout();
+
+    postJson(action([ConfigSyncController::class, $action]))->assertUnauthorized();
+})->with('routes');
+
+test('all routes validate data', function (string $action) {
     if ($action === 'index') {
-        post(action([$controller, $action]))->assertOk();
+        post(action([ConfigSyncController::class, $action]))->assertOk();
 
         return;
     }
 
-    postJson(action([$controller, $action]), [
+    postJson(action([ConfigSyncController::class, $action]), [
         'data' => 'invalid-data',
     ])->assertJsonValidationErrors([
         'data',
@@ -67,7 +73,7 @@ test('index returns Inertia Updater page', function () {
             ->component('updater/Index')
             ->has('title')
             ->has('initialState')
-            ->has('actionPrefix')
+            ->where('initialState.finishUrl', action([ConfigSyncController::class, 'finish']))
             ->has('returnUrl')
         );
 });

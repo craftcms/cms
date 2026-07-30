@@ -86,9 +86,9 @@
     "laravel/pint": "^1.22",
     "laravel/socialite": "^5.23",
     "orchestra/testbench": "^11.0",
-    "pestphp/pest": "^4.0",
-    "pestphp/pest-plugin-arch": "^4.0",
-    "pestphp/pest-plugin-laravel": "^4.0",
+    "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-arch": "^5.0",
+    "pestphp/pest-plugin-laravel": "^5.0",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.3",
     "spatie/laravel-typescript-transformer": "^3.2"
@@ -137,7 +137,7 @@
       "Composer\\Config::disableProcessTimeout",
       "./vendor/bin/pest --compact"
     ],
-    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel",
+    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
     "post-autoload-dump": [
       "@clear",
       "@prepare"

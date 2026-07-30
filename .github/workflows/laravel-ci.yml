@@ -247,7 +247,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: vendor/bin/pest --ci --compact --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel
+          test-command: yii2-adapter/vendor/bin/pest --ci --compact --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}

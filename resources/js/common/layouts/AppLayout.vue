@@ -194,7 +194,7 @@
 
 <template>
   <Head :title="pageTitle" />
-  <LiveRegion></LiveRegion>
+  <LiveRegion />
   <div class="cp">
     <header class="cp__header">
       <a

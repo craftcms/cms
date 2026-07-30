@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use Symfony\Component\Finder\Finder;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -134,13 +135,27 @@ class ImageTransformHelper
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         try {
-            $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
+            $disk = $volume->sourceDisk();
+            $isLocalFs = $disk instanceof LocalFilesystemAdapter;
 
             if (! $isLocalFs) {
                 // This is a non-local fs
-                if (! is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
+                $remoteDateModified = null;
+                if (is_file($imageSourcePath) && filesize($imageSourcePath) !== 0) {
+                    try {
+                        $remoteDateModified = $disk->lastModified($asset->getPath());
+                    } catch (Throwable) {
+                        // Can't tell whether the cache is still fresh; assume it is rather than
+                        // re-downloading on every request just because the fs is being flaky.
+                    }
+                }
+
+                // Stale if the remote object has been modified more recently than our local copy.
+                $sourceIsStale = $remoteDateModified !== null && filemtime($imageSourcePath) < $remoteDateModified;
+
+                if (! is_file($imageSourcePath) || filesize($imageSourcePath) === 0 || $sourceIsStale) {
                     if (is_file($imageSourcePath)) {
-                        // Delete since it's a 0-byter
+                        // Delete since it's either a 0-byter or stale
                         File::delete($imageSourcePath);
                     }
 
@@ -162,7 +177,7 @@ class ImageTransformHelper
                         File::delete($file->getPathname());
                     }
 
-                    AssetsHelper::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
+                    AssetsHelper::downloadFile($disk, $asset->getPath(), $tempFilePath);
 
                     if (! is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {

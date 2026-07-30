@@ -416,11 +416,8 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return false;
     }
 
-    /**
-     * @TODO: Remove parameters once Element no longer extends Yii Model
-     */
     #[Override]
-    public function validationData($names = null, $except = []): array
+    public function validationData(): array
     {
         $attributes = $this->attributes();
         $values = [];

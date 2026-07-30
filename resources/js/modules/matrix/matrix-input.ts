@@ -21,7 +21,7 @@ import {
   prefersReducedMotion,
   scrollContainerToElement,
 } from '@craftcms/garnish';
-import {t} from '@craftcms/ui';
+import {createPasteButton, t, type CraftButton} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
 import {containerMatrixInputs} from './support';
 import {
@@ -129,7 +129,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   addEntryBtnContainer: HTMLElement | null = null;
   addEntryBtn: HTMLElement | null = null;
   addEntryMenuBtns: HTMLElement[] = [];
-  pasteBtn: HTMLElement | null = null;
+  pasteBtn: CraftButton | null = null;
   statusMessage: HTMLElement | null = null;
 
   entrySort: DragSort | null = null;
@@ -382,7 +382,9 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
   async pasteEntries(before: HTMLElement | null = null): Promise<void> {
     craft().cp.announce(t('Loading'));
-    this.pasteBtn?.classList.add('loading');
+    if (this.pasteBtn) {
+      this.pasteBtn.loading = true;
+    }
 
     try {
       if (this.elementEditor) {
@@ -456,7 +458,9 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         firstFocusableElement(newEntries[0])?.focus();
       }
     } finally {
-      this.pasteBtn?.classList.remove('loading');
+      if (this.pasteBtn) {
+        this.pasteBtn.loading = false;
+      }
     }
 
     // Resume the element editor
@@ -485,20 +489,16 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     elementInfo = elementInfo || craft().cp.getCopiedElements();
     if (this.canPaste(elementInfo)) {
       if (!this.pasteBtn) {
-        // `Craft.ui.createPasteButton()` returns a jQuery collection.
-        const created = craft().ui.createPasteButton() as {0?: HTMLElement};
-        this.pasteBtn = created[0] ?? null;
-        if (this.pasteBtn) {
-          this.addEntryBtnContainer?.append(this.pasteBtn);
-          this.addListener(this.pasteBtn, 'activate', () => {
-            this.pasteEntries();
-          });
-        }
+        this.pasteBtn = createPasteButton();
+        this.addEntryBtnContainer?.append(this.pasteBtn);
+        this.addListener(this.pasteBtn, 'activate', () => {
+          this.pasteEntries();
+        });
       } else {
-        this.pasteBtn.classList.remove('hidden');
+        this.pasteBtn.hidden = false;
       }
-    } else {
-      this.pasteBtn?.classList.add('hidden');
+    } else if (this.pasteBtn) {
+      this.pasteBtn.hidden = true;
     }
   }
 
