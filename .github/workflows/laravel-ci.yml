@@ -213,6 +213,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install libvips
+        if: matrix.os == 'ubuntu-latest' && matrix.db == 'sqlite'
+        run: sudo apt-get update && sudo apt-get install -y libvips-dev
+
       - name: Copy tests .env
         shell: bash
         run: |
@@ -222,6 +226,8 @@ jobs:
 
       - name: Run tests
         uses: ./.github/actions/run-tests
+        env:
+          CRAFT_REQUIRE_VIPS: ${{ matrix.os == 'ubuntu-latest' && matrix.db == 'sqlite' && '1' || '' }}
         with:
           test-command: ./vendor/bin/pest --ci --compact --testsuite=Feature
           github-token: ${{ secrets.GITHUB_TOKEN }}
