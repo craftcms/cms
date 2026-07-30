@@ -221,6 +221,12 @@ function cpDriftExpectedPhpOnly(): array
         // craft-input-copy extends craft-input, inheriting the same
         // Lion-pushed control properties.
         'craft-input-copy' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
+        // craft-input-password / craft-input-color extend LionInput directly (no
+        // craft-input host props), so they only carry the Lion-pushed control
+        // props; `type` is owned by the component (password reveal / color
+        // picker), not server-set.
+        'craft-input-password' => ['placeholder', 'name', 'disabled', 'readonly'],
+        'craft-input-color' => ['placeholder', 'name', 'disabled', 'readonly'],
         'craft-textarea' => ['placeholder', 'name', 'disabled', 'readonly', 'rows'],
 
         // craft-icon: `data-color` is the global palette-scoping attribute

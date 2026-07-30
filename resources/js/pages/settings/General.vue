@@ -34,7 +34,7 @@
 
   const form = useForm({
     name: props.system.name ?? '',
-    live: props.system.live,
+    live: props.system.live ? 'true' : 'false',
     retryDuration: props.system.retryDuration,
     timeZone: props.system.timeZone,
   });

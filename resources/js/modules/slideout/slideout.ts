@@ -75,14 +75,19 @@ function resetBackgroundLayerVisibility(): void {
   (legacy ?? resetModalBackgroundLayerVisibility)();
 }
 
+function createLiveRegion(): HTMLSpanElement {
+  const liveRegion = document.createElement('span');
+  liveRegion.classList.add('sr-only');
+  liveRegion.role = 'status';
+  return liveRegion;
+}
+
 /**
  * A single status live region shared by every slideout — it moves (not
  * clones) into whichever container most recently initialized, since screen
  * readers only announce one status region at a time.
  */
-const $sharedLiveRegion = $(
-  '<span class="sr-only" role="status"></span>'
-);
+let $sharedLiveRegion: HTMLSpanElement | null = null;
 
 /**
  * Settings accepted by {@link Slideout}. Pass a `Partial<SlideoutSettings>` to
@@ -231,14 +236,14 @@ export class Slideout extends Base<SlideoutSettings> {
     this.setSettings(settings, Slideout.defaults);
 
     this.$outerContainer = $('<div/>', {
-      class: 'slideout-container hidden',
+      class: 'slideout-container cp-legacy hidden',
     });
     this.$container = $(
       `<${this.settings!.containerElement}/>`,
       this.settings!.containerAttributes
     )
       .attr('data-slideout', '')
-      .addClass('slideout')
+      .addClass('slideout cp-legacy')
       .append(contents)
       .data('slideout', this)
       .appendTo(this.$outerContainer);
@@ -253,8 +258,8 @@ export class Slideout extends Base<SlideoutSettings> {
 
     Craft.trapFocusWithin(this.$container);
 
-    this.$liveRegion = $sharedLiveRegion;
-    this.$liveRegion.appendTo(this.$container);
+    this.$liveRegion = $sharedLiveRegion ??= createLiveRegion();
+    this.$container.append(this.$liveRegion);
 
     if (this.settings!.autoOpen) {
       this.open();

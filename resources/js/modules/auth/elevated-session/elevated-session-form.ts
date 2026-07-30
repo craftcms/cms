@@ -1,4 +1,5 @@
 import {elevatedSessionManager} from './manager';
+import {jq} from '@/common/utils/jquery';
 
 type FormTarget = HTMLFormElement | string | ArrayLike<HTMLFormElement>;
 type InputTarget = Element | string | ArrayLike<Element>;
@@ -51,7 +52,7 @@ function inputValue(input: Element): InputValue {
 }
 
 function passwordInput(input: Element): Element {
-  const jquery = (window as any).jQuery ?? (window as any).$;
+  const jquery = jq();
   const currentInput =
     jquery?.(input).data?.('passwordInput')?.$currentInput?.[0];
 

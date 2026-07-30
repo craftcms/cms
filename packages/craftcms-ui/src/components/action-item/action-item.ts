@@ -1,18 +1,24 @@
 import {html, LitElement, nothing} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import styles from './action-item.styles.js';
-import {AsyncStates} from '@src/types';
+import {type AsyncState, AsyncStates} from '@src/types';
 import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
 import '../shortcut/shortcut.js';
-import {Actionable} from '@src/mixins/Actionable';
+import {
+  type ActionFeedback,
+  type BaseAction,
+  type FeedbackData,
+  normalizeAction,
+  runAction,
+} from '@src/actions';
 import {Variant, type VariantValue} from '@src/constants/variants';
 
 /**
  * @summary Either a link or button typically used in a menu.
  */
-export default class CraftActionItem extends Actionable(LitElement) {
+export default class CraftActionItem extends LitElement {
   static override styles = [variantsStyles, styles];
 
   /**
@@ -38,6 +44,14 @@ export default class CraftActionItem extends Actionable(LitElement) {
   @property({type: Boolean}) checked: boolean = false;
   @property({type: Boolean}) active: boolean = false;
   @property() type: 'button' | 'checkbox' = 'button';
+  @property({type: Object}) action: BaseAction | string | null = null;
+  @property({type: Object}) feedback: ActionFeedback | null = null;
+  @property({type: Number, attribute: 'feedback-duration'})
+  feedbackDuration: number = 1000;
+  @property() confirm: string | null = null;
+
+  @state() private state: AsyncState = AsyncStates.Idle;
+  @state() private feedbackMessage: string | null = null;
 
   @property({
     converter: {
@@ -82,6 +96,63 @@ export default class CraftActionItem extends Actionable(LitElement) {
     return nothing;
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('click', this);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('click', this);
+  }
+
+  setState(state: AsyncState, detail: FeedbackData = {}) {
+    this.state = state;
+    this.feedbackMessage = detail.message ?? null;
+
+    this.dispatchEvent(
+      new CustomEvent('action:change-state', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          state,
+          actionType: normalizeAction(this.action)?.type,
+          ...detail,
+        },
+      })
+    );
+  }
+
+  async handleEvent(event: Event) {
+    if (this.disabled) {
+      event.preventDefault();
+      return;
+    }
+
+    const action = normalizeAction(this.action);
+
+    if (event.type === 'click' && action) {
+      // Only show loading spinner for http requests
+      if (action.type === 'http') {
+        this.setState(AsyncStates.Loading);
+      }
+
+      try {
+        await runAction(action, {trigger: this, sourceEvent: event});
+        this.setState(AsyncStates.Success, this.feedback?.success);
+      } catch (error: any) {
+        this.setState(AsyncStates.Error, {
+          message: error.message,
+          ...(this.feedback?.error || {}),
+        });
+      } finally {
+        setTimeout(() => {
+          this.setState(AsyncStates.Idle);
+        }, this.feedbackDuration);
+      }
+    }
+  }
+
   renderCheckbox() {
     return html`<span class="action-item__check">
       <slot name="checkmark">
@@ -91,7 +162,7 @@ export default class CraftActionItem extends Actionable(LitElement) {
   }
 
   renderIcon() {
-    switch (this.actionState) {
+    switch (this.state) {
       case AsyncStates.Loading:
         return html`<craft-spinner style="--size: 0.8em"></craft-spinner>`;
       case AsyncStates.Success:

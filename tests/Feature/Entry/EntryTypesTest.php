@@ -10,7 +10,7 @@ use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Models\EntryType;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
@@ -93,7 +93,7 @@ it('normalizes empty ui label formats from project config to the title placehold
             'name' => 'Pages',
             'handle' => 'pages',
             'hasTitleField' => true,
-            'titleTranslationMethod' => Field::TRANSLATION_METHOD_SITE,
+            'titleTranslationMethod' => TranslationMethod::Site->value,
             'titleFormat' => null,
             'uiLabelFormat' => '',
         ],

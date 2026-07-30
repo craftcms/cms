@@ -1576,16 +1576,15 @@ JS, [
                     'label' => t('Filesystem settings'),
                 ];
 
-                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
+                HtmlStack::jsWithVars(fn ($id, $url) => <<<JS
 (() => {
   $('#' + $id).on('activate', function() {
-    const params = $params;
-    new Craft.CpScreenSlideout('fs/edit', {params});
+    new Craft.CpScreenSlideout($url);
   });
 })();
 JS, [
                     InputNamespace::namespaceId($fsEditId),
-                    ['handle' => $fsHandle],
+                    Url::cpUrl("settings/filesystems/$fsHandle/edit"),
                 ]);
             }
         }

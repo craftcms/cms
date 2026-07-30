@@ -344,6 +344,22 @@ class Cp extends Component
     }
 
     /**
+     * Renders a password input's HTML from the legacy password variables.
+     */
+    public function password(array $config = []): string
+    {
+        return FormFields::passwordFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Renders a color input's HTML from the legacy color variables.
+     */
+    public function color(array $config = []): string
+    {
+        return FormFields::colorFromConfig($config)->toHtml();
+    }
+
+    /**
      * Renders a lightswitch's HTML from the legacy lightswitch variables.
      */
     public function lightswitch(array $config = []): string

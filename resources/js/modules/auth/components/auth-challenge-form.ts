@@ -1,6 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {actionClient, t} from '@craftcms/ui';
+import {registerCraftGlobals} from '@/common/craft-global';
 
 /** @internal Module-private registry of PHP METHOD handle → element class. */
 const _registry = new Map<string, typeof CraftAuthChallengeForm>();
@@ -270,5 +271,4 @@ export abstract class CraftAuthChallengeForm extends LitElement {
 // (bundling their own copy from an import would give them a separate, useless
 // method registry). Assigned here so the global exists in any bundle that can
 // render a challenge form.
-const craft = (window as any).Craft ?? ((window as any).Craft = {});
-craft.AuthChallengeForm = CraftAuthChallengeForm;
+registerCraftGlobals({AuthChallengeForm: CraftAuthChallengeForm});

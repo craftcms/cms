@@ -206,7 +206,7 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #setError(message: string) {
-    const { announce } = useAnnouncer();
+    const {announce} = useAnnouncer();
     this._error = message.trim();
     announce(this._error);
   }

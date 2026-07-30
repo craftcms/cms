@@ -8126,67 +8126,6 @@ body {
   cursor: default;
 }
 
-/* slide picker */
-.slide-picker {
-  display: flex;
-  height: 1rem;
-  white-space: nowrap;
-
-  a {
-    position: relative;
-    border: 1px solid var(--border-hairline);
-    border-inline-start: none;
-    background-image: none;
-    width: calc(8rem / 16 - 1px);
-    height: calc(1rem - 2px);
-    margin-inline-start: 0;
-    margin-block: 1px;
-    box-sizing: border-box;
-    cursor: pointer;
-
-    &:first-child {
-      width: calc(8rem / 16);
-      border-inline-start: 1px solid var(--gray-400) !important;
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      inset-block-start: calc(-4rem / 16 - 1px);
-      inset-inline-start: -1px;
-      width: calc(100% + 2px);
-      height: var(--touch-target-size);
-    }
-  }
-
-  &:not(:hover) a.active,
-  &:hover a.active-hover {
-    border-block-start-color: var(--gray-400);
-    border-block-end-color: var(--gray-400);
-    height: 1rem;
-    margin-block: 0;
-
-    &:first-child {
-      border-inline-start: 1px solid var(--gray-400);
-      border-start-start-radius: var(--radius-sm);
-      border-end-start-radius: var(--radius-sm);
-    }
-  }
-
-  &:not(:hover) a.last-active,
-  &:hover a.last-active-hover {
-    border-inline-end: 1px solid var(--gray-400);
-    border-start-end-radius: var(--radius-sm);
-    border-end-end-radius: var(--radius-sm);
-  }
-
-  &:focus {
-    a.active {
-      background-color: var(--bg-selection-light);
-    }
-  }
-}
-
 /* errors */
 ul.errors {
   margin-block-start: 5px;
