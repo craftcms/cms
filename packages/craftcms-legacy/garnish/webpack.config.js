@@ -22,6 +22,12 @@ module.exports = getConfig({
             exposes: [
               {
                 globalName: 'Garnish',
+                // `@craftcms/garnish/compat` may have installed `window.Garnish`
+                // already (it guards on `typeof window.Garnish === 'undefined'`,
+                // yielding to this bundle during the coexistence period). Without
+                // `override`, expose-loader throws instead of taking the slot,
+                // which aborts the rest of this bundle's init.
+                override: true,
                 moduleLocalName: 'default',
               },
             ],

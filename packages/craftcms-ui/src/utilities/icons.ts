@@ -68,6 +68,112 @@ async function requestIcon(url: string): Promise<ResolvedIcon> {
 }
 
 /**
+ * Icons that only ship in the `custom-icons` folder, so a bare name resolves
+ * there instead of 404ing against Font Awesome's `solid`. Names that exist in
+ * both (e.g. `grip-dots`) are deliberately absent — those keep resolving to the
+ * Font Awesome copy.
+ */
+const CUSTOM_ICONS = new Set([
+  'asterisk-slash',
+  'c-debug',
+  'c-outline',
+  'clone-dashed',
+  'craft-cms',
+  'craft-partners',
+  'craft-stack-exchange',
+  'default-plugin',
+  'diamond-slash',
+  'duplicate',
+  'element-card',
+  'element-card-slash',
+  'element-cards',
+  'gear-slash',
+  'graphql',
+  'list-flip',
+  'list-tree-flip',
+  'notification-bottom-left',
+  'notification-bottom-right',
+  'notification-top-left',
+  'notification-top-right',
+  'share-flip',
+  'slideout-left',
+  'slideout-right',
+  'thumb-left',
+  'thumb-right',
+]);
+
+/**
+ * Craft's pre-6 icon names, mapped onto the Font Awesome (or custom) icon that
+ * replaced them.
+ *
+ * This lives here rather than in the CP bootstrap because the resolver built
+ * from {@link getIconUrl} is installed at module load, while the CP's own
+ * bootstrap only runs once its ES module executes — i.e. after the legacy
+ * classic scripts have already rendered their first action menus. Aliasing at
+ * the URL layer means those early icons resolve correctly too.
+ */
+const LEGACY_ICON_NAMES: Record<string, string> = {
+  alert: 'triangle-exclamation',
+  asc: 'arrow-down-short-wide',
+  asset: 'image',
+  assets: 'image',
+  circleuarr: 'circle-arrow-up',
+  collapse: 'down-left-and-up-right-to-center',
+  condition: 'diamond',
+  darr: 'arrow-down',
+  date: 'calendar',
+  desc: 'arrow-down-wide-short',
+  disabled: 'circle-dashed',
+  done: 'circle-check',
+  downangle: 'angle-down',
+  draft: 'scribble',
+  edit: 'pencil',
+  enabled: 'circle',
+  expand: 'up-right-and-down-left-from-center',
+  external: 'arrow-up-right-from-square',
+  field: 'pen-to-square',
+  help: 'circle-question',
+  home: 'house',
+  info: 'circle-info',
+  insecure: 'unlock',
+  larr: 'arrow-left',
+  layout: 'table-layout',
+  leftangle: 'angle-left',
+  listrtl: 'list-flip',
+  location: 'location-dot',
+  mail: 'envelope',
+  menu: 'bars',
+  move: 'grip-dots',
+  newstamp: 'certificate',
+  paperplane: 'paper-plane',
+  plugin: 'plug',
+  rarr: 'arrow-right',
+  refresh: 'arrows-rotate',
+  remove: 'xmark',
+  rightangle: 'angle-right',
+  rotate: 'rotate-left',
+  routes: 'signs-post',
+  search: 'magnifying-glass',
+  secure: 'lock',
+  settings: 'gear',
+  shareleft: 'share-flip',
+  shuteye: 'eye-slash',
+  'sidebar-left': 'sidebar',
+  'sidebar-right': 'sidebar-flip',
+  'sidebar-start': 'sidebar',
+  'sidebar-end': 'sidebar-flip',
+  structure: 'list-tree',
+  structurertl: 'list-tree-flip',
+  template: 'file-code',
+  time: 'clock',
+  tool: 'wrench',
+  uarr: 'arrow-up',
+  upangle: 'angle-up',
+  view: 'eye',
+  wand: 'wand-magic-sparkles',
+};
+
+/**
  * Resolves an icon name to its URL under the CP's published Font Awesome
  * assets.
  */
@@ -103,7 +209,18 @@ export function getIconUrl(
     folder = 'brands';
   }
 
-  if (family === 'custom-icons' || resolvedVariant === 'custom-icons') {
+  // Alias pre-6 names onto whatever replaced them, before deciding the folder —
+  // some of them (`listrtl`, `shareleft`, `structurertl`) resolve to icons that
+  // only exist under `custom-icons`.
+  resolvedName = LEGACY_ICON_NAMES[resolvedName] ?? resolvedName;
+
+  if (
+    family === 'custom-icons' ||
+    resolvedVariant === 'custom-icons' ||
+    // These ship only as custom icons, so there's no Font Awesome variant to
+    // honor — `craft-icon` defaults `variant` to `solid`, which would 404.
+    CUSTOM_ICONS.has(resolvedName)
+  ) {
     folder = 'custom-icons';
   }
 

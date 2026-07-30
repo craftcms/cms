@@ -65,20 +65,25 @@
     {{ hiddenInput(name, '') }}
   {% endif %}
   {% tag 'table' with tableAttributes %}
-    {% for col in cols %}
-      <col>
-    {% endfor %}
-    {% if (allowDelete and allowReorder) %}
-      <colgroup span="2"></colgroup>
-    {% else %}
-      {% if allowDelete %}
-        <col>{% endif %}
-      {% if allowReorder %}
-        <col>{% endif %}
-    {% endif %}
-    {% if includeRowId %}
-      <col> {# for hidden row ID #}
-    {% endif %}
+    {# `col` is only valid inside a `colgroup`; browsers drop it otherwise, and Vue
+       warns about the nesting when this markup is rendered into an Inertia page. #}
+    <colgroup>
+      {% for col in cols %}
+        <col>
+      {% endfor %}
+      {% if (allowDelete and allowReorder) %}
+        <col>
+        <col>
+      {% else %}
+        {% if allowDelete %}
+          <col>{% endif %}
+        {% if allowReorder %}
+          <col>{% endif %}
+      {% endif %}
+      {% if includeRowId %}
+        <col> {# for hidden row ID #}
+      {% endif %}
+    </colgroup>
     {% if cols|filter(c => (c.headingHtml ?? c.heading ?? c.info ?? '') is not same as(''))|length %}
       <thead>
         <tr>

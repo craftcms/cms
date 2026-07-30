@@ -400,25 +400,34 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
               .find('[data-disclosure-trigger]')
               .first()
               .data('disclosureMenu');
-          const moveForwardBtn = disclosureMenu.$container.find(
-            '[data-move-forward]'
-          )[0];
-          const moveBackwardBtn = disclosureMenu.$container.find(
-            '[data-move-backward]'
-          )[0];
 
-          disclosureMenu.on('show', () => {
-            const $li = $element.parent();
-            const $prev = $li.prev();
-            const $next = $li.next();
+          // `addActionsToChip()` above routes modern `craft-chip` markup to a
+          // self-booting `craft-action-menu`, which is not a Garnish
+          // DisclosureMenu and populates its items asynchronously — so there's
+          // nothing to resolve here and nothing to toggle yet. Only the legacy
+          // disclosure-menu shape gets the show-time position wiring; the
+          // modern menu re-evaluates its own items on each open.
+          if (disclosureMenu?.on) {
+            const moveForwardBtn = disclosureMenu.$container.find(
+              '[data-move-forward]'
+            )[0];
+            const moveBackwardBtn = disclosureMenu.$container.find(
+              '[data-move-backward]'
+            )[0];
 
-            if (moveForwardBtn) {
-              disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
-            }
-            if (moveBackwardBtn) {
-              disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
-            }
-          });
+            disclosureMenu.on('show', () => {
+              const $li = $element.parent();
+              const $prev = $li.prev();
+              const $next = $li.next();
+
+              if (moveForwardBtn) {
+                disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
+              }
+              if (moveBackwardBtn) {
+                disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
+              }
+            });
+          }
         }
 
         // only add the diamond icon (for drag-sorting) if device has mouse events
