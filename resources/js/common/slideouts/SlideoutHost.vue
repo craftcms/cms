@@ -49,12 +49,14 @@
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="panels.length"
-      class="slideout-shade"
-      @click="closeTop"
-      data-slideout-shade
-    ></div>
+    <Transition name="cp-slideout-shade">
+      <div
+        v-if="panels.length"
+        class="cp-slideout-shade"
+        @click="closeTop"
+        data-slideout-shade
+      ></div>
+    </Transition>
     <SlideoutPanel
       v-for="(panel, index) in panels"
       :key="panel.id"
@@ -70,12 +72,31 @@
     overflow: hidden;
   }
 
-  .slideout-shade {
+  /**
+   * Deliberately NOT `.slideout-shade`: the legacy stylesheet claims that
+   * class and hides it with `&:not(.visible) { display: none }` until its own
+   * JS marks it visible. Sharing the name means the legacy rules win and this
+   * shade never renders at all.
+   */
+  .cp-slideout-shade {
     position: fixed;
     inset: 0;
-    background: rgb(0 0 0 / 40%);
-    /* Matches the legacy `.slideout-shade`, so Vue and jQuery panels stack
-       against each other in DOM order rather than one class always winning. */
+    background: var(--slideout-shade-color, rgb(0 0 0 / 40%));
+    /* Same stacking level as the legacy shade and `.slideout-container`, so
+       Vue and jQuery panels interleave in DOM order rather than one class
+       always winning. Panels render after this, so they sit above it. */
     z-index: 100;
+  }
+
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .cp-slideout-shade-enter-active,
+    .cp-slideout-shade-leave-active {
+      transition: opacity linear 250ms;
+    }
+
+    .cp-slideout-shade-enter-from,
+    .cp-slideout-shade-leave-to {
+      opacity: 0;
+    }
   }
 </style>

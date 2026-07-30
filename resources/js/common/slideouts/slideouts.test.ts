@@ -193,6 +193,59 @@ describe('slideout store', () => {
   });
 });
 
+describe('SlideoutHost', () => {
+  async function mountHost() {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/screen',
+    });
+
+    const SlideoutHost = (await import('./SlideoutHost.vue')).default;
+    const root = mount(defineComponent({render: () => h(SlideoutHost)}));
+    await nextTick();
+
+    return root;
+  }
+
+  /**
+   * The shade must NOT be `.slideout-shade`: the legacy stylesheet owns that
+   * class and hides it with `:not(.visible) { display: none }` until its own
+   * JS marks it visible, which would stop this one rendering at all.
+   */
+  it('renders no shade until a slideout is open', async () => {
+    const root = await mountHost();
+
+    expect(document.querySelector('.cp-slideout-shade')).toBeNull();
+    expect(root).toBeTruthy();
+  });
+
+  it('renders a shade while a slideout is open', async () => {
+    await mountHost();
+    await openSlideout('/a');
+    await nextTick();
+
+    const shade = document.querySelector('.cp-slideout-shade');
+
+    expect(shade).not.toBeNull();
+    // Guards against the legacy collision coming back.
+    expect(shade!.classList.contains('slideout-shade')).toBe(false);
+  });
+
+  it('closes the top slideout when the shade is clicked', async () => {
+    await mountHost();
+    const first = await openSlideout('/a');
+    await openSlideout('/b', {opener: openerInPanel(first.id)});
+    await nextTick();
+
+    document.querySelector<HTMLElement>('.cp-slideout-shade')!.click();
+    await nextTick();
+
+    // Only the top one — clicking again closes the next.
+    expect(slideoutPanels().map((p) => p.href)).toEqual(['/a']);
+  });
+});
+
 describe('SlideoutPanel', () => {
   /** Mount a panel around a page component, as the host does. */
   async function mountPanel(page: any, props: Record<string, unknown> = {}) {
@@ -280,9 +333,7 @@ describe('SlideoutPanel', () => {
   it('shows the screen title from the page props', async () => {
     pageProps.value = {title: 'Edit entry type'};
 
-    const {root} = await mountPanel(
-      defineComponent({render: () => h('div')})
-    );
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}));
 
     expect(root.querySelector('.slideout-screen__title')?.textContent).toBe(
       'Edit entry type'
@@ -333,9 +384,9 @@ describe('SlideoutPanel', () => {
     const {root} = await mountPanel(Page);
     await nextTick();
 
-    root.querySelector<HTMLElement>('form.slideout-screen')!.dispatchEvent(
-      new Event('submit', {bubbles: true, cancelable: true})
-    );
+    root
+      .querySelector<HTMLElement>('form.slideout-screen')!
+      .dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
     await nextTick();
 
     expect(onSave).toHaveBeenCalled();
