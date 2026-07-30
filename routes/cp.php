@@ -374,10 +374,19 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
 
         // Volumes
-        Route::get('settings/assets', [VolumesController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
-        Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
-        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/volumes/{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
+        Route::prefix('settings/assets')->group(function () {
+            Route::get('/', [VolumesController::class, 'index']);
+
+            Route::prefix('volumes')->group(function () {
+                Route::middleware(RequireAdminChanges::class)->get('new', [VolumesController::class, 'create']);
+                Route::get('{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
+
+                Route::middleware(RequireAdminChanges::class)->group(function () {
+                    Route::delete('{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
+                    Route::post('/', [VolumesController::class, 'save']);
+                });
+            });
+        });
 
         // Transforms
         Route::prefix('settings/assets/transforms')->name('settings.assets.transforms.')->group(function () {

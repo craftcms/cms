@@ -302,6 +302,9 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::get('fields/table-data', [FieldsController::class, 'tableData']);
         });
 
+        // Volumes
+        Route::middleware([RequireAdminChanges::class])->post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
+
         // Matrix
         Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
         Route::post('matrix/create-entry', [MatrixController::class, 'createEntry']);
@@ -353,12 +356,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
         Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
-
-        // Volumes
-        Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('volumes/save-volume', [VolumesController::class, 'save']);
-            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
-        });
 
         // Sections
         Route::get('sections/table-data', [SectionsController::class, 'tableData']);
