@@ -12,7 +12,6 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import {ButtonVariant} from '@craftcms/ui';
   import {computed, provide} from 'vue';
-  import {usePage} from '@inertiajs/vue3';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import PassthroughScreen from './PassthroughScreen.vue';
@@ -21,6 +20,7 @@
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
     ScreenShellKey,
+    useScreenPageProps,
     useScreenPropsStore,
   } from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
@@ -56,16 +56,22 @@
     ),
   }));
 
-  const page = usePage<{
+  // The slideout's own props, not the page behind it — `usePage()` would give
+  // us the base page's title and edit URL.
+  const pageProps = useScreenPageProps();
+
+  interface ScreenPageProps {
     title?: string;
     readOnly?: boolean;
     submitButtonLabel?: string | null;
     screen?: {editUrl?: string | null};
-  }>();
+  }
 
-  const title = computed(() => props.value.title?.trim() || page.props.title);
-  const editUrl = computed(() => page.props.screen?.editUrl ?? null);
-  const readOnly = computed(() => Boolean(page.props.readOnly));
+  const chrome = computed(() => pageProps() as ScreenPageProps);
+
+  const title = computed(() => props.value.title?.trim() || chrome.value.title);
+  const editUrl = computed(() => chrome.value.screen?.editUrl ?? null);
+  const readOnly = computed(() => Boolean(chrome.value.readOnly));
   const form = computed(() => props.value.form ?? null);
 
   const hasToolbar = computed(
@@ -79,7 +85,9 @@
     () => Boolean(slots.details) || registry.has('details')
   );
 
-  const submitLabel = computed(() => page.props.submitButtonLabel || t('Save'));
+  const submitLabel = computed(
+    () => chrome.value.submitButtonLabel || t('Save')
+  );
 
   function save() {
     const options: FormSaveOptions = {redirect: false};
@@ -143,10 +151,7 @@
       <div class="slideout-screen__content">
         <LayoutSlotOutlet name="error-summary">
           <slot name="error-summary">
-            <ErrorSummary
-              v-if="form && form.hasErrors"
-              :errors="form.errors"
-            />
+            <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
           </slot>
         </LayoutSlotOutlet>
 
@@ -248,11 +253,19 @@
 
   .slideout-screen__body {
     display: flex;
+    /* Stacked by default: a fixed-width details column beside the content
+       squeezes it below a usable width on a narrow panel. Legacy makes the
+       same call at ~700px. */
+    flex-direction: column;
     gap: var(--c-spacing-md, 1rem);
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     padding: var(--c-spacing-md, 1rem);
+
+    @container slideout (width >= 44rem) {
+      flex-direction: row;
+    }
   }
 
   .slideout-screen__content {
@@ -264,10 +277,14 @@
   }
 
   .slideout-screen__details {
-    flex: 0 0 16rem;
     display: grid;
     gap: var(--c-spacing-md, 1rem);
     align-content: start;
+
+    /* Only claim a fixed column once the panel is wide enough to spare it. */
+    @container slideout (width >= 44rem) {
+      flex: 0 0 16rem;
+    }
   }
 
   .slideout-screen__footer {

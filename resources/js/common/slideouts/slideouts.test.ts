@@ -330,14 +330,30 @@ describe('SlideoutPanel', () => {
     expect(root.querySelector('.page-content')?.textContent).toBe('hello');
   });
 
-  it('shows the screen title from the page props', async () => {
-    pageProps.value = {title: 'Edit entry type'};
+  it("titles itself from the slideout's own props, not the page behind it", async () => {
+    // `usePage()` always resolves to the base page, so a shell reading its
+    // chrome from there shows the title of whatever is open underneath.
+    pageProps.value = {title: 'Entries'};
 
-    const {root} = await mountPanel(defineComponent({render: () => h('div')}));
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}), {
+      title: 'Edit entry type',
+    });
 
     expect(root.querySelector('.slideout-screen__title')?.textContent).toBe(
       'Edit entry type'
     );
+  });
+
+  it('reads the edit URL from the slideout props', async () => {
+    pageProps.value = {title: 'Entries', screen: {editUrl: '/wrong'}};
+
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}), {
+      screen: {editUrl: '/admin/entries/5'},
+    });
+
+    expect(
+      root.querySelector<HTMLAnchorElement>('.slideout-screen__edit-link')?.href
+    ).toContain('/admin/entries/5');
   });
 
   it('routes a page LayoutSlot into the slideout own details outlet', async () => {

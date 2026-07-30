@@ -16,6 +16,7 @@
   import {
     createScreenPropsStore,
     provideScreenContext,
+    ScreenPagePropsKey,
     ScreenPropsStoreKey,
     ScreenShellKey,
   } from '@/common/composables/screen';
@@ -32,6 +33,10 @@
   provide(ScreenShellKey, SlideoutScreen);
   provide(ScreenPropsStoreKey, createScreenPropsStore());
   provideScreenContext('slideout');
+
+  // Without this the shell would read its chrome off `usePage()` — the page
+  // *behind* the slideout — and show that screen's title and edit URL.
+  provide(ScreenPagePropsKey, () => props.instance.props);
 
   provide(SlideoutControllerKey, {
     get instance() {
@@ -110,6 +115,10 @@
     inset-block: 0;
     /* The inline offset is set per-panel from `positionProp`/`offset`. */
     width: var(--slideout-panel-width);
+    /* Lets the shell lay itself out against the panel's width rather than the
+       viewport's — the panel is far narrower, and `--slideout-width` is
+       configurable, so a media query would be measuring the wrong thing. */
+    container: slideout / inline-size;
     display: flex;
     flex-direction: column;
     background: var(--c-surface-default, #fff);

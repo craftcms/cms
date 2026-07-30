@@ -5,6 +5,7 @@ import {
   type Component,
   type InjectionKey,
 } from 'vue';
+import {usePage} from '@inertiajs/vue3';
 
 /**
  * A CP screen renders in one of two contexts. The page component is the same
@@ -81,6 +82,18 @@ export function createScreenPropsStore(): ScreenPropsStore {
   };
 }
 
+/**
+ * The page props a shell should read its chrome from.
+ *
+ * `usePage()` always returns the *base* page — correct for shared props (flash,
+ * CSRF, the craft bag), but wrong for anything screen-specific: a slideout
+ * reading `usePage().props.title` gets the title of the page behind it. A
+ * slideout panel provides its own props here; a full page has none and falls
+ * back to `usePage()`.
+ */
+export const ScreenPagePropsKey: InjectionKey<() => Record<string, unknown>> =
+  Symbol('screenPageProps');
+
 export function provideScreenContext(mode: ScreenMode): void {
   provide(ScreenContextKey, reactive({mode}));
 }
@@ -96,4 +109,20 @@ export function useScreenPropsStore(): ScreenPropsStore | null {
 /** True when the calling component is rendering inside a slideout. */
 export function useIsSlideout(): boolean {
   return useScreenContext().mode === 'slideout';
+}
+
+/**
+ * Screen-specific page props for the current context — the slideout's own when
+ * inside one, the base page's otherwise. See {@link ScreenPagePropsKey}.
+ */
+export function useScreenPageProps(): () => Record<string, unknown> {
+  const scoped = inject(ScreenPagePropsKey, null);
+
+  if (scoped) {
+    return scoped;
+  }
+
+  const page = usePage();
+
+  return () => page.props as Record<string, unknown>;
 }
