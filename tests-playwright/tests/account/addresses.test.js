@@ -47,7 +47,9 @@ async function createAddress(page, label) {
   await slideout.waitFor();
 
   await slideout.locator('input[name$="[title]"]').fill(label);
-  await slideout.locator('input[name$="[addressLine1]"]').fill('123 Main Street');
+  await slideout
+    .locator('input[name$="[addressLine1]"]')
+    .fill('123 Main Street');
   await slideout.locator('input[name$="[locality]"]').fill('Portland');
   await slideout.locator('input[name$="[postalCode]"]').fill('97201');
 
@@ -97,11 +99,11 @@ test.describe('Editing addresses', () => {
       .click();
     await slideout.waitFor();
 
-    await expect(slideout.locator('input[name$="[title]"]')).toHaveValue(
-      label
-    );
+    await expect(slideout.locator('input[name$="[title]"]')).toHaveValue(label);
     await slideout.locator('input[name$="[title]"]').fill(editedLabel);
-    await slideout.locator('input[name$="[addressLine1]"]').fill('1 Edited Road');
+    await slideout
+      .locator('input[name$="[addressLine1]"]')
+      .fill('1 Edited Road');
     await page.getByRole('button', {name: 'Save', exact: true}).click();
     await slideout.waitFor({state: 'hidden'});
 

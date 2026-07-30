@@ -6,8 +6,8 @@
     "build": "webpack --node-env=production",
     "dev": "webpack --node-env=dev --mode=development -w",
     "serve": "webpack-dev-server --node-env=development",
-    "check-prettier": "prettier --check ./",
-    "fix-prettier": "prettier --write ./",
+    "check-prettier": "vp fmt --check ./",
+    "fix-prettier": "vp fmt ./",
     "prepare": "husky",
     "lint:styles": "stylelint \"./**/*.scss\""
   },
@@ -24,7 +24,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "pkg-dir": "^5.0.0",
-    "prettier": "3.8.3",
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^36.0.1",
     "stylelint-config-standard-scss": "^13.1.0",

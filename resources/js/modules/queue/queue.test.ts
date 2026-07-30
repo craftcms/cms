@@ -1,4 +1,11 @@
-import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vite-plus/test';
 import {QueueService} from './queue';
 import {ConfigService} from '@craftcms/ui/services/Config';
 import type {JobInfo} from './types';
