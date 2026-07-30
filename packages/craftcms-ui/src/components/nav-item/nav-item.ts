@@ -1,4 +1,5 @@
 import {html, LitElement, nothing} from 'lit';
+import {html as staticHtml, literal} from 'lit/static-html.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -48,6 +49,15 @@ export default class CraftNavItem extends LitElement {
   @property({reflect: true, attribute: 'initial-state'})
   initialState: 'open' | 'closed' = 'closed';
 
+  /**
+   * Renders the item as a non-collapsible semantic group. When it has a
+   * `subnav`, no disclosure toggle is shown and the subnav stays open — a
+   * grouping without the visual collapse affordance. Reflected, so it can be
+   * styled via the `[group]` attribute (e.g. `:host([group])`).
+   */
+  @property({type: Boolean, reflect: true})
+  group: boolean = false;
+
   /** Where the subnav disclosure toggle is rendered. */
   @property({attribute: 'toggle-position'})
   togglePosition: 'prefix' | 'suffix' = 'suffix';
@@ -89,9 +99,11 @@ export default class CraftNavItem extends LitElement {
 
   renderIconItem(showToggle: boolean) {
     const itemId = `item-${this.id}`;
+    // Without an href there's nothing to link to, so render a plain span.
+    const tag = this.href ? literal`a` : literal`span`;
 
-    return html`
-      <a
+    return staticHtml`
+      <${tag}
         class="${classMap({
           'nav-item': true,
           'nav-item--icon': true,
@@ -99,10 +111,10 @@ export default class CraftNavItem extends LitElement {
         })}"
         id="${itemId}"
         href="${ifDefined(this.href || undefined)}"
-        aria-current="${this.active ? 'page' : false}"
+        aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
       >
         ${this.renderPrefix()} ${this.renderSuffix(showToggle)}
-      </a>
+      </${tag}>
       <craft-tooltip for="${itemId}" placement="right-start"
         ><slot></slot
       ></craft-tooltip>
@@ -173,8 +185,11 @@ export default class CraftNavItem extends LitElement {
   }
 
   renderItem(showToggle: boolean, hasPrefix: boolean = false) {
-    return html`
-      <a
+    // Without an href there's nothing to link to, so render a plain span.
+    const tag = this.href ? literal`a` : literal`span`;
+
+    return staticHtml`
+      <${tag}
         class="${classMap({
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
@@ -182,7 +197,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item--static': !this.href,
         })}"
         href="${ifDefined(this.href || undefined)}"
-        aria-current="${this.active ? 'page' : false}"
+        aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
       >
         ${hasPrefix ? this.renderPrefix(showToggle) : nothing}
         <slot
@@ -190,14 +205,16 @@ export default class CraftNavItem extends LitElement {
           @slotchange="${() => this.requestUpdate()}"
         ></slot>
         ${this.renderSuffix(showToggle)}
-      </a>
+      </${tag}>
     `;
   }
 
   override render() {
     const hasSubnav = !!this.querySelector('[slot="subnav"]');
-    // No label means no toggle, and no way to collapse.
-    const showToggle = hasSubnav && this.hasLabel;
+    // No label means no toggle, and no way to collapse. A `group` item is a
+    // permanent semantic grouping: it never shows a toggle and its subnav
+    // stays open (subnavOpen falls back to true when there's no toggle).
+    const showToggle = hasSubnav && this.hasLabel && !this.group;
     const toggleInPrefix = showToggle && this.togglePosition === 'prefix';
     const hasPrefix =
       toggleInPrefix ||
