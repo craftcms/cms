@@ -88,9 +88,7 @@
   }
 
   function removeItem(itemId: number) {
-    emit('update:modelValue', [
-      ...props.modelValue.filter((item) => item.id !== itemId),
-    ]);
+    emit('update:modelValue', props.modelValue.filter((item) => item.id !== itemId));
   }
 
   const slideout = ref<SlideoutInstance | undefined>(undefined);
