@@ -17,7 +17,6 @@ use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
-use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\withSession;
@@ -36,7 +35,6 @@ it('requires authentication', function () {
     get(action([EntryTypesController::class, 'index']))->assertRedirect();
     get(action([EntryTypesController::class, 'create']))->assertRedirect();
     get(action([EntryTypesController::class, 'edit'], [EntryType::first()->id]))->assertRedirect();
-    get(action([EntryTypesController::class, 'tableData']))->assertRedirect();
     postJson(action([EntryTypesController::class, 'renderOverrideSettings']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'applyOverrideSettings']))->assertUnauthorized();
     postJson(action([EntryTypesController::class, 'store']))->assertUnauthorized();
@@ -175,11 +173,6 @@ it('can delete an entry type', function () {
     deleteJson(action([EntryTypesController::class, 'destroy'], [$newEntryType->id]))->assertOk();
 
     expect(EntryType::count())->toBe(1);
-});
-
-it('can get table data', function () {
-    getJson(action([EntryTypesController::class, 'tableData']))
-        ->assertOk();
 });
 
 it('can render override settings', function () {

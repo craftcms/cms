@@ -276,18 +276,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::any('entries/reassign-modal', [ReassignEntriesModalController::class, 'show']);
         Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 
-        // Entry Types
-        Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
-        Route::get('entry-types/edit/{entryType?}', [EntryTypesController::class, 'edit']);
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::get('entry-types/new', [EntryTypesController::class, 'create']);
-            Route::post('entry-types/save', [EntryTypesController::class, 'store']);
-            Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
-            Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
-        });
-
         // Fields
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::get('fields/edit-field', [FieldsController::class, 'edit']);
@@ -300,6 +288,12 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         });
         Route::middleware([RequireAdmin::class])->group(function () {
             Route::get('fields/table-data', [FieldsController::class, 'tableData']);
+        });
+
+        // Entry types
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
+            Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
 
         // Volumes

@@ -1837,7 +1837,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
           params.entryTypeId = input.val();
         }
     }
-    new Craft.CpScreenSlideout('entry-types/edit', {params});
+    new Craft.CpScreenSlideout(Craft.getCpUrl('settings/entry-types/' + params.entryTypeId));
   });
 })();
 JS, [

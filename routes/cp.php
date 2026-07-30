@@ -262,10 +262,17 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->name('settings.index');
 
         // Entry types
-        Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
-        Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/entry-types/{entryType}', [EntryTypesController::class, 'destroy']);
+        Route::prefix('settings/entry-types')->group(function () {
+            Route::get('/', [EntryTypesController::class, 'index']);
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [EntryTypesController::class, 'create']);
+                Route::post('/', [EntryTypesController::class, 'store']);
+                Route::delete('{entryType}', [EntryTypesController::class, 'destroy']);
+            });
+
+            Route::get('{entryType}', [EntryTypesController::class, 'edit']);
+        });
 
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);

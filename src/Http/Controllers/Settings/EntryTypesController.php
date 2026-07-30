@@ -28,7 +28,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
-use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -203,23 +202,6 @@ class EntryTypesController
             'isMultiSite' => Sites::isMultiSite(),
             'readOnly' => $this->readOnly,
         ];
-    }
-
-    #[Deprecated(message: 'in 6.0. Use `settings/entry-types` instead.')]
-    public function tableData(TableRequest $request): JsonResponse
-    {
-        [$pagination, $tableData] = $this->entryTypes->getTableData(
-            page: $request->page(),
-            limit: $request->limit(),
-            searchTerm: $request->search(),
-            orderBy: $request->orderBy(),
-            sortDir: $request->sortDir(),
-        );
-
-        return new JsonResponse([
-            'pagination' => $pagination,
-            'data' => $tableData,
-        ]);
     }
 
     public function store(Request $request): Response
