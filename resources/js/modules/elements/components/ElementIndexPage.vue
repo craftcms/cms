@@ -120,12 +120,8 @@
       <template #body>
         <!-- Delegated so every view mode gets double-click-to-edit without
           any of them knowing about it, matching Craft 5's element container
-          listener. Capture phase: the title anchor may handle its own clicks,
-          and we need to head that off before it navigates. -->
-        <div
-          @click.capture="quickEdit.onClick"
-          @dblclick.capture="quickEdit.onDblClick"
-        >
+          listener. -->
+        <div @dblclick="quickEdit.onDblClick">
           <ElementCards
             v-if="mode === 'cards'"
             :table="elementTable"
