@@ -14,7 +14,7 @@ use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\DashboardAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Collection;
+use Illuminate\View\View;
 
 use function CraftCms\Cms\cp_url;
 
@@ -28,32 +28,25 @@ readonly class DashboardController
         private WidgetTypes $widgetTypes,
     ) {}
 
-    public function index()
+    public function index(): View
     {
-        /**
-         * @var Collection<string, array{iconSvg: mixed, name: string, maxColspan: int|null, settingsHtml?: string, settingsJs?: mixed, selectable: bool}> $widgetTypeInfo
-         */
-        $widgetTypeInfo = $this->widgetTypes->types()
-            /** @var class-string<WidgetInterface> $widgetType */
-            ->filter(fn (string $widgetType) => $widgetType::isSelectable())
-            /** @phpstan-ignore argument.unresolvableType */
-            ->mapWithKeys(function (string $widgetType) {
-                $this->HtmlStack->startJsBuffer();
-                $widget = $this->dashboard->createWidget($widgetType);
-                $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
-                $settingsJs = (string) $this->HtmlStack->clearJsBuffer(false);
+        $widgetTypeInfo = [];
+        foreach ($this->widgetTypes->types()->sortBy(fn (string $type): string => $type::displayName()) as $widgetType) {
+            if (! $widgetType::isSelectable()) {
+                continue;
+            }
 
-                return [$widget::class => [
-                    'iconSvg' => $this->getWidgetIconSvg($widget),
-                    'name' => $widget::displayName(),
-                    'maxColspan' => $widget::maxColspan(),
-                    'settingsHtml' => $settingsHtml,
-                    'settingsJs' => $settingsJs,
-                    'selectable' => true,
-                ]];
-            })
-            /** @phpstan-ignore argument.unresolvableType */
-            ->sortBy('name');
+            $this->HtmlStack->startJsBuffer();
+            $widget = $this->dashboard->createWidget($widgetType);
+            $widgetTypeInfo[$widget::class] = [
+                'iconSvg' => $this->getWidgetIconSvg($widget),
+                'name' => $widget::displayName(),
+                'maxColspan' => $widget::maxColspan(),
+                'settingsHtml' => InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__'),
+                'settingsJs' => (string) $this->HtmlStack->clearJsBuffer(false),
+                'selectable' => true,
+            ];
+        }
 
         $variables = [];
         // Assemble the list of existing widgets
@@ -70,13 +63,13 @@ readonly class DashboardController
                     return;
                 }
 
-                if (! $widgetTypeInfo->has($info['type'])) {
-                    $widgetTypeInfo->put($info['type'], [
+                if (! isset($widgetTypeInfo[$info['type']])) {
+                    $widgetTypeInfo[$info['type']] = [
                         'iconSvg' => $this->getWidgetIconSvg($widget),
                         'name' => $widget::displayName(),
                         'maxColspan' => $widget::maxColspan(),
                         'selectable' => false,
-                    ]);
+                    ];
                 }
 
                 $variables['widgets'][] = $info;

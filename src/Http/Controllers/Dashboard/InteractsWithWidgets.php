@@ -19,6 +19,7 @@ trait InteractsWithWidgets
         return $icon ? Icons::svg($icon, $label) : Icons::fallbackSvg($label);
     }
 
+    /** @return array<string, mixed>|false */
     protected function getWidgetInfo(WidgetInterface $widget): array|false
     {
         // Get the body HTML

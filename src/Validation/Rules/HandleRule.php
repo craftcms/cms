@@ -13,6 +13,7 @@ class HandleRule implements ValidationRule
 {
     public static string $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
 
+    /** @var list<string> */
     public static array $baseReservedWords = [
         'attribute',
         'attributeLabels',
@@ -36,6 +37,9 @@ class HandleRule implements ValidationRule
         'yes',
     ];
 
+    /**
+     * @param  list<string>  $reservedWords
+     */
     public function __construct(
         public array $reservedWords = [],
     ) {}

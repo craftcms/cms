@@ -12,8 +12,8 @@ use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
+use Inertia\Response;
 use InvalidArgumentException;
 
 use function CraftCms\Cms\cp_redirect;
@@ -47,7 +47,7 @@ readonly class UtilitiesController
         return cp_redirect('utilities/'.$firstUtility::id());
     }
 
-    public function show(string $id, HtmlStack $htmlStack)
+    public function show(string $id, HtmlStack $htmlStack): RedirectResponse|Response
     {
         $class = $this->utilitiesService->getUtilityTypeById($id);
 
@@ -75,23 +75,22 @@ readonly class UtilitiesController
         ]);
     }
 
-    private function utilityInfo(): Collection
+    /** @return list<array{id:string, url:string, iconSvg:string, displayName:string, iconPath:string|null, badgeCount:int}> */
+    private function utilityInfo(): array
     {
-        return $this->utilitiesService
-            ->getAuthorizedUtilityTypes()
-            /**
-             * @var class-string<Utility> $class
-             *
-             * @phpstan-ignore argument.unresolvableType
-             */
-            ->map(fn (string $class) => [
+        $utilities = [];
+        foreach ($this->utilitiesService->getAuthorizedUtilityTypes() as $class) {
+            $utilities[] = [
                 'id' => $class::id(),
                 'url' => Url::cpUrl('utilities/'.$class::id()),
                 'iconSvg' => $this->utilityIconSvg($class),
                 'displayName' => $class::displayName(),
                 'iconPath' => $class::icon(),
                 'badgeCount' => $class::badgeCount(),
-            ]);
+            ];
+        }
+
+        return $utilities;
     }
 
     /**

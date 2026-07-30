@@ -10,6 +10,7 @@ use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Updates;
@@ -166,9 +167,10 @@ class MigrateCommand extends Command implements Isolatable
 
             $this->box(
                 $this->cyan("Total $n new $which ".Str::plural('migration', $n).' to be applied:'),
-                collect($migrations)
-                    ->map(fn (string $migration) => $this->getMigrator($track)->getMigrationName($migration))
-                    ->join("\n")
+                implode("\n", array_map(
+                    fn (string $migration) => $this->getMigrator($track)->getMigrationName($migration),
+                    $migrations,
+                ))
             );
             $this->newLine();
 
@@ -205,6 +207,10 @@ class MigrateCommand extends Command implements Isolatable
         $this->call(UpCommand::class);
     }
 
+    /**
+     * @param  array<string, list<string>>  $migrationsByTrack
+     * @param  array<string, PluginInterface>  $plugins
+     */
     private function gatherMigrationsByTrack(array &$migrationsByTrack, array &$plugins): void
     {
         if (! $this->option('track') || $this->option('track') === 'craft') {
@@ -214,8 +220,9 @@ class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        $plugins = $this->plugins->getAllPlugins();
-        foreach ($plugins as $plugin) {
+        foreach ($this->plugins->getAllPlugins() as $plugin) {
+            $plugins[$plugin->handle] = $plugin;
+
             if ($this->option('track') && $this->option('track') !== "plugin:$plugin->handle") {
                 continue;
             }

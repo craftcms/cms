@@ -121,14 +121,18 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public ?string $htmlSanitizer = null;
 
+    /** @var list<string> */
     public array $toolbarButtons = self::DEFAULT_TOOLBAR_BUTTONS;
 
+    /** @var list<string> */
     public array $linkSettingsTypes = self::DEFAULT_LINK_TYPES;
 
+    /** @var array<string, array<string, mixed>> */
     public array $linkSettingsTypeSettings = [];
 
     public bool $linkSettingsShowLabelField = false;
 
+    /** @var list<string> */
     public array $linkSettingsAdvancedFields = [];
 
     public ?string $placeholder = null;
@@ -139,6 +143,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public ?int $byteLimit = null;
 
+    /** @var list<string>|'*' */
     public array|string $availableVolumes = '*';
 
     public ?string $uploadVolume = null;
@@ -147,6 +152,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public bool $showUnpermittedFiles = false;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         if (isset($config['limitUnit'], $config['fieldLimit'])) {
@@ -218,6 +224,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         return sprintf('\\%s|null', MarkdownData::class);
     }
 
+    /** @return list<array{label: string, value: string, icon: string}> */
     public static function toolbarButtonOptions(): array
     {
         return [
@@ -242,6 +249,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         ];
     }
 
+    /** @return list<array{label: string, value: string}> */
     public static function flavorOptions(): array
     {
         $labels = [
@@ -261,6 +269,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->all();
     }
 
+    /** @return list<array{label: string, value: string}> */
     public function volumeOptions(): array
     {
         return Volumes::getAllVolumes()
@@ -374,11 +383,13 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         return 'linkSettings';
     }
 
+    /** @return list<string> */
     protected function supportedLinkAdvancedFields(): array
     {
         return self::SUPPORTED_LINK_ADVANCED_FIELDS;
     }
 
+    /** @return Collection<int, array{label: string, value: string}> */
     private function htmlSanitizerOptions(): Collection
     {
         return collect(HtmlSanitizers::names())
@@ -456,6 +467,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         ]);
     }
 
+    /** @return list<string> */
     private function assetSourceKeys(): array
     {
         return $this->availableAssetVolumes()
@@ -463,6 +475,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->all();
     }
 
+    /** @return array{}|array{uploaderId: null} */
     private function assetSelectionCriteria(): array
     {
         return $this->showUnpermittedFiles ? ['uploaderId' => null] : [];
@@ -488,6 +501,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         return Volumes::getVolumeByUid($this->uploadVolume);
     }
 
+    /** @return Collection<int, Volume> */
     private function availableAssetVolumes(): Collection
     {
         $volumes = Volumes::getAllVolumes();
@@ -503,6 +517,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         return $volumes->values();
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -589,6 +604,14 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
+    /**
+     * @return array{
+     *     name: string,
+     *     type: Type,
+     *     args: array{raw: array{name: string, type: Type, defaultValue: bool, description: string}},
+     *     resolve: Closure(mixed, array{raw?: bool}, mixed, ResolveInfo): mixed,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {

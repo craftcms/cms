@@ -43,6 +43,10 @@ class HardDeleteElements extends GarbageCollectionAction
         );
     }
 
+    /**
+     * @param  list<class-string>  $normalElementTypes
+     * @param  list<class-string<NestedElementInterface>>  $nestedElementTypes
+     */
     private function deleteTrashedElements(array $normalElementTypes, array $nestedElementTypes): void
     {
         if ($normalElementTypes) {

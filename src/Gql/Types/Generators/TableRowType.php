@@ -19,7 +19,7 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
         return [static::generateType($context)];
     }
 
-    public static function getName($context = null): string
+    public static function getName(mixed $context = null): string
     {
         /** @var TableField $context */
         return $context->handle.'_TableRow';

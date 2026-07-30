@@ -29,7 +29,7 @@ readonly class CopyElementValuesController
         private Sites $sites,
     ) {}
 
-    public function __invoke()
+    public function __invoke(): Response
     {
         $element = $this->request->element(checkForProvisionalDraft: true);
 

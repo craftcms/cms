@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Session;
@@ -64,7 +63,6 @@ class MyDrafts extends Widget
     #[Override]
     public function getBodyHtml(): string
     {
-        /** @var ElementCollection<Entry> $drafts */
         $drafts = Entry::find()
             ->drafts()
             ->status(null)

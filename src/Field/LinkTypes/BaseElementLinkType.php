@@ -63,11 +63,10 @@ abstract class BaseElementLinkType extends BaseLinkType
         return static::elementType()::baseGqlType();
     }
 
-    /**
-     * @return string|string[] The element sources elements can be linked from
-     */
+    /** @var list<string>|null The element sources elements can be linked from */
     public ?array $sources = null;
 
+    /** @param array<string, bool|list<string>|null> $config */
     public function __construct($config = [])
     {
         if (
@@ -171,6 +170,8 @@ JS, [
     /**
      * Returns all sources available to the field, based on
      * [[availableSources()]] plus any custom sources for the element type.
+     *
+     * @return array<int, array{key:string, label:string, type:string}>
      */
     protected function availableSources(): array
     {
@@ -189,7 +190,7 @@ JS, [
     /**
      * Returns an array of source keys for the element type, filtering out any sources that can’t be linked to.
      *
-     * @return string[]
+     * @return list<string>
      */
     protected function availableSourceKeys(): array
     {
@@ -198,6 +199,14 @@ JS, [
 
     /**
      * Returns the config array that will be passed to [[\CraftCms\Cms\Cp\FormFields::elementSelectHtml()]].
+     *
+     * @return array{
+     *     elementType: class-string<ElementInterface>,
+     *     limit: int,
+     *     single: bool,
+     *     sources: string|array<int, string>,
+     *     criteria: array<string, bool|list<string>|string|null>,
+     * }
      */
     protected function elementSelectConfig(): array
     {
@@ -210,6 +219,7 @@ JS, [
         ];
     }
 
+    /** @return array<string, bool|list<string>|string|null> */
     protected function selectionCriteria(): array
     {
         return [
@@ -217,6 +227,22 @@ JS, [
         ];
     }
 
+    /**
+     * @return array{
+     *     id: string,
+     *     label: string,
+     *     kind: string,
+     *     elementType: class-string<ElementInterface>,
+     *     refHandle: string,
+     *     elementSelectConfig: array{
+     *         elementType: class-string<ElementInterface>,
+     *         limit: int,
+     *         single: bool,
+     *         sources: string|array<int, string>,
+     *         criteria: array<string, bool|list<string>|string|null>,
+     *     },
+     * }
+     */
     #[Override]
     public function pickerConfig(): array
     {

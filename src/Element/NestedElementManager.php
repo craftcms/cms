@@ -58,11 +58,13 @@ class NestedElementManager extends Component
 
     private const string VIEW_MODE_INDEX = 'index';
 
+    /** @var array<string,string|false> */
     private static array $renderedPropagationFormats = [];
 
     /**
      * @param  class-string<NestedElementInterface>  $elementType
      * @param  Closure(ElementInterface): ElementQueryInterface  $queryFactory
+     * @param  array<string,mixed>  $config
      */
     public function __construct(
         private readonly string $elementType,
@@ -88,6 +90,7 @@ class NestedElementManager extends Component
 
     public string $primaryOwnerIdParam = 'primaryOwnerId';
 
+    /** @var array<string,mixed> */
     public array $criteria = [];
 
     public ?Closure $valueGetter = null;
@@ -112,6 +115,7 @@ class NestedElementManager extends Component
         return call_user_func($this->queryFactory, $owner);
     }
 
+    /** @return ElementQueryInterface|ElementCollection<array-key,ElementInterface> */
     private function getValue(ElementInterface $owner, bool $fetchAll = false): ElementQueryInterface|ElementCollection
     {
         if (isset($this->valueGetter)) {
@@ -146,6 +150,7 @@ class NestedElementManager extends Component
         return $query;
     }
 
+    /** @param ElementQueryInterface|ElementCollection<array-key,ElementInterface> $value */
     private function setValue(ElementInterface $owner, ElementQueryInterface|ElementCollection $value): void
     {
         if ($this->valueSetter === false) {
@@ -349,6 +354,7 @@ class NestedElementManager extends Component
         return $settings;
     }
 
+    /** @param array<string,mixed> $config */
     public function getCardsHtml(?ElementInterface $owner, array $config = []): string
     {
         $config = $this->normalizeCardsConfig($config);
@@ -509,6 +515,7 @@ class NestedElementManager extends Component
         return $settings;
     }
 
+    /** @param array<string,mixed> $config */
     public function getIndexHtml(?ElementInterface $owner, array $config = []): string
     {
         $config = $this->normalizeIndexConfig($owner, $config);
@@ -620,6 +627,7 @@ class NestedElementManager extends Component
         return $indexSettings;
     }
 
+    /** @param array<string,mixed> $config */
     private function createView(?ElementInterface $owner, array $config, string $mode, callable $renderHtml): string
     {
         if (! $owner?->id) {
@@ -1078,7 +1086,6 @@ class NestedElementManager extends Component
             $elements = ElementCollection::make($elements->getResultOverride() ?? $elements->all());
         }
 
-        /** @var ElementCollection<NestedElementInterface> $elements */
         $elements = $elements
             ->filter(fn (ElementInterface $element) => isset($element->id))
             ->values()

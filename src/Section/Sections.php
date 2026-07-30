@@ -110,7 +110,7 @@ class Sections
      * {% set sectionIds = craft.sections.getAllSectionIds %}
      * ```
      *
-     * @return Collection<int> All the sections’ IDs.
+     * @return Collection<int, int> All the sections’ IDs.
      */
     public function getAllSectionIds(): Collection
     {
@@ -129,7 +129,7 @@ class Sections
      * {% set sectionIds = craft.sections.getEditableSectionIds %}
      * ```
      *
-     * @return Collection<int> All the editable sections’ IDs.
+     * @return Collection<int, int> All the editable sections’ IDs.
      */
     public function getEditableSectionIds(): Collection
     {
@@ -232,7 +232,7 @@ class Sections
      * {% set sections = craft.sections.getAllSections %}
      * ```
      *
-     * @return Collection<Section> All the sections.
+     * @return Collection<int, Section> All the sections.
      */
     public function getAllSections(): Collection
     {
@@ -251,7 +251,7 @@ class Sections
      * {% set sections = craft.sections.getEditableSections %}
      * ```
      *
-     * @return Collection<Section> All the editable sections.
+     * @return Collection<int, Section> All the editable sections.
      */
     public function getEditableSections(): Collection
     {
@@ -279,6 +279,7 @@ class Sections
      *
      * @throws AuthenticationException
      */
+    /** @return Collection<int, Section> */
     public function getPublishableSections(): Collection
     {
         $currentUser = currentUser();
@@ -331,7 +332,7 @@ class Sections
      * ```
      *
      * @param  SectionType  $type  The section type (`single`, `channel`, or `structure`)
-     * @return Collection<Section> All the sections of the given type.
+     * @return Collection<int, Section> All the sections of the given type.
      */
     public function getSectionsByType(SectionType $type): Collection
     {
@@ -677,7 +678,7 @@ class Sections
                 ->delete();
 
             DB::table(Table::SECTIONS_ENTRYTYPES)
-                ->insert(Collection::make($data['entryTypes'] ?? [])
+                ->insert(collect(array_values($data['entryTypes'] ?? []))
                     ->map(fn ($entryType) => EntryTypes::getEntryType($entryType))
                     ->filter()
                     ->map(fn (EntryType $entryType, int $i) => [
@@ -818,7 +819,7 @@ class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var ElementCollection<Entry> $entries */
+            /** @var ElementCollection<int, Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)
@@ -902,6 +903,7 @@ class Sections
      *
      * @see saveSection()
      */
+    /** @param array<string, array<string, bool|string|null>>|null $siteSettings */
     private function ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
     {
         // Get the section's supported sites
@@ -1188,6 +1190,7 @@ class Sections
     /**
      * Returns data for the Sections index page in the control panel.
      */
+    /** @return array{array<string, int|string|null>, array<int, array<string, int|string|null>>} */
     public function getSectionTableData(
         int $page,
         int $limit,
@@ -1198,7 +1201,7 @@ class Sections
         [$results, $paginator] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
             $sortDir);
 
-        /** @var Collection<Section> $sections */
+        /** @var Collection<int, Section> $sections */
         $sections = $results
             ->map(fn (object $result) => $this->_sections()->firstWhere('id', $result->id))
             ->filter()
@@ -1236,7 +1239,7 @@ class Sections
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: LengthAwarePaginator}
+     * @return array{0: Collection<int, object>, 1: LengthAwarePaginator<int, object>}
      */
     private function prepTableData(
         Builder $query,
@@ -1274,6 +1277,7 @@ class Sections
     /**
      * Returns the sql expression to be used in the 'where' param for the query.
      */
+    /** @return array<int, array{string, string, string}> */
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle'];

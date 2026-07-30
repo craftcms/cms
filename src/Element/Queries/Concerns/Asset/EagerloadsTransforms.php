@@ -106,6 +106,8 @@ trait EagerloadsTransforms
      *     ->all();
      * ```
      *
+     * @param  string[]|string|null  $value
+     *
      * @uses $withTransforms
      */
     public function withTransforms(string|array|null $value = null): static

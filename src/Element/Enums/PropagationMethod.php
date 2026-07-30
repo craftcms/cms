@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Enums;
 
 use CraftCms\Cms\Cp\Concerns\CanSelect;
+use CraftCms\Cms\Cp\Contracts\SelectableEnumInterface;
 
 use function CraftCms\Cms\t;
 
 /**
  * PropagationMethod defines all possible site propagation methods for element values.
  */
-enum PropagationMethod: string
+enum PropagationMethod: string implements SelectableEnumInterface
 {
     use CanSelect;
 

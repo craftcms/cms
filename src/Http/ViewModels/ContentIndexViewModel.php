@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use LogicException;
 
 use function CraftCms\Cms\t;
 
@@ -36,7 +37,7 @@ class ContentIndexViewModel extends ViewModel
 {
     private const string RENDER_CONTEXT = 'index';
 
-    /** @var array{0: ?string, 1: ?array}|null */
+    /** @var array{0: ?string, 1: ?array<string, mixed>}|null */
     private ?array $resolvedSource = null;
 
     private ?ElementQueryInterface $query = null;
@@ -44,10 +45,13 @@ class ContentIndexViewModel extends ViewModel
     /** @var array<int, array{field: string, direction: string}>|null */
     private ?array $resolvedSort = null;
 
+    /** @var array<string, mixed>|null */
     private ?array $resolvedViewState = null;
 
+    /** @var array<string, mixed>|null */
     private ?array $indexData = null;
 
+    /** @var LengthAwarePaginator<array-key, ElementInterface|array<string, mixed>>|null */
     private ?LengthAwarePaginator $paginator = null;
 
     /** @var string[]|null */
@@ -58,6 +62,7 @@ class ContentIndexViewModel extends ViewModel
         private readonly string $elementType,
         private readonly ElementIndexRequest $request,
         private readonly ?string $sectionHandle = null,
+        /** @var array<string, string> */
         private readonly array $elementStatuses = [],
     ) {}
 
@@ -71,6 +76,7 @@ class ContentIndexViewModel extends ViewModel
         return $this->request->input('search');
     }
 
+    /** @return array<string, mixed>|null */
     public function source(): ?array
     {
         return $this->sourceState()[1];
@@ -86,11 +92,13 @@ class ContentIndexViewModel extends ViewModel
             : null;
     }
 
+    /** @return array<string, mixed>|null */
     public function currentCondition(): ?array
     {
         return $this->request->condition()?->getConfig();
     }
 
+    /** @return array<string, mixed> */
     public function viewState(): array
     {
         if ($this->resolvedViewState !== null) {
@@ -231,9 +239,18 @@ class ContentIndexViewModel extends ViewModel
             ->all();
     }
 
+    /** @return list<array<string, mixed>> */
     public function data(): array
     {
-        $elements = $this->resolvePaginator()->items();
+        $elements = [];
+
+        foreach ($this->resolvePaginator()->items() as $element) {
+            if (! $element instanceof ElementInterface) {
+                throw new LogicException('Content index queries must return elements.');
+            }
+
+            $elements[] = $element;
+        }
 
         return $this->mode() === 'cards'
             ? $this->cardData($elements)
@@ -287,6 +304,7 @@ class ContentIndexViewModel extends ViewModel
         return $this->resolvedSort = [['field' => 'dateCreated', 'direction' => 'desc']];
     }
 
+    /** @return list<array<string, mixed>> */
     public function publishableSections(): array
     {
         return SectionResource::collection(Sections::getPublishableSections())->resolve();
@@ -320,7 +338,7 @@ class ContentIndexViewModel extends ViewModel
         ];
     }
 
-    /** @return array{0: ?string, 1: ?array} */
+    /** @return array{0: ?string, 1: ?array<string, mixed>} */
     private function sourceState(): array
     {
         if ($this->resolvedSource !== null) {
@@ -412,6 +430,7 @@ class ContentIndexViewModel extends ViewModel
      * columns, view flags) — the same data that backs the legacy HTML index —
      * so the two indexes stay in sync.
      */
+    /** @return array<string, mixed> */
     private function resolveIndexData(): array
     {
         if ($this->indexData !== null) {
@@ -444,6 +463,7 @@ class ContentIndexViewModel extends ViewModel
      * Paginates a clone of the (ordered, prepared) query. Out-of-range pages
      * clamp to the last valid page.
      */
+    /** @return LengthAwarePaginator<array-key, ElementInterface|array<string, mixed>> */
     private function resolvePaginator(): LengthAwarePaginator
     {
         if ($this->paginator !== null) {
@@ -482,7 +502,8 @@ class ContentIndexViewModel extends ViewModel
      * like `authors`). Only the visible columns render — the client refetches
      * when its column selection changes.
      *
-     * @param  ElementInterface[]  $elements
+     * @param  list<ElementInterface>  $elements
+     * @return list<array<string, mixed>>
      */
     private function tableRows(array $elements): array
     {
@@ -511,7 +532,8 @@ class ContentIndexViewModel extends ViewModel
      * Serializes elements as server-rendered card parts for the cards view.
      * Vue owns the selection process, so cards render non-selectable.
      *
-     * @param  ElementInterface[]  $elements
+     * @param  list<ElementInterface>  $elements
+     * @return list<array<string, mixed>>
      */
     private function cardData(array $elements): array
     {

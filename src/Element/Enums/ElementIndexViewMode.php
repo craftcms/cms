@@ -40,6 +40,7 @@ enum ElementIndexViewMode: string
         };
     }
 
+    /** @return array{mode: string, title: string, icon: string} */
     public function toArray(): array
     {
         return [

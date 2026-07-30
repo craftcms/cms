@@ -121,7 +121,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     ];
 
     /**
-     * @var array<string,array> Settings for the allowed types
+     * @var array<string, array<string, mixed>> Settings for the allowed types
      */
     public array $typeSettings = [];
 
@@ -283,6 +283,10 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return $html.Html::endTag('craft-disclosure');
     }
 
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     private function prepareLegacyAdvancedFieldConfig(array $config): array
     {
         $config['advancedFields'] ??= [];
@@ -298,6 +302,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return $config;
     }
 
+    /** @return array<string, BaseLinkType> */
     protected function configuredLinkTypesForSettings(): array
     {
         return $this->getLinkTypes();
@@ -399,6 +404,8 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
     /**
      * Localize the value of the link field when linking to an element.
+     *
+     * @return LinkData|array{type: string, value: string}
      */
     private function localizeLinkValue(LinkData $value, ElementInterface $element): LinkData|array
     {
@@ -641,6 +648,7 @@ JS;
         return $html.Html::endTag('div');
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -720,7 +728,7 @@ JS;
     }
 
     #[Override]
-    public function getContentGqlType(): Type|array
+    public function getContentGqlType(): Type
     {
         if (! $this->fullGraphqlData) {
             return parent::getContentGqlType();
@@ -729,6 +737,7 @@ JS;
         return LinkDataType::generateType($this);
     }
 
+    /** @return Type|array{name: string, type: Type, description: string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {

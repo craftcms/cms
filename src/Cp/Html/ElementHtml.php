@@ -54,6 +54,7 @@ readonly class ElementHtml
         private ContentHtml $contentHtml,
     ) {}
 
+    /** @param array<string, mixed> $config */
     public function chipHtml(Chippable $component, array $config = []): string
     {
         $config += [
@@ -258,6 +259,7 @@ readonly class ElementHtml
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      */
+    /** @param array<string, mixed> $config */
     public function elementChipHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
@@ -352,6 +354,7 @@ readonly class ElementHtml
      * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      */
+    /** @param array<string, mixed> $config */
     public function elementCardHtml(ElementInterface $element, array $config = []): string
     {
         $config = $this->normalizeCardConfig($element, $config);
@@ -374,6 +377,7 @@ readonly class ElementHtml
      *
      * Accepts the same `$config` settings as {@see elementCardHtml()}.
      */
+    /** @param array<string, mixed> $config */
     public function elementCardHeaderHtml(ElementInterface $element, array $config = []): string
     {
         $config = $this->normalizeCardConfig($element, $config);
@@ -492,6 +496,7 @@ readonly class ElementHtml
      *
      * Accepts the same `$config` settings as {@see elementCardHtml()}.
      */
+    /** @param array<string, mixed> $config */
     public function elementCardContentHtml(ElementInterface $element, array $config = []): string
     {
         $config = $this->normalizeCardConfig($element, $config);
@@ -568,6 +573,7 @@ readonly class ElementHtml
      * ID; otherwise it’s empty. Accepts the same `$config` settings as
      * {@see elementCardHtml()}.
      */
+    /** @param array<string, mixed> $config */
     public function elementCardFooterHtml(ElementInterface $element, array $config = []): string
     {
         $config = $this->normalizeCardConfig($element, $config);
@@ -589,6 +595,10 @@ readonly class ElementHtml
      * uses, so they can be applied to a card rendered from the individual part
      * methods. Accepts the same `$config` settings as {@see elementCardHtml()}.
      */
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     public function elementCardAttributes(ElementInterface $element, array $config = []): array
     {
         return $this->cardAttributes($element, $this->normalizeCardConfig($element, $config));
@@ -600,6 +610,10 @@ readonly class ElementHtml
      * Applying defaults here (rather than in each part method) keeps the
      * generated `id` stable when {@see elementCardHtml()} composes the parts, so
      * the same already-normalized `$config` is threaded through each.
+     */
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
      */
     private function normalizeCardConfig(ElementInterface $element, array $config): array
     {
@@ -728,6 +742,10 @@ readonly class ElementHtml
     /**
      * Builds the HTML attributes for the outer `.card` element.
      */
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     private function cardAttributes(ElementInterface $element, array $config): array
     {
         $color = $element instanceof Colorable ? $element->getColor() : null;
@@ -815,6 +833,10 @@ readonly class ElementHtml
             Html::endTag('div');
     }
 
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
         $user = currentUser();
@@ -901,6 +923,10 @@ readonly class ElementHtml
         ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $config
+     * @param  array<string, mixed>  $attributes
+     */
     private function elementLabelHtml(ElementInterface $element, array $config, array $attributes, callable $uiLabel): string
     {
         $content = implode('', array_map(
@@ -1068,6 +1094,7 @@ readonly class ElementHtml
      *   be rejected server-side; it just won't get the elevated-session
      *   modal first. See the task report for details.
      */
+    /** @param array<string, mixed> $item */
     private function actionMenuItemHtml(array $item): string
     {
         $type = $item['type'] ?? MenuItemType::Button;
@@ -1144,6 +1171,7 @@ readonly class ElementHtml
      * `menu-item-description` markup `_includes/menuitem.twig` and
      * `_includes/forms/componentSelect.twig` use.
      */
+    /** @param array<string, mixed> $item */
     private function actionMenuItemContentHtml(array $item): string
     {
         $labelHtml = isset($item['label'])

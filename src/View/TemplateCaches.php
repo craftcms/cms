@@ -172,6 +172,7 @@ class TemplateCaches
         $this->applyNonDependencyCollectorPayloads($data['collectors'], $context);
     }
 
+    /** @param array<string, mixed> $payloads */
     private function applyNonDependencyCollectorPayloads(array $payloads, TemplateCacheContext $context): void
     {
         foreach ($this->collectors() as $collector) {

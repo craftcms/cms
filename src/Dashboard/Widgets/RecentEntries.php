@@ -47,6 +47,7 @@ class RecentEntries extends Widget
      */
     public int $limit = 10;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         parent::__construct($config);
@@ -126,6 +127,7 @@ class RecentEntries extends Widget
     /**
      * Returns the recent entries, based on the widget settings and user permissions.
      */
+    /** @return ElementCollection<int, Entry> */
     private function getEntries(): ElementCollection
     {
         $targetSiteId = $this->getTargetSiteId();
@@ -161,6 +163,7 @@ class RecentEntries extends Widget
     /**
      * Returns the Channel and Structure section IDs that the user is allowed to edit.
      */
+    /** @return list<int> */
     private function getEditableSectionIds(): array
     {
         $sectionIds = [];

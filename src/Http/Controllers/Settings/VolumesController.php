@@ -37,7 +37,7 @@ class VolumesController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request, Volumes $volumes)
+    public function index(Request $request, Volumes $volumes): \Inertia\Response
     {
         $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
             ['field' => 'sortOrder', 'direction' => 'asc'],
@@ -111,12 +111,12 @@ class VolumesController
                     && $optionTarget !== $fsTarget;
 
                 return $option;
-            })
-            ->partition(fn (array $option): bool => str_starts_with((string) $option['value'], Volume::STORAGE_DISK_PREFIX));
+            });
 
-        [$diskOptions, $craftFilesystemOptions] = $fsOptions;
+        $diskOptions = $fsOptions->filter(fn (array $option): bool => str_starts_with($option['value'], Volume::STORAGE_DISK_PREFIX));
+        $craftFilesystemOptions = $fsOptions->reject(fn (array $option): bool => str_starts_with($option['value'], Volume::STORAGE_DISK_PREFIX));
 
-        $groupedFsOptions = $this->groupFsOptions($craftFilesystemOptions, $diskOptions);
+        $groupedFsOptions = $this->groupFsOptions($craftFilesystemOptions->all(), $diskOptions->all());
         $fsOptions = $groupedFsOptions;
         array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '', 'data' => ['hint' => '']]);
 
@@ -215,14 +215,19 @@ class VolumesController
         return $this->asSuccess();
     }
 
-    private function groupFsOptions(Collection $craftFilesystemOptions, Collection $diskOptions): array
+    /**
+     * @param  array<int, array{label:string, value:string, disabled:bool}>  $craftFilesystemOptions
+     * @param  array<int, array{label:string, value:string, disabled:bool}>  $diskOptions
+     * @return list<array{optgroup:string}|array{label:string, value:string, disabled:bool}>
+     */
+    private function groupFsOptions(array $craftFilesystemOptions, array $diskOptions): array
     {
         $options = [];
 
         $options[] = ['optgroup' => t('Craft Filesystems')];
         array_push($options, ...$this->sortFsOptions($craftFilesystemOptions));
 
-        if ($diskOptions->isNotEmpty()) {
+        if ($diskOptions !== []) {
             $options[] = ['optgroup' => t('Laravel Disks')];
             array_push($options, ...$this->sortFsOptions($diskOptions));
         }
@@ -230,9 +235,13 @@ class VolumesController
         return $options;
     }
 
-    private function sortFsOptions(Collection $options): array
+    /**
+     * @param  array<int, array{label:string, value:string, disabled:bool}>  $options
+     * @return list<array{label:string, value:string, disabled:bool}>
+     */
+    private function sortFsOptions(array $options): array
     {
-        return $options
+        return collect($options)
             ->sortBy(fn (array $option) => $option['label'])
             ->values()
             ->all();

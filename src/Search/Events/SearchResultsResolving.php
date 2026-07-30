@@ -17,6 +17,7 @@ class SearchResultsResolving
     public function __construct(
         public readonly ElementQueryInterface $elementQuery,
         public readonly SearchQuery $query,
+        /** @var list<array{elementId: int|string, siteId: int|string, keywords: string, attribute: string}> */
         public array $results,
     ) {}
 }

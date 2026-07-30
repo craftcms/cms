@@ -13,7 +13,7 @@ class RelatedUsers extends RelationArgumentHandler
     protected string $argumentName = 'relatedToUsers';
 
     #[Override]
-    protected function handleArgument($argumentValue): mixed
+    protected function handleArgument(mixed $argumentValue): mixed
     {
         $argumentValue = parent::handleArgument($argumentValue);
 

@@ -21,6 +21,8 @@ use CraftCms\Cms\Element\ElementCollection;
  *     $event->blockers[] = // ...
  * });
  * ```
+ *
+ * @template TElement of ElementInterface
  */
 class DefineDeletionBlockers
 {
@@ -31,7 +33,7 @@ class DefineDeletionBlockers
         public string $elementType,
 
         /**
-         * @var ElementCollection The elements to be deleted.
+         * @var ElementCollection<int, TElement> The elements to be deleted.
          */
         public ElementCollection $elements,
 

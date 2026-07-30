@@ -86,7 +86,8 @@ class ElementCollection extends Collection
      *     ->with(['related']);
      * ```
      *
-     * @param  array|string  $with  The property value
+     * @param  array<array-key,mixed>|string  $with  The property value
+     * @return self<TKey,TElement>
      */
     public function with(array|string $with): self
     {
@@ -216,6 +217,7 @@ class ElementCollection extends Collection
     /**
      * Reloads fresh element instances from the database for all the elements.
      */
+    /** @return Collection<array-key,ElementInterface> */
     public function fresh(): Collection
     {
         if ($this->isEmpty()) {
@@ -379,6 +381,7 @@ class ElementCollection extends Collection
      *
      * @see ElementHelper::renderElements()
      */
+    /** @param array<string,mixed> $variables */
     public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->items, $variables);
@@ -464,15 +467,16 @@ class ElementCollection extends Collection
     }
 
     /**
-     * @template TZipValue
-     *
-     * @param  Arrayable<array-key,TZipValue>|iterable<array-key,TZipValue>  ...$items
+     * @param  Arrayable<array-key,mixed>|iterable<array-key,mixed>  ...$items
      * @return Collection<int,Collection<int,mixed>>
      */
     #[Override]
     public function zip($items): Collection
     {
-        return $this->toBase()->zip(...func_get_args());
+        $arrayableItems = array_map(fn ($items) => $this->getArrayableItems($items), func_get_args());
+        $params = array_merge([fn () => new Collection(func_get_args()), $this->items], $arrayableItems);
+
+        return new Collection(array_map(...$params));
     }
 
     /**

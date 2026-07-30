@@ -22,6 +22,7 @@ use function CraftCms\Cms\renderObjectTemplate;
 
 trait RespondsWithFlash
 {
+    /** @param array<string, mixed> $data */
     public function asFailure(?string $message = null, array $data = []): Response
     {
         if (request()->expectsJson()) {
@@ -42,6 +43,7 @@ trait RespondsWithFlash
             ->with($data)->withErrors($errors);
     }
 
+    /** @param array<string, mixed> $data */
     public function asJsonFailure(?string $message = null, array $data = []): JsonResponse
     {
         return new JsonResponse($data + array_filter([
@@ -49,6 +51,10 @@ trait RespondsWithFlash
         ]), 400);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $notificationSettings
+     */
     public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = []): Response
     {
         $redirect ??= $this->getPostedRedirectUrl();
@@ -75,6 +81,7 @@ trait RespondsWithFlash
         return back()->with($data);
     }
 
+    /** @param array<string, mixed> $data */
     public function asJsonSuccess(?string $message = null, array $data = [], ?string $redirect = null): JsonResponse
     {
         return new JsonResponse($data + array_filter([
@@ -83,6 +90,7 @@ trait RespondsWithFlash
         ]), 200);
     }
 
+    /** @param array<string, mixed> $data */
     public function asModelFailure(
         object $model,
         ?string $message = null,
@@ -102,6 +110,7 @@ trait RespondsWithFlash
         return $this->asFailure($message, $data);
     }
 
+    /** @param array<string, mixed> $data */
     public function asModelSuccess(
         object $model,
         ?string $message = null,

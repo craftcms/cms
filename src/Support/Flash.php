@@ -8,6 +8,7 @@ use function CraftCms\Cms\t;
 
 class Flash
 {
+    /** @param array<string, mixed> $settings */
     public static function notice(?string $default = null, array $settings = []): ?string
     {
         $message = request('notice', $default);
@@ -30,6 +31,7 @@ class Flash
         return $message;
     }
 
+    /** @param array<string, mixed> $settings */
     public static function success(?string $default = null, array $settings = []): ?string
     {
         $message = request()->getSigned('successMessage', $default);
@@ -52,6 +54,7 @@ class Flash
         return $message;
     }
 
+    /** @param array<string, mixed> $settings */
     public static function error(?string $default = null, array $settings = []): ?string
     {
         $message = request()->getSigned('failMessage', $default);

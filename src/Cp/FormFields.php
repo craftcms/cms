@@ -52,6 +52,7 @@ readonly class FormFields
      * slotted control happens client-side, so `labelledBy`/`describedBy` are
      * only passed to input templates when explicitly configured.
      */
+    /** @param array<string, mixed> $config */
     public static function fieldHtml(string|Stringable|callable $input, array $config = []): string
     {
         return self::fieldFromConfig($input, $config)->toHtml();
@@ -61,6 +62,7 @@ readonly class FormFields
      * Maps the legacy field config surface onto the {@see Field} component —
      * the PHP twin of the `_includes/forms/field` glue template.
      */
+    /** @param array<string, mixed> $config */
     private static function fieldFromConfig(string|Stringable|callable $input, array $config): Field
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
@@ -130,6 +132,8 @@ readonly class FormFields
             isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
         ]));
 
+        $errors = $errors !== null && ! is_iterable($errors) ? [$errors] : $errors;
+
         return Field::make()
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
@@ -175,6 +179,7 @@ readonly class FormFields
      * longer support (or support with changed behavior). Keys that map
      * faithfully onto the components don't warn.
      *
+     * @param  array<string, mixed>  $config
      * @param  array<string, string>  $messages  Key => what to use instead
      */
     private static function deprecateConfig(string $component, array $config, array $messages): void
@@ -196,6 +201,7 @@ readonly class FormFields
      * spinner when loading); the busy/failure/retry/success messages pass
      * through as data attributes for the legacy submit JS.
      */
+    /** @param array<string, mixed> $config */
     public static function buttonFromConfig(array $config): Button
     {
         self::deprecateConfig('button', $config, [
@@ -246,6 +252,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function buttonGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'buttongroup'.mt_rand();
@@ -262,6 +269,7 @@ readonly class FormFields
      * component, applying the group-level appearance/size defaults and the
      * selected state to each option's button.
      */
+    /** @param array<string, mixed> $config */
     public static function buttonGroupFromConfig(array $config): ButtonGroup
     {
         $value = $config['value'] ?? null;
@@ -312,6 +320,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function checkboxFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkbox'.mt_rand();
@@ -335,6 +344,7 @@ readonly class FormFields
      * `label`, aria-labelledby is suppressed when an `aria-label` is
      * configured, and custom-option mode renders a text input for the value.
      */
+    /** @param array<string, mixed> $config */
     public static function checkboxFromConfig(array $config): Checkbox
     {
         $id = $config['id'] ?? 'checkbox'.mt_rand();
@@ -376,6 +386,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function checkboxSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxselect'.mt_rand();
@@ -394,6 +405,7 @@ readonly class FormFields
      * preserved: sortable pre-orders options by the `values` order, and a
      * checked "All" option checks and disables every item.
      */
+    /** @param array<string, mixed> $config */
     public static function checkboxSelectFromConfig(array $config): CheckboxSelect
     {
         $id = $config['id'] ?? 'checkbox-select-'.mt_rand();
@@ -402,7 +414,10 @@ readonly class FormFields
         $disabled = (bool) ($config['disabled'] ?? false);
         $sortable = (bool) ($config['sortable'] ?? false);
 
-        $options = collect($config['options'] ?? [])
+        $rawOptions = $config['options'] ?? [];
+        $rawOptions = is_iterable($rawOptions) ? $rawOptions : [$rawOptions];
+
+        $options = collect($rawOptions)
             ->map(fn ($option, $key) => is_array($option) ? $option : [
                 'label' => $option,
                 'value' => $key,
@@ -465,6 +480,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function radioGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'radiogroup'.mt_rand();
@@ -482,6 +498,7 @@ readonly class FormFields
      * semantics preserved: `radioLabel` wins over `label`, and custom-option
      * mode renders an "Other:" text input that syncs its value to the radio.
      */
+    /** @param array<string, mixed> $config */
     public static function radioFromConfig(array $config): Radio
     {
         $id = $config['id'] ?? 'radio'.mt_rand();
@@ -535,6 +552,7 @@ readonly class FormFields
      * component — the PHP twin of the `_includes/forms/radioGroup` glue
      * template.
      */
+    /** @param array<string, mixed> $config */
     public static function radioGroupFromConfig(array $config): RadioGroup
     {
         $id = $config['id'] ?? 'radio-group-'.mt_rand();
@@ -573,6 +591,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function checkboxGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxgroup'.mt_rand();
@@ -588,6 +607,7 @@ readonly class FormFields
      * {@see CheckboxGroup} component — the PHP twin of the
      * `_includes/forms/checkboxGroup` glue template.
      */
+    /** @param array<string, mixed> $config */
     public static function checkboxGroupFromConfig(array $config): CheckboxGroup
     {
         $id = $config['id'] ?? 'checkbox-group-'.mt_rand();
@@ -639,6 +659,7 @@ readonly class FormFields
             ->attributes($config['containerAttributes'] ?? []);
     }
 
+    /** @param array<string, mixed> $config */
     public static function colorHtml(array $config): string
     {
         return self::colorFromConfig($config)->toHtml();
@@ -670,6 +691,7 @@ readonly class FormFields
         return $input->presets($config['presets'] ?? []);
     }
 
+    /** @param array<string, mixed> $config */
     public static function colorFieldHtml(array $config): string
     {
         $config['id'] ??= 'color'.mt_rand();
@@ -681,6 +703,7 @@ readonly class FormFields
         );
     }
 
+    /** @param array<string, mixed> $config */
     public static function colorSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'colorselect'.mt_rand();
@@ -688,11 +711,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/colorSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function iconPickerHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/iconPicker', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function iconPickerFieldHtml(array $config): string
     {
         $config['id'] ??= 'iconpicker'.mt_rand();
@@ -704,11 +729,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/iconPicker', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function editableTableHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/editableTable', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] ??= 'editabletable'.mt_rand();
@@ -717,6 +744,7 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/editableTable', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function lightswitchFieldHtml(array $config): string
     {
         $config['id'] ??= 'lightswitch'.mt_rand();
@@ -740,6 +768,7 @@ readonly class FormFields
      * template. Legacy semantics preserved: `label` is an `onLabel` fallback,
      * not a field label.
      */
+    /** @param array<string, mixed> $config */
     public static function lightswitchFromConfig(array $config): Lightswitch
     {
         self::deprecateConfig('lightswitch', $config, [
@@ -764,11 +793,13 @@ readonly class FormFields
             ->attributes($config['containerAttributes'] ?? []);
     }
 
+    /** @param array<string, mixed> $config */
     public static function rangeHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/range', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function rangeFieldHtml(array $config): string
     {
         $config['id'] ??= 'range'.mt_rand();
@@ -776,11 +807,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/range', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function moneyInputHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/money', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function moneyFieldHtml(array $config): string
     {
         $config['id'] ??= 'money'.mt_rand();
@@ -788,11 +821,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/money', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function selectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/select', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function selectFieldHtml(array $config): string
     {
         $config['id'] ??= 'select'.mt_rand();
@@ -800,11 +835,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/select', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function customSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/customSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function customSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'customselect'.mt_rand();
@@ -812,11 +849,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/customSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function selectizeHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/selectize', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function selectizeFieldHtml(array $config): string
     {
         $config['id'] ??= 'selectize'.mt_rand();
@@ -824,11 +863,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/selectize', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function multiSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/multiselect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function multiSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'multiselect'.mt_rand();
@@ -836,6 +877,7 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/multiselect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function textHtml(array $config): string
     {
         return self::textFromConfig($config)->toHtml();
@@ -850,6 +892,7 @@ readonly class FormFields
      * A `maxlength` alone keeps the legacy full-width behavior unless a
      * `width` is configured, since the web component would otherwise shrink.
      */
+    /** @param array<string, mixed> $config */
     public static function textFromConfig(array $config, ?Input $input = null): Input
     {
         $inputAttributes = $config['inputAttributes'] ?? [];
@@ -891,6 +934,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function textFieldHtml(array $config): string
     {
         $config['id'] ??= 'text'.mt_rand();
@@ -901,6 +945,7 @@ readonly class FormFields
         );
     }
 
+    /** @param array<string, mixed> $config */
     public static function passwordHtml(array $config): string
     {
         return self::passwordFromConfig($config)->toHtml();
@@ -937,6 +982,7 @@ readonly class FormFields
         );
     }
 
+    /** @param array<string, mixed> $config */
     public static function textareaHtml(array $config): string
     {
         return self::textareaFromConfig($config)->toHtml();
@@ -948,6 +994,7 @@ readonly class FormFields
      * template. Legacy semantics preserved: unlike {@see textFromConfig()},
      * autofocus isn't gated on the current user's autofocus preference.
      */
+    /** @param array<string, mixed> $config */
     public static function textareaFromConfig(array $config): Textarea
     {
         $cols = ($config['cols'] ?? false) ?: null;
@@ -974,6 +1021,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function textareaFieldHtml(array $config): string
     {
         $config['id'] ??= 'textarea'.mt_rand();
@@ -984,11 +1032,13 @@ readonly class FormFields
         );
     }
 
+    /** @param array<string, mixed> $config */
     public static function dateHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/date', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function dateFieldHtml(array $config): string
     {
         $config['id'] ??= 'date'.mt_rand();
@@ -996,11 +1046,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/date', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function timeHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/time', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function timeFieldHtml(array $config): string
     {
         $config['id'] ??= 'time'.mt_rand();
@@ -1008,6 +1060,7 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/time', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function dateTimeFieldHtml(array $config): string
     {
         $config += [
@@ -1018,11 +1071,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/datetime', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function elementSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/elementSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function elementSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'elementselect'.mt_rand();
@@ -1030,11 +1085,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/elementSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function entryTypeSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function entryTypeSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'entrytypeselect'.mt_rand();
@@ -1042,6 +1099,7 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function autosuggestFieldHtml(array $config): string
     {
         $config['id'] ??= 'autosuggest'.mt_rand();
@@ -1232,6 +1290,10 @@ readonly class FormFields
         return false;
     }
 
+    /**
+     * @param  array<string, int>  $visibleFields
+     * @return array{locality: list<string|null>, dependentLocality: list<string|null>}
+     */
     private static function subdivisionParents(Address $address, array $visibleFields): array
     {
         $baseSubdivisionRepository = new BaseSubdivisionRepository;
@@ -1252,6 +1314,7 @@ readonly class FormFields
         return ['locality' => $localityParents, 'dependentLocality' => $dependentLocalityParents];
     }
 
+    /** @param list<string|null>|null $parents */
     private static function subdivisionField(
         Address $address,
         string $name,
@@ -1341,6 +1404,7 @@ readonly class FormFields
         ]);
     }
 
+    /** @param array<string, mixed> $variables */
     private static function renderTemplate(string $template, array $variables = []): string
     {
         return template(''.$template, $variables, templateMode: TemplateMode::Cp);

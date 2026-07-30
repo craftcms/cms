@@ -94,6 +94,8 @@ class ImageTransformHelper
 
     /**
      * Extend a transform by taking an existing transform and overriding its parameters.
+     *
+     * @param  array<string,mixed>  $parameters
      */
     public static function extendTransform(ImageTransform $transform, array $parameters): ImageTransform
     {
@@ -244,6 +246,7 @@ class ImageTransformHelper
         ]));
     }
 
+    /** @return array<string,int|string|bool|null> */
     public static function parseTransformString(string $str): array
     {
         if (! preg_match('/^_?(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(?:_(?P<quality>\d+))?_(?P<interlace>[a-z]+)(?:_(?P<fill>transparent|[0-9a-f]{3}|[0-9a-f]{6}))?(?:_(?P<upscale>ns))?$/', $str, $match)) {

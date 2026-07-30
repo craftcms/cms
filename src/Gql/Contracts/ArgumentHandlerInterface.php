@@ -9,7 +9,8 @@ use CraftCms\Cms\Gql\ArgumentManager;
 interface ArgumentHandlerInterface
 {
     /**
-     * @param  array  $argumentList  argument list to be used for the query
+     * @param  array<string, mixed>  $argumentList  argument list to be used for the query
+     * @return array<string, mixed>
      */
     public function handleArgumentCollection(array $argumentList = []): array;
 

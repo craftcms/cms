@@ -25,6 +25,7 @@ class FieldLayoutForm extends Component
      */
     public ?string $errorKeyPrefix = null;
 
+    /** @return array<string, array{tabId: string, label: string, url: string, class: string|null}> */
     public function getTabMenu(): array
     {
         $menu = [];
@@ -86,6 +87,7 @@ class FieldLayoutForm extends Component
     /**
      * Returns lists of visible layout elements’ UUIDs, indexed by their tabs’ UUIDs.
      */
+    /** @return array<string, list<string>> */
     public function getVisibleElements(): array
     {
         $response = [];
@@ -114,6 +116,7 @@ class FieldLayoutForm extends Component
     /**
      * Returns lists of visible but static layout elements’ UUIDs, indexed by their tabs’ UUIDs.
      */
+    /** @return array<string, list<string>> */
     public function getStaticElements(): array
     {
         $response = [];

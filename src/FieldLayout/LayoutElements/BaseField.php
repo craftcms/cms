@@ -145,6 +145,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the card preview options supplied by this field.
+     *
+     * @return list<array{label: string, value: string}>|null
      */
     public function getPreviewOptions(): ?array
     {
@@ -162,6 +164,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the card thumbnail options supplied by this field.
+     *
+     * @return list<array{label: string, value: string}>|null
      */
     public function getThumbOptions(): ?array
     {
@@ -245,6 +249,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns HTML attributes that should be added to the selector container.
+     *
+     * @return array{class: string, data: array{attribute: string, mandatory: bool, requirable: bool, thumbable: bool, preview-options: list<array{label: string, value: string}>|null, thumb-options: list<array{label: string, value: string}>|null}}
      */
     protected function selectorAttributes(): array
     {
@@ -284,6 +290,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the indicators that should be shown within the selector.
+     *
+     * @return list<array{label: string, icon: string, iconColor: string}>
      */
     protected function selectorIndicators(): array
     {
@@ -553,6 +561,7 @@ abstract class BaseField extends FieldLayoutElement
         return $ids ? implode(' ', $ids) : null;
     }
 
+    /** @return array{class?: list<string>, data: array{base-input-name: string, error-key: string}} */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -585,6 +594,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array<string, scalar|array<array-key, scalar|null>|null>
      */
     protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -596,6 +606,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array<string, scalar|array<array-key, scalar|null>|null>
      */
     protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -837,6 +848,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return list<array<string, mixed>>
      */
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
@@ -845,6 +857,9 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns a “Copy field handle” action menu item definition for [[actionMenuItems()]].
+     *
+     * @param  array{id?: string, icon?: string, label?: string, promptLabel?: string, attribute?: string}  $config
+     * @return array{id: string, icon: string, label: string}
      */
     protected function copyAttributeAction(array $config = []): array
     {

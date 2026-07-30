@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 
 class Asset extends ElementResolver
 {
+    /** @param array<string, mixed> $arguments */
     public static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed
     {
         // If this is the beginning of a resolver chain, start fresh

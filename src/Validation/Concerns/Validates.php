@@ -79,7 +79,7 @@ trait Validates
      * TODO: Add types to method signature once components no longer rely
      * on craft/base/Model
      *
-     * @param  array|string|null  $attributeNames
+     * @param  list<string>|string|null  $attributeNames
      * @param  bool  $clearErrors
      */
     public function validate($attributeNames = null, $clearErrors = true, bool $throw = false): bool

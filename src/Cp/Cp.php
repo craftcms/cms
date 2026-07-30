@@ -56,6 +56,7 @@ readonly class Cp
      * The keys merged below are always present so the Inertia side never loses
      * config it relies on, even on unauthenticated or non-CP requests.
      */
+    /** @return Collection<string, mixed> */
     public static function config(): Collection
     {
         $generalConfig = Cms::config();
@@ -93,6 +94,7 @@ readonly class Cp
      * always present, CP-request-only keys are added for CP requests, and the
      * large authenticated-user block is added when someone is logged in.
      */
+    /** @return array<string, mixed> */
     private static function craftData(): array
     {
         $upToDate = Cms::isInstalled() && ! app(Updates::class)->areMigrationsPending();
@@ -226,6 +228,7 @@ readonly class Cp
         return $event->data;
     }
 
+    /** @return array<string, mixed> */
     private static function datepickerOptions(Locale $formattingLocale, Locale $locale): array
     {
         return [
@@ -244,6 +247,7 @@ readonly class Cp
         ];
     }
 
+    /** @return array<string, mixed> */
     private static function defaultCookieOptions(): array
     {
         return [
@@ -254,6 +258,7 @@ readonly class Cp
         ];
     }
 
+    /** @return array<string, mixed>|null */
     private static function httpProxy(GeneralConfig $generalConfig): ?array
     {
         if (! $generalConfig->httpProxy) {
@@ -273,6 +278,7 @@ readonly class Cp
         ]);
     }
 
+    /** @return array<string, mixed>|null|false */
     private static function previewIframeResizerOptions(GeneralConfig $generalConfig): array|null|false
     {
         if (! $generalConfig->useIframeResizer) {
@@ -287,6 +293,7 @@ readonly class Cp
         return $generalConfig->previewIframeResizerOptions;
     }
 
+    /** @return list<array{handle: string, id: int, uid: string, name: string}> */
     private static function sites(): array
     {
         $sites = [];
@@ -303,6 +310,7 @@ readonly class Cp
         return $sites;
     }
 
+    /** @return array<string, mixed> */
     private static function timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
         // normalize the AM/PM names consistently with time2int() in jQuery Timepicker

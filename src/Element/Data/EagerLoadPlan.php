@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Data;
 
 class EagerLoadPlan
 {
+    /** @param array<string, mixed> $criteria */
     public function __construct(
         public ?string $handle = null,
         public ?string $alias = null,

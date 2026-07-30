@@ -12,7 +12,6 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\File;
 use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Override;
 use Throwable;
@@ -53,7 +52,6 @@ class AsciiFilenamesCommand extends Command
             default => throw new Exception('Invalid driver name: '.DB::connection()->getDriverName().'.')
         };
 
-        /** @var Collection<Asset> $assets */
         $assets = $query->get();
         $total = $assets->count();
 
@@ -65,9 +63,7 @@ class AsciiFilenamesCommand extends Command
 
         $this->components->info("$total assets found with non-ASCII filenames:");
 
-        $this->components->bulletList($assets->map(
-            fn (Asset $asset) => $asset->getFilename(),
-        )->all());
+        $this->components->bulletList($assets->pluck('filename')->all());
 
         if (! confirm('Ready to rename these filenames as ASCII?')) {
             return self::SUCCESS;

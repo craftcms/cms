@@ -13,6 +13,10 @@ use function CraftCms\Cms\template;
 
 trait UpdatesFieldLayout
 {
+    /**
+     * @param  array<string, mixed>  $formConfig
+     * @return array<string, mixed>
+     */
     protected function fieldLayoutData(ElementInterface $element, array $formConfig = []): array
     {
         $namespace = request()->header('X-Craft-Namespace');

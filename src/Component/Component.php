@@ -24,6 +24,10 @@ use Illuminate\Support\Traits\Macroable;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
+/**
+ * @implements Arrayable<string, mixed>
+ * @implements ArrayAccess<string, mixed>
+ */
 #[Ruleset(ValidatableRules::class)]
 abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, ComponentInterface, Validatable
 {
@@ -36,6 +40,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     use MacroableMagicMethods;
     use Validates;
 
+    /** @param array<string, mixed>|object $config */
     public function __construct(array|object $config = [])
     {
         if (is_object($config)) {
@@ -49,7 +54,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
      * Configures a component with the initial property values.
      *
      * @param  self  $component  the component to be configured
-     * @param  array  $properties  the property initial values given in terms of name-value pairs.
+     * @param  array<string, mixed>  $properties  the property initial values given in terms of name-value pairs.
      * @return self the component itself
      */
     final public static function configure(self $component, array $properties = []): self
@@ -74,6 +79,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         return true;
     }
 
+    /** @return array<string, string|callable> */
     public function fields(): array
     {
         $fields = Arr::except($this->traitFields(), ['ruleset']);
@@ -81,6 +87,10 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         return $this->formatDateFields($fields);
     }
 
+    /**
+     * @param  array<string, string|callable>  $fields
+     * @return array<string, string|callable>
+     */
     protected function formatDateFields(array $fields): array
     {
         foreach ($fields as $field => $definition) {
@@ -111,7 +121,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         return $fields;
     }
 
-    public function __get(string $name)
+    public function __get(string $name): mixed
     {
         $getter = $this->resolveMagicMethod('get', $name);
 
@@ -126,7 +136,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         throw new UnknownPropertyException('Getting unknown property: '.static::class.'::'.$name);
     }
 
-    public function __set(string $name, $value): void
+    public function __set(string $name, mixed $value): void
     {
         $setter = $this->resolveMagicMethod('set', $name);
 

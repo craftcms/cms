@@ -21,6 +21,7 @@ use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\VariableNode;
 use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\NonNull;
+use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
@@ -56,6 +57,7 @@ class GqlHelper
      * @param  string  $action  The action for which the entities should be extracted. Defaults to "read".
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
+    /** @return array<string, list<string>> */
     public static function extractAllowedEntitiesFromSchema(string $action = 'read', ?GqlSchema $schema = null): array
     {
         try {
@@ -90,6 +92,7 @@ class GqlHelper
     /**
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
+    /** @return list<string> */
     public static function extractEntityAllowedActions(string $entity, ?GqlSchema $schema = null): array
     {
         try {
@@ -156,11 +159,11 @@ class GqlHelper
 
     /**
      * @param  string  $typeName  The union type name.
-     * @param  array  $includedTypes  The type the union should include
+     * @param  list<ObjectType>  $includedTypes  The types the union should include
      * @param  callable|null  $resolveFunction  The resolver function to use to resolve a specific type. If not provided,
      *                                          a default one will be used that is able to resolve Craft elements.
      */
-    public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): mixed
+    public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): UnionType
     {
         $resolveFunction ??= fn (ElementInterface $value) => $value->getGqlTypeName();
 
@@ -245,6 +248,10 @@ class GqlHelper
         return $value;
     }
 
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>|string
+     */
     public static function prepareTransformArguments(array $arguments): array|string
     {
         unset($arguments['immediately']);
@@ -296,6 +303,7 @@ class GqlHelper
             ->all();
     }
 
+    /** @param array<string, mixed> $variableValues */
     private static function _convertArgumentValue(mixed $value, array $variableValues = []): mixed
     {
         if ($value instanceof VariableNode) {
@@ -309,6 +317,7 @@ class GqlHelper
         return $value->value;
     }
 
+    /** @param array{conditionBuilder?: ElementQueryConditionBuilder}|null $context */
     public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, mixed $source, ?array $context): string
     {
         // $resolveInfo->path is either an array or not set, so we need to check if it's set

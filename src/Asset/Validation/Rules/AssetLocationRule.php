@@ -19,6 +19,7 @@ use function CraftCms\Cms\t;
  */
 readonly class AssetLocationRule implements ValidationRule
 {
+    /** @param string|list<string>|null $allowedExtensions */
     public function __construct(
         private Asset $asset,
         private string $folderIdAttribute = 'folderId',

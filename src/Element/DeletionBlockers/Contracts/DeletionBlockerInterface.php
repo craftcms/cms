@@ -61,5 +61,8 @@ interface DeletionBlockerInterface
      * resolve('This is now resolved!');
      * ```
      */
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function getActions(): array;
 }

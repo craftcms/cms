@@ -31,6 +31,7 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
+/** @phpstan-type SourceConfig array{sites?: array<int|string>|false, ...} */
 #[Scoped]
 class ElementSources
 {
@@ -51,11 +52,15 @@ class ElementSources
     public const string CONTEXT_EMBEDDED_INDEX = 'embeddedIndex';
 
     /**
+     * @var array<class-string,array<string,SourceConfig[]>>
+     *
      * @see defineSources()
      */
     private array $sources = [];
 
     /**
+     * @var array<class-string,array<string,FieldLayout[]>>
+     *
      * @see getFieldLayoutsForSource()
      */
     private array $fieldLayouts;
@@ -67,8 +72,8 @@ class ElementSources
     /**
      * Filters out any unnecessary headings from a given source list.
      *
-     * @param  array[]|Collection<array>  $sources
-     * @return Collection<array>
+     * @param  SourceConfig[]|Collection<int,SourceConfig>  $sources
+     * @return Collection<int,SourceConfig>
      */
     public static function filterExtraHeadings(array|Collection $sources): Collection
     {
@@ -94,7 +99,7 @@ class ElementSources
      * @param  string  $context  The context
      * @param  bool  $withDisabled  Whether disabled sources should be included
      * @param  string|null  $page  The page to fetch sources for
-     * @return Collection<array>
+     * @return Collection<int,SourceConfig>
      */
     public function getSources(
         string $elementType,
@@ -104,8 +109,8 @@ class ElementSources
     ): Collection {
         $sources = $this
             ->sources($elementType, $context)
-            ->when(
-                ! $withDisabled,
+            ->unless(
+                $withDisabled,
                 fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false)),
             );
 
@@ -128,7 +133,7 @@ class ElementSources
 
     /**
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<array>
+     * @return Collection<int,SourceConfig>
      */
     private function sources(string $elementType, string $context): Collection
     {
@@ -141,7 +146,7 @@ class ElementSources
 
     /**
      * @param  class-string<ElementInterface>  $elementType
-     * @return array[]
+     * @return SourceConfig[]
      */
     private function defineSources(string $elementType, string $context): array
     {
@@ -216,24 +221,23 @@ class ElementSources
                 continue;
             }
 
-            $source['sites'] = collect($source['sites'])
-                ->map(function (int|string $siteId) {
-                    if (! is_string($siteId)) {
-                        return $siteId;
-                    }
-
-                    if (! Str::isUuid($siteId)) {
-                        return (int) $siteId;
-                    }
-
+            $siteIds = [];
+            foreach ($source['sites'] ?: [] as $siteId) {
+                if (is_string($siteId) && Str::isUuid($siteId)) {
                     try {
-                        return Sites::getSiteByUid($siteId)->id;
+                        $siteId = Sites::getSiteByUid($siteId)->id;
                     } catch (SiteNotFoundException) {
-                        return null;
+                        continue;
                     }
-                })
-                ->filter()
-                ->all();
+                } elseif (is_string($siteId)) {
+                    $siteId = (int) $siteId;
+                }
+
+                if ($siteId) {
+                    $siteIds[] = $siteId;
+                }
+            }
+            $source['sites'] = $siteIds;
         }
 
         return $sources;
@@ -262,6 +266,7 @@ class ElementSources
 
     /**
      * @param  class-string<ElementInterface>  $elementType
+     * @return SourceConfig|null
      */
     public function findSource(
         string $elementType,
@@ -322,7 +327,7 @@ class ElementSources
      * Returns the unique pages found for the given element type’s sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @return Collection<string>
+     * @return Collection<int,string>
      */
     public function getPages(string $elementType): Collection
     {
@@ -404,6 +409,7 @@ class ElementSources
     /**
      * Returns whether the given custom source should be available for the current user.
      */
+    /** @param SourceConfig $source */
     private function showCustomSource(array $source): bool
     {
         if (! isset($source['userGroups'])) {
@@ -435,6 +441,7 @@ class ElementSources
      * Saves an element’s source configs.
      *
      * @param  class-string<ElementInterface>  $elementType
+     * @param  SourceConfig[]  $sources
      */
     public function saveSources(string $elementType, array $sources): void
     {
@@ -474,7 +481,7 @@ class ElementSources
      * Returns the common table attributes that are available for a given element type, across all its sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @return Collection<array>
+     * @return Collection<string,array<string,mixed>>
      */
     public function getAvailableTableAttributes(string $elementType): Collection
     {
@@ -503,7 +510,7 @@ class ElementSources
      * @param  string  $sourceKey  The element type source key
      * @param  string[]|null  $customAttributes  Custom attributes to show rather than the defaults
      * @param  FieldLayout[]|null  $fieldLayouts  The field layouts that should be factored in
-     * @return Collection<array>
+     * @return Collection<int,array{0:mixed,1:array<string,mixed>}>
      */
     public function getTableAttributes(
         string $elementType,
@@ -548,7 +555,7 @@ class ElementSources
      * Returns all the field layouts available for the given element source.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<FieldLayout>
+     * @return Collection<int,FieldLayout>
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): Collection
     {
@@ -580,7 +587,7 @@ class ElementSources
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element source key
-     * @return Collection<array>
+     * @return Collection<array-key,mixed>
      */
     public function getSourceSortOptions(string $elementType, string $sourceKey): Collection
     {
@@ -601,27 +608,27 @@ class ElementSources
         // Combine duplicate attributes. If any attributes map to multiple sort
         // options and each option has a string orderBy value, cmobine them
         // with a CoalesceColumnsExpression.
-        return $sortOptions
-            ->groupBy('attribute')
-            ->map(function (Collection $group) {
-                $orderBys = $group->pluck('orderBy');
+        $combined = collect();
+        foreach ($sortOptions->groupBy('attribute') as $attribute => $group) {
+            $orderBys = $group->pluck('orderBy');
+            $option = $group->first();
 
-                if ($orderBys->count() === 1 || $orderBys->doesntContain(fn ($orderBy) => is_string($orderBy))) {
-                    return $group->first();
-                }
+            if ($orderBys->count() > 1 && $orderBys->contains(fn ($orderBy) => is_string($orderBy))) {
+                $option['orderBy'] = new Coalesce($orderBys->all());
+            }
 
-                return array_merge($group->first(), [
-                    'orderBy' => new Coalesce($orderBys->all()),
-                ]);
-            });
+            $combined->put($attribute, $option);
+        }
+
+        return $combined;
     }
 
     /**
      * Returns additional sort options that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
-     * @return Collection<array>
+     * @param  FieldLayout[]|Collection<int,FieldLayout>  $fieldLayouts
+     * @return Collection<array-key,mixed>
      */
     public function getSortOptionsForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
@@ -663,7 +670,7 @@ class ElementSources
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element source key
-     * @return Collection<array>
+     * @return Collection<array-key,array<string,mixed>>
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): Collection
     {
@@ -687,8 +694,8 @@ class ElementSources
      * Returns any table attributes that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
-     * @return Collection<array>
+     * @param  FieldLayout[]|Collection<int,FieldLayout>  $fieldLayouts
+     * @return Collection<string,array<string,mixed>>
      */
     public function getTableAttributesForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
@@ -765,7 +772,7 @@ class ElementSources
      * Returns the native sources for a given element type and context, normalized with `type` keys.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return array[]
+     * @return SourceConfig[]
      */
     private function nativeSources(string $elementType, string $context): array
     {
@@ -790,6 +797,7 @@ class ElementSources
         return $normalized;
     }
 
+    /** @param SourceConfig $source */
     private function normalizeNativeSource(array &$source): void
     {
         if (isset($source['defaultFilter']) && $source['defaultFilter'] instanceof ConditionInterface) {
@@ -807,7 +815,7 @@ class ElementSources
      * Returns the source configs for a given element type.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @return array[]|null
+     * @return SourceConfig[]|null
      */
     private function sourceConfigs(string $elementType): ?array
     {
@@ -818,6 +826,7 @@ class ElementSources
      * Returns the source config for a given native source key.
      *
      * @param  class-string<ElementInterface>  $elementType
+     * @return SourceConfig|null
      */
     private function sourceConfig(string $elementType, string $sourceKey): ?array
     {
@@ -836,6 +845,7 @@ class ElementSources
      * Returns the page settings for a given element type.
      *
      * @param  class-string<ElementInterface>  $elementType
+     * @return array<string,mixed>
      */
     public function getPageSettings(string $elementType): array
     {
@@ -848,6 +858,7 @@ class ElementSources
      * Saves the page settings for a given element type.
      *
      * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string,mixed>  $pageSettings
      */
     public function savePageSettings(string $elementType, array $pageSettings): void
     {

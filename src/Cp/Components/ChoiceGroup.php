@@ -50,7 +50,11 @@ abstract class ChoiceGroup extends ViewComponent
         return '';
     }
 
-    /** Attributes for each option's wrapper element. */
+    /**
+     * Attributes for each option's wrapper element.
+     *
+     * @return array<string, mixed>
+     */
     protected function optionWrapperAttributes(ViewComponent $option): array
     {
         return [];

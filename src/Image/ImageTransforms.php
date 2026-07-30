@@ -209,7 +209,7 @@ class ImageTransforms
      * When a `srcset`-style size is encountered, the preceding normal transform definition will be used as a
      * reference when determining the resulting transform dimensions.
      *
-     * @param  array  $transforms  The transform definitions to eager-load
+     * @param  array<int,mixed>  $transforms  The transform definitions to eager-load
      * @param  Asset[]  $assets  The assets to eager-load transforms for
      */
     public function eagerLoadTransforms(array $assets, array $transforms): void
@@ -282,6 +282,7 @@ class ImageTransforms
      * @template T of ImageTransformerInterface
      *
      * @param  class-string<T>  $class
+     * @param  array<string,mixed>  $config
      * @return T
      *
      * @throws ImageTransformException

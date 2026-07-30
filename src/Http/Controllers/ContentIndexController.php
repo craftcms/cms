@@ -11,6 +11,7 @@ use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
 use Inertia\Inertia;
+use Inertia\Response;
 
 /**
  * @TODO Make this more generic, for now I'm just replacing entries
@@ -23,7 +24,7 @@ readonly class ContentIndexController
         private PrepareElementSourcesVariables $prepareElementSourcesVariables,
     ) {}
 
-    public function __invoke(ElementIndexRequest $request, string $page, ?string $sectionHandle = null)
+    public function __invoke(ElementIndexRequest $request, string $page, ?string $sectionHandle = null): Response
     {
         $elementType = Entry::class;
         $context = [

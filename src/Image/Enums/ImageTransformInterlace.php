@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Enums;
 
 use CraftCms\Cms\Cp\Concerns\CanSelect;
+use CraftCms\Cms\Cp\Contracts\SelectableEnumInterface;
 
 use function CraftCms\Cms\t;
 
-enum ImageTransformInterlace: string
+enum ImageTransformInterlace: string implements SelectableEnumInterface
 {
     use CanSelect;
 

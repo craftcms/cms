@@ -44,8 +44,9 @@ class ElementRelationParamFilter
     /**
      * Normalizes a `relatedTo` param for [[parse()]].
      *
-     * @param  array|string|int|ElementInterface  $relatedToParam
+     * @param  array<array-key, mixed>|string|int|ElementInterface  $relatedToParam
      * @param  int|string|int[]|null  $siteId
+     * @return array<int, string|array<string, mixed>>
      *
      * @throws InvalidArgumentException if any of the relation criteria contain an invalid site handle
      */
@@ -113,6 +114,7 @@ class ElementRelationParamFilter
      * Normalizes an individual `relatedTo` criteria.
      *
      * @param  int|string|int[]|null  $siteId
+     * @return array<string, mixed>
      *
      * @throws InvalidArgumentException if the criteria contains an invalid site handle
      */
@@ -468,6 +470,7 @@ class ElementRelationParamFilter
     /**
      * Returns a field model based on its handle or ID.
      */
+    /** @param list<string>|null $fieldHandleParts */
     private function getField(mixed $field, ?array &$fieldHandleParts, bool $useElementQueryFields): ?FieldInterface
     {
         if (is_numeric($field)) {

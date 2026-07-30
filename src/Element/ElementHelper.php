@@ -187,6 +187,7 @@ class ElementHelper
      *
      * @throws RuntimeException if any of the element's supported sites are invalid
      */
+    /** @return array<int,array{siteId:int,siteUid:string,propagate:bool,enabledByDefault:bool}> */
     public static function supportedSitesForElement(
         ElementInterface $element,
         bool $withUnpropagatedSites = false,
@@ -204,8 +205,6 @@ class ElementHelper
             if (! isset($site['siteId'])) {
                 throw new RuntimeException('Missing "siteId" key in '.$element::class.'::getSupportedSites()');
             }
-
-            $site['siteId'] = (int) $site['siteId'];
 
             if (! isset($siteUidMap[$site['siteId']])) {
                 continue;
@@ -536,6 +535,10 @@ class ElementHelper
      * If no partial template exists for an element, its string representation will be output instead.
      *
      * @param  ElementInterface[]  $elements
+     */
+    /**
+     * @param  ElementInterface[]  $elements
+     * @param  array<string,mixed>  $variables
      */
     public static function renderElements(array $elements, array $variables = []): HtmlString
     {

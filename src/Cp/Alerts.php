@@ -156,6 +156,7 @@ readonly class Alerts
         return $alerts;
     }
 
+    /** @param array<string, mixed> $tagInfo */
     private static function alertTagHtml(array $tagInfo): string
     {
         if ($tagInfo['type'] === 'text') {

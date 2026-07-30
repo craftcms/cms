@@ -47,6 +47,7 @@ class ComponentRegistry
         $this->components[$name] = $class;
     }
 
+    /** @param array<string, mixed> $config */
     public function make(string $name, array $config = []): ViewComponent
     {
         $class = $this->components[$name] ?? throw new InvalidArgumentException(sprintf(

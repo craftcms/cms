@@ -9,9 +9,9 @@ use Override;
 
 /**
  * @method static \CraftCms\Cms\Element\Contracts\ElementExporterInterface[] availableExporters(string $elementType, string $sourceKey)
- * @method static \CraftCms\Cms\Element\Contracts\ElementExporterInterface createExporter(\CraftCms\Cms\Element\Contracts\ElementExporterInterface|string|array $exporter, string $elementType)
- * @method static array serializeExporters(iterable $exporters)
- * @method static \CraftCms\Cms\Element\Contracts\ElementExporterInterface|null resolveExporter(iterable $exporters, string $exporterClass)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementExporterInterface createExporter(\CraftCms\Cms\Element\Contracts\ElementExporterInterface|string|array<array-key, mixed> $exporter, string $elementType)
+ * @method static array<array-key, mixed> serializeExporters(iterable<array-key, mixed> $exporters)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementExporterInterface|null resolveExporter(iterable<array-key, mixed> $exporters, string $exporterClass)
  * @method static \Symfony\Component\HttpFoundation\Response export(\CraftCms\Cms\Element\Contracts\ElementExporterInterface $exporter, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query, string $format = 'csv')
  *
  * @see \CraftCms\Cms\Element\ElementExporters

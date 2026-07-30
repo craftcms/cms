@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Responses;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Site\Data\Site;
@@ -44,7 +45,7 @@ class CpScreenResponse implements Responsable
     private ?string $inertiaPage = null;
 
     /**
-     * @var array|Arrayable Props to pass to the Inertia page component.
+     * @var array<string, mixed>|Arrayable<string, mixed> Props to pass to the Inertia page component.
      *
      * @see inertiaPage()
      */
@@ -106,7 +107,7 @@ class CpScreenResponse implements Responsable
     public ?array $selectableSites = null;
 
     /**
-     * @var array|callable|null Breadcrumbs.
+     * @var list<array<string, mixed>>|callable|null Breadcrumbs.
      *
      * This will only be used by full-page screens.
      *
@@ -116,7 +117,7 @@ class CpScreenResponse implements Responsable
     public $crumbs;
 
     /**
-     * @var array Tabs.
+     * @var array<string, array<string, mixed>> Tabs.
      *
      * @see tabs()
      * @see addTab()
@@ -124,7 +125,7 @@ class CpScreenResponse implements Responsable
     public array $tabs = [];
 
     /**
-     * @var array|null Secondary navigation items.
+     * @var array<string, array<string, mixed>|NavItem>|null Secondary navigation items.
      *
      * @see subnav()
      */
@@ -136,7 +137,7 @@ class CpScreenResponse implements Responsable
     public ?string $slideoutBodyClass = null;
 
     /**
-     * @var array Custom attributes to add to the `<main>` tag.
+     * @var array<string, mixed> Custom attributes to add to the `<main>` tag.
      *
      * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
@@ -147,7 +148,7 @@ class CpScreenResponse implements Responsable
     public array $mainAttributes = [];
 
     /**
-     * @var array Custom attributes to add to the `<form>` tag.
+     * @var array<string, mixed> Custom attributes to add to the `<form>` tag.
      *
      * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      *
@@ -163,7 +164,7 @@ class CpScreenResponse implements Responsable
     public ?string $action = null;
 
     /**
-     * @var array|callable|null Alternate form actions.
+     * @var list<array<string, mixed>>|callable|null Alternate form actions.
      *
      * This will only be used by full-page screens.
      *
@@ -340,6 +341,7 @@ class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
+    /** @param list<array<string, mixed>>|callable|null $value */
     public function crumbs(callable|array|null $value): self
     {
         $this->crumbs = $value;
@@ -401,6 +403,7 @@ class CpScreenResponse implements Responsable
      * If the tabs are meant to toggle in-page content, the array keys should be set to the `id` attributes of the
      * container elements they represent.
      */
+    /** @param array<string, array<string, mixed>> $value */
     public function tabs(array $value): self
     {
         $this->tabs = $value;
@@ -411,6 +414,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the secondary navigation items.
      */
+    /** @param array<string, array<string, mixed>|NavItem>|null $value */
     public function subnav(?array $value): self
     {
         $this->subnav = $value;
@@ -447,6 +451,7 @@ class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
+    /** @param array<string, mixed> $value */
     public function mainAttributes(array $value): self
     {
         $this->mainAttributes = $value;
@@ -459,6 +464,7 @@ class CpScreenResponse implements Responsable
      *
      * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
      */
+    /** @param array<string, mixed> $value */
     public function formAttributes(array $value): self
     {
         $this->formAttributes = $value;
@@ -494,6 +500,7 @@ class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
+    /** @param list<array<string, mixed>>|callable|null $value */
     public function altActions(callable|array|null $value): self
     {
         $this->altActions = $value;
@@ -508,6 +515,7 @@ class CpScreenResponse implements Responsable
      *
      * @see altActions()
      */
+    /** @param array<string, mixed> $config */
     public function addAltAction(string $label, array $config): self
     {
         if (! is_array($this->altActions)) {
@@ -568,6 +576,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets a template that should be used to render the toolbar HTML.
      */
+    /** @param array<string, mixed> $variables */
     public function toolbarTemplate(string $template, array $variables = []): self
     {
         return $this->toolbarHtml(
@@ -614,6 +623,7 @@ class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
+    /** @param array<string, mixed> $variables */
     public function additionalButtonsTemplate(string $template, array $variables = []): self
     {
         return $this->additionalButtonsHtml(
@@ -634,6 +644,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets a template that should be used to render the content HTML.
      */
+    /** @param array<string, mixed> $variables */
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
@@ -647,6 +658,7 @@ class CpScreenResponse implements Responsable
      * When set, `toResponse()` will render an Inertia response instead of a Twig template.
      * The `title` and `crumbs` properties will be automatically included as props.
      */
+    /** @param array<string, mixed>|Arrayable<string, mixed> $props */
     public function inertiaPage(?string $value, array|Arrayable $props = []): self
     {
         $this->inertiaPage = $value;
@@ -668,6 +680,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets a template that should be used to render the right-hand meta sidebar HTML.
      */
+    /** @param array<string, mixed> $variables */
     public function metaSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->metaSidebarHtml(
@@ -688,6 +701,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets a template that should be used to render the left-hand page sidebar HTML (only used by full-page screens).
      */
+    /** @param array<string, mixed> $variables */
     public function pageSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->pageSidebarHtml(
@@ -708,6 +722,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets a template that should be used to render the content notice HTML.
      */
+    /** @param array<string, mixed> $variables */
     public function noticeTemplate(string $template, array $variables = []): self
     {
         return $this->noticeHtml(
@@ -728,6 +743,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets a template that should be used to render the errors summary HTML.
      */
+    /** @param array<string, mixed> $variables */
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(
@@ -934,6 +950,7 @@ class CpScreenResponse implements Responsable
         ], $namespace);
     }
 
+    /** @param array<string, mixed> $config */
     private function actionMenu(bool $withDestructive = true, array $config = [], ?string $namespace = null): ?string
     {
         $itemsFactory = $this->actionMenuItemsFactory($withDestructive);
@@ -947,6 +964,7 @@ class CpScreenResponse implements Responsable
         ], $namespace);
     }
 
+    /** @return list<array<string, mixed>>|null */
     private function actionMenuItemProps(bool $withDestructive = true): ?array
     {
         return $this->menuItems($this->actionMenuItemsFactory($withDestructive));
@@ -968,6 +986,7 @@ class CpScreenResponse implements Responsable
         );
     }
 
+    /** @param array<string, mixed> $config */
     private function menu(?callable $itemsFactory, array $config, ?string $namespace): ?string
     {
         if ($itemsFactory === null) {
@@ -991,6 +1010,7 @@ class CpScreenResponse implements Responsable
         return $render();
     }
 
+    /** @return list<array<string, mixed>>|null */
     private function menuItems(?callable $itemsFactory): ?array
     {
         if ($itemsFactory === null) {

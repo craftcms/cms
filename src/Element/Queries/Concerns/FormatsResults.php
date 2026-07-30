@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
@@ -24,7 +25,7 @@ use UnexpectedValueException;
 trait FormatsResults
 {
     /**
-     * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
+     * @var array<int|string, Expression<*>|string|int> The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
      */
     protected array $defaultOrderBy = [
         'elements.dateCreated' => SORT_DESC,
@@ -66,6 +67,7 @@ trait FormatsResults
      * ```
      * @return $this the query object itself
      */
+    /** @var string|callable(ElementInterface|array<string, mixed>): array-key|null */
     public $indexBy;
 
     /**
@@ -184,7 +186,7 @@ trait FormatsResults
         return $this->pluck('elements.id')->all();
     }
 
-    /** @return Collection<int> */
+    /** @return Collection<int, int> */
     public function collectIds(): Collection
     {
         return $this->pluck('elements.id');
@@ -195,6 +197,7 @@ trait FormatsResults
         $this->query->orderBy(new OrderByPlaceholderExpression);
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     protected function applyOrderByParams(ElementQuery $elementQuery): void
     {
         $this->orderBySearchResults($elementQuery);
@@ -220,6 +223,7 @@ trait FormatsResults
         $this->parseOrderColumnMappings($elementQuery, $this->query);
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     private function applyDefaultOrder(ElementQuery $elementQuery): void
     {
         $orders = $elementQuery->query->orders;
@@ -276,6 +280,7 @@ trait FormatsResults
         }
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     private function parseOrderColumnMappings(ElementQuery $elementQuery, Builder $query): void
     {
         $orders = $query->orders;
@@ -299,6 +304,7 @@ trait FormatsResults
         }, $orders);
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     private function orderBySearchResults(ElementQuery $elementQuery): void
     {
         $elementQuery->getQuery()->orders = array_filter(

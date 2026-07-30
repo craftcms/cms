@@ -21,6 +21,7 @@ abstract class BackupCommand
 
     abstract public function restore(): string;
 
+    /** @return array{database: string, host: string, port: string, username: string, password: string, schema: string} */
     protected function getConnectionConfig(): array
     {
         return [

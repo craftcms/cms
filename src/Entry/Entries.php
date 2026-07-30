@@ -54,6 +54,7 @@ class Entries
      * @param  int  $entryId  The entry’s ID.
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the entry in.
      *                                         Defaults to the current site.
+     * @param  array<string, array<array-key, int|string>|bool|int|string|null>  $criteria
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
     public function getEntryById(int $entryId, array|int|string|null $siteId = null, array $criteria = []): ?Entry

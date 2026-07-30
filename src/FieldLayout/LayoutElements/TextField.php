@@ -138,6 +138,7 @@ class TextField extends BaseNativeField
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array<string, string|array<string, string>>
      */
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -156,6 +157,7 @@ class TextField extends BaseNativeField
         return $this->name ?? parent::errorKey();
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

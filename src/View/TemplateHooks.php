@@ -41,7 +41,7 @@ class TemplateHooks
      * Return values from all invoked handlers are concatenated.
      *
      * @param  string  $hook  The hook name.
-     * @param  array  $context  The current template context (passed by reference).
+     * @param  array<string, mixed>  $context  The current template context (passed by reference).
      * @return string Concatenated output from all invoked handlers.
      */
     public function invoke(string $hook, array &$context): string

@@ -4,7 +4,7 @@ includes:
 
 parameters:
     phpVersion: 80500
-    level: 5
+    level: 6
     paths:
         - src
         - config
@@ -30,5 +30,3 @@ parameters:
     configDirectories:
         - tests
     tmpDir: /tmp/phpstan
-    ignoreErrors:
-        - '#^Call to function class_exists\(\) with .* will always evaluate to false.$#'

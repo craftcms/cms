@@ -61,6 +61,9 @@ class ArrayTwigExtension extends AbstractExtension
     }
 
     /**
+     * @param  iterable<array-key, mixed>  $array
+     * @return array<array-key, mixed>
+     *
      * @throws RuntimeError
      */
     public function sortFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, string|callable|null $arrow = null): array
@@ -70,9 +73,7 @@ class ArrayTwigExtension extends AbstractExtension
         return CoreExtension::sort($env, $isSandboxed, $array, $arrow);
     }
 
-    /**
-     * @throws RuntimeError
-     */
+    /** @throws RuntimeError */
     public function reduceFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $arrow, mixed $initial = null): mixed
     {
         CoreExtension::checkArrow($isSandboxed, $arrow, 'reduce', 'filter');
@@ -81,6 +82,8 @@ class ArrayTwigExtension extends AbstractExtension
     }
 
     /**
+     * @return array<array-key, mixed>
+     *
      * @throws RuntimeError
      */
     public function mapFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $arrow = null): array
@@ -91,11 +94,13 @@ class ArrayTwigExtension extends AbstractExtension
     }
 
     /**
+     * @param  iterable<array-key, mixed>  $arr
+     * @return array<array-key, mixed>
+     *
      * @throws RuntimeError
      */
     public function filterFilter(TwigEnvironment $env, bool $isSandboxed, iterable $arr, ?callable $arrow = null): array
     {
-        /** @var array|Traversable $arr */
         if ($arrow === null) {
             if ($arr instanceof Traversable) {
                 $arr = iterator_to_array($arr);
@@ -115,12 +120,16 @@ class ArrayTwigExtension extends AbstractExtension
         return iterator_to_array($filtered);
     }
 
+    /** @param iterable<array-key, mixed> $array */
     public function firstWhereFilter(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
     {
         return collect($array)->firstWhere($key, $strict ? '===' : '==', $value);
     }
 
     /**
+     * @param  iterable<array-key, mixed>  $arr
+     * @return array<string, list<mixed>>
+     *
      * @throws RuntimeError
      */
     public function groupFilter(iterable $arr, callable|string $arrow): array
@@ -167,6 +176,11 @@ class ArrayTwigExtension extends AbstractExtension
         return $default;
     }
 
+    /**
+     * @param  iterable<array-key, mixed>  $arr1
+     * @param  iterable<array-key, mixed>  $arr2
+     * @return array<array-key, mixed>
+     */
     public function mergeFilter(iterable $arr1, iterable $arr2, bool $recursive = false): array
     {
         if ($arr1 instanceof Traversable) {
@@ -184,6 +198,11 @@ class ArrayTwigExtension extends AbstractExtension
         return CoreExtension::merge($arr1, $arr2);
     }
 
+    /**
+     * @param  int|array<array-key, int>  $direction
+     * @param  int|array<array-key, int>  $sortFlag
+     * @return array<array-key, mixed>
+     */
     public function multisortFilter(mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
     {
         $array = array_merge($array);
@@ -193,6 +212,10 @@ class ArrayTwigExtension extends AbstractExtension
             ->all();
     }
 
+    /**
+     * @param  array<array-key, mixed>  $array
+     * @return array<array-key, mixed>
+     */
     public function pushFilter(array $array, mixed ...$values): array
     {
         array_push($array, ...$values);
@@ -200,6 +223,10 @@ class ArrayTwigExtension extends AbstractExtension
         return $array;
     }
 
+    /**
+     * @param  array<array-key, mixed>  $array
+     * @return array<array-key, mixed>
+     */
     public function unshiftFilter(array $array, mixed ...$values): array
     {
         array_unshift($array, ...$values);
@@ -207,13 +234,22 @@ class ArrayTwigExtension extends AbstractExtension
         return $array;
     }
 
+    /** @return array<array-key, mixed> */
     public function withoutFilter(mixed $arr, mixed $exclude, bool $strict = false): array
     {
-        return Collection::make($arr)
+        $items = is_null($arr) || is_scalar($arr) || $arr instanceof \UnitEnum
+            ? Arr::wrap($arr)
+            : Arr::from($arr);
+
+        return Collection::make($items)
             ->reject(fn ($value) => in_array($value, Arr::wrap($exclude), $strict))
             ->all();
     }
 
+    /**
+     * @param  array<array-key, string>|string  $key
+     * @return array<array-key, mixed>
+     */
     public function withoutKeyFilter(mixed $arr, array|string $key): array
     {
         $arr = (array) $arr;
@@ -229,9 +265,13 @@ class ArrayTwigExtension extends AbstractExtension
         return $arr;
     }
 
+    /** @return Collection<array-key, mixed> */
     public function collectFunction(mixed $var): Collection
     {
-        $collection = Collection::make($var);
+        $items = is_null($var) || is_scalar($var) || $var instanceof \UnitEnum
+            ? Arr::wrap($var)
+            : Arr::from($var);
+        $collection = Collection::make($items);
 
         if ($collection->isNotEmpty() && $collection->doesntContain(fn ($item) => ! $item instanceof ElementInterface)) {
             return ElementCollection::make($collection);
@@ -240,9 +280,12 @@ class ArrayTwigExtension extends AbstractExtension
         return $collection;
     }
 
+    /**
+     * @param  iterable<array-key, mixed>  $arr
+     * @return list<mixed>
+     */
     public function shuffleFunction(iterable $arr): array
     {
-        /** @var array|Traversable $arr */
         if ($arr instanceof Traversable) {
             $arr = iterator_to_array($arr, false);
         } else {

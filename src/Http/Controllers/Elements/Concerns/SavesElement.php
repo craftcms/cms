@@ -107,6 +107,7 @@ trait SavesElement
         $element->setFieldValuesFromRequest($fieldsLocation);
     }
 
+    /** @return list<string> */
     private function sensitiveAttributes(User $element): array
     {
         if ($element->getIsDraft()) {

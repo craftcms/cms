@@ -86,11 +86,13 @@ class FilesystemsEditViewModel extends ViewModel
     }
 
     // @TODO this should probably be its own item on SelectOptions
+    /** @return list<array<string, list<array<string, mixed>>|string>> */
     public function baseUrlSuggestions(): array
     {
         return SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value));
     }
 
+    /** @return list<array<string, list<array<string, mixed>>|string>> */
     public function basePathSuggestions(): array
     {
         return SelectOptions::getEnvSuggestions(true);

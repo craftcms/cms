@@ -6,8 +6,10 @@ namespace CraftCms\Cms\Gql\Types;
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
 abstract class InterfaceType
 {
     abstract public static function getName(): string;
@@ -19,6 +21,7 @@ abstract class InterfaceType
         return GqlEntityRegistry::prefixTypeName($element->getGqlTypeName());
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     public static function getFieldDefinitions(): array
     {
         return [

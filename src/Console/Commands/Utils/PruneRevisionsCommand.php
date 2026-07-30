@@ -16,6 +16,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Override;
+use stdClass;
 
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\text;
@@ -63,11 +64,10 @@ class PruneRevisionsCommand extends Command
         $prunedRevisionCount = 0;
 
         foreach ($elements as $element) {
-            if (! class_exists($element->type)) {
+            if (! is_subclass_of($element->type, ElementInterface::class)) {
                 continue;
             }
 
-            /** @var class-string<ElementInterface> $elementType */
             $elementType = $element->type;
             $extraRevisionCount = $element->count - $maxRevisions;
             $extraRevisions = $elementType::find()
@@ -106,6 +106,7 @@ class PruneRevisionsCommand extends Command
         return self::SUCCESS;
     }
 
+    /** @return list<int>|null */
     private function resolveSectionIds(): ?array
     {
         $handles = str((string) $this->option('section'))
@@ -178,6 +179,10 @@ class PruneRevisionsCommand extends Command
         );
     }
 
+    /**
+     * @param  list<int>  $sectionIds
+     * @return Collection<int, stdClass>
+     */
     private function elementsWithExtraRevisions(Connection $connection, array $sectionIds, int $maxRevisions): Collection
     {
         $subQuery = $connection->table(Table::REVISIONS, 'revisions')

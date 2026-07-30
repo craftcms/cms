@@ -59,6 +59,8 @@ abstract class ViewComponent implements Htmlable, Stringable
      * kebab/snake keys are camelized, so Twig-style hashes work:
      *
      *     {{ ui('callout', {variant: 'warning', content: 'Careful!'}) }}
+     *
+     * @param  array<string, mixed>  $config
      */
     public function configure(array $config): static
     {
@@ -266,7 +268,12 @@ abstract class ViewComponent implements Htmlable, Stringable
         return Html::tag('span', $html, ['slot' => $slot]);
     }
 
-    /** Explodes `class` strings into arrays so merges union them. */
+    /**
+     * Explodes `class` strings into arrays so merges union them.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
     protected static function normalizeClasses(array $attributes): array
     {
         if (isset($attributes['class'])) {

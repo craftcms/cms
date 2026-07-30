@@ -133,6 +133,7 @@ EOD;
         return $this->getSettings();
     }
 
+    /** @param array<string, mixed>|WidgetModel $config */
     public static function fromConfig(array|WidgetModel $config): WidgetInterface
     {
         if ($config instanceof WidgetModel) {

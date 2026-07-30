@@ -71,6 +71,10 @@ readonly class Addresses implements FieldLayoutProviderInterface
 
     /**
      * Returns subdivisions for a field based on its parents.
+     *
+     * @param  list<string>  $parents
+     * @param  array<string, string>  $options
+     * @return array<string, string>
      */
     public function defineAddressSubdivisions(array $parents, array $options = []): array
     {
@@ -81,6 +85,8 @@ readonly class Addresses implements FieldLayoutProviderInterface
 
     /**
      * Returns a list of countries to be used as options for selection.
+     *
+     * @return array<string, string>
      */
     public function getCountryList(?string $locale = null): array
     {
@@ -155,6 +161,8 @@ readonly class Addresses implements FieldLayoutProviderInterface
 
     /**
      * Formats the address model into the correct sequence and format in HTML.
+     *
+     * @param  array{locale?: string, html?: bool, html_tag?: string, html_attributes?: array<string, string>}  $options
      */
     public function formatAddress(Address $address, array $options = [], ?FormatterInterface $formatter = null): string
     {

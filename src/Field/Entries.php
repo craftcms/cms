@@ -29,6 +29,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Entries represents an Entries field.
+ *
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
  */
 class Entries extends BaseRelationField
 {
@@ -78,6 +80,7 @@ class Entries extends BaseRelationField
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // Default showUnpermittedSections and showUnpermittedEntries to true for existing Entries fields
@@ -89,6 +92,7 @@ class Entries extends BaseRelationField
         parent::__construct($config);
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
@@ -113,6 +117,15 @@ class Entries extends BaseRelationField
         return Gql::canQueryEntries($schema);
     }
 
+    /**
+     * @return array{
+     *     name: string|null,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig|Type>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -128,6 +141,7 @@ class Entries extends BaseRelationField
         ];
     }
 
+    /** @return array{sectionId:list<int>, typeId:list<int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -157,6 +171,7 @@ class Entries extends BaseRelationField
         ];
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getInputSelectionCriteria(): array
     {
@@ -198,6 +213,7 @@ class Entries extends BaseRelationField
         return app(ElementHtml::class)->chipHtml($mockup);
     }
 
+    /** @return list<string>|string|null */
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {

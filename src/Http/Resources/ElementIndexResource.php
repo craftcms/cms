@@ -29,6 +29,7 @@ class ElementIndexResource extends JsonResource
         parent::__construct(null);
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function toArray(Request $_): array
     {

@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 trait ElementCrumbs
 {
+    /** @return list<array<string, mixed>> */
     protected function crumbs(ElementInterface $element, bool $current = true): array
     {
         $crumbs = $element->isProvisionalDraft

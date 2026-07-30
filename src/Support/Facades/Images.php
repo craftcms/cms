@@ -22,7 +22,7 @@ use Override;
  * @method static bool checkMemoryForImage(string $filePath, bool $toTheMax = false)
  * @method static void cleanImage(string $filePath)
  * @method static bool rotateImageByExifData(string $filePath)
- * @method static array|null getExifData(string $filePath)
+ * @method static array<array-key, mixed>|null getExifData(string $filePath)
  * @method static bool stripOrientationFromExifData(string $filePath)
  *
  * @see \CraftCms\Cms\Image\Images

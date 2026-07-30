@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static void extend(string $name, callable $flavor)
  * @method static bool has(string $name)
- * @method static array flavors()
+ * @method static array<array-key, mixed> flavors()
  * @method static string parse(string $markdown, string|null $flavor = null, bool $allowUnsafeLinks = false)
  * @method static string parseParagraph(string $markdown, string|null $flavor = null, bool $allowUnsafeLinks = false)
  * @method static string convert(string $markdown, \CraftCms\Cms\Markdown\MarkdownOptions $options)

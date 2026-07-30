@@ -20,6 +20,7 @@ class ImageHelper
     // Bounds metadata scans for formats whose dimensions aren't in fixed header bytes.
     private const MAX_IMAGE_SIZE_STREAM_BYTES = 1024 * 1024;
 
+    /** @return array{int,int} */
     public static function calculateMissingDimension(float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight): array
     {
         if ($targetWidth && $targetHeight) {
@@ -40,6 +41,7 @@ class ImageHelper
         ];
     }
 
+    /** @return array{int,int} */
     public static function targetDimensions(
         int $sourceWidth,
         int $sourceHeight,
@@ -98,6 +100,7 @@ class ImageHelper
         return in_array($extension, $formats);
     }
 
+    /** @return list<string> */
     public static function webSafeFormats(): array
     {
         return ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp', 'avif'];
@@ -108,6 +111,7 @@ class ImageHelper
         return in_array(strtolower($extension), self::webSafeFormats(), true);
     }
 
+    /** @return array<string,int|string>|false */
     public static function pngImageInfo(string $file): array|false
     {
         if ($file === '') {
@@ -174,6 +178,7 @@ class ImageHelper
         }
     }
 
+    /** @return array{int,int} */
     public static function imageSize(string $filePath): array
     {
         try {
@@ -191,6 +196,10 @@ class ImageHelper
         }
     }
 
+    /**
+     * @param  resource  $stream
+     * @return array{int,int}|array{}|false
+     */
     public static function imageSizeByStream($stream): array|false
     {
         if (! is_resource($stream)) {
@@ -282,6 +291,7 @@ class ImageHelper
 
     /**
      * @param  resource  $stream
+     * @return array{int,int}
      */
     private static function webpSizeByStream($stream, string $buffer): array
     {
@@ -364,6 +374,7 @@ class ImageHelper
 
     /**
      * @param  resource  $stream
+     * @return array{int,int}|null
      */
     private static function isoBmffSizeByStream($stream, string $buffer): ?array
     {
@@ -441,6 +452,7 @@ class ImageHelper
         return array_any($brands, fn ($brand) => in_array($brand, ['avif', 'heic', 'heif'], true));
     }
 
+    /** @return array{int,int}|null */
     private static function isoBmffSizeFromBoxes(string $buffer): ?array
     {
         $offset = 0;
@@ -509,6 +521,7 @@ class ImageHelper
         return null;
     }
 
+    /** @return array<int,array{int,int}> */
     private static function isoBmffPropertyDimensions(string $buffer): array
     {
         $dimensions = [];
@@ -528,6 +541,7 @@ class ImageHelper
         return $dimensions;
     }
 
+    /** @return list<int> */
     private static function isoBmffPrimaryPropertyIndices(string $buffer, int $primaryItemId): array
     {
         if (strlen($buffer) < 8) {
@@ -585,6 +599,7 @@ class ImageHelper
         return $bytes[1] + ($bytes[2] << 8) + ($bytes[3] << 16);
     }
 
+    /** @return array{int,int} */
     public static function parseSvgSize(string $svg): array
     {
         if (

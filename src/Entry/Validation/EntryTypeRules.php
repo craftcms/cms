@@ -17,6 +17,7 @@ use function CraftCms\Cms\t;
 /** @extends Ruleset<EntryType> */
 class EntryTypeRules extends Ruleset
 {
+    /** @return array<string, array<int, string|\Closure|object>> */
     public function rules(): array
     {
         $rules = [

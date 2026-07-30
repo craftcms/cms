@@ -8,6 +8,7 @@ use IntlDateFormatter;
 
 class FormatConverter
 {
+    /** @var array<string, int> */
     private static array $icuShortFormats = [
         'short' => 3, // IntlDateFormatter::SHORT,
         'medium' => 2, // IntlDateFormatter::MEDIUM,

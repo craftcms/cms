@@ -14,6 +14,7 @@ class Facade
     /**
      * Call the method on the facade.
      */
+    /** @param list<mixed> $arguments */
     public function __call(string $method, array $arguments): mixed
     {
         $facade = $this->facade;

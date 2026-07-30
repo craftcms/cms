@@ -58,6 +58,8 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
+use GraphQL\Type\Definition\FieldDefinition;
+use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -72,6 +74,10 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ * @phpstan-import-type InputObjectFieldConfig from InputObjectField
+ */
 abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
 {
     use ConfigurableComponent;
@@ -140,6 +146,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         get => $this->_translationMethod->value;
     }
 
+    /** @var list<string> */
     public array $supportedTranslationMethodValues {
         get => array_map(
             static fn (TranslationMethod $translationMethod) => $translationMethod->value,
@@ -150,7 +157,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /** @var string|null The field’s previous handle */
     public ?string $oldHandle = null;
 
-    /** @var array|null The field’s previous settings */
+    /** @var array<string, mixed>|null The field’s previous settings */
     public ?array $oldSettings = null;
 
     /** @var string|null The field's UID */
@@ -467,6 +474,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return $event->items;
     }
 
+    /** @return list<array<string, mixed>> */
     protected function actionMenuItems(): array
     {
         $items = [];
@@ -650,6 +658,7 @@ JS, [
         return $value;
     }
 
+    /** @return list<string|object> */
     public function getElementRules(ElementInterface $element): array
     {
         return [];
@@ -722,6 +731,7 @@ JS, [
     /**
      * @see SortableFieldInterface::getSortOption()
      */
+    /** @return array{label:string, orderBy:string|Expression|null, attribute:string} */
     public function getSortOption(): array
     {
         $dbType = static::dbType();
@@ -769,7 +779,7 @@ JS, [
     /**
      * @see MergeableFieldInterface::afterMergeInto()
      */
-    public function afterMergeInto(FieldInterface $persistingField)
+    public function afterMergeInto(FieldInterface $persistingField): void
     {
         event(new FieldMergeIntoCompleted($this, $persistingField));
     }
@@ -777,7 +787,7 @@ JS, [
     /**
      * @see MergeableFieldInterface::afterMergeFrom()
      */
-    public function afterMergeFrom(FieldInterface $outgoingField)
+    public function afterMergeFrom(FieldInterface $outgoingField): void
     {
         if ($this instanceof RelationalFieldInterface) {
             DB::table(Table::RELATIONS)
@@ -961,11 +971,13 @@ JS, [
         return true;
     }
 
+    /** @return Type|FieldDefinitionConfig */
     public function getContentGqlType(): Type|array
     {
         return Type::string();
     }
 
+    /** @return Type|InputObjectFieldConfig */
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
@@ -975,6 +987,7 @@ JS, [
         ];
     }
 
+    /** @return Type|InputObjectFieldConfig */
     public function getContentGqlQueryArgumentType(): Type|array
     {
         return [
@@ -1101,6 +1114,7 @@ JS, [
     /**
      * @see EagerLoadingFieldInterface::getEagerLoadingGqlConditions()
      */
+    /** @return array<string, mixed>|null */
     public function getEagerLoadingGqlConditions(): ?array
     {
         // No restrictions

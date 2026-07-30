@@ -28,12 +28,13 @@ trait QueriesUniqueElements
     public bool $unique = false;
 
     /**
-     * @var array|null Determines which site should be selected when querying multi-site elements.
+     * @var array<int, int|string>|null Determines which site should be selected when querying multi-site elements.
      *
      * @used-by preferSites()
      */
     public ?array $preferSites = null;
 
+    /** @param ElementQuery<*> $elementQuery */
     protected function applyUniqueParams(ElementQuery $elementQuery): void
     {
         if (! $elementQuery->unique) {
@@ -160,6 +161,7 @@ trait QueriesUniqueElements
      *     ->all();
      * ```
      */
+    /** @param array<int, int|string>|null $value */
     public function preferSites(?array $value = null): static
     {
         $this->preferSites = $value;

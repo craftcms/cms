@@ -19,6 +19,9 @@ class ClearCachesCommand extends Command
 {
     use CraftCommand;
 
+    /**
+     * @param  list<string>  $aliases
+     */
     public function __construct(string $signature, string $description, array $aliases = [])
     {
         $this->signature = $signature;
@@ -30,19 +33,6 @@ class ClearCachesCommand extends Command
 
     public function handle(): int
     {
-        if ($this->signature === 'craft:clear-caches {keys?*}') {
-            /** @phpstan-ignore-next-line */
-            if (! empty($keys = $this->argument('keys'))) {
-                foreach ($keys as $key) {
-                    $this->call("craft:clear-caches:$key");
-                }
-
-                return self::SUCCESS;
-            }
-
-            return $this->list();
-        }
-
         $key = Str::after($this->signature, 'craft:clear-caches:');
 
         if ($key === 'all') {
@@ -117,13 +107,12 @@ class ClearCachesCommand extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * @return list<array{signature: string, description: string, aliases?: list<string>}>
+     */
     public static function signatures(): array
     {
         $signatures = [
-            [
-                'signature' => 'craft:clear-caches {keys?*}',
-                'description' => 'Lists available caches to clear or clear specific caches.',
-            ],
             [
                 'signature' => 'craft:clear-caches:all',
                 'description' => 'Clears all caches.',

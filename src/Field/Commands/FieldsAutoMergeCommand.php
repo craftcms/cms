@@ -39,7 +39,7 @@ class FieldsAutoMergeCommand extends Command
             return self::FAILURE;
         }
 
-        /** @var Collection<Collection<FieldInterface>> $groups */
+        /** @var Collection<string, Collection<int, FieldInterface&MergeableFieldInterface>> $groups */
         $groups = $fieldsService->getAllFields()
             ->filter(fn ($field) => $field instanceof MergeableFieldInterface)
             ->groupBy(fn (FieldInterface $field) => implode(',', [
@@ -74,7 +74,7 @@ class FieldsAutoMergeCommand extends Command
         $migrationPaths = [];
         $relationFieldHandles = [];
 
-        /** @var Collection<FieldInterface> $group */
+        /** @var Collection<int, FieldInterface&MergeableFieldInterface> $group */
         foreach ($groups as $group) {
             /** @var FieldInterface $first */
             $first = $group->first();

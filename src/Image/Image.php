@@ -8,6 +8,7 @@ use CraftCms\Cms\Component\Component;
 
 abstract class Image extends Component
 {
+    /** @var callable|null */
     private $heartBeatCallback;
 
     abstract public function getWidth(): int;
@@ -22,6 +23,7 @@ abstract class Image extends Component
 
     abstract public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self;
 
+    /** @param array{x:numeric,y:numeric}|string $cropPosition */
     abstract public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self;
 
     abstract public function resize(?int $targetWidth, ?int $targetHeight): self;

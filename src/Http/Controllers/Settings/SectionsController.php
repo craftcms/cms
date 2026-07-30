@@ -94,6 +94,7 @@ readonly class SectionsController
             ->inertiaPage('settings/sections/Edit', $this->sectionProps($sectionData, $sites, brandNew: false));
     }
 
+    /** @return array<string, mixed> */
     private function sectionProps(SectionData $section, Sites $sites, bool $brandNew): array
     {
         $headlessMode = app(GeneralConfig::class)->headlessMode;

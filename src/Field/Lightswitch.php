@@ -212,6 +212,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
         return Type::boolean();
     }
 
+    /** @return array{name: string, type: Type, description: string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {
@@ -222,6 +223,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
         ];
     }
 
+    /** @return array{name: string, type: Type} */
     #[Override]
     public function getContentGqlQueryArgumentType(): array
     {

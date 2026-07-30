@@ -11,7 +11,7 @@ interface AssetPreviewHandlerInterface
     /**
      * Returns the asset preview HTML.
      *
-     * @param  array  $variables  Additional variables to pass to the template.
+     * @param  array<string, bool|float|int|string|null>  $variables  Additional variables to pass to the template.
      * @return string The preview modal HTML
      *
      * @throws AssetNotPreviewableException if the asset can't be previewed

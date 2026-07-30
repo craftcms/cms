@@ -9,11 +9,11 @@ use Override;
 
 /**
  * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface[] availableActions(string $elementType, string $sourceKey, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery)
- * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface createAction(\CraftCms\Cms\Element\Contracts\ElementActionInterface|string|array $action, string $elementType)
- * @method static array serializeActions(iterable $actions)
- * @method static array serializeActionItems(iterable $actions)
- * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface|null resolveAction(iterable $actions, string $actionClass)
- * @method static array invoke(\CraftCms\Cms\Element\Contracts\ElementActionInterface $action, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface createAction(\CraftCms\Cms\Element\Contracts\ElementActionInterface|string|array<array-key, mixed> $action, string $elementType)
+ * @method static array<array-key, mixed> serializeActions(iterable<array-key, mixed> $actions)
+ * @method static array<array-key, mixed> serializeActionItems(iterable<array-key, mixed> $actions)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface|null resolveAction(iterable<array-key, mixed> $actions, string $actionClass)
+ * @method static array<array-key, mixed> invoke(\CraftCms\Cms\Element\Contracts\ElementActionInterface $action, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query)
  *
  * @see \CraftCms\Cms\Element\ElementActions
  */

@@ -9,7 +9,6 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\table;
@@ -30,12 +29,11 @@ class ListAdminsCommand extends Command
 
     public function handle(GeneralConfig $generalConfig): void
     {
-        /** @var Collection<User> $users */
         $users = User::find()
             ->admin()
             ->status(null)
             ->orderBy('username')
-            ->get();
+            ->all();
 
         $total = count($users);
 
@@ -47,7 +45,7 @@ class ListAdminsCommand extends Command
                 $generalConfig->useEmailAsUsername ? null : 'Email',
                 'Status',
             ]),
-            rows: $users->map(fn (User $user) => array_filter([
+            rows: array_map(fn (User $user) => array_filter([
                 $generalConfig->useEmailAsUsername ? $user->email : $user->username,
                 $generalConfig->useEmailAsUsername ? null : $user->email,
                 match ($user->getStatus()) {
@@ -56,7 +54,7 @@ class ListAdminsCommand extends Command
                     User::STATUS_PENDING => $this->yellow('pending'),
                     default => $this->green('active'),
                 },
-            ]))->all(),
+            ]), $users),
         );
     }
 }

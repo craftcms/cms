@@ -91,7 +91,11 @@ class Checkbox extends ViewComponent
         ];
     }
 
-    /** Default attributes for the native input. */
+    /**
+     * Default attributes for the native input.
+     *
+     * @return array<string, mixed>
+     */
     protected function inputDefaults(): array
     {
         return [

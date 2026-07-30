@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
@@ -43,15 +44,16 @@ readonly class MatrixController
     {
         $entryTypeIds = $request->validate([
             'entryTypeIds' => ['required', 'array'],
+            'entryTypeIds.*' => ['integer'],
         ])['entryTypeIds'];
 
-        $entryTypes = collect($entryTypeIds)->map(function (int|string $entryTypeId) {
+        $entryTypes = array_map(function (mixed $entryTypeId) {
             $entryType = $this->entryTypes->getEntryTypeById((int) $entryTypeId);
 
             abort_if(is_null($entryType), 400, "Invalid entry type ID: $entryTypeId");
 
             return $entryType;
-        })->all();
+        }, $entryTypeIds);
 
         return new JsonResponse([
             'options' => Matrix::defaultTableColumnOptions($entryTypes),
@@ -71,7 +73,11 @@ readonly class MatrixController
             'duplicate' => ['nullable'],
         ]);
 
-        $owner = $this->elements->getElementById($validated['ownerId'], $validated['ownerElementType'], $validated['siteId']);
+        $owner = $this->owner(
+            (int) $validated['ownerId'],
+            $validated['ownerElementType'],
+            (int) $validated['siteId'],
+        );
 
         abort_if(is_null($owner), 400, 'Invalid owner ID, element type, or site ID.');
 
@@ -148,7 +154,7 @@ readonly class MatrixController
             }
         }
 
-        /** @var EntryQuery|ElementCollection $value */
+        /** @var EntryQuery<Entry>|ElementCollection<array-key, Entry> $value */
         $value = $owner->getFieldValue($field->handle);
 
         /** @var Entry[] $entries */
@@ -167,6 +173,12 @@ readonly class MatrixController
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
+    }
+
+    /** @param class-string<ElementInterface> $elementType */
+    private function owner(int $id, string $elementType, int $siteId): ?ElementInterface
+    {
+        return $this->elements->getElementById($id, $elementType, $siteId);
     }
 
     /**

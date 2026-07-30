@@ -73,6 +73,7 @@ class SystemReport extends Utility
     /**
      * Returns application info.
      */
+    /** @return array<string, string> */
     private static function appInfo(): array
     {
         $info = [
@@ -100,6 +101,10 @@ class SystemReport extends Utility
         return $info;
     }
 
+    /**
+     * @param  array<string, string>  $info
+     * @return array<string, string>
+     */
     private static function addVersion(array $info, string $label, string $packageName): array
     {
         try {
@@ -143,6 +148,7 @@ class SystemReport extends Utility
     /**
      * Runs the requirements checker and returns its results.
      */
+    /** @return list<array<string, bool|string>> */
     private static function requirementResults(): array
     {
         $checker = ConnectionConfig::requirementsChecker();

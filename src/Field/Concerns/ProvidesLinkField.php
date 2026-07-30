@@ -15,11 +15,26 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Template;
 use Illuminate\Support\Collection;
+use Illuminate\Support\HtmlString;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @property list<string> $types
+ * @property array<string, array<string, mixed>> $typeSettings
+ * @property bool $showLabelField
+ * @property list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'> $advancedFields
+ * @property list<string> $linkSettingsTypes
+ * @property array<string, array<string, mixed>> $linkSettingsTypeSettings
+ * @property bool $linkSettingsShowLabelField
+ * @property list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'> $linkSettingsAdvancedFields
+ */
 trait ProvidesLinkField
 {
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     protected function prepareLinkSettingsConfig(
         array $config,
     ): array {
@@ -83,6 +98,7 @@ trait ProvidesLinkField
         return $config;
     }
 
+    /** @return array<string, list<string|Closure>> */
     protected function linkSettingsRules(): array
     {
         $typesAttribute = $this->namespacedAttribute('types');
@@ -122,6 +138,7 @@ trait ProvidesLinkField
         ];
     }
 
+    /** @return list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'> */
     protected function supportedLinkAdvancedFields(): array
     {
         return [
@@ -136,6 +153,10 @@ trait ProvidesLinkField
         ];
     }
 
+    /**
+     * @param  list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'>|null  $fields
+     * @return list<array{label:string|HtmlString, value:string}>
+     */
     protected function linkAdvancedFieldOptions(?array $fields = null): array
     {
         $fields ??= $this->supportedLinkAdvancedFields();
@@ -163,6 +184,19 @@ trait ProvidesLinkField
         return $options;
     }
 
+    /**
+     * @return array{
+     *     advancedFieldOptions:list<array{label:string|HtmlString, value:string}>,
+     *     advancedFields:list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'>,
+     *     allowedTypes:list<string>,
+     *     field:static,
+     *     linkTypeOptions:list<array{label:string, value:string}>,
+     *     linkTypeSettings:array<string, array{html:string, label:string}>,
+     *     namespace:string|null,
+     *     readOnly:bool,
+     *     showLabelField:bool,
+     * }
+     */
     protected function linkSettingsProps(bool $readOnly): array
     {
         $types = $this->orderedLinkSettingsTypes();
@@ -190,6 +224,7 @@ trait ProvidesLinkField
         ];
     }
 
+    /** @return list<array<string, mixed>> */
     protected function linkPickerConfig(): array
     {
         $availableTypes = Link::types();
@@ -210,7 +245,8 @@ trait ProvidesLinkField
             ->all();
     }
 
-    protected function orderedLinkSettingsTypes(): iterable
+    /** @return Collection<string, class-string<BaseLinkType>> */
+    protected function orderedLinkSettingsTypes(): Collection
     {
         $allTypes = Link::types();
         /** @var Collection<string, class-string<BaseLinkType>> $selectedTypes */
@@ -248,11 +284,18 @@ trait ProvidesLinkField
         return null;
     }
 
+    /** @return array<string, BaseLinkType> */
     protected function configuredLinkTypesForSettings(): array
     {
         return [];
     }
 
+    /**
+     * @return ($attribute is 'types' ? 'types'|'linkSettingsTypes' :
+     *     ($attribute is 'typeSettings' ? 'typeSettings'|'linkSettingsTypeSettings' :
+     *     ($attribute is 'showLabelField' ? 'showLabelField'|'linkSettingsShowLabelField' :
+     *     'advancedFields'|'linkSettingsAdvancedFields')))
+     */
     private function namespacedAttribute(string $attribute): string
     {
         $namespace = $this->linkSettingsNamespace();
@@ -260,6 +303,10 @@ trait ProvidesLinkField
         return $namespace === null ? $attribute : $namespace.ucfirst($attribute);
     }
 
+    /**
+     * @param  iterable<string, class-string<BaseLinkType>>  $types
+     * @return list<array{label:string, value:string}>
+     */
     protected function linkTypeOptions(iterable $types): array
     {
         $options = [];
@@ -273,6 +320,12 @@ trait ProvidesLinkField
         return $options;
     }
 
+    /**
+     * @param  iterable<string, class-string<BaseLinkType>>  $types
+     * @param  array<string, BaseLinkType>  $configuredLinkTypes
+     * @param  array<string, array<string, mixed>>  $typeSettings
+     * @return array<string, array{html:string, label:string}>
+     */
     protected function linkTypeSettingsHtml(
         iterable $types,
         array $configuredLinkTypes,

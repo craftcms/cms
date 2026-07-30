@@ -401,7 +401,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
     /**
      * Gets a transform index row. If it doesn't exist, creates one.
      *
-     * @param  ImageTransform|string|array|null  $transform
+     * @param  ImageTransform|string|array<string,mixed>|null  $transform
      *
      * @throws ImageTransformException if the transform cannot be found by the handle
      */
@@ -471,6 +471,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
         return $index;
     }
 
+    /** @param array<string,mixed>|Asset $asset */
     private function validateTransformIndexResult(ImageTransformIndex $result, ImageTransform $transform, array|Asset $asset): bool
     {
         if ($result->dateIndexed === null) {

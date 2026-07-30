@@ -66,6 +66,7 @@ class CheckboxGroup extends ChoiceGroup
     }
 
     #[\Override]
+    /** @return array<string, mixed> */
     protected function optionWrapperAttributes(ViewComponent $option): array
     {
         return [

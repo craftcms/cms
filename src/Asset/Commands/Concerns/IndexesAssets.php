@@ -12,14 +12,11 @@ use CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException;
 use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
 use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 use function Laravel\Prompts\select;
@@ -45,6 +42,7 @@ trait IndexesAssets
     /**
      * @param  Volume[]  $volumes
      */
+    /** @param list<Volume> $volumes */
     protected function indexAssets(array $volumes, string $path = '', int $startAt = 0): void
     {
         $this->cacheRemoteImages = $this->hasOption('cacheRemoteImages') && $this->parseBooleanOption($this->option('cacheRemoteImages'));
@@ -61,9 +59,16 @@ trait IndexesAssets
             listEmptyFolders: $this->deleteEmptyFolders,
         );
 
-        $missingRecordsByFilename = collect($volumes)
-            ->flatMap(fn (Volume $volume) => $this->processVolume($volume, $path, $startAt, $session))
-            ->all();
+        $missingRecordsByFilename = $this->emptyMissingRecordsByFilename();
+
+        foreach ($volumes as $volume) {
+            foreach ($this->processVolume($volume, $path, $startAt, $session) as $filename => $missingRecords) {
+                $missingRecordsByFilename[$filename] = [
+                    ...($missingRecordsByFilename[$filename] ?? []),
+                    ...$missingRecords,
+                ];
+            }
+        }
 
         // Manually close the indexing session.
         $session->actionRequired = true;
@@ -86,9 +91,11 @@ trait IndexesAssets
             );
 
             $this->components->bulletList(
-                collect($missingFolders)
-                    ->map(fn (string $folderPath, int $folderId) => "$folderPath ($folderId)")
-                    ->all()
+                array_map(
+                    fn (string $folderPath, int $folderId) => "$folderPath ($folderId)",
+                    $missingFolders,
+                    array_keys($missingFolders),
+                ),
             );
         }
 
@@ -109,7 +116,6 @@ trait IndexesAssets
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
                 function () use ($assetIds) {
-                    /** @var ElementCollection<Asset> $assets */
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
@@ -135,6 +141,7 @@ trait IndexesAssets
         AssetIndexer::stopIndexingSession($session);
     }
 
+    /** @return array<string, list<MissingAssetException>> */
     private function processVolume(
         Volume $volume,
         string $path,
@@ -145,11 +152,9 @@ trait IndexesAssets
 
         $fileList = AssetIndexer::getIndexListOnVolume($volume, $path);
 
-        /** @var Collection<MissingAssetException|MissingVolumeFolderException> $missingRecords */
-        $missingRecords = Collection::make();
-        $missingRecordsByFilename = [];
+        $missingRecords = [];
+        $missingRecordsByFilename = $this->emptyMissingRecordsByFilename();
 
-        /** @var FsListing $item */
         foreach ($fileList as $index => $item) {
             $count = $index + 1;
             $description = "#{$count}: <fg=cyan>{$item->getUri()}".($item->getIsDir() ? '/' : '').'</>';
@@ -165,7 +170,7 @@ trait IndexesAssets
                     ? AssetIndexer::indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets)
                     : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
             } catch (MissingAssetException|MissingVolumeFolderException $e) {
-                $missingRecords->add($e);
+                $missingRecords[] = $e;
 
                 if ($e instanceof MissingAssetException) {
                     $missingRecordsByFilename[$e->filename][] = $e;
@@ -185,17 +190,17 @@ trait IndexesAssets
 
         $this->newLine();
 
-        if ($this->createMissingAssets || $missingRecords->isEmpty()) {
+        if ($this->createMissingAssets || $missingRecords === []) {
             return $missingRecordsByFilename;
         }
 
-        $this->warn($missingRecords->count() === 1
+        $this->warn(count($missingRecords) === 1
             ? 'One record is missing:'
-            : "{$missingRecords->count()} records are missing:"
+            : count($missingRecords).' records are missing:'
         );
 
         $this->components->bulletList(
-            $missingRecords->map(function (MissingAssetException|MissingVolumeFolderException $e) {
+            array_map(function (MissingAssetException|MissingVolumeFolderException $e) {
                 $line = "{$e->volume->name}/{$e->indexEntry->uri}";
 
                 if ($e instanceof MissingVolumeFolderException) {
@@ -203,13 +208,16 @@ trait IndexesAssets
                 }
 
                 return $line;
-            })
-                ->all()
+            }, $missingRecords),
         );
 
         return $missingRecordsByFilename;
     }
 
+    /**
+     * @param  array<int, string>  $missingFiles
+     * @param  array<string, list<MissingAssetException>>  $missingRecordsByFilename
+     */
     private function processMissingFiles(array $missingFiles, array $missingRecordsByFilename): bool
     {
         $maybes = false;
@@ -221,7 +229,7 @@ trait IndexesAssets
             : "$totalMissing recorded assets are missing their files:"
         );
 
-        $this->components->bulletList(collect($missingFiles)->map(function ($filePath, $assetId) use (
+        $this->components->bulletList(collect($missingFiles)->map(function (string $filePath, int $assetId) use (
             &$maybes,
             $missingRecordsByFilename
         ) {
@@ -236,7 +244,6 @@ trait IndexesAssets
             $maybePaths = [];
 
             foreach ($missingRecordsByFilename[$filename] as $e) {
-                /** @var MissingAssetException $e */
                 $maybePaths[] = "{$e->volume->name}/{$e->indexEntry->uri}";
             }
 
@@ -246,6 +253,12 @@ trait IndexesAssets
         return $maybes;
     }
 
+    /**
+     * @param  array<int, string>  $missingFiles
+     * @param  array<int, string>  $remainingMissingFiles
+     * @param  array<string, list<MissingAssetException>>  $missingRecordsByFilename
+     * @return array<int, string>
+     */
     private function fixAssetLocations(
         array $missingFiles,
         array $remainingMissingFiles,
@@ -288,6 +301,12 @@ trait IndexesAssets
         return $remainingMissingFiles;
     }
 
+    /** @return array<string, list<MissingAssetException>> */
+    private function emptyMissingRecordsByFilename(): array
+    {
+        return [];
+    }
+
     /**
      * @param  MissingAssetException[]  $missingRecords
      */
@@ -299,13 +318,11 @@ trait IndexesAssets
         }
 
         $selection = select(
-            label: "What is the new location for <fg=cyan>{$path}</>? (leave blank to skip)",
+            label: "What is the new location for <fg=cyan>{$path}</>?",
             options: collect($missingRecords)
                 ->mapWithKeys(fn ($e, int $i) => [(string) ($i + 1) => "{$e->volume->name}/{$e->indexEntry->uri}"])
                 ->all(),
             validate: fn (?string $value) => is_null($value) || (is_numeric($value) && isset($missingRecords[$value - 1])),
-            /** @phpstan-ignore-next-line */
-            required: false,
         );
 
         return $selection ? $missingRecords[$selection - 1] : null;

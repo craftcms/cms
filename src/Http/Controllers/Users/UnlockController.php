@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Users;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -17,7 +18,7 @@ readonly class UnlockController
     use AuthorizesRequests;
     use RespondsWithFlash;
 
-    public function __invoke(Request $request, Users $users, Impersonation $impersonation)
+    public function __invoke(Request $request, Users $users, Impersonation $impersonation): Response
     {
         $this->authorize('moderateUsers');
 

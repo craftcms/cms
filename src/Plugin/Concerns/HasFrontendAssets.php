@@ -29,8 +29,10 @@ trait HasFrontendAssets
      */
     protected array $vite = [];
 
+    /** @var array<string, string> */
     protected array $styles = [];
 
+    /** @var array<string, string> */
     protected array $scripts = [];
 
     public function publishFrontendAssets(): void
@@ -103,6 +105,10 @@ trait HasFrontendAssets
         $this->publishes($assets, static::getInstance()->handle);
     }
 
+    /**
+     * @param  array{publicDirectory?: string, buildDirectory?: string}  $config
+     * @return array{string, string}
+     */
     private function getSourceAndTarget(PluginInterface $plugin, array $config): array
     {
         $directory = Str::finish(dirname($plugin->getBasePath()), '/');
@@ -122,6 +128,7 @@ trait HasFrontendAssets
         return "vendor/{$ns}/$path";
     }
 
+    /** @return array<string, string> */
     private function frontendAssetPublishPaths(): array
     {
         return collect(array_merge($this->styles, $this->scripts))

@@ -39,6 +39,7 @@ readonly class DeleteElementsController
 
     protected bool $hardDelete;
 
+    /** @var ElementCollection<array-key, ElementInterface> */
     protected ElementCollection $elements;
 
     public function __construct(
@@ -266,6 +267,7 @@ readonly class DeleteElementsController
         ]));
     }
 
+    /** @return ElementCollection<array-key, ElementInterface> */
     private function elements(): ElementCollection
     {
         $this->request->validate([
@@ -311,8 +313,11 @@ readonly class DeleteElementsController
         $elements = [];
         $elementIds = [];
 
-        /** @var Element $element */
         foreach ($query->all() as $element) {
+            if (! $element instanceof ElementInterface) {
+                continue;
+            }
+
             if (isset($elementIds[$element->id])) {
                 continue;
             }
@@ -330,6 +335,10 @@ readonly class DeleteElementsController
 
             if ($withDescendants) {
                 foreach ($element->getDescendants()->all() as $descendant) {
+                    if (! $descendant instanceof ElementInterface) {
+                        continue;
+                    }
+
                     if (isset($elementIds[$descendant->id])) {
                         continue;
                     }

@@ -29,7 +29,7 @@ class ImageTransformsController
 {
     use RespondsWithFlash;
 
-    public function index(ImageTransforms $imageTransforms)
+    public function index(ImageTransforms $imageTransforms): \Inertia\Response
     {
         return Inertia::render('settings/assets/transforms/Index', [
             'crumbs' => fn () => [

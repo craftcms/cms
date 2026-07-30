@@ -62,10 +62,23 @@ trait SiteDefaults
         return 'en';
     }
 
+    /** @return array<string, mixed>|null */
     private function primarySiteConfig(): ?array
     {
-        return once(fn () => collect(
-            app(ProjectConfig::class)->get('sites', true) ?? []
-        )->firstWhere('primary', true));
+        return once(function (): ?array {
+            $sites = app(ProjectConfig::class)->get('sites', true);
+
+            if (! is_array($sites)) {
+                return null;
+            }
+
+            foreach ($sites as $site) {
+                if (is_array($site) && ($site['primary'] ?? false)) {
+                    return $site;
+                }
+            }
+
+            return null;
+        });
     }
 }

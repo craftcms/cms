@@ -100,6 +100,7 @@ readonly class IconController
         ]);
     }
 
+    /** @param list<string> $searchTerms */
     private function matchTerms(array $searchTerms, string $indexTerms): int
     {
         $score = 0;

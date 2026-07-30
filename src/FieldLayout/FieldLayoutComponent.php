@@ -205,7 +205,6 @@ abstract class FieldLayoutComponent extends Component
         $fields['userCondition'] = fn () => $this->getUserCondition()?->getConfig();
         $fields['elementCondition'] = fn () => $this->getElementCondition()?->getConfig();
 
-        /** @phpstan-ignore-next-line */
         return $fields;
     }
 
