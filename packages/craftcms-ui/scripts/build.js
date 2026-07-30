@@ -1,4 +1,4 @@
-import {build} from 'tsdown';
+import {build} from 'vite-plus/pack';
 import ora from 'ora';
 import {execSync} from 'node:child_process';
 import {mkdir} from 'fs/promises';

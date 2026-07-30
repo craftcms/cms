@@ -607,7 +607,7 @@ export class CpScreenSlideout extends Slideout {
       bubble: true,
     });
     uiLayerManager().registerShortcut(ESC_KEY, (ev: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions -- bubble the shortcut only when the sidebar didn't just close for overlapping it.
+      // oxlint-disable-next-line @typescript-eslint/no-unused-expressions -- bubble the shortcut only when the sidebar didn't just close for overlapping it.
       this.hideSidebarIfOverlapping() || ev.bubbleShortcut();
     });
 

@@ -723,7 +723,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     return total !== null && total + num <= this.settings.maxElements;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- legacy call sites pass a count
+  // oxlint-disable-next-line @typescript-eslint/no-unused-vars -- legacy call sites pass a count
   canDelete(_num = 1): boolean {
     if (!this.settings.minElements) {
       return true;

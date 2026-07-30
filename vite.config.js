@@ -1,4 +1,4 @@
-import {defineConfig, loadEnv} from 'vite';
+import {defineConfig, loadEnv, lazyPlugins} from 'vite-plus';
 import laravel from 'laravel-vite-plugin';
 import inertia from '@inertiajs/vite';
 import {exec} from 'child_process';
@@ -117,6 +117,80 @@ export default defineConfig(({mode}) => {
   }
 
   return {
+    lint: {
+      plugins: ['oxc', 'typescript', 'unicorn', 'react', 'vue'],
+      categories: {
+        correctness: 'warn',
+      },
+      env: {
+        browser: true,
+        builtin: true,
+      },
+      ignorePatterns: [
+        '**/*',
+        '!resources/js/**',
+        'resources/build/**',
+        'resources/legacy/**',
+        'resources/js/**/fixtures/**',
+      ],
+      overrides: [
+        {
+          files: ['resources/js/**/*.{ts,vue}'],
+          rules: {
+            'no-undef': 'off',
+            'vue/require-default-prop': 'off',
+            'typescript/no-explicit-any': 'off',
+          },
+          globals: {
+            Craft: 'readonly',
+            Garnish: 'readonly',
+          },
+        },
+      ],
+      options: {
+        typeAware: true,
+        typeCheck: true,
+      },
+      jsPlugins: [
+        {
+          name: 'vite-plus',
+          specifier: 'vite-plus/oxlint-plugin',
+        },
+      ],
+    },
+    staged: {
+      'yii2-adapter/**/*.php':
+        './yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix',
+      '!(yii2-adapter)/**/*.php': './vendor/bin/rector && ./vendor/bin/pint',
+      'yii2-adapter/**/*.scss':
+        'stylelint --fix --allow-empty-input -c ./yii2-adapter/.stylelintrc.json',
+      '!(yii2-adapter)/**/*.scss': 'stylelint --fix --allow-empty-input',
+      '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write',
+      'resources/js/**/*.{ts,vue}': 'vp check --fix',
+    },
+    fmt: {
+      singleQuote: true,
+      bracketSpacing: false,
+      vueIndentScriptAndStyle: true,
+      trailingComma: 'es5',
+      printWidth: 80,
+      sortPackageJson: false,
+      ignorePatterns: [
+        '*.md',
+        '*.php',
+        'composer.lock',
+        '**/dist/*',
+        'vendor/*',
+        '.ddev/*',
+        'resources/build/*',
+        'resources/public/*',
+        'resources/js/actions/*',
+        'resources/js/routes/*',
+        'resources/js/wayfinder/*',
+        'yii2-adapter/*',
+        'tests-playwright/.authentication.json',
+      ],
+    },
     base: './',
     server,
 
@@ -154,7 +228,7 @@ export default defineConfig(({mode}) => {
       exclude: ['@awesome.me/webawesome'],
     },
 
-    plugins: [
+    plugins: lazyPlugins(() => [
       serveResourcesLegacy(),
       tailwindcss(),
       typescriptTransformer(),
@@ -201,6 +275,6 @@ export default defineConfig(({mode}) => {
       inertia({
         ssr: false,
       }),
-    ],
+    ]),
   };
 });
