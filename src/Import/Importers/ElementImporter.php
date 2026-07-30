@@ -385,7 +385,7 @@ class ElementImporter extends BaseImporter
 
         if (is_array($data['matchCriteria'])) {
             $query = $element::find()
-                ->drafts()
+                ->drafts(null)
                 ->status(null);
 
             // give element a chance to adjust the query

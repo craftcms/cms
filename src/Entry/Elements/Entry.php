@@ -140,7 +140,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               ```
      */
     #[AllowedInSandbox]
-    #[Importable('sectionId', 'Section ID')]
+    #[Importable('sectionId', 'Section ID', canBeCleared: false)]
     public ?int $sectionId = null;
 
     /**
@@ -2804,8 +2804,12 @@ JS;
     #[Override]
     public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery
     {
-        /** @var $query EntryQuery */
-        return $query->typeId($this->_typeId);
+        if ($this->_typeId !== null) {
+            /** @var $query EntryQuery */
+            return $query->typeId($this->_typeId);
+        }
+
+        return $query;
     }
 
     #[Override]
