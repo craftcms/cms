@@ -69,26 +69,86 @@ afterEach(() => {
     entry.unmount();
     entry.root.remove();
   }
+
+  document.body.innerHTML = '';
 });
 
+/** An opener sitting inside a rendered panel, as the DOM would have it. */
+function openerInPanel(panelId: string): HTMLElement {
+  const panel = document.createElement('div');
+  panel.dataset.slideoutId = panelId;
+  const button = document.createElement('button');
+  panel.appendChild(button);
+  document.body.appendChild(panel);
+
+  return button;
+}
+
 describe('slideout store', () => {
-  it('stacks panels and gives each its own container id', async () => {
+  it('nests a panel opened from inside another', async () => {
     fetchSlideoutPage.mockResolvedValue({
       component: defineComponent({render: () => h('div')}),
       props: {},
       url: '/a',
     });
 
-    await openSlideout('/a');
-    await openSlideout('/b');
+    const first = await openSlideout('/a');
+    await openSlideout('/b', {opener: openerInPanel(first.id)});
 
     const panels = slideoutPanels();
 
     expect(panels).toHaveLength(2);
-    expect(panels[0]!.containerId).not.toBe(panels[1]!.containerId);
+    expect(panels.map((p) => p.href)).toEqual(['/a', '/b']);
     // The container id is what the server namespaces inputs against, so two
     // slideouts of the same screen must not share one.
-    expect(panels.map((p) => p.href)).toEqual(['/a', '/b']);
+    expect(panels[0]!.containerId).not.toBe(panels[1]!.containerId);
+  });
+
+  it('replaces the open panel when opened from the base page again', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+
+    // Double-clicking a second row on an index: the opener is in the page, not
+    // in a panel, so this swaps rather than stacks.
+    await openSlideout('/a', {opener: document.createElement('button')});
+    await openSlideout('/b', {opener: document.createElement('button')});
+
+    expect(slideoutPanels().map((p) => p.href)).toEqual(['/b']);
+  });
+
+  it('drops deeper panels when reopening from an outer one', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+
+    const first = await openSlideout('/a');
+    const opener = openerInPanel(first.id);
+    await openSlideout('/b', {opener});
+    await openSlideout('/c', {opener});
+
+    // `/c` was opened from the first panel, so it takes `/b`'s place.
+    expect(slideoutPanels().map((p) => p.href)).toEqual(['/a', '/c']);
+  });
+
+  it('closes nested panels along with the one they were opened from', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+
+    const first = await openSlideout('/a');
+    await openSlideout('/b', {opener: openerInPanel(first.id)});
+
+    closeSlideout(first.id);
+
+    // The nested panel has nowhere to sit once its parent is gone.
+    expect(slideoutPanels()).toHaveLength(0);
   });
 
   it('sends the container id with the request', async () => {

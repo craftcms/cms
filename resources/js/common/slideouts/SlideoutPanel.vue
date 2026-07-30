@@ -46,7 +46,13 @@
 </script>
 
 <template>
-  <div class="slideout-panel" :style="{'--slideout-offset': offset}">
+  <!-- `data-slideout-id` is how the store works out which panel something was
+    opened from, so it can nest below it rather than replace it. -->
+  <div
+    class="slideout-panel"
+    :data-slideout-id="instance.id"
+    :style="{'--slideout-offset': offset}"
+  >
     <div v-if="instance.loading" class="slideout-panel__status">
       <craft-spinner></craft-spinner>
     </div>
