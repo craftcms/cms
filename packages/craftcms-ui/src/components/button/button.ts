@@ -239,6 +239,9 @@ export default class CraftButton extends LionButtonSubmit {
 
   private linkHostStateApplied = false;
 
+  /** The caller's `type` before link mode forced it to "button". */
+  private originalType: string | null = null;
+
   private announcementTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** The caller's `type` before link mode forced it to "button". */
