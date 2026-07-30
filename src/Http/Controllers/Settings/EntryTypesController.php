@@ -94,6 +94,9 @@ class EntryTypesController
             ->title(t('Create a new entry type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
+            ->formAttributes([
+                'action' => Url::cpUrl('settings/entry-types'),
+            ])
             ->redirectUrl('settings/entry-types')
             ->inertiaPage('settings/entry-types/Edit', $this->entryTypeProps($entryType, brandNew: true));
     }
@@ -118,6 +121,10 @@ class EntryTypesController
             ->inertiaPage('settings/entry-types/Edit', $this->entryTypeProps($entryTypeData, brandNew: false));
 
         if (! $this->readOnly) {
+            $response->formAttributes([
+                'action' => Url::cpUrl('settings/entry-types'),
+            ]);
+
             if ($entryTypeData->id) {
                 $response->addAltAction(t('Delete'), [
                     'variant' => 'danger',

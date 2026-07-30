@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
@@ -68,6 +69,18 @@ test('create can be loaded', function () {
     get(action([EntryTypesController::class, 'create']))
         ->assertOk()
         ->assertSee(t('Create a new entry type'));
+});
+
+test('create returns the Inertia page for a slideout', function () {
+    get(action([EntryTypesController::class, 'create']), [
+        'Accept' => 'application/json',
+        'X-Craft-Container-Id' => 'entry-type-slideout',
+        'X-Requested-With' => 'XMLHttpRequest',
+    ])
+        ->assertOk()
+        ->assertJsonPath('inertiaPage', 'settings/entry-types/Edit')
+        ->assertJsonPath('inertiaProps.brandNew', true)
+        ->assertJsonPath('formAttributes.action', Url::cpUrl('settings/entry-types'));
 });
 
 test('it can edit an entry type', function () {

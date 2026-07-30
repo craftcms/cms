@@ -11,7 +11,6 @@
   import CraftSelectColor from '@craftcms/ui/vue/CraftSelectColor.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import useCraftData from '@/common/composables/useCraftData';
   import Pane from '@/common/components/Pane.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/EntryTypesController';
   import type {SelectOption} from '@/common/types';
@@ -32,9 +31,11 @@
     errors: Record<any, any> | null;
     metadataHtml: string | null;
     formActions?: Array<any>;
+    slideout?: boolean;
+    readOnly: boolean;
   }>();
 
-  const {readOnly} = useCraftData();
+  const {readOnly} = props;
 
   const form = useForm({
     entryTypeId: props.entryType.id,
@@ -92,45 +93,47 @@
   // values back out of the self-booting custom elements at submit. `fieldLayout`
   // must stay a string (the server `JsonHelper::decode()`s it); `generatedFields`
   // is the ordered row list the server `array_values()`-es.
-  const {save} = useSettingsSave(form, store, {
-    transform: (data) => ({
-      ...data,
-      fieldLayout:
-        fldHost.value
-          ?.querySelector('craft-field-layout-designer')
-          ?.serialize() ?? '{}',
-      generatedFields:
-        fldHost.value
-          ?.querySelector('craft-generated-fields-table')
-          ?.serialize() ?? [],
-    }),
-  });
+  if (!props.slideout) {
+    const {save} = useSettingsSave(form, store, {
+      transform: (data) => ({
+        ...data,
+        fieldLayout:
+          fldHost.value
+            ?.querySelector('craft-field-layout-designer')
+            ?.serialize() ?? '{}',
+        generatedFields:
+          fldHost.value
+            ?.querySelector('craft-generated-fields-table')
+            ?.serialize() ?? [],
+      }),
+    });
 
-  // "Save as a new {type}" submits the current form (including the field layout)
-  // with a `saveAsNew` flag, so on-screen edits are carried into the duplicate —
-  // rather than a standalone request that would clone the last-saved version.
-  // Delete (and any other server-defined actions) come from `props.formActions`.
-  const formActionItems = computed(() => {
-    const actions = [...(props.formActions ?? [])];
+    // "Save as a new {type}" submits the current form (including the field layout)
+    // with a `saveAsNew` flag, so on-screen edits are carried into the duplicate —
+    // rather than a standalone request that would clone the last-saved version.
+    // Delete (and any other server-defined actions) come from `props.formActions`.
+    const formActionItems = computed(() => {
+      const actions = [...(props.formActions ?? [])];
 
-    if (!props.brandNew) {
-      actions.unshift({
-        label: t('Save as a new {type}', {type: props.lowerTypeName}),
-        // Don't preserve state — we navigate to the *new* type's edit screen, so
-        // the form must re-initialize from the new props (not keep this record's).
-        onClick: () => save({data: {saveAsNew: true}, preserveState: false}),
-      });
-    }
+      if (!props.brandNew) {
+        actions.unshift({
+          label: t('Save as a new {type}', {type: props.lowerTypeName}),
+          // Don't preserve state — we navigate to the *new* type's edit screen, so
+          // the form must re-initialize from the new props (not keep this record's).
+          onClick: () => save({data: {saveAsNew: true}, preserveState: false}),
+        });
+      }
 
-    return actions;
-  });
+      return actions;
+    });
 
-  useAppLayout(() => ({
-    title: props.title,
-    form,
-    onSave: save,
-    formActions: formActionItems.value,
-  }));
+    useAppLayout(() => ({
+      title: props.title,
+      form,
+      onSave: save,
+      formActions: formActionItems.value,
+    }));
+  }
 </script>
 
 <template>
