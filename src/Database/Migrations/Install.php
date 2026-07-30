@@ -124,16 +124,16 @@ class Install extends Migration
      */
     public function createLaravelTables(): void
     {
-        if (! Schema::hasTable('password_reset_tokens')) {
-            Schema::create('password_reset_tokens', function (Blueprint $table) {
+        if (! Schema::hasTable(Table::PASSWORD_RESET_TOKENS)) {
+            Schema::create(Table::PASSWORD_RESET_TOKENS, function (Blueprint $table) {
                 $table->string('email')->primary();
                 $table->string('token');
                 $table->timestamp('created_at')->nullable();
             });
         }
 
-        if (! Schema::hasTable('cache')) {
-            Schema::create('cache', function (Blueprint $table) {
+        if (! Schema::hasTable(Table::CACHE)) {
+            Schema::create(Table::CACHE, function (Blueprint $table) {
                 $table->string('key')->primary();
                 $table->mediumText('value');
                 $table->bigInteger('expiration')->index();
@@ -187,8 +187,8 @@ class Install extends Migration
             });
         }
 
-        if (! Schema::hasTable('sessions')) {
-            Schema::create('sessions', function (Blueprint $table) {
+        if (! Schema::hasTable(Table::SESSIONS)) {
+            Schema::create(Table::SESSIONS, function (Blueprint $table) {
                 $table->string('id')->primary();
                 $table->foreignId('user_id')->nullable()->index();
                 $table->string('ip_address', 45)->nullable();
@@ -206,8 +206,8 @@ class Install extends Migration
     {
         $this->dropEmptyStarterTable(Table::USERS);
 
-        $logger?->subLabel('addresses');
-        Schema::create('addresses', function (Blueprint $table) {
+        $logger?->subLabel(Table::ADDRESSES);
+        Schema::create(Table::ADDRESSES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('primaryOwnerId')->nullable();
             $table->integer('fieldId')->nullable();
@@ -231,8 +231,8 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        $logger?->subLabel('announcements');
-        Schema::create('announcements', function (Blueprint $table) {
+        $logger?->subLabel(Table::ANNOUNCEMENTS);
+        Schema::create(Table::ANNOUNCEMENTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->integer('pluginId')->nullable();
@@ -243,8 +243,8 @@ class Install extends Migration
             $table->dateTime('dateCreated');
         });
 
-        $logger?->subLabel('assetindexdata');
-        Schema::create('assetindexdata', function (Blueprint $table) {
+        $logger?->subLabel(Table::ASSETINDEXDATA);
+        Schema::create(Table::ASSETINDEXDATA, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('sessionId');
             $table->integer('volumeId');
@@ -261,8 +261,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('assetindexingsessions');
-        Schema::create('assetindexingsessions', function (Blueprint $table) {
+        $logger?->subLabel(Table::ASSETINDEXINGSESSIONS);
+        Schema::create(Table::ASSETINDEXINGSESSIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->text('indexedVolumes')->nullable();
             $table->integer('totalEntries')->nullable();
@@ -277,8 +277,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('assets');
-        Schema::create('assets', function (Blueprint $table) {
+        $logger?->subLabel(Table::ASSETS);
+        Schema::create(Table::ASSETS, function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->integer('volumeId')->nullable();
             $table->integer('folderId');
@@ -298,16 +298,16 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        $logger?->subLabel('assets_sites');
-        Schema::create('assets_sites', function (Blueprint $table) {
+        $logger?->subLabel(Table::ASSETS_SITES);
+        Schema::create(Table::ASSETS_SITES, function (Blueprint $table) {
             $table->integer('assetId');
             $table->integer('siteId');
             $table->text('alt')->nullable();
             $table->primary(['assetId', 'siteId']);
         });
 
-        $logger?->subLabel('imagetransformindex');
-        Schema::create('imagetransformindex', function (Blueprint $table) {
+        $logger?->subLabel(Table::IMAGETRANSFORMINDEX);
+        Schema::create(Table::IMAGETRANSFORMINDEX, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('assetId');
             $table->string('transformer')->default(null)->nullable();
@@ -323,8 +323,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('imagetransforms');
-        Schema::create('imagetransforms', function (Blueprint $table) {
+        $logger?->subLabel(Table::IMAGETRANSFORMS);
+        Schema::create(Table::IMAGETRANSFORMS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
@@ -343,8 +343,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('authenticator');
-        Schema::create('authenticator', function (Blueprint $table) {
+        $logger?->subLabel(Table::AUTHENTICATOR);
+        Schema::create(Table::AUTHENTICATOR, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('auth2faSecret')->default(null)->nullable();
@@ -353,8 +353,8 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        $logger?->subLabel('bulkopevents');
-        Schema::create('bulkopevents', function (Blueprint $table) {
+        $logger?->subLabel(Table::BULKOPEVENTS);
+        Schema::create(Table::BULKOPEVENTS, function (Blueprint $table) {
             $table->char('key', 10);
             $table->string('senderClass');
             $table->string('eventName');
@@ -362,8 +362,8 @@ class Install extends Migration
             $table->primary(['key', 'senderClass', 'eventName']);
         });
 
-        $logger?->subLabel('changedattributes');
-        Schema::create('changedattributes', function (Blueprint $table) {
+        $logger?->subLabel(Table::CHANGEDATTRIBUTES);
+        Schema::create(Table::CHANGEDATTRIBUTES, function (Blueprint $table) {
             $table->integer('elementId');
             $table->integer('siteId');
             $table->string('attribute');
@@ -373,8 +373,8 @@ class Install extends Migration
             $table->primary(['elementId', 'siteId', 'attribute']);
         });
 
-        $logger?->subLabel('changedfields');
-        Schema::create('changedfields', function (Blueprint $table) {
+        $logger?->subLabel(Table::CHANGEDFIELDS);
+        Schema::create(Table::CHANGEDFIELDS, function (Blueprint $table) {
             $table->integer('elementId');
             $table->integer('siteId');
             $table->integer('fieldId');
@@ -385,16 +385,15 @@ class Install extends Migration
             $table->primary(['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
         });
 
-        $logger?->subLabel('contentblocks');
-        Schema::create('contentblocks', function (Blueprint $table) {
+        $logger?->subLabel(Table::CONTENTBLOCKS);
+        Schema::create(Table::CONTENTBLOCKS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('primaryOwnerId')->nullable();
             $table->integer('fieldId')->nullable();
         });
 
-        /** @todo change back to Table::DEPRECATIONERRORS once larastan is updated */
-        $logger?->subLabel('deprecationerrors');
-        Schema::create('deprecationerrors', function (Blueprint $table) {
+        $logger?->subLabel(Table::DEPRECATIONERRORS);
+        Schema::create(Table::DEPRECATIONERRORS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('key');
             $table->string('fingerprint');
@@ -408,8 +407,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('drafts');
-        Schema::create('drafts', function (Blueprint $table) {
+        $logger?->subLabel(Table::DRAFTS);
+        Schema::create(Table::DRAFTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('canonicalId')->nullable();
             $table->integer('creatorId')->nullable();
@@ -421,8 +420,8 @@ class Install extends Migration
             $table->boolean('saved')->default(true);
         });
 
-        $logger?->subLabel('elementactivity');
-        Schema::create('elementactivity', function (Blueprint $table) {
+        $logger?->subLabel(Table::ELEMENTACTIVITY);
+        Schema::create(Table::ELEMENTACTIVITY, function (Blueprint $table) {
             $table->integer('elementId');
             $table->integer('userId');
             $table->integer('siteId');
@@ -432,8 +431,8 @@ class Install extends Migration
             $table->primary(['elementId', 'userId', 'type']);
         });
 
-        $logger?->subLabel('elements');
-        Schema::create('elements', function (Blueprint $table) {
+        $logger?->subLabel(Table::ELEMENTS);
+        Schema::create(Table::ELEMENTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('canonicalId')->nullable();
             $table->integer('draftId')->nullable();
@@ -450,24 +449,24 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('elements_bulkops');
-        Schema::create('elements_bulkops', function (Blueprint $table) {
+        $logger?->subLabel(Table::ELEMENTS_BULKOPS);
+        Schema::create(Table::ELEMENTS_BULKOPS, function (Blueprint $table) {
             $table->integer('elementId');
             $table->char('key', 10);
             $table->dateTime('timestamp');
             $table->primary(['elementId', 'key']);
         });
 
-        $logger?->subLabel('elements_owners');
-        Schema::create('elements_owners', function (Blueprint $table) {
+        $logger?->subLabel(Table::ELEMENTS_OWNERS);
+        Schema::create(Table::ELEMENTS_OWNERS, function (Blueprint $table) {
             $table->integer('elementId');
             $table->integer('ownerId');
             $table->unsignedSmallInteger('sortOrder');
             $table->primary(['elementId', 'ownerId']);
         });
 
-        $logger?->subLabel('elements_sites');
-        Schema::create('elements_sites', function (Blueprint $table) {
+        $logger?->subLabel(Table::ELEMENTS_SITES);
+        Schema::create(Table::ELEMENTS_SITES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('elementId');
             $table->integer('siteId');
@@ -481,15 +480,15 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('resourcepaths');
-        Schema::create('resourcepaths', function (Blueprint $table) {
+        $logger?->subLabel(Table::RESOURCEPATHS);
+        Schema::create(Table::RESOURCEPATHS, function (Blueprint $table) {
             $table->string('hash');
             $table->string('path');
             $table->primary('hash');
         });
 
-        $logger?->subLabel('revisions');
-        Schema::create('revisions', function (Blueprint $table) {
+        $logger?->subLabel(Table::REVISIONS);
+        Schema::create(Table::REVISIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('canonicalId');
             $table->integer('creatorId')->nullable();
@@ -497,16 +496,15 @@ class Install extends Migration
             $table->text('notes')->nullable();
         });
 
-        $logger?->subLabel('sequences');
-        Schema::create('sequences', function (Blueprint $table) {
+        $logger?->subLabel(Table::SEQUENCES);
+        Schema::create(Table::SEQUENCES, function (Blueprint $table) {
             $table->string('name');
             $table->unsignedInteger('next')->default(1);
             $table->primary('name');
         });
 
-        /** @todo Change when Larastan is updated */
-        $logger?->subLabel('systemmessages');
-        Schema::create('systemmessages', function (Blueprint $table) {
+        $logger?->subLabel(Table::SYSTEMMESSAGES);
+        Schema::create(Table::SYSTEMMESSAGES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('language');
             $table->string('key');
@@ -517,8 +515,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('entries');
-        Schema::create('entries', function (Blueprint $table) {
+        $logger?->subLabel(Table::ENTRIES);
+        Schema::create(Table::ENTRIES, function (Blueprint $table) {
             $table->integer('id');
             $table->integer('sectionId')->nullable();
             $table->integer('parentId')->nullable();
@@ -539,16 +537,16 @@ class Install extends Migration
             $table->primary('id');
         });
 
-        $logger?->subLabel('entries_authors');
-        Schema::create('entries_authors', function (Blueprint $table) {
+        $logger?->subLabel(Table::ENTRIES_AUTHORS);
+        Schema::create(Table::ENTRIES_AUTHORS, function (Blueprint $table) {
             $table->integer('entryId');
             $table->integer('authorId');
             $table->unsignedSmallInteger('sortOrder');
             $table->primary(['entryId', 'authorId']);
         });
 
-        $logger?->subLabel('entrytypes');
-        Schema::create('entrytypes', function (Blueprint $table) {
+        $logger?->subLabel(Table::ENTRYTYPES);
+        Schema::create(Table::ENTRYTYPES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
@@ -572,8 +570,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('fieldlayouts');
-        Schema::create('fieldlayouts', function (Blueprint $table) {
+        $logger?->subLabel(Table::FIELDLAYOUTS);
+        Schema::create(Table::FIELDLAYOUTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('type');
             $table->jsonb('config')->nullable();
@@ -583,8 +581,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('fields');
-        Schema::create('fields', function (Blueprint $table) {
+        $logger?->subLabel(Table::FIELDS);
+        Schema::create(Table::FIELDS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->text('name');
             $table->string('handle', 64);
@@ -601,7 +599,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('fieldreferences');
+        $logger?->subLabel(Table::FIELDREFERENCES);
         Schema::create(Table::FIELDREFERENCES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('fieldId');
@@ -611,8 +609,8 @@ class Install extends Migration
             $table->integer('targetId');
         });
 
-        $logger?->subLabel('gqltokens');
-        Schema::create('gqltokens', function (Blueprint $table) {
+        $logger?->subLabel(Table::GQLTOKENS);
+        Schema::create(Table::GQLTOKENS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('accessToken');
@@ -625,8 +623,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('gqlschemas');
-        Schema::create('gqlschemas', function (Blueprint $table) {
+        $logger?->subLabel(Table::GQLSCHEMAS);
+        Schema::create(Table::GQLSCHEMAS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->jsonb('scope')->nullable();
@@ -636,9 +634,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        /** @todo Change when Larastan is updated */
-        $logger?->subLabel('info');
-        Schema::create('info', function (Blueprint $table) {
+        $logger?->subLabel(Table::INFO);
+        Schema::create(Table::INFO, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('version', 50);
             $table->string('schemaVersion', 15);
@@ -658,8 +655,8 @@ class Install extends Migration
             });
         }
 
-        $logger?->subLabel('plugins');
-        Schema::create('plugins', function (Blueprint $table) {
+        $logger?->subLabel(Table::PLUGINS);
+        Schema::create(Table::PLUGINS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('handle');
             $table->string('version');
@@ -670,14 +667,14 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('projectconfig');
-        Schema::create('projectconfig', function (Blueprint $table) {
+        $logger?->subLabel(Table::PROJECTCONFIG);
+        Schema::create(Table::PROJECTCONFIG, function (Blueprint $table) {
             $table->string('path')->primary();
             $table->text('value');
         });
 
-        $logger?->subLabel('jobprogress');
-        Schema::create('jobprogress', function (Blueprint $table) {
+        $logger?->subLabel(Table::JOBPROGRESS);
+        Schema::create(Table::JOBPROGRESS, function (Blueprint $table) {
             $table->string('uid')->primary();
             $table->string('description')->nullable();
             $table->unsignedTinyInteger('status')->default(1); // JobStatus::Pending
@@ -691,8 +688,8 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        $logger?->subLabel('recoverycodes');
-        Schema::create('recoverycodes', function (Blueprint $table) {
+        $logger?->subLabel(Table::RECOVERYCODES);
+        Schema::create(Table::RECOVERYCODES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->text('recoveryCodes')->nullable();
@@ -700,8 +697,8 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        $logger?->subLabel('relations');
-        Schema::create('relations', function (Blueprint $table) {
+        $logger?->subLabel(Table::RELATIONS);
+        Schema::create(Table::RELATIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('fieldId');
             $table->integer('sourceId');
@@ -713,8 +710,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('routetokens');
-        Schema::create('routetokens', function (Blueprint $table) {
+        $logger?->subLabel(Table::ROUTETOKENS);
+        Schema::create(Table::ROUTETOKENS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->char('token', 32);
             $table->text('route')->nullable();
@@ -726,24 +723,24 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('searchindexqueue');
-        Schema::create('searchindexqueue', function (Blueprint $table) {
+        $logger?->subLabel(Table::SEARCHINDEXQUEUE);
+        Schema::create(Table::SEARCHINDEXQUEUE, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('elementId');
             $table->integer('siteId');
             $table->boolean('reserved')->default(false);
         });
 
-        $logger?->subLabel('searchindexqueue_fields');
-        Schema::create('searchindexqueue_fields', function (Blueprint $table) {
+        $logger?->subLabel(Table::SEARCHINDEXQUEUE_FIELDS);
+        Schema::create(Table::SEARCHINDEXQUEUE_FIELDS, function (Blueprint $table) {
             $table->integer('jobId');
             $table->string('fieldHandle');
 
             $table->primary(['jobId', 'fieldHandle']);
         });
 
-        $logger?->subLabel('sections');
-        Schema::create('sections', function (Blueprint $table) {
+        $logger?->subLabel(Table::SECTIONS);
+        Schema::create(Table::SECTIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId')->nullable();
             $table->string('name');
@@ -768,8 +765,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('sections_entrytypes');
-        Schema::create('sections_entrytypes', function (Blueprint $table) {
+        $logger?->subLabel(Table::SECTIONS_ENTRYTYPES);
+        Schema::create(Table::SECTIONS_ENTRYTYPES, function (Blueprint $table) {
             $table->integer('sectionId');
             $table->integer('typeId');
             $table->unsignedSmallInteger('sortOrder');
@@ -780,8 +777,8 @@ class Install extends Migration
             $table->primary(['sectionId', 'typeId']);
         });
 
-        $logger?->subLabel('sections_sites');
-        Schema::create('sections_sites', function (Blueprint $table) {
+        $logger?->subLabel(Table::SECTIONS_SITES);
+        Schema::create(Table::SECTIONS_SITES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('sectionId');
             $table->integer('siteId');
@@ -794,8 +791,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('shunnedmessages');
-        Schema::create('shunnedmessages', function (Blueprint $table) {
+        $logger?->subLabel(Table::SHUNNEDMESSAGES);
+        Schema::create(Table::SHUNNEDMESSAGES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('message');
@@ -805,8 +802,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('sites');
-        Schema::create('sites', function (Blueprint $table) {
+        $logger?->subLabel(Table::SITES);
+        Schema::create(Table::SITES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('groupId');
             $table->boolean('primary');
@@ -823,8 +820,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('sitegroups');
-        Schema::create('sitegroups', function (Blueprint $table) {
+        $logger?->subLabel(Table::SITEGROUPS);
+        Schema::create(Table::SITEGROUPS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->dateTime('dateCreated');
@@ -833,8 +830,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('sso_identities');
-        Schema::create('sso_identities', function (Blueprint $table) {
+        $logger?->subLabel(Table::SSO_IDENTITIES);
+        Schema::create(Table::SSO_IDENTITIES, function (Blueprint $table) {
             $table->string('provider');
             $table->string('identityId');
             $table->integer('userId');
@@ -844,8 +841,8 @@ class Install extends Migration
             $table->primary(['provider', 'identityId', 'userId']);
         });
 
-        $logger?->subLabel('structureelements');
-        Schema::create('structureelements', function (Blueprint $table) {
+        $logger?->subLabel(Table::STRUCTUREELEMENTS);
+        Schema::create(Table::STRUCTUREELEMENTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId');
             $table->integer('elementId')->nullable();
@@ -858,8 +855,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('structures');
-        Schema::create('structures', function (Blueprint $table) {
+        $logger?->subLabel(Table::STRUCTURES);
+        Schema::create(Table::STRUCTURES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->unsignedSmallInteger('maxLevels')->nullable();
             $table->dateTime('dateCreated');
@@ -868,8 +865,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('usergroups');
-        Schema::create('usergroups', function (Blueprint $table) {
+        $logger?->subLabel(Table::USERGROUPS);
+        Schema::create(Table::USERGROUPS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
@@ -879,8 +876,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('usergroups_users');
-        Schema::create('usergroups_users', function (Blueprint $table) {
+        $logger?->subLabel(Table::USERGROUPS_USERS);
+        Schema::create(Table::USERGROUPS_USERS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('groupId');
             $table->integer('userId');
@@ -889,8 +886,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('userpermissions');
-        Schema::create('userpermissions', function (Blueprint $table) {
+        $logger?->subLabel(Table::USERPERMISSIONS);
+        Schema::create(Table::USERPERMISSIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->dateTime('dateCreated');
@@ -898,8 +895,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('userpermissions_usergroups');
-        Schema::create('userpermissions_usergroups', function (Blueprint $table) {
+        $logger?->subLabel(Table::USERPERMISSIONS_USERGROUPS);
+        Schema::create(Table::USERPERMISSIONS_USERGROUPS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('permissionId');
             $table->integer('groupId');
@@ -908,8 +905,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('userpermissions_users');
-        Schema::create('userpermissions_users', function (Blueprint $table) {
+        $logger?->subLabel(Table::USERPERMISSIONS_USERS);
+        Schema::create(Table::USERPERMISSIONS_USERS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('permissionId');
             $table->integer('userId');
@@ -918,14 +915,14 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('userpreferences');
-        Schema::create('userpreferences', function (Blueprint $table) {
+        $logger?->subLabel(Table::USERPREFERENCES);
+        Schema::create(Table::USERPREFERENCES, function (Blueprint $table) {
             $table->integer('userId')->primary();
             $table->jsonb('preferences')->nullable();
         });
 
-        $logger?->subLabel('users');
-        Schema::create('users', function (Blueprint $table) {
+        $logger?->subLabel(Table::USERS);
+        Schema::create(Table::USERS, function (Blueprint $table) {
             $table->integer('id');
             $table->integer('photoId')->nullable();
             $table->integer('affiliatedSiteId')->nullable();
@@ -957,8 +954,8 @@ class Install extends Migration
             $table->primary('id');
         });
 
-        $logger?->subLabel('volumefolders');
-        Schema::create('volumefolders', function (Blueprint $table) {
+        $logger?->subLabel(Table::VOLUMEFOLDERS);
+        Schema::create(Table::VOLUMEFOLDERS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('parentId')->nullable();
             $table->integer('volumeId')->nullable();
@@ -969,8 +966,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('volumes');
-        Schema::create('volumes', function (Blueprint $table) {
+        $logger?->subLabel(Table::VOLUMES);
+        Schema::create(Table::VOLUMES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
@@ -990,8 +987,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('webauthn');
-        Schema::create('webauthn', function (Blueprint $table) {
+        $logger?->subLabel(Table::WEBAUTHN);
+        Schema::create(Table::WEBAUTHN, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('credentialId')->default(null)->nullable();
@@ -1003,8 +1000,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        $logger?->subLabel('widgets');
-        Schema::create('widgets', function (Blueprint $table) {
+        $logger?->subLabel(Table::WIDGETS);
+        Schema::create(Table::WIDGETS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('type');
