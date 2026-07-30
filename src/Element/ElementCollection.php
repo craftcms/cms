@@ -473,7 +473,7 @@ class ElementCollection extends Collection
     #[Override]
     public function zip($items): Collection
     {
-        $arrayableItems = array_map(fn ($items) => $this->getArrayableItems($items), func_get_args());
+        $arrayableItems = array_map($this->getArrayableItems(...), func_get_args());
         $params = array_merge([fn () => new Collection(func_get_args()), $this->items], $arrayableItems);
 
         return new Collection(array_map(...$params));

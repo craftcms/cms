@@ -353,7 +353,7 @@ class Cp extends Component
     /**
      * Renders a password input's HTML from the legacy password variables.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function password(array $config = []): string
     {
@@ -363,7 +363,7 @@ class Cp extends Component
     /**
      * Renders a color input's HTML from the legacy color variables.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function color(array $config = []): string
     {

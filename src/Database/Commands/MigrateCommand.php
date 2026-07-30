@@ -161,7 +161,7 @@ class MigrateCommand extends Command implements Isolatable
             $which = match (true) {
                 $track === 'craft' => 'Craft',
                 $track === 'content' => 'content',
-                str_starts_with((string) $track, 'plugin') => $plugins[substr((string) $track, 7)]->name,
+                str_starts_with($track, 'plugin') => $plugins[substr($track, 7)]->name,
                 default => $track,
             };
 
@@ -199,8 +199,8 @@ class MigrateCommand extends Command implements Isolatable
             // Update version info
             if ($track === 'craft') {
                 $this->updates->updateCraftVersionInfo();
-            } elseif (str_starts_with((string) $track, 'plugin')) {
-                $this->plugins->updatePluginVersionInfo($plugins[substr((string) $track, 7)]);
+            } elseif (str_starts_with($track, 'plugin')) {
+                $this->plugins->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
 

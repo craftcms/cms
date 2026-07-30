@@ -16,12 +16,12 @@ use function CraftCms\Cms\t;
 class Route implements ProvidesInertiaProperty
 {
     /**
-     * @param  list<string|array{string, string}>  $uriParts
+     * @param  list<string|array{0: string, 1: string}>  $uriParts
      */
     public function __construct(
         /**
-         * @var list<string|array{string, string}> $uriParts The URI as defined by the user. This is an array where each element is either a
-         *                                         string or an array containing the name of a subpattern and the subpattern
+         * @var list<string|array{0: string, 1: string}> $uriParts The URI as defined by the user. This is an array where each element is either a
+         *                                               string or an array containing the name of a subpattern and the subpattern
          */
         public array $uriParts {
             get => array_filter($this->uriParts);
@@ -48,7 +48,7 @@ class Route implements ProvidesInertiaProperty
     }
 
     /**
-     * @return array{template: string, uriParts: list<string|array{string, string}>, siteUid: string|null}
+     * @return array{template: string, uriParts: list<string|array{0: string, 1: string}>, siteUid: string|null}
      */
     public function configData(): array
     {

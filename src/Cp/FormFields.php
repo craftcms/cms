@@ -673,7 +673,7 @@ readonly class FormFields
      * `presets` pass through to the picker datalist. The legacy `.color-input`
      * input class is preserved for any CSS/JS still keyed on it.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public static function colorFromConfig(array $config): InputColor
     {
@@ -961,7 +961,7 @@ readonly class FormFields
      * so this reuses the text mapping and swaps the component. The legacy
      * `.password` input class is preserved for any CSS/JS still keyed on it.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public static function passwordFromConfig(array $config): InputPassword
     {

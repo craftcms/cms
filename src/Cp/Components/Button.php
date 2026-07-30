@@ -178,7 +178,7 @@ class Button extends ViewComponent
      * `craft-action-item` supports (`http`/`event`/`clipboard`/`download`),
      * serialized onto the `action` attribute.
      *
-     * @param array<string, mixed>|Closure|null $action
+     * @param  array<string, mixed>|Closure|null  $action
      */
     public function action(array|Closure|null $action): static
     {

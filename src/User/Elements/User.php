@@ -908,7 +908,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         );
 
         if (isset($values['email'])) {
-            $values['email'] = trim($values['email']);
+            $values['email'] = trim((string) $values['email']);
             if ($values['email'] === '' || $values['email'] === $this->email) {
                 unset($values['email']);
             }

@@ -10,6 +10,7 @@ use Spatie\TypeScriptTransformer\Attributes\Optional;
 
 /**
  * @internal
+ *
  * @implements Arrayable<string, mixed>
  */
 class UpdaterOption implements Arrayable

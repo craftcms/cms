@@ -400,7 +400,7 @@ readonly class ElementHtml
      * title, and modified-status badge. Suited to a card component's `label`
      * slot. Accepts the same `$config` settings as {@see elementCardHtml()}.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function elementCardLabelHtml(ElementInterface $element, array $config = []): string
     {
@@ -422,7 +422,7 @@ readonly class ElementHtml
      * fragment, suited to a card component's `actions` slot. Accepts the
      * same `$config` settings as {@see elementCardHtml()}.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function elementCardActionsHtml(ElementInterface $element, array $config = []): string
     {
@@ -439,7 +439,7 @@ readonly class ElementHtml
      * slideout module's window listener, which opens an element editor
      * slideout (or the element's edit page on ctrl-click).
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      * @return array{0: bool, 1: array<string, mixed>|null} `[showEditButton, editAction]`
      */
     private function cardEditButtonConfig(ElementInterface $element, array $config): array
@@ -468,8 +468,8 @@ readonly class ElementHtml
     }
 
     /**
-     * @param array<string, mixed> $config
-     * @param array<string, mixed>|null $editAction
+     * @param  array<string, mixed>  $config
+     * @param  array<string, mixed>|null  $editAction
      */
     private function cardActionsHtml(ElementInterface $element, array $config, bool $showEditButton, ?array $editAction): string
     {
@@ -665,7 +665,7 @@ readonly class ElementHtml
      * render configs (`app/render-elements`) can request them but never
      * grant them.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      * @return list<array<string, mixed>>
      */
     private function nestedCardActionItems(ElementInterface $element, array $config): array
@@ -1017,7 +1017,7 @@ readonly class ElementHtml
      * `Craft.addActionsToChip()`) always has a `[slot="content"]` container
      * to inject into.
      *
-     * @param list<array<string, mixed>> $extraItems
+     * @param  list<array<string, mixed>>  $extraItems
      */
     private function componentActionMenu(Actionable $component, bool $withEdit = true, array $extraItems = []): string
     {

@@ -9,6 +9,7 @@ parameters:
         - src
         - config
     stubFiles:
+        - yii2-adapter/stubs/laravel-ruleset-validation.stub
         - yii2-adapter/stubs/_generated.stub
         - yii2-adapter/stubs/GraphQL/Type/Definition/FieldDefinition.stub
         - yii2-adapter/stubs/GraphQL/Type/Definition/ResolveInfo.stub
