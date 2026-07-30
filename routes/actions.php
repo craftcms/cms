@@ -69,7 +69,6 @@ use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
-use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
@@ -350,10 +349,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
         Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
-
-        // Sections
-        Route::get('sections/table-data', [SectionsController::class, 'tableData']);
-        Route::get('sections/edit/{section}', [SectionsController::class, 'edit']);
 
         // Structures
         Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
