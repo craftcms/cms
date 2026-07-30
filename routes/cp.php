@@ -275,10 +275,17 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
 
         // Fields
-        Route::get('settings/fields', [FieldsController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
-        Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/fields/{fieldId}', [FieldsController::class, 'destroy'])->whereNumber('fieldId');
+        Route::prefix('settings/fields')->group(function () {
+            Route::get('/', [FieldsController::class, 'index']);
+            Route::middleware(RequireAdminChanges::class)->get('edit', [FieldsController::class, 'edit']);
+            Route::get('edit/{fieldId}', [FieldsController::class, 'edit'])->whereNumber('fieldId');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [FieldsController::class, 'create']);
+                Route::post('/', [FieldsController::class, 'store']);
+                Route::delete('{fieldId}', [FieldsController::class, 'destroy'])->whereNumber('fieldId');
+            });
+        });
 
         // General
         Route::get('settings/general', [GeneralSettingsController::class, 'index'])

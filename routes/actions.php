@@ -277,16 +277,11 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Fields
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::get('fields/edit-field', [FieldsController::class, 'edit']);
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
-            Route::post('fields/save-field', [FieldsController::class, 'store']);
             Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
             Route::post('fields/render-card-preview', [FieldsController::class, 'renderCardPreview']);
-        });
-        Route::middleware([RequireAdmin::class])->group(function () {
-            Route::get('fields/table-data', [FieldsController::class, 'tableData']);
         });
 
         // Entry types

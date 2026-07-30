@@ -1879,7 +1879,7 @@ JS, [
                 HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
+        new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {params: $params})
       });
     })();
     JS, [

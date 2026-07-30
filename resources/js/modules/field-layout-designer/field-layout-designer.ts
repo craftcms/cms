@@ -447,7 +447,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   }
 
   createField(): void {
-    const slideout = new Craft.CpScreenSlideout('fields/edit-field');
+    const slideout = new Craft.CpScreenSlideout(
+      Craft.getCpUrl('settings/fields/edit')
+    );
 
     slideout.on('submit', async ({response}: any) => {
       // add the library selector

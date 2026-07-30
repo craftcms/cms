@@ -71,7 +71,7 @@
   }
 
   // The field type's own settings are a server-rendered legacy HTML island
-  // (each type's getSettingsHtml()), swapped out via `fields/render-settings`
+  // (each type's getSettingsHtml()), swapped out via `settings/fields/render-settings`
   // when the type changes. Its inputs — namespaced `types[<typeId>]` — aren't
   // part of the Inertia form, so they're serialized out of the DOM at submit.
   const settingsHost = ref<HTMLElement | null>(null);
