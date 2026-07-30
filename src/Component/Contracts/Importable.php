@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Contracts;
 
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 
 /**
@@ -26,6 +27,11 @@ interface Importable
      * Prepares a new element instance for import.
      */
     public function prepareNewElementForImport(BaseImporter $config, array &$data): self;
+
+    /**
+     * Prepare query that searches for the root element we're importing into
+     */
+    public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery;
 
     /**
      * Sets element's importable attributes.

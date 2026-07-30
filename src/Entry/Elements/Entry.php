@@ -30,6 +30,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -2773,6 +2774,8 @@ JS;
     #[Override]
     public function prepareNewElementForImport(BaseImporter $config, array &$data): self
     {
+        parent::prepareNewElementForImport($config, $data);
+
         // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
         // we need to ensure the typeId is set
         if ($config->fieldLayout) {
@@ -2793,8 +2796,16 @@ JS;
                 }
             }
         }
+        // todo (iwona): otherwise we also have to ensure this; think whether we need to do anything about it here
 
         return $this;
+    }
+
+    #[Override]
+    public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery
+    {
+        /** @var $query EntryQuery */
+        return $query->typeId($this->_typeId);
     }
 
     #[Override]

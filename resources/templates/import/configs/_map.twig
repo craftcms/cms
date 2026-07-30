@@ -58,12 +58,14 @@
         </td>
         <td>
             {% set nestedFieldValueForMap = import.map ? col.prefixedHandleAsArray|reduce(
-                (value, part) => value and value is iterable and value[part] is defined ? attribute(value, part) : null,
-                import.map) : null %}
+                (value, part) => (value and value is iterable and value[part] is defined) ? attribute(value, part) : null,
+                import.map
+            ) : null %}
 
             {% set nestedFieldValueForMatchCriteria = import.matchCriteria ? col.prefixedHandleAsArray|reduce(
-                (value, part) => value and value is iterable and value[part] is defined ? attribute(value, part)|boolean : null,
-                import.matchCriteria) : null %}
+                (value, part) => (value and value is iterable and value[part] is defined) ? attribute(value, part)|boolean : null,
+                import.matchCriteria
+            ) : null %}
 
             {% if col.isContainer %}
                 {{ hiddenInput(

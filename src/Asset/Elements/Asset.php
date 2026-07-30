@@ -50,6 +50,7 @@ use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -3486,6 +3487,8 @@ JS;
     #[Override]
     public function prepareNewElementForImport(BaseImporter $config, array &$data): self
     {
+        parent::prepareNewElementForImport($config, $data);
+
         // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
         // we need to ensure the volumeId is set
         if ($config->fieldLayout) {
@@ -3505,6 +3508,13 @@ JS;
         }
 
         return $this;
+    }
+
+    #[Override]
+    public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery
+    {
+        /** @var $query AssetQuery */
+        return $query->volumeId($this->_volumeId);
     }
 
     #[Override]

@@ -13,6 +13,7 @@ use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -751,8 +752,19 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     #[Override]
     public function prepareNewElementForImport(BaseImporter $config, array &$data): self
     {
-        // by default, this does nothing
+        // ensure site is set
+        $this->siteId = $config->site->id;
+        // and validation scenario is "live"
+        $this->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+
         return $this;
+    }
+
+    #[Override]
+    public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery
+    {
+        // by default, we don't need to adjust the element query
+        return $query;
     }
 
     #[Override]

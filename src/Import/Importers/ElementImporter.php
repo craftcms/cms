@@ -378,14 +378,18 @@ class ElementImporter extends BaseImporter
 
         $element = $element->prepareNewElementForImport($this, $data);
 
-        // if null then return a brand new ElementInterface object with just the siteId set to the selected value
+        // if we don't have matchCriteria, then return a new Element
         if (empty($data['matchCriteria'])) {
-            $element->siteId = $this->site->id;
-
             return $element;
         }
+
         if (is_array($data['matchCriteria'])) {
-            $query = $element::find();
+            $query = $element::find()
+                ->drafts()
+                ->status(null);
+
+            // give element a chance to adjust the query
+            $element->prepareRootElementImportQuery($query);
 
             // by now the match criteria from various sources (ui, config, transformer) should have been merged,
             // and the values from incoming data should have been applied to it
@@ -398,7 +402,9 @@ class ElementImporter extends BaseImporter
             }
 
             Typecast::configure($query, $criteria);
-            // force the selected siteId
+
+            // ensure we use the config's siteId, not one from the matchCriteria
+            // that's why we haven't set it earlier on
             $query->siteId = $this->site?->id;
 
             return $query->one() ?? $element;
