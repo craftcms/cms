@@ -15,5 +15,6 @@ final readonly class Importable
         public bool $excludeFromUiMapping = false,
         public bool $isContainer = false,
         public bool $canBeMatchCriteria = true,
+        public bool $canBeCleared = true,
     ) {}
 }

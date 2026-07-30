@@ -28,11 +28,12 @@ class ImportHelper
 
             return [
                 'property' => $property->getName(),
-                'name' => $arguments[0],
-                'label' => $arguments[1] ?? $arguments[0],
-                'excludeFromUiMapping' => $arguments[2] ?? false,
-                'isContainer' => $arguments[3] ?? false,
-                'canBeMatchCriteria' => $arguments[4] ?? true,
+                'name' => $arguments[0] ?? $arguments['name'],
+                'label' => $arguments[1] ?? $arguments[0] ?? $arguments['label'],
+                'excludeFromUiMapping' => $arguments[2] ?? $arguments['excludeFromUiMapping'] ?? false,
+                'isContainer' => $arguments[3] ?? $arguments['isContainer'] ?? false,
+                'canBeMatchCriteria' => $arguments[4] ?? $arguments['canBeMatchCriteria'] ?? true,
+                'canBeCleared' => $arguments[5] ?? $arguments['canBeCleared'] ?? true,
                 'defaultValue' => $property->getDefaultValue(),
             ];
         }, $properties);
@@ -138,9 +139,10 @@ class ImportHelper
 
         $prefixedHandleForMap = Html::namespaceInputName($prefixedHandle, 'map');
         $prefixedHandleForMatchCriteria = Html::namespaceInputName($prefixedHandle, 'matchCriteria');
+        $prefixedHandleForClear = Html::namespaceInputName($prefixedHandle, 'clearableItems');
         $prefixedHandleAsArray = Arr::bracketsToArray($prefixedHandle);
 
-        return [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandle, $prefixedHandleAsArray];
+        return [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray];
     }
 
     public static function remapData(array $map, array $data): array

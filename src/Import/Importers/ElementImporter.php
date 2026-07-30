@@ -304,10 +304,12 @@ class ElementImporter extends BaseImporter
                 'label' => $prop['label'],
                 'prefixedHandleForMap' => Html::namespaceInputName($prop['name'], 'map'),
                 'prefixedHandleForMatchCriteria' => Html::namespaceInputName($prop['name'], 'matchCriteria'),
+                'prefixedHandleForClear' => Html::namespaceInputName($prop['name'], 'clearableItems'),
                 'prefixedHandle' => $prop['name'],
                 'prefixedHandleAsArray' => Arr::bracketsToArray($prop['name']),
                 'isContainer' => $prop['isContainer'] ?? false,
                 'canBeMatchCriteria' => $prop['canBeMatchCriteria'] ?? true,
+                'canBeCleared' => $prop['canBeCleared'] ?? true,
                 'isProperty' => true,
             ], $props);
         }

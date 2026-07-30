@@ -233,17 +233,19 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
         ];
 
         foreach ($parts as $part) {
-            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
 
             $subfields[] = [
                 'handle' => $part['attribute'],
                 'label' => $part['label'],
                 'prefixedHandleForMap' => $prefixedHandleForMap,
                 'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
+                'prefixedHandleForClear' => $prefixedHandleForClear,
                 'prefixedHandle' => $prefixedHandle,
                 'prefixedHandleAsArray' => $prefixedHandleAsArray,
                 'isContainer' => false,
                 'canBeMatchCriteria' => $part['canBeMatchCriteria'] ?? false,
+                'canBeCleared' => $part['canBeCleared'] ?? true,
             ];
         }
 
@@ -254,6 +256,13 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
 
     #[Override]
     public function canBeMatchCriteria(): bool
+    {
+        // this is taken care of by the getFieldsForMapping() method
+        return false;
+    }
+
+    #[Override]
+    public function canBeCleared(): bool
     {
         // this is taken care of by the getFieldsForMapping() method
         return false;

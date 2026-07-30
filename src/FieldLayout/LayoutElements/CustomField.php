@@ -976,17 +976,19 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         $attribute = $this->attribute();
-        [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
+        [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
 
         $content = [
             'handle' => $attribute,
             'label' => $this->label(),
             'prefixedHandleForMap' => $prefixedHandleForMap,
             'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
+            'prefixedHandleForClear' => $prefixedHandleForClear,
             'prefixedHandle' => $prefixedHandle,
             'prefixedHandleAsArray' => $prefixedHandleAsArray,
             'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
             'canBeMatchCriteria' => $this->canBeMatchCriteria() ?? false,
+            'canBeCleared' => $this->canBeCleared(),
         ];
 
         if ($content['isContainer']) {
@@ -1016,6 +1018,31 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
 
         if (method_exists($field, 'canBeImportMatchCriteria')) {
             return $field->canBeImportMatchCriteria();
+        }
+
+        return true;
+    }
+
+    public function canBeCleared(): bool
+    {
+        if ($this instanceof ImportableElementContainerFieldInterface) {
+            return false;
+        }
+
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return false;
+        }
+
+        if ($field instanceof BaseRelationField) {
+            return false;
+        }
+
+        if (method_exists($field, 'canBeImportCleared')) {
+            return $field->canBeImportCleared();
         }
 
         return true;

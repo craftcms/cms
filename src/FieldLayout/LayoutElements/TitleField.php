@@ -125,4 +125,10 @@ JS, [
     {
         return true;
     }
+
+    #[Override]
+    public function canBeCleared(): bool
+    {
+        return true;
+    }
 }

@@ -325,6 +325,12 @@ class ImportConfigController
                 // we're intentionally using validateMap() here as we basically want to check the same thing for map and matchCriteria
                 fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
             ],
+            'clearableItems' => [
+                'nullable',
+                'array',
+                // we're intentionally using validateMap() here as we basically want to check the same thing for map and clearableItems
+                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator),
+            ],
         ]);
 
         if (property_exists($import, 'fieldLayoutId')) {
@@ -334,6 +340,7 @@ class ImportConfigController
 
         $import->map($this->request->input('map', $import->map));
         $import->matchCriteria($this->request->input('matchCriteria', $import->matchCriteria));
+        $import->clearableItems($this->request->input('clearableItems', $import->clearableItems ?? []));
 
         if (! $this->importService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
@@ -355,9 +362,11 @@ class ImportConfigController
         $fieldIsProperty = $this->request->input('fieldIsProperty');
         $currentPartialMap = $this->request->input('currentMap');
         $currentPartialMatchCriteria = $this->request->input('currentMatchCriteria');
+        $currentPartialClearableItems = $this->request->input('currentClearableItems');
 
         $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialMap, 'map');
         $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialMatchCriteria, 'matchCriteria');
+        $this->applyCurrentPartialValue($import, $fieldHandle, $currentPartialClearableItems, 'clearableItems');
 
         $cols = [];
 
@@ -469,19 +478,28 @@ class ImportConfigController
                 // we're intentionally using validateMap() here as we basically want to check the same thing for map and matchCriteria
                 fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
             ],
+            "clearableItems.$fieldHandle" => [
+                'nullable',
+                'array',
+                // we're intentionally using validateMap() here as we basically want to check the same thing for map and clearableItems
+                fn ($attribute, $value, Closure $fail, Validator $validator) => $import::validateMap($value, $attribute, $fail, $validator, ['field' => $field]),
+            ],
         ]);
 
         $map = $this->request->input("map.$fieldHandle");
         $matchCriteria = $this->request->input("matchCriteria.$fieldHandle");
+        $clearableItems = $this->request->input("clearableItems.$fieldHandle");
 
         $map = array_map(ImportHelper::ensureCleanArray(...), $map);
         $matchCriteria = array_map(ImportHelper::ensureCleanArray(...), $matchCriteria);
+        $clearableItems = array_map(ImportHelper::ensureCleanArray(...), $clearableItems);
 
         // and return it
         return $this->asJsonSuccess(null, [
             'fieldHandle' => $fieldHandle,
             'map' => $map,
             'matchCriteria' => $matchCriteria,
+            'clearableItems' => $clearableItems,
             'namespace' => $this->request->header('X-Craft-Namespace'),
         ]);
     }

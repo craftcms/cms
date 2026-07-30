@@ -67,6 +67,11 @@
                 import.matchCriteria
             ) : null %}
 
+            {% set nestedFieldValueForClear = import.clearableItems ? col.prefixedHandleAsArray|reduce(
+                (value, part) => (value and value is iterable and value[part] is defined) ? attribute(value, part)|boolean : null,
+                import.clearableItems
+            ) : null %}
+
             {% if col.isContainer %}
                 {{ hiddenInput(
                     col.prefixedHandleForMap,
@@ -75,6 +80,10 @@
                 {{ hiddenInput(
                     col.prefixedHandleForMatchCriteria,
                     nestedFieldValueForMatchCriteria ? nestedFieldValueForMatchCriteria|json_encode : null
+                ) }}
+                {{ hiddenInput(
+                    col.prefixedHandleForClear,
+                    nestedFieldValueForClear ? nestedFieldValueForClear|json_encode : null
                 ) }}
                 <a href="#"
                    class="btn mapping-slideout"
@@ -102,6 +111,15 @@
                       value: 1,
                     }) }}
                 {% endif %}
+
+                {% if col.canBeCleared ?? false %}
+                    {{ forms.checkboxField({
+                      name: col.prefixedHandleForClear,
+                      label: 'Clear existing value if no data provided or provided value is empty.'|t('app'),
+                      checked: nestedFieldValueForClear ?? false,
+                      value: 1,
+                    }) }}
+                {% endif %}
                 {#{{ dump(col) }}#}
             {% endif %}
         </td>
@@ -123,6 +141,7 @@ $('.mapping-slideout').on('activate', function(e) {
     const importUid = $(this).data('import-uid');
     let $mapInput = $(this).prevAll('input[type="hidden"][name^="map["], input[type="hidden"][name*="[map]["]');
     let $matchCriteriaInput = $(this).prevAll('input[type="hidden"][name^="matchCriteria["], input[type="hidden"][name*="[matchCriteria]["]');
+    let $clearableItemsInput = $(this).prevAll('input[type="hidden"][name^="clearableItems["], input[type="hidden"][name*="[clearableItems]["]');
     let data;
 
     try {
@@ -136,6 +155,7 @@ $('.mapping-slideout').on('activate', function(e) {
                     'importUid': importUid,
                     'currentMap': $mapInput.val(),
                     'currentMatchCriteria': $matchCriteriaInput.val(),
+                    'currentClearableItems': $clearableItemsInput.val(),
                 },
             }
         );
@@ -144,6 +164,7 @@ $('.mapping-slideout').on('activate', function(e) {
 
             $mapInput.val(JSON.stringify(data.map));
             $matchCriteriaInput.val(JSON.stringify(data.matchCriteria));
+            $clearableItemsInput.val(JSON.stringify(data.clearableItems));
         });
 {#        slideout.on('close', () => {#}
 {#            slideout.destroy();#}

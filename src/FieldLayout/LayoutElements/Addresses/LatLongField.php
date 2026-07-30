@@ -165,22 +165,24 @@ class LatLongField extends BaseNativeField implements ImportableFieldLayoutEleme
         $subfields = [];
 
         $parts = [
-            ['attribute' => 'latitude', 'label' => t('Latitude'), 'canBeMatchCriteria' => true],
-            ['attribute' => 'longitude', 'label' => t('Longitude'), 'canBeMatchCriteria' => true],
+            ['attribute' => 'latitude', 'label' => t('Latitude'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
+            ['attribute' => 'longitude', 'label' => t('Longitude'), 'canBeMatchCriteria' => true, 'canBeCleared' => true],
         ];
 
         foreach ($parts as $part) {
-            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
 
             $subfields[] = [
                 'handle' => $part['attribute'],
                 'label' => $part['label'],
                 'prefixedHandleForMap' => $prefixedHandleForMap,
                 'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
+                'prefixedHandleForClear' => $prefixedHandleForClear,
                 'prefixedHandle' => $prefixedHandle,
                 'prefixedHandleAsArray' => $prefixedHandleAsArray,
                 'isContainer' => false,
-                'canBeMatchCriteria' => $part['canBeMatchCriteria'] ?? false,
+                'canBeMatchCriteria' => $part['canBeMatchCriteria'],
+                'canBeCleared' => $part['canBeCleared'],
             ];
         }
 
@@ -191,6 +193,13 @@ class LatLongField extends BaseNativeField implements ImportableFieldLayoutEleme
 
     #[Override]
     public function canBeMatchCriteria(): bool
+    {
+        // this is taken care of by the getFieldsForMapping() method
+        return false;
+    }
+
+    #[Override]
+    public function canBeCleared(): bool
     {
         // this is taken care of by the getFieldsForMapping() method
         return false;

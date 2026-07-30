@@ -108,10 +108,10 @@ it('recursively decodes a JSON-encoded string element inside an array', function
     expect(ImportHelper::ensureCleanArray(['["a","b"]']))->toBe([['a', 'b']]);
 });
 
-// getPrefixedHandlesForMapping – fourth return value
+// getPrefixedHandlesForMapping – fifth return value
 
-it('returns the handle split into path-part segments as the fourth return value', function () {
-    [,,, $parts] = ImportHelper::getPrefixedHandlesForMapping('title', null, null, null, null);
+it('returns the handle split into path-part segments as the fifth return value', function () {
+    [,,,, $parts] = ImportHelper::getPrefixedHandlesForMapping('title', null, null, null, null);
 
     expect($parts)->toBe(['title']);
 });

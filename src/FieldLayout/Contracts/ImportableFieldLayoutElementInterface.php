@@ -29,4 +29,13 @@ interface ImportableFieldLayoutElementInterface
      * It's false by default.
      */
     public function canBeMatchCriteria(): bool;
+
+    /**
+     * Returns whether the element's value can be cleared on import when no data is provided or the provided value is empty.
+     * For the CustomField instances,
+     * the underlying Field can implement the canBeImportCleared() method to further customise this.
+     *
+     * It's false by default.
+     */
+    public function canBeCleared(): bool;
 }

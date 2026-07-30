@@ -202,6 +202,7 @@ class Import
                 'transformer' => $import->transformer ? $import->transformer::class : null,
                 'map' => $import->map,
                 'matchCriteria' => $import->matchCriteria,
+                'clearableItems' => $import->clearableItems,
             ];
             if (property_exists($import, 'site')) {
                 $settings['site'] = $import->site->uid;
@@ -444,6 +445,8 @@ class Import
         // this should continue to be executed on per-item basis
         $this->resolveMatchCriteria($data, $matchCriteria);
 
+        $this->applyClearableItems($data, $config->clearableItems ?? []);
+
         $config->importItem($data);
 
         event(new DataImported($config, $data));
@@ -520,6 +523,72 @@ class Import
                 $this->resolveMatchCriteria($data[$key], $value);
             }
         }
+    }
+
+    /**
+     * Clears out any handles marked as clearable in $clearableItems whose incoming value is missing or empty,
+     * forcing them to null so they're explicitly applied (rather than silently left untouched) further downstream.
+     */
+    private function applyClearableItems(array &$data, array $clearableItems): void
+    {
+        foreach ($clearableItems as $key => $value) {
+            if (! is_array($value)) {
+                if ($value && (! array_key_exists($key, $data) || self::isEmptyValue($data[$key]))) {
+                    $data[$key] = null;
+                }
+
+                continue;
+            }
+            if (! isset($data[$key])) {
+                continue;
+            }
+            if (! is_array($data[$key])) {
+                continue;
+            }
+
+            if (! empty($data[$key]) && array_is_list($data[$key]) && ! array_is_list($value)) {
+                foreach ($data[$key] as &$item) {
+                    if (is_array($item)) {
+                        $this->applyClearableItems($item, $value);
+                    }
+                }
+                unset($item);
+            } else {
+                $this->applyClearableItems($data[$key], $value);
+            }
+        }
+
+        // anything left over that's empty/null and isn't explicitly marked clearable should never
+        // reach the importer at all, so the existing value it maps to is left completely untouched
+        foreach ($data as $key => $value) {
+            if (array_key_exists($key, $clearableItems) && $clearableItems[$key] !== null) {
+                continue;
+            }
+
+            if (self::isEmptyValue($value)) {
+                unset($data[$key]);
+            }
+        }
+    }
+
+    /**
+     * Determines whether a value should be treated as "empty" for the purposes of clearableItems.
+     */
+    private static function isEmptyValue(mixed $value): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        if (is_string($value)) {
+            return trim($value) === '';
+        }
+
+        if (is_array($value)) {
+            return $value === [];
+        }
+
+        return false;
     }
 
     // todo (iwona): might be able to delete this; currently only used by ImportConfigController::run()

@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -48,6 +49,19 @@ abstract class BaseImporter
      *  null => don't match against existing elements; import all incoming data as new
      */
     public protected(set) ?array $matchCriteria = null;
+
+    /**
+     * @var array|null
+     *
+     * array => key is the field/attribute handle to clear when the incoming data doesn't provide a value for it
+     *  (or provides an empty one); value is truthy (1/true) to mark it as clearable;
+     *  the array can be multidimensional to reach into container fields, mirroring $matchCriteria's shape;
+     *  for convenience, file-based configs may instead provide a flat list of dot-notation handles
+     *  (e.g. ['heading', 'body']), which gets normalized into the nested truthy-leaf shape;
+     *
+     *  null => nothing is cleared; missing/empty incoming values are left untouched
+     */
+    public protected(set) ?array $clearableItems = null;
 
     public ?string $uid = null;
 
@@ -253,6 +267,26 @@ abstract class BaseImporter
     public function matchCriteria(array $matchCriteria): self
     {
         $this->matchCriteria = $this->unpackJson($matchCriteria);
+
+        return $this;
+    }
+
+    /**
+     * Sets the field/attribute handles that should be cleared on import when no data is provided
+     * for them or the provided value is empty, and returns the current instance.
+     *
+     * @param  array  $clearableItems  The handles to mark as clearable, either as a nested map with truthy
+     *                                 leaves (matching $matchCriteria's shape) or a flat list of dot-notation handles.
+     */
+    public function clearableItems(array $clearableItems): self
+    {
+        $clearableItems = $this->unpackJson($clearableItems);
+
+        if (array_is_list($clearableItems)) {
+            $clearableItems = Arr::undot(array_fill_keys($clearableItems, true));
+        }
+
+        $this->clearableItems = $clearableItems;
 
         return $this;
     }
