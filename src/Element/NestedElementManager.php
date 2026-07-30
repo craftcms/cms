@@ -299,6 +299,9 @@ class NestedElementManager extends Component
      * Grants the session authorization the nested-element endpoints require,
      * same as the HTML path. Namespace-derived values (`baseInputName`)
      * reflect the calling namespace context.
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>|null
      */
     public function getCardsData(?ElementInterface $owner, array $config = []): ?array
     {
@@ -401,6 +404,9 @@ class NestedElementManager extends Component
     /**
      * Applies the cards-view config defaults (shared by `getCardsHtml()` and
      * `getCardsData()`).
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>
      */
     private function normalizeCardsConfig(array $config): array
     {
@@ -413,6 +419,9 @@ class NestedElementManager extends Component
 
     /**
      * The cards-mode additions to the manager settings payload.
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>
      */
     private function cardsSettings(array $config): array
     {
@@ -433,6 +442,9 @@ class NestedElementManager extends Component
 
     /**
      * The per-card render config for the nested context.
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>
      */
     private function cardConfig(array $config): array
     {
@@ -497,6 +509,9 @@ class NestedElementManager extends Component
      * Grants the session authorization the nested-element endpoints require,
      * same as the HTML path. Namespace-derived values (`baseInputName`,
      * `indexSettings.namespace`) reflect the calling namespace context.
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>|null
      */
     public function getIndexData(?ElementInterface $owner, array $config = []): ?array
     {
@@ -547,6 +562,9 @@ class NestedElementManager extends Component
     /**
      * Applies the index-view config defaults (shared by `getIndexHtml()` and
      * `getIndexData()`).
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>
      */
     private function normalizeIndexConfig(?ElementInterface $owner, array $config): array
     {
@@ -584,6 +602,9 @@ class NestedElementManager extends Component
      * Builds the `indexSettings` portion of the view settings: the owner
      * criteria, view-mode/pagination options, and (when sortable) the
      * reorder action configs.
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>
      */
     private function indexSettings(ElementInterface $owner, array $config, string $attribute): array
     {
@@ -660,6 +681,9 @@ class NestedElementManager extends Component
     /**
      * Applies the shared view config defaults (create/paste/limit options)
      * used by both the HTML and data paths.
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>
      */
     private function normalizeViewConfig(array $config): array
     {
@@ -710,6 +734,19 @@ class NestedElementManager extends Component
      * Builds the manager settings payload shared by the HTML views (encoded
      * into `<craft-nested-element-manager settings>`) and the data path
      * ({@see getIndexData()}).
+     *
+     * @param array{
+     *     sortable: bool,
+     *     canCreate: mixed,
+     *     canPaste: mixed,
+     *     pasteableData: mixed,
+     *     minElements: mixed,
+     *     maxElements: mixed,
+     *     createButtonLabel: mixed,
+     *     prevalidate?: mixed,
+     *     createAttributes?: array<string, mixed>|list<array{attributes: array<string, mixed>, icon?: mixed, color?: mixed}>
+     * } $config
+     * @return array<string, mixed>
      */
     private function viewSettings(ElementInterface $owner, array $config, string $mode, string $attribute): array
     {

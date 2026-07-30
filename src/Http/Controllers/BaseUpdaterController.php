@@ -327,6 +327,7 @@ abstract class BaseUpdaterController
         return new JsonResponse($this->clientState($state)->toArray());
     }
 
+    /** @param array<string, mixed> $state */
     protected function clientState(array $state): UpdaterState
     {
         if (isset($state['nextAction'])) {
