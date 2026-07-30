@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
+- Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
+- Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
+- Added `CraftCms\Cms\Image\Raster::getInterventionImage()`.
+- Changed `CraftCms\Cms\Image\Raster::getTextBox()` to return a `width` and `height` array.
+- Removed `CraftCms\Cms\Image\Raster::getImagineImage()`.
+- Removed `CraftCms\Cms\Image\Images::MINIMUM_IMAGICK_VERSION` and `craft\services\Images::MINIMUM_IMAGICK_VERSION`.
 - Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements, including dependency-injected closure values.
 - Added support for configuring field layout field instruction positions.
 - Added the `@craftcms/ui/factory` module, a jQuery-free layer of typed element factories that mirror the `src/Cp/Components` PHP builders. ([#19323](https://github.com/craftcms/cms/pull/19323))
