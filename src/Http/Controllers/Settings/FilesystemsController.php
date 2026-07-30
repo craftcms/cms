@@ -81,7 +81,9 @@ class FilesystemsController
                 $this->readOnly,
                 function (CpScreenResponse $response) {
                     $response
-                        ->action('fs/save')
+                        ->formAttributes([
+                            'action' => Url::cpUrl('settings/filesystems'),
+                        ])
                         ->redirectUrl('settings/filesystems')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'settings/filesystems/{handle}',

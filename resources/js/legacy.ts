@@ -18,6 +18,18 @@ import './modules/grouped-entry-type-manager/index';
 import './modules/queue/index';
 import './modules/slideout/index';
 import './modules/auth-method-setup/index';
+import './modules/input-generators/index';
+import './modules/icon-picker/index';
+import './modules/field-toggle/index';
+import './modules/proxy-scrollbar/index';
+import './modules/element-label/index';
+import './modules/form-observer/index';
+import './modules/interval-manager/index';
+import './modules/entry-mover/index';
+import './modules/prompt-handler/index';
+import './modules/link-field/index';
+import './modules/nested-element-manager/index';
+import './modules/ui/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 

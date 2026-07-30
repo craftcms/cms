@@ -3,6 +3,7 @@ import {MatrixEntry} from './matrix-entry';
 import CraftMatrixInput from './matrix-input.ce';
 import {defineElement} from '@/common/web-components';
 import {containerMatrixEntries} from './support';
+import {registerCraftGlobals} from '@/common/craft-global';
 
 /**
  * Legacy callers construct `new Craft.MatrixInput(id, entryTypes,
@@ -35,8 +36,7 @@ type MatrixInputGlobal = typeof MatrixInput & {
 // Assign onto the legacy `Craft` global so the PHP-emitted
 // `new Craft.MatrixInput(...)` and `Craft.MatrixInput.rememberCollapsedEntryId()`
 // keep working.
-const craftGlobal = (window as any).Craft ?? ((window as any).Craft = {});
-craftGlobal.MatrixInput = MatrixInput as MatrixInputGlobal;
+registerCraftGlobals({MatrixInput: MatrixInput as MatrixInputGlobal});
 (MatrixInput as MatrixInputGlobal).Entry = CraftMatrixEntryGlobal;
 
 defineElement('craft-matrix-input', CraftMatrixInput);

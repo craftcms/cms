@@ -27,6 +27,12 @@
       error?: string;
       freeOnly?: boolean;
       disabled?: boolean;
+      // Used by the legacy `<craft-icon-picker>` mount bridge: `id` lets a
+      // wrapping `craft-field` label associate with the control, and
+      // labelledBy/describedBy cover the label-less table-cell case.
+      id?: string;
+      labelledBy?: string;
+      describedBy?: string;
     }>(),
     {freeOnly: false}
   );
@@ -136,8 +142,11 @@
 
 <template>
   <craft-input
+    :id="id"
     :label="label"
     :name="name"
+    :aria-labelledby="labelledBy"
+    :aria-describedby="describedBy"
     :has-feedback-for="error ? 'error' : ''"
     hidden-input
     .modelValue="model"

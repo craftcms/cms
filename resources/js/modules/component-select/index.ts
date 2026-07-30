@@ -7,10 +7,11 @@ import {defineElement} from '@/common/web-components';
 defineElement('craft-component-select', CraftComponentSelect);
 
 // Unlike the other ported modules there is no `window.Craft.*` assignment:
-// the legacy `Craft.ComponentSelectInput` still ships in the legacy bundle
-// for the not-yet-migrated Twig surfaces, and `<craft-component-select>` (the
-// element, not this controller) is the public API for the ported ones — see
-// the module README's "No legacy-global shim" section.
+// `<craft-component-select>` (the element, not this controller) is the public
+// API. Core no longer instantiates `Craft.ComponentSelectInput`; the legacy
+// class was relocated out of the legacy bundle to a yii2-adapter compat asset
+// purely for the `componentSelect.twig` `jsClass` escape hatch — see the
+// module README's "No legacy-global shim" section.
 export {CraftComponentSelect, ComponentSelect};
 export type {
   ComponentSelectSettings,

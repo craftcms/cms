@@ -147,6 +147,7 @@ describe('field helper methods', function () {
         ['color-input', 'colorFieldHtml'],
         ['editable', 'editableTableFieldHtml', ['name' => 'test']],
         ['lightswitch', 'lightswitchFieldHtml'],
+        ['<craft-input-password', 'passwordFieldHtml'],
         ['<select', 'selectFieldHtml'],
         ['type="text"', 'textFieldHtml'],
         ['slot="suffix"', 'textFieldHtml', ['unit' => 'Test unit']],
