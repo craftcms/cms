@@ -1,6 +1,7 @@
 import {computed, type MaybeRefOrGetter, ref, type Ref, toValue} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
+import {isInteractiveClick} from '@/common/utils/dom';
 
 export interface ElementIndexSelectionOptions {
   selectable: MaybeRefOrGetter<boolean>;
@@ -17,6 +18,7 @@ export function useElementIndexSelection(
   const anchorIndex: Ref<number | null> = ref(null);
 
   const readOnly = computed(() => toValue(options.readOnly));
+  const selectable = computed(() => toValue(options.selectable));
 
   const selectedIds = computed<Array<string | number>>(() => {
     const t = toValue(table);
@@ -85,6 +87,26 @@ export function useElementIndexSelection(
     anchorIndex.value = rowIndex(row);
   }
 
+  // A click anywhere on a selectable row/card body toggles that row, unless it
+  // landed on an interactive control. Reuses selectRow so a shift-click extends
+  // the range from the anchor exactly like shift-clicking the checkbox does.
+  function selectRowFromEvent(row: Row<any> | undefined, event: MouseEvent) {
+    if (!selectable.value || readOnly.value || !row) return;
+    if (typeof row.getCanSelect === 'function' && !row.getCanSelect()) return;
+    if (isInteractiveClick(event)) return;
+
+    selectRow(row, {
+      checked: !row.getIsSelected(),
+      shiftKey: event.shiftKey,
+    });
+
+    // A shift-click also extends the browser's text selection; drop it so the
+    // range select doesn't leave stray highlighted text behind.
+    if (event.shiftKey) {
+      window.getSelection?.()?.removeAllRanges();
+    }
+  }
+
   function extendSelectionTo(row: Row<any>) {
     if (readOnly.value) return;
     const rows = toValue(table).getRowModel().rows;
@@ -107,6 +129,7 @@ export function useElementIndexSelection(
     clearSelection,
     onToggleAllSelected,
     selectRow,
+    selectRowFromEvent,
     toggleRow,
     extendSelectionTo,
   };

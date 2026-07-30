@@ -37,12 +37,17 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} =
-    useElementIndexSelection(() => props.table, {
-      selectable: () => props.selectable ?? false,
-      readOnly,
-      actions: () => [], // actions/bulk bar live on BaseElementIndex
-    });
+  const {
+    onToggleAllSelected,
+    selectRow,
+    selectRowFromEvent,
+    toggleRow,
+    extendSelectionTo,
+  } = useElementIndexSelection(() => props.table, {
+    selectable: () => props.selectable ?? false,
+    readOnly,
+    actions: () => [], // actions/bulk bar live on BaseElementIndex
+  });
 
   // Captures modifier state from the native click, because craft-checkbox's
   // `model-value-changed` event does not carry `shiftKey`.
@@ -314,6 +319,7 @@
             'row--dragging':
               !readOnly && getDragState(row.id).type === 'is-dragging',
           }"
+          @click="selectRowFromEvent(row, $event)"
           @keydown="onRowKeydown(row, rowIdx, $event)"
         >
           <template v-if="reorderable && !readOnly">
