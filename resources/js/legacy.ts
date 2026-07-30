@@ -44,6 +44,8 @@ import './modules/asset-select-input/index';
 import './modules/customize-sources-modal/index';
 import './modules/element-deletion-manager/index';
 import './modules/uploader/index';
+import './modules/nested-element-manager/index';
+import './modules/ui/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 

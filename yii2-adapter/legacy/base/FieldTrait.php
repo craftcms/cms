@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use DateTime;
@@ -55,9 +56,9 @@ trait FieldTrait
 
     /**
      * @var string The field’s translation method
-     * @phpstan-var Field::TRANSLATION_METHOD_*
+     * @phpstan-var value-of<TranslationMethod>
      */
-    public string $translationMethod = Field::TRANSLATION_METHOD_NONE;
+    public string $translationMethod = TranslationMethod::None->value;
 
     /**
      * @var string|null The field’s translation key format, if [[translationMethod]] is "custom"

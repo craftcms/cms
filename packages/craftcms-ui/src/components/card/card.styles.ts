@@ -29,6 +29,7 @@ export default css`
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
+    height: 100%;
   }
 
   .card__header,
@@ -62,6 +63,7 @@ export default css`
   .card__actions {
     display: flex;
     gap: var(--c-spacing-sm);
+    align-self: end;
   }
 
   .card-body {

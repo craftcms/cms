@@ -45,5 +45,7 @@ import './modules/asset-select-input';
 import './modules/customize-sources-modal';
 import './modules/element-deletion-manager';
 import './modules/uploader';
+import './modules/nested-element-manager';
+import './modules/ui';
 
 window.Cp = Cp as unknown as typeof window.Cp;

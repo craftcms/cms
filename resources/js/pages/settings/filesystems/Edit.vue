@@ -25,6 +25,7 @@
   const form = useForm({
     name: props.filesystem.name ?? '',
     handle: props.filesystem.handle ?? '',
+    oldHandle: props.oldHandle,
     type: props.filesystem.type ?? '',
     settings: {
       hasUrls: props.filesystem.hasUrls ?? false,
@@ -52,26 +53,22 @@
 
   provide('fsTypeSettings', fsTypeSettings);
 
-  const {save} = useSettingsSave(
-    form,
-    store['/{cpTrigger?}/{actionTrigger?}/fs/save'],
-    {
-      transform: (data) => {
-        const typeSettings = settingsHost.value
-          ? serializeFormInputsAsObject(settingsHost.value)
-          : {};
+  const {save} = useSettingsSave(form, store, {
+    transform: (data) => {
+      const typeSettings = settingsHost.value
+        ? serializeFormInputsAsObject(settingsHost.value)
+        : {};
 
-        return {
-          ...data,
-          settings: {
-            ...data.settings,
-            ...typeSettings,
-            ...fsTypeSettings.value,
-          },
-        };
-      },
-    }
-  );
+      return {
+        ...data,
+        settings: {
+          ...data.settings,
+          ...typeSettings,
+          ...fsTypeSettings.value,
+        },
+      };
+    },
+  });
 
   useAppLayout({
     form,
