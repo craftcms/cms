@@ -42,7 +42,7 @@
                 }) }}
 
                 {% if permission.info ?? false %}
-                    <div class="info">{{ permission.info }}</div>
+                    <craft-info-icon>{{ permission.info }}</craft-info-icon>
                 {% endif %}
 
                 {% if permission.warning ?? false %}

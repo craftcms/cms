@@ -70,6 +70,10 @@ The CP has two parallel rendering stacks that are actively being consolidated:
 components in `resources/js/common/`. `HandleInertiaRequests` middleware provides shared CP config, navigation, and
 global props to all Inertia pages. The root Blade template is `resources/views/app.blade.php`.
 
+VueUse (`@vueuse/core`) is installed — before hand-rolling composable behavior in Vue code (event listeners with
+mount/unmount cleanup, media queries, storage, observers, etc.), check whether a VueUse utility already covers it
+(e.g. `useEventListener` accepts ref targets and cleans up automatically, `useMediaQuery`).
+
 **Legacy jQuery (old):** `resources/js/legacy.ts` loads the old surface. The individual jQuery modules live in
 `packages/craftcms-legacy/` and are bundled with webpack (separate from Vite). Pages still on this stack return `view()`
 from their controllers.

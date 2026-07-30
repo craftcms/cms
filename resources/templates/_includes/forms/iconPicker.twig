@@ -1,63 +1,22 @@
-{% import '_includes/forms.twig' as forms %}
+{# Renders a <craft-icon-picker> web component, which mounts the Vue IconPicker
+   (resources/js/common/form/IconPicker.vue) on legacy CP surfaces — replacing the
+   old `.icon-picker` markup + the `Craft.IconPicker` jQuery widget.
 
-{% set id = id ?? "selectize#{random()}" %}
+   The component renders its own form-postable control (a craft-input with a
+   hidden input + name). Labeling comes from a wrapping craft-field legend (the
+   `iconPickerField` macro sets `fieldset: true`) or from `labelledBy` (label-less
+   editable-table cells). `static` maps to the component's disabled state.
+
+   @TODO `small` (editable-table cells) isn't a component prop yet — see
+   resources/js/modules/icon-picker/README.md. #}
+
 {% set value = value ?? null %}
-{% set small = small ?? false %}
-{% set static = static ?? false %}
 
-{% set hasValue = value or value is same as('0') %}
-
-{% tag 'div' with {
-  id,
-  class: {
-    'icon-picker': true,
-    small,
-  }|filter|keys,
-} %}
-  {% tag 'div' with {
-    class: {
-      'icon-picker--icon': true,
-      small,
-    }|filter|keys,
-    title: hasValue ? value : false,
-    role: hasValue ? 'img' : false,
-    lang: craft.targetLanguage() starts with 'en' ? false : 'en',
-    aria: {
-      label: hasValue ? value : false,
-    },
-  } %}
-    {% if hasValue %}
-      {{ svg("@appicons/#{value}.svg") }}
-    {% endif %}
-  {% endtag %}
-
-  {% if not static %}
-    {{ forms.button({
-      class: {
-        'icon-picker--choose-btn': true,
-        small,
-        hidden: hasValue and small,
-      }|filter|keys,
-      label: hasValue ? 'Change'|t('app') : 'Choose'|t('app'),
-    }) }}
-
-    {{ forms.button({
-      class: {
-        'icon-picker--remove-btn': true,
-        small,
-        hidden: not hasValue,
-      }|filter|keys,
-      label: 'Remove'|t('app'),
-    }) }}
-
-    {% if name ?? false %}
-      {{ hiddenInput(name, value ?? '') }}
-    {% endif %}
-  {% endif %}
-{% endtag %}
-
-{% js %}
-  new Craft.IconPicker('#{{ id|namespaceInputId }}', {
-    freeOnly: {{ (freeOnly ?? false)|json_encode }},
-  });
-{% endjs %}
+{% tag 'craft-icon-picker' with {
+  name: name ?? false,
+  value: value ?: false,
+  'free-only': freeOnly ?? false,
+  disabled: (static ?? false) or (disabled ?? false),
+  'labelled-by': labelledBy ?? false,
+  'described-by': describedBy ?? false,
+} %}{% endtag %}

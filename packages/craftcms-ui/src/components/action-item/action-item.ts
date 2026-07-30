@@ -10,6 +10,7 @@ import {
   type ActionFeedback,
   type BaseAction,
   type FeedbackData,
+  normalizeAction,
   runAction,
 } from '@src/actions';
 import {Variant, type VariantValue} from '@src/constants/variants';
@@ -43,7 +44,7 @@ export default class CraftActionItem extends LitElement {
   @property({type: Boolean}) checked: boolean = false;
   @property({type: Boolean}) active: boolean = false;
   @property() type: 'button' | 'checkbox' = 'button';
-  @property({type: Object}) action: BaseAction | null = null;
+  @property({type: Object}) action: BaseAction | string | null = null;
   @property({type: Object}) feedback: ActionFeedback | null = null;
   @property({type: Number, attribute: 'feedback-duration'})
   feedbackDuration: number = 1000;
@@ -115,7 +116,7 @@ export default class CraftActionItem extends LitElement {
         composed: true,
         detail: {
           state,
-          actionType: this.action?.type,
+          actionType: normalizeAction(this.action)?.type,
           ...detail,
         },
       })
@@ -128,14 +129,16 @@ export default class CraftActionItem extends LitElement {
       return;
     }
 
-    if (event.type === 'click' && this.action) {
+    const action = normalizeAction(this.action);
+
+    if (event.type === 'click' && action) {
       // Only show loading spinner for http requests
-      if (this.action.type === 'http') {
+      if (action.type === 'http') {
         this.setState(AsyncStates.Loading);
       }
 
       try {
-        await runAction(this.action);
+        await runAction(action, {trigger: this, sourceEvent: event});
         this.setState(AsyncStates.Success, this.feedback?.success);
       } catch (error: any) {
         this.setState(AsyncStates.Error, {

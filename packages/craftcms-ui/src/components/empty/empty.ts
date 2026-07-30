@@ -7,17 +7,25 @@ export default class CraftEmpty extends LitElement {
   static override styles = [
     css`
       .cp-empty {
-        min-height: calc(200rem / 16);
+        min-height: calc(120rem / 16);
         display: grid;
         place-items: center;
+        border-radius: var(--c-radius-md);
+        background-color: var(--c-color-neutral-fill-quiet);
+        color: var(--c-color-neutral-on-quiet);
+        padding-block: var(--c-spacing-lg);
       }
 
       .cp-empty__content {
+        display: grid;
+        gap: var(--c-spacing-md);
+        justify-items: center;
         max-width: 60ch;
         text-align: center;
       }
 
       .label {
+        margin: 0;
         font-size: 1.25em;
       }
     `,
@@ -26,7 +34,7 @@ export default class CraftEmpty extends LitElement {
   @property() label: string = '';
   @property() icon: string = '';
 
-  protected override render(): unknown {
+  protected override render() {
     return html`
       <div class="cp-empty">
         <div class="cp-empty__content">
