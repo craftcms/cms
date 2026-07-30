@@ -16,9 +16,9 @@ class EntryTransformer extends ElementTransformer
             return null;
         }
 
-        if (is_int($value)) {
+        if (is_int($value) || is_numeric($value)) {
             // $section = Sections::getSectionById($value);
-            return $value;
+            return (int) $value;
         }
 
         if (is_string($value)) {

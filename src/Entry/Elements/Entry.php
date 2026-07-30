@@ -2784,7 +2784,10 @@ JS;
             });
             $entryType = $allFieldLayouts->firstWhere('uid', $config->fieldLayout)?->provider;
             if ($entryType) {
-                $this->setTypeId($entryType->id);
+                $this->_typeId = $entryType->id;
+                $this->_type = $entryType;
+                $this->fieldLayoutId = $entryType->getFieldLayoutId();
+
                 if (isset($data['matchCriteria']['typeId'])) {
                     unset($data['matchCriteria']['typeId']);
                 }

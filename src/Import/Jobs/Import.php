@@ -70,7 +70,7 @@ class Import extends Job
                 $importService->importItem($config, $data[$i]);
             } catch (\Exception $e) {
                 // log and proceed further
-                Importer::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['config' => $config, 'data' => $data[$i]]);
+                Importer::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['config' => $config->name, 'data' => $data[$i]]);
             }
         }
 

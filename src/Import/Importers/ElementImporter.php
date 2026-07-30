@@ -15,6 +15,7 @@ use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Importer;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
@@ -361,7 +362,13 @@ class ElementImporter extends BaseImporter
             }
         }
 
-        Elements::saveElement($element);
+        if (! Elements::saveElement($element)) {
+            Importer::warning(
+                'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.
+                print_r($element->errors()->all(), true),
+                ['data' => $item]
+            );
+        }
     }
 
     private function getRootElement(array $data): ElementInterface
