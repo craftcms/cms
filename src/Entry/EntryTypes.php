@@ -233,7 +233,7 @@ class EntryTypes
         }
 
         if (is_numeric($entryType)) {
-            return $this->getEntryTypeById($entryType);
+            return $this->getEntryTypeById((int) $entryType);
         }
 
         if (is_string($entryType)) {
@@ -247,7 +247,7 @@ class EntryTypes
         }
 
         if (isset($config['id'])) {
-            $entryType = $this->getEntryTypeById($config['id']);
+            $entryType = $this->getEntryTypeById((int) $config['id']);
         } elseif (isset($config['uid'])) {
             $entryType = $this->getEntryTypeByUid($config['uid']);
         } else {
