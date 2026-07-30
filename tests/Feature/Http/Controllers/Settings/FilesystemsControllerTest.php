@@ -8,6 +8,7 @@ use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
@@ -32,7 +33,7 @@ test('requires authentication for index', function () {
 test('requires authentication for edit', function () {
     Auth::logout();
 
-    get(action([FilesystemsController::class, 'edit']))
+    get(action([FilesystemsController::class, 'edit'], ['handle']))
         ->assertRedirect();
 });
 
@@ -86,25 +87,31 @@ test('create delegates to edit method', function () {
 test('edit shows 403 when creating in read-only mode', function () {
     Cms::config()->allowAdminChanges = false;
 
-    get(action([FilesystemsController::class, 'edit']))
+    get(action([FilesystemsController::class, 'create']))
         ->assertForbidden();
 });
 
 test('edit shows create form for new filesystem', function () {
-    $response = get(action([FilesystemsController::class, 'edit']));
+    $response = get(action([FilesystemsController::class, 'create']));
 
     $response
         ->assertOk()
         ->assertSee(t('Create a new filesystem'));
 });
 
-test('edit returns 200 for non-existent filesystem handle and shows create form', function () {
-    // Non-existent handles are treated as new filesystem creation
-    $response = get(action([FilesystemsController::class, 'edit'], ['handle' => 'non-existent-handle']));
-
-    $response
+test('slideout form targets the filesystem CP route', function () {
+    get(action([FilesystemsController::class, 'create']), [
+        'Accept' => 'application/json',
+        'X-Craft-Container-Id' => 'filesystem-slideout',
+        'X-Requested-With' => 'XMLHttpRequest',
+    ])
         ->assertOk()
-        ->assertSee(t('Create a new filesystem'));
+        ->assertJsonPath('formAttributes.action', Url::cpUrl('settings/filesystems'));
+});
+
+test('edit returns 404 for non-existent filesystem handle', function () {
+    get(action([FilesystemsController::class, 'edit'], ['handle' => 'non-existent-handle']))
+        ->assertNotFound();
 });
 
 test('edit loads existing filesystem by handle', function () {

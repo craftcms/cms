@@ -78,20 +78,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     use LegacyFieldConstants;
     use SavableComponent;
 
-    // Translation methods
-    // @TODO: Replace const with the enum everywhere
-    // -------------------------------------------------------------------------
-
-    public const string TRANSLATION_METHOD_NONE = TranslationMethod::None->value;
-
-    public const string TRANSLATION_METHOD_SITE = TranslationMethod::Site->value;
-
-    public const string TRANSLATION_METHOD_SITE_GROUP = TranslationMethod::SiteGroup->value;
-
-    public const string TRANSLATION_METHOD_LANGUAGE = TranslationMethod::Language->value;
-
-    public const string TRANSLATION_METHOD_CUSTOM = TranslationMethod::Custom->value;
-
     // Properties
     // -------------------------------------------------------------------------
 

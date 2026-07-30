@@ -48,6 +48,7 @@
     "enshrined/svg-sanitize": "~0.22.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "inertiajs/inertia-laravel": "^3.0",
+    "intervention/image": "^4.2",
     "laravel/framework": "^13.0.0",
     "laravel/wayfinder": "^0.1.12",
     "league/commonmark": "^2.8",
@@ -55,7 +56,6 @@
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",
     "phpoffice/phpspreadsheet": "^5.3",
-    "pixelandtonic/imagine": "~1.5.2.1",
     "pragmarx/google2fa": "^9.0",
     "pragmarx/recovery": "^0.2.1",
     "symfony/css-selector": "^7.0|^8.0",
@@ -80,14 +80,15 @@
     "dg/bypass-finals": "^1.9",
     "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
+    "intervention/image-driver-vips": "^4.1",
     "larastan/larastan": "^3.4",
     "laravel/pao": "^1.0",
     "laravel/pint": "^1.22",
     "laravel/socialite": "^5.23",
     "orchestra/testbench": "^11.0",
-    "pestphp/pest": "^4.0",
-    "pestphp/pest-plugin-arch": "^4.0",
-    "pestphp/pest-plugin-laravel": "^4.0",
+    "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-arch": "^5.0",
+    "pestphp/pest-plugin-laravel": "^5.0",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.3",
     "spatie/laravel-typescript-transformer": "^3.2"
@@ -105,6 +106,7 @@
   "suggest": {
     "ext-exif": "Adds support for parsing image EXIF data.",
     "ext-imagick": "Adds support for more image processing formats and options.",
+    "intervention/image-driver-vips": "Adds support for image processing with libvips (requires ext-ffi and libvips).",
     "ext-iconv": "Adds support for more character encodings than PHP\u2019s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
     "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`."
   },
@@ -135,7 +137,7 @@
       "Composer\\Config::disableProcessTimeout",
       "./vendor/bin/pest --compact"
     ],
-    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel",
+    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
     "post-autoload-dump": [
       "@clear",
       "@prepare"

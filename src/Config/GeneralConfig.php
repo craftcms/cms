@@ -26,6 +26,8 @@ class GeneralConfig extends BaseConfig
 
     public const string IMAGE_DRIVER_IMAGICK = 'imagick';
 
+    public const string IMAGE_DRIVER_VIPS = 'vips';
+
     public const string CAMEL_CASE = 'camel';
 
     public const string PASCAL_CASE = 'pascal';
@@ -1345,8 +1347,8 @@ class GeneralConfig extends BaseConfig
     public string $ideHelperPath = 'vendor/_craft';
 
     /**
-     * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
-     *            and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
+     * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed,
+     *            followed by libvips and GD. You can explicitly set `'imagick'`, `'vips'`, or `'gd'` to override that behavior.
      *
      * ::: code
      * ```php Static Config
@@ -1807,8 +1809,7 @@ class GeneralConfig extends BaseConfig
     public string|int $maxUploadFileSize = 16777216;
 
     /**
-     * @var bool Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
-     *           ImageMagick is used.)
+     * @var bool Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
      * ::: code
      * ```php Static Config
@@ -2004,8 +2005,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
      *
-     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions it can cause
-     * image color distortion. This will only have an effect if ImageMagick is in use.
+     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB when the active image driver supports CMYK.
      *
      * ::: code
      * ```php Static Config
@@ -2025,7 +2025,7 @@ class GeneralConfig extends BaseConfig
      *
      * Setting this to `true` will result in larger image file sizes.
      *
-     * This will only have effect if ImageMagick is in use.
+     * This will only have an effect if the active image driver supports preserving EXIF data.
      *
      * ::: code
      * ```php Static Config
@@ -2043,8 +2043,8 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
-     * Setting this to `false` will reduce the image size a little bit, but on some ImageMagick versions can cause images to be saved with
-     * an incorrect gamma value, which causes the images to become very dark. This will only have effect if ImageMagick is in use.
+     * Setting this to `false` will reduce the image size a little bit, but can cause images to be saved with an incorrect gamma value.
+     * This will only have an effect if the active image driver supports embedded color profiles.
      *
      * ::: code
      * ```php Static Config
@@ -2186,7 +2186,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
      *
-     * This will only work if ImageMagick is installed, and <config5:imageDriver> is set to either `auto` or `imagick`.
+     * This requires SVG decoding support from the active image driver.
      *
      * ::: code
      * ```php Static Config
@@ -4512,8 +4512,8 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it's installed
-     * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
+     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it's installed,
+     * followed by libvips and GD. You can explicitly set `'imagick'`, `'vips'`, or `'gd'` to override that behavior.
      *
      * ```php
      * ->imageDriver('imagick')
@@ -4971,8 +4971,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
-     * ImageMagick is used.)
+     * Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
      * ```php
      * ->optimizeImageFilesize(false)
@@ -5186,8 +5185,7 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether CMYK should be preserved as the colorspace when manipulating images.
      *
-     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions it can cause
-     * image color distortion. This will only have an effect if ImageMagick is in use.
+     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB when the active image driver supports CMYK.
      *
      * ```php
      * ->preserveCmykColorspace(true)
@@ -5209,7 +5207,7 @@ class GeneralConfig extends BaseConfig
      *
      * Setting this to `true` will result in larger image file sizes.
      *
-     * This will only have effect if ImageMagick is in use.
+     * This will only have an effect if the active image driver supports preserving EXIF data.
      *
      * ```php
      * ->preserveExifData(true)
@@ -5229,8 +5227,8 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
-     * Setting this to `false` will reduce the image size a little bit, but on some ImageMagick versions can cause images to be saved with
-     * an incorrect gamma value, which causes the images to become very dark. This will only have effect if ImageMagick is in use.
+     * Setting this to `false` will reduce the image size a little bit, but can cause images to be saved with an incorrect gamma value.
+     * This will only have an effect if the active image driver supports embedded color profiles.
      *
      * ```php
      * ->preserveImageColorProfiles(false)
@@ -5389,7 +5387,7 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether SVG thumbnails should be rasterized.
      *
-     * This will only work if ImageMagick is installed, and <config5:imageDriver> is set to either `auto` or `imagick`.
+     * This requires SVG decoding support from the active image driver.
      *
      * ```php
      * ->rasterizeSvgThumbs(true)

@@ -577,3 +577,95 @@ describe('craft-switch toggle reveal', () => {
     }
   });
 });
+
+describe('craft-switch imperative API (legacy Craft.LightSwitch)', () => {
+  function countChanges(element: CraftSwitch): () => number {
+    let changes = 0;
+    element.addEventListener('change', () => {
+      changes++;
+    });
+    return () => changes;
+  }
+
+  it('turnOn()/turnOff() set the state, reflected by `on`', async () => {
+    const element = await createSwitch({label: 'Enabled'});
+    expect(element.on).toBe(false);
+
+    element.turnOn();
+    await element.updateComplete;
+    expect(element.checked).toBe(true);
+    expect(element.on).toBe(true);
+
+    element.turnOff();
+    await element.updateComplete;
+    expect(element.checked).toBe(false);
+    expect(element.on).toBe(false);
+  });
+
+  it('fires a single change event on unmuted turnOn()/turnOff()', async () => {
+    const element = await createSwitch({label: 'Enabled'});
+    const changes = countChanges(element);
+
+    element.turnOn();
+    await element.updateComplete;
+    expect(changes()).toBe(1);
+
+    element.turnOff();
+    await element.updateComplete;
+    expect(changes()).toBe(2);
+  });
+
+  it('suppresses the change event when muted', async () => {
+    const element = await createSwitch({label: 'Enabled'});
+    const changes = countChanges(element);
+
+    element.turnOn(true);
+    await element.updateComplete;
+    await element.updateComplete;
+    expect(element.checked).toBe(true);
+    expect(changes()).toBe(0);
+
+    // A later unmuted change still fires normally.
+    element.turnOff();
+    await element.updateComplete;
+    expect(changes()).toBe(1);
+  });
+
+  it('turnIndeterminate() sets the mixed state', async () => {
+    const element = await createSwitch({label: 'Enabled'});
+    element.turnOn(true);
+    await element.updateComplete;
+
+    element.turnIndeterminate();
+    await element.updateComplete;
+    expect(element.indeterminate).toBe(true);
+    expect(element.checked).toBe(false);
+  });
+
+  it('reports the posted value for each state', async () => {
+    const element = await createSwitch({
+      label: 'Enabled',
+      value: 'yes',
+      'indeterminate-value': 'maybe',
+    });
+    expect(element.postedValue).toBe('');
+
+    element.turnOn(true);
+    await element.updateComplete;
+    expect(element.postedValue).toBe('yes');
+
+    element.turnIndeterminate(true);
+    await element.updateComplete;
+    expect(element.postedValue).toBe('maybe');
+  });
+
+  it('ignores turn* calls when disabled', async () => {
+    const element = await createSwitch({label: 'Enabled', disabled: ''});
+    const changes = countChanges(element);
+
+    element.turnOn();
+    await element.updateComplete;
+    expect(element.checked).toBe(false);
+    expect(changes()).toBe(0);
+  });
+});

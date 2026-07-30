@@ -129,7 +129,7 @@ export class CpScreenSlideout extends Slideout {
   }
 
   /**
-   * @param action - The controller action to fetch the screen's content from.
+   * @param action - The controller action or URL to fetch the screen's content from.
    * @param settings - Optional settings overrides (see {@link CpScreenSlideoutSettings}).
    */
   constructor(action?: string, settings?: Partial<CpScreenSlideoutSettings>) {
@@ -311,20 +311,24 @@ export class CpScreenSlideout extends Slideout {
 
       this.cancelToken = axios.CancelToken.source();
 
-      Craft.sendActionRequest(
-        'GET',
-        this.action,
-        $.extend(
-          {
-            params: Object.assign({}, this.getParams(), this.settings!.params),
-            cancelToken: this.cancelToken.token,
-            headers: {
-              'X-Craft-Container-Id': this.$container.attr('id'),
-            },
+      const options = $.extend(
+        {
+          params: Object.assign({}, this.getParams(), this.settings!.params),
+          cancelToken: this.cancelToken.token,
+          headers: {
+            'X-Craft-Container-Id': this.$container.attr('id'),
           },
-          this.settings!.requestOptions
-        )
-      )
+        },
+        this.settings!.requestOptions
+      );
+      const request = /^(?:https?:\/\/|\/)/.test(this.action!)
+        ? axios.get(this.action!, {
+            ...options,
+            headers: {...Craft._actionHeaders(), ...options.headers},
+          })
+        : Craft.sendActionRequest('GET', this.action, options);
+
+      request
         .then((response: any) => {
           this.update(response.data)
             .then(() => {
@@ -693,12 +697,20 @@ export class CpScreenSlideout extends Slideout {
       this.$container.data('initial-delta-values')
     );
 
-    Craft.sendActionRequest('POST', null, {
+    const action = this.$container.attr('action');
+    const options = {
       data,
       headers: {
         'X-Craft-Namespace': this.namespace,
       },
-    })
+    };
+    const request = action
+      ? axios.post(action, data, {
+          headers: {...Craft._actionHeaders(), ...options.headers},
+        })
+      : Craft.sendActionRequest('POST', null, options);
+
+    request
       .then((response: any) => {
         this.handleSubmitResponse(response);
       })

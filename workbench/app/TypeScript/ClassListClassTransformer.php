@@ -13,6 +13,13 @@ use Spatie\TypeScriptTransformer\Transformers\ClassTransformer;
 
 class ClassListClassTransformer extends ClassTransformer
 {
+    public function __construct()
+    {
+        parent::__construct(
+            transpilePhpStanTypeToTypeScriptTypeAction: new LiteralAwareTranspileAction,
+        );
+    }
+
     protected function shouldTransform(PhpClassNode $phpClassNode): bool
     {
         return true;

@@ -66,6 +66,10 @@ export default class CraftSwitch extends LionSwitch {
 
   private __clickableExternalLabels = new Set<HTMLElement>();
 
+  // While true, programmatic state changes don't dispatch a `change` event,
+  // backing the `muteEvent` argument of turnOn()/turnOff()/turnIndeterminate().
+  #suppressNativeChange = false;
+
   override get slots() {
     return {
       ...super.slots,
@@ -276,6 +280,63 @@ export default class CraftSwitch extends LionSwitch {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Imperative API mirroring the legacy Craft.LightSwitch, so code migrated off
+  // `$el.data('lightswitch')` can drive the element directly, e.g.
+  // `switchEl.turnOn(true)`. Pass `true` to suppress the change event.
+  // ---------------------------------------------------------------------------
+
+  /** Whether the switch is on. Mirrors the legacy lightswitch's `on`. */
+  get on(): boolean {
+    return this.checked;
+  }
+
+  /** The value the switch's hidden input posts for its current state. */
+  get postedValue(): string {
+    return this._postedValue;
+  }
+
+  turnOn(muteEvent = false): void {
+    this.#applyState(() => this._setCheckedState(true), muteEvent);
+  }
+
+  turnOff(muteEvent = false): void {
+    this.#applyState(() => this._setCheckedState(false), muteEvent);
+  }
+
+  turnIndeterminate(muteEvent = false): void {
+    this.#applyState(() => {
+      if (this.indeterminate && !this.checked) {
+        return;
+      }
+      const wasChecked = this.checked;
+      this.checked = false;
+      this.indeterminate = true;
+      if (!wasChecked) {
+        // `checked` didn't flip, so no `checked-changed` fires; dispatch the
+        // change ourselves, like the legacy lightswitch's turnIndeterminate().
+        this.__dispatchNativeChange();
+      }
+    }, muteEvent);
+  }
+
+  #applyState(mutate: () => void, muteEvent: boolean): void {
+    if (this.disabled) {
+      return;
+    }
+    if (!muteEvent) {
+      mutate();
+      return;
+    }
+    // Hold the flag until the update settles so both the synchronous dispatch
+    // (leaving indeterminate) and the async `checked-changed` forward are muted.
+    this.#suppressNativeChange = true;
+    mutate();
+    void this.updateComplete.then(() => {
+      this.#suppressNativeChange = false;
+    });
+  }
+
   private __onKeydown = (event: KeyboardEvent): void => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
       return;
@@ -295,6 +356,9 @@ export default class CraftSwitch extends LionSwitch {
   };
 
   private __dispatchNativeChange(): void {
+    if (this.#suppressNativeChange) {
+      return;
+    }
     // Legacy CP code (e.g. Craft.FieldToggle, which powers toggle/
     // reverseToggle reveals) listens for native change events on the switch
     // button.
