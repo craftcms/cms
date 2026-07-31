@@ -11,9 +11,18 @@
    */
   import {t} from '@craftcms/ui/utilities/translate';
   import {ButtonVariant} from '@craftcms/ui';
-  import {computed, provide, ref, useTemplateRef} from 'vue';
+  import {
+    computed,
+    onBeforeUnmount,
+    onMounted,
+    provide,
+    ref,
+    useTemplateRef,
+  } from 'vue';
+  import {useEventListener} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
   import {submitScreenForm} from '@/common/slideouts/submitScreenForm';
+  import {setSlideoutDirtyCheck} from '@/common/slideouts/store';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import PassthroughScreen from './PassthroughScreen.vue';
@@ -110,6 +119,36 @@
   const submittingHtml = ref(false);
   const screenErrors = ref<Record<string, string> | null>(null);
 
+  /**
+   * Whether the panel holds unsaved changes, so the store can prompt before
+   * discarding it.
+   *
+   * A Vue page has Inertia's own precise `isDirty`. A server-rendered screen
+   * has no such tracking, and snapshot-diffing its markup isn't reliable —
+   * `Craft.initUiElements()` rewrites inputs after load, which would read as
+   * user edits. So that path tracks whether the user has interacted at all:
+   * more conservative (undoing an edit still counts), but never wrong in the
+   * direction that loses work.
+   */
+  const touched = ref(false);
+  useEventListener(formEl, 'input', () => (touched.value = true));
+  useEventListener(formEl, 'change', () => (touched.value = true));
+
+  const isDirty = () =>
+    form.value ? Boolean(form.value.isDirty) : touched.value;
+
+  onMounted(() => {
+    if (slideout) {
+      setSlideoutDirtyCheck(slideout.instance.id, isDirty);
+    }
+  });
+
+  onBeforeUnmount(() => {
+    if (slideout) {
+      setSlideoutDirtyCheck(slideout.instance.id, null);
+    }
+  });
+
   async function saveHtmlScreen(): Promise<void> {
     if (!formEl.value || !screenAction.value) {
       return;
@@ -138,7 +177,7 @@
       return;
     }
 
-    slideout?.close();
+    slideout?.close({force: true});
     // The controller flashes its success message to the session even on the
     // JSON branch, so refreshing the page behind surfaces it and picks up
     // whatever changed.

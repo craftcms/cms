@@ -37,8 +37,13 @@ vi.mock('@craftcms/ui', async (importOriginal) => ({
   appendElementHtml: vi.fn(async () => vi.fn()),
 }));
 
-const {closeAllSlideouts, closeSlideout, openSlideout, slideoutPanels} =
-  await import('./store');
+const {
+  closeAllSlideouts,
+  closeSlideout,
+  openSlideout,
+  setSlideoutDirtyCheck,
+  slideoutPanels,
+} = await import('./store');
 const SlideoutPanel = (await import('./SlideoutPanel.vue')).default;
 const LayoutSlot = (await import('@/common/components/LayoutSlot.vue')).default;
 const {useAppLayout} = await import('@/common/composables/useAppLayout');
@@ -92,7 +97,7 @@ describe('slideout store', () => {
       url: '/a',
     });
 
-    const first = await openSlideout('/a');
+    const first = (await openSlideout('/a'))!;
     await openSlideout('/b', {opener: openerInPanel(first.id)});
 
     const panels = slideoutPanels();
@@ -126,7 +131,7 @@ describe('slideout store', () => {
       url: '/a',
     });
 
-    const first = await openSlideout('/a');
+    const first = (await openSlideout('/a'))!;
     const opener = openerInPanel(first.id);
     await openSlideout('/b', {opener});
     await openSlideout('/c', {opener});
@@ -142,7 +147,7 @@ describe('slideout store', () => {
       url: '/a',
     });
 
-    const first = await openSlideout('/a');
+    const first = (await openSlideout('/a'))!;
     await openSlideout('/b', {opener: openerInPanel(first.id)});
 
     closeSlideout(first.id);
@@ -158,7 +163,7 @@ describe('slideout store', () => {
       url: '/a',
     });
 
-    const panel = await openSlideout('/a');
+    const panel = (await openSlideout('/a'))!;
 
     expect(fetchSlideoutPage).toHaveBeenCalledWith('/a', panel.containerId);
   });
@@ -174,7 +179,7 @@ describe('slideout store', () => {
     document.body.appendChild(opener);
     const focus = vi.spyOn(opener, 'focus');
 
-    const panel = await openSlideout('/a', {opener});
+    const panel = (await openSlideout('/a', {opener}))!;
     closeSlideout(panel.id);
 
     expect(focus).toHaveBeenCalled();
@@ -186,10 +191,128 @@ describe('slideout store', () => {
   it('surfaces a load failure on the panel instead of throwing', async () => {
     fetchSlideoutPage.mockRejectedValue(new Error('boom'));
 
-    const panel = await openSlideout('/a');
+    const panel = (await openSlideout('/a'))!;
 
     expect(panel.loading).toBe(false);
     expect(panel.error).toBe('boom');
+  });
+});
+
+describe('discarding unsaved changes', () => {
+  let confirmSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    confirmSpy = vi.fn(() => true);
+    // happy-dom doesn't implement confirm(), so install one to spy on.
+    Object.defineProperty(window, 'confirm', {
+      configurable: true,
+      writable: true,
+      value: confirmSpy,
+    });
+
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+  });
+
+  /** Open a panel and mark it as holding unsaved changes. */
+  async function openDirty(href = '/a', options = {}) {
+    const panel = (await openSlideout(href, options))!;
+    setSlideoutDirtyCheck(panel.id, () => true);
+
+    return panel;
+  }
+
+  it('does not prompt when nothing is dirty', async () => {
+    const panel = (await openSlideout('/a'))!;
+
+    closeSlideout(panel.id);
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(slideoutPanels()).toHaveLength(0);
+  });
+
+  it('prompts before closing a dirty panel, and closes when confirmed', async () => {
+    const panel = await openDirty();
+
+    closeSlideout(panel.id);
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(slideoutPanels()).toHaveLength(0);
+  });
+
+  it('keeps the panel open when the prompt is declined', async () => {
+    confirmSpy.mockReturnValue(false);
+    const panel = await openDirty();
+
+    closeSlideout(panel.id);
+
+    expect(slideoutPanels().map((p) => p.id)).toEqual([panel.id]);
+  });
+
+  it('prompts before a dirty panel is replaced', async () => {
+    // The silent-loss case: double-clicking a second row on an index replaces
+    // whatever is open, with no close button involved.
+    confirmSpy.mockReturnValue(false);
+    const first = await openDirty('/a', {
+      opener: document.createElement('button'),
+    });
+
+    const second = await openSlideout('/b', {
+      opener: document.createElement('button'),
+    });
+
+    expect(confirmSpy).toHaveBeenCalled();
+    // Declining leaves the original panel untouched and opens nothing.
+    expect(second).toBeNull();
+    expect(slideoutPanels().map((p) => p.href)).toEqual([first.href]);
+  });
+
+  it('replaces a dirty panel once the prompt is accepted', async () => {
+    await openDirty('/a', {opener: document.createElement('button')});
+
+    const second = await openSlideout('/b', {
+      opener: document.createElement('button'),
+    });
+
+    expect(second).not.toBeNull();
+    expect(slideoutPanels().map((p) => p.href)).toEqual(['/b']);
+  });
+
+  it('asks once when closing a parent with dirty nested panels', async () => {
+    const first = (await openSlideout('/a'))!;
+    const nested = (await openSlideout('/b', {
+      opener: openerInPanel(first.id),
+    }))!;
+    setSlideoutDirtyCheck(nested.id, () => true);
+
+    closeSlideout(first.id);
+
+    // One prompt for the whole subtree, not one per panel.
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(slideoutPanels()).toHaveLength(0);
+  });
+
+  it('skips the prompt for a forced close, as used after a save', async () => {
+    const panel = await openDirty();
+
+    closeSlideout(panel.id, {force: true});
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(slideoutPanels()).toHaveLength(0);
+  });
+
+  it('forgets a panel dirty check once it closes', async () => {
+    const panel = await openDirty();
+    closeSlideout(panel.id, {force: true});
+
+    // Ids aren't reused, but a stale predicate would wrongly guard later panels.
+    const next = (await openSlideout('/c'))!;
+    closeSlideout(next.id);
+
+    expect(confirmSpy).not.toHaveBeenCalled();
   });
 });
 
@@ -234,7 +357,7 @@ describe('SlideoutHost', () => {
 
   it('closes the top slideout when the shade is clicked', async () => {
     await mountHost();
-    const first = await openSlideout('/a');
+    const first = (await openSlideout('/a'))!;
     await openSlideout('/b', {opener: openerInPanel(first.id)});
     await nextTick();
 
@@ -255,7 +378,7 @@ describe('SlideoutPanel', () => {
       url: '/screen',
     });
 
-    const instance = await openSlideout('/screen');
+    const instance = (await openSlideout('/screen'))!;
 
     const root = mount(
       defineComponent({
@@ -276,7 +399,7 @@ describe('SlideoutPanel', () => {
       url: '/screen',
     });
 
-    const instance = await openSlideout('/screen');
+    const instance = (await openSlideout('/screen'))!;
 
     const root = mount(
       defineComponent({
@@ -303,7 +426,7 @@ describe('SlideoutPanel', () => {
       url: '/screen',
     });
 
-    const instance = await openSlideout('/screen', {width: '40rem'});
+    const instance = (await openSlideout('/screen', {width: '40rem'}))!;
 
     const root = mount(
       defineComponent({

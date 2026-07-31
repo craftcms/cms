@@ -42,7 +42,8 @@
     get instance() {
       return props.instance;
     },
-    close: () => closeSlideout(props.instance.id),
+    close: (options?: {force?: boolean}) =>
+      closeSlideout(props.instance.id, options),
     reload: () => reloadSlideout(props.instance.id),
   });
 

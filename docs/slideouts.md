@@ -150,6 +150,73 @@ if ($this->request->hasHeader('X-Craft-Container-Id')) {
 }
 ```
 
+## Saving
+
+Saving works in a slideout without navigating, on both kinds of screen. No controller changes are
+needed: `RespondsWithFlash` already answers JSON whenever the request accepts it, so `asSuccess()`
+and `asFailure()` do the right thing on their own.
+
+> Failures come back as **400**, not Laravel's usual 422 — `asJsonFailure()` picks it. Anything
+> reading the status directly needs to expect that.
+
+### Vue pages
+
+Nothing to do. `useSettingsSave` detects the slideout and swaps its own submit strategy:
+
+| | Full page | Slideout |
+| --- | --- | --- |
+| Transport | navigating `form.submit()` | direct `axios` post |
+| `redirect` in payload | sent | omitted — a panel closes instead |
+| On success | follows the redirect | closes the panel, reloads the page behind |
+| On failure | Inertia error bag | `form.setError()` from the 400 body |
+
+The elevated-session (423) retry, `transform`, and `elevatedFields` behave identically in both.
+
+<kbd>Cmd</kbd>/<kbd>Ctrl</kbd>+<kbd>S</kbd> is "save and continue editing" — it saves and **keeps the
+panel open**. The Save button closes it. Internally that's the `redirect: false` flag, which is why
+`SlideoutScreen` deliberately doesn't pass it.
+
+### Server-rendered screens
+
+Screens without an `inertiaPage()` have no Vue form — just markup — so the shell submits its own
+`<form>`. `SlideoutScreen` shows a Save button whenever the response carries a `screen.action`, and
+posts the panel's inputs with `submitScreenForm()`.
+
+Those inputs are already namespaced per panel (`ns[title]`, `ns[action]`, …), so the request carries
+`X-Craft-Namespace` and `ExtractNamespace` un-prefixes them server-side back to what the controller
+expects. That middleware runs *before* `HandleActionRequest`, so the un-namespaced `action` routes
+correctly.
+
+Errors render through the same `ErrorSummary`, flattened to one message per field by
+`firstMessages()` so both paths look identical.
+
+> **Element editor caveat.** An entry saved this way is written **directly** — drafts, autosave and
+> provisional drafts still belong to `Craft.ElementEditor`, which isn't wired into the Vue panel.
+> That differs from the legacy slideout on that screen.
+
+### Unsaved changes
+
+Discarding a panel with unsaved edits prompts first. That covers the close button, Cancel,
+<kbd>Esc</kbd>, the shade — and **replacing**, which is the easy one to miss: opening a slideout
+drops whatever is stacked above its opener, so double-clicking a second row on an index would
+otherwise throw away an edited panel with no warning. Declining leaves everything untouched, and
+`openSlideout()` resolves to `null`.
+
+Closing a panel with dirty children asks once for the whole subtree, not once per panel.
+
+How "dirty" is decided depends on the screen:
+
+| Screen | Signal | Notes |
+| --- | --- | --- |
+| Vue page | Inertia's `form.isDirty` | Precise — reverting an edit clears it |
+| Server-rendered | any `input`/`change` in the panel | Conservative; `Craft.initUiElements()` rewrites inputs after load, so snapshot-diffing the markup would read as user edits |
+
+A close that follows a successful save passes `{force: true}` and never prompts — Inertia only
+clears `isDirty` when a form's defaults are updated, so the panel still looks dirty at that moment.
+
+Register a check yourself with `setSlideoutDirtyCheck(id, () => boolean)`; `SlideoutScreen` does
+this automatically and clears it when the panel closes.
+
 ## Writing a page that works in both contexts
 
 Pages render inside a **shell**. `AppLayout` is a dispatcher that picks one:
@@ -275,10 +342,10 @@ Two things to know if you touch this area:
 
 ## Not supported yet
 
-- **Saving.** `useSettingsSave` still submits as a navigating Inertia visit, which will navigate the
-  page underneath the slideout. Screens that save need this before they're usable in a panel.
+- **Element drafts.** Saving an entry from a slideout writes directly; drafts, autosave and
+  provisional drafts need `Craft.ElementEditor`, which isn't wired in. See
+  [Saving](#server-rendered-screens).
 - **Deep linking.** Opening a slideout doesn't change the URL, and it can't be linked to.
-- **Dirty checking.** Closing or replacing a panel discards it without prompting.
 - **Coordinated stacking with legacy slideouts.** A Vue panel opened over a
   `Craft.CpScreenSlideout` will compete with it for the shade and <kbd>Esc</kbd>.
 
@@ -291,5 +358,7 @@ Two things to know if you touch this area:
 | `resources/js/common/layouts/screens/` | `PageScreen`, `SlideoutScreen`, `PassthroughScreen`, the shared contract |
 | `resources/js/common/composables/screen.ts` | Screen context, shell key, props store |
 | `resources/js/pages/cp/Screen.vue` | Fallback page for screens without `inertiaPage()` |
+| `resources/js/common/slideouts/submitScreenForm.ts` | Saving for server-rendered screens |
+| `resources/js/modules/settings/composables/useSettingsSave.ts` | Saving for Vue pages, both contexts |
 | `resources/js/modules/elements/composables/useElementQuickEdit.ts` | Index double-click |
 | `src/Http/Responses/CpScreenResponse.php` | The slideout branch and its two wire formats |

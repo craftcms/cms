@@ -102,9 +102,11 @@ export function useSettingsSave<T extends Record<string, any>>(
         form.processing = false;
 
         // `redirect: false` is "save and continue editing" (the cmd+S path),
-        // which keeps the panel open.
+        // which keeps the panel open. `force` because the form can still read
+        // dirty right after a save — Inertia only clears that when its
+        // defaults are updated, which the page behind does on reload.
         if (redirect !== false) {
-          slideout!.close();
+          slideout!.close({force: true});
         }
 
         // The controller flashes the success message to the session even on

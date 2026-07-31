@@ -33,7 +33,11 @@ export interface OpenSlideoutOptions {
 
 export interface SlideoutController {
   readonly instance: SlideoutInstance;
-  close(): void;
+  /**
+   * Close the panel. Prompts when there are unsaved changes; pass
+   * `{force: true}` for a close that follows a successful save.
+   */
+  close(options?: {force?: boolean}): void;
   reload(): Promise<void>;
 }
 
