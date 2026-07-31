@@ -39,7 +39,12 @@ export default class CraftInputCopy extends CraftInput {
   override get slots() {
     return {
       ...super.slots,
-      suffix: () => ({template: this._renderSuffix()}),
+      // Render as a direct host child so the copy button itself carries
+      // slot="suffix", rather than being nested in SlotMixin's wrapper div.
+      suffix: () => ({
+        template: this._renderSuffix(),
+        renderAsDirectHostChild: true,
+      }),
     };
   }
 

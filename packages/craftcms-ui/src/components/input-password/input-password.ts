@@ -39,34 +39,38 @@ export default class CraftInputPassword extends LionInput {
     this.type = this._visible ? 'text' : 'password';
   };
 
+  // Note: no leading/trailing whitespace inside the template — with
+  // `renderAsDirectHostChild` every root node is appended to the host, and
+  // text nodes don't get a slot attribute.
   renderSuffix = () => {
-    return html`
-      <craft-button
-        type="button"
-        icon
-        size="small"
-        variant="plain"
-        @click="${this.reveal}"
-        appearance="plain"
-      >
-        <span class="icon"
-          >${this._visible
-            ? html`<craft-icon
-                name="eye-slash"
-                label="${t('Hide')}"
-              ></craft-icon>`
-            : html`<craft-icon name="eye" label="${t('Show')}"></craft-icon>`}
-        </span>
-      </craft-button>
-    `;
+    return html`<craft-button
+      type="button"
+      icon
+      size="small"
+      variant="plain"
+      @click="${this.reveal}"
+      appearance="plain"
+    >
+      <span class="icon"
+        >${this._visible
+          ? html`<craft-icon
+              name="eye-slash"
+              label="${t('Hide')}"
+            ></craft-icon>`
+          : html`<craft-icon name="eye" label="${t('Show')}"></craft-icon>`}
+      </span>
+    </craft-button>`;
   };
 
   override get slots() {
     return {
       ...super.slots,
+      // Render as a direct host child so the button itself carries
+      // slot="suffix", rather than being nested in SlotMixin's wrapper div.
       suffix: () => {
         return {
           template: this.renderSuffix(),
+          renderAsDirectHostChild: true,
         };
       },
     };
