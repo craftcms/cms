@@ -5,22 +5,7 @@ import axios from 'axios';
 import type {FormSaveOptions} from '@/common/types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 import {useSlideout} from '@/common/slideouts/useSlideout';
-
-/**
- * Flatten the server's `{field: [message, …]}` error bag to one message per
- * field, matching what `withErrors()` hands an Inertia page on the full-page
- * path so error rendering is identical in both contexts.
- */
-function firstMessages(
-  errors: Record<string, unknown>
-): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(errors).map(([field, value]) => [
-      field,
-      String((Array.isArray(value) ? value[0] : value) ?? ''),
-    ])
-  );
-}
+import {firstMessages} from '@/common/slideouts/errors';
 
 interface PasswordConfirmationOptions<T> {
   required: (data: T) => boolean;

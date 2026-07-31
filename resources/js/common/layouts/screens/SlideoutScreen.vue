@@ -11,7 +11,9 @@
    */
   import {t} from '@craftcms/ui/utilities/translate';
   import {ButtonVariant} from '@craftcms/ui';
-  import {computed, provide} from 'vue';
+  import {computed, provide, ref, useTemplateRef} from 'vue';
+  import {router} from '@inertiajs/vue3';
+  import {submitScreenForm} from '@/common/slideouts/submitScreenForm';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import PassthroughScreen from './PassthroughScreen.vue';
@@ -65,7 +67,12 @@
     title?: string;
     readOnly?: boolean;
     submitButtonLabel?: string | null;
-    screen?: {editUrl?: string | null};
+    screen?: {
+      editUrl?: string | null;
+      /** Present on screens that submit server-rendered HTML (`cp/Screen`). */
+      action?: string | null;
+      namespace?: string | null;
+    };
   }
 
   const chrome = computed(() => pageProps() as ScreenPageProps);
@@ -90,7 +97,61 @@
     () => chrome.value.submitButtonLabel || t('Save')
   );
 
+  /**
+   * Screens rendered through `cp/Screen` have no Vue form — just server HTML
+   * with real, namespaced inputs — so the shell submits them itself.
+   */
+  const screenAction = computed(() => chrome.value.screen?.action ?? null);
+  const canSave = computed(
+    () => Boolean(form.value) || Boolean(screenAction.value)
+  );
+
+  const formEl = useTemplateRef<HTMLFormElement>('formEl');
+  const submittingHtml = ref(false);
+  const screenErrors = ref<Record<string, string> | null>(null);
+
+  async function saveHtmlScreen(): Promise<void> {
+    if (!formEl.value || !screenAction.value) {
+      return;
+    }
+
+    submittingHtml.value = true;
+    screenErrors.value = null;
+
+    const result = await submitScreenForm(formEl.value, {
+      action: screenAction.value,
+      namespace: chrome.value.screen?.namespace,
+      containerId: slideout?.instance.containerId,
+    });
+
+    submittingHtml.value = false;
+
+    if (!result.ok) {
+      if (result.fatal) {
+        throw result.fatal;
+      }
+
+      screenErrors.value = result.errors ?? {
+        error: result.message ?? t('Couldn’t save.'),
+      };
+
+      return;
+    }
+
+    slideout?.close();
+    // The controller flashes its success message to the session even on the
+    // JSON branch, so refreshing the page behind surfaces it and picks up
+    // whatever changed.
+    router.reload();
+  }
+
   function save() {
+    if (!form.value && screenAction.value) {
+      void saveHtmlScreen();
+
+      return;
+    }
+
     // Deliberately no `redirect: false` — in a slideout that flag means "save
     // and continue editing" (the cmd+S path), which keeps the panel open. The
     // Save button should close it. A slideout never follows the redirect
@@ -109,7 +170,12 @@
 </script>
 
 <template>
-  <form class="slideout-screen" method="post" @submit.prevent="save">
+  <form
+    ref="formEl"
+    class="slideout-screen"
+    method="post"
+    @submit.prevent="save"
+  >
     <header class="slideout-screen__header">
       <h2 class="slideout-screen__title">{{ title }}</h2>
 
@@ -155,6 +221,8 @@
         <LayoutSlotOutlet name="error-summary">
           <slot name="error-summary">
             <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
+            <!-- Server-HTML screens have no Vue form to hang errors off. -->
+            <ErrorSummary v-else-if="screenErrors" :errors="screenErrors" />
           </slot>
         </LayoutSlotOutlet>
 
@@ -195,10 +263,10 @@
         <LayoutSlotOutlet name="submit-button">
           <slot name="submit-button">
             <craft-button
-              v-if="form && !readOnly"
+              v-if="canSave && !readOnly"
               type="submit"
               :variant="ButtonVariant.Primary"
-              :loading="form.processing || undefined"
+              :loading="form?.processing || submittingHtml || undefined"
             >
               {{ submitLabel }}
             </craft-button>
