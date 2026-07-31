@@ -9,6 +9,8 @@ export interface ScreenFormResult {
   message?: string;
   /** Set when the failure wasn't something the panel can present inline. */
   fatal?: unknown;
+  /** The controller's response body, on success. */
+  data?: Record<string, unknown>;
 }
 
 /**
@@ -42,9 +44,11 @@ export async function submitScreenForm(
   try {
     // `actionClient` resolves a bare action path against the CP action URL and
     // adds CSRF + registered-asset headers.
-    await actionClient.post(action, new FormData(formEl), {headers});
+    const response = await actionClient.post(action, new FormData(formEl), {
+      headers,
+    });
 
-    return {ok: true};
+    return {ok: true, data: response.data};
   } catch (error: any) {
     const data = error?.response?.data;
 

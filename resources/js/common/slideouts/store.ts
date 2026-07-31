@@ -1,7 +1,11 @@
 import {reactive, readonly, type DeepReadonly} from 'vue';
 import {t} from '@craftcms/ui/utilities/translate';
 import {fetchSlideoutPage} from './request';
-import type {OpenSlideoutOptions, SlideoutInstance} from './types';
+import type {
+  OpenSlideoutOptions,
+  SlideoutInstance,
+  SlideoutSaveResult,
+} from './types';
 
 /**
  * The open slideout stack, outermost first.
@@ -104,6 +108,7 @@ export async function openSlideout(
     loading: true,
     error: null,
     opener,
+    onSaved: options.onSaved ?? null,
     width: options.width ?? null,
   });
 
@@ -149,6 +154,25 @@ function closeAbove(panelId: string | null, {force = false} = {}): boolean {
     // back to the old opener first makes it flicker.
     removePanel(panels[panels.length - 1]!.id, {restoreFocus: false});
   }
+
+  return true;
+}
+
+/**
+ * Tell the opener its screen saved. See {@link SlideoutController.saved} for
+ * what the return value means.
+ */
+export function notifySlideoutSaved(
+  id: string,
+  result: SlideoutSaveResult = {}
+): boolean {
+  const handler = findSlideout(id)?.onSaved;
+
+  if (!handler) {
+    return false;
+  }
+
+  handler(result);
 
   return true;
 }

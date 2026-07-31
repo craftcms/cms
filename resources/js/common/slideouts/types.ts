@@ -17,6 +17,13 @@ export interface SlideoutInstance {
   error: string | null;
   /** Refocused when the panel closes. */
   opener: HTMLElement | null;
+  /** See {@link OpenSlideoutOptions.onSaved}. */
+  onSaved: ((result: SlideoutSaveResult) => void) | null;
+}
+
+export interface SlideoutSaveResult {
+  /** Whatever the controller returned for the saved record, if anything. */
+  data?: Record<string, unknown>;
 }
 
 export interface OpenSlideoutOptions {
@@ -29,6 +36,15 @@ export interface OpenSlideoutOptions {
    * change every slideout at once.
    */
   width?: string;
+  /**
+   * Called when the screen saves, before the panel closes.
+   *
+   * Registering one also takes over refreshing: without it a save reloads the
+   * whole page behind the panel, which is the only thing a slideout opened
+   * from an arbitrary place can safely do. Openers that know what changed
+   * should say so here and refresh just that.
+   */
+  onSaved?: (result: SlideoutSaveResult) => void;
 }
 
 export interface SlideoutController {
@@ -39,6 +55,16 @@ export interface SlideoutController {
    */
   close(options?: {force?: boolean}): void;
   reload(): Promise<void>;
+  /**
+   * Report a successful save to whoever opened the panel.
+   *
+   * Returns `false` when nobody was listening, which is the caller's cue to
+   * fall back to reloading the page behind.
+   *
+   * Call this *before* {@link close} — closing drops the panel from the store,
+   * and its handler with it.
+   */
+  saved(result?: SlideoutSaveResult): boolean;
 }
 
 export const SlideoutControllerKey: InjectionKey<SlideoutController> =

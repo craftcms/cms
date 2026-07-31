@@ -196,8 +196,13 @@
 
     craft()?.Preview?.refresh?.();
 
+    const handled = slideout?.saved({data});
+
     slideout?.close({force: true});
-    router.reload();
+
+    if (!handled) {
+      router.reload();
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -285,11 +290,16 @@
       return;
     }
 
+    const handled = slideout?.saved({data: result.data});
+
     slideout?.close({force: true});
-    // The controller flashes its success message to the session even on the
-    // JSON branch, so refreshing the page behind surfaces it and picks up
-    // whatever changed.
-    router.reload();
+
+    if (!handled) {
+      // The controller flashes its success message to the session even on the
+      // JSON branch, so refreshing the page behind surfaces it and picks up
+      // whatever changed.
+      router.reload();
+    }
   }
 
   function save(event: Event) {

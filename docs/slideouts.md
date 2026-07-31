@@ -52,6 +52,7 @@ Fetches `href` as an Inertia page and mounts it in a panel. Returns the `Slideou
 | --- | --- | --- |
 | `opener` | `HTMLElement \| null` | Element to refocus when the panel closes, and what the [stacking rules](#stacking-and-nesting) are resolved against. Defaults to whatever had focus when it opened. |
 | `width` | `string` | Width for this panel, as any CSS **length**. Defaults to `--slideout-width`. |
+| `onSaved` | `(result) => void` | Called when the screen saves. See [Telling the opener](#telling-the-opener). |
 
 Pass `opener` whenever you have it — focus restoration and nesting both depend on it.
 
@@ -88,6 +89,7 @@ import {
 | `instance` | The `SlideoutInstance` (`id`, `href`, `props`, `loading`, `error`, …) |
 | `close()` | Closes this panel, and anything nested inside it |
 | `reload()` | Re-fetches the screen |
+| `saved(result?)` | Reports a save to the opener; `false` means nobody was listening |
 
 To branch on context without caring about the panel itself:
 
@@ -189,6 +191,27 @@ correctly.
 
 Errors render through the same `ErrorSummary`, flattened to one message per field by
 `firstMessages()` so both paths look identical.
+
+### Telling the opener
+
+By default a successful save reloads the whole page behind the panel. That's the only thing a
+slideout opened from an arbitrary place can safely do — it has no idea what the screen affects.
+
+An opener that *does* know should say so:
+
+```ts
+open(url, {
+  opener: button,
+  onSaved: () => router.reload({only: ['entryTypes']}),
+});
+```
+
+Registering `onSaved` also **takes over refreshing**: `saved()` returns `true`, and the panel skips
+its blanket reload. `SlideoutButton` wires this to its `success` emit, so both of its call sites
+refresh one prop instead of the page.
+
+> Save paths must call `saved()` **before** `close()` — closing drops the panel from the store, and
+> its handler with it. `slideouts.test.ts` pins that.
 
 ### The element editor
 

@@ -40,6 +40,7 @@ vi.mock('@craftcms/ui', async (importOriginal) => ({
 const {
   closeAllSlideouts,
   closeSlideout,
+  notifySlideoutSaved,
   openSlideout,
   setSlideoutDirtyCheck,
   slideoutPanels,
@@ -195,6 +196,48 @@ describe('slideout store', () => {
 
     expect(panel.loading).toBe(false);
     expect(panel.error).toBe('boom');
+  });
+});
+
+describe('reporting a save to the opener', () => {
+  beforeEach(() => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+  });
+
+  it('hands the result to the opener’s handler', async () => {
+    const onSaved = vi.fn();
+    const panel = (await openSlideout('/a', {onSaved}))!;
+
+    expect(notifySlideoutSaved(panel.id, {data: {id: 7}})).toBe(true);
+    expect(onSaved).toHaveBeenCalledWith({data: {id: 7}});
+  });
+
+  /**
+   * The caller's cue to fall back to reloading the page behind — the only
+   * refresh a panel opened from an arbitrary place can safely do.
+   */
+  it('reports back that nobody was listening', async () => {
+    const panel = (await openSlideout('/a'))!;
+
+    expect(notifySlideoutSaved(panel.id)).toBe(false);
+  });
+
+  /**
+   * Closing drops the panel from the store, handler and all. Save paths have
+   * to notify first, and this is what goes red when one stops doing that.
+   */
+  it('finds nothing once the panel has closed', async () => {
+    const onSaved = vi.fn();
+    const panel = (await openSlideout('/a', {onSaved}))!;
+
+    closeSlideout(panel.id, {force: true});
+
+    expect(notifySlideoutSaved(panel.id)).toBe(false);
+    expect(onSaved).not.toHaveBeenCalled();
   });
 });
 

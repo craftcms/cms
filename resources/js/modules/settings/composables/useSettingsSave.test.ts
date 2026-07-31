@@ -4,7 +4,11 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 const axiosRequest = vi.hoisted(() => vi.fn());
 const routerReload = vi.hoisted(() => vi.fn());
 const slideout = vi.hoisted(() => ({
-  value: null as null | {instance: {containerId: string}; close: () => void},
+  value: null as null | {
+    instance: {containerId: string};
+    close: () => void;
+    saved: (result?: unknown) => boolean;
+  },
 }));
 const elevated = vi.hoisted(() => ({require: vi.fn()}));
 
@@ -63,7 +67,12 @@ beforeEach(() => {
   axiosRequest.mockReset().mockResolvedValue({data: {message: 'Saved.'}});
   routerReload.mockReset();
   elevated.require.mockReset().mockResolvedValue(true);
-  slideout.value = {instance: {containerId: 'slideout-1'}, close: vi.fn()};
+  slideout.value = {
+    instance: {containerId: 'slideout-1'},
+    close: vi.fn(),
+    // Nobody listening, so the panel falls back to reloading the page behind.
+    saved: vi.fn(() => false),
+  };
 });
 
 afterEach(() => scope?.stop());
@@ -113,7 +122,11 @@ describe('useSettingsSave in a slideout', () => {
 
   it('closes the panel and refreshes the page behind on success', async () => {
     const close = vi.fn();
-    slideout.value = {instance: {containerId: 'slideout-1'}, close};
+    slideout.value = {
+      instance: {containerId: 'slideout-1'},
+      close,
+      saved: vi.fn(() => false),
+    };
     const form = makeForm();
     const {save} = run(() => useSettingsSave(form as any, action));
 
@@ -126,13 +139,36 @@ describe('useSettingsSave in a slideout', () => {
 
   it('keeps the panel open for save-and-continue', async () => {
     const close = vi.fn();
-    slideout.value = {instance: {containerId: 'slideout-1'}, close};
+    slideout.value = {
+      instance: {containerId: 'slideout-1'},
+      close,
+      saved: vi.fn(() => false),
+    };
     const {save} = run(() => useSettingsSave(makeForm() as any, action));
 
     save({redirect: false});
     await vi.waitFor(() => expect(routerReload).toHaveBeenCalled());
 
     expect(close).not.toHaveBeenCalled();
+  });
+
+  /**
+   * An opener that registered `onSaved` refreshes itself, and knows better than
+   * the panel does what needs refreshing — so the blanket reload is skipped.
+   */
+  it('leaves refreshing to the opener when it handles the save', async () => {
+    const saved = vi.fn((_result?: unknown) => true);
+    const close = vi.fn();
+    slideout.value = {instance: {containerId: 'slideout-1'}, close, saved};
+
+    const {save} = run(() => useSettingsSave(makeForm() as any, action));
+
+    save();
+    await vi.waitFor(() => expect(saved).toHaveBeenCalled());
+
+    expect(saved.mock.calls[0]![0]).toEqual({data: {message: 'Saved.'}});
+    expect(routerReload).not.toHaveBeenCalled();
+    expect(close).toHaveBeenCalled();
   });
 
   it('maps a 400 validation failure onto the form', async () => {

@@ -20,7 +20,7 @@
     ScreenPropsStoreKey,
     ScreenShellKey,
   } from '@/common/composables/screen';
-  import {closeSlideout, reloadSlideout} from './store';
+  import {closeSlideout, notifySlideoutSaved, reloadSlideout} from './store';
   import {SlideoutControllerKey, type SlideoutInstance} from './types';
 
   const props = defineProps<{
@@ -45,6 +45,7 @@
     close: (options?: {force?: boolean}) =>
       closeSlideout(props.instance.id, options),
     reload: () => reloadSlideout(props.instance.id),
+    saved: (result) => notifySlideoutSaved(props.instance.id, result),
   });
 
   /**
