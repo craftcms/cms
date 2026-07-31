@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
@@ -14,10 +13,8 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -28,22 +25,6 @@ readonly class UsersController
     use EditUserTrait;
     use EnforcesPermissions;
     use RespondsWithFlash;
-
-    public function index(Request $request, ?string $slug = null): View
-    {
-        $this->authorize('viewUsers');
-
-        Edition::require(Edition::Team);
-
-        return view('users._index', [
-            'title' => t('Users'),
-            'buttonLabel' => mb_ucfirst(t('New {type}', [
-                'type' => User::lowerDisplayName(),
-            ])),
-            'canRegisterUsers' => Gate::allows('save', new User),
-            'source' => $slug ?? $request->input('source'),
-        ]);
-    }
 
     public function create(Request $request, Drafts $drafts): Response
     {
