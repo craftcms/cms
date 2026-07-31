@@ -15,6 +15,7 @@ export type CpComponentRegistration = Component | CpComponentLoader;
 
 export interface CpComponentRegistry {
   register(name: string, componentOrLoader: CpComponentRegistration): void;
+  resolve(name: string): Component | undefined;
   install(app: App): void;
 }
 
@@ -42,19 +43,33 @@ function asyncComponent(loader: CpComponentLoader): Component {
 
 export function createCpComponentRegistry(): CpComponentRegistry {
   const components = new Map<string, CpComponentRegistration>();
+  const resolvedComponents = new Map<string, Component>();
   let app: App | null = null;
 
-  function registerWithApp(
-    app: App,
-    name: string,
-    componentOrLoader: CpComponentRegistration
-  ) {
-    app.component(
-      name,
-      isLoader(componentOrLoader)
-        ? asyncComponent(componentOrLoader)
-        : componentOrLoader
-    );
+  function resolve(name: string): Component | undefined {
+    const existingComponent = resolvedComponents.get(name);
+
+    if (existingComponent) {
+      return existingComponent;
+    }
+
+    const registration = components.get(name);
+
+    if (!registration) {
+      return undefined;
+    }
+
+    const component = isLoader(registration)
+      ? asyncComponent(registration)
+      : registration;
+
+    resolvedComponents.set(name, component);
+
+    return component;
+  }
+
+  function registerWithApp(app: App, name: string) {
+    app.component(name, resolve(name)!);
   }
 
   return {
@@ -74,9 +89,11 @@ export function createCpComponentRegistry(): CpComponentRegistry {
 
       components.set(name, componentOrLoader);
       if (app) {
-        registerWithApp(app, name, componentOrLoader);
+        registerWithApp(app, name);
       }
     },
+
+    resolve,
 
     install(installedApp) {
       if (app === installedApp) {
@@ -84,8 +101,8 @@ export function createCpComponentRegistry(): CpComponentRegistry {
       }
 
       app = installedApp;
-      components.forEach((componentOrLoader, name) => {
-        registerWithApp(installedApp, name, componentOrLoader);
+      components.forEach((_, name) => {
+        registerWithApp(installedApp, name);
       });
     },
   };

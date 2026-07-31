@@ -40,6 +40,17 @@ describe('CP component registry', () => {
     }).not.toThrow();
   });
 
+  it('resolves a component by its exact registered name', () => {
+    const registry = createCpComponentRegistry();
+
+    registry.register('form-element:craft:text-input', testComponent);
+
+    expect(registry.resolve('form-element:craft:text-input')).toBe(
+      testComponent
+    );
+    expect(registry.resolve('FormElement:Craft:TextInput')).toBeUndefined();
+  });
+
   it('fails duplicate registrations with a different value', () => {
     const registry = createCpComponentRegistry();
 

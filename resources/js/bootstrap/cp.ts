@@ -23,6 +23,7 @@ import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
 import {configureIcons} from './icons.js';
 import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
+import TextInputRenderer from '@/form-definitions/renderers/TextInputRenderer.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -49,6 +50,7 @@ function defaultPageLayout(name: string) {
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
 const components = createCpComponentRegistry();
+components.register('form-element:craft:text-input', TextInputRenderer);
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {
