@@ -1,5 +1,5 @@
 import {createApp, nextTick} from 'vue';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 const manager = vi.hoisted(() => ({
   state: {

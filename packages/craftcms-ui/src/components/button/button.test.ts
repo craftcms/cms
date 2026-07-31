@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
 

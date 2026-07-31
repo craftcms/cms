@@ -33,7 +33,7 @@ runs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ inputs.php-version }}
-        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, ffi
         tools: composer:v2
         ini-values: display_errors=On, memory_limit=2G
         coverage: none

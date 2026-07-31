@@ -197,7 +197,7 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @function toRem($values...) {
-  @warn "torem mixin is deprecated. Use calc($value / 16 * 1rem) instead.";
+  @warn 'torem mixin is deprecated. Use calc($value / 16 * 1rem) instead.';
   $max: list.length($values);
   $remValues: '';
 
@@ -213,7 +213,7 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin fontSize($size) {
-  @warn "fontsize mixin is deprecated. Use CSS values instead.";
+  @warn 'fontsize mixin is deprecated. Use CSS values instead.';
   font-size: toRem($size);
 }
 
@@ -328,17 +328,17 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin light-focus-ring() {
-  @warn "light-focus-ring mixin is deprecated. Use CSS variables instead.";
+  @warn 'light-focus-ring mixin is deprecated. Use CSS variables instead.';
   --focus-ring: var(--focus-ring-light);
 }
 
 @mixin dark-btn-light-bg-focus-ring() {
-  @warn "dark-btn-light-bg-focus-ring is deprecated. Use CSS variables instead.";
+  @warn 'dark-btn-light-bg-focus-ring is deprecated. Use CSS variables instead.';
   --focus-ring: var(--focus-ring-outset);
 }
 
 @mixin custom-color-focus-ring($primary, $secondary: null) {
-  @warn "custom-color-focus-ring mixin is deprecated. Use CSS variables instead.";
+  @warn 'custom-color-focus-ring mixin is deprecated. Use CSS variables instead.';
 
   @if $secondary != null {
     --focus-ring: 0 0 0 1px #{$primary}, 0 0 0 3px #{$secondary};
@@ -364,47 +364,47 @@ $menuBorderRadius: $mediumBorderRadius;
 // RTL stuff
 
 @mixin left($left) {
-  @warn "left mixin is deprecated. Use inset-inline-start instead.";
+  @warn 'left mixin is deprecated. Use inset-inline-start instead.';
   inset-inline-start: $left;
 }
 
 @mixin right($right) {
-  @warn "right mixin is deprecated. Use inset-inline-end instead.";
+  @warn 'right mixin is deprecated. Use inset-inline-end instead.';
   inset-inline-end: $right;
 }
 
 @mixin alignleft {
-  @warn "alignleft mixin is deprecated. Use text-align: start instead.";
+  @warn 'alignleft mixin is deprecated. Use text-align: start instead.';
   text-align: start;
 }
 
 @mixin alignright {
-  @warn "alignright mixin is deprecated. Use text-align: end instead.";
+  @warn 'alignright mixin is deprecated. Use text-align: end instead.';
   text-align: end;
 }
 
 @mixin border-left($params...) {
-  @warn "border-left mixin is deprecated. Use border-inline-start instead.";
+  @warn 'border-left mixin is deprecated. Use border-inline-start instead.';
   border-inline-start: $params;
 }
 
 @mixin border-right($params...) {
-  @warn "border-right mixin is deprecated. Use border-inline-end instead.";
+  @warn 'border-right mixin is deprecated. Use border-inline-end instead.';
   border-inline-end: $params;
 }
 
 @mixin border-left-width($param) {
-  @warn "border-left-width mixin is deprecated. Use border-inline-start-width instead.";
+  @warn 'border-left-width mixin is deprecated. Use border-inline-start-width instead.';
   border-inline-start-width: $param;
 }
 
 @mixin border-right-width($param) {
-  @warn "border-right-width mixin is deprecated. Use border-inline-end-width instead.";
+  @warn 'border-right-width mixin is deprecated. Use border-inline-end-width instead.';
   border-inline-end-width: $param;
 }
 
 @mixin border-radius($tl, $tr, $br, $bl) {
-  @warn "border-radius mixin is deprecated. Use logical border properties instead.";
+  @warn 'border-radius mixin is deprecated. Use logical border properties instead.';
   border-start-start-radius: $tl;
   border-start-end-radius: $tr;
   border-end-end-radius: $br;
@@ -412,64 +412,64 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin border-top-left-radius($params...) {
-  @warn "border-top-left-radius mixin is deprecated. Use border-start-start-radius instead.";
+  @warn 'border-top-left-radius mixin is deprecated. Use border-start-start-radius instead.';
   border-start-start-radius: $params;
 }
 
 @mixin border-top-right-radius($params...) {
-  @warn "border-top-right-radius mixin is deprecated. Use border-end-start-radius instead.";
+  @warn 'border-top-right-radius mixin is deprecated. Use border-end-start-radius instead.';
   border-start-end-radius: $params;
 }
 
 @mixin border-bottom-left-radius($params...) {
-  @warn "border-bottom-left-radius mixin is deprecated. Use border-start-end-radius instead.";
+  @warn 'border-bottom-left-radius mixin is deprecated. Use border-start-end-radius instead.';
   border-start-end-radius: $params;
 }
 
 @mixin border-bottom-right-radius($params...) {
-  @warn "border-bottom-right-radius mixin is deprecated. Use border-end-end-radius instead.";
+  @warn 'border-bottom-right-radius mixin is deprecated. Use border-end-end-radius instead.';
   border-end-end-radius: $params;
 }
 
 @mixin floatleft {
-  @warn "floatleft mixin is deprecated. Use float: inline-start instead.";
+  @warn 'floatleft mixin is deprecated. Use float: inline-start instead.';
   float: inline-start;
 }
 
 @mixin floatright {
-  @warn "floatright mixin is deprecated. Use float: inline-end instead.";
+  @warn 'floatright mixin is deprecated. Use float: inline-end instead.';
   float: inline-end;
 }
 
 @mixin margin($t, $r, $b, $l, $important: '') {
-  @warn "margin mixin is deprecated. Use logical margin properties instead.";
+  @warn 'margin mixin is deprecated. Use logical margin properties instead.';
   margin-block: $t $b string.unquote($important);
   margin-inline: $l $r string.unquote($important);
 }
 
 @mixin margin-left($margin...) {
-  @warn "margin-left mixin is deprecated. Use margin-inline-start instead.";
+  @warn 'margin-left mixin is deprecated. Use margin-inline-start instead.';
   margin-inline-start: $margin;
 }
 
 @mixin margin-right($margin...) {
-  @warn "margin-left mixin is deprecated. Use margin-inline-end instead.";
+  @warn 'margin-left mixin is deprecated. Use margin-inline-end instead.';
   margin-inline-end: $margin;
 }
 
 @mixin padding($t, $r, $b, $l, $important: '') {
-  @warn "padding mixin is deprecated. Use padding logical properties instead.";
+  @warn 'padding mixin is deprecated. Use padding logical properties instead.';
   padding-block: $t $b string.unquote($important);
   padding-inline: $l $r string.unquote($important);
 }
 
 @mixin padding-left($padding...) {
-  @warn "padding-left mixin is deprecated. Use padding-inline-start properties instead.";
+  @warn 'padding-left mixin is deprecated. Use padding-inline-start properties instead.';
   padding-inline-start: $padding;
 }
 
 @mixin padding-right($padding...) {
-  @warn "padding-right mixin is deprecated. Use padding-inline-end properties instead.";
+  @warn 'padding-right mixin is deprecated. Use padding-inline-end properties instead.';
   padding-inline-end: $padding;
 }
 

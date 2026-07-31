@@ -9,6 +9,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Path;
@@ -133,9 +134,11 @@ class SystemReport extends Utility
     {
         $imagesService = app(Images::class);
 
-        $driverName = $imagesService->getIsGd()
-            ? 'GD'
-            : 'Imagick';
+        $driverName = match ($imagesService->getDriver()) {
+            ImageDriver::Gd => 'GD',
+            ImageDriver::Imagick => 'Imagick',
+            ImageDriver::Vips => 'Vips',
+        };
 
         return $driverName.' '.$imagesService->getVersion();
     }

@@ -30,7 +30,7 @@ class Images extends Component
 {
     public const DRIVER_GD = ImageDriver::Gd->value;
     public const DRIVER_IMAGICK = ImageDriver::Imagick->value;
-    public const MINIMUM_IMAGICK_VERSION = ImagesService::MINIMUM_IMAGICK_VERSION;
+    public const MINIMUM_IMAGICK_VERSION = '6.2.9';
 
     public function __serialize(): array
     {
