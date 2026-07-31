@@ -237,6 +237,7 @@
   .slideout-screen__title {
     font-size: 1.125rem;
     font-weight: 600;
+    margin: 0;
     margin-inline-end: auto;
   }
 
@@ -262,6 +263,7 @@
     min-height: 0;
     overflow-y: auto;
     padding: var(--c-spacing-md, 1rem);
+    background-color: var(--c-surface-overlay);
 
     @container slideout (width >= 44rem) {
       flex-direction: row;
