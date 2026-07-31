@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
@@ -64,6 +65,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     EntryIndexViewModel::class,
                     FieldEditViewModel::class,
                     UserAddressesViewModel::class,
+                    UserIndexViewModel::class,
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,
                     UserProfileViewModel::class,
