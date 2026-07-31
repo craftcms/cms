@@ -2,13 +2,14 @@
 
 ## Unreleased
 
+- Added `craft\helpers\StringHelper::isMd5()`.
 - Fixed a bug where image transforms could be generated from a stale locally-cached copy of an asset’s source file, after the file was replaced on a non-local filesystem. ([#19328](https://github.com/craftcms/cms/issues/19328))
 - Fixed a bug where warnings were getting logged for SSO attributes that mapped to native user properties. ([#19294](https://github.com/craftcms/cms/pull/19294))
 - Fixed an error that could occur when applying a draft. ([#19277](https://github.com/craftcms/cms/issues/19277))
 - Fixed an error that could occur when running `project-config/apply --force`. ([#19300](https://github.com/craftcms/cms/issues/19300))
 - Fixed a bug where compiled templates could be missing the injected `{{ head() }}`, `{{ beginBody() }}`, or `{{ endBody() }}` tags. ([#19304](https://github.com/craftcms/cms/issues/19304))
 - Fixed an error that could occur when listing an element without a slug in an element index.
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5jmw-g85v-7jv2, GHSA-9c4j-cjw3-r3xx)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5jmw-g85v-7jv2, GHSA-9c4j-cjw3-r3xx, GHSA-5r92-75j8-c534)
 
 ## 5.10.12 - 2026-07-22
 
