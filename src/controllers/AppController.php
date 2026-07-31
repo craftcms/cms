@@ -22,6 +22,8 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Number;
+use craft\helpers\StringHelper;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -433,14 +435,24 @@ class AppController extends Controller
      */
     public function actionSetLicenseShunCookie(): Response
     {
+        $hash = $this->request->getRequiredBodyParam('hash');
+
+        if (!StringHelper::isMd5($hash)) {
+            throw new BadRequestHttpException('Invalid hash');
+        }
+
         $cookieName = App::licenseShunCookieName();
         $oldCookie = $this->request->getCookies()->get($cookieName);
         $data = $oldCookie ? Json::decode($oldCookie->value) : [];
 
+        if (isset($data['count']) && !Number::isInt($data['count'])) {
+            throw new BadRequestHttpException('Invalid count');
+        }
+
         $newCookie = new Cookie(Craft::cookieConfig([
             'name' => $cookieName,
             'value' => Json::encode([
-                'hash' => $this->request->getRequiredBodyParam('hash'),
+                'hash' => $hash,
                 'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
                 'count' => ($data['count'] ?? 0) + 1,
             ]),

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Added `craft\helpers\StringHelper::isMd5()`.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-5r92-75j8-c534)
+
 ## 4.18.5 - 2026-07-15
 
 - `craft\services\Sites::getGroupById()` now has a `$withTrashed` argument.
