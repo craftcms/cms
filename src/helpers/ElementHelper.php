@@ -1221,6 +1221,7 @@ class ElementHelper
             $criteria['selectOption'],
             $criteria['union'],
             $criteria['where'],
+            $criteria['with'],
             $criteria['withQueries'],
         );
         return $criteria;
