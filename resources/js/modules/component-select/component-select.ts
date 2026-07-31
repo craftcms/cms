@@ -630,9 +630,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       if (ev.key === 'Backspace' || ev.key === 'Delete') {
         ev.stopPropagation();
         ev.preventDefault();
-        (
-          closestRegistered(chip, componentSelectData) ?? this
-        ).#removeSelected();
+        // oxfmt-ignore
+        (closestRegistered(chip, componentSelectData) ?? this).#removeSelected();
       }
     });
   }

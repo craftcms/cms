@@ -342,10 +342,10 @@ npm run dev          # Storybook dev server at http://localhost:6006
 npm run storybook    # alias of `npm run dev`
 npm run build:storybook  # static Storybook build
 npm run build        # production build (dual `.` + `/compat` entries)
-npm run build:watch  # tsdown watch build
+npm run build:watch  # Vite+ pack watch build
 npm run test         # Vitest suite
 npm run check:types  # tsc --noEmit (includes stories)
-npm run format       # Prettier (writes ./src ./tests ./stories ./.storybook)
+npm run format       # Oxfmt (writes ./src ./tests ./stories ./.storybook)
 ```
 
 Interactive component demos live in **Storybook** (`npm run dev` or

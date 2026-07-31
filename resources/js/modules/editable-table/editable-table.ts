@@ -703,7 +703,7 @@ export class EditableTable extends Base<EditableTableSettings> {
               name = `${name}[value]`;
             }
 
-            // eslint-disable-next-line no-case-declarations
+            // oxlint-disable-next-line no-case-declarations
             const $textarea = $('<textarea/>', {
               name: name,
               rows: col.rows || 1,

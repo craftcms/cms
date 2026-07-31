@@ -88,5 +88,5 @@ Imported for side effects from both `resources/js/cp.ts` (modern surfaces) and
 
 ## Verification
 
-`npm run typecheck` + eslint + prettier. Behavior (Name → Handle/Slug/URI as you
+`vp check`. Behavior (Name → Handle/Slug/URI as you
 type, on the settings pages and in editable tables) is verified live in the CP.
