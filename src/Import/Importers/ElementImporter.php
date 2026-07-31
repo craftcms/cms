@@ -398,7 +398,7 @@ class ElementImporter extends BaseImporter
         // or, we add a setting to the config that allows you to choose if you want the data validated on import and its on by default?
         // -----
         // and validation scenario is "live"
-        $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        //$element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         // }
 
         $item = Import::processData($this, $data, $element);
