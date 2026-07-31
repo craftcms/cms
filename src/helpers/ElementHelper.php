@@ -1210,18 +1210,18 @@ class ElementHelper
     public static function cleanseQueryCriteria(array $criteria): array
     {
         unset(
-            $criteria['where'],
-            $criteria['orderBy'],
-            $criteria['indexBy'],
-            $criteria['select'],
-            $criteria['selectOption'],
             $criteria['from'],
             $criteria['groupBy'],
-            $criteria['join'],
             $criteria['having'],
-            $criteria['union'],
-            $criteria['withQueries'],
+            $criteria['indexBy'],
+            $criteria['join'],
+            $criteria['orderBy'],
             $criteria['params'],
+            $criteria['select'],
+            $criteria['selectOption'],
+            $criteria['union'],
+            $criteria['where'],
+            $criteria['withQueries'],
         );
         return $criteria;
     }
