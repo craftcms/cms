@@ -31,9 +31,10 @@
     (e: 'save', options?: FormSaveOptions): void;
   }>();
 
-  const ownProps = withDefaults(defineProps<ScreenProps>(), {
-    form: null,
-  });
+  // No `withDefaults` here on purpose: a default turns an unset prop into a
+  // defined one, which then wins the merge below and clobbers whatever the
+  // page pushed through `useAppLayout()`. Unset must stay `undefined`.
+  const ownProps = defineProps<ScreenProps>();
 
   const slots = defineSlots<ScreenSlots>();
 
@@ -90,12 +91,14 @@
   );
 
   function save() {
-    const options: FormSaveOptions = {redirect: false};
-
-    emit('save', options);
+    // Deliberately no `redirect: false` — in a slideout that flag means "save
+    // and continue editing" (the cmd+S path), which keeps the panel open. The
+    // Save button should close it. A slideout never follows the redirect
+    // either way; `useSettingsSave` drops it from the payload.
+    emit('save');
     // Reaches pages that configured this shell from below — via
     // `useAppLayout({onSave})` or an inline `<AppLayout @save>`.
-    store?.save(options);
+    store?.save();
   }
 
   function close() {
