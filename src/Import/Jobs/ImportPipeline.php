@@ -13,6 +13,12 @@ use function CraftCms\Cms\t;
 
 class ImportPipeline extends Job
 {
+    /**
+     * Promotes steps and run, then calls the parent constructor.
+     *
+     * @param array $steps The steps to run in this pipeline.
+     * @param ImportRun $run The import run this pipeline belongs to.
+     */
     public function __construct(
         public array $steps,
         public ImportRun $run,

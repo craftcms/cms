@@ -44,6 +44,9 @@ class Xml implements DataTypeInterface
                 |> array_values(...);
     }
 
+    /**
+     * Converts an XML string to array via SimpleXML + JSON round-trip, unwrapping the first key if it's itself an array.
+     */
     private static function getData(string $data): array
     {
         $xmlObj = simplexml_load_string($data);

@@ -14,6 +14,12 @@ class DataImporting
 {
     use ValidatableEvent;
 
+    /**
+     * Promotes the importer config and raw data into a cancellable event fired before import.
+     *
+     * @param BaseImporter $import The importer config for this event.
+     * @param array $data
+     */
     public function __construct(
         public BaseImporter $import,
         public array $data,

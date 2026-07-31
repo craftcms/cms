@@ -16,6 +16,9 @@ class ImportServiceProvider extends ServiceProvider
         $this->registerLogChannel();
     }
 
+    /**
+     * Registers the Element artisan command.
+     */
     public function boot(): void
     {
         $this->commands([
@@ -23,6 +26,9 @@ class ImportServiceProvider extends ServiceProvider
         ]);
     }
 
+    /**
+     * Adds a daily `import` log channel to the logging config if not already defined.
+     */
     private function registerLogChannel(): void
     {
         $channels = config('logging.channels', []);

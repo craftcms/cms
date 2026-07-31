@@ -18,6 +18,11 @@ use function CraftCms\Cms\template;
 
 class ModelImporter extends BaseImporter
 {
+    /**
+     * Calls the parent constructor then sets default match criteria to `['id' => 'id']`.
+     *
+     * @param  array|null  $config  Optional config array, potentially containing a `uid` key.
+     */
     public function __construct(?array $config = null)
     {
         parent::__construct($config);
@@ -47,6 +52,15 @@ class ModelImporter extends BaseImporter
         ]);
     }
 
+    /**
+     * Validates that the given class is not an element type and does extend BaseModel.
+     *
+     * @param mixed $value The value of the model class being validated.
+     * @param string $attribute The name of the attribute being validated.
+     * @param Closure $fail The callback function to invoke when validation fails.
+     * @param Validator $validator The validator instance performing the validation.
+     * @return bool
+     */
     public static function validateModel(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
         // can't be empty
@@ -76,6 +90,11 @@ class ModelImporter extends BaseImporter
         return true;
     }
 
+    /**
+     * Convenience factory returning a new instance.
+     *
+     * @return self
+     */
     public static function create(): self
     {
         return new self;
@@ -128,6 +147,9 @@ class ModelImporter extends BaseImporter
         $model->fill($attributes)->save();
     }
 
+    /**
+     * Creates a new model or looks up an existing one via a match-criteria `where()` query.
+     */
     private function getModel(array $data): BaseModel
     {
         $model = new $this->className;

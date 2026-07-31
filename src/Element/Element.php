@@ -754,8 +754,6 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     {
         // ensure site is set
         $this->siteId = $config->site->id;
-        // and validation scenario is "live"
-        // $this->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
         return $this;
     }

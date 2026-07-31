@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Console\Command;
+use Override;
 
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\select;
@@ -20,7 +21,7 @@ class Element extends Command
 {
     use CraftCommand;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:import:element
         {--elementType= : The fully qualified class name of the element type you want to import into.}
         {--file= : `@root`-relative path to the file containing data you want to import.}
@@ -29,12 +30,17 @@ class Element extends Command
         {--site= : The handle of the site you want to import into.}
     ';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Imports data into specified Craft CMS element type';
 
-    #[\Override]
+    #[Override]
     protected $aliases = ['import/element'];
 
+    /**
+     * Builds an interactive prompt form for missing CLI options, normalizes match criteria, constructs an ElementImporter config from options/prompt answers, and dispatches the import.
+     *
+     * @return int
+     */
     public function handle(): int
     {
         $responses = form()
@@ -103,6 +109,9 @@ class Element extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * Strips a leading `=` from a match-criteria string and JSON-decodes it, returning null if not prefixed.
+     */
     private static function normalizeMatchCriteria(string $matchCriteria): ?array
     {
         if (str_starts_with($matchCriteria, '=')) {

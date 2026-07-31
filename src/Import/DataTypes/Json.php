@@ -48,11 +48,17 @@ class Json implements DataTypeInterface
         return $keys;
     }
 
+    /**
+     * Thin wrapper around the app's JsonHelper::decode.
+     */
     private static function getData(string $data): array
     {
         return JsonHelper::decode($data);
     }
 
+    /**
+     * Recursively walks a nested array collecting keys by reference.
+     */
     private static function collectKeysFromArray(array $array, array &$keys): void
     {
         foreach ($array as $key => $value) {

@@ -48,12 +48,22 @@ use Throwable;
 #[Singleton]
 class Import
 {
+    /**
+     * @param LaravelCollection|null $configs The cached collection of importer configs.
+     * @param LaravelCollection|null $runs The cached collection of import runs.
+     */
     public function __construct(
         // private readonly ProjectConfig $projectConfig,
         private ?LaravelCollection $configs = null,
         private ?LaravelCollection $runs = null,
     ) {}
 
+    /**
+     * Returns the available data type classes, keyed by extension.
+     * The list includes built-in json/csv/xml data type map, extended via `RegisterDataTypes` event listeners.
+     *
+     * @return array
+     */
     public function getAllDataTypes(): array
     {
         $dataTypes = [
@@ -71,6 +81,12 @@ class Import
         return $dataTypes;
     }
 
+    /**
+     * Returns the available importer classes.
+     * The list includes built-in Element/Model importer classes, extended via `RegisterImporterTypes` event.
+     *
+     * @return array The available importer classes.
+     */
     public function getAllImporterTypes(): array
     {
         $importers = [
@@ -88,6 +104,12 @@ class Import
     }
 
     // //////////// configs //////////////
+    /**
+     * Instantiates an importer from a config array, applying properties and decoded settings via setter methods.
+     *
+     * @param array $config The importer config array.
+     * @return BaseImporter
+     */
     public function createImporter(array $config): BaseImporter
     {
         $importer = new $config['type']($config);
@@ -104,6 +126,13 @@ class Import
         return $importer;
     }
 
+    /**
+     * Lazily loads/caches all importer configs, merging DB-stored configs with file-based `craft.import` config,
+     * keyed by handle and sorted by name.
+     * Returns the collection of importer configs, keyed by handle.
+     *
+     * @return LaravelCollection
+     */
     public function getAllConfigs(): LaravelCollection
     {
         if ($this->configs === null) {
@@ -132,16 +161,33 @@ class Import
         return $this->configs;
     }
 
+    /**
+     * Filters all configs down to editable (DB-backed) ones.
+     *
+     * @return LaravelCollection
+     */
     public function getEditableConfigs(): LaravelCollection
     {
         return $this->getAllConfigs()->filter(fn ($config) => $config->isEditable());
     }
 
+    /**
+     * Filters all configs down to non-editable (file-based) ones.
+     *
+     * @return LaravelCollection
+     */
     public function getNonEditableConfigs(): LaravelCollection
     {
         return $this->getAllConfigs()->reject(fn ($config) => $config->isEditable());
     }
 
+    /**
+     * Looks up an importer config by handle, optionally restricted to editable configs.
+     *
+     * @param string|null $handle The importer config handle to look up.
+     * @param bool $editableOnly Whether to restrict the lookup to editable configs.
+     * @return BaseImporter|null
+     */
     public function getConfigByHandle(?string $handle, bool $editableOnly = false): ?BaseImporter
     {
         if (is_null($handle)) {
@@ -158,6 +204,13 @@ class Import
         return $configs->where('handle', $handle)->first();
     }
 
+    /**
+     * Looks up an importer config by UID, optionally restricted to editable configs.
+     *
+     * @param string $uid  The UID of the importer config to look up.
+     * @param bool $editableOnly  Whether to restrict the lookup to editable configs.
+     * @return BaseImporter|null
+     */
     public function getConfigByUid(string $uid, bool $editableOnly = false): ?BaseImporter
     {
         if ($editableOnly) {
@@ -170,6 +223,12 @@ class Import
         return $configs->where('uid', $uid)->first();
     }
 
+    /**
+     * Fires a saving event, persists importer settings to the import_configs table inside a transaction, invalidates the configs cache, then fires a saved event.
+     *
+     * @param BaseImporter $import The importer config to save.
+     * @return bool
+     */
     public function saveConfig(BaseImporter $import): bool
     {
         $isNewConfig = ! $import->uid;
@@ -228,6 +287,11 @@ class Import
         return true;
     }
 
+    /**
+     * Soft-deletes the DB record for an importer config and invalidates the configs cache.
+     *
+     * @param BaseImporter $import The importer config to delete.
+     */
     public function deleteConfig(BaseImporter $import): void
     {
         $configRecord = $this->_getImportConfigModel($import->uid);
@@ -252,6 +316,9 @@ class Import
             ->first() ?? new ImportConfigModel;
     }
 
+    /**
+     * Builds the base query for selecting non-deleted rows from the import_configs table.
+     */
     private function _importConfigQuery(): Builder
     {
         return DB::table(Table::IMPORT_CONFIGS)
@@ -269,6 +336,12 @@ class Import
     }
 
     // //////////// runs //////////////
+    /**
+     * Lazily loads/caches all ImportRun records, keyed by handle and sorted by name.
+     * Returns the collection of import runs, keyed by handle.
+     *
+     * @return LaravelCollection
+     */
     public function getImportRuns(): LaravelCollection
     {
         if ($this->runs === null) {
@@ -281,6 +354,12 @@ class Import
         return $this->runs;
     }
 
+    /**
+     * Looks up an import run by handle.
+     *
+     * @param string|null $handle The handle of the import run to look up.
+     * @return ImportRun|null
+     */
     public function getImportRunByHandle(?string $handle): ?ImportRun
     {
         if (is_null($handle)) {
@@ -291,12 +370,24 @@ class Import
         return $this->getImportRuns()->where('handle', $handle)->first();
     }
 
+    /**
+     * Looks up an import run by UID.
+     *
+     * @param string $uid The UID of the import run to look up.
+     * @return ImportRun|null
+     */
     public function getImportRunByUid(string $uid): ?ImportRun
     {
         /** @var ImportRun|null */
         return $this->getImportRuns()->where('uid', $uid)->first();
     }
 
+    /**
+     * Fires a saving event, validates the run, persists it to import_runs in a transaction, invalidates the runs cache, then fires a saved event.
+     *
+     * @param ImportRun $run The import run to save.
+     * @return bool
+     */
     public function saveRun(ImportRun $run): bool
     {
         $isNewRun = ! $run->uid;
@@ -345,6 +436,11 @@ class Import
         return true;
     }
 
+    /**
+     * Soft-deletes the DB record for an import run and invalidates the runs cache.
+     *
+     * @param ImportRun $run The import run to delete.
+     */
     public function deleteRun(ImportRun $run): void
     {
         $runRecord = $this->_getImportRunModel($run->uid);
@@ -369,6 +465,9 @@ class Import
             ->first() ?? new ImportRunModel;
     }
 
+    /**
+     * Builds the base query for selecting non-deleted rows from the import_runs table.
+     */
     private function _importRunQuery(): Builder
     {
         return DB::table(Table::IMPORT_RUNS)
@@ -385,6 +484,12 @@ class Import
     }
 
     // //////////// import //////////////
+    /**
+     * Resolves each step's config/file into a queued Import job, fires dispatching/dispatched events, and dispatches an ImportPipeline job chain.
+     *
+     * @param ImportRun $run The import run to dispatch.
+     * @return bool
+     */
     public function dispatchImport(ImportRun $run): bool
     {
         $steps = [];
@@ -420,6 +525,12 @@ class Import
         return true;
     }
 
+    /**
+     * Fires the importing event, applies map remapping, resolves/applies match criteria and clearable items, then hands the item to the importer and fires the imported event.
+     *
+     * @param BaseImporter $config The importer config to import into.
+     * @param array $data The raw item data being imported.
+     */
     public function importItem(BaseImporter $config, array $data): void
     {
         event($event = new DataImporting($config, $data));
@@ -592,6 +703,11 @@ class Import
     }
 
     // todo (iwona): might be able to delete this; currently only used by ImportConfigController::run()
+    /**
+     * Reads and formats the importer's source file, then imports each item one by one.
+     *
+     * @param BaseImporter $config The importer config to use.
+     */
     public function import(BaseImporter $config): void
     {
         $filePath = BaseImporter::resolvedFilePath($config->file);
@@ -601,6 +717,12 @@ class Import
     }
 
     // //////////// data //////////////
+    /**
+     * Returns a file's raw contents, throwing if the read fails or the file is empty.
+     *
+     * @param string $filePath The path to the file to read.
+     * @return string
+     */
     public function getRawData(string $filePath): string
     {
         error_clear_last();
@@ -617,6 +739,13 @@ class Import
         return $rawData;
     }
 
+    /**
+     * Reads raw file data and formats it via the appropriate data type.
+     * Return the formatted data, throws on failure.
+     *
+     * @param string $filePath The path to the file to read and format.
+     * @return array
+     */
     public function getFormattedData(string $filePath): array
     {
         $rawData = $this->getRawData($filePath);
@@ -631,6 +760,9 @@ class Import
         return $data['data'];
     }
 
+    /**
+     * Determines the data type from the file extension and delegates formatting to that type's `format()`, logging and returning null on error.
+     */
     private function formatData(string $filePath, string $rawData): ?array
     {
         $extension = File::extension($filePath);
@@ -651,6 +783,12 @@ class Import
         return $data;
     }
 
+    /**
+     * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder), logging and returning null on error.
+     *
+     * @param string $filePath The path to the file to read.
+     * @return array|null
+     */
     public function getDataHeadings(string $filePath): ?array
     {
         $rawData = $this->getRawData($filePath);
@@ -672,6 +810,14 @@ class Import
         return array_merge([['label' => 'Please select', 'value' => '']], $headings);
     }
 
+    /**
+     * Runs a Fractal transformer over the raw item data (with config/element as meta) and returns the transformed array.
+     *
+     * @param BaseImporter $config The importer config providing the transformer.
+     * @param array $data The raw item data to transform.
+     * @param mixed $element The element associated with the item, if any.
+     * @return array
+     */
     final public function processData(BaseImporter $config, array $data, mixed $element): array
     {
         // turn the data from the json/csv/xml file into a fractal collection

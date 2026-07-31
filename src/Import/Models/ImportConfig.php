@@ -17,6 +17,9 @@ class ImportConfig extends BaseModel
     #[\Override]
     protected $table = Table::IMPORT_CONFIGS;
 
+    /**
+     * Declares Eloquent attribute casts (`settings` to json, `elementImport` to boolean).
+     */
     #[\Override]
     protected function casts(): array
     {

@@ -31,6 +31,11 @@ class ImportRun extends Component implements CpEditable, Validatable
 
     public ?string $uid = null;
 
+    /**
+     * Normalizes an object/array config, JSON-decodes `steps` if it's a string, then delegates to the parent constructor.
+     *
+     * @param object|array $config The import run config.
+     */
     public function __construct(object|array $config = [])
     {
         if (is_object($config)) {
@@ -44,6 +49,11 @@ class ImportRun extends Component implements CpEditable, Validatable
         parent::__construct($config);
     }
 
+    /**
+     * Defines validation rules for name/handle/description/steps (uniqueness of handle, file requiredness per step, batch size bounds).
+     *
+     * @return array
+     */
     #[\Override]
     public function getRules(): array
     {
@@ -105,6 +115,11 @@ class ImportRun extends Component implements CpEditable, Validatable
         ];
     }
 
+    /**
+     * Moves nested `steps.*` validation error messages up to a top-level `steps` key.
+     *
+     * @param Validator|null $validator
+     */
     public function afterValidate(?Validator $validator = null): void
     {
         // move all the nested steps validation messages up top for now
@@ -126,6 +141,11 @@ class ImportRun extends Component implements CpEditable, Validatable
     //        ];
     //    }
 
+    /**
+     * Returns a plain array snapshot of the run's properties.
+     *
+     * @return array
+     */
     public function getConfig(): array
     {
         return [

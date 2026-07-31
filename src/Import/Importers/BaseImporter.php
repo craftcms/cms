@@ -65,6 +65,11 @@ abstract class BaseImporter
 
     public ?string $uid = null;
 
+    /**
+     * Sets `$this->uid` from a config array if provided.
+     *
+     * @param array|null $config Optional config array, potentially containing a `uid` key.
+     */
     public function __construct(?array $config = null)
     {
         if (! empty($config)) {
@@ -74,6 +79,8 @@ abstract class BaseImporter
 
     /**
      * Returns the display name for the importer.
+     *
+     * @return string
      */
     public static function displayName(): string
     {
@@ -84,6 +91,8 @@ abstract class BaseImporter
      * Determines if the importer is editable.
      * If the importer has a UID, it means it's stored in the database, and therefore it's editable via the Control Panel.
      * Otherwise, it's a custom importer that comes e.g. from a file.'
+     *
+     * @return bool
      */
     public function isEditable(): bool
     {
@@ -92,6 +101,8 @@ abstract class BaseImporter
 
     /**
      * Generates the HTML for the settings view.
+     *
+     * @return string
      */
     public function getSettingsHtml(): string
     {
@@ -100,6 +111,8 @@ abstract class BaseImporter
 
     /**
      * Generates the HTML for read-only settings.
+     *
+     * @return string
      */
     public function getReadOnlySettingsHtml(): string
     {
@@ -109,8 +122,8 @@ abstract class BaseImporter
     /**
      * Generates the settings HTML for the importer.
      *
-     * @param  bool  $readOnly  Indicates whether the settings should be rendered in a read-only state.
-     * @return string The rendered HTML for the settings.
+     * @param bool $readOnly Indicates whether the settings should be rendered in a read-only state.
+     * @return string
      */
     protected function settingsHtml(bool $readOnly): string
     {
@@ -122,6 +135,8 @@ abstract class BaseImporter
 
     /**
      * Determines if the current importer is for an Element.
+     *
+     * @return bool
      */
     public function isElementImport(): bool
     {
@@ -130,6 +145,8 @@ abstract class BaseImporter
 
     /**
      * Defines the validation rules for the importer.
+     *
+     * @return array
      */
     public static function getRules(): array
     {
@@ -177,7 +194,8 @@ abstract class BaseImporter
     /**
      * Sets the name for the importer.
      *
-     * @param  string  $name  The name to set.
+     * @param string $name The name to set.
+     * @return self
      */
     public function name(string $name): self
     {
@@ -189,7 +207,8 @@ abstract class BaseImporter
     /**
      * Sets the handle for the importer.
      *
-     * @param  string|null  $handle  The handle to be assigned.
+     * @param string|null $handle The handle to be assigned.
+     * @return self
      */
     public function handle(?string $handle): self
     {
@@ -201,7 +220,8 @@ abstract class BaseImporter
     /**
      * Sets the description for the importer.
      *
-     * @param  string|null  $description  The description to be assigned.
+     * @param string|null $description The description to be assigned.
+     * @return self
      */
     public function description(?string $description): self
     {
@@ -213,7 +233,8 @@ abstract class BaseImporter
     /**
      * Sets the class we're importing into, e.g. Entry
      *
-     * @param  string  $className  The name of the class to set.
+     * @param string $className The name of the class to set.
+     * @return self
      */
     public function className(string $className): self
     {
@@ -225,7 +246,8 @@ abstract class BaseImporter
     /**
      * Sets the path to the file that contains the data to be imported.
      *
-     * @param  string|null  $file  The file name or path to set.
+     * @param string|null $file The file name or path to set.
+     * @return self
      */
     public function file(?string $file): self
     {
@@ -237,7 +259,8 @@ abstract class BaseImporter
     /**
      * Sets and normalizes the transformer.
      *
-     * @param  string|null|BaseTransformer  $transformer  The transformer instance, class name, or null value.
+     * @param string|null|BaseTransformer $transformer The transformer instance, class name, or null value.
+     * @return self
      */
     public function transformer(string|null|BaseTransformer $transformer): self
     {
@@ -249,7 +272,8 @@ abstract class BaseImporter
     /**
      * Sets the mapping configuration for the importer.
      *
-     * @param  array  $map  The mapping configuration array.
+     * @param array $map The mapping configuration array.
+     * @return self
      */
     public function map(array $map): self
     {
@@ -262,7 +286,8 @@ abstract class BaseImporter
      * Sets the criteria to be used for matching the element we're importing into
      * and returns the current instance.
      *
-     * @param  array  $matchCriteria  The criteria to match against.
+     * @param array $matchCriteria The criteria to match against.
+     * @return self
      */
     public function matchCriteria(array $matchCriteria): self
     {
@@ -275,8 +300,9 @@ abstract class BaseImporter
      * Sets the field/attribute handles that should be cleared on import when no data is provided
      * for them or the provided value is empty, and returns the current instance.
      *
-     * @param  array  $clearableItems  The handles to mark as clearable, either as a nested map with truthy
+     * @param array  $clearableItems The handles to mark as clearable, either as a nested map with truthy
      *                                 leaves (matching $matchCriteria's shape) or a flat list of dot-notation handles.
+     * @return self
      */
     public function clearableItems(array $clearableItems): self
     {
@@ -316,12 +342,12 @@ abstract class BaseImporter
      * Validates a provided file based on its existence, MIME type, and compatibility with
      * the application's expected data types.
      *
-     * @param  mixed  $value  The file to validate, typically a path or identifier.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  A callback function to report validation failures.
-     * @param  Validator  $validator  The validator instance performing the validation.
-     * @param  string|null  $attributeForMessage  Optional. An alternate attribute name for error messages.
-     * @return bool Returns true if the file is valid; otherwise, false.
+     * @param mixed $value The file to validate, typically a path or identifier.
+     * @param string $attribute The name of the attribute being validated.
+     * @param Closure $fail A callback function to report validation failures.
+     * @param Validator $validator The validator instance performing the validation.
+     * @param string|null $attributeForMessage Optional. An alternate attribute name for error messages.
+     * @return bool
      */
     public static function validateFile(mixed $value, string $attribute, Closure $fail, Validator $validator, ?string $attributeForMessage = null): bool
     {
@@ -369,8 +395,8 @@ abstract class BaseImporter
      * path using the Aliases service. Otherwise, it constructs the path by appending the
      * file to the '@root/' alias.
      *
-     * @param  string|null  $file  The file alias or relative path to be resolved.
-     * @return string|null The resolved absolute file path, or null if the input is null.
+     * @param string|null $file The file alias or relative path to be resolved.
+     * @return string|null
      */
     public static function resolvedFilePath(?string $file): ?string
     {
@@ -394,8 +420,8 @@ abstract class BaseImporter
      * that can evaluate the provided logic against an `ElementInterface` instance. Additionally,
      * transformer class strings are validated to ensure they refer to a valid BaseTransformer class.
      *
-     * @param  string|BaseTransformer|null  $transformer  Input transformer to normalize.
-     * @return BaseTransformer|Closure|null A normalized transformer instance, closure, or null if not valid.
+     * @param string|BaseTransformer|null $transformer Input transformer to normalize.
+     * @return BaseTransformer|Closure|null
      */
     public function normalizeTransformer(string|null|BaseTransformer $transformer): BaseTransformer|Closure|null
     {
@@ -430,11 +456,11 @@ abstract class BaseImporter
     /**
      * Validates the transformer value to ensure it is either empty, a closure, or a valid class compatible with `BaseTransformer`.
      *
-     * @param  mixed  $value  The value of the transformer being validated.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  The callback function to invoke when validation fails.
-     * @param  Validator  $validator  The validator instance performing the validation.
-     * @return bool Returns true if the transformer value is valid; otherwise, false.
+     * @param mixed $value The value of the transformer being validated.
+     * @param string $attribute The name of the attribute being validated.
+     * @param Closure $fail The callback function to invoke when validation fails.
+     * @param Validator $validator The validator instance performing the validation.
+     * @return bool
      */
     public static function validateTransformer(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
@@ -460,6 +486,11 @@ abstract class BaseImporter
         return false;
     }
 
+    /**
+     * Returns the transformer's class name if it's a BaseTransformer instance, otherwise null.
+     *
+     * @return string|null
+     */
     public function transformerAsString(): ?string
     {
         if ($this->transformer === null) {
@@ -473,6 +504,16 @@ abstract class BaseImporter
         return null;
     }
 
+    /**
+     * No-op base validator for the map setting; always returns true (subclasses override).
+     *
+     * @param mixed $value The value of the map being validated.
+     * @param string $attribute The name of the attribute being validated.
+     * @param Closure $fail The callback function to invoke when validation fails.
+     * @param Validator $validator The validator instance performing the validation.
+     * @param array $params Additional context params for the validation.
+     * @return bool
+     */
     public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
     {
         // by default this does nothing
@@ -481,6 +522,8 @@ abstract class BaseImporter
 
     /**
      * Returns the names of the columns/properties/fields that we're importing into.
+     *
+     * @return array
      */
     public function getDestinationCols(): array
     {
@@ -489,12 +532,19 @@ abstract class BaseImporter
 
     /**
      * Returns the names of the columns/properties that we're importing from (the ones from the data source).
+     *
+     * @return array
      */
     public function getSourceDataCols(): array
     {
         return [];
     }
 
+    /**
+     * No-op base implementation; subclasses override to actually perform the import.
+     *
+     * @param array $data The data for the item being imported.
+     */
     public function importItem(array $data): void
     {
         // by default, this doesn't do anything

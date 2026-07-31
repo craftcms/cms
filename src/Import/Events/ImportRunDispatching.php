@@ -14,6 +14,12 @@ class ImportRunDispatching
 {
     use ValidatableEvent;
 
+    /**
+     * Carries the steps and run for a cancellable pre-dispatch event.
+     *
+     * @param array $steps The queue job steps to be dispatched.
+     * @param ImportRun $run
+     */
     public function __construct(
         public array $steps,
         public ImportRun $run,

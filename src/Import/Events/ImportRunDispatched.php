@@ -11,6 +11,12 @@ use CraftCms\Cms\Import\Data\ImportRun;
  */
 class ImportRunDispatched
 {
+    /**
+     * Carries the dispatched job steps and the run, fired after queue dispatch.
+     *
+     * @param array $steps The queue job steps to be dispatched.
+     * @param ImportRun $run
+     */
     public function __construct(
         public array $steps,
         public ImportRun $run,

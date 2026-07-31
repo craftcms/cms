@@ -29,6 +29,11 @@ class ElementTransformer extends BaseTransformer
      * Note: with automatic handle matching, if the handle is overwritten in the field layout, that's what's used;
      * it *doesn't* fall back to the original handle.
      *
+     * Returns the transformed data array, ready to be imported into an Element.
+     *
+     * @param mixed $item The raw item data to transform.
+     * @return array
+     *
      * @throws \ReflectionException
      */
     public function transform(mixed $item): array
@@ -81,6 +86,9 @@ class ElementTransformer extends BaseTransformer
         return $array;
     }
 
+    /**
+     * Looks up a raw property value from the item and calls a `normalize{PropName}()` method if defined on the transformer, else returns the raw or default value.
+     */
     private function normalizePropertyValue(mixed $item, array $prop, ElementInterface $element): mixed
     {
         $rawValue = $item[$prop['name']] ?? null;

@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Transformers;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 
 class EntryTransformer extends ElementTransformer
 {
+    /**
+     * Normalizes an incoming section value (numeric id or handle string) to a section ID.
+     */
     protected function normalizeSectionId(mixed $value, ElementInterface $element): ?int
     {
         if ($value === null) {
@@ -31,10 +35,14 @@ class EntryTransformer extends ElementTransformer
         return null;
     }
 
+    /**
+     * Normalizes an incoming entry-type value (numeric id or handle string) to a type ID, falling back to the element's current type ID.
+     */
     protected function normalizeTypeId(mixed $value, ElementInterface $element): ?int
     {
         if ($value === null) {
-            return $element->typeId;
+            /** @var $element Entry */
+            return $element->getTypeId();
         }
 
         if (is_int($value)) {
@@ -44,11 +52,11 @@ class EntryTransformer extends ElementTransformer
 
         if (is_string($value)) {
             $type = EntryTypes::getEntryTypeByHandle($value);
-            if ($type) {
-                return $type->id;
-            }
+
+            return $type?->id;
         }
 
+        /** @var $element Entry */
         return $element->getTypeId();
     }
 }

@@ -18,6 +18,13 @@ class Import extends Job
 
     private int $defaultBatchSize = 5;
 
+    /**
+     * Promotes step config, file path, and starting offset, then calls the parent constructor.
+     *
+     * @param array $step The step configuration.
+     * @param string $filePath The path to the file being imported.
+     * @param int $start The offset to start processing from.
+     */
     public function __construct(
         private readonly array $step,
         private readonly string $filePath,
@@ -80,6 +87,9 @@ class Import extends Job
         }
     }
 
+    /**
+     * Returns the step's configured batch size, or the default batch size if null.
+     */
     private function getBatchSize(array $step): int
     {
         // if batch size was left empty, it was cast to a null, and we should use the default batch size

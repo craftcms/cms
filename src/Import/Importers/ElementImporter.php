@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -33,6 +34,11 @@ class ElementImporter extends BaseImporter
 
     public protected(set) ?string $fieldLayout = null;
 
+    /**
+     * Calls the parent constructor then sets default match criteria to `['id' => 'id']`.
+     *
+     * @param array|null $config Optional config array, potentially containing a `uid` key.
+     */
     public function __construct(?array $config = null)
     {
         parent::__construct($config);
@@ -92,6 +98,15 @@ class ElementImporter extends BaseImporter
         ]);
     }
 
+    /**
+     * Validates that the given class name is a known importable element type.
+     *
+     * @param mixed $value The value of the element type being validated.
+     * @param string $attribute The name of the attribute being validated.
+     * @param Closure $fail The callback function to invoke when validation fails.
+     * @param Validator $validator The validator instance performing the validation.
+     * @return bool
+     */
     public static function validateElementType(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
         if (empty($value)) {
@@ -112,6 +127,15 @@ class ElementImporter extends BaseImporter
         return true;
     }
 
+    /**
+     * Validates that the given handle matches a known site.
+     *
+     * @param mixed $value The value of the site handle being validated.
+     * @param string $attribute The name of the attribute being validated.
+     * @param Closure $fail The callback function to invoke when validation fails.
+     * @param Validator $validator The validator instance performing the validation.
+     * @return bool
+     */
     public static function validateSite(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
         if (empty($value)) {
@@ -148,6 +172,11 @@ class ElementImporter extends BaseImporter
         return true;
     }
 
+    /**
+     * Convenience factory returning a new instance.
+     *
+     * @return self
+     */
     public static function create(): self
     {
         return new self;
@@ -166,6 +195,12 @@ class ElementImporter extends BaseImporter
         return $this;
     }
 
+    /**
+     * Resolves and sets the target site from a Site instance, id, handle, or uid (defaults to primary site if null).
+     *
+     * @param string|int|Site|null $site The site instance, ID, handle, uid, or null.
+     * @return self
+     */
     public function site(string|int|Site|null $site): self
     {
         if ($site instanceof Site) {
@@ -188,6 +223,12 @@ class ElementImporter extends BaseImporter
         return $this;
     }
 
+    /**
+     * Resolves and sets the field layout UID/type from a FieldLayout instance, id, or uid/type string.
+     *
+     * @param string|int|FieldLayout|null $value The field layout instance, ID, uid, type, or null.
+     * @return self
+     */
     public function fieldLayout(string|int|FieldLayout|null $value): self
     {
         $fieldsService = app(Fields::class);
@@ -229,6 +270,8 @@ class ElementImporter extends BaseImporter
 
     /**
      * Returns whether the current transformer is the default one for the element type.
+     *
+     * @return bool
      */
     public function usesDefaultTransformer(): bool
     {
@@ -248,6 +291,12 @@ class ElementImporter extends BaseImporter
         return false;
     }
 
+    /**
+     * Builds a select-option list of field layout providers for the element class (singular or multiple layouts).
+     * The list of field layout providers as label/value pairs.
+     *
+     * @return array
+     */
     public function getAvailableFieldLayoutProviders(): array
     {
         $element = (new $this->className);
@@ -340,6 +389,18 @@ class ElementImporter extends BaseImporter
         // figure out if we're adding or updating
         $element = $this->getRootElement($data);
 
+        // if ($element->id !== null) {
+        // todo (iwona): not sure if we want to be this extreme;
+        // when used via command or any other option where user is not logged in to the CP
+        // it'll force the entry data to have author(s) specified or for them to be turned off on section's level
+        // or maybe we should set the live scenario by default but if someone maps the status,
+        // and it's set to disabled then we go with the default or essential scenario?
+        // or, we add a setting to the config that allows you to choose if you want the data validated on import and its on by default?
+        // -----
+        // and validation scenario is "live"
+        $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        // }
+
         $item = app(Import::class)->processData($this, $data, $element);
 
         // normalization and validation of attributes happens in the transformer and in the setAttributesForImport() method
@@ -373,6 +434,9 @@ class ElementImporter extends BaseImporter
         }
     }
 
+    /**
+     * Prepares a new element or looks up an existing one via a match criteria query, applying site ID.
+     */
     private function getRootElement(array $data): ElementInterface
     {
         // figure out if we're adding or editing
@@ -415,6 +479,9 @@ class ElementImporter extends BaseImporter
         return $element;
     }
 
+    /**
+     * Runs each field's `normalizeValueForImport()` (if defined) over the incoming field data.
+     */
     private function normalizeFields(ElementInterface $rootElement, array $data): array
     {
         $fieldLayout = $rootElement->getFieldLayout();

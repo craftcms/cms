@@ -22,6 +22,11 @@ use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
  */
 class RegisterDataTypes
 {
+    /**
+     * Carries the mutable list of registered data type classes for listeners to add to.
+     *
+     * @param array<class-string<DataTypeInterface>> $dataTypes The registered data type classes.
+     */
     public function __construct(
         /** @var array<class-string<DataTypeInterface>> */
         public array $dataTypes,
