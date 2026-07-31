@@ -137,6 +137,15 @@ class CpScreenResponse implements Responsable
     public ?string $slideoutBodyClass = null;
 
     /**
+     * @var array<string, mixed> Extra data merged into the Inertia `screen`
+     *                           prop, for screens whose client-side behavior
+     *                           needs configuring.
+     *
+     * @see screenData()
+     */
+    private array $screenData = [];
+
+    /**
      * @var array<string, mixed> Custom attributes to add to the `<main>` tag.
      *
      * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
@@ -751,6 +760,23 @@ class CpScreenResponse implements Responsable
         );
     }
 
+    /**
+     * Merge extra data into the Inertia `screen` prop.
+     *
+     * For screens that hand configuration to client-side code. The Twig/jQuery
+     * paths pass such config by injecting a script that looks the container up
+     * by id — which races Vue's mount, since the panel's subtree isn't in the
+     * document yet when that script runs. Props arrive with the page instead.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function screenData(array $data): self
+    {
+        $this->screenData = [...$this->screenData, ...$data];
+
+        return $this;
+    }
+
     public function toResponse($request): Response
     {
         if ($request->wantsJson()) {
@@ -927,7 +953,7 @@ class CpScreenResponse implements Responsable
     private function screenProps(string $mode, array $extra = []): array
     {
         return [
-            'screen' => ['mode' => $mode] + $extra,
+            'screen' => ['mode' => $mode] + $extra + $this->screenData,
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ];

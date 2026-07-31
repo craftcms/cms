@@ -30,11 +30,14 @@
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
+    ScreenContentReadyKey,
     ScreenShellKey,
     useScreenPageProps,
     useScreenPropsStore,
   } from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
+  import {useElementEditor} from '@/common/slideouts/useElementEditor';
+  import {firstMessages} from '@/common/slideouts/errors';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
 
@@ -81,6 +84,9 @@
       /** Present on screens that submit server-rendered HTML (`cp/Screen`). */
       action?: string | null;
       namespace?: string | null;
+      /** Present only on the element-edit screen. See `useElementEditor()`. */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      elementEditorSettings?: Record<string, any> | null;
     };
   }
 
@@ -111,13 +117,107 @@
    * with real, namespaced inputs — so the shell submits them itself.
    */
   const screenAction = computed(() => chrome.value.screen?.action ?? null);
-  const canSave = computed(
-    () => Boolean(form.value) || Boolean(screenAction.value)
-  );
 
   const formEl = useTemplateRef<HTMLFormElement>('formEl');
+  const contentEl = useTemplateRef<HTMLElement>('contentEl');
+  const detailsEl = useTemplateRef<HTMLElement>('detailsEl');
+  const toolbarEl = useTemplateRef<HTMLElement>('toolbarEl');
+  const tabsEl = useTemplateRef<HTMLElement>('tabsEl');
+
   const submittingHtml = ref(false);
   const screenErrors = ref<Record<string, string> | null>(null);
+
+  /**
+   * The element-edit screen brings its own controller: drafts, autosaving and
+   * delta submission are `Craft.ElementEditor`'s, not the shell's.
+   */
+  const elementEditor = useElementEditor({
+    settings: () => chrome.value.screen?.elementEditorSettings,
+    namespace: () => chrome.value.screen?.namespace,
+    slideout,
+    regions: {
+      form: formEl,
+      content: contentEl,
+      details: detailsEl,
+      toolbar: toolbarEl,
+      tabs: tabsEl,
+    },
+    onSaved: handleElementSaved,
+    onError: handleElementSaveError,
+  });
+
+  // The editor snapshots the form to detect changes, so it can't be built
+  // until the screen's server-rendered HTML is really in the document.
+  provide(ScreenContentReadyKey, elementEditor.start);
+
+  onBeforeUnmount(elementEditor.destroy);
+
+  const canSave = computed(
+    () =>
+      !elementEditor.isStatic.value &&
+      (Boolean(form.value) ||
+        Boolean(screenAction.value) ||
+        elementEditor.active.value)
+  );
+
+  /**
+   * A revision — or an element already autosaved to a provisional draft — has
+   * nothing to cancel; the only thing left to do is leave.
+   */
+  const cancelLabel = computed(
+    () =>
+      elementEditor.cancelLabel.value ??
+      (elementEditor.isStatic.value ? t('Close') : t('Cancel'))
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const craft = (): any => (window as any).Craft;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function handleElementSaved(response: any): void {
+    const data = response?.data ?? {};
+
+    if (data.message) {
+      craft()?.cp?.displaySuccess(data.message, data.notificationSettings);
+    }
+
+    if (data.modelClass && data.modelId) {
+      craft()?.refreshComponentInstances?.(data.modelClass, data.modelId);
+    }
+
+    // Tell other tabs — and the legacy element index behind this panel — that
+    // the element changed, exactly as `ElementEditorSlideout` does.
+    if (data.element?.id) {
+      craft()?.broadcaster?.postMessage({
+        event: 'saveElement',
+        id: data.element.id,
+      });
+    }
+
+    craft()?.Preview?.refresh?.();
+
+    slideout?.close({force: true});
+    router.reload();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function handleElementSaveError(error: any): void {
+    const data = error?.response?.data;
+
+    if (!data) {
+      throw error;
+    }
+
+    craft()?.cp?.displayError(data.message);
+
+    // The server's own summary gets drawn into the screen HTML, split across
+    // its tabs. Only stand in for it when there wasn't one.
+    screenErrors.value = data.errorSummary
+      ? null
+      : data.errors
+        ? firstMessages(data.errors)
+        : {error: data.message ?? t('Couldn’t save.')};
+  }
 
   /**
    * Whether the panel holds unsaved changes, so the store can prompt before
@@ -134,8 +234,16 @@
   useEventListener(formEl, 'input', () => (touched.value = true));
   useEventListener(formEl, 'change', () => (touched.value = true));
 
-  const isDirty = () =>
-    form.value ? Boolean(form.value.isDirty) : touched.value;
+  const isDirty = () => {
+    // Autosaved drafts persist every edit as it's made, so there's nothing to
+    // warn about — and warning anyway would make every element slideout
+    // prompt on close.
+    if (elementEditor.autosaves.value) {
+      return false;
+    }
+
+    return form.value ? Boolean(form.value.isDirty) : touched.value;
+  };
 
   onMounted(() => {
     if (slideout) {
@@ -184,7 +292,13 @@
     router.reload();
   }
 
-  function save() {
+  function save(event: Event) {
+    if (elementEditor.active.value) {
+      void elementEditor.submit(event);
+
+      return;
+    }
+
     if (!form.value && screenAction.value) {
       void saveHtmlScreen();
 
@@ -209,7 +323,11 @@
 </script>
 
 <template>
+  <!-- The `id` must be the container id: screens that drive themselves from
+    JS are handed their settings by `$('#<containerId>').data(…)`, emitted
+    server-side against the `X-Craft-Container-Id` this panel sent. -->
   <form
+    :id="slideout?.instance.containerId"
     ref="formEl"
     class="slideout-screen"
     method="post"
@@ -218,7 +336,10 @@
     <header class="slideout-screen__header">
       <h2 class="slideout-screen__title">{{ title }}</h2>
 
-      <div v-show="hasToolbar" class="slideout-screen__toolbar">
+      <!-- Always rendered: `Craft.ElementEditor` hangs its autosave spinner
+        and draft status icon here, and a screen with no toolbar still has
+        drafts to report on. -->
+      <div ref="toolbarEl" class="slideout-screen__toolbar">
         <LayoutSlotOutlet name="toolbar">
           <slot name="toolbar"></slot>
         </LayoutSlotOutlet>
@@ -249,14 +370,14 @@
       </craft-button>
     </header>
 
-    <div v-show="hasTabs" class="slideout-screen__tabs">
+    <div v-show="hasTabs" ref="tabsEl" class="slideout-screen__tabs">
       <LayoutSlotOutlet name="tabs">
         <slot name="tabs"></slot>
       </LayoutSlotOutlet>
     </div>
 
     <div class="slideout-screen__body">
-      <div class="slideout-screen__content">
+      <div ref="contentEl" class="slideout-screen__content">
         <LayoutSlotOutlet name="error-summary">
           <slot name="error-summary">
             <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
@@ -282,7 +403,11 @@
 
       <!-- v-show, not v-if: the outlet is a teleport target and must stay in
         the DOM so page content can mount before registration flips hasDetails. -->
-      <aside v-show="hasDetails" class="slideout-screen__details">
+      <aside
+        v-show="hasDetails"
+        ref="detailsEl"
+        class="slideout-screen__details"
+      >
         <LayoutSlotOutlet name="details">
           <slot name="details"></slot>
         </LayoutSlotOutlet>
@@ -296,7 +421,7 @@
 
       <div class="slideout-screen__footer-actions">
         <craft-button type="button" @click="close">
-          {{ t('Cancel') }}
+          {{ cancelLabel }}
         </craft-button>
 
         <LayoutSlotOutlet name="submit-button">
@@ -305,7 +430,12 @@
               v-if="canSave && !readOnly"
               type="submit"
               :variant="ButtonVariant.Primary"
-              :loading="form?.processing || submittingHtml || undefined"
+              :loading="
+                form?.processing ||
+                submittingHtml ||
+                elementEditor.saving.value ||
+                undefined
+              "
             >
               {{ submitLabel }}
             </craft-button>

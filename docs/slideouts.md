@@ -190,9 +190,34 @@ correctly.
 Errors render through the same `ErrorSummary`, flattened to one message per field by
 `firstMessages()` so both paths look identical.
 
-> **Element editor caveat.** An entry saved this way is written **directly** — drafts, autosave and
-> provisional drafts still belong to `Craft.ElementEditor`, which isn't wired into the Vue panel.
-> That differs from the legacy slideout on that screen.
+### The element editor
+
+The `elements/edit` screen is the exception: it doesn't submit itself. Drafts, autosaving,
+provisional drafts, delta submission and tab error indicators all live in `Craft.ElementEditor`, so
+the panel hands that screen over to it rather than reimplementing any of it — the same deal
+`ElementEditorSlideout` strikes for the jQuery stack.
+
+`useElementEditor()` builds the editor and gives it the shell's regions: the panel `<form>`, the
+content and details columns, the header as a spinner host. Everything else is adapted through
+callbacks — `updateTabs`/`getTabManager` onto a `Craft.Tabs` the bridge owns, submit results onto
+the panel's own success and error handling.
+
+Two wrinkles worth knowing:
+
+- **Settings arrive as `screen.elementEditorSettings`,** not through `$(container).data()`.
+  `EditElementController` branches on `$request->inertia()` and calls `CpScreenResponse::screenData()`
+  instead of emitting the usual script. That script looks the container up by id, and it runs while
+  Vue still has the panel's subtree detached from the document, so the lookup finds nothing. Any
+  screen with the same problem can use `screenData()` the same way.
+- **The editor is built on a `ready` signal, not on mount.** Fragments are appended asynchronously
+  (`appendHeadHtml()` resolves only once the screen's assets have loaded), and the editor snapshots
+  the form to detect changes — snapshotting an empty form would read every field as an edit. So
+  `cp/Screen` waits until *all* of its fragments have reported in, then calls the callback provided
+  under `ScreenContentReadyKey`.
+
+Once the editor is running it owns the screen: `SlideoutScreen` routes Save to it, hides the Save
+button on a static screen (a revision), and lets it rename Cancel to "Close" once a provisional
+draft exists.
 
 ### Unsaved changes
 
@@ -210,6 +235,7 @@ How "dirty" is decided depends on the screen:
 | --- | --- | --- |
 | Vue page | Inertia's `form.isDirty` | Precise — reverting an edit clears it |
 | Server-rendered | any `input`/`change` in the panel | Conservative; `Craft.initUiElements()` rewrites inputs after load, so snapshot-diffing the markup would read as user edits |
+| Element editor, autosaving | never dirty | Every edit is already persisted to a provisional draft, so there's nothing to lose — prompting anyway would make every element slideout ask on close |
 
 A close that follows a successful save passes `{force: true}` and never prompts — Inertia only
 clears `isDirty` when a form's defaults are updated, so the panel still looks dirty at that moment.
@@ -342,9 +368,8 @@ Two things to know if you touch this area:
 
 ## Not supported yet
 
-- **Element drafts.** Saving an entry from a slideout writes directly; drafts, autosave and
-  provisional drafts need `Craft.ElementEditor`, which isn't wired in. See
-  [Saving](#server-rendered-screens).
+- **Live preview from a slideout.** `Craft.ElementEditor` builds its preview links off an action
+  button the Vue panel doesn't render yet, so the editor gets an empty one.
 - **Deep linking.** Opening a slideout doesn't change the URL, and it can't be linked to.
 - **Coordinated stacking with legacy slideouts.** A Vue panel opened over a
   `Craft.CpScreenSlideout` will compete with it for the shade and <kbd>Esc</kbd>.
@@ -359,6 +384,7 @@ Two things to know if you touch this area:
 | `resources/js/common/composables/screen.ts` | Screen context, shell key, props store |
 | `resources/js/pages/cp/Screen.vue` | Fallback page for screens without `inertiaPage()` |
 | `resources/js/common/slideouts/submitScreenForm.ts` | Saving for server-rendered screens |
+| `resources/js/common/slideouts/useElementEditor.ts` | `Craft.ElementEditor` bridge: drafts, autosave, tabs |
 | `resources/js/modules/settings/composables/useSettingsSave.ts` | Saving for Vue pages, both contexts |
 | `resources/js/modules/elements/composables/useElementQuickEdit.ts` | Index double-click |
 | `src/Http/Responses/CpScreenResponse.php` | The slideout branch and its two wire formats |

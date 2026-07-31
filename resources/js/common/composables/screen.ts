@@ -94,6 +94,23 @@ export function createScreenPropsStore(): ScreenPropsStore {
 export const ScreenPagePropsKey: InjectionKey<() => Record<string, unknown>> =
   Symbol('screenPageProps');
 
+/**
+ * Called by a page once its server-rendered content is actually in the
+ * document.
+ *
+ * Fragments are appended asynchronously — `appendHeadHtml()` resolves only
+ * when the screen's assets have loaded — so a shell that has to hand that
+ * markup to legacy JS (`Craft.ElementEditor`, say) can't just wait for
+ * `onMounted`, which fires while the content is still empty.
+ */
+export const ScreenContentReadyKey: InjectionKey<() => void> =
+  Symbol('screenContentReady');
+
+/** No-ops outside a shell that cares. See {@link ScreenContentReadyKey}. */
+export function useScreenContentReady(): () => void {
+  return inject(ScreenContentReadyKey, () => {});
+}
+
 export function provideScreenContext(mode: ScreenMode): void {
   provide(ScreenContextKey, reactive({mode}));
 }
