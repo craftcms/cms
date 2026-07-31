@@ -10,6 +10,7 @@
 - Fixed a bug where compiled templates could be missing the injected `{{ head() }}`, `{{ beginBody() }}`, or `{{ endBody() }}` tags. ([#19304](https://github.com/craftcms/cms/issues/19304))
 - Fixed an error that could occur when listing an element without a slug in an element index.
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5jmw-g85v-7jv2, GHSA-9c4j-cjw3-r3xx, GHSA-5r92-75j8-c534)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-hfjh-gw6x-7pv5)
 
 ## 5.10.12 - 2026-07-22
 
