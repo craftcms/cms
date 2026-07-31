@@ -2029,7 +2029,7 @@ JS, [
         return true;
     }
 
-    public static function getDestinationColsForProperty(BaseImporter $config, string $property): ?array
+    public static function getDestinationColsForProperty(BaseImporter $importer, string $property): ?array
     {
         return match ($property) {
             'addresses' => ImportHelper::getDestinationColsForFieldLayout(
@@ -2039,14 +2039,14 @@ JS, [
         };
     }
 
-    public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $config): void
+    public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $importer): void
     {
         // user addresses are super-special; they're kind of the same as Addresses field and technically they are nested elements,
         // but when added to User element, they're not "taken care of" by `NestedElementManager->maintainNestedElements()`;
         // that's why we have to prep them and then save them once we're sure that the User they belong to actually exists;
         if ($attribute['name'] === 'addresses' && isset($item['addresses'])) {
             $addressesField = new Addresses;
-            $addresses = ElementCollection::make($addressesField->normalizeValueForImport($item['addresses'], $config, $this));
+            $addresses = ElementCollection::make($addressesField->normalizeValueForImport($item['addresses'], $importer, $this));
             $this->_addresses = $addresses;
 
             Event::listen(function (ElementSaved $event) use ($addressesField) {

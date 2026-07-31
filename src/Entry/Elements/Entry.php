@@ -2772,20 +2772,20 @@ JS;
     }
 
     #[Override]
-    public function prepareNewElementForImport(BaseImporter $config, array &$data): self
+    public function prepareNewElementForImport(BaseImporter $importer, array &$data): self
     {
-        parent::prepareNewElementForImport($config, $data);
+        parent::prepareNewElementForImport($importer, $data);
 
         // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
         // we need to ensure the typeId is set
-        if ($config->fieldLayout) {
+        if ($importer->fieldLayout) {
             $allEntryTypes = app(\CraftCms\Cms\Entry\EntryTypes::class)->getAllEntryTypes();
             $allFieldLayouts = $allEntryTypes->mapWithKeys(function ($entryType) {
                 $fieldLayout = $entryType->getFieldLayout();
 
                 return [$fieldLayout->id => $fieldLayout];
             });
-            $entryType = $allFieldLayouts->firstWhere('uid', $config->fieldLayout)?->provider;
+            $entryType = $allFieldLayouts->firstWhere('uid', $importer->fieldLayout)?->provider;
             if ($entryType) {
                 $this->_typeId = $entryType->id;
                 $this->_type = $entryType;

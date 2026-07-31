@@ -1162,7 +1162,7 @@ JS, [
     }
 
     #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): mixed
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): mixed
     {
         // by default, just return the value we were given
         return $value;

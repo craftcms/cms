@@ -608,5 +608,5 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Normalizes value so that it can be imported into the field.
      */
-    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): mixed;
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): mixed;
 }

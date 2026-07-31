@@ -26,7 +26,7 @@ interface Importable
     /**
      * Prepares a new element instance for import.
      */
-    public function prepareNewElementForImport(BaseImporter $config, array &$data): self;
+    public function prepareNewElementForImport(BaseImporter $importer, array &$data): self;
 
     /**
      * Prepare query that searches for the root element we're importing into

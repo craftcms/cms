@@ -883,12 +883,12 @@ JS, [
      * The value has to be an array; each item in the array represents a field inside this singular nested entry.
      */
     #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): array
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array
     {
         if (! is_array($value)) {
             return [];
         }
 
-        return $this->normalizeNestedEntryForImport($value, $config, $this->getFieldLayout(), $rootOwner);
+        return $this->normalizeNestedEntryForImport($value, $importer, $this->getFieldLayout(), $rootOwner);
     }
 }

@@ -226,48 +226,48 @@ class Import
     /**
      * Fires a saving event, persists importer settings to the import_configs table inside a transaction, invalidates the configs cache, then fires a saved event.
      *
-     * @param BaseImporter $import The importer config to save.
+     * @param BaseImporter $importer The importer config to save.
      * @return bool
      */
-    public function saveConfig(BaseImporter $import): bool
+    public function saveConfig(BaseImporter $importer): bool
     {
-        $isNewConfig = ! $import->uid;
+        $isNewConfig = ! $importer->uid;
 
-        event($event = new ImportConfigSaving($import, $isNewConfig));
+        event($event = new ImportConfigSaving($importer, $isNewConfig));
 
         if (! $event->isValid) {
             return false;
         }
 
-        $import = $event->import;
+        $importer = $event->importer;
 
         if ($isNewConfig) {
-            $import->uid = Str::uuid7()->toString();
+            $importer->uid = Str::uuid7()->toString();
         }
 
-        $configRecord = $this->_getImportConfigModel($import->uid);
+        $configRecord = $this->_getImportConfigModel($importer->uid);
 
         DB::beginTransaction();
 
         try {
-            $configRecord->uid = $import->uid;
-            $configRecord->type = $import::class;
-            $configRecord->name = $import->name;
-            $configRecord->handle = $import->handle;
-            $configRecord->description = $import->description;
+            $configRecord->uid = $importer->uid;
+            $configRecord->type = $importer::class;
+            $configRecord->name = $importer->name;
+            $configRecord->handle = $importer->handle;
+            $configRecord->description = $importer->description;
             $settings = [
-                'file' => $import->file,
-                'className' => $import->className,
-                'transformer' => $import->transformer ? $import->transformer::class : null,
-                'map' => $import->map,
-                'matchCriteria' => $import->matchCriteria,
-                'clearableItems' => $import->clearableItems,
+                'file' => $importer->file,
+                'className' => $importer->className,
+                'transformer' => $importer->transformer ? $importer->transformer::class : null,
+                'map' => $importer->map,
+                'matchCriteria' => $importer->matchCriteria,
+                'clearableItems' => $importer->clearableItems,
             ];
-            if (property_exists($import, 'site')) {
-                $settings['site'] = $import->site->uid;
+            if (property_exists($importer, 'site')) {
+                $settings['site'] = $importer->site->uid;
             }
-            if (property_exists($import, 'fieldLayout')) {
-                $settings['fieldLayout'] = $import->fieldLayout;
+            if (property_exists($importer, 'fieldLayout')) {
+                $settings['fieldLayout'] = $importer->fieldLayout;
             }
             $configRecord->settings = $settings;
             $configRecord->save();
@@ -282,7 +282,7 @@ class Import
         // invalidate caches
         $this->configs = null;
 
-        event(new ImportConfigSaved($import, $isNewConfig));
+        event(new ImportConfigSaved($importer, $isNewConfig));
 
         return true;
     }
@@ -290,11 +290,11 @@ class Import
     /**
      * Soft-deletes the DB record for an importer config and invalidates the configs cache.
      *
-     * @param BaseImporter $import The importer config to delete.
+     * @param BaseImporter $importer The importer config to delete.
      */
-    public function deleteConfig(BaseImporter $import): void
+    public function deleteConfig(BaseImporter $importer): void
     {
-        $configRecord = $this->_getImportConfigModel($import->uid);
+        $configRecord = $this->_getImportConfigModel($importer->uid);
 
         if (! $configRecord->exists) {
             return;
@@ -528,12 +528,12 @@ class Import
     /**
      * Fires the importing event, applies map remapping, resolves/applies match criteria and clearable items, then hands the item to the importer and fires the imported event.
      *
-     * @param BaseImporter $config The importer config to import into.
+     * @param BaseImporter $importer The importer config to import into.
      * @param array $data The raw item data being imported.
      */
-    public function importItem(BaseImporter $config, array $data): void
+    public function importItem(BaseImporter $importer, array $data): void
     {
-        event($event = new DataImporting($config, $data));
+        event($event = new DataImporting($importer, $data));
 
         if (! $event->isValid) {
             return;
@@ -544,39 +544,39 @@ class Import
         // if we have a map here, hook it up; if we have both the map and the transformer,
         // then the map is used first and then transformer can do further manipulation;
         // if there's no map, the transformer acts as one on its own;
-        if ($config->map) {
-            $data = ImportHelper::remapData($config->map, $data);
+        if ($importer->map) {
+            $data = ImportHelper::remapData($importer->map, $data);
         }
 
         // todo: if we decide to include the transformer matchCriteria later on
         // (e.g. because we want it to be able to match directly to a value and not necessarily just the data key),
         // then we might want to do this once per config and not for each root item that is being imported
-        $matchCriteria = $this->normalizeMatchCriteria($config);
+        $matchCriteria = $this->normalizeMatchCriteria($importer);
 
         // this should continue to be executed on per-item basis
         $this->resolveMatchCriteria($data, $matchCriteria);
 
-        $this->applyClearableItems($data, $config->clearableItems ?? []);
+        $this->applyClearableItems($data, $importer->clearableItems ?? []);
 
-        $config->importItem($data);
+        $importer->importItem($data);
 
-        event(new DataImported($config, $data));
+        event(new DataImported($importer, $data));
     }
 
     /**
      * Normalizes match criteria into an array where keys are the fields/attributes/properties to update,
      * and values containing the incoming data keys.
      */
-    private function normalizeMatchCriteria(BaseImporter $config): array
+    private function normalizeMatchCriteria(BaseImporter $importer): array
     {
         // the order of importance is:
         // matchCriteria coming from the incoming data are overwritten by
         // matchCriteria coming from the UI or file-based config (those two never exist together), are overwritten by
 
-        $map = $config->map;
+        $map = $importer->map;
 
         // the matchCriteria that are coming from the UI or from a file-based config
-        $matchCriteria = $config->matchCriteria;
+        $matchCriteria = $importer->matchCriteria;
 
         // ones coming from the UI will have a value of 1
         // ones coming from the file-based config should be strings that point to the original data keys
@@ -706,13 +706,13 @@ class Import
     /**
      * Reads and formats the importer's source file, then imports each item one by one.
      *
-     * @param BaseImporter $config The importer config to use.
+     * @param BaseImporter $importer The importer config to use.
      */
-    public function import(BaseImporter $config): void
+    public function import(BaseImporter $importer): void
     {
-        $filePath = BaseImporter::resolvedFilePath($config->file);
+        $filePath = BaseImporter::resolvedFilePath($importer->file);
         foreach ($this->getFormattedData($filePath) as $item) {
-            $this->importItem($config, $item);
+            $this->importItem($importer, $item);
         }
     }
 
@@ -813,16 +813,16 @@ class Import
     /**
      * Runs a Fractal transformer over the raw item data (with config/element as meta) and returns the transformed array.
      *
-     * @param BaseImporter $config The importer config providing the transformer.
+     * @param BaseImporter $importer The importer config providing the transformer.
      * @param array $data The raw item data to transform.
      * @param mixed $element The element associated with the item, if any.
      * @return array
      */
-    final public function processData(BaseImporter $config, array $data, mixed $element): array
+    final public function processData(BaseImporter $importer, array $data, mixed $element): array
     {
         // turn the data from the json/csv/xml file into a fractal collection
-        $resource = new Item($data, $config->transformer);
-        $resource->setMeta(['config' => $config, 'element' => $element]);
+        $resource = new Item($data, $importer->transformer);
+        $resource->setMeta(['config' => $importer, 'element' => $element]);
 
         // Load Fractal
         $fractalManager = new Manager;

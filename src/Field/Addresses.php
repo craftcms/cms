@@ -912,7 +912,7 @@ JS, [
      * The value has to be an array; each item in the array represents an address.
      */
     #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): array
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array
     {
         if (! is_array($value)) {
             return [];
@@ -966,7 +966,7 @@ JS, [
 
             Arr::forget($address, ['matchCriteria']);
 
-            $normalizedValue[$newKey] = $this->normalizeNestedEntryForImport($address, $config, $fieldLayout, $addressElement);
+            $normalizedValue[$newKey] = $this->normalizeNestedEntryForImport($address, $importer, $fieldLayout, $addressElement);
         }
 
         return $normalizedValue;

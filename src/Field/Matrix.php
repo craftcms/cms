@@ -1780,7 +1780,7 @@ JS, [
      * or by "new:X" key where X is an incremented integer
      */
     #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $config, ?ElementInterface $rootOwner = null): array
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array
     {
         if (! is_array($value)) {
             return [];
@@ -1852,7 +1852,7 @@ JS, [
             Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
 
             $normalizedValue['sortOrder'][] = $newKey;
-            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $config, $entryType->getFieldLayout(), $entryElement);
+            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $importer, $entryType->getFieldLayout(), $entryElement);
         }
 
         // if we have a predefined sort order and entries were not a list - use that prefefined sortOrder
@@ -1866,7 +1866,7 @@ JS, [
         return $normalizedValue;
     }
 
-    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $config, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
+    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
     {
         // ensure each entry has the custom fields wrapped in 'fields' key?
         if (! isset($dataItem['fields'])) {
@@ -1888,7 +1888,7 @@ JS, [
             $dataItem['fields'] = $customFields;
         }
 
-        return self::traitNormalizeNestedEntryForImport($dataItem, $config, $fieldLayout, $owner);
+        return self::traitNormalizeNestedEntryForImport($dataItem, $importer, $fieldLayout, $owner);
     }
 
     /**

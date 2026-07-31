@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
-use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Import;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Validator;
 use Override;
@@ -131,7 +131,7 @@ class ModelImporter extends BaseImporter
     {
         $filePath = BaseImporter::resolvedFilePath($this->file);
 
-        return app(Import::class)->getDataHeadings($filePath);
+        return Import::getDataHeadings($filePath);
     }
 
     #[Override]
@@ -139,7 +139,7 @@ class ModelImporter extends BaseImporter
     {
         $model = $this->getModel($data);
 
-        $item = app(Import::class)->processData($this, $data, $model);
+        $item = Import::processData($this, $data, $model);
 
         $attributeHandles = Schema::getColumnListing($model->getTable());
         $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));

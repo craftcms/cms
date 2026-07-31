@@ -15,10 +15,10 @@ use CraftCms\Cms\Support\Facades\Fields;
 
 class ImportHelper
 {
-    public static function getImportableProperties(BaseImporter $config): array
+    public static function getImportableProperties(BaseImporter $importer): array
     {
         // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
-        $class = new \ReflectionClass($config->className);
+        $class = new \ReflectionClass($importer->className);
         $properties = $class->getProperties();
         $properties = array_values(array_filter($properties, fn ($property) => ! empty($property->getAttributes(Importable::class))));
 
@@ -39,9 +39,9 @@ class ImportHelper
         }, $properties);
     }
 
-    public static function getImportableContainerProperties(BaseImporter $config): array
+    public static function getImportableContainerProperties(BaseImporter $importer): array
     {
-        $importableProperties = self::getImportableProperties($config);
+        $importableProperties = self::getImportableProperties($importer);
         $importableContainerProperties = [];
 
         foreach ($importableProperties as $property) {
@@ -78,7 +78,7 @@ class ImportHelper
     }
 
     public static function getDestinationColsForProperty(
-        BaseImporter $config,
+        BaseImporter $importer,
         string $property,
         ?FieldLayout $fieldLayout,
         ?string $prefix = null

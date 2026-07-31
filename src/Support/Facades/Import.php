@@ -15,14 +15,14 @@ use Illuminate\Support\Facades\Facade;
  * @method static LaravelCollection getNonEditableConfigs()
  * @method static ?BaseImporter getConfigByHandle(?string $handle, bool $editableOnly = false)
  * @method static ?BaseImporter getConfigByUid(string $uid, bool $editableOnly = false)
- * @method static bool saveConfig(BaseImporter $import)
- * @method static void deleteConfig(BaseImporter $import)
+ * @method static bool saveConfig(BaseImporter $importer)
+ * @method static void deleteConfig(BaseImporter $importer)
  * @method static LaravelCollection getImportRuns()
  * @method static ?ImportRun getImportRunByHandle(?string $handle)
  * @method static ?ImportRun getImportRunByUid(string $uid)
  * @method static bool saveRun(ImportRun $run)
  * @method static void deleteRun(ImportRun $run)
- * @method static void import(BaseImporter $config)
+ * @method static void import(BaseImporter $importer)
  * @method static array getTypes()
  *
  * @see \CraftCms\Cms\Import\Import

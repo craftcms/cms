@@ -11,11 +11,11 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Importer;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -380,7 +380,7 @@ class ElementImporter extends BaseImporter
     {
         $filePath = BaseImporter::resolvedFilePath($this->file);
 
-        return app(Import::class)->getDataHeadings($filePath);
+        return Import::getDataHeadings($filePath);
     }
 
     #[Override]
@@ -401,7 +401,7 @@ class ElementImporter extends BaseImporter
         $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         // }
 
-        $item = app(Import::class)->processData($this, $data, $element);
+        $item = Import::processData($this, $data, $element);
 
         // normalization and validation of attributes happens in the transformer and in the setAttributesForImport() method
         $attributeHandles = $element->attributes();

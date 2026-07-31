@@ -99,9 +99,9 @@ class ImportConfigController
         ]);
     }
 
-    public function edit(?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
+    public function edit(?BaseImporter $importer = null, ?string $handle = null): CpScreenResponse
     {
-        $handle ??= $import->handle ?? $this->request->input('handle');
+        $handle ??= $importer->handle ?? $this->request->input('handle');
 
         if (is_null($handle)) {
             return $this->create();
@@ -110,11 +110,11 @@ class ImportConfigController
         abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
-        if ($import === null) {
-            $import = $found;
+        if ($importer === null) {
+            $importer = $found;
         }
 
-        return $this->cpScreenResponse($import);
+        return $this->cpScreenResponse($importer);
     }
 
     public function store(): Response
@@ -163,17 +163,17 @@ class ImportConfigController
         );
     }
 
-    public function editFieldLayoutProvider(?ElementImporter $import = null, ?string $handle = null): CpScreenResponse
+    public function editFieldLayoutProvider(?ElementImporter $importer = null, ?string $handle = null): CpScreenResponse
     {
-        $handle ??= $import->handle ?? $this->request->input('handle');
+        $handle ??= $importer->handle ?? $this->request->input('handle');
 
         abort_if(is_null($handle), 404, 'Import config not found');
         abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
-        if ($import === null) {
-            /** @var ElementImporter $import */
-            $import = $found;
+        if ($importer === null) {
+            /** @var ElementImporter $importer */
+            $importer = $found;
         }
 
         $currentUser = $this->request->craftUser();
@@ -181,15 +181,15 @@ class ImportConfigController
         $templateVars = [
             'readOnly' => $this->readOnly,
             'static' => ! $currentUser?->can('editImportConfigs'),
-            'import' => $import,
-            'availableFieldLayoutProviders' => $import->getAvailableFieldLayoutProviders(),
+            'import' => $importer,
+            'availableFieldLayoutProviders' => $importer->getAvailableFieldLayoutProviders(),
         ];
 
         return new CpScreenResponse()
-            ->title(t('Edit Field Layout Provider', ['name' => $import->name]))
+            ->title(t('Edit Field Layout Provider', ['name' => $importer->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Configs'), 'import/configs')
-            ->addCrumb(t($import->name), 'import/configs/'.$import->handle)
+            ->addCrumb(t($importer->name), 'import/configs/'.$importer->handle)
             ->contentTemplate('import/configs/_field-layout-provider.twig', $templateVars)
             ->unless(
                 $this->readOnly || ! $currentUser?->can('editImportConfigs'),
@@ -225,38 +225,38 @@ class ImportConfigController
             'uid' => ['string', 'max:36'],
         ]);
 
-        abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
+        abort_if(is_null($importer = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
         $this->request->validate([
             'fieldLayout' => ['nullable', 'string', 'max:255'],
         ]);
 
-        /** @var ElementImporter $import */
-        if (property_exists($import, 'fieldLayout')) {
-            $import->fieldLayout($this->request->input('fieldLayout', $import->fieldLayout));
+        /** @var ElementImporter $importer */
+        if (property_exists($importer, 'fieldLayout')) {
+            $importer->fieldLayout($this->request->input('fieldLayout', $importer->fieldLayout));
         }
 
-        if (! $this->importService->saveConfig($import)) {
-            return $this->asModelFailure($import, t('Couldn’t save import config.'), 'import');
+        if (! $this->importService->saveConfig($importer)) {
+            return $this->asModelFailure($importer, t('Couldn’t save import config.'), 'import');
         }
 
         return $this->asModelSuccess(
-            $import,
+            $importer,
             t('Import config saved.'),
             'import',
         );
     }
 
-    public function editMap(?BaseImporter $import = null, ?string $handle = null): CpScreenResponse
+    public function editMap(?BaseImporter $importer = null, ?string $handle = null): CpScreenResponse
     {
-        $handle ??= $import->handle ?? $this->request->input('handle');
+        $handle ??= $importer->handle ?? $this->request->input('handle');
 
         abort_if(is_null($handle), 404, 'Import config not found');
         abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
-        if ($import === null) {
-            $import = $found;
+        if ($importer === null) {
+            $importer = $found;
         }
 
         $currentUser = $this->request->craftUser();
@@ -264,16 +264,16 @@ class ImportConfigController
         $templateVars = [
             'readOnly' => $this->readOnly,
             'static' => ! $currentUser?->can('editImportConfigs'),
-            'import' => $import,
-            'destinationCols' => $import->getDestinationCols(),
-            'sourceDataCols' => $import->getSourceDataCols(),
+            'import' => $importer,
+            'destinationCols' => $importer->getDestinationCols(),
+            'sourceDataCols' => $importer->getSourceDataCols(),
         ];
 
         $response = new CpScreenResponse()
-            ->title(t('Edit map', ['name' => $import->name]))
+            ->title(t('Edit map', ['name' => $importer->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Configs'), 'import/configs')
-            ->addCrumb(t($import->name), 'import/configs/'.$import->handle)
+            ->addCrumb(t($importer->name), 'import/configs/'.$importer->handle)
             ->contentTemplate('import/configs/_map.twig', $templateVars)
             ->unless(
                 $this->readOnly || ! $currentUser?->can('editImportConfigs'),
@@ -294,8 +294,8 @@ class ImportConfigController
                 },
             );
 
-        if ($import->isElementImport()) {
-            $response->addCrumb(t('Field Layout Provider'), 'import/configs/'.$import->handle.'/field-layout-provider');
+        if ($importer->isElementImport()) {
+            $response->addCrumb(t('Field Layout Provider'), 'import/configs/'.$importer->handle.'/field-layout-provider');
         }
 
         return $response;
@@ -424,7 +424,7 @@ class ImportConfigController
             );
     }
 
-    private function applyCurrentPartialValue(BaseImporter $import, string $fieldHandle, mixed $currentPartialValue, string $type): void
+    private function applyCurrentPartialValue(BaseImporter $importer, string $fieldHandle, mixed $currentPartialValue, string $type): void
     {
         if (is_string($currentPartialValue)) {
             $currentPartialValue = Json::decodeIfJson($currentPartialValue);
@@ -433,16 +433,16 @@ class ImportConfigController
             // if the config we have in the hidden field is different to the one coming from the server,
             // use the one coming from the hidden field
             $fieldHandleArray = Arr::bracketsToArray($fieldHandle);
-            $savedPartialValue = $import->$type ? array_reduce(
+            $savedPartialValue = $importer->$type ? array_reduce(
                 $fieldHandleArray,
                 static fn ($value, $part) => $value && is_iterable($value)
                     ? $value[$part] ?? null
                     : null,
-                $import->$type
+                $importer->$type
             ) : null;
 
             if ($currentPartialValue != $savedPartialValue) {
-                $value = $import->$type;
+                $value = $importer->$type;
                 $ref = &$value;
                 foreach ($fieldHandleArray as $part) {
                     if (! is_array($ref[$part] ?? null)) {
@@ -452,7 +452,7 @@ class ImportConfigController
                 }
                 $ref = $currentPartialValue;
                 unset($ref);
-                $import->$type($value);
+                $importer->$type($value);
             }
         }
     }
@@ -544,17 +544,17 @@ class ImportConfigController
         ]));
     }
 
-    private function cpScreenResponse(?BaseImporter $import = null): CpScreenResponse
+    private function cpScreenResponse(?BaseImporter $importer = null): CpScreenResponse
     {
         $currentUser = $this->request->craftUser();
 
         $templateVars = [
             'readOnly' => $this->readOnly,
             'static' => ! $currentUser?->can('editImportConfigs'),
-            'import' => $import,
+            'import' => $importer,
         ];
 
-        if ($import === null) {
+        if ($importer === null) {
             $templateVars['importerTypes'] = array_map(fn ($type) => [
                 'label' => $type::displayName(),
                 'value' => $type,
@@ -563,19 +563,19 @@ class ImportConfigController
         }
 
         return new CpScreenResponse()
-            ->title(! isset($import->uid) ? t('Create a new import config') : t('Edit {name} import config', ['name' => $import->name]))
+            ->title(! isset($importer->uid) ? t('Create a new import config') : t('Edit {name} import config', ['name' => $importer->name]))
             ->addCrumb(t('Import'), 'import')
             ->addCrumb(t('Configs'), 'import/configs')
             ->contentTemplate('import/configs/_edit.twig', $templateVars)
             ->unless(
                 $this->readOnly || ! $currentUser?->can('editImportConfigs'),
-                callback: function (CpScreenResponse $response) use ($import) {
+                callback: function (CpScreenResponse $response) use ($importer) {
                     $response
                         ->action('import/configs/save')
                         ->redirectUrl('import/configs')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'import/configs/{handle}',
-                            'shortcut' => ! $import?->isElementImport(),
+                            'shortcut' => ! $importer?->isElementImport(),
                             'retainScroll' => true,
                         ])
                         ->addAltAction(t('Delete'), [
@@ -583,11 +583,11 @@ class ImportConfigController
                             'redirect' => 'import/configs',
                             'destructive' => true,
                             'confirm' => t('Are you sure you want to delete “{name}”?', [
-                                'name' => $import?->name,
+                                'name' => $importer?->name,
                             ]),
                         ]);
 
-                    if ($import?->isElementImport()) {
+                    if ($importer?->isElementImport()) {
                         $response->addAltAction(t('Save and configure field layout provider'), [
                             'redirect' => 'import/configs/{handle}/field-layout-provider',
                             'shortcut' => true,

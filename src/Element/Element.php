@@ -750,10 +750,10 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     }
 
     #[Override]
-    public function prepareNewElementForImport(BaseImporter $config, array &$data): self
+    public function prepareNewElementForImport(BaseImporter $importer, array &$data): self
     {
         // ensure site is set
-        $this->siteId = $config->site->id;
+        $this->siteId = $importer->site->id;
 
         return $this;
     }

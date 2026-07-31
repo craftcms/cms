@@ -19,7 +19,7 @@ trait ImportableElementContainerField
     /**
      * @see ImportableElementContainerFieldInterface::normalizeNestedEntryForImport()
      */
-    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $config, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
+    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
     {
         $fields = $dataItem['fields'] ?? [];
 
@@ -35,7 +35,7 @@ trait ImportableElementContainerField
                 continue;
             }
 
-            $dataItem['fields'][$handle] = $field->normalizeValueForImport($value, $config, $owner);
+            $dataItem['fields'][$handle] = $field->normalizeValueForImport($value, $importer, $owner);
         }
 
         return $dataItem;

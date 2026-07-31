@@ -3485,20 +3485,20 @@ JS;
     }
 
     #[Override]
-    public function prepareNewElementForImport(BaseImporter $config, array &$data): self
+    public function prepareNewElementForImport(BaseImporter $importer, array &$data): self
     {
-        parent::prepareNewElementForImport($config, $data);
+        parent::prepareNewElementForImport($importer, $data);
 
         // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
         // we need to ensure the volumeId is set
-        if ($config->fieldLayout) {
+        if ($importer->fieldLayout) {
             $allVolumes = Volumes::getAllVolumes();
             $allFieldLayouts = $allVolumes->mapWithKeys(function ($volume) {
                 $fieldLayout = $volume->getFieldLayout();
 
                 return [$fieldLayout->id => $fieldLayout];
             });
-            $volume = $allFieldLayouts->firstWhere('uid', $config->fieldLayout)?->provider;
+            $volume = $allFieldLayouts->firstWhere('uid', $importer->fieldLayout)?->provider;
             if ($volume) {
                 $this->setVolumeId($volume->id);
                 if (isset($data['matchCriteria']['volumeId'])) {
