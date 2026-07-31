@@ -244,9 +244,6 @@ export default class CraftButton extends LionButtonSubmit {
 
   private announcementTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /** The caller's `type` before link mode forced it to "button". */
-  private originalType: string | null = null;
-
   private get isLink(): boolean {
     return !!this.href && !this.disabled;
   }
