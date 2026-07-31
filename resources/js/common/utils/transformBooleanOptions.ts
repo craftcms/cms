@@ -14,7 +14,7 @@ function addBooleanData(
     ? {
         ...option,
         data: {
-          ...(option.data || {}),
+          ...option.data,
           hint: option.data?.boolean === '1' ? trueLabel : falseLabel,
           indicator: option.data?.boolean
             ? {

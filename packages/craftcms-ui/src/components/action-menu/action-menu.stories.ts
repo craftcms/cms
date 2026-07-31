@@ -124,7 +124,7 @@ export const DataDrivenDisabled: Story = {
 export const SlotBasedDisabled: Story = {
   render: () =>
     html`<craft-action-menu disabled>
-      <craft-button type="button" slot="invoker" appearance="secondary">
+      <craft-button type="button" slot="invoker" variant="fill">
         Custom invoker
       </craft-button>
       <div slot="content">
@@ -140,7 +140,7 @@ export const SlotBasedDisabled: Story = {
 export const DataDrivenWithCustomInvoker: Story = {
   render: () =>
     html`<craft-action-menu .actions="${dataDrivenActions}">
-      <craft-button type="button" slot="invoker" appearance="secondary">
+      <craft-button type="button" slot="invoker" variant="fill">
         Custom invoker
       </craft-button>
     </craft-action-menu>`,
@@ -156,7 +156,7 @@ export const DataDrivenWithCustomInvoker: Story = {
 export const Searchable: Story = {
   render: () =>
     html`<craft-action-menu searchable>
-      <craft-button type="button" slot="invoker" appearance="secondary">
+      <craft-button type="button" slot="invoker" variant="fill">
         Add a field
       </craft-button>
 
@@ -218,7 +218,7 @@ export const SearchableDataDriven: Story = {
 export const SearchableWithHiddenItems: Story = {
   render: () =>
     html`<craft-action-menu searchable>
-      <craft-button type="button" slot="invoker" appearance="secondary">
+      <craft-button type="button" slot="invoker" variant="fill">
         Add a field
       </craft-button>
 

@@ -4,6 +4,7 @@
   import {
     appendBodyHtml,
     appendHeadHtml,
+    ButtonVariant,
     serializeFormInputs,
     t,
   } from '@craftcms/ui';
@@ -316,7 +317,7 @@
       <craft-button
         type="button"
         slot="invoker"
-        appearance="filled"
+        :variant="ButtonVariant.Dashed"
         v-if="!readOnly"
       >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>

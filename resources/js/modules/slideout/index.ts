@@ -83,7 +83,7 @@ window.addEventListener('craft:edit-element', ((ev: CustomEvent) => {
   // returned to it.
   (trigger as HTMLElement | undefined)?.focus();
 
-  const editorSettings = {...(settings ?? {}), elementType};
+  const editorSettings = {...settings, elementType};
   // If the settings have a draftId but the (possibly since-replaced) card no
   // longer has a `data-draft-id` attribute, drop it so the editor retrieves
   // the current element.

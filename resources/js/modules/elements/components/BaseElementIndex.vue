@@ -2,7 +2,7 @@
   import {computed, ref, watch} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import type {Table} from '@tanstack/vue-table';
-  import {Appearance, t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import Text from '@/common/components/Text.vue';
   import Select from '@/common/form/Select.vue';
   import BulkActionsBar from '@/modules/elements/components/BulkActionsBar.vue';
@@ -143,7 +143,7 @@
               type="button"
               @click="table.previousPage()"
               :disabled="!table.getCanPreviousPage()"
-              :appearance="Appearance.Plain"
+              :variant="ButtonVariant.Plain"
               icon
               size="small"
             >
@@ -172,7 +172,7 @@
               @click="table.nextPage()"
               :disabled="!table.getCanNextPage()"
               size="small"
-              :appearance="Appearance.Plain"
+              :variant="ButtonVariant.Plain"
               icon
             >
               <craft-icon

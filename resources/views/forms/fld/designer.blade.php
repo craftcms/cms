@@ -64,7 +64,7 @@
                     <craft-button
                         type="button"
                         aria-pressed="true"
-                        appearance="outline"
+                        variant="outline"
                         size="small"
                         data-library="field"
                         class="w-full"
@@ -75,7 +75,7 @@
                         type="button"
                         aria-pressed="false"
                         data-library="ui"
-                        appearance="outline"
+                        variant="outline"
                         size="small"
                         class="w-full"
                         @disabled($disabled)

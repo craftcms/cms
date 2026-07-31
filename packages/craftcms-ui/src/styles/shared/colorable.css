@@ -243,26 +243,26 @@
   --c-color-neutral-on-loud: var(--color-slate-50);
 
   /* Semantics colors - accent */
-  --c-color-accent-fill-quiet: var(--color-red-50);
-  --c-color-accent-fill-normal: var(--color-red-100);
-  --c-color-accent-fill-loud: var(--color-red-600);
-  --c-color-accent-border-quiet: var(--color-red-400);
-  --c-color-accent-border-normal: var(--color-red-600);
-  --c-color-accent-border-loud: var(--color-red-800);
-  --c-color-accent-on-quiet: var(--color-red-800);
-  --c-color-accent-on-normal: var(--color-red-950);
-  --c-color-accent-on-loud: var(--color-red-50);
+  --c-color-accent-fill-quiet: var(--color-blue-50);
+  --c-color-accent-fill-normal: var(--color-blue-100);
+  --c-color-accent-fill-loud: var(--color-blue-600);
+  --c-color-accent-border-quiet: var(--color-blue-400);
+  --c-color-accent-border-normal: var(--color-blue-600);
+  --c-color-accent-border-loud: var(--color-blue-800);
+  --c-color-accent-on-quiet: var(--color-blue-800);
+  --c-color-accent-on-normal: var(--color-blue-950);
+  --c-color-accent-on-loud: var(--color-blue-50);
 
   /* Semantics colors - info */
-  --c-color-info-fill-quiet: var(--color-blue-50);
-  --c-color-info-fill-normal: var(--color-blue-100);
-  --c-color-info-fill-loud: var(--color-blue-600);
-  --c-color-info-border-quiet: var(--color-blue-400);
-  --c-color-info-border-normal: var(--color-blue-600);
-  --c-color-info-border-loud: var(--color-blue-800);
-  --c-color-info-on-quiet: var(--color-blue-800);
-  --c-color-info-on-normal: var(--color-blue-950);
-  --c-color-info-on-loud: var(--color-blue-50);
+  --c-color-info-fill-quiet: var(--color-sky-50);
+  --c-color-info-fill-normal: var(--color-sky-100);
+  --c-color-info-fill-loud: var(--color-sky-600);
+  --c-color-info-border-quiet: var(--color-sky-400);
+  --c-color-info-border-normal: var(--color-sky-600);
+  --c-color-info-border-loud: var(--color-sky-800);
+  --c-color-info-on-quiet: var(--color-sky-800);
+  --c-color-info-on-normal: var(--color-sky-950);
+  --c-color-info-on-loud: var(--color-sky-50);
 
   /* Semantics colors - success */
   --c-color-success-fill-quiet: var(--color-emerald-50);

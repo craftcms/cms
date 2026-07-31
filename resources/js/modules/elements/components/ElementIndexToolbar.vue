@@ -75,7 +75,7 @@
               type="button"
               icon
               size="small"
-              appearance="plain"
+              variant="plain"
               v-if="search"
               @click="search = ''"
             >
@@ -85,7 +85,7 @@
               type="button"
               icon
               size="small"
-              appearance="plain"
+              variant="plain"
               @click="filterActive = true"
               :class="{'is-active': !!conditions}"
             >
@@ -113,7 +113,7 @@
         <template v-for="viewMode in viewModes" :key="viewMode.mode">
           <craft-button
             type="button"
-            :appearance="Appearance.Fill"
+            :variant="Appearance.Fill"
             :icon="viewMode.icon"
             :aria-label="viewMode.title"
             :value="viewMode.mode"
