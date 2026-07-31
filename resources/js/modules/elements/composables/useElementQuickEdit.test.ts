@@ -1,14 +1,21 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 const openSlideout = vi.hoisted(() => vi.fn());
+const refreshResults = vi.hoisted(() => vi.fn());
 
 vi.mock('@/common/slideouts', () => ({openSlideout}));
+vi.mock('@/modules/elements/composables/useElementIndexTable', () => ({
+  useElementIndexTable: () => ({refreshResults}),
+}));
 
 const {useElementQuickEdit} = await import('./useElementQuickEdit');
 
 const {onDblClick} = useElementQuickEdit();
 
-beforeEach(() => openSlideout.mockReset());
+beforeEach(() => {
+  openSlideout.mockReset();
+  refreshResults.mockReset();
+});
 afterEach(() => {
   document.body.innerHTML = '';
 });
@@ -193,5 +200,50 @@ describe('useElementQuickEdit', () => {
     dblclick(document.body);
 
     expect(openSlideout).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * A save in the slideout has to show up in the row behind it. A full
+ * `router.reload()` would work but throws away scroll position and the table's
+ * selection, so the index asks for just the results.
+ */
+describe('refreshing the index after a save', () => {
+  /** The `onSaved` handler `useElementQuickEdit` registered with the panel. */
+  function openedWith(): (result: {draft?: boolean}) => void {
+    const {postDate} = renderRow();
+    dblclick(postDate);
+
+    return openSlideout.mock.calls[0]![1].onSaved;
+  }
+
+  it('pulls fresh rows without leaving the page', () => {
+    openedWith()({});
+
+    // The index's own partial reload — not a full visit, and not the
+    // bulk-action one, which would clear the selection too.
+    expect(refreshResults).toHaveBeenCalled();
+  });
+
+  it('debounces autosaved drafts into one refresh', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const onSaved = openedWith();
+
+      onSaved({draft: true});
+      onSaved({draft: true});
+      onSaved({draft: true});
+
+      // Typing shouldn't cost a request per keystroke-batch…
+      expect(refreshResults).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(600);
+
+      // …but the last one always lands.
+      expect(refreshResults).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

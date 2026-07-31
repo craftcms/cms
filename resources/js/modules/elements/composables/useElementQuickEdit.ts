@@ -1,4 +1,6 @@
-import {openSlideout} from '@/common/slideouts';
+import {useDebounceFn} from '@vueuse/core';
+import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
+import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
 
 /**
  * Anything in a row that owns its own click. Double-clicking one of these
@@ -34,6 +36,27 @@ const INTERACTIVE_SELECTOR = [
  * without either having to know about it.
  */
 export function useElementQuickEdit() {
+  // The active index's partial reload — the same one a bulk action triggers,
+  // minus clearing the selection. Editing one row shouldn't deselect anything.
+  const {refreshResults} = useElementIndexTable();
+
+  /**
+   * Drafts autosave as the user types, and each one is a chance for the row to
+   * drift out of date. Trailing-edge only: mid-word rows aren't worth a
+   * request, and the last one always lands.
+   */
+  const refreshSoon = useDebounceFn(refreshResults, 600);
+
+  function onSaved(result: SlideoutSaveResult): void {
+    if (result.draft) {
+      void refreshSoon();
+
+      return;
+    }
+
+    refreshResults();
+  }
+
   /**
    * The row (table) or card (cards view) an event landed in.
    *
@@ -109,6 +132,7 @@ export function useElementQuickEdit() {
 
     void openSlideout(element.dataset.cpUrl!, {
       opener: row instanceof HTMLElement ? row : null,
+      onSaved,
     });
   }
 

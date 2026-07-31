@@ -143,6 +143,7 @@
       tabs: tabsEl,
     },
     onSaved: handleElementSaved,
+    onDraftSaved: handleElementDraftSaved,
     onError: handleElementSaveError,
   });
 
@@ -203,6 +204,16 @@
     if (!handled) {
       router.reload();
     }
+  }
+
+  /**
+   * An autosaved draft. The panel stays open — this only lets the opener show
+   * the provisional changes, the way the legacy index picks up a `saveDraft`
+   * broadcast.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function handleElementDraftSaved(response: any): void {
+    slideout?.saved({draft: true, data: response?.data});
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

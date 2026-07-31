@@ -41,6 +41,11 @@ export interface UseElementEditorOptions {
   slideout: SlideoutController | null;
   onSaved: (response: any) => void;
   /**
+   * Called after each autosaved draft, while the panel stays open. Fires as
+   * often as the editor decides to save — debounce anything expensive.
+   */
+  onDraftSaved: (response: any) => void;
+  /**
    * Called on a failed save for whatever the shell owns — the error toast, and
    * rethrowing anything that isn't a validation failure. Field-level messages,
    * tab indicators and the server's error summary are drawn into the screen's
@@ -395,6 +400,9 @@ export function useElementEditor(
 
     editor.value.on('beforeSubmit', () => (saving.value = true));
     editor.value.on('afterSubmit', () => (saving.value = false));
+    editor.value.on('afterSaveDraft', (event: any) =>
+      options.onDraftSaved(event?.response)
+    );
 
     isStatic.value = Boolean(editor.value.settings.isStatic);
     autosaves.value = Boolean(

@@ -24,6 +24,13 @@ export interface SlideoutInstance {
 export interface SlideoutSaveResult {
   /** Whatever the controller returned for the saved record, if anything. */
   data?: Record<string, unknown>;
+  /**
+   * True for an autosaved draft rather than a finished save.
+   *
+   * The panel stays open and keeps saving as the user types, so an opener that
+   * refreshes on this should debounce and must not treat it as "done".
+   */
+  draft?: boolean;
 }
 
 export interface OpenSlideoutOptions {

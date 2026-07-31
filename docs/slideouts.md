@@ -210,6 +210,9 @@ Registering `onSaved` also **takes over refreshing**: `saved()` returns `true`, 
 its blanket reload. `SlideoutButton` wires this to its `success` emit, so both of its call sites
 refresh one prop instead of the page.
 
+The result carries `draft: true` for an autosaved draft rather than a finished save. The panel stays
+open and keeps saving as the user types, so an opener that refreshes on it should debounce.
+
 > Save paths must call `saved()` **before** `close()` — closing drops the panel from the store, and
 > its handler with it. `slideouts.test.ts` pins that.
 
@@ -375,6 +378,27 @@ The behaviour lives in `useElementQuickEdit` and reads its metadata from the ele
 `data-cp-url` / `data-editable` / `data-trashed` attributes. Those come from
 `ElementHtml::elementChipHtml()` — the generic `chipHtml()` does **not** emit them, so an index
 rendering chips the other way won't be double-clickable.
+
+### Keeping the row in sync
+
+Edits made in the slideout show up in the row behind it without a page reload. `useElementQuickEdit`
+registers an `onSaved` handler that calls the index's own `refreshResults()` — the partial Inertia
+reload of `data` / `pagination` / `badgeCounts` that bulk actions already use, minus the selection
+clear, since editing one row shouldn't deselect anything.
+
+That covers both halves of an edit:
+
+| | When | Row shows |
+| --- | --- | --- |
+| Autosaved draft | debounced 600ms after each `afterSaveDraft` | the provisional title, with the *Edited* status badge |
+| Full save | immediately | the applied values, badge gone |
+
+Provisional changes appear because `DisplayedInIndex::indexData()` already runs
+`Drafts::loadProvisionalChanges()` over the elements it fetches — the refreshed rows carry them
+without the index having to know drafts exist.
+
+The shell, the sources sidebar, scroll position and the table's selection all survive: only the
+result props come back, and `rowSelection` is keyed by element id and lives outside the table.
 
 ## Coexisting with the legacy stack
 
