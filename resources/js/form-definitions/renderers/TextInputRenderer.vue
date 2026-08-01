@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import type {FormElementBinding, JsonValue} from '../types';
+  import CraftInputRenderer from './CraftInputRenderer.vue';
 
   const props = defineProps<{
     config: Record<string, JsonValue>;
@@ -18,21 +19,14 @@
 
     return typeof placeholder === 'string' ? placeholder : undefined;
   });
-
-  function updateValue(event: Event): void {
-    emit(
-      'update:value',
-      (event.target as HTMLElementTagNameMap['craft-input']).value
-    );
-  }
 </script>
 
 <template>
-  <craft-input
-    v-bind="attributes"
+  <CraftInputRenderer
+    :attributes="attributes"
     type="text"
     :value="value"
     :placeholder="placeholder"
-    @input="updateValue"
-  ></craft-input>
+    @update:value="emit('update:value', $event)"
+  />
 </template>

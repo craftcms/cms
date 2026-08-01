@@ -136,10 +136,17 @@ describe('Form Definition renderer', () => {
     const money = inputs.find(
       (input) => input.name === 'settings[defaultValue]'
     )!;
+    const uiModeField =
+      select.closest<HTMLElementTagNameMap['craft-field']>('craft-field')!;
+    await uiModeField.updateComplete;
 
     expect(select.modelValue).toBe('enlarged');
     expect(select.getAttribute('aria-required')).toBe('true');
-    expect(container.querySelector('label')?.textContent).toContain('*');
+    expect(
+      container
+        .querySelector('craft-field > label[slot="label"]')
+        ?.querySelector('.required')
+    ).not.toBeNull();
     expect(number.value).toBe('');
     expect(number.type).toBe('number');
     expect(number.getAttribute('min')).toBe('1');
@@ -290,9 +297,10 @@ describe('Form Definition renderer', () => {
     expect(diagnostic.textContent).toContain('vendor/color-tools');
   });
 
-  it('gives a plugin container its rendered children through the default slot', () => {
+  it('gives a plugin container its rendered children while retaining generic presentation state', async () => {
     const registry = createCpComponentRegistry();
     const container = document.createElement('div');
+    const values = reactive({settings: {enabled: true, handle: 'news'}});
     const pluginContainer = defineComponent({
       inheritAttrs: false,
       setup(_, {slots}) {
@@ -313,6 +321,8 @@ describe('Form Definition renderer', () => {
         elements: [
           {
             type: 'color-tools:palette-group',
+            width: 50,
+            visibleWhen: {name: 'enabled', operator: 'equals', value: true},
             plugin: {
               handle: 'color-tools',
               name: 'Color Tools',
@@ -323,7 +333,7 @@ describe('Form Definition renderer', () => {
         ],
       },
       bindingScope: 'settings',
-      values: {settings: {handle: 'news'}},
+      values,
       errors: {},
     });
 
@@ -336,6 +346,17 @@ describe('Form Definition renderer', () => {
     expect(container.querySelector('craft-input')!.name).toBe(
       'settings[handle]'
     );
+    const plugin = container.querySelector<HTMLElement>(
+      '[data-plugin-container]'
+    )!;
+    const wrapper = plugin.parentElement!;
+    expect(wrapper.style.width).toBe('50%');
+
+    values.settings.enabled = false;
+    await nextTick();
+
+    expect(wrapper.style.display).toBe('none');
+    expect(container.querySelector('[data-plugin-container]')).toBe(plugin);
   });
 
   it('preserves keyed tabs, focus, cursor, and unchanged DOM across a complete definition refresh', async () => {
@@ -382,6 +403,10 @@ describe('Form Definition renderer', () => {
     const tabsElement = container.querySelector(
       '[data-form-element="craft:tabs"]'
     )!;
+    expect(tabsElement.tagName).toBe('CRAFT-TABS');
+    expect(
+      container.querySelector('[data-form-element="craft:group"]')?.tagName
+    ).toBe('CRAFT-FIELD-GROUP');
     const metadataPanel = container.querySelector(
       '[data-form-tab-panel="metadata"]'
     )!;
@@ -393,6 +418,9 @@ describe('Form Definition renderer', () => {
 
     currentDefinition.value = tabbedDefinition(true);
     await nextTick();
+    await vi.waitFor(() => {
+      expect(container.querySelectorAll('[role="tab"]')).toHaveLength(3);
+    });
 
     const tabs = container.querySelectorAll<HTMLElement>('[role="tab"]');
     expect(Array.from(tabs, (tab) => tab.textContent?.trim())).toEqual([
@@ -428,6 +456,9 @@ describe('Form Definition renderer', () => {
 
     selectedTab.dispatchEvent(
       new KeyboardEvent('keydown', {key: 'Home', bubbles: true})
+    );
+    selectedTab.dispatchEvent(
+      new KeyboardEvent('keyup', {key: 'Home', bubbles: true})
     );
     await nextTick();
     expect(
@@ -668,10 +699,14 @@ describe('Form Definition renderer', () => {
     mountedApps.push(app);
     app.mount(container);
 
-    const field = container.querySelector<HTMLElement>(
+    const field = container.querySelector<HTMLElementTagNameMap['craft-field']>(
       '[data-form-element="craft:field"]'
     )!;
-    const label = field.querySelector('label')!;
+    await field.updateComplete;
+    await field.updateComplete;
+    const label = field.querySelector<HTMLLabelElement>(
+      ':scope > label[slot="label"]'
+    )!;
     const instructions = field.querySelector<HTMLElement>(
       '[data-form-element-instructions]'
     )!;
@@ -682,6 +717,7 @@ describe('Form Definition renderer', () => {
       field.querySelector<HTMLElementTagNameMap['craft-input']>('craft-input')!;
 
     expect(resolve).toHaveBeenCalledWith('form-element:craft:text-input');
+    expect(field.tagName).toBe('CRAFT-FIELD');
     expect(field.style.width).toBe('50%');
     expect(label.textContent).toBe('Handle');
     expect(label.htmlFor).toBe(input.id);
@@ -700,15 +736,32 @@ describe('Form Definition renderer', () => {
     expect(input.placeholder).toBe('myComponent');
     expect(input.autocomplete).toBe('off');
     expect(input.dataset.setting).toBe('handle');
+    expect(input.slot).toBe('input');
+    expect(feedback.slot).toBe('feedback');
 
     input.value = 'articles';
     input.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
 
     expect(values.settings.handle).toBe('articles');
+
+    errors['settings.handle'] = ['Handles must be unique.'];
+    await nextTick();
+    expect(feedback.textContent).toContain('Handles must be unique.');
+    expect(input.getAttribute('aria-describedby')?.split(' ')).toContain(
+      feedback.id
+    );
+
+    errors['settings.handle'] = [];
+    await nextTick();
+    await field.updateComplete;
+    expect(field.querySelector('[data-form-element-errors]')).toBeNull();
+    expect(input.getAttribute('aria-describedby')?.split(' ')).toEqual([
+      instructions.id,
+    ]);
   });
 
-  it('combines host and field read-only state', () => {
+  it('combines host and field read-only state', async () => {
     for (const [hostReadOnly, fieldReadOnly] of [
       [true, false],
       [false, true],
@@ -740,6 +793,14 @@ describe('Form Definition renderer', () => {
       expect(
         container.querySelector('craft-input')!.hasAttribute('readonly')
       ).toBe(true);
+      const field =
+        container.querySelector<HTMLElementTagNameMap['craft-field']>(
+          'craft-field'
+        )!;
+      await field.updateComplete;
+      expect(
+        field.shadowRoot?.querySelector('.read-only-badge')?.textContent
+      ).toBe('Read Only');
     }
   });
 });

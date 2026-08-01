@@ -15,8 +15,6 @@ export type {
 
 export interface FieldContext {
   inputId: string;
-  labelledBy?: string;
-  describedBy?: string;
   readOnly: boolean;
   required: boolean;
 }

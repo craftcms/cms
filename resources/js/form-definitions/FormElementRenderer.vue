@@ -1,7 +1,10 @@
 <script setup lang="ts">
-  import {computed, onErrorCaptured, ref, useId, watch} from 'vue';
+  import {computed, onErrorCaptured, ref, watch} from 'vue';
+  import '@craftcms/ui/components/field/field';
+  import '@craftcms/ui/components/field-group/field-group';
   import '@craftcms/ui/components/indicator/indicator';
   import '@craftcms/ui/components/tab/tab';
+  import '@craftcms/ui/components/tabs/tabs';
   import {t} from '@craftcms/ui/utilities/translate';
   import type {FormElementBinding} from '@craftcms/ui';
   import {
@@ -25,6 +28,7 @@
     element: FormElementData;
     context: RenderContext;
     fieldContext?: FieldContext;
+    hostSlot?: string;
   }>();
 
   const renderer = computed(() => {
@@ -118,26 +122,8 @@
 
     return typeof errors === 'string' ? [errors] : (errors ?? []);
   });
-  const labelId = computed(() => `${fieldInputId.value}-label`);
-  const instructionsId = computed(() => `${fieldInputId.value}-instructions`);
-  const errorsId = computed(() => `${fieldInputId.value}-errors`);
-  const tipId = computed(() => `${fieldInputId.value}-tip`);
-  const warningId = computed(() => `${fieldInputId.value}-warning`);
-  const describedBy = computed(
-    () =>
-      [
-        instructions.value ? instructionsId.value : undefined,
-        tip.value ? tipId.value : undefined,
-        warning.value ? warningId.value : undefined,
-        fieldErrors.value.length ? errorsId.value : undefined,
-      ]
-        .filter((id): id is string => Boolean(id))
-        .join(' ') || undefined
-  );
   const childFieldContext = computed<FieldContext>(() => ({
     inputId: fieldInputId.value,
-    labelledBy: label.value ? labelId.value : undefined,
-    describedBy: describedBy.value,
     readOnly: fieldReadOnly.value,
     required: required.value,
   }));
@@ -175,14 +161,6 @@
       attributes['aria-required'] = 'true';
     }
 
-    if (props.fieldContext?.labelledBy) {
-      attributes['aria-labelledby'] = props.fieldContext.labelledBy;
-    }
-
-    if (props.fieldContext?.describedBy) {
-      attributes['aria-describedby'] = props.fieldContext.describedBy;
-    }
-
     return attributes;
   });
 
@@ -199,8 +177,13 @@
       : true
   );
   const tabs = computed(() => props.element.children ?? []);
-  const tabsId = useId();
   const selectedTabKey = ref<string>();
+  const selectedTabIndex = computed(() =>
+    Math.max(
+      0,
+      tabs.value.findIndex((tab) => tab.key === selectedTabKey.value)
+    )
+  );
 
   watch(
     tabs,
@@ -230,68 +213,34 @@
     );
   }
 
-  function selectTabKey(key: string | null | undefined): void {
-    selectedTabKey.value = key ?? undefined;
-  }
+  function selectTab(event: Event): void {
+    const index = (
+      event.currentTarget as HTMLElement & {
+        selectedIndex: number;
+      }
+    ).selectedIndex;
 
-  function tabId(key: string | null | undefined): string {
-    return `${tabsId}-tab-${encodeURIComponent(key ?? '')}`;
-  }
-
-  function panelId(key: string | null | undefined): string {
-    return `${tabsId}-panel-${encodeURIComponent(key ?? '')}`;
-  }
-
-  function navigateTabs(event: KeyboardEvent): void {
-    const tab = event.currentTarget as HTMLElement;
-    const tabElements = Array.from(
-      tab.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]') ?? []
-    );
-    const index = tabElements.indexOf(tab);
-    let nextIndex = -1;
-
-    switch (event.key) {
-      case 'Home':
-        nextIndex = 0;
-        break;
-      case 'End':
-        nextIndex = tabElements.length - 1;
-        break;
-      case 'ArrowRight':
-      case 'ArrowDown':
-        nextIndex = (index + 1) % tabElements.length;
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        nextIndex = (index - 1 + tabElements.length) % tabElements.length;
-        break;
-    }
-
-    if (nextIndex === -1) {
-      return;
-    }
-
-    event.preventDefault();
-    tabElements[nextIndex]?.click();
-    tabElements[nextIndex]?.focus();
+    selectedTabKey.value = tabs.value[index]?.key ?? undefined;
   }
 </script>
 
 <template>
-  <div
+  <craft-field
     v-if="element.type === 'craft:field'"
     v-show="visible"
+    :slot="hostSlot"
     data-form-element="craft:field"
     :style="{width}"
+    :label="label"
+    :required="required"
+    :readonly="fieldReadOnly"
+    :has-errors="fieldErrors.length > 0"
   >
-    <label v-if="label" :id="labelId" :for="fieldInputId">
-      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
-    </label>
-    <p v-if="instructions" :id="instructionsId" data-form-element-instructions>
+    <p v-if="instructions" slot="help-text" data-form-element-instructions>
       {{ instructions }}
     </p>
-    <p v-if="tip" :id="tipId" data-form-element-tip>{{ tip }}</p>
-    <p v-if="warning" :id="warningId" data-form-element-warning role="alert">
+    <p v-if="tip" slot="tip" data-form-element-tip>{{ tip }}</p>
+    <p v-if="warning" slot="warning" data-form-element-warning>
       {{ warning }}
     </p>
     <FormElementRenderer
@@ -300,20 +249,22 @@
       :element="child"
       :context="context"
       :field-context="childFieldContext"
+      host-slot="input"
     />
     <ul
       v-if="fieldErrors.length"
-      :id="errorsId"
+      slot="feedback"
       data-form-element-errors
       :aria-label="t('Validation errors')"
     >
       <li v-for="error in fieldErrors" :key="error">{{ error }}</li>
     </ul>
-  </div>
+  </craft-field>
 
-  <div
+  <craft-field-group
     v-else-if="element.type === 'craft:group' || element.type === 'craft:tab'"
     v-show="visible"
+    :slot="hostSlot"
     :data-form-element="element.type"
     :style="{width}"
   >
@@ -323,43 +274,35 @@
       :element="child"
       :context="context"
     />
-  </div>
+  </craft-field-group>
 
-  <div
+  <craft-tabs
     v-else-if="element.type === 'craft:tabs'"
     v-show="visible"
+    :slot="hostSlot"
     data-form-element="craft:tabs"
     :style="{width}"
+    :selected-index="selectedTabIndex"
+    @selected-changed="selectTab"
   >
-    <div v-if="tabs.length > 1" role="tablist" data-form-tab-navigation>
-      <craft-tab
-        v-for="tab in tabs"
-        :key="`tab:${tab.key}`"
-        role="tab"
-        :id="tabId(tab.key)"
-        :aria-controls="panelId(tab.key)"
-        :aria-selected="tab.key === selectedTabKey"
-        :tabindex="tab.key === selectedTabKey ? 0 : -1"
-        :selected="tab.key === selectedTabKey || undefined"
-        @click="selectTabKey(tab.key)"
-        @keydown="navigateTabs"
-      >
-        {{ tab.props?.label }}
-        <craft-indicator
-          v-if="tab.props?.hasErrors === true"
-          fill="danger"
-          :label="t('Contains errors')"
-          data-form-tab-errors
-        />
-      </craft-tab>
-    </div>
+    <craft-tab
+      v-for="tab in tabs"
+      v-show="tabs.length > 1"
+      :key="`tab:${tab.key}`"
+      slot="tab"
+    >
+      {{ tab.props?.label }}
+      <craft-indicator
+        v-if="tab.props?.hasErrors === true"
+        fill="danger"
+        :label="t('Contains errors')"
+        data-form-tab-errors
+      />
+    </craft-tab>
     <div
       v-for="tab in tabs"
       :key="`panel:${tab.key}`"
-      v-show="tabs.length === 1 || tab.key === selectedTabKey"
-      :role="tabs.length > 1 ? 'tabpanel' : undefined"
-      :id="tabs.length > 1 ? panelId(tab.key) : undefined"
-      :aria-labelledby="tabs.length > 1 ? tabId(tab.key) : undefined"
+      slot="panel"
       :data-form-tab-panel="tab.key"
     >
       <FormElementRenderer
@@ -369,18 +312,15 @@
         :context="context"
       />
     </div>
-  </div>
+  </craft-tabs>
 
-  <div v-else v-show="visible" :style="{width}">
-    <div v-if="missingRenderer" data-form-element-missing-renderer>
-      {{ missingRendererMessage }}
-    </div>
-    <div v-else-if="rendererFailure" data-form-element-failed-renderer>
-      {{ failedRendererMessage }}
-    </div>
+  <template v-else>
     <component
       :is="renderer"
-      v-else-if="renderer"
+      v-if="renderer && hostSlot && !rendererFailure"
+      v-show="visible"
+      :slot="hostSlot"
+      :style="{width}"
       :config="(element.props ?? {}) as Record<string, JsonValue>"
       :attributes="attributes"
       :binding="binding"
@@ -393,5 +333,28 @@
         :context="context"
       />
     </component>
-  </div>
+    <div v-else v-show="visible" :slot="hostSlot" :style="{width}">
+      <div v-if="missingRenderer" data-form-element-missing-renderer>
+        {{ missingRendererMessage }}
+      </div>
+      <div v-else-if="rendererFailure" data-form-element-failed-renderer>
+        {{ failedRendererMessage }}
+      </div>
+      <component
+        :is="renderer"
+        v-else-if="renderer"
+        :config="(element.props ?? {}) as Record<string, JsonValue>"
+        :attributes="attributes"
+        :binding="binding"
+        @update:value="updateValue"
+      >
+        <FormElementRenderer
+          v-for="(child, index) in element.children"
+          :key="reconciliationKey(child, index)"
+          :element="child"
+          :context="context"
+        />
+      </component>
+    </div>
+  </template>
 </template>

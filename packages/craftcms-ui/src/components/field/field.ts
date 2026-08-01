@@ -88,6 +88,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
   private __lightDomObserver = new MutationObserver(() =>
     this.__onLightDomChanged()
   );
+  private __descriptionNodes = new Map<string, HTMLElement>();
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -353,9 +354,16 @@ export default class CraftField extends FormControlMixin(LitElement) {
   private __wireDescribedBy(): void {
     for (const slotName of ['help-text', 'feedback', 'tip', 'warning']) {
       const node = this.__lightChild(slotName);
+
+      const previousNode = this.__descriptionNodes.get(slotName);
+      if (previousNode && previousNode !== node) {
+        this.removeFromAriaDescribedBy(previousNode);
+        this.__descriptionNodes.delete(slotName);
+      }
+
       if (node) {
-        // Already-registered nodes are ignored by addToAriaDescribedBy.
         this.addToAriaDescribedBy(node, {idPrefix: slotName});
+        this.__descriptionNodes.set(slotName, node);
       }
     }
   }
