@@ -61,6 +61,7 @@ abstract class InputElement extends FormElement
 
         return new FormElementData(
             type: 'craft:field',
+            key: $this->elementKey,
             width: $this->width,
             props: $fieldProps === [] ? null : $fieldProps,
             children: [new FormElementData(

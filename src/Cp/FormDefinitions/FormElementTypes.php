@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Cp\FormDefinitions;
 
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Container\Attributes\Singleton;
@@ -21,6 +24,9 @@ class FormElementTypes
     {
         $this->registrations = [
             'craft:field' => ['class' => null, 'container' => true, 'plugin' => null],
+            Group::type() => ['class' => Group::class, 'container' => true, 'plugin' => null],
+            Tabs::type() => ['class' => Tabs::class, 'container' => true, 'plugin' => null],
+            Tab::type() => ['class' => Tab::class, 'container' => true, 'plugin' => null],
             TextInput::type() => ['class' => TextInput::class, 'container' => false, 'plugin' => null],
         ];
     }

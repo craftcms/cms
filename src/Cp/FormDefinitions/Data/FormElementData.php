@@ -12,6 +12,7 @@ readonly class FormElementData implements JsonSerializable
 {
     /**
      * @param  string  $type  Stable Form Element Type.
+     * @param  ?string  $key  Stable sibling reconciliation key.
      * @param  ?string  $name  Local Input Name.
      * @param  ?int  $width  Percentage width.
      * @param  array<string, mixed>|null  $props  Type-specific renderer configuration.
@@ -22,6 +23,8 @@ readonly class FormElementData implements JsonSerializable
      */
     public function __construct(
         public string $type,
+        #[Optional]
+        public ?string $key = null,
         #[Optional]
         public ?string $name = null,
         #[Optional]
@@ -51,6 +54,7 @@ readonly class FormElementData implements JsonSerializable
     {
         return array_filter([
             'type' => $this->type,
+            'key' => $this->key,
             'name' => $this->name,
             'width' => $this->width,
             'props' => $this->props,
@@ -71,6 +75,7 @@ readonly class FormElementData implements JsonSerializable
     {
         return new self(
             type: $this->type,
+            key: $this->key,
             name: $this->name,
             width: $this->width,
             props: $this->props,

@@ -1,4 +1,4 @@
-import {createApp, defineComponent, h, nextTick, reactive} from 'vue';
+import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import '@craftcms/ui/components/input/input';
 import {createCpComponentRegistry} from '@/bootstrap/components';
@@ -202,6 +202,142 @@ describe('Form Definition renderer', () => {
     expect(
       container.querySelector('[data-plugin-container] craft-input')
     ).not.toBeNull();
+    expect(container.querySelector('craft-input')!.name).toBe(
+      'settings[handle]'
+    );
+  });
+
+  it('preserves keyed tabs, focus, cursor, and unchanged DOM across a complete definition refresh', async () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+    const values = reactive({settings: {slug: 'article', subtitle: ''}});
+    const currentDefinition = ref(tabbedDefinition(false));
+    const nativeInputRenderer = defineComponent({
+      props: ['attributes', 'binding'],
+      setup(props) {
+        return () =>
+          h('input', {
+            ...props.attributes,
+            value: props.binding.value,
+            'data-native-input': props.binding.name,
+          });
+      },
+    });
+    const host = defineComponent({
+      setup() {
+        return () =>
+          h(FormDefinitionRenderer, {
+            definition: currentDefinition.value,
+            bindingScope: 'settings',
+            values,
+            errors: {},
+          });
+      },
+    });
+
+    registry.register(
+      'form-element:application:native-input',
+      nativeInputRenderer
+    );
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const app = createApp(host);
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    expect(container.querySelector('[role="tablist"]')).toBeNull();
+
+    const tabsElement = container.querySelector(
+      '[data-form-element="craft:tabs"]'
+    )!;
+    const metadataPanel = container.querySelector(
+      '[data-form-tab-panel="metadata"]'
+    )!;
+    const slugInput = container.querySelector<HTMLInputElement>(
+      '[data-native-input="slug"]'
+    )!;
+    slugInput.focus();
+    slugInput.setSelectionRange(2, 5);
+
+    currentDefinition.value = tabbedDefinition(true);
+    await nextTick();
+
+    const tabs = container.querySelectorAll<HTMLElement>('[role="tab"]');
+    expect(Array.from(tabs, (tab) => tab.textContent?.trim())).toEqual([
+      'New',
+      'Content',
+      'Metadata',
+    ]);
+    expect(
+      tabs[2]!.querySelector<HTMLElementTagNameMap['craft-indicator']>(
+        'craft-indicator'
+      )!.label
+    ).toBe('Contains errors');
+    const selectedTab = container.querySelector(
+      '[role="tab"][aria-selected="true"]'
+    )!;
+    expect(selectedTab.textContent).toContain('Metadata');
+    expect(container.querySelector('[data-form-element="craft:tabs"]')).toBe(
+      tabsElement
+    );
+    expect(container.querySelector('[data-form-tab-panel="metadata"]')).toBe(
+      metadataPanel
+    );
+    expect(container.querySelector('[data-native-input="slug"]')).toBe(
+      slugInput
+    );
+    expect(document.activeElement).toBe(slugInput);
+    expect(slugInput.selectionStart).toBe(2);
+    expect(slugInput.selectionEnd).toBe(5);
+    expect(
+      container.querySelector('[data-native-input="subtitle"]')
+    ).not.toBeNull();
+    expect(slugInput.name).toBe('settings[slug]');
+
+    selectedTab.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Home', bubbles: true})
+    );
+    await nextTick();
+    expect(
+      container.querySelector('[role="tab"][aria-selected="true"]')!.textContent
+    ).toContain('New');
+  });
+
+  it('suppresses tab navigation when only one tab is present', () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+
+    registry.register('form-element:craft:text-input', TextInputRenderer);
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormDefinitionRenderer, {
+      definition: {
+        elements: [
+          {
+            type: 'craft:tabs',
+            key: 'settings-tabs',
+            children: [
+              {
+                type: 'craft:tab',
+                key: 'content',
+                props: {label: 'Content'},
+                children: definition.elements,
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values: {settings: {handle: 'news'}},
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    expect(container.querySelector('[role="tablist"]')).toBeNull();
+    expect(container.querySelector('craft-input')).not.toBeNull();
   });
 
   it('throws for an unavailable application renderer inside a plugin container', () => {
@@ -476,3 +612,57 @@ describe('Form Definition renderer', () => {
     }
   });
 });
+
+function tabbedDefinition(insertSubtitle: boolean) {
+  const metadataTab = {
+    type: 'craft:tab',
+    key: 'metadata',
+    props: {label: 'Metadata', hasErrors: true},
+    children: [
+      ...(insertSubtitle
+        ? [nativeInputField('subtitle', 'subtitle-field')]
+        : []),
+      nativeInputField('slug'),
+    ],
+  } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData;
+
+  return {
+    elements: [
+      {
+        type: 'craft:group',
+        key: 'settings',
+        children: [
+          {
+            type: 'craft:tabs',
+            key: 'settings-tabs',
+            children: insertSubtitle
+              ? [
+                  {
+                    type: 'craft:tab',
+                    key: 'new-tab',
+                    props: {label: 'New'},
+                    children: [],
+                  },
+                  {
+                    type: 'craft:tab',
+                    key: 'content',
+                    props: {label: 'Content'},
+                    children: [],
+                  },
+                  metadataTab,
+                ]
+              : [metadataTab],
+          },
+        ],
+      },
+    ],
+  } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
+}
+
+function nativeInputField(name: string, key?: string) {
+  return {
+    type: 'craft:field',
+    key,
+    children: [{type: 'application:native-input', name}],
+  } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData;
+}

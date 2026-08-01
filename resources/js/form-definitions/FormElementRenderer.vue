@@ -1,5 +1,7 @@
 <script setup lang="ts">
-  import {computed, onErrorCaptured, ref} from 'vue';
+  import {computed, onErrorCaptured, ref, useId, watch} from 'vue';
+  import '@craftcms/ui/components/indicator/indicator';
+  import '@craftcms/ui/components/tab/tab';
   import {t} from '@craftcms/ui/utilities/translate';
   import type {FormElementBinding} from '@craftcms/ui';
   import {
@@ -15,6 +17,8 @@
     JsonValue,
     RenderContext,
   } from './types';
+  import {isSharedContainer} from './form-element-types';
+  import {reconciliationKey} from './reconciliation';
   import {evaluateVisibilityCondition} from './visibility';
 
   const props = defineProps<{
@@ -24,7 +28,7 @@
   }>();
 
   const renderer = computed(() => {
-    if (props.element.type === 'craft:field') {
+    if (isSharedContainer(props.element.type)) {
       return null;
     }
 
@@ -42,7 +46,7 @@
   });
   const rendererFailure = ref<Error>();
   const missingRenderer = computed(
-    () => props.element.type !== 'craft:field' && !renderer.value
+    () => !isSharedContainer(props.element.type) && !renderer.value
   );
   const missingRendererMessage = computed(() => {
     const plugin = props.element.plugin!;
@@ -181,6 +185,19 @@
         )
       : true
   );
+  const tabs = computed(() => props.element.children ?? []);
+  const tabsId = useId();
+  const selectedTabKey = ref<string>();
+
+  watch(
+    tabs,
+    (tabs) => {
+      if (!tabs.some((tab) => tab.key === selectedTabKey.value)) {
+        selectedTabKey.value = tabs[0]?.key ?? undefined;
+      }
+    },
+    {immediate: true}
+  );
 
   function stringProp(name: string): string | undefined {
     const value = props.element.props?.[name];
@@ -200,8 +217,50 @@
     );
   }
 
-  function reconciliationKey(element: FormElementData, index: number): string {
-    return element.name ?? `position:${index}`;
+  function selectTabKey(key: string | null | undefined): void {
+    selectedTabKey.value = key ?? undefined;
+  }
+
+  function tabId(key: string | null | undefined): string {
+    return `${tabsId}-tab-${encodeURIComponent(key ?? '')}`;
+  }
+
+  function panelId(key: string | null | undefined): string {
+    return `${tabsId}-panel-${encodeURIComponent(key ?? '')}`;
+  }
+
+  function navigateTabs(event: KeyboardEvent): void {
+    const tab = event.currentTarget as HTMLElement;
+    const tabElements = Array.from(
+      tab.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]') ?? []
+    );
+    const index = tabElements.indexOf(tab);
+    let nextIndex = -1;
+
+    switch (event.key) {
+      case 'Home':
+        nextIndex = 0;
+        break;
+      case 'End':
+        nextIndex = tabElements.length - 1;
+        break;
+      case 'ArrowRight':
+      case 'ArrowDown':
+        nextIndex = (index + 1) % tabElements.length;
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        nextIndex = (index - 1 + tabElements.length) % tabElements.length;
+        break;
+    }
+
+    if (nextIndex === -1) {
+      return;
+    }
+
+    event.preventDefault();
+    tabElements[nextIndex]?.click();
+    tabElements[nextIndex]?.focus();
   }
 </script>
 
@@ -231,6 +290,66 @@
     >
       <li v-for="error in fieldErrors" :key="error">{{ error }}</li>
     </ul>
+  </div>
+
+  <div
+    v-else-if="element.type === 'craft:group' || element.type === 'craft:tab'"
+    v-show="visible"
+    :data-form-element="element.type"
+    :style="{width}"
+  >
+    <FormElementRenderer
+      v-for="(child, index) in element.children"
+      :key="reconciliationKey(child, index)"
+      :element="child"
+      :context="context"
+    />
+  </div>
+
+  <div
+    v-else-if="element.type === 'craft:tabs'"
+    v-show="visible"
+    data-form-element="craft:tabs"
+    :style="{width}"
+  >
+    <div v-if="tabs.length > 1" role="tablist" data-form-tab-navigation>
+      <craft-tab
+        v-for="tab in tabs"
+        :key="`tab:${tab.key}`"
+        role="tab"
+        :id="tabId(tab.key)"
+        :aria-controls="panelId(tab.key)"
+        :aria-selected="tab.key === selectedTabKey"
+        :tabindex="tab.key === selectedTabKey ? 0 : -1"
+        :selected="tab.key === selectedTabKey || undefined"
+        @click="selectTabKey(tab.key)"
+        @keydown="navigateTabs"
+      >
+        {{ tab.props?.label }}
+        <craft-indicator
+          v-if="tab.props?.hasErrors === true"
+          fill="danger"
+          :label="t('Contains errors')"
+          data-form-tab-errors
+        />
+      </craft-tab>
+    </div>
+    <div
+      v-for="tab in tabs"
+      :key="`panel:${tab.key}`"
+      v-show="tabs.length === 1 || tab.key === selectedTabKey"
+      :role="tabs.length > 1 ? 'tabpanel' : undefined"
+      :id="tabs.length > 1 ? panelId(tab.key) : undefined"
+      :aria-labelledby="tabs.length > 1 ? tabId(tab.key) : undefined"
+      :data-form-tab-panel="tab.key"
+    >
+      <FormElementRenderer
+        v-for="(child, index) in tab.children"
+        :key="reconciliationKey(child, index)"
+        :element="child"
+        :context="context"
+      />
+    </div>
   </div>
 
   <div v-else v-show="visible" :style="{width}">

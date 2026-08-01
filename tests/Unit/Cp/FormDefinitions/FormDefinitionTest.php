@@ -6,6 +6,9 @@ use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 
@@ -46,6 +49,109 @@ it('projects a native text setting through an explicit field container', functio
         ]],
     ]);
 });
+
+it('projects visual groups and tabs with resolved labels and stable keys', function () {
+    $definition = FormDefinition::make([
+        Group::make([
+            Tabs::make([
+                Tab::make('content', fn (): string => 'Content', [
+                    TextInput::make('title'),
+                ]),
+                Tab::make('metadata', 'Metadata', [
+                    TextInput::make('slug'),
+                ])->hasErrors(),
+            ])->key('settings-tabs'),
+        ])->key('settings'),
+    ]);
+
+    expect($definition->toArray())->toBe([
+        'elements' => [[
+            'type' => 'craft:group',
+            'key' => 'settings',
+            'children' => [[
+                'type' => 'craft:tabs',
+                'key' => 'settings-tabs',
+                'children' => [[
+                    'type' => 'craft:tab',
+                    'key' => 'content',
+                    'props' => ['label' => 'Content'],
+                    'children' => [[
+                        'type' => 'craft:field',
+                        'children' => [[
+                            'type' => 'craft:text-input',
+                            'name' => 'title',
+                        ]],
+                    ]],
+                ], [
+                    'type' => 'craft:tab',
+                    'key' => 'metadata',
+                    'props' => [
+                        'label' => 'Metadata',
+                        'hasErrors' => true,
+                    ],
+                    'children' => [[
+                        'type' => 'craft:field',
+                        'children' => [[
+                            'type' => 'craft:text-input',
+                            'name' => 'slug',
+                        ]],
+                    ]],
+                ]],
+            ]],
+        ]],
+    ]);
+});
+
+it('rejects duplicate sibling keys', function () {
+    $definition = FormDefinition::make([
+        Group::make([TextInput::make('title')])->key('settings'),
+        Group::make([TextInput::make('slug')])->key('settings'),
+    ]);
+
+    expect(fn () => $definition->toArray())
+        ->toThrow(
+            InvalidArgumentException::class,
+            'Form Element Type "craft:group" at elements[1]: duplicate sibling key "settings".',
+        );
+});
+
+it('rejects malformed container structures', function (FormElement $element, string $message) {
+    expect(fn () => FormDefinition::make([$element])->toArray())
+        ->toThrow(InvalidArgumentException::class, $message);
+})->with([
+    'tabs without tabs' => [
+        fn () => Tabs::make([TextInput::make('title')]),
+        'Form Element Type "craft:field" at elements[0].children[0]: only Tab Form Elements may be direct children of Tabs.',
+    ],
+    'empty tabs' => [
+        fn () => Tabs::make([]),
+        'Form Element Type "craft:tabs" at elements[0]: Tabs must contain at least one Tab.',
+    ],
+    'tab outside tabs' => [
+        fn () => Group::make([Tab::make('content', 'Content', [])]),
+        'Form Element Type "craft:tab" at elements[0].children[0]: a Tab must be a direct child of Tabs.',
+    ],
+    'empty tab key' => [
+        fn () => Tabs::make([Tab::make('', 'Content', [])]),
+        'Form Element Type "craft:tab" at elements[0].children[0]: key cannot be empty.',
+    ],
+    'missing tab key' => [
+        fn () => Tabs::make([
+            TestFormElement::make('craft:tab', props: ['label' => 'Content']),
+        ]),
+        'Form Element Type "craft:tab" at elements[0].children[0]: a Tab must define a stable key.',
+    ],
+    'empty tab label' => [
+        fn () => Tabs::make([Tab::make('content', '', [])]),
+        'Form Element Type "craft:tab" at elements[0].children[0]: a Tab must define a resolved label.',
+    ],
+    'container inside field' => [
+        fn () => TestFormElement::make('craft:field', children: [
+            Group::make([TextInput::make('title')]),
+        ]),
+        'Form Element Type "craft:field" at elements[0]: a Field Container must contain exactly one input.',
+    ],
+]);
 
 it('keeps host workflow data outside the serialized definition', function () {
     $json = json_encode(
@@ -287,19 +393,19 @@ class TestFormElement extends FormElement
         return 'test:element';
     }
 
-    #[\Override]
+    #[Override]
     protected function props(): array
     {
         return $this->elementProps;
     }
 
-    #[\Override]
+    #[Override]
     protected function children(): array
     {
         return $this->elementChildren;
     }
 
-    #[\Override]
+    #[Override]
     public function toData(): FormElementData
     {
         return new FormElementData(

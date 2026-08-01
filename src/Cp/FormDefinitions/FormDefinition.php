@@ -33,9 +33,10 @@ readonly class FormDefinition implements JsonSerializable
         ));
 
         $names = [];
+        $keys = [];
 
         foreach ($data->elements as $index => $element) {
-            $this->validateElement($element, "elements[{$index}]", $names, root: true);
+            $this->validateElement($element, "elements[{$index}]", $names, $keys, root: true);
         }
 
         foreach ($data->elements as $index => $element) {
@@ -61,21 +62,45 @@ readonly class FormDefinition implements JsonSerializable
      * @param  FormElementData  $element  Element being validated.
      * @param  string  $path  Element location in the tree.
      * @param  array<string, string>  $names  Previously encountered Input Names.
+     * @param  array<string, string>  $keys  Previously encountered sibling keys.
+     * @param  ?string  $parentType  Parent Form Element Type.
      * @param  bool  $root  Whether the element is at the definition root.
      */
     private function validateElement(
         FormElementData $element,
         string $path,
         array &$names,
+        array &$keys,
+        ?string $parentType = null,
         bool $root = false,
     ): void {
         $this->validateType($element, $path);
+
+        if ($element->key !== null) {
+            if ($element->key === '') {
+                $this->fail($element, $path, 'key cannot be empty.');
+            }
+
+            if (isset($keys[$element->key])) {
+                $this->fail($element, $path, "duplicate sibling key \"{$element->key}\".");
+            }
+
+            $keys[$element->key] = $path;
+        }
 
         if ($element->width !== null && ($element->width < 1 || $element->width > 100)) {
             $this->fail($element, $path, 'width must be between 1 and 100.');
         }
 
         $types = app(FormElementTypes::class);
+
+        if ($parentType === 'craft:tabs' && $element->type !== 'craft:tab') {
+            $this->fail($element, $path, 'only Tab Form Elements may be direct children of Tabs.');
+        }
+
+        if ($element->type === 'craft:tab' && $parentType !== 'craft:tabs') {
+            $this->fail($element, $path, 'a Tab must be a direct child of Tabs.');
+        }
 
         if ($root && $element->type !== 'craft:field' && ! $types->isContainer($element->type)) {
             $this->fail($element, $path, 'an input must be wrapped in a Field Container.');
@@ -95,6 +120,16 @@ readonly class FormDefinition implements JsonSerializable
                 || $element->children[0]->name === null
             ) {
                 $this->fail($element, $path, 'a Field Container must contain exactly one input.');
+            }
+        } elseif ($element->type === 'craft:tabs' && ($element->children ?? []) === []) {
+            $this->fail($element, $path, 'Tabs must contain at least one Tab.');
+        } elseif ($element->type === 'craft:tab') {
+            if ($element->key === null) {
+                $this->fail($element, $path, 'a Tab must define a stable key.');
+            }
+
+            if (! is_string($element->props['label'] ?? null) || $element->props['label'] === '') {
+                $this->fail($element, $path, 'a Tab must define a resolved label.');
             }
         } elseif ($types->isContainer($element->type)) {
             if ($element->name !== null) {
@@ -116,8 +151,16 @@ readonly class FormDefinition implements JsonSerializable
             $names[$element->name] = $path;
         }
 
+        $childKeys = [];
+
         foreach ($element->children ?? [] as $index => $child) {
-            $this->validateElement($child, "{$path}.children[{$index}]", $names);
+            $this->validateElement(
+                $child,
+                "{$path}.children[{$index}]",
+                $names,
+                $childKeys,
+                parentType: $element->type,
+            );
         }
     }
 

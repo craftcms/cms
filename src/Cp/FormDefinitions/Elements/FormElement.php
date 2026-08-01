@@ -9,6 +9,8 @@ use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 
 abstract class FormElement
 {
+    protected ?string $elementKey = null;
+
     protected ?int $width = null;
 
     /** @var array<string, mixed> */
@@ -25,6 +27,13 @@ abstract class FormElement
     public static function isContainer(): bool
     {
         return false;
+    }
+
+    public function key(string $key): static
+    {
+        $this->elementKey = $key;
+
+        return $this;
     }
 
     public function width(int $width): static
@@ -56,6 +65,7 @@ abstract class FormElement
 
         return new FormElementData(
             type: static::type(),
+            key: $this->elementKey,
             name: $this->name,
             width: $this->width,
             props: $props === [] ? null : $props,

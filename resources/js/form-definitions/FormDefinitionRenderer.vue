@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import FormElementRenderer from './FormElementRenderer.vue';
+  import {isSharedContainer} from './form-element-types';
+  import {reconciliationKey} from './reconciliation';
   import type {
     FormDefinitionData,
     FormElementData,
@@ -30,13 +32,12 @@
 
     return props.definition.elements;
   });
-
   function assertOwnerlessRenderersAvailable(
     elements: FormElementData[]
   ): void {
     for (const element of elements) {
       if (
-        element.type !== 'craft:field' &&
+        !isSharedContainer(element.type) &&
         !element.plugin &&
         !window.Cp.$components.resolve(`form-element:${element.type}`)
       ) {
@@ -51,7 +52,7 @@
 <template>
   <FormElementRenderer
     v-for="(element, index) in renderableElements"
-    :key="element.name ?? `position:${index}`"
+    :key="reconciliationKey(element, index)"
     :element="element"
     :context="context"
   />
