@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp\FormDefinitions;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\ComboboxInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\DateInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
@@ -42,6 +43,7 @@ class FormElementTypes
             Tabs::type() => ['class' => Tabs::class, 'container' => true, 'plugin' => null],
             Tab::type() => ['class' => Tab::class, 'container' => true, 'plugin' => null],
             TextInput::type() => ['class' => TextInput::class, 'container' => false, 'plugin' => null],
+            ComboboxInput::type() => ['class' => ComboboxInput::class, 'container' => false, 'plugin' => null],
             CheckboxSelectInput::type() => ['class' => CheckboxSelectInput::class, 'container' => false, 'plugin' => null],
             ElementConditionInput::type() => ['class' => ElementConditionInput::class, 'container' => false, 'plugin' => null],
             EditableTableInput::type() => ['class' => EditableTableInput::class, 'container' => false, 'plugin' => null],

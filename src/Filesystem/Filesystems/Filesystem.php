@@ -7,8 +7,15 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\ComboboxInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Validation\Rule;
 use Override;
@@ -98,9 +105,42 @@ abstract class Filesystem extends Component implements FsInterface
         return static::$showUrlSetting;
     }
 
-    public function hasLegacySettingsHtml(): bool
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
-        return true;
+        $elements = $this->settingsFormElements($readOnly);
+
+        return $elements === [] ? null : FormDefinition::make($elements);
+    }
+
+    /** @return list<FormElement> */
+    protected function settingsFormElements(bool $readOnly): array
+    {
+        $elements = [];
+
+        if ($this->getShowHasUrlSetting()) {
+            $elements[] = LightswitchInput::make('hasUrls')
+                ->label(t('Files in this filesystem have public URLs'))
+                ->readOnly($readOnly);
+        }
+
+        if ($this->getShowUrlSetting()) {
+            $url = ComboboxInput::make('url')
+                ->label(t('Base URL'))
+                ->instructions(t('The base URL to the files in this filesystem.'))
+                ->options(SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)))
+                ->placeholder('//example.com/path/to/folder')
+                ->required()
+                ->readOnly($readOnly);
+
+            if ($this->getShowHasUrlSetting()) {
+                $url->visibleWhen(Condition::equals('hasUrls', true));
+            }
+
+            $elements[] = $url;
+        }
+
+        return $elements;
     }
 
     #[Override]

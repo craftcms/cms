@@ -10,7 +10,12 @@
 namespace craft\base;
 
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Yii2Adapter\Cp\FormDefinitions\Elements\LegacySettings;
 use CraftCms\Yii2Adapter\ModelWrapper;
 use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
 use yii\base\InvalidConfigException;
@@ -27,6 +32,28 @@ use yii\base\InvalidConfigException;
  */
 abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
 {
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    {
+        $class = static::class;
+
+        Deprecator::log(
+            "legacy-settings-form-definition:{$class}",
+            "{$class} must implement getSettingsFormDefinition() to provide native settings.",
+            __FILE__,
+        );
+
+        $fragment = HtmlStack::capture(fn(): string => InputNamespace::namespaceInputs((string) ($readOnly
+            ? $this->getReadOnlySettingsHtml()
+            : $this->getSettingsHtml())));
+        $elements = $this->settingsFormElements($readOnly);
+
+        if (!$fragment->isEmpty()) {
+            $elements[] = LegacySettings::make($fragment);
+        }
+
+        return $elements === [] ? null : FormDefinition::make($elements);
+    }
+
     public function getDiskConfig(): array
     {
         if (!is_string($this->handle) || $this->handle === '') {

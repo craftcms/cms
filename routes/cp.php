@@ -455,6 +455,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
+            Route::post('render-settings', [FilesystemsController::class, 'renderSettings']);
             Route::post('/', [FilesystemsController::class, 'store']);
             Route::delete('{handle}', [FilesystemsController::class, 'destroy']);
         });

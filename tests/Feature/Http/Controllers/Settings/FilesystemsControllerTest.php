@@ -5,11 +5,15 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
+use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Filesystem\FilesystemTypes;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
 
@@ -92,11 +96,49 @@ test('edit shows 403 when creating in read-only mode', function () {
 });
 
 test('edit shows create form for new filesystem', function () {
-    $response = get(action([FilesystemsController::class, 'create']));
+    $typeId = Html::id(Local::class);
 
-    $response
+    get(action([FilesystemsController::class, 'create']))
         ->assertOk()
-        ->assertSee(t('Create a new filesystem'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/filesystems/Edit')
+            ->where('title', t('Create a new filesystem'))
+            ->where('filesystem.type', Local::class)
+            ->where('settingsInputNamespace', "types[{$typeId}]")
+            ->where('settingsBindingScope', "types.{$typeId}")
+            ->where('settingsValues.types.'.$typeId.'.hasUrls', false)
+            ->where('settingsValues.types.'.$typeId.'.url', null)
+            ->where('settingsValues.types.'.$typeId.'.path', null)
+            ->where('settingsErrors', [])
+            ->where('readOnly', false)
+            ->has('settingsDefinition.elements', 3)
+            ->missing('fsInstances'));
+});
+
+test('can render settings while preserving compatible host values', function () {
+    app(FilesystemTypes::class)->register(Temp::class);
+    $localTypeId = Html::id(Local::class);
+    $tempTypeId = Html::id(Temp::class);
+
+    postJson(action([FilesystemsController::class, 'renderSettings']), [
+        'type' => Temp::class,
+        'oldType' => Local::class,
+        'settings' => [
+            'hasUrls' => true,
+            'url' => 'https://assets.example.test',
+            'path' => '@webroot/uploads',
+        ],
+    ])
+        ->assertOk()
+        ->assertJsonPath('definition', null)
+        ->assertJsonPath('inputNamespace', "types[{$tempTypeId}]")
+        ->assertJsonPath('bindingScope', "types.{$tempTypeId}")
+        ->assertJsonPath("values.types.{$tempTypeId}.hasUrls", false)
+        ->assertJsonPath("values.types.{$tempTypeId}.url", 'https://assets.example.test')
+        ->assertJsonMissingPath("values.types.{$tempTypeId}.path")
+        ->assertJsonPath('errors', [])
+        ->assertJsonPath('readOnly', false)
+        ->assertJsonMissingPath("values.types.{$localTypeId}");
 });
 
 test('slideout form targets the filesystem CP route', function () {
@@ -155,13 +197,43 @@ test('edit loads filesystem and shows actions when not in read-only mode', funct
     $response->assertOk();
 });
 
+test('edit supplies read-only filesystem settings through the host contract', function () {
+    $filesystem = Filesystems::createFilesystem([
+        'type' => Local::class,
+        'name' => 'Read-only Filesystem',
+        'handle' => 'readOnlyFilesystem',
+        'settings' => [
+            'path' => sys_get_temp_dir().'/read-only-filesystem',
+        ],
+    ]);
+    Filesystems::saveFilesystem($filesystem);
+    Cms::config()->allowAdminChanges = false;
+    $typeId = Html::id(Local::class);
+
+    get(sprintf('/%s/settings/filesystems/%s', Cms::config()->cpTrigger, $filesystem->handle))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/filesystems/Edit')
+            ->where('readOnly', true)
+            ->where('settingsInputNamespace', "types[{$typeId}]")
+            ->where('settingsBindingScope', "types.{$typeId}")
+            ->where('settingsValues.types.'.$typeId.'.path', File::normalizePath(sys_get_temp_dir().'/read-only-filesystem', '/'))
+            ->where('settingsErrors', [])
+            ->where('settingsDefinition', fn (Collection $definition): bool => array_all(
+                $definition->get('elements'),
+                fn (array $element): bool => ($element['props']['readOnly'] ?? false) === true,
+            )));
+});
+
 test('save creates filesystem with valid data', function () {
+    $typeId = Html::id(Local::class);
     $response = postJson(action([FilesystemsController::class, 'store']), [
         'type' => Local::class,
         'name' => 'New Test Filesystem',
         'handle' => 'newTestFilesystem',
-        'settings' => [
-            'path' => sys_get_temp_dir().'/test-uploads',
+        'types' => [
+            $typeId => [
+                'path' => sys_get_temp_dir().'/test-uploads',
+            ],
         ],
     ]);
 
@@ -182,7 +254,7 @@ test('save ignores null transient filesystem settings', function () {
         'name' => 'Transient Settings Filesystem',
         'handle' => 'transientSettingsFilesystem',
         'types' => [
-            TransientSettingsFilesystem::class => [
+            Html::id(TransientSettingsFilesystem::class) => [
                 'transientSetting' => null,
             ],
         ],
@@ -191,7 +263,8 @@ test('save ignores null transient filesystem settings', function () {
     $response->assertOk();
 
     $fs = Filesystems::getFilesystemByHandle('transientSettingsFilesystem');
-    expect($fs)->not()->toBeNull();
+    expect($fs)->not()->toBeNull()
+        ->and($fs->getSettings())->toBe([]);
 });
 
 test('save updates existing filesystem with oldHandle', function () {
@@ -233,16 +306,31 @@ test('save updates existing filesystem with oldHandle', function () {
 });
 
 test('save returns failure on invalid data', function () {
+    $typeId = Html::id(Local::class);
     $response = postJson(action([FilesystemsController::class, 'store']), [
-        'type' => 'craft\fs\Local',
+        'type' => Local::class,
         'name' => '', // Empty name should fail
         'handle' => '',
         'types' => [
-            'craft-fs-Local' => [],
+            $typeId => [
+                'hasUrls' => true,
+                'url' => null,
+            ],
         ],
     ]);
 
-    $response->assertStatus(400);
+    $response
+        ->assertStatus(400)
+        ->assertJsonPath('errors', function (array $errors): bool {
+            $urlErrors = array_filter(
+                $errors,
+                fn (string $path): bool => str_starts_with($path, 'types.') && str_ends_with($path, '.url'),
+                ARRAY_FILTER_USE_KEY,
+            );
+
+            return count($urlErrors) === 1
+                && str_contains((string) array_first($urlErrors)[0], 'required');
+        });
 });
 
 test('delete removes filesystem successfully', function () {

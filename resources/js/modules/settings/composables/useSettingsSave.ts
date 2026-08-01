@@ -11,6 +11,7 @@ interface PasswordConfirmationOptions<T> {
 
 interface UseSettingsSaveOptions<T extends Record<string, any>> {
   transform?: (data: T) => Record<string, any>;
+  disabled?: () => boolean;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
   /**
    * Sugar over {@link passwordConfirmation}: require an elevated session when the
@@ -54,6 +55,10 @@ export function useSettingsSave<T extends Record<string, any>>(
     // navigates to a different record and needs the form to re-initialize.
     preserveState = true,
   }: FormSaveOptions = {}) {
+    if (options.disabled?.()) {
+      return;
+    }
+
     const submitOptions = redirect
       ? {
           preserveScroll: true,

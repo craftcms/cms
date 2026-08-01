@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Resources\FsResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use ReflectionException;
+use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -99,8 +106,8 @@ class FilesystemsController
 
     public function store(Request $request): Response
     {
-        $type = $request->input('type');
-        $settings = Arr::whereNotNull($request->array('settings'));
+        $type = $request->string('type')->toString();
+        $settings = Arr::whereNotNull($this->typeSettingsFromRequest($request, $type));
 
         $fs = $this->filesystems->createFilesystem([
             'type' => $type,
@@ -111,10 +118,59 @@ class FilesystemsController
         ]);
 
         if (! $this->filesystems->saveFilesystem($fs)) {
-            return $this->asModelFailure($fs, t('Couldn’t save filesystem.'), 'filesystem');
+            return $this->asModelFailure($fs, t('Couldn’t save filesystem.'), 'filesystem', [
+                'errors' => new FilesystemsEditViewModel($fs, $this->filesystems)->settingsErrors(),
+            ]);
         }
 
         return $this->asModelSuccess($fs, t('Filesystem saved.'), 'filesystem');
+    }
+
+    public function renderSettings(Request $request): JsonResponse
+    {
+        $request->validate([
+            'type' => ['required', 'string'],
+            'oldType' => ['nullable', 'string'],
+            'settings' => ['nullable', 'array'],
+            'typeSettings' => ['nullable', 'string'],
+        ]);
+
+        $type = $request->string('type')->toString();
+        $oldType = $request->input('oldType');
+        $filesystem = $this->filesystems->createFilesystem($type);
+
+        if (is_string($oldType) && ComponentHelper::validateComponentClass($oldType, FsInterface::class)) {
+            $settings = $request->array('settings');
+
+            if (is_string($typeSettings = $request->input('typeSettings'))) {
+                parse_str($typeSettings, $postedSettings);
+                $settings = Arr::get($postedSettings, sprintf('types.%s', Html::id($oldType)), []);
+            }
+
+            $settings = array_filter($settings, function (string $attribute) use ($type, $oldType): bool {
+                try {
+                    $newProperty = new ReflectionProperty($type, $attribute);
+                    $oldProperty = new ReflectionProperty($oldType, $attribute);
+
+                    return $newProperty->getDeclaringClass()->name === $oldProperty->getDeclaringClass()->name;
+                } catch (ReflectionException) {
+                    return false;
+                }
+            }, ARRAY_FILTER_USE_KEY);
+
+            Typecast::configure($filesystem, $settings);
+        }
+
+        $viewModel = new FilesystemsEditViewModel($filesystem, $this->filesystems);
+
+        return new JsonResponse([
+            'definition' => $viewModel->settingsDefinition(),
+            'values' => $viewModel->settingsValues(),
+            'errors' => $viewModel->settingsErrors(),
+            'bindingScope' => $viewModel->settingsBindingScope(),
+            'inputNamespace' => $viewModel->settingsInputNamespace(),
+            'readOnly' => false,
+        ]);
     }
 
     public function destroy(Request $request, string $handle): Response
@@ -126,5 +182,19 @@ class FilesystemsController
         }
 
         return $this->asSuccess();
+    }
+
+    private function typeSettingsFromRequest(Request $request, string $type): array
+    {
+        $settings = $request->input('typeSettings');
+
+        if (is_string($settings) && $settings !== '') {
+            parse_str($settings, $postedSettings);
+
+            return $postedSettings['types'][Html::id($type)] ?? [];
+        }
+
+        return $request->input('types', [])[Html::id($type)]
+            ?? $request->input('settings', []);
     }
 }

@@ -22,8 +22,8 @@ import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
 import {configureIcons} from './icons.js';
-import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
 import CheckboxSelectInputRenderer from '@/form-definitions/renderers/CheckboxSelectInputRenderer.vue';
+import ComboboxInputRenderer from '@/form-definitions/renderers/ComboboxInputRenderer.vue';
 import ElementConditionInputRenderer from '@/form-definitions/renderers/ElementConditionInputRenderer.vue';
 import EditableTableInputRenderer from '@/form-definitions/renderers/EditableTableInputRenderer.vue';
 import TextInputRenderer from '@/form-definitions/renderers/TextInputRenderer.vue';
@@ -77,6 +77,7 @@ components.register(
   EditableTableInputRenderer
 );
 components.register('form-element:craft:text-input', TextInputRenderer);
+components.register('form-element:craft:combobox-input', ComboboxInputRenderer);
 components.register('form-element:craft:number-input', NumberInputRenderer);
 components.register('form-element:craft:option-rows', OptionRowsRenderer);
 components.register('form-element:craft:select-input', SelectInputRenderer);
@@ -207,8 +208,6 @@ const Cp = {
         app.component('AssetIndexes', AssetIndexes);
         app.component('SystemMessages', SystemMessages);
         app.component('CpLink', CpLink);
-        app.component('LocalFsSettings', LocalFsSettings);
-
         components.install(app);
       },
     });

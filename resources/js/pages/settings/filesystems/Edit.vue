@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {serializeFormInputsAsObject, t, toHandle} from '@craftcms/ui';
+  import {actionClient, serializeFormInputs, t, toHandle} from '@craftcms/ui';
   import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
@@ -7,13 +7,15 @@
   import {useForm, usePage} from '@inertiajs/vue3';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave.js';
-  import {store} from '@actions/Settings/FilesystemsController';
-  import {provide, ref} from 'vue';
+  import {renderSettings, store} from '@actions/Settings/FilesystemsController';
+  import {computed, ref, watch} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import CraftCombobox from '@/common/form/CraftCombobox.vue';
-  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
-  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import FormDefinitionRenderer from '@/form-definitions/FormDefinitionRenderer.vue';
+  import type {
+    FormDefinitionData,
+    FormErrors,
+    FormValues,
+  } from '@/form-definitions/types';
 
   defineOptions({
     inheritAttrs: false,
@@ -27,46 +29,91 @@
     handle: props.filesystem.handle ?? '',
     oldHandle: props.oldHandle,
     type: props.filesystem.type ?? '',
-    settings: {
-      hasUrls: props.filesystem.hasUrls ?? false,
-      url: props.filesystem.url ?? '',
-    },
+    ...props.settingsValues,
   });
+  const formDefinitionValues = form as unknown as FormValues;
 
   const settingsHost = ref<HTMLElement | null>(null);
+  const settingsDefinition = ref<FormDefinitionData | null>(
+    props.settingsDefinition as FormDefinitionData | null
+  );
+  const settingsBindingScope = ref(props.settingsBindingScope);
+  const settingsErrors = ref<FormErrors>(props.settingsErrors);
+  const settingsType = ref(form.type);
+  const selectedType = ref(form.type);
+  const settingsLoading = ref(false);
+  let settingsRequestId = 0;
 
   useInputGenerator(
     () => form.name,
-    (v) => (form.handle = toHandle(v))
+    (value) => (form.handle = toHandle(value))
   );
 
-  /**
-   * We create a special ref for the type specific settings and then provide
-   * it down. That way Vue components registered and rendered within
-   * DynamicHtmlRenderer can pick up the injected ref and alter it so the
-   * settings values can be picked up by the form.
-   *
-   * @TODO I need to make sure this works with plugins, or make it work with
-   * plugins.
-   */
-  const fsTypeSettings = ref<Record<string, any>>({});
+  const typeOptionFor = (type: string | undefined) =>
+    props.fsOptions.find((option) => option.value === type);
+  const currentTypeOption = computed(() => typeOptionFor(settingsType.value));
+  const formDefinitionErrors = computed(() => ({
+    ...settingsErrors.value,
+    ...form.errors,
+  }));
 
-  provide('fsTypeSettings', fsTypeSettings);
+  function serializedLegacySettings(): string | undefined {
+    if (!settingsHost.value?.querySelector('craft-legacy-settings-island')) {
+      return undefined;
+    }
+
+    return serializeFormInputs(settingsHost.value);
+  }
+
+  watch(selectedType, async (type) => {
+    if (type === settingsType.value) {
+      return;
+    }
+
+    const oldType = settingsType.value;
+    const oldTypeId = typeOptionFor(oldType)?.id;
+    const requestId = ++settingsRequestId;
+    selectedType.value = oldType;
+    settingsLoading.value = true;
+
+    try {
+      const {data} = await actionClient.post(renderSettings().url, {
+        type,
+        oldType,
+        settings: oldTypeId ? (form.types[oldTypeId] ?? {}) : {},
+        typeSettings: serializedLegacySettings(),
+      });
+
+      if (requestId !== settingsRequestId) {
+        return;
+      }
+
+      settingsDefinition.value = data.definition;
+      settingsBindingScope.value = data.bindingScope;
+      settingsErrors.value = data.errors;
+      form.types = data.values.types;
+      form.type = type;
+      settingsType.value = type;
+      selectedType.value = type;
+    } catch (error) {
+      if (requestId === settingsRequestId) {
+        selectedType.value = settingsType.value;
+      }
+
+      throw error;
+    } finally {
+      if (requestId === settingsRequestId) {
+        settingsLoading.value = false;
+      }
+    }
+  });
 
   const {save} = useSettingsSave(form, store, {
+    disabled: () => settingsLoading.value,
     transform: (data) => {
-      const typeSettings = settingsHost.value
-        ? serializeFormInputsAsObject(settingsHost.value)
-        : {};
+      const typeSettings = serializedLegacySettings();
 
-      return {
-        ...data,
-        settings: {
-          ...data.settings,
-          ...typeSettings,
-          ...fsTypeSettings.value,
-        },
-      };
+      return typeSettings === undefined ? data : {...data, typeSettings};
     },
   });
 
@@ -112,52 +159,30 @@
           :label="t('Filesystem Type')"
           :help-text="t('What type of filesystem is this?')"
           :options="props.fsOptions"
-          v-model="form.type"
-          :disabled="props.readOnly"
+          v-model="selectedType"
+          :disabled="props.readOnly || settingsLoading"
         />
       </template>
 
-      <template v-if="props.filesystem.showHasUrlSetting">
-        <CraftSwitch
-          :label="t('Files in this filesystem have public URLs')"
-          name="hasUrls"
-          id="has-urls"
-          v-model="form.settings.hasUrls"
-          :disabled="props.readOnly"
-        />
+      <template v-if="settingsLoading || settingsDefinition">
+        <div ref="settingsHost" :aria-busy="settingsLoading">
+          <div :id="currentTypeOption?.id">
+            <div v-if="settingsLoading" class="flex justify-center p-4">
+              <craft-spinner></craft-spinner>
+            </div>
+            <div :inert="settingsLoading || undefined">
+              <FormDefinitionRenderer
+                v-if="settingsDefinition"
+                :definition="settingsDefinition"
+                :binding-scope="settingsBindingScope"
+                :values="formDefinitionValues"
+                :errors="formDefinitionErrors"
+                :read-only="props.readOnly"
+              />
+            </div>
+          </div>
+        </div>
       </template>
-
-      <template v-if="form.settings.hasUrls && props.filesystem.showUrlSetting">
-        <CraftCombobox
-          :label="t('Base URL')"
-          :help-text="t('The base URL to the files in this filesystem.')"
-          v-model="form.settings.url"
-          :options="props.baseUrlSuggestions"
-          name="url"
-          :required="true"
-          placeholder="//example.com/path/to/folder"
-          data-error-key="url"
-          :disabled="props.readOnly"
-        ></CraftCombobox>
-      </template>
-
-      <div ref="settingsHost">
-        <template v-for="(instance, fsType) in props.fsInstances" :key="fsType">
-          <craft-field-group v-if="form.type === fsType">
-            <!-- Legacy (Twig) settings render as an isolated HTML island; component
-                 settings are compiled as part of the page. Each pane must render
-                 its own type's settings — rendering the selected filesystem's here
-                 would inject the same island (and its element ids) once per pane. -->
-            <HtmlFragmentRenderer
-              v-if="instance.settingsFragment"
-              :fragment="instance.settingsFragment"
-            />
-            <DynamicHtmlRenderer v-else :html="instance.settingsHtml ?? ''" />
-          </craft-field-group>
-        </template>
-      </div>
     </craft-field-group>
   </Pane>
 </template>
-
-<style scoped lang="scss"></style>

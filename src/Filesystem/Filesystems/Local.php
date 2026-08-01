@@ -6,10 +6,12 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use Closure;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\ComboboxInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Support\Html;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -35,12 +37,6 @@ class Local extends Filesystem
             self::VISIBILITY_HIDDEN => 0700,
         ],
     ];
-
-    public ?string $settingsHtml {
-        get => $this->getSettingsHtml();
-        set {
-        }
-    }
 
     public string $rootPath {
         get => $this->getRootPath();
@@ -96,7 +92,7 @@ class Local extends Filesystem
     #[Override]
     public function settingsAttributes(): array
     {
-        return array_values(array_diff(parent::settingsAttributes(), ['rootPath', 'settingsHtml']));
+        return array_values(array_diff(parent::settingsAttributes(), ['rootPath']));
     }
 
     #[Override]
@@ -116,33 +112,18 @@ class Local extends Filesystem
     }
 
     #[Override]
-    public function hasLegacySettingsHtml(): bool
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
-        return false;
-    }
-
-    #[Override]
-    public function getSettingsHtml(): ?string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): ?string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return Html::tag('LocalFsSettings', attributes: [
-            ':filesystem' => [
-                'name' => static::displayName(),
-                'type' => self::class,
-                'handle' => $this->handle,
-                'path' => $this->path,
-            ],
-            ':readOnly' => $readOnly,
+        return FormDefinition::make([
+            ...$this->settingsFormElements($readOnly),
+            ComboboxInput::make('path')
+                ->label(t('Base Path'))
+                ->instructions(t('The base folder path that should be used as the root of the filesystem.'))
+                ->options(SelectOptions::getEnvSuggestions(true))
+                ->placeholder(t('/path/to/folder'))
+                ->allowAliases()
+                ->required()
+                ->readOnly($readOnly),
         ]);
     }
 

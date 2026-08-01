@@ -9,6 +9,7 @@ use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\UnableToListContents;
@@ -79,6 +80,26 @@ it('logs one actionable deprecation per concrete legacy filesystem class', funct
     expect($logs)->toHaveCount(1)
         ->and($logs[0]->message)
         ->toContain('getDiskConfig()');
+});
+
+it('projects adapter filesystem settings through the final namespaced legacy island', function() {
+    $filesystem = adapterSettingsFilesystem();
+
+    $definition = InputNamespace::with(
+        'types[legacy-fs]',
+        fn(): ?array => $filesystem->getSettingsFormDefinition(false)?->toArray(),
+    );
+
+    expect($definition['elements'])->toHaveCount(3)
+        ->and($definition['elements'][0]['children'][0])->toMatchArray([
+            'type' => 'craft:lightswitch-input',
+            'name' => 'hasUrls',
+        ])
+        ->and($definition['elements'][2])->toMatchArray([
+            'type' => 'yii2-adapter:legacy-settings',
+        ])
+        ->and($definition['elements'][2]['props']['fragment']['html'])
+        ->toContain('name="types[legacy-fs][label]"');
 });
 
 class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsInterface
@@ -205,4 +226,89 @@ class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsIn
     public function renameDirectory(string $path, string $newName): void
     {
     }
+}
+
+function adapterSettingsFilesystem(): FsInterface
+{
+    if (!class_exists('AdapterSettingsFilesystemTestFs', false)) {
+        class AdapterSettingsFilesystemTestFs extends craft\base\Fs
+        {
+            public function getSettingsHtml(): ?string
+            {
+                return '<input id="label" name="label" value="Legacy">';
+            }
+
+            public function getFileList(string $directory = '', bool $recursive = true): Generator
+            {
+                yield from [];
+            }
+
+            public function getFileSize(string $uri): int
+            {
+                return 0;
+            }
+
+            public function getDateModified(string $uri): int
+            {
+                return 0;
+            }
+
+            public function write(string $path, string $contents, array $config = []): void
+            {
+            }
+
+            public function read(string $path): string
+            {
+                return '';
+            }
+
+            public function writeFileFromStream(string $path, $stream, array $config = []): void
+            {
+            }
+
+            public function fileExists(string $path): bool
+            {
+                return false;
+            }
+
+            public function deleteFile(string $uri): void
+            {
+            }
+
+            public function renameFile(string $path, string $newPath, array $config = []): void
+            {
+            }
+
+            public function copyFile(string $path, string $newPath, array $config = []): void
+            {
+            }
+
+            public function getFileStream(string $uriPath)
+            {
+                return fopen('php://temp', 'r+');
+            }
+
+            public function directoryExists(string $path): bool
+            {
+                return false;
+            }
+
+            public function createDirectory(string $path, array $config = []): void
+            {
+            }
+
+            public function deleteDirectory(string $path): void
+            {
+            }
+
+            public function renameDirectory(string $path, string $newName): void
+            {
+            }
+        }
+    }
+
+    return new AdapterSettingsFilesystemTestFs([
+        'name' => 'Legacy Compatibility',
+        'handle' => 'legacy-compatibility',
+    ]);
 }
