@@ -12,3 +12,4 @@
 
 ### System
 - Updated Twig to 3.28.
+- Updated yii2-debug to 2.1.28.
