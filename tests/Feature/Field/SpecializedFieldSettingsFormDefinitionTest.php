@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Markdown;
 use CraftCms\Cms\Field\Table;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
 
 it('projects every address field setting through native form elements', function () {
     $field = new Addresses([
