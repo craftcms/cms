@@ -1,4 +1,4 @@
-import {describe, test, expect} from 'vitest';
+import {describe, test, expect} from 'vite-plus/test';
 import {t, tokenizePattern, parseToken, formatMessage} from './translate.js';
 
 const translations = {

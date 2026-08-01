@@ -27,8 +27,8 @@ use function CraftCms\Cms\t;
  *         ->label(t('Remember me'))
  *         ->checked($user->remember);
  *
- * Posting matches the legacy checkbox template: a scalar-named checkbox is
- * preceded by an always-post hidden input (empty value), so unchecking posts
+ * Posting matches the legacy checkbox template: a scalar-named checkbox gets
+ * an always-post hidden input (empty value) ahead of it, so unchecking posts
  * an empty string; `name[]`-style checkboxes post nothing when unchecked.
  */
 class Checkbox extends ViewComponent
@@ -269,24 +269,45 @@ class Checkbox extends ViewComponent
     #[\Override]
     protected function renderSlots(): string
     {
-        return $this->inputHtml().$this->labelHtml().parent::renderSlots();
+        return $this->alwaysPostInputHtml().$this->inputHtml().$this->labelHtml().parent::renderSlots();
     }
 
     /**
-     * Renders the always-post hidden input before the host and the custom
-     * option input after it, mirroring the legacy checkbox template.
+     * Renders the custom option input after the host, mirroring the legacy
+     * checkbox template.
      */
     #[\Override]
     protected function renderMarkup(): string
     {
-        $name = $this->evaluate($this->name);
-        $alwaysPost = $this->rendersAlwaysPostInput() && $name !== null && ! str_ends_with($name, '[]');
+        return parent::renderMarkup().$this->customInputHtml();
+    }
 
-        return implode('', array_filter([
-            $alwaysPost ? (string) Html::hiddenInput($name, '') : '',
-            parent::renderMarkup(),
-            $this->customInputHtml(),
-        ]));
+    /**
+     * The hidden input that posts an empty value when a scalar-named checkbox
+     * is unchecked, mirroring the legacy checkbox template. It stays ahead of
+     * the checkbox in the form's field order, so a checked box's value wins.
+     *
+     * It renders as the host's first light-DOM child rather than as a
+     * preceding sibling, so the component's markup keeps a single root
+     * element: a multi-root control can't be slotted — {@see
+     * ViewComponent::slotted()} would put `slot="input"` on the hidden input,
+     * leaving `<craft-checkbox>` unassigned, and a `<craft-field>` (whose
+     * shadow root has no default slot) would render nothing at all.
+     *
+     * `<craft-checkbox>`'s own shadow root has no default slot either, so the
+     * hidden input is never rendered — but it stays in the form's DOM tree, so
+     * it still posts. `<craft-switch>` does the same thing with its
+     * `hidden-input` slot.
+     */
+    protected function alwaysPostInputHtml(): string
+    {
+        $name = $this->evaluate($this->name);
+
+        if (! $this->rendersAlwaysPostInput() || $name === null || str_ends_with($name, '[]')) {
+            return '';
+        }
+
+        return (string) Html::hiddenInput($name, '');
     }
 
     protected function inputHtml(): string

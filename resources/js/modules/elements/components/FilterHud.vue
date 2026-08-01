@@ -1,11 +1,5 @@
 <script setup lang="ts">
-  import {
-    t,
-    appendBodyHtml,
-    appendHeadHtml,
-    ButtonAppearance,
-    ButtonVariant,
-  } from '@craftcms/ui';
+  import {t, appendBodyHtml, appendHeadHtml, ButtonVariant} from '@craftcms/ui';
   import {useHttp, usePage} from '@inertiajs/vue3';
   import {onMounted, onUnmounted, ref, useTemplateRef} from 'vue';
   import ElementIndexController from '@actions/Elements/ElementIndex/ElementIndexController';
@@ -108,16 +102,13 @@
           <div class="mt-4 flex justify-end gap-2">
             <craft-button
               type="button"
-              :appearance="ButtonAppearance.Fill"
+              :variant="ButtonVariant.Fill"
               @click="() => emit('close')"
               >{{ t('Cancel') }}</craft-button
             >
-            <craft-button
-              type="submit"
-              :variant="ButtonVariant.Accent"
-              :appearance="ButtonAppearance.Solid"
-              >{{ t('Apply') }}</craft-button
-            >
+            <craft-button type="submit" :variant="ButtonVariant.Primary">{{
+              t('Apply')
+            }}</craft-button>
           </div>
         </template>
       </form>

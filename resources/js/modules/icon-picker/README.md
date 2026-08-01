@@ -52,5 +52,5 @@ Craft.IconPicker(...)` callers lives in the yii2-adapter cpcompat bundle.
 
 ## Verification
 
-`npm run typecheck` + eslint + prettier. Behavior is verified live in the CP
+`vp check`. Behavior is verified live in the CP
 (pick/change/remove, the search modal, and form posting of the selected icon).

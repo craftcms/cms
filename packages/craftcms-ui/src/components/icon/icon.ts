@@ -77,7 +77,7 @@ export default class CraftIcon extends LitElement {
     try {
       svg = await resolveIcon(icon.name, icon.family, icon.variant);
     } catch (error) {
-      // eslint-disable-next-line no-console
+      // oxlint-disable-next-line no-console
       console.error(error);
       svg = nothing;
     }

@@ -53,12 +53,12 @@ const CLASS_SYNCS: Array<(button: CraftButton, classes: DOMTokenList) => void> =
     },
     (button, classes) => {
       if (classes.contains('submit')) {
-        button.variant = 'accent';
+        button.variant = 'primary';
       }
     },
     (button, classes) => {
       if (classes.contains('secondary')) {
-        button.appearance = 'outline';
+        button.variant = 'solid';
       }
     },
     (button, classes) => {

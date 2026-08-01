@@ -26,20 +26,20 @@ jobs:
           php-version: '8.5'
           tools: composer:v2
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: '24'
+          cache: true
 
-      - name: Install npm dependencies
-        run: npm ci
+      - name: Install frontend dependencies
+        run: vp install --frozen-lockfile
         env:
           CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
-      
+
       - name: Copy icons
         run: php ./scripts/copyicons.php
 
@@ -47,7 +47,7 @@ jobs:
         run: |
           rm -rf cms-assets/resources/build
           rm -rf cms-assets/resources/legacy
-          npm run build:all
+          vp run build:all
 
           test -f cms-assets/resources/build/manifest.json || { echo "::error::Missing cms-assets/resources/build/manifest.json"; exit 1; }
           test -f cms-assets/resources/legacy/cp/dist/cp.js || { echo "::error::Missing cms-assets/resources/legacy/cp/dist/cp.js"; exit 1; }

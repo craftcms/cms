@@ -5,7 +5,13 @@
 import Vue from 'vue';
 import axios from 'axios';
 import {currency} from './js/filters/currency';
-import {escapeHtml, formatDate, formatNumber, t, uppercaseFirst,} from './js/filters/craft';
+import {
+  escapeHtml,
+  formatDate,
+  formatNumber,
+  t,
+  uppercaseFirst,
+} from './js/filters/craft';
 import router from './js/router';
 import store from './js/store';
 import {mapState} from 'vuex';

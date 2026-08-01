@@ -14,12 +14,7 @@ const MARKER = '<!-- storybook-preview-comment -->';
 
 // Directory portion of a story's importPath, normalized for comparison against
 // the repo-relative paths returned by the GitHub API.
-const dirOf = (p) =>
-  p
-    .replace(/^\.\//, '')
-    .split('/')
-    .slice(0, -1)
-    .join('/');
+const dirOf = (p) => p.replace(/^\.\//, '').split('/').slice(0, -1).join('/');
 
 // Storybook publishes an index of every story at `<preview>/index.json`. We use
 // it to turn a changed file into a deep link to its rendered component.
@@ -65,7 +60,8 @@ async function sectionFor(preview, changed) {
   for (const entry of entries) {
     if (!entry?.importPath) continue;
     const dir = dirOf(entry.importPath);
-    if (!dir || !changedInScope.some((file) => file.startsWith(`${dir}/`))) continue;
+    if (!dir || !changedInScope.some((file) => file.startsWith(`${dir}/`)))
+      continue;
     const current = byImport.get(entry.importPath);
     if (!current || (entry.type === 'docs' && current.type !== 'docs')) {
       byImport.set(entry.importPath, entry);
@@ -87,8 +83,16 @@ async function sectionFor(preview, changed) {
 
 module.exports = async ({github, context}) => {
   const previews = [
-    {name: '@craftcms/ui', result: process.env.CP_RESULT, url: process.env.CP_URL},
-    {name: 'resources/js', result: process.env.RESOURCES_RESULT, url: process.env.RESOURCES_URL},
+    {
+      name: '@craftcms/ui',
+      result: process.env.CP_RESULT,
+      url: process.env.CP_URL,
+    },
+    {
+      name: 'resources/js',
+      result: process.env.RESOURCES_RESULT,
+      url: process.env.RESOURCES_URL,
+    },
   ];
 
   // Every file changed in this PR (excluding deletions, which no longer have a

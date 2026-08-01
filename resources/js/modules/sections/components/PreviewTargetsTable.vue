@@ -90,7 +90,7 @@
       size="small"
       @click="addPreviewTarget"
       class="w-full"
-      appearance="plain"
+      variant="plain"
     >
       {{ t('Add a target') }}
     </craft-button>
