@@ -37,7 +37,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -89,7 +88,7 @@ class FieldsController
 
     public function create(Request $request): CpScreenResponse
     {
-        // Slideouts (`new Craft.CpScreenSlideout('fields/edit-field')` with no
+        // Slideouts (`new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'))` with no
         // field ID, e.g. the field layout designer's "New field" button) still
         // consume the legacy Twig screen as JSON.
         if ($request->wantsJson()) {
@@ -400,23 +399,6 @@ class FieldsController
         ]);
     }
 
-    #[Deprecated(message: 'in 6.0. Use `settings/fields` instead.')]
-    public function tableData(TableRequest $request): Response
-    {
-        [$pagination, $tableData] = $this->fieldsService->getTableData(
-            page: $request->page(),
-            limit: $request->limit(),
-            searchTerm: $request->search(),
-            orderBy: $request->orderBy(),
-            sortDir: $request->sortDir(),
-        );
-
-        return $this->asSuccess(data: [
-            'pagination' => $pagination,
-            'data' => $tableData,
-        ]);
-    }
-
     private function fieldLayoutComponent(Request $request, ?array &$settings = null): FieldLayoutComponent
     {
         $request->validate([
@@ -596,7 +578,9 @@ class FieldsController
 
         if (! $this->readOnly) {
             $response
-                ->action('fields/save-field')
+                ->formAttributes([
+                    'action' => Url::cpUrl('settings/fields'),
+                ])
                 ->redirectUrl('settings/fields')
                 ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
@@ -631,9 +615,14 @@ JS, [
             if (! $this->readOnly) {
                 $response
                     ->addAltAction(t('Delete'), [
-                        'action' => 'fields/delete-field',
-                        'redirect' => 'settings/fields',
-                        'destructive' => true,
+                        'action' => [
+                            'type' => 'http',
+                            'method' => 'DELETE',
+                            'url' => Url::cpUrl("settings/fields/$field->id"),
+                            'body' => [
+                                'redirect' => Crypt::encrypt(Url::cpUrl('settings/fields')),
+                            ],
+                        ],
                         'confirm' => t('Are you sure you want to delete “{name}”?', [
                             'name' => $field->name,
                         ]),

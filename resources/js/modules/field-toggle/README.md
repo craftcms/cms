@@ -47,5 +47,5 @@ two remain for their surfaces (craft-switch already defers to a bound FieldToggl
 
 ## Verification
 
-`npm run typecheck` + eslint + prettier. Behavior (each toggle type reveals/hides
+`vp check`. Behavior (each toggle type reveals/hides
 and animates its targets) is verified live in the CP.

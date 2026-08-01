@@ -286,7 +286,14 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
         // Never match the "development" exports condition: workspace packages
         // (e.g. @craftcms/ui) map it to their TypeScript source for Vite's dev
         // server. The legacy webpack build must always consume built output.
-        conditionNames: ['webpack', 'browser', 'module', 'import', 'require', 'default'],
+        conditionNames: [
+          'webpack',
+          'browser',
+          'module',
+          'import',
+          'require',
+          'default',
+        ],
       },
       module: {
         rules: [

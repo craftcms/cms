@@ -51,7 +51,7 @@
         key,
         {
           ...value,
-          ...(pluginLicenseData.value[key] || {}),
+          ...pluginLicenseData.value[key],
         },
       ])
     );

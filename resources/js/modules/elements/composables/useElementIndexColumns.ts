@@ -134,7 +134,7 @@ export function useElementIndexColumns(
 
   // Merge a patch into the active source's view state (and persist it).
   function patchSourceColumnState(patch: {visible?: Array<string>}) {
-    const sources = {...(viewState.value.sources ?? {})};
+    const sources = {...viewState.value.sources};
     sources[sourceKey.value] = {...sources[sourceKey.value], ...patch};
     viewState.value.sources = sources;
   }

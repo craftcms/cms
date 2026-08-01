@@ -1,8 +1,5 @@
 import type CraftButton from '../components/button/button.js';
-import type {
-  ButtonAppearance,
-  ButtonVariant,
-} from '../components/button/button.js';
+import type {ButtonVariant} from '../components/button/button.js';
 import '../components/button/button.js';
 import {t} from './translate.js';
 import {capitalize} from './string.js';
@@ -12,7 +9,7 @@ import {capitalize} from './string.js';
  * `Craft.ui.create*` factories. Each returns a `@craftcms/ui` custom element
  * (a plain `HTMLElement`, not a jQuery collection) configured through the
  * same config keys the legacy factory accepted, plus the component's own
- * modern options (`variant`, `appearance`, `size`).
+ * modern options (`variant`, `size`).
  *
  * New code should import these directly. The legacy `Craft.ui.create*`
  * methods keep working — `resources/js/modules/ui` patches them to delegate
@@ -59,7 +56,6 @@ export interface CreateButtonConfig {
   disabled?: boolean;
   loading?: boolean;
   variant?: ButtonVariant;
-  appearance?: ButtonAppearance;
   size?: CraftButton['size'];
 }
 
@@ -125,9 +121,6 @@ export function createButton(config: CreateButtonConfig = {}): CraftButton {
   }
   if (config.variant) {
     button.variant = config.variant;
-  }
-  if (config.appearance) {
-    button.appearance = config.appearance;
   }
   if (config.size) {
     button.size = config.size;

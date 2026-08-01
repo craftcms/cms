@@ -55,7 +55,7 @@ export default class CraftComponentSelect extends ControllerElement<ComponentSel
   // `root` (the `:scope > ul`) is unused here — the controller re-resolves it
   // off `this` (the container) since it needs to re-query on every boot, and
   // there's no benefit to threading the already-resolved node through.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // oxlint-disable-next-line @typescript-eslint/no-unused-vars
   protected create(root: HTMLElement): ComponentSelect {
     return new ComponentSelect(this, {
       ...this.#parseSettings(),

@@ -49,9 +49,7 @@
           'a',
           {
             class: 'font-bold',
-            href: edit['/{cpTrigger?}/settings/sections/{section}']({
-              section: row.original.id,
-            }).url,
+            href: edit({section: row.original.id}).url,
           },
           getValue()
         ),

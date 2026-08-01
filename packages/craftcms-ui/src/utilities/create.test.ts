@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import {createButton, createPasteButton, createSubmitButton} from './create.js';
 
 beforeEach(() => {
@@ -53,13 +53,11 @@ describe('createButton', () => {
   it('supports the modern options', () => {
     const button = createButton({
       variant: 'danger',
-      appearance: 'outline',
       size: 'small',
       loading: true,
     });
 
     expect(button.variant).toBe('danger');
-    expect(button.appearance).toBe('outline');
     expect(button.size).toBe('small');
     expect(button.loading).toBe(true);
   });

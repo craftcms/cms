@@ -321,12 +321,15 @@ export class Element extends Base {
   }
 
   async showFieldEditor(): Promise<void> {
-    const slideout = new Craft.CpScreenSlideout('fields/edit-field', {
-      params: {
-        fieldId: this.fieldId,
-        multiInstanceTypesOnly: this.isMultiInstance ? 1 : 0,
-      },
-    });
+    const slideout = new Craft.CpScreenSlideout(
+      Craft.getCpUrl('settings/fields/edit'),
+      {
+        params: {
+          fieldId: this.fieldId,
+          multiInstanceTypesOnly: this.isMultiInstance ? 1 : 0,
+        },
+      }
+    );
 
     slideout.on('submit', async ({response}: any) => {
       const designer = this.tab.designer;
