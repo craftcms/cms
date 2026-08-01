@@ -94,3 +94,13 @@ The renderer receives the exported `FormElementRendererProps<TConfig, TValue>` c
 Renderers do not receive the complete definition, Binding Scope, validation collection, routes, submission, or persistence workflow. Plugins deliver PHP and JavaScript together and declare compatible Craft versions through Composer. Optional contract additions may ship in minor Craft releases; required properties or semantic changes require a major release.
 
 If a plugin-owned renderer is unavailable, Craft shows the type and derived plugin ownership. Missing core or application renderers throw. Exceptions from registered renderers produce a separate failed-renderer diagnostic.
+
+## Legacy Settings Islands
+
+The Yii 2 adapter can wrap conventional legacy settings HTML in its internal `yii2-adapter:legacy-settings` Form Element. This compatibility element is not a native plugin authoring API or a general raw-HTML fallback. Plugins should implement a native Form Definition instead.
+
+The island mounts captured head assets, fragment HTML, and body assets in that order, then initializes legacy UI elements. Its live light DOM is serialized before replacement and form submission, and an unchanged keyed island keeps its actual DOM across a complete definition refresh.
+
+This behavior is best-effort. It does not provide native dirty tracking, reset behavior, reactive visibility, field-level errors, file-input serialization, unknown shadow-DOM control serialization, reliable teardown of arbitrary plugin listeners or global side effects, safe shared-asset ownership across islands, new diagnostics for silent asset failures, or full-page lifecycle equivalence. A plugin that depends on those behaviors must migrate to a native Form Definition.
+
+The compatibility element’s lifetime and removal follow the Yii 2 adapter package’s compatibility policy, independently of Craft CMS major releases.

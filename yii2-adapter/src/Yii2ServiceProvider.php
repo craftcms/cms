@@ -11,6 +11,7 @@ use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
@@ -41,6 +42,7 @@ use CraftCms\Yii2Adapter\Console\LegacyCommandCompatibility;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
+use CraftCms\Yii2Adapter\Cp\FormDefinitions\Elements\LegacySettings as LegacySettingsElement;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
@@ -107,6 +109,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
+        $this->app->make(FormElementTypes::class)->register(LegacySettingsElement::class);
         /**
          * Load the legacy fallback route from booted() so it registers after
          * the CMS package's own Route::fallback(), ensuring that unmatched

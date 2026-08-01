@@ -34,6 +34,7 @@ class CpCompatAsset implements LegacyAssetInterface
     public function register(HtmlStack $htmlStack): void
     {
         $htmlStack->jsFile(craftAsset('adapter/cpcompat/component-select-input.js'));
+        $htmlStack->jsFile(craftAsset('adapter/cpcompat/legacy-settings-island.js'));
         $htmlStack->jsFile(craftAsset('adapter/cpcompat/cp-compat.js'));
     }
 }
