@@ -17,6 +17,7 @@ use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\Components\Lightswitch;
+use CraftCms\Cms\Cp\Components\MoneyInput;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
@@ -32,6 +33,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
@@ -779,14 +781,56 @@ readonly class FormFields
 
     public static function moneyInputHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/money', $config);
+        return self::moneyFromConfig($config)->toHtml();
     }
 
     public static function moneyFieldHtml(array $config): string
     {
         $config['id'] ??= 'money'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/money', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::moneyFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    public static function moneyFromConfig(array $config): MoneyInput
+    {
+        self::deprecateConfig('money', $config, [
+            'jsSettings' => 'has been deprecated. Use the dedicated money config options instead.',
+            'showClear' => 'has been deprecated and is no longer supported.',
+        ]);
+
+        $inputAttributes = $config['inputAttributes'] ?? [];
+        $locale = I18N::getFormattingLocale();
+        $size = ($config['size'] ?? false) ?: null;
+        $value = $config['value'] ?? null;
+
+        return MoneyInput::make()
+            ->id($config['id'] ?? 'money'.mt_rand())
+            ->name($config['name'] ?? null)
+            ->value($value !== false ? $value : null)
+            ->currency($config['currency'] ?? null)
+            ->currencyLabel(($config['showCurrency'] ?? true) ? ($config['currencyLabel'] ?? null) : null)
+            ->fractionDigits((int) ($config['decimals'] ?? 2))
+            ->formattingLocale($config['formattingLocale'] ?? null)
+            ->decimalSeparator($config['decimalSeparator'] ?? $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR))
+            ->groupSeparator($config['groupSeparator'] ?? $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR))
+            ->inputSize($size !== null ? (int) $size : null)
+            ->width($size !== null ? 'auto' : null)
+            ->autofocus((bool) ($config['autofocus'] ?? false))
+            ->autocomplete($config['autocomplete'] ?? false)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->title($config['title'] ?? null)
+            ->placeholder($config['placeholder'] ?? null)
+            ->labelledBy(empty($inputAttributes['aria']['label']) ? ($config['labelledBy'] ?? null) : null)
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->attributes($config['containerAttributes'] ?? [])
+            ->inputAttributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $inputAttributes,
+            ));
     }
 
     public static function selectHtml(array $config): string

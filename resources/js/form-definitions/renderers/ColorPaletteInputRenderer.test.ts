@@ -22,49 +22,51 @@ describe('Color Palette Form Element', () => {
       },
     });
     const container = mount(values);
+    const palette = container.querySelector<
+      HTMLElementTagNameMap['craft-color-palette']
+    >('craft-color-palette')!;
+    await palette.updateComplete;
+    const root = palette.shadowRoot!;
 
-    expect(container.querySelectorAll('craft-input-color')).toHaveLength(2);
-    expect(container.querySelectorAll('craft-input')).toHaveLength(2);
-    expect(container.querySelectorAll('craft-checkbox')).toHaveLength(2);
-    expect(container.querySelectorAll('craft-reorder-button')).toHaveLength(2);
-    expect(container.querySelectorAll('craft-button')).toHaveLength(3);
+    expect(palette.value).toEqual(values.settings.palette);
+    expect(root.querySelectorAll('craft-input-color')).toHaveLength(2);
+    expect(root.querySelectorAll('craft-input')).toHaveLength(2);
+    expect(root.querySelectorAll('craft-checkbox')).toHaveLength(2);
+    expect(root.querySelectorAll('craft-reorder-button')).toHaveLength(2);
+    expect(root.querySelectorAll('craft-button')).toHaveLength(3);
     expect(
-      container
-        .querySelector('[data-palette-color="0"]')
-        ?.getAttribute('aria-label')
+      root.querySelector('[data-palette-color="0"]')?.getAttribute('aria-label')
     ).toBe('Color for Red');
     expect(
-      container
-        .querySelector('[data-palette-label="0"]')
-        ?.getAttribute('aria-label')
+      root.querySelector('[data-palette-label="0"]')?.getAttribute('aria-label')
     ).toBe('Label for Red');
     expect(
-      container.querySelector<HTMLElementTagNameMap['craft-reorder-button']>(
+      root.querySelector<HTMLElementTagNameMap['craft-reorder-button']>(
         'craft-reorder-button'
       )?.label
     ).toBe('Reorder Red');
-    expect(
-      container.querySelector('craft-button')?.getAttribute('aria-label')
-    ).toBe('Delete Red');
-    expect(container.querySelector('th:last-child')?.textContent).toBe(
+    expect(root.querySelector('craft-button')?.getAttribute('aria-label')).toBe(
+      'Delete Red'
+    );
+    expect(root.querySelector('th:last-child')?.textContent?.trim()).toBe(
       'Actions'
     );
 
-    const label = container.querySelector<HTMLElementTagNameMap['craft-input']>(
+    const label = root.querySelector<HTMLElementTagNameMap['craft-input']>(
       '[data-palette-label="0"]'
     )!;
     label.value = 'Crimson';
     label.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
 
-    const color = container.querySelector<
+    const color = root.querySelector<
       HTMLElementTagNameMap['craft-input-color']
     >('[data-palette-color="0"]')!;
     color.value = '00ff00';
     color.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
 
-    container
+    root
       .querySelector<HTMLElement & {checked: boolean}>(
         '[data-palette-default="1"]'
       )!
@@ -76,7 +78,7 @@ describe('Color Palette Form Element', () => {
       {color: '#0000ff', label: '', default: true},
     ]);
 
-    container
+    root
       .querySelector<HTMLElementTagNameMap['craft-reorder-button']>(
         '[data-palette-row="1"] craft-reorder-button'
       )!
@@ -94,27 +96,40 @@ describe('Color Palette Form Element', () => {
     ]);
   });
 
-  it('disables every palette control when read-only', () => {
+  it('disables every palette control when read-only', async () => {
     const container = mount(
       {
         settings: {
           palette: [{color: '#ff0000', label: 'Red', default: true}],
         },
       },
-      true
+      true,
+      {'settings.palette': ['Palette is invalid.']}
     );
+    const palette = container.querySelector<
+      HTMLElementTagNameMap['craft-color-palette']
+    >('craft-color-palette')!;
+    await palette.updateComplete;
 
-    for (const control of container.querySelectorAll<
+    for (const control of palette.shadowRoot!.querySelectorAll<
       HTMLElement & {disabled: boolean}
     >(
       'craft-input-color, craft-input, craft-checkbox, craft-reorder-button, craft-button'
     )) {
       expect(control.disabled).toBe(true);
     }
+
+    expect(
+      container.querySelector('[data-form-element-errors]')?.textContent
+    ).toContain('Palette is invalid.');
   });
 });
 
-function mount(values: Record<string, unknown>, readOnly = false): HTMLElement {
+function mount(
+  values: Record<string, unknown>,
+  readOnly = false,
+  errors: Record<string, string[]> = {}
+): HTMLElement {
   const registry = createCpComponentRegistry();
   const container = document.createElement('div');
 
@@ -135,7 +150,7 @@ function mount(values: Record<string, unknown>, readOnly = false): HTMLElement {
     },
     bindingScope: 'settings',
     values,
-    errors: {},
+    errors,
     readOnly,
   });
 

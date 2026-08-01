@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
+use CraftCms\Cms\Cp\Components\ColorPalette;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
@@ -159,10 +160,11 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            ColorPaletteInput::make('palette')
+            FieldComponent::make()
                 ->label(t('Palette'))
                 ->instructions(t('Define the available colors to choose from.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(ColorPalette::make()->name('palette')),
             LightswitchInput::make('allowCustomColors')
                 ->label(t('Allow custom colors'))
                 ->readOnly($readOnly),

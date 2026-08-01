@@ -5,24 +5,24 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\FormDefinitions;
 
 use CraftCms\Cms\Cp\Components\CheckboxSelect as CheckboxSelectComponent;
+use CraftCms\Cms\Cp\Components\ColorPalette as ColorPaletteComponent;
 use CraftCms\Cms\Cp\Components\Combobox as ComboboxComponent;
 use CraftCms\Cms\Cp\Components\DateInput as DateInputComponent;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
+use CraftCms\Cms\Cp\Components\MoneyInput as MoneyInputComponent;
 use CraftCms\Cms\Cp\Components\NumberInput as NumberInputComponent;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Cp\Components\TextInput as TextInputComponent;
 use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
@@ -100,8 +100,16 @@ class FormElementTypes
                 'container' => TimeInputComponent::isFormElementContainer(),
                 'plugin' => null,
             ],
-            ColorPaletteInput::type() => ['class' => ColorPaletteInput::class, 'container' => false, 'plugin' => null],
-            MoneyInput::type() => ['class' => MoneyInput::class, 'container' => false, 'plugin' => null],
+            ColorPaletteComponent::formElementType() => [
+                'class' => ColorPaletteComponent::class,
+                'container' => ColorPaletteComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
+            MoneyInputComponent::formElementType() => [
+                'class' => MoneyInputComponent::class,
+                'container' => MoneyInputComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
         ];
     }
 

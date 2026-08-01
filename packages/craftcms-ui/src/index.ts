@@ -22,6 +22,10 @@ export {default as CraftCheckboxGroup} from './components/checkbox-group/checkbo
 export {default as CraftCheckboxIndeterminate} from './components/checkbox-indeterminate/checkbox-indeterminate.js';
 export {default as CraftCheckbox} from './components/checkbox/checkbox.js';
 export {default as CraftChip} from './components/chip/chip.js';
+export {
+  default as CraftColorPalette,
+  type ColorPaletteRow,
+} from './components/color-palette/color-palette.js';
 export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftCopyAttribute} from './components/copy-attribute/copy-attribute.js';
 export {default as CraftCopyButton} from './components/copy-button/copy-button.js';
@@ -36,6 +40,7 @@ export {default as CraftInfoIcon} from './components/info-icon/info-icon.js';
 export {default as CraftInputColor} from './components/input-color/input-color.js';
 export {default as CraftInputFile} from './components/input-file/input-file.js';
 export {default as CraftInputHandle} from './components/input-handle/input-handle.js';
+export {default as CraftInputMoney} from './components/input-money/input-money.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
 export {default as CraftInput} from './components/input/input.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';

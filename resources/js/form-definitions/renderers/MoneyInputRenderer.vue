@@ -1,7 +1,9 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, useAttrs} from 'vue';
+  import '@craftcms/ui/components/input-money/input-money';
   import type {FormElementBinding, JsonValue} from '../types';
-  import CraftInputRenderer from './CraftInputRenderer.vue';
+
+  defineOptions({inheritAttrs: false});
 
   const props = defineProps<{
     config: Record<string, JsonValue>;
@@ -12,7 +14,8 @@
   const emit = defineEmits<{
     'update:value': [value: number | string | null];
   }>();
-
+  const attrs = useAttrs();
+  const hostAttributes = computed(() => ({...props.attributes, ...attrs}));
   const fractionDigits = computed(() =>
     typeof props.config.fractionDigits === 'number'
       ? props.config.fractionDigits
@@ -21,10 +24,23 @@
   const value = computed(() =>
     formatMinorUnits(props.binding?.value, fractionDigits.value)
   );
-  const step = computed(() => 10 ** -fractionDigits.value);
+  const currency = computed(() => stringConfig('currency'));
+  const placeholder = computed(() => stringConfig('placeholder'));
 
-  function updateValue(value: string): void {
-    emit('update:value', parseMinorUnits(value, fractionDigits.value));
+  function updateValue(event: Event): void {
+    emit(
+      'update:value',
+      parseMinorUnits(
+        (event.target as HTMLElementTagNameMap['craft-input-money']).value,
+        fractionDigits.value
+      )
+    );
+  }
+
+  function stringConfig(name: string): string | undefined {
+    const value = props.config[name];
+
+    return typeof value === 'string' ? value : undefined;
   }
 
   function formatMinorUnits(value: unknown, digits: number): string {
@@ -66,11 +82,12 @@
 </script>
 
 <template>
-  <CraftInputRenderer
-    :attributes="attributes"
-    type="number"
+  <craft-input-money
+    v-bind="hostAttributes"
     :value="value"
-    :step="step"
-    @update:value="updateValue"
-  />
+    :currency="currency"
+    :fraction-digits="fractionDigits"
+    :placeholder="placeholder"
+    @input="updateValue"
+  ></craft-input-money>
 </template>

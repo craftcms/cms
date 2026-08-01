@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\MoneyInput;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -169,18 +169,18 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 ->required()
                 ->readOnly($readOnly)
                 ->input(Select::make()->name('currency')->options($currencyOptions)),
-            MoneyInput::make('defaultValue')
+            FieldComponent::make()
                 ->label(t('Default Value'))
-                ->fractionDigits($fractionDigits)
-                ->readOnly($readOnly),
-            MoneyInput::make('min')
+                ->readOnly($readOnly)
+                ->input(MoneyInput::make()->name('defaultValue')->fractionDigits($fractionDigits)),
+            FieldComponent::make()
                 ->label(t('Min Value'))
-                ->fractionDigits($fractionDigits)
-                ->readOnly($readOnly),
-            MoneyInput::make('max')
+                ->readOnly($readOnly)
+                ->input(MoneyInput::make()->name('min')->fractionDigits($fractionDigits)),
+            FieldComponent::make()
                 ->label(t('Max Value'))
-                ->fractionDigits($fractionDigits)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(MoneyInput::make()->name('max')->fractionDigits($fractionDigits)),
             LightswitchInput::make('showCurrency')
                 ->label(t('Show Currency'))
                 ->readOnly($readOnly),

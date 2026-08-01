@@ -108,7 +108,9 @@ describe('Form Definition renderer', () => {
           },
           scalarField('craft:time-input', 'minTime'),
           scalarField('craft:money-input', 'defaultValue', {
+            currency: 'USD',
             fractionDigits: 2,
+            placeholder: '0.00',
           }),
         ],
       },
@@ -138,9 +140,10 @@ describe('Form Definition renderer', () => {
     )!;
     const date = inputs.find((input) => input.type === 'date')!;
     const time = inputs.find((input) => input.type === 'time')!;
-    const money = inputs.find(
-      (input) => input.name === 'settings[defaultValue]'
-    )!;
+    const money =
+      container.querySelector<HTMLElementTagNameMap['craft-input-money']>(
+        'craft-input-money'
+      )!;
     const uiModeField =
       select.closest<HTMLElementTagNameMap['craft-field']>('craft-field')!;
     await uiModeField.updateComplete;
@@ -161,6 +164,9 @@ describe('Form Definition renderer', () => {
     expect(date.value).toBe('2026-01-02');
     expect(time.value).toBe('08:30');
     expect(money.value).toBe('12.34');
+    expect(money.currency).toBe('USD');
+    expect(money.fractionDigits).toBe(2);
+    expect(money.placeholder).toBe('0.00');
     expect(
       container.querySelector('[data-form-element-tip]')?.textContent
     ).toBe('Dates use the project time zone.');
@@ -192,6 +198,8 @@ describe('Form Definition renderer', () => {
 
     number.value = '';
     number.dispatchEvent(new Event('input', {bubbles: true}));
+    money.value = '';
+    money.dispatchEvent(new Event('input', {bubbles: true}));
     date.value = '';
     date.dispatchEvent(new Event('input', {bubbles: true}));
     time.value = '';
@@ -199,8 +207,62 @@ describe('Form Definition renderer', () => {
     await nextTick();
 
     expect(values.settings.charLimit).toBeNull();
+    expect(values.settings.defaultValue).toBeNull();
     expect(values.settings.minDate).toBeNull();
     expect(values.settings.minTime).toBeNull();
+  });
+
+  it('applies host errors, read-only state, and accessibility to money inputs', async () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+
+    registry.register('form-element:craft:money-input', MoneyInputRenderer);
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormDefinitionRenderer, {
+      definition: {
+        elements: [
+          {
+            type: 'craft:field',
+            props: {label: 'Minimum amount', required: true},
+            children: [
+              {
+                type: 'craft:money-input',
+                name: 'minimum',
+                props: {currency: 'EUR', fractionDigits: 2},
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values: {settings: {minimum: 250}},
+      errors: {'settings.minimum': ['Enter a valid amount.']},
+      readOnly: true,
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const money =
+      container.querySelector<HTMLElementTagNameMap['craft-input-money']>(
+        'craft-input-money'
+      )!;
+
+    await money.updateComplete;
+
+    expect(money.value).toBe('2.50');
+    expect(money.name).toBe('settings[minimum]');
+    expect(money.readOnly).toBe(true);
+    expect(money.getAttribute('aria-required')).toBe('true');
+    expect(
+      money.shadowRoot
+        ?.querySelector('[data-money-currency]')
+        ?.hasAttribute('aria-hidden')
+    ).toBe(false);
+    expect(
+      container.querySelector('[data-form-element-errors]')?.textContent
+    ).toContain('Enter a valid amount.');
   });
 
   it('renders eager and lazy plugin renderers through the public renderer contract', async () => {
