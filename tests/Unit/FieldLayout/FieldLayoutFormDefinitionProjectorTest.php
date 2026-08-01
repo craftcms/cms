@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
@@ -143,7 +143,7 @@ class ProjectableField extends Field implements FieldLayoutFormElementProviderIn
 {
     public function formElement(FieldLayoutFormElementContext $context): ?FormElement
     {
-        return TextInput::make($context->inputName ?? throw new LogicException('Input Name is required.'))
+        return ProjectorTextInput::make($context->inputName ?? throw new LogicException('Input Name is required.'))
             ->placeholder('Projected body');
     }
 }
@@ -186,7 +186,7 @@ class InapplicableFormElement extends FieldLayoutElement implements FieldLayoutF
 
     public function formElement(FieldLayoutFormElementContext $context): ?FormElement
     {
-        return TextInput::make('hidden');
+        return ProjectorTextInput::make('hidden');
     }
 }
 
@@ -200,5 +200,30 @@ class UnsupportedFormElement extends FieldLayoutElement
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return '<input name="legacy">';
+    }
+}
+
+class ProjectorTextInput extends InputElement
+{
+    private ?string $placeholder = null;
+
+    public static function type(): string
+    {
+        return 'craft:text-input';
+    }
+
+    public function placeholder(?string $placeholder): static
+    {
+        $this->placeholder = $placeholder;
+
+        return $this;
+    }
+
+    #[Override]
+    protected function props(): array
+    {
+        return array_filter([
+            'placeholder' => $this->placeholder,
+        ], fn (mixed $value): bool => $value !== null);
     }
 }

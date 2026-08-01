@@ -7,7 +7,8 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
@@ -223,12 +224,16 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     {
         $elements = [
             ...$this->linkSettingsFormElements($readOnly),
-            NumberInput::make('maxLength')
+            FieldComponent::make()
                 ->label(t('Max Length'))
                 ->instructions(t('The maximum length (in bytes) the field can hold.'))
-                ->min(10)
-                ->step(10)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    NumberInput::make()
+                        ->name('maxLength')
+                        ->min(10)
+                        ->step(10),
+                ),
         ];
 
         if (Cms::config()->enableGql) {

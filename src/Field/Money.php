@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
@@ -183,10 +184,10 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             LightswitchInput::make('showCurrency')
                 ->label(t('Show Currency'))
                 ->readOnly($readOnly),
-            NumberInput::make('size')
+            FieldComponent::make()
                 ->label(t('Size'))
-                ->min(1)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('size')->min(1)),
         ]);
     }
 

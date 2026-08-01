@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\DateInput;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\DateInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -199,14 +200,16 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ->instructions(t('Whether authors should be able to choose which time zone the time is in.'))
                 ->visibleWhen(Condition::equals('showTime', true))
                 ->readOnly($readOnly),
-            DateInput::make('min')
+            FieldComponent::make()
                 ->label(t('Min Date'))
                 ->visibleWhen(Condition::equals('showDate', true))
-                ->readOnly($readOnly),
-            DateInput::make('max')
+                ->readOnly($readOnly)
+                ->input(DateInput::make()->name('min')),
+            FieldComponent::make()
                 ->label(t('Max Date'))
                 ->visibleWhen(Condition::equals('showDate', true))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(DateInput::make()->name('max')),
         ]);
     }
 

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -67,10 +68,11 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            TextInput::make('placeholder')
+            FieldComponent::make()
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(TextInput::make()->name('placeholder')),
         ]);
     }
 

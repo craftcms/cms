@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FormDefinitions;
 
+use CraftCms\Cms\Cp\Components\DateInput as DateInputComponent;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
+use CraftCms\Cms\Cp\Components\NumberInput as NumberInputComponent;
+use CraftCms\Cms\Cp\Components\TextInput as TextInputComponent;
+use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ComboboxInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\DateInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
@@ -19,14 +22,11 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TimeInput;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Container\Attributes\Singleton;
 use InvalidArgumentException;
@@ -54,13 +54,21 @@ class FormElementTypes
             Group::type() => ['class' => Group::class, 'container' => true, 'plugin' => null],
             Tabs::type() => ['class' => Tabs::class, 'container' => true, 'plugin' => null],
             Tab::type() => ['class' => Tab::class, 'container' => true, 'plugin' => null],
-            TextInput::type() => ['class' => TextInput::class, 'container' => false, 'plugin' => null],
+            TextInputComponent::formElementType() => [
+                'class' => TextInputComponent::class,
+                'container' => TextInputComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             ComboboxInput::type() => ['class' => ComboboxInput::class, 'container' => false, 'plugin' => null],
             CheckboxSelectInput::type() => ['class' => CheckboxSelectInput::class, 'container' => false, 'plugin' => null],
             ElementConditionInput::type() => ['class' => ElementConditionInput::class, 'container' => false, 'plugin' => null],
             EditableTableInput::type() => ['class' => EditableTableInput::class, 'container' => false, 'plugin' => null],
             FieldLayoutInput::type() => ['class' => FieldLayoutInput::class, 'container' => false, 'plugin' => null],
-            NumberInput::type() => ['class' => NumberInput::class, 'container' => false, 'plugin' => null],
+            NumberInputComponent::formElementType() => [
+                'class' => NumberInputComponent::class,
+                'container' => NumberInputComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             SelectInput::type() => ['class' => SelectInput::class, 'container' => false, 'plugin' => null],
             LightswitchComponent::formElementType() => [
                 'class' => LightswitchComponent::class,
@@ -70,8 +78,16 @@ class FormElementTypes
             KeyedTableInput::type() => ['class' => KeyedTableInput::class, 'container' => false, 'plugin' => null],
             OptionRows::type() => ['class' => OptionRows::class, 'container' => false, 'plugin' => null],
             ObjectSelectInput::type() => ['class' => ObjectSelectInput::class, 'container' => false, 'plugin' => null],
-            DateInput::type() => ['class' => DateInput::class, 'container' => false, 'plugin' => null],
-            TimeInput::type() => ['class' => TimeInput::class, 'container' => false, 'plugin' => null],
+            DateInputComponent::formElementType() => [
+                'class' => DateInputComponent::class,
+                'container' => DateInputComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
+            TimeInputComponent::formElementType() => [
+                'class' => TimeInputComponent::class,
+                'container' => TimeInputComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             ColorPaletteInput::type() => ['class' => ColorPaletteInput::class, 'container' => false, 'plugin' => null],
             MoneyInput::type() => ['class' => MoneyInput::class, 'container' => false, 'plugin' => null],
         ];

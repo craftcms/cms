@@ -12,11 +12,12 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -295,27 +296,35 @@ class Assets extends BaseRelationField
                 ->options($options)
                 ->visibleWhen($restricted)
                 ->readOnly($readOnly),
-            TextInput::make('restrictedLocationSubpath')
+            FieldComponent::make()
                 ->label(t('Asset Location Subpath'))
                 ->instructions(t('The subpath where assets can be selected from.'))
                 ->tip($dynamicPathTip)
-                ->placeholder(t('path/to/subfolder'))
                 ->visibleWhen($restricted)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    TextInput::make()
+                        ->name('restrictedLocationSubpath')
+                        ->placeholder(t('path/to/subfolder')),
+                ),
             LightswitchInput::make('allowSubfolders')
                 ->label(t('Allow subfolders'))
                 ->visibleWhen($restricted)
                 ->readOnly($readOnly),
-            TextInput::make('restrictedDefaultUploadSubpath')
+            FieldComponent::make()
                 ->label(t('Default Upload Location'))
                 ->instructions(t('Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'))
                 ->tip($dynamicPathTip)
-                ->placeholder(t('path/to/subfolder'))
                 ->visibleWhen(Condition::all(
                     $restricted,
                     Condition::equals('allowSubfolders', true),
                 ))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    TextInput::make()
+                        ->name('restrictedDefaultUploadSubpath')
+                        ->placeholder(t('path/to/subfolder')),
+                ),
             $this->sourceFormElement($sourceOptions, $readOnly)
                 ->visibleWhen($unrestricted),
             SelectInput::make('defaultUploadLocationSource')
@@ -324,13 +333,17 @@ class Assets extends BaseRelationField
                 ->options($options)
                 ->visibleWhen($unrestricted)
                 ->readOnly($readOnly),
-            TextInput::make('defaultUploadLocationSubpath')
+            FieldComponent::make()
                 ->label(t('Default Upload Location Subpath'))
                 ->instructions(t('The subpath where assets should be stored when they are uploaded directly to the field.'))
                 ->tip($dynamicPathTip)
-                ->placeholder(t('path/to/subfolder'))
                 ->visibleWhen($unrestricted)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    TextInput::make()
+                        ->name('defaultUploadLocationSubpath')
+                        ->placeholder(t('path/to/subfolder')),
+                ),
             ...($selectionCondition === null ? [] : [$selectionCondition]),
             LightswitchInput::make('showUnpermittedVolumes')
                 ->label(t('Show unpermitted volumes'))

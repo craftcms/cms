@@ -6,13 +6,14 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -399,24 +400,25 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->label(t('Show Stats'))
                 ->instructions(t('Whether the editor should show character, word, and line counts.'))
                 ->readOnly($readOnly),
-            TextInput::make('placeholder')
+            FieldComponent::make()
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
-                ->readOnly($readOnly),
-            NumberInput::make('initialRows')
+                ->readOnly($readOnly)
+                ->input(TextInput::make()->name('placeholder')),
+            FieldComponent::make()
                 ->label(t('Initial Rows'))
-                ->min(1)
-                ->readOnly($readOnly),
-            NumberInput::make('charLimit')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('initialRows')->min(1)),
+            FieldComponent::make()
                 ->label(t('Character Limit'))
                 ->instructions(t('The maximum number of characters the field is allowed to have.'))
-                ->min(1)
-                ->readOnly($readOnly),
-            NumberInput::make('byteLimit')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('charLimit')->min(1)),
+            FieldComponent::make()
                 ->label(t('Byte Limit'))
                 ->instructions(t('The maximum number of bytes the field is allowed to have.'))
-                ->min(1)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('byteLimit')->min(1)),
             Group::fromDefinition(
                 FormDefinition::make($this->linkSettingsFormElements($readOnly)),
                 'linkSettings',

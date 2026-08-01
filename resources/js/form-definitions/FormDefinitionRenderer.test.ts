@@ -49,6 +49,7 @@ describe('Form Definition renderer', () => {
       settings: {
         uiMode: 'enlarged',
         minuteIncrement: 15,
+        title: 'Craft',
         charLimit: null as number | null,
         code: true,
         minDate: '2026-01-02T00:00:00+00:00',
@@ -59,6 +60,7 @@ describe('Form Definition renderer', () => {
     const container = document.createElement('div');
 
     registry.register('form-element:craft:select-input', SelectInputRenderer);
+    registry.register('form-element:craft:text-input', TextInputRenderer);
     registry.register('form-element:craft:number-input', NumberInputRenderer);
     registry.register(
       'form-element:craft:lightswitch-input',
@@ -94,6 +96,9 @@ describe('Form Definition renderer', () => {
               {label: '30', value: 30},
             ],
           }),
+          scalarField('craft:text-input', 'title', {
+            placeholder: 'Article title',
+          }),
           scalarField('craft:number-input', 'charLimit', {min: 1}),
           scalarField('craft:lightswitch-input', 'code'),
           {
@@ -122,15 +127,15 @@ describe('Form Definition renderer', () => {
     const numericSelect = Array.from(
       container.querySelectorAll('craft-select')
     ).find((select) => select.name === 'settings[minuteIncrement]')!;
-    const number =
-      container.querySelector<HTMLElementTagNameMap['craft-input']>(
-        'craft-input'
-      )!;
     const lightswitch =
       container.querySelector<HTMLElementTagNameMap['craft-switch']>(
         'craft-switch'
       )!;
     const inputs = Array.from(container.querySelectorAll('craft-input'));
+    const text = inputs.find((input) => input.name === 'settings[title]')!;
+    const number = inputs.find(
+      (input) => input.name === 'settings[charLimit]'
+    )!;
     const date = inputs.find((input) => input.type === 'date')!;
     const time = inputs.find((input) => input.type === 'time')!;
     const money = inputs.find(
@@ -150,6 +155,8 @@ describe('Form Definition renderer', () => {
     expect(number.value).toBe('');
     expect(number.type).toBe('number');
     expect(number.getAttribute('min')).toBe('1');
+    expect(text.value).toBe('Craft');
+    expect(text.placeholder).toBe('Article title');
     expect(lightswitch.checked).toBe(true);
     expect(date.value).toBe('2026-01-02');
     expect(time.value).toBe('08:30');
@@ -158,21 +165,42 @@ describe('Form Definition renderer', () => {
       container.querySelector('[data-form-element-tip]')?.textContent
     ).toBe('Dates use the project time zone.');
 
+    text.value = 'Craft CMS';
+    text.dispatchEvent(new Event('input', {bubbles: true}));
     number.value = '120';
     number.dispatchEvent(new Event('input', {bubbles: true}));
     lightswitch.checked = false;
     lightswitch.dispatchEvent(new Event('change', {bubbles: true}));
     money.value = '56.78';
     money.dispatchEvent(new Event('input', {bubbles: true}));
+    date.value = '2027-03-04';
+    date.dispatchEvent(new Event('input', {bubbles: true}));
+    time.value = '09:45';
+    time.dispatchEvent(new Event('input', {bubbles: true}));
     const nativeNumericSelect = numericSelect.querySelector('select')!;
     nativeNumericSelect.value = '30';
     nativeNumericSelect.dispatchEvent(new Event('change', {bubbles: true}));
     await nextTick();
 
+    expect(values.settings.title).toBe('Craft CMS');
     expect(values.settings.charLimit).toBe(120);
     expect(values.settings.code).toBe(false);
     expect(values.settings.defaultValue).toBe(5678);
     expect(values.settings.minuteIncrement).toBe(30);
+    expect(values.settings.minDate).toBe('2027-03-04');
+    expect(values.settings.minTime).toBe('09:45');
+
+    number.value = '';
+    number.dispatchEvent(new Event('input', {bubbles: true}));
+    date.value = '';
+    date.dispatchEvent(new Event('input', {bubbles: true}));
+    time.value = '';
+    time.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(values.settings.charLimit).toBeNull();
+    expect(values.settings.minDate).toBeNull();
+    expect(values.settings.minTime).toBeNull();
   });
 
   it('renders eager and lazy plugin renderers through the public renderer contract', async () => {

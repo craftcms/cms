@@ -6,7 +6,8 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Database\Table as DbTable;
@@ -313,16 +314,16 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            NumberInput::make('minAddresses')
+            FieldComponent::make()
                 ->label(t('Min {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
-                ->min(0)
-                ->readOnly($readOnly),
-            NumberInput::make('maxAddresses')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('minAddresses')->min(0)),
+            FieldComponent::make()
                 ->label(t('Max {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
-                ->min(0)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('maxAddresses')->min(0)),
             SelectInput::make('viewMode')
                 ->label(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))

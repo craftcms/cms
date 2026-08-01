@@ -13,6 +13,7 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -101,8 +102,10 @@ class Tags extends BaseRelationField
     {
         return FormDefinition::make(array_values(array_filter(
             $this->relationSettingsFormElements($readOnly),
-            function(FormElement $element): bool {
-                $children = $element->toData()->children;
+            function (FormElement|ProjectableFormElement $element): bool {
+                $children = $element instanceof ProjectableFormElement
+                    ? $element->toFormElementData()->children
+                    : $element->toData()->children;
 
                 return $children === null || $children[0]->name !== 'showSearchInput';
             },
@@ -123,7 +126,7 @@ class Tags extends BaseRelationField
             $value = $value
                 ->status(null)
                 ->all();
-        } elseif (!is_array($value)) {
+        } elseif (! is_array($value)) {
             $value = [];
         }
 
@@ -148,7 +151,7 @@ class Tags extends BaseRelationField
                 ]);
         }
 
-        return '<p class="error">' . t('This field is not set to a valid source.') . '</p>';
+        return '<p class="error">'.t('This field is not set to a valid source.').'</p>';
     }
 
     /**
@@ -181,7 +184,7 @@ class Tags extends BaseRelationField
             'name' => $this->handle,
             'type' => Type::nonNull(Type::listOf(TagInterface::getType())),
             'args' => TagArguments::getArguments(),
-            'resolve' => TagResolver::class . '::resolve',
+            'resolve' => TagResolver::class.'::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
@@ -200,7 +203,7 @@ class Tags extends BaseRelationField
         }
 
         $tagsService = Craft::$app->getTags();
-        $tagGroupIds = array_filter(array_map(function(string $uid) use ($tagsService) {
+        $tagGroupIds = array_filter(array_map(function (string $uid) use ($tagsService) {
             $tagGroup = $tagsService->getTagGroupByUid($uid);
 
             return $tagGroup->id ?? null;
@@ -226,7 +229,7 @@ class Tags extends BaseRelationField
      */
     private function _getTagGroupUid(): ?string
     {
-        if (!isset($this->_tagGroupUid)) {
+        if (! isset($this->_tagGroupUid)) {
             if (preg_match('/^taggroup:([0-9a-f\-]+)$/', (string) $this->source, $matches)) {
                 $this->_tagGroupUid = $matches[1];
             } else {

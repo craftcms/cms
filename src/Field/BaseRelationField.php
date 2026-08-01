@@ -6,14 +6,16 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -552,7 +554,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
     /**
      * @param  list<FormElement>  $afterSelectionCondition
-     * @return list<FormElement>
+     * @return list<FormElement|ProjectableFormElement>
      */
     protected function relationSettingsFormElements(bool $readOnly, array $afterSelectionCondition = []): array
     {
@@ -635,6 +637,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
     /**
      * @param  list<FormElement>  $beforeAdvanced
+     * @return list<FormElement|ProjectableFormElement>
      * @return list<FormElement>
      */
     protected function relationBehaviorFormElements(
@@ -745,11 +748,15 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ...$branchLimit,
             $defaultPlacement,
             ...$viewMode,
-            TextInput::make('selectionLabel')
+            FieldComponent::make()
                 ->label(t('“Add” Button Label'))
                 ->instructions(t('The text label for {type} selection buttons.', ['type' => $elementName]))
-                ->placeholder(static::defaultSelectionLabel())
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    TextInput::make()
+                        ->name('selectionLabel')
+                        ->placeholder(static::defaultSelectionLabel()),
+                ),
             $showSearchInput,
             LightswitchInput::make('validateRelatedElements')
                 ->label(t('Validate related {type}', ['type' => $pluralElements]))
@@ -772,12 +779,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         string $instructions,
         bool $readOnly,
         ?Condition $visibleWhen = null,
-    ): NumberInput {
-        $element = NumberInput::make($name)
+    ): FieldComponent {
+        $element = FieldComponent::make()
             ->label($label)
             ->instructions($instructions)
-            ->step(1)
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input(NumberInput::make()->name($name)->step(1));
 
         if ($visibleWhen !== null) {
             $element->visibleWhen($visibleWhen);

@@ -6,17 +6,17 @@ use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Lightswitch;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use Illuminate\Support\HtmlString;
 
 it('projects a Field and Lightswitch alongside existing authoring objects', function () {
     $definition = FormDefinition::make([
-        TextInput::make('mode'),
+        Field::make()->input(TextInput::make()->name('mode')),
         Field::make()
             ->key('feature-toggle')
             ->columnWidth(50)

@@ -18,6 +18,7 @@ trait HasSize
 
     public function size(Size|string|Closure|null $size): static
     {
+        $this->trackConfiguration('size');
         $this->size = $size;
 
         return $this;

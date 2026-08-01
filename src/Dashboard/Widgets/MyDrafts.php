@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\ElementCollection;
@@ -52,11 +53,11 @@ class MyDrafts extends Widget
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            NumberInput::make('limit')
+            Field::make()
                 ->label(t('Limit'))
-                ->min(1)
                 ->required()
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('limit')->min(1)),
         ]);
     }
 

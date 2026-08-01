@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -159,12 +160,16 @@ class QuickPost extends Widget
         }
 
         $section = $this->section() ?? $sections[0];
-        $elements[] = TextInput::make('customTitle')
+        $elements[] = Field::make()
             ->label(t('Widget Title'))
-            ->placeholder(t('Create a new {section} entry', [
-                'section' => $section->getUiLabel(),
-            ]))
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input(
+                TextInput::make()
+                    ->name('customTitle')
+                    ->placeholder(t('Create a new {section} entry', [
+                        'section' => $section->getUiLabel(),
+                    ])),
+            );
 
         return FormDefinition::make($elements);
     }

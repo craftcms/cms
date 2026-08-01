@@ -6,14 +6,15 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -576,12 +577,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ['label' => t('Custom…'), 'value' => PropagationMethod::Custom->value],
                 ])
                 ->readOnly($readOnly);
-            $elements[] = TextInput::make('propagationKeyFormat')
+            $elements[] = FieldComponent::make()
                 ->label(t('Propagation Key Format'))
                 ->instructions(t('Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'))
-                ->attributes(['class' => 'code'])
                 ->visibleWhen(Condition::equals('propagationMethod', PropagationMethod::Custom->value))
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input(
+                    TextInput::make()
+                        ->name('propagationKeyFormat')
+                        ->attributes(['class' => 'code']),
+                );
         }
 
         $columns = [[
@@ -612,16 +617,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ],
                 )->values()->all())
                 ->readOnly($readOnly),
-            NumberInput::make('minEntries')
+            FieldComponent::make()
                 ->label(t('Min {type}', ['type' => t('Entries')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))
-                ->min(0)
-                ->readOnly($readOnly),
-            NumberInput::make('maxEntries')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('minEntries')->min(0)),
+            FieldComponent::make()
                 ->label(t('Max {type}', ['type' => t('Entries')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('entries')]))
-                ->min(0)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('maxEntries')->min(0)),
             LightswitchInput::make('enableVersioning')
                 ->label(t('Enable versioning for entries in this field'))
                 ->readOnly($readOnly),
@@ -676,11 +681,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ))
                 ->visibleWhen($indexMode)
                 ->readOnly($readOnly),
-            TextInput::make('createButtonLabel')
+            FieldComponent::make()
                 ->label(t('“New” Button Label'))
                 ->instructions(t('The text label for the entry creation button.'))
-                ->placeholder($this->defaultCreateButtonLabel())
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    TextInput::make()
+                        ->name('createButtonLabel')
+                        ->placeholder($this->defaultCreateButtonLabel()),
+                ),
         );
 
         return FormDefinition::make($elements);

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -185,34 +186,40 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
         );
 
         return FormDefinition::make([
-            NumberInput::make('min')
+            FieldComponent::make()
                 ->label(t('Min Value'))
-                ->readOnly($readOnly),
-            NumberInput::make('max')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('min')),
+            FieldComponent::make()
                 ->label(t('Max Value'))
-                ->readOnly($readOnly),
-            NumberInput::make('step')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('max')),
+            FieldComponent::make()
                 ->label(t('Step Size'))
-                ->readOnly($readOnly),
-            NumberInput::make('decimals')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('step')),
+            FieldComponent::make()
                 ->label(t('Decimal Points'))
-                ->min(0)
-                ->readOnly($readOnly),
-            NumberInput::make('size')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('decimals')->min(0)),
+            FieldComponent::make()
                 ->label(t('Size'))
-                ->min(1)
-                ->readOnly($readOnly),
-            NumberInput::make('defaultValue')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('size')->min(1)),
+            FieldComponent::make()
                 ->label(t('Default Value'))
-                ->readOnly($readOnly),
-            TextInput::make('prefix')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('defaultValue')),
+            FieldComponent::make()
                 ->label(t('Prefix Text'))
                 ->instructions(t('Text that should be shown before the input.'))
-                ->readOnly($readOnly),
-            TextInput::make('suffix')
+                ->readOnly($readOnly)
+                ->input(TextInput::make()->name('prefix')),
+            FieldComponent::make()
                 ->label(t('Suffix Text'))
                 ->instructions(t('Text that should be shown after the input.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(TextInput::make()->name('suffix')),
             SelectInput::make('previewFormat')
                 ->label(t('Preview Format'))
                 ->instructions(t('How field values will be formatted within element indexes.'))

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Tests\FieldLayout;
 
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
@@ -84,7 +84,7 @@ class AdapterProjectableField extends Field implements FieldLayoutFormElementPro
 {
     public function formElement(FieldLayoutFormElementContext $context): ?FormElement
     {
-        return TextInput::make($context->inputName ?? throw new \LogicException('Input Name is required.'));
+        return AdapterTextInput::make($context->inputName ?? throw new \LogicException('Input Name is required.'));
     }
 }
 
@@ -110,7 +110,7 @@ class AdapterProjectableLayoutElement extends FieldLayoutElement implements Fiel
 
     public function formElement(FieldLayoutFormElementContext $context): ?FormElement
     {
-        return TextInput::make('title');
+        return AdapterTextInput::make('title');
     }
 }
 
@@ -140,5 +140,13 @@ class LegacyLayoutElement extends FieldLayoutElement
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return '<input name="legacyRating">';
+    }
+}
+
+class AdapterTextInput extends InputElement
+{
+    public static function type(): string
+    {
+        return 'craft:text-input';
     }
 }

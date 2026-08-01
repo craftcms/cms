@@ -23,6 +23,7 @@ class ComponentRegistry
         'checkbox' => Checkbox::class,
         'checkbox-group' => CheckboxGroup::class,
         'checkbox-select' => CheckboxSelect::class,
+        'date-input' => DateInput::class,
         'field' => Field::class,
         'field-group' => FieldGroup::class,
         'icon' => Icon::class,
@@ -30,9 +31,12 @@ class ComponentRegistry
         'input-color' => InputColor::class,
         'input-password' => InputPassword::class,
         'lightswitch' => Lightswitch::class,
+        'number-input' => NumberInput::class,
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,
+        'text-input' => TextInput::class,
         'textarea' => Textarea::class,
+        'time-input' => TimeInput::class,
     ];
 
     /**

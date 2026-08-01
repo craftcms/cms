@@ -7,9 +7,9 @@ use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 
 it('projects a native text setting through an explicit field container', function () {
@@ -422,5 +422,30 @@ class TestFormElement extends FormElement
                 ),
             visibleWhen: $this->elementVisibleWhen,
         );
+    }
+}
+
+class TextInput extends InputElement
+{
+    private ?string $placeholder = null;
+
+    public static function type(): string
+    {
+        return 'craft:text-input';
+    }
+
+    public function placeholder(?string $placeholder): static
+    {
+        $this->placeholder = $placeholder;
+
+        return $this;
+    }
+
+    #[Override]
+    protected function props(): array
+    {
+        return array_filter([
+            'placeholder' => $this->placeholder,
+        ], fn (mixed $value): bool => $value !== null);
     }
 }

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TimeInput as TimeInputElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -122,12 +123,14 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
                 ->options($minuteIncrementOptions)
                 ->readOnly($readOnly),
-            TimeInputElement::make('min')
+            FieldComponent::make()
                 ->label(t('Min Time'))
-                ->readOnly($readOnly),
-            TimeInputElement::make('max')
+                ->readOnly($readOnly)
+                ->input(TimeInputComponent::make()->name('min')),
+            FieldComponent::make()
                 ->label(t('Max Time'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(TimeInputComponent::make()->name('max')),
         ]);
     }
 

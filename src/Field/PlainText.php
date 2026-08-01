@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -138,31 +139,32 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                     ['label' => t('Enlarged'), 'value' => 'enlarged'],
                 ])
                 ->readOnly($readOnly),
-            TextInput::make('placeholder')
+            FieldComponent::make()
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
-                ->readOnly($readOnly),
-            NumberInput::make('charLimit')
+                ->readOnly($readOnly)
+                ->input(TextInput::make()->name('placeholder')),
+            FieldComponent::make()
                 ->label(t('Character Limit'))
                 ->instructions(t('The maximum number of characters the field is allowed to have.'))
-                ->min(1)
-                ->readOnly($readOnly),
-            NumberInput::make('byteLimit')
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('charLimit')->min(1)),
+            FieldComponent::make()
                 ->label(t('Byte Limit'))
                 ->instructions(t('The maximum number of bytes the field is allowed to have.'))
-                ->min(1)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('byteLimit')->min(1)),
             LightswitchInput::make('code')
                 ->label(t('Use a monospaced font'))
                 ->readOnly($readOnly),
             LightswitchInput::make('multiline')
                 ->label(t('Allow line breaks'))
                 ->readOnly($readOnly),
-            NumberInput::make('initialRows')
+            FieldComponent::make()
                 ->label(t('Initial Rows'))
-                ->min(1)
                 ->visibleWhen(Condition::equals('multiline', true))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(NumberInput::make()->name('initialRows')->min(1)),
         ]);
     }
 

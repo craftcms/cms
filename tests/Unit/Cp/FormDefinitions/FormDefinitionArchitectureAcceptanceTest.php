@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -66,22 +67,28 @@ it('matches the shared architecture fixture through public registration and proj
 
     $actual = [
         'ordinary' => FormDefinition::make([
-            TextInput::make('title')
+            FieldComponent::make()
                 ->key('ordinary-title')
                 ->label('Title')
                 ->instructions('Shown in article listings.')
-                ->placeholder('Article title')
-                ->width(50)
-                ->attributes(['autocomplete' => 'off']),
+                ->columnWidth(50)
+                ->input(
+                    TextInput::make()
+                        ->name('title')
+                        ->placeholder('Article title')
+                        ->attributes(['autocomplete' => 'off']),
+                ),
         ])->toArray(),
         'conditionalVisibility' => FormDefinition::make([
-            TextInput::make('mode')
+            FieldComponent::make()
                 ->key('visibility-mode')
-                ->label('Mode'),
-            TextInput::make('details')
+                ->label('Mode')
+                ->input(TextInput::make()->name('mode')),
+            FieldComponent::make()
                 ->key('visibility-details')
                 ->label('Details')
-                ->visibleWhen(Condition::equals('mode', 'advanced')),
+                ->visibleWhen(Condition::equals('mode', 'advanced'))
+                ->input(TextInput::make()->name('details')),
         ])->toArray(),
         'plugin' => FormDefinition::make([
             ArchitectureAcceptanceColorMap::make('palette')
@@ -121,8 +128,33 @@ class ArchitectureAcceptanceField extends Field implements FieldLayoutFormElemen
 {
     public function formElement(FieldLayoutFormElementContext $context): ?InputElement
     {
-        return TextInput::make($context->inputName ?? throw new LogicException('Input Name is required.'))
-            ->placeholder('Projected '.$this->handle);
+        return ArchitectureAcceptanceTextInput::make($context->inputName ?? throw new LogicException('Input Name is required.'))
+            ->placeholder("Projected {$this->handle}");
+    }
+}
+
+class ArchitectureAcceptanceTextInput extends InputElement
+{
+    private ?string $placeholder = null;
+
+    public static function type(): string
+    {
+        return 'craft:text-input';
+    }
+
+    public function placeholder(?string $placeholder): static
+    {
+        $this->placeholder = $placeholder;
+
+        return $this;
+    }
+
+    #[Override]
+    protected function props(): array
+    {
+        return array_filter([
+            'placeholder' => $this->placeholder,
+        ], fn (mixed $value): bool => $value !== null);
     }
 }
 

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\ElementCollection;
@@ -97,9 +98,10 @@ class RecentEntries extends Widget
                     ->all(),
             ])
             ->readOnly($readOnly);
-        $elements[] = NumberInput::make('limit')
+        $elements[] = Field::make()
             ->label(t('Limit'))
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input(NumberInput::make()->name('limit'));
 
         return FormDefinition::make($elements);
     }
