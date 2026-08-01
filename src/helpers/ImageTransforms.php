@@ -21,6 +21,7 @@ use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\validators\ColorValidator;
 use Imagine\Image\Format;
+use Throwable;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -148,11 +149,25 @@ class ImageTransforms
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         try {
-            if (!$volume->getFs() instanceof LocalFsInterface) {
+            $fs = $volume->getFs();
+            if (!$fs instanceof LocalFsInterface) {
                 // This is a non-local fs
-                if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
+                $remoteDateModified = null;
+                if (is_file($imageSourcePath) && filesize($imageSourcePath) !== 0) {
+                    try {
+                        $remoteDateModified = $fs->getDateModified($asset->getPath());
+                    } catch (Throwable) {
+                        // Can't tell whether the cache is still fresh; assume it is rather than
+                        // re-downloading on every request just because the fs is being flaky.
+                    }
+                }
+
+                // Stale if the remote object has been modified more recently than our local copy.
+                $sourceIsStale = $remoteDateModified !== null && filemtime($imageSourcePath) < $remoteDateModified;
+
+                if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0 || $sourceIsStale) {
                     if (is_file($imageSourcePath)) {
-                        // Delete since it's a 0-byter
+                        // Delete since it's either a 0-byter or stale
                         FileHelper::unlink($imageSourcePath);
                     }
 
