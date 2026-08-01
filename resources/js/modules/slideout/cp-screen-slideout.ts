@@ -24,7 +24,12 @@
  */
 
 import {Garnish, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
-import {createApp, type App, type ComponentPublicInstance} from 'vue';
+import {
+  createApp,
+  type App,
+  type Component,
+  type ComponentPublicInstance,
+} from 'vue';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
 
@@ -35,6 +40,29 @@ declare const axios: any;
 type EmbeddedInertiaPage = ComponentPublicInstance & {
   setErrors?: (errors: Record<string, unknown>) => void;
 };
+
+export async function mountEmbeddedInertiaPage(
+  container: HTMLElement,
+  page: string,
+  props: Record<string, unknown>,
+  resolve: (name: string) => Promise<Component> = resolveInertiaPage
+): Promise<{app: App; page: EmbeddedInertiaPage}> {
+  const component = await resolve(page);
+  const mountPoint = document.createElement('div');
+  container.append(mountPoint);
+
+  const app = createApp(component, props);
+  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+
+  return {app, page: app.mount(mountPoint) as EmbeddedInertiaPage};
+}
+
+export function slideoutRequestHeaders(
+  hasInertiaPage: boolean,
+  namespace: string | null
+): Record<string, string | null> {
+  return hasInertiaPage ? {} : {'X-Craft-Namespace': namespace};
+}
 
 /**
  * Settings accepted by {@link CpScreenSlideout}, layered on top of
@@ -519,16 +547,13 @@ export class CpScreenSlideout extends Slideout {
           await Craft.appendBodyHtml(data.bodyHtml);
 
           if (data.inertiaPage) {
-            const component = await resolveInertiaPage(data.inertiaPage);
-            const mountPoint = document.createElement('div');
-            this.$content.append(mountPoint);
-
-            this.inertiaApp = createApp(component, data.inertiaProps);
-            this.inertiaApp.config.compilerOptions.isCustomElement = (tag) =>
-              tag.includes('-');
-            this.inertiaPage = this.inertiaApp.mount(
-              mountPoint
-            ) as EmbeddedInertiaPage;
+            const mounted = await mountEmbeddedInertiaPage(
+              this.$content[0],
+              data.inertiaPage,
+              data.inertiaProps
+            );
+            this.inertiaApp = mounted.app;
+            this.inertiaPage = mounted.page;
           }
 
           Craft.initUiElements(this.$content);
@@ -735,7 +760,7 @@ export class CpScreenSlideout extends Slideout {
     const action = this.$container.attr('action');
     const options = {
       data,
-      headers: this.hasInertiaPage ? {} : {'X-Craft-Namespace': this.namespace},
+      headers: slideoutRequestHeaders(this.hasInertiaPage, this.namespace),
     };
     const request = action
       ? axios.post(action, data, {

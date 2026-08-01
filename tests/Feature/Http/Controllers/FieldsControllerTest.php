@@ -246,6 +246,31 @@ it('preserves values between rendering settings', function () {
         ->assertJsonPath('values.types.'.Html::id(RadioButtons::class).'.options.0.label', $label);
 });
 
+it('preserves live adapter values when rendering replacement settings', function () {
+    $label = Str::random();
+
+    $this->postJson(action([FieldsController::class, 'renderSettings']), [
+        'type' => RadioButtons::class,
+        'oldType' => MultiSelect::class,
+        'settings' => [
+            'options' => [
+                ['label' => 'Stale label', 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
+            ],
+        ],
+        'typeSettings' => http_build_query([
+            'types' => [
+                Html::id(MultiSelect::class) => [
+                    'options' => [
+                        ['label' => $label, 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
+                    ],
+                ],
+            ],
+        ]),
+    ])
+        ->assertOk()
+        ->assertJsonPath('values.types.'.Html::id(RadioButtons::class).'.options.0.label', $label);
+});
+
 it('omits the settings section when the field type has no settings', function () {
     app(FieldTypes::class)->register(SettingsFreeField::class);
 

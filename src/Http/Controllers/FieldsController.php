@@ -190,6 +190,7 @@ class FieldsController
             'type' => ['required', 'string'],
             'oldType' => ['nullable', 'string'],
             'settings' => ['nullable', 'array'],
+            'typeSettings' => ['nullable', 'string'],
         ]);
 
         $type = $request->input('type');
@@ -198,6 +199,11 @@ class FieldsController
 
         if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
             $settings = $request->array('settings');
+
+            if (is_string($typeSettings = $request->input('typeSettings'))) {
+                parse_str($typeSettings, $postedSettings);
+                $settings = Arr::get($postedSettings, sprintf('types.%s', Html::id($oldType)), []);
+            }
 
             // Remove any settings that aren't defined by the same class between both types
             $settings = array_filter($settings, function ($attribute) use ($type, $oldType) {

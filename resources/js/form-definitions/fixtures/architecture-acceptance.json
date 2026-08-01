@@ -115,6 +115,13 @@
                 ]
               },
               {
+                "type": "application:legacy-island",
+                "key": "legacy-layout-element",
+                "props": {
+                  "label": "Legacy rating"
+                }
+              },
+              {
                 "type": "craft:field",
                 "key": "summary-layout-element",
                 "width": 100,

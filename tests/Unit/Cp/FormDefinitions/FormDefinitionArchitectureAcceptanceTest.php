@@ -3,13 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormDefinitionContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormDefinitionProjector;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormElementContext;
@@ -29,6 +32,7 @@ it('matches the shared architecture fixture through public registration and proj
         'packageName' => 'vendor/color-tools',
     ]);
     $plugin->registerFormElementTypes(ArchitectureAcceptanceColorMap::class);
+    app(FormElementTypes::class)->register(ArchitectureAcceptanceLegacyIsland::class);
 
     $layout = new FieldLayout(['uid' => 'article-layout']);
     $layout->setTabs([
@@ -44,6 +48,9 @@ it('matches the shared architecture fixture through public registration and proj
                 ]), [
                     'uid' => 'title-layout-element',
                     'width' => 50,
+                ]),
+                new ArchitectureAcceptanceLegacyLayoutElement([
+                    'uid' => 'legacy-layout-element',
                 ]),
                 new CustomField(new ArchitectureAcceptanceField([
                     'uid' => 'summary-field',
@@ -116,5 +123,42 @@ class ArchitectureAcceptanceField extends Field implements FieldLayoutFormElemen
     {
         return TextInput::make($context->inputName ?? throw new LogicException('Input Name is required.'))
             ->placeholder('Projected '.$this->handle);
+    }
+}
+
+class ArchitectureAcceptanceLegacyIsland extends FormElement
+{
+    public static function make(): self
+    {
+        return new self;
+    }
+
+    public static function type(): string
+    {
+        return 'application:legacy-island';
+    }
+
+    #[Override]
+    protected function props(): array
+    {
+        return ['label' => 'Legacy rating'];
+    }
+}
+
+class ArchitectureAcceptanceLegacyLayoutElement extends FieldLayoutElement implements FieldLayoutFormElementProviderInterface
+{
+    public function selectorHtml(): string
+    {
+        return '';
+    }
+
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
+    }
+
+    public function formElement(FieldLayoutFormElementContext $context): ?FormElement
+    {
+        return ArchitectureAcceptanceLegacyIsland::make();
     }
 }
