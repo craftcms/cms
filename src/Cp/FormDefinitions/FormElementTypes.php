@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FormDefinitions;
 
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
@@ -15,7 +18,6 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
@@ -32,13 +34,23 @@ use InvalidArgumentException;
 #[Singleton]
 class FormElementTypes
 {
-    /** @var array<string, array{class: class-string<FormElement>|null, container: bool, plugin: PluginData|null}> */
+    /**
+     * @var array<string, array{
+     *     class: class-string<FormElement|ProjectableFormElement>|null,
+     *     container: bool,
+     *     plugin: PluginData|null,
+     * }>
+     */
     private array $registrations;
 
     public function __construct()
     {
         $this->registrations = [
-            'craft:field' => ['class' => null, 'container' => true, 'plugin' => null],
+            FieldComponent::formElementType() => [
+                'class' => FieldComponent::class,
+                'container' => FieldComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             Group::type() => ['class' => Group::class, 'container' => true, 'plugin' => null],
             Tabs::type() => ['class' => Tabs::class, 'container' => true, 'plugin' => null],
             Tab::type() => ['class' => Tab::class, 'container' => true, 'plugin' => null],
@@ -50,7 +62,11 @@ class FormElementTypes
             FieldLayoutInput::type() => ['class' => FieldLayoutInput::class, 'container' => false, 'plugin' => null],
             NumberInput::type() => ['class' => NumberInput::class, 'container' => false, 'plugin' => null],
             SelectInput::type() => ['class' => SelectInput::class, 'container' => false, 'plugin' => null],
-            LightswitchInput::type() => ['class' => LightswitchInput::class, 'container' => false, 'plugin' => null],
+            LightswitchComponent::formElementType() => [
+                'class' => LightswitchComponent::class,
+                'container' => LightswitchComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             KeyedTableInput::type() => ['class' => KeyedTableInput::class, 'container' => false, 'plugin' => null],
             OptionRows::type() => ['class' => OptionRows::class, 'container' => false, 'plugin' => null],
             ObjectSelectInput::type() => ['class' => ObjectSelectInput::class, 'container' => false, 'plugin' => null],

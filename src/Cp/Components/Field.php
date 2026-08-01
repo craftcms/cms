@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\Markdown;
@@ -34,7 +37,7 @@ use function CraftCms\Cms\t;
  * Every setter accepts a literal value or a Closure evaluated at render time
  * (with dependency injection — see {@see EvaluatesClosures}).
  */
-class Field extends ViewComponent
+class Field extends ViewComponent implements ProjectableFormElement
 {
     use HasDisabled;
     use HasId;
@@ -78,6 +81,22 @@ class Field extends ViewComponent
 
     protected string|Htmlable|Stringable|ViewComponent|Closure|null $labelExtra = null;
 
+    protected string|Closure|null $elementKey = null;
+
+    protected int|Closure|null $columnWidth = null;
+
+    protected Condition|Closure|null $visibilityCondition = null;
+
+    public static function formElementType(): string
+    {
+        return 'craft:field';
+    }
+
+    public static function isFormElementContainer(): bool
+    {
+        return true;
+    }
+
     protected function tagName(): string
     {
         return 'craft-field';
@@ -114,6 +133,7 @@ class Field extends ViewComponent
     /** @param 'before'|'after'|Closure $position Relative to the input. */
     public function instructionsPosition(string|Closure $position): static
     {
+        $this->trackConfiguration('instructionsPosition');
         $this->instructionsPosition = $position;
 
         return $this;
@@ -128,6 +148,7 @@ class Field extends ViewComponent
 
     public function translatable(bool|Closure $translatable = true, string|Closure|null $description = null): static
     {
+        $this->trackConfiguration('translatable');
         $this->translatable = $translatable;
 
         if ($description !== null) {
@@ -140,6 +161,7 @@ class Field extends ViewComponent
     /** Renders the label as a group legend (`role="group"`) instead of a `<label>`. */
     public function fieldset(bool|Closure $fieldset = true): static
     {
+        $this->trackConfiguration('fieldset');
         $this->fieldset = $fieldset;
 
         return $this;
@@ -147,6 +169,7 @@ class Field extends ViewComponent
 
     public function status(string|Closure|null $status, string|Closure|null $label = null): static
     {
+        $this->trackConfiguration('status');
         $this->status = $status;
 
         if ($label !== null) {
@@ -159,6 +182,7 @@ class Field extends ViewComponent
     /** @param 'ltr'|'rtl'|Closure|null $orientation */
     public function orientation(string|Closure|null $orientation): static
     {
+        $this->trackConfiguration('orientation');
         $this->orientation = $orientation;
 
         return $this;
@@ -175,6 +199,7 @@ class Field extends ViewComponent
     /** Heading content rendered before the label. Strings are trusted HTML. */
     public function headingPrefix(string|Htmlable|Stringable|ViewComponent|Closure|null $headingPrefix): static
     {
+        $this->trackConfiguration('headingPrefix');
         $this->headingPrefix = $headingPrefix;
 
         return $this;
@@ -183,6 +208,7 @@ class Field extends ViewComponent
     /** Heading content rendered after the label extras. Strings are trusted HTML. */
     public function headingSuffix(string|Htmlable|Stringable|ViewComponent|Closure|null $headingSuffix): static
     {
+        $this->trackConfiguration('headingSuffix');
         $this->headingSuffix = $headingSuffix;
 
         return $this;
@@ -191,6 +217,7 @@ class Field extends ViewComponent
     /** @param array<array-key, string>|Closure $errors Plain-text messages; encoded on render. */
     public function errors(array|Closure $errors): static
     {
+        $this->trackConfiguration('errors');
         $this->errors = $errors;
 
         return $this;
@@ -215,6 +242,7 @@ class Field extends ViewComponent
     /** Extra heading content (handle-copy buttons, action menus). Strings are trusted HTML. */
     public function labelExtra(string|Htmlable|Stringable|ViewComponent|Closure|null $labelExtra): static
     {
+        $this->trackConfiguration('labelExtra');
         $this->labelExtra = $labelExtra;
 
         return $this;
@@ -230,9 +258,105 @@ class Field extends ViewComponent
      */
     public function width(string|Closure|null $width): static
     {
+        $this->trackConfiguration('width');
         $this->width = $width;
 
         return $this;
+    }
+
+    public function key(string|Closure|null $key): static
+    {
+        $this->trackConfiguration('key');
+        $this->elementKey = $key;
+
+        return $this;
+    }
+
+    public function columnWidth(int|Closure|null $width): static
+    {
+        $this->trackConfiguration('columnWidth');
+        $this->columnWidth = $width;
+
+        return $this;
+    }
+
+    public function visibleWhen(Condition|Closure|null $condition): static
+    {
+        $this->trackConfiguration('visibleWhen');
+        $this->visibilityCondition = $condition;
+
+        return $this;
+    }
+
+    #[Override]
+    public function toHtml(): string
+    {
+        $this->rejectConfiguredOptions([
+            'key',
+            'columnWidth',
+            'visibleWhen',
+        ], 'HTML');
+
+        return parent::toHtml();
+    }
+
+    public function toFormElementData(): FormElementData
+    {
+        $this->rejectConfiguredOptions([
+            'attributes',
+            'disabled',
+            'id',
+            'slot',
+            'instructionsPosition',
+            'translatable',
+            'fieldset',
+            'status',
+            'orientation',
+            'width',
+            'headingPrefix',
+            'headingSuffix',
+            'errors',
+            'labelExtra',
+        ], 'Form Definition');
+
+        $input = $this->evaluate($this->input);
+
+        if (! $input instanceof ProjectableFormElement || $input::isFormElementContainer()) {
+            $this->unsupportedOutputOption('input', 'Form Definition');
+        }
+
+        $props = array_filter([
+            'label' => $this->portableText('label', $this->label),
+            'instructions' => $this->portableText('instructions', $this->instructions),
+            'tip' => $this->portableText('tip', $this->tip),
+            'warning' => $this->portableText('warning', $this->warning),
+            'required' => $this->portableBoolean('required', $this->required) ?: null,
+            'readOnly' => $this->portableBoolean('readOnly', $this->readOnly) ?: null,
+        ], fn (mixed $value): bool => $value !== null);
+        $key = $this->evaluate($this->elementKey);
+        $columnWidth = $this->evaluate($this->columnWidth);
+        $condition = $this->evaluate($this->visibilityCondition);
+
+        if ($key !== null && ! is_string($key)) {
+            $this->unsupportedOutputOption('key', 'Form Definition');
+        }
+
+        if ($columnWidth !== null && ! is_int($columnWidth)) {
+            $this->unsupportedOutputOption('columnWidth', 'Form Definition');
+        }
+
+        if ($condition !== null && ! $condition instanceof Condition) {
+            $this->unsupportedOutputOption('visibleWhen', 'Form Definition');
+        }
+
+        return new FormElementData(
+            type: static::formElementType(),
+            key: $key,
+            width: $columnWidth,
+            props: $props === [] ? null : $props,
+            children: [$input->toFormElementData()],
+            visibleWhen: $condition?->toData(),
+        );
     }
 
     #[Override]
@@ -330,6 +454,17 @@ class Field extends ViewComponent
     {
         if (is_string($value) || ($value instanceof Stringable && ! $value instanceof Htmlable && ! $value instanceof ViewComponent)) {
             return new HtmlString((string) $value);
+        }
+
+        return $value;
+    }
+
+    private function portableBoolean(string $option, mixed $value): bool
+    {
+        $value = $this->evaluate($value);
+
+        if (! is_bool($value)) {
+            $this->unsupportedOutputOption($option, 'Form Definition');
         }
 
         return $value;

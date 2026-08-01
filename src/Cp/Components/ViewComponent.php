@@ -47,6 +47,9 @@ abstract class ViewComponent implements Htmlable, Stringable
     /** @var array<string, mixed> Slot content keyed by slot name. */
     protected array $slots = [];
 
+    /** @var array<string, true> */
+    private array $configuredOptions = [];
+
     final public function __construct() {}
 
     public static function make(): static
@@ -92,6 +95,7 @@ abstract class ViewComponent implements Htmlable, Stringable
      */
     public function attributes(array $attributes): static
     {
+        $this->trackConfiguration('attributes');
         $this->attributes = Arr::merge(
             self::normalizeClasses($this->attributes),
             self::normalizeClasses($attributes),
@@ -105,6 +109,7 @@ abstract class ViewComponent implements Htmlable, Stringable
      */
     public function slot(string $name): static
     {
+        $this->trackConfiguration('slot');
         $this->attributes['slot'] = $name;
 
         return $this;
@@ -221,7 +226,7 @@ abstract class ViewComponent implements Htmlable, Stringable
 
         // A nested component drops straight into the named slot.
         if ($name !== static::DEFAULT_SLOT && $resolved instanceof self) {
-            return $resolved->slot($name)->toHtml();
+            return (clone $resolved)->slot($name)->toHtml();
         }
 
         $rendered = $this->renderContent($resolved);
@@ -274,5 +279,43 @@ abstract class ViewComponent implements Htmlable, Stringable
         }
 
         return $attributes;
+    }
+
+    protected function trackConfiguration(string $option): void
+    {
+        $this->configuredOptions[$option] = true;
+    }
+
+    /**
+     * @param  list<string>  $options
+     */
+    protected function rejectConfiguredOptions(array $options, string $output): void
+    {
+        foreach ($options as $option) {
+            if (isset($this->configuredOptions[$option])) {
+                $this->unsupportedOutputOption($option, $output);
+            }
+        }
+    }
+
+    protected function unsupportedOutputOption(string $option, string $output): never
+    {
+        throw new InvalidArgumentException(sprintf(
+            '%s option "%s" is not supported for %s output.',
+            static::class,
+            $option,
+            $output,
+        ));
+    }
+
+    protected function portableText(string $option, mixed $value): ?string
+    {
+        $value = $this->evaluate($value);
+
+        if ($value !== null && ! is_string($value)) {
+            $this->unsupportedOutputOption($option, 'Form Definition');
+        }
+
+        return $value;
     }
 }

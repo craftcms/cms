@@ -761,6 +761,96 @@ describe('Form Definition renderer', () => {
     ]);
   });
 
+  it('renders a projected Field and Lightswitch with host-owned state and accessibility', async () => {
+    const registry = createCpComponentRegistry();
+    const values = reactive({settings: {enabled: true}});
+    const container = document.createElement('div');
+
+    registry.register(
+      'form-element:craft:lightswitch-input',
+      LightswitchInputRenderer
+    );
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const vueApp = createApp(FormDefinitionRenderer, {
+      definition: {
+        elements: [
+          {
+            type: 'craft:field',
+            props: {
+              label: 'Feature',
+              instructions: 'Controls the feature.',
+              required: true,
+              readOnly: true,
+            },
+            children: [
+              {
+                type: 'craft:lightswitch-input',
+                name: 'enabled',
+                props: {
+                  label: 'Feature state',
+                  onLabel: 'Enabled',
+                  offLabel: 'Disabled',
+                  size: 'small',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values,
+      errors: {'settings.enabled': ['Choose a feature state.']},
+    });
+
+    mountedApps.push(vueApp);
+    vueApp.mount(container);
+
+    const field = container.querySelector<HTMLElementTagNameMap['craft-field']>(
+      '[data-form-element="craft:field"]'
+    )!;
+    const lightswitch =
+      field.querySelector<HTMLElementTagNameMap['craft-switch']>(
+        'craft-switch'
+      )!;
+    await field.updateComplete;
+    await field.updateComplete;
+    await lightswitch.updateComplete;
+    await lightswitch.updateComplete;
+    const label = field.querySelector<HTMLLabelElement>(
+      ':scope > label[slot="label"]'
+    )!;
+    const instructions = field.querySelector<HTMLElement>(
+      '[data-form-element-instructions]'
+    )!;
+    const feedback = field.querySelector<HTMLElement>(
+      '[data-form-element-errors]'
+    )!;
+
+    expect(label.textContent).toContain('Feature');
+    expect(label.htmlFor).toBe(lightswitch.id);
+    expect(instructions.textContent).toBe('Controls the feature.');
+    expect(feedback.textContent).toContain('Choose a feature state.');
+    expect(feedback.getAttribute('aria-label')).toBe('Validation errors');
+    expect(field.required).toBe(true);
+    expect(field.readOnly).toBe(true);
+    expect(field.hasErrors).toBe(true);
+    expect(lightswitch.checked).toBe(true);
+    expect(lightswitch.disabled).toBe(true);
+    expect(lightswitch.label).toBe('Feature state');
+    expect(lightswitch.onLabel).toBe('Enabled');
+    expect(lightswitch.offLabel).toBe('Disabled');
+    expect(lightswitch.size).toBe('small');
+    expect(lightswitch.name).toBe('settings[enabled]');
+    expect(lightswitch.id).toBe('form-element-settings--enabled');
+    expect(lightswitch.getAttribute('aria-required')).toBe('true');
+    expect(lightswitch.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(lightswitch.getAttribute('aria-describedby')?.split(' ')).toEqual([
+      instructions.id,
+      feedback.id,
+    ]);
+  });
+
   it('combines host and field read-only state', async () => {
     for (const [hostReadOnly, fieldReadOnly] of [
       [true, false],

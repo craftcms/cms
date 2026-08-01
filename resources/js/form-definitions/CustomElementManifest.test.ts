@@ -119,8 +119,18 @@ function attributeNames(rawAttributes: string): string[] {
   );
 
   return Array.from(
-    attributesWithoutValues.matchAll(/(?:^|\s)([@:]?[a-z][\w:-]*)/g),
-    ([, name]) => name!.replace(/^:/, '')
+    attributesWithoutValues.matchAll(/(?:^|\s)([@:.]?[a-z][\w:-]*)/g),
+    ([, name]) => {
+      const attributeName = name!;
+
+      if (!attributeName.startsWith('.')) {
+        return attributeName.replace(/^:/, '');
+      }
+
+      return attributeName
+        .slice(1)
+        .replace(/[A-Z]/g, (character) => `-${character.toLowerCase()}`);
+    }
   );
 }
 

@@ -13,6 +13,7 @@ trait HasDisabled
 
     public function disabled(bool|Closure $disabled = true): static
     {
+        $this->trackConfiguration('disabled');
         $this->disabled = $disabled;
 
         return $this;

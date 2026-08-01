@@ -8,6 +8,9 @@ use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
+use CraftCms\Cms\Cp\Enums\Size;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -29,7 +32,7 @@ use Stringable;
  * `indeterminateValue` when indeterminate, an empty string when off, nothing
  * when unnamed.
  */
-class Lightswitch extends ViewComponent
+class Lightswitch extends ViewComponent implements ProjectableFormElement
 {
     use HasDisabled;
     use HasId;
@@ -68,6 +71,16 @@ class Lightswitch extends ViewComponent
 
     protected string|Stringable|Closure|null $instructions = null;
 
+    public static function formElementType(): string
+    {
+        return 'craft:lightswitch-input';
+    }
+
+    public static function isFormElementContainer(): bool
+    {
+        return false;
+    }
+
     protected function tagName(): string
     {
         return 'craft-switch';
@@ -75,6 +88,7 @@ class Lightswitch extends ViewComponent
 
     public function on(bool|Closure $on = true): static
     {
+        $this->trackConfiguration('on');
         $this->on = $on;
 
         return $this;
@@ -83,6 +97,7 @@ class Lightswitch extends ViewComponent
     /** Mixed state; only meaningful while the switch is off. */
     public function indeterminate(bool|Closure $indeterminate = true): static
     {
+        $this->trackConfiguration('indeterminate');
         $this->indeterminate = $indeterminate;
 
         return $this;
@@ -99,6 +114,7 @@ class Lightswitch extends ViewComponent
     /** The value posted when the switch is on. */
     public function value(string|int|float|Closure $value): static
     {
+        $this->trackConfiguration('value');
         $this->value = is_int($value) || is_float($value) ? (string) $value : $value;
 
         return $this;
@@ -107,6 +123,7 @@ class Lightswitch extends ViewComponent
     /** The value posted when the switch is indeterminate. */
     public function indeterminateValue(string|Closure $indeterminateValue): static
     {
+        $this->trackConfiguration('indeterminateValue');
         $this->indeterminateValue = $indeterminateValue;
 
         return $this;
@@ -138,6 +155,7 @@ class Lightswitch extends ViewComponent
     /** Selector (or element id) of a container to reveal while the switch is on. */
     public function toggle(string|Closure|null $toggle): static
     {
+        $this->trackConfiguration('toggle');
         $this->toggle = $toggle;
 
         return $this;
@@ -146,6 +164,7 @@ class Lightswitch extends ViewComponent
     /** Selector (or element id) of a container to reveal while the switch is off. */
     public function reverseToggle(string|Closure|null $reverseToggle): static
     {
+        $this->trackConfiguration('reverseToggle');
         $this->reverseToggle = $reverseToggle;
 
         return $this;
@@ -153,6 +172,7 @@ class Lightswitch extends ViewComponent
 
     public function labelledBy(string|Closure|null $labelledBy): static
     {
+        $this->trackConfiguration('labelledBy');
         $this->labelledBy = $labelledBy;
 
         return $this;
@@ -160,6 +180,7 @@ class Lightswitch extends ViewComponent
 
     public function describedBy(string|Closure|null $describedBy): static
     {
+        $this->trackConfiguration('describedBy');
         $this->describedBy = $describedBy;
 
         return $this;
@@ -168,6 +189,7 @@ class Lightswitch extends ViewComponent
     /** Help text below the switch; supports markdown. */
     public function instructions(string|Stringable|Closure|null $instructions): static
     {
+        $this->trackConfiguration('instructions');
         $this->instructions = $instructions;
 
         return $this;
@@ -221,6 +243,7 @@ class Lightswitch extends ViewComponent
      */
     public function buttonAttributes(array $attributes): static
     {
+        $this->trackConfiguration('buttonAttributes');
         $this->buttonAttributes = Arr::merge(
             static::normalizeClasses($this->buttonAttributes),
             static::normalizeClasses($attributes),
@@ -286,6 +309,67 @@ class Lightswitch extends ViewComponent
         return $this->effectiveIndeterminateValue() ?? '';
     }
 
+    public function toFormElementData(): FormElementData
+    {
+        $this->rejectConfiguredOptions([
+            'on',
+            'indeterminate',
+            'disabled',
+            'id',
+            'slot',
+            'buttonAttributes',
+            'value',
+            'indeterminateValue',
+            'toggle',
+            'reverseToggle',
+            'labelledBy',
+            'describedBy',
+            'instructions',
+        ], 'Form Definition');
+
+        $name = $this->portableText('name', $this->name);
+
+        if ($name === null) {
+            $this->unsupportedOutputOption('name', 'Form Definition');
+        }
+
+        $attributes = Html::normalizeTagAttributes($this->attributes);
+
+        foreach (array_keys($attributes) as $attribute) {
+            if (in_array(strtolower((string) $attribute), [
+                'aria-describedby',
+                'aria-labelledby',
+                'aria-required',
+                'checked',
+                'disabled',
+                'id',
+                'indeterminate',
+                'indeterminate-value',
+                'name',
+                'readonly',
+                'required',
+                'slot',
+                'value',
+            ], true)) {
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+            }
+        }
+
+        $props = array_filter([
+            'label' => $this->portableText('label', $this->label),
+            'onLabel' => $this->portableText('onLabel', $this->onLabel),
+            'offLabel' => $this->portableText('offLabel', $this->offLabel),
+            'size' => $this->projectedSize(),
+        ], fn (mixed $value): bool => $value !== null);
+
+        return new FormElementData(
+            type: static::formElementType(),
+            name: $name,
+            props: $props === [] ? null : $props,
+            attributes: $attributes === [] ? null : $attributes,
+        );
+    }
+
     /** The effective indeterminate posting value, or `null` when not indeterminate. */
     private function effectiveIndeterminateValue(): ?string
     {
@@ -294,5 +378,20 @@ class Lightswitch extends ViewComponent
         }
 
         return (string) $this->evaluate($this->indeterminateValue);
+    }
+
+    private function projectedSize(): ?string
+    {
+        $size = $this->evaluate($this->size);
+
+        if ($size instanceof Size) {
+            $size = $size->value;
+        }
+
+        if ($size !== null && ! in_array($size, [Size::Small->value, Size::Medium->value], true)) {
+            $this->unsupportedOutputOption('size', 'Form Definition');
+        }
+
+        return $size;
     }
 }
