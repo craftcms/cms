@@ -15,7 +15,6 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -65,7 +64,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
@@ -82,7 +80,6 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -552,17 +549,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $value->count();
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
@@ -728,67 +714,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         return array_values($options);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $entryTypes = Collection::make($this->_entryTypes);
-        $entryTypeSelectConfig = [
-            'name' => 'entryTypes[]',
-            'renderDefaultInput' => false,
-            'allowOverrides' => true,
-            'create' => true,
-            // No jsClass → componentSelect.twig renders the self-booting
-            // `<craft-component-select>`, orchestrated by
-            // `<craft-entry-type-manager>` (resources/js/modules/entry-types).
-            'jsClass' => false,
-            'errors' => $this->errors()->get('entryTypes'),
-            'data' => [
-                'error-key' => 'entryTypes',
-                'disabled' => $readOnly,
-            ],
-        ];
-
-        if (! $readOnly) {
-            // The select template for new groups, with TEMP_ID placeholder ids
-            // the manager swaps client-side. Rendered with NO ambient namespace
-            // so the markup stays raw (a clean TEMP_ID and un-namespaced input
-            // names); the field settings' own namespace pass then namespaces the
-            // whole settings HTML — including this `<template>`'s contents —
-            // exactly once, the same single pass the inline group selects get.
-            // Applying `namespaceInputs()` here too would double it up, breaking
-            // the TEMP_ID swap and producing over-nested `entryTypes[]` names
-            // (which fail to save as unknown `types` properties).
-            // The JS buffer only guards against stray registered JS leaking
-            // TEMP_ID references into the page — the web-component path registers
-            // none, so it's discarded.
-            HtmlStack::startJsBuffer();
-            $entryTypeSelectHtml = InputNamespace::with(
-                namespace: null,
-                callback: fn () => FormFields::entryTypeSelectHtml([
-                    ...$entryTypeSelectConfig,
-                    'id' => 'TEMP_ID',
-                ]),
-            );
-            HtmlStack::clearJsBuffer();
-        }
-
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
-
-        return template('_components/fieldtypes/Matrix/settings', [
-            'field' => $this,
-            'entryTypes' => $entryTypes,
-            'entryTypeSelectConfig' => $entryTypeSelectConfig,
-            'entryTypeSelectHtml' => $entryTypeSelectHtml ?? null,
-            'defaultTableColumnOptions' => self::defaultTableColumnOptions($this->_entryTypes),
-            'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
-            'indexViewModes' => array_filter(
-                Entry::indexViewModes(),
-                fn (array $viewMode) => ! ($viewMode['structuresOnly'] ?? false),
-            ),
-            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
-            'readOnly' => $readOnly,
-        ]);
     }
 
     #[Override]

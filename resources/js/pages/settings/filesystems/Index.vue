@@ -25,7 +25,6 @@
     id: number;
     dateCreated: string;
     dateUpdated: string;
-    settingsHtml: string;
     rootPath: string;
     path: string;
   }

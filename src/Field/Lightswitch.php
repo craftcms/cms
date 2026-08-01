@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -109,11 +108,6 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -134,48 +128,6 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
                 ->instructions(t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'))
                 ->readOnly($readOnly),
         ]);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Default Value'),
-                'id' => 'default',
-                'name' => 'default',
-                'on' => $this->default,
-                'disabled' => $readOnly,
-            ]).
-            FormFields::textFieldHtml([
-                'label' => t('OFF Label'),
-                'instructions' => t('The label text to display beside the lightswitch’s disabled state.'),
-                'id' => 'off-label',
-                'name' => 'offLabel',
-                'value' => $this->offLabel,
-                'disabled' => $readOnly,
-            ]).
-            FormFields::textFieldHtml([
-                'label' => t('ON Label'),
-                'instructions' => t('The label text to display beside the lightswitch’s enabled state.'),
-                'id' => 'on-label',
-                'name' => 'onLabel',
-                'value' => $this->onLabel,
-                'disabled' => $readOnly,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show ON/OFF labels in cards'),
-                'instructions' => t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'),
-                'id' => 'show-labels-in-cards',
-                'name' => 'showLabelsInCards',
-                'on' => $this->showLabelsInCards,
-                'disabled' => $readOnly,
-            ]);
     }
 
     #[Override]

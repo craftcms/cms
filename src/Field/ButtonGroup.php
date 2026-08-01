@@ -8,7 +8,6 @@ use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup as ButtonGroupComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
@@ -43,20 +42,6 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
      * @var bool Whether buttons should only show their icons, hiding their text labels
      */
     public bool $iconsOnly = false;
-
-    #[Override]
-    public function getSettingsHtml(): string
-    {
-        return Html::beginTag('craft-field-group').
-            parent::getSettingsHtml().
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Icons only'),
-                'instructions' => t('Whether buttons should only show their icons, hiding their text labels.'),
-                'name' => 'iconsOnly',
-                'on' => $this->iconsOnly,
-            ]).
-            Html::endTag('craft-field-group');
-    }
 
     /** @return list<FormElement> */
     #[Override]

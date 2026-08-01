@@ -16,6 +16,7 @@
     FormErrors,
     FormValues,
   } from '@/form-definitions/types';
+  import type {FormSaveOptions} from '@/common/types';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {
@@ -35,32 +36,36 @@
     types: Record<string, Record<string, any>>;
   }
 
-  const props = defineProps<{
-    field: {
-      id: number | null;
-      name: string | null;
-      handle: string | null;
-      instructions: string | null;
-      searchable: boolean;
-      type: string;
-      translationMethod: string;
-      translationKeyFormat: string | null;
-    };
-    brandNew: boolean;
-    fieldTypeOptions: Array<FieldTypeOption>;
-    supportedTranslationMethods: Record<string, string[]>;
-    translationMethodOptions: Array<{value: string; label: string}>;
-    isMultiSite: boolean;
-    settingsDefinition: FormDefinitionData | null;
-    settingsValues: FieldSettingsValues;
-    settingsErrors: FormErrors;
-    settingsBindingScope: string;
-    settingsInputNamespace: string;
-    readOnly: boolean;
-    metadataHtml: string | null;
-    missingFieldPlaceholder: string | null;
-    formActions?: Array<any>;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      field: {
+        id: number | null;
+        name: string | null;
+        handle: string | null;
+        instructions: string | null;
+        searchable: boolean;
+        type: string;
+        translationMethod: string;
+        translationKeyFormat: string | null;
+      };
+      brandNew: boolean;
+      fieldTypeOptions: Array<FieldTypeOption>;
+      supportedTranslationMethods: Record<string, string[]>;
+      translationMethodOptions: Array<{value: string; label: string}>;
+      isMultiSite: boolean;
+      settingsDefinition: FormDefinitionData | null;
+      settingsValues: FieldSettingsValues;
+      settingsErrors: FormErrors;
+      settingsBindingScope: string;
+      settingsInputNamespace: string;
+      readOnly: boolean;
+      metadataHtml: string | null;
+      missingFieldPlaceholder: string | null;
+      formActions?: Array<any>;
+      embedded?: boolean;
+    }>(),
+    {embedded: false}
+  );
 
   const form = useForm({
     fieldId: props.field.id,
@@ -178,13 +183,17 @@
     () => !props.brandNew && !form.errors.type
   );
 
-  const {save} = useSettingsSave(form, store, {
-    transform: (data) => {
-      const typeSettings = serializedLegacySettings();
+  let save: (options?: FormSaveOptions) => void = () => {};
 
-      return typeSettings === undefined ? data : {...data, typeSettings};
-    },
-  });
+  if (!props.embedded) {
+    ({save} = useSettingsSave(form, store, {
+      transform: (data) => {
+        const typeSettings = serializedLegacySettings();
+
+        return typeSettings === undefined ? data : {...data, typeSettings};
+      },
+    }));
+  }
 
   const formActionItems = computed(() => [
     {
@@ -197,14 +206,36 @@
     ...(props.formActions ?? []),
   ]);
 
-  useAppLayout(() => ({
-    form,
-    onSave: save,
-    formActions: formActionItems.value,
-  }));
+  if (!props.embedded) {
+    useAppLayout(() => ({
+      form,
+      onSave: save,
+      formActions: formActionItems.value,
+    }));
+  }
+
+  function setErrors(errors: FormErrors): void {
+    form.clearErrors();
+    form.setError(
+      Object.fromEntries(
+        Object.entries(errors).map(([key, messages]) => [
+          key,
+          Array.isArray(messages) ? (messages[0] ?? '') : messages,
+        ])
+      )
+    );
+  }
+
+  defineExpose({setErrors});
 </script>
 
 <template>
+  <input
+    v-if="embedded && form.fieldId"
+    type="hidden"
+    name="fieldId"
+    :value="form.fieldId"
+  />
   <div class="grid gap-6 grid-cols-4">
     <Pane
       appearance="raised"

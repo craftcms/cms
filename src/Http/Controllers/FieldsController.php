@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Closure;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
-use CraftCms\Cms\Cp\Html\ContentHtml;
-use CraftCms\Cms\Cp\Html\FieldHtml;
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -36,8 +31,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
-use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,7 +42,6 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class FieldsController
 {
@@ -90,13 +82,6 @@ class FieldsController
 
     public function create(Request $request): CpScreenResponse
     {
-        // Slideouts (`new Craft.CpScreenSlideout('fields/edit-field')` with no
-        // field ID, e.g. the field layout designer's "New field" button) still
-        // consume the legacy Twig screen as JSON.
-        if ($request->wantsJson()) {
-            return $this->cpScreenResponse($this->fieldsService->createField(PlainText::class), $request);
-        }
-
         // "Save and add another" links back here with the last-saved type preselected
         $type = $request->input('type');
 
@@ -111,12 +96,23 @@ class FieldsController
         /** @var Field $field */
         $field = $this->fieldsService->createField($type);
 
-        return new CpScreenResponse()
+        $response = new CpScreenResponse()
             ->title(t('Create a new field'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Fields'), 'settings/fields')
             ->redirectUrl('settings/fields')
-            ->inertiaPage('settings/fields/Edit', new FieldEditViewModel($field, $this->fieldsService));
+            ->inertiaPage('settings/fields/Edit', new FieldEditViewModel(
+                $field,
+                $this->fieldsService,
+                embedded: $request->wantsJson(),
+                multiInstanceTypesOnly: $request->boolean('multiInstanceTypesOnly'),
+            ));
+
+        if ($request->wantsJson()) {
+            $response->action('fields/save-field');
+        }
+
+        return $response;
     }
 
     public function edit(Request $request, ?FieldInterface $field = null, ?int $fieldId = null): CpScreenResponse
@@ -133,14 +129,16 @@ class FieldsController
             $field = $found;
         }
 
-        if ($request->wantsJson()) {
-            return $this->cpScreenResponse($field, $request);
+        $response = $this->editScreenResponse($field, $request);
+
+        if ($request->wantsJson() && ! $this->readOnly) {
+            $response->action('fields/save-field');
         }
 
-        return $this->editScreenResponse($field);
+        return $response;
     }
 
-    private function editScreenResponse(FieldInterface $field): CpScreenResponse
+    private function editScreenResponse(FieldInterface $field, Request $request): CpScreenResponse
     {
         // If the field's type class exists again (e.g. a plugin was reinstalled),
         // swap the missing-field placeholder for a fresh instance of it
@@ -158,7 +156,13 @@ class FieldsController
             ->addCrumb(t('Fields'), 'settings/fields')
             ->redirectUrl('settings/fields')
             ->editUrl("settings/fields/edit/$field->id")
-            ->inertiaPage('settings/fields/Edit', new FieldEditViewModel($field, $this->fieldsService, $this->readOnly));
+            ->inertiaPage('settings/fields/Edit', new FieldEditViewModel(
+                $field,
+                $this->fieldsService,
+                $this->readOnly,
+                embedded: $request->wantsJson(),
+                multiInstanceTypesOnly: $request->boolean('multiInstanceTypesOnly'),
+            ));
 
         if (! $this->readOnly) {
             $response->addAltAction(t('Delete'), [
@@ -185,36 +189,15 @@ class FieldsController
         $request->validate([
             'type' => ['required', 'string'],
             'oldType' => ['nullable', 'string'],
-            'settings' => [
-                'nullable',
-                static function (string $attribute, mixed $value, Closure $fail): void {
-                    if (! is_array($value) && ! is_string($value)) {
-                        $fail(t('The settings must be a string or an array.'));
-                    }
-                },
-            ],
-            'typeSettings' => ['nullable', 'string'],
-            'namespace' => ['nullable', 'string'],
-            'oldNamespace' => ['nullable', 'string'],
+            'settings' => ['nullable', 'array'],
         ]);
 
         $type = $request->input('type');
         $oldType = $request->input('oldType');
-        $usesNativeSettingsProtocol = is_array($request->input('settings'));
         $field = $this->fieldsService->createField($type);
 
         if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
-            if ($usesNativeSettingsProtocol) {
-                $settings = $request->array('settings');
-            } else {
-                parse_str((string) $request->input('settings', ''), $postedOldSettings);
-                $settings = Arr::get($postedOldSettings, $request->input('oldNamespace'), []);
-            }
-
-            if (is_string($typeSettings = $request->input('typeSettings'))) {
-                parse_str($typeSettings, $postedOldSettings);
-                $settings = Arr::get($postedOldSettings, sprintf('types.%s', Html::id($oldType)), []);
-            }
+            $settings = $request->array('settings');
 
             // Remove any settings that aren't defined by the same class between both types
             $settings = array_filter($settings, function ($attribute) use ($type, $oldType) {
@@ -229,17 +212,6 @@ class FieldsController
             }, ARRAY_FILTER_USE_KEY);
 
             Typecast::configure($field, $settings);
-        }
-
-        if (! $usesNativeSettingsProtocol) {
-            return new JsonResponse([
-                'settingsHtml' => template('settings/fields/_type-settings', [
-                    'field' => $field,
-                    'namespace' => $request->input('namespace'),
-                ]),
-                'headHtml' => $this->HtmlStack->headHtml(),
-                'bodyHtml' => $this->HtmlStack->bodyHtml(),
-            ]);
         }
 
         /** @var Field $field */
@@ -522,158 +494,5 @@ class FieldsController
         abort_if(! $element, 400, "Invalid layout element UUID: $uid");
 
         return $element;
-    }
-
-    private function cpScreenResponse(FieldInterface $field, ?Request $request = null): CpScreenResponse
-    {
-        // Supported translation methods
-        // ---------------------------------------------------------------------
-
-        $supportedTranslationMethods = [];
-        $allFieldTypes = $this->fieldsService->getAllFieldTypes();
-
-        foreach ($allFieldTypes as $class) {
-            if ($class === $field::class || $class::isSelectable()) {
-                $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
-            }
-        }
-
-        $supportedTranslationMethods = array_map(
-            fn (array $translationMethods) => array_map(
-                static fn (TranslationMethod $translationMethod) => $translationMethod->value,
-                $translationMethods,
-            ),
-            $supportedTranslationMethods,
-        );
-
-        // Allowed field types
-        // ---------------------------------------------------------------------
-
-        if (! $field->id) {
-            $compatibleFieldTypes = $allFieldTypes;
-        } else {
-            $compatibleFieldTypes = $this->fieldsService->getCompatibleFieldTypes($field, includeCurrent: true);
-        }
-
-        $fieldTypeOptions = [];
-        $fieldTypeNames = [];
-        $foundCurrent = false;
-        $missingFieldPlaceholder = null;
-        $multiInstanceTypesOnly = (bool) $request?->input('multiInstanceTypesOnly');
-
-        foreach ($allFieldTypes as $class) {
-            $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : $field::class);
-            $foundCurrent = $foundCurrent || $isCurrent;
-
-            if (
-                $isCurrent ||
-                (
-                    $class::isSelectable() &&
-                    (! $multiInstanceTypesOnly || $class::isMultiInstance())
-                )
-            ) {
-                $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
-                $name = $class::displayName();
-                $option = [
-                    'icon' => $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
-                    'value' => $class,
-                ];
-                if ($compatible) {
-                    $option['label'] = $name;
-                } else {
-                    $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']).
-                        Html::tag('span', Html::encode($name)).
-                        Html::tag('span', Icons::svg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
-                        Html::endTag('div');
-                }
-                $fieldTypeOptions[] = $option;
-                $fieldTypeNames[] = $name;
-            }
-        }
-
-        // Sort them by name
-        array_multisort($fieldTypeNames, $fieldTypeOptions);
-
-        if ($field instanceof MissingField) {
-            if ($foundCurrent) {
-                $field = $this->fieldsService->createField($field->expectedType);
-            } else {
-                array_unshift($fieldTypeOptions, ['value' => $field->expectedType, 'label' => '']);
-                $missingFieldPlaceholder = $field->getPlaceholderHtml();
-            }
-        }
-
-        // Page setup + render
-        // ---------------------------------------------------------------------
-
-        if ($field->id) {
-            $title = trim((string) $field->name) ?: t('Edit Field');
-        } else {
-            $title = t('Create a new field');
-        }
-
-        $response = new CpScreenResponse()
-            ->title($title)
-            ->addCrumb(t('Settings'), 'settings')
-            ->addCrumb(t('Fields'), 'settings/fields')
-            ->contentTemplate('settings/fields/_edit.twig', [
-                'fieldId' => $field->id,
-                'field' => $field,
-                'fieldTypeOptions' => $fieldTypeOptions,
-                'missingFieldPlaceholder' => $missingFieldPlaceholder,
-                'supportedTranslationMethods' => $supportedTranslationMethods,
-                'readOnly' => $this->readOnly,
-            ]);
-
-        if (! $this->readOnly) {
-            $response
-                ->action('fields/save-field')
-                ->redirectUrl('settings/fields')
-                ->addAltAction(t('Save and continue editing'), [
-                    'redirect' => 'settings/fields/edit/{id}',
-                    'shortcut' => true,
-                    'retainScroll' => true,
-                ])
-                ->addAltAction(t('Save and add another'), [
-                    'shortcut' => true,
-                    'shift' => true,
-                    'params' => ['addAnother' => 1],
-                ])
-                ->editUrl($field->id ? "settings/fields/edit/$field->id" : null);
-        } else {
-            $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
-        }
-
-        $response
-            ->prepareScreen(function () {
-                app(InternalAssetRegistry::class)->register(FieldSettingsAsset::class);
-                $this->HtmlStack->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
-new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
-  wrapWithTypeClassDiv: true
-})
-JS, [
-                    InputNamespace::namespaceId('type'),
-                    InputNamespace::namespaceId('settings'),
-                    InputNamespace::namespaceInputName('types[__TYPE__]'),
-                ]);
-            });
-
-        if ($field->id) {
-            if (! $this->readOnly) {
-                $response
-                    ->addAltAction(t('Delete'), [
-                        'action' => 'fields/delete-field',
-                        'redirect' => 'settings/fields',
-                        'destructive' => true,
-                        'confirm' => t('Are you sure you want to delete “{name}”?', [
-                            'name' => $field->name,
-                        ]),
-                    ]);
-            }
-            $response
-                ->metaSidebarHtml(app(FieldHtml::class)->metadataHtml($field));
-        }
-
-        return $response;
     }
 }

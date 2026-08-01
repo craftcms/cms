@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormFields;
 use Exception;
 use League\Uri\Uri;
 
@@ -73,26 +72,6 @@ class Url extends BaseTextLinkType
     protected function urlPrefix(): array
     {
         return ['https://', 'http://'];
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Allow root-relative URLs'),
-                'name' => 'allowRootRelativeUrls',
-                'on' => $this->allowRootRelativeUrls,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Allow anchors'),
-                'name' => 'allowAnchors',
-                'on' => $this->allowAnchors,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Allow custom URL schemes'),
-                'name' => 'allowCustomSchemes',
-                'on' => $this->allowCustomSchemes,
-            ]);
     }
 
     /** @return list<FormElement> */

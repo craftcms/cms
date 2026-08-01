@@ -179,9 +179,6 @@ class Assets extends BaseRelationField
     protected bool $allowLargeThumbsView = true;
 
     #[Override]
-    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
-
-    #[Override]
     protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
 
     #[Override]

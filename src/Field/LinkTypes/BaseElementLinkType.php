@@ -82,11 +82,6 @@ abstract class BaseElementLinkType extends BaseLinkType
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): ?string
-    {
-        return $this->sourcesSettingHtml();
-    }
-
     /** @return list<FormElement> */
     #[Override]
     protected function settingsFormElements(bool $readOnly): array
@@ -118,27 +113,6 @@ abstract class BaseElementLinkType extends BaseLinkType
     /**
      * Returns the HTML for the “Sources” setting
      */
-    protected function sourcesSettingHtml(): ?string
-    {
-        $sources = Collection::make($this->availableSources())
-            ->keyBy(fn (array $source) => $source['key'])
-            ->map(fn (array $source) => $source['label']);
-
-        if ($sources->isEmpty()) {
-            return null;
-        }
-
-        return FormFields::checkboxSelectFieldHtml([
-            'label' => t('{type} Sources', [
-                'type' => static::elementType()::displayName(),
-            ]),
-            'name' => 'sources',
-            'options' => $sources->all(),
-            'values' => $this->sources ?? '*',
-            'showAllOption' => true,
-        ]);
-    }
-
     public function supports(string $value): bool
     {
         return (bool) preg_match(sprintf('/^\{%s:(\d+)(@(\d+))?:url\}$/', static::elementType()::refHandle()), $value);

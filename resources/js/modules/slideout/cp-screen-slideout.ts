@@ -24,11 +24,17 @@
  */
 
 import {Garnish, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
+import {createApp, type App, type ComponentPublicInstance} from 'vue';
+import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
 
 declare const Craft: any;
 declare const $: any;
 declare const axios: any;
+
+type EmbeddedInertiaPage = ComponentPublicInstance & {
+  setErrors?: (errors: Record<string, unknown>) => void;
+};
 
 /**
  * Settings accepted by {@link CpScreenSlideout}, layered on top of
@@ -118,6 +124,9 @@ export class CpScreenSlideout extends Slideout {
   cancelToken: any = null;
   ignoreFailedRequest = false;
   fieldsWithErrors: any[] = [];
+  inertiaApp: App | null = null;
+  inertiaPage: EmbeddedInertiaPage | null = null;
+  hasInertiaPage = false;
 
   /** Whether the slideout is wide enough to show the sidebar alongside the content. */
   get showExpandedView(): boolean {
@@ -290,7 +299,7 @@ export class CpScreenSlideout extends Slideout {
     });
     this.addListener(this.$container, 'submit', 'handleSubmit');
 
-    this.load();
+    void this.load();
   }
 
   /**
@@ -369,7 +378,7 @@ export class CpScreenSlideout extends Slideout {
 
   reload(): void {
     this.showLoadSpinner();
-    this.load();
+    void this.load();
   }
 
   updateHeaderVisibility(): void {
@@ -406,8 +415,10 @@ export class CpScreenSlideout extends Slideout {
   }
 
   update(data: any): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      this.unmountInertiaPage();
       this.namespace = data.namespace;
+      this.hasInertiaPage = Boolean(data.inertiaPage);
 
       if (data.bodyClass) {
         this.$body.addClass(data.bodyClass);
@@ -501,29 +512,53 @@ export class CpScreenSlideout extends Slideout {
       this.$footer.removeClass('hidden');
 
       requestAnimationFrame(async () => {
-        // Execute the response JS first so any Selectize inputs, etc.,
-        // get instantiated before field toggles
-        await Craft.appendHeadHtml(data.headHtml);
-        await Craft.appendBodyHtml(data.bodyHtml);
-        Craft.initUiElements(this.$content);
-        Craft.cp.elementThumbLoader.load($(this.$content));
+        try {
+          // Plugin assets must register their pages and renderers before an
+          // embedded Inertia page is resolved and mounted.
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
 
-        if (data.sidebar) {
-          Craft.initUiElements(this.$sidebar);
-          Craft.cp.elementThumbLoader.load(this.$sidebar);
-        }
+          if (data.inertiaPage) {
+            const component = await resolveInertiaPage(data.inertiaPage);
+            const mountPoint = document.createElement('div');
+            this.$content.append(mountPoint);
 
-        if (!isMobileBrowser() && !this.isOpening) {
-          this.setFocusWithin();
-        }
+            this.inertiaApp = createApp(component, data.inertiaProps);
+            this.inertiaApp.config.compilerOptions.isCustomElement = (tag) =>
+              tag.includes('-');
+            this.inertiaPage = this.inertiaApp.mount(
+              mountPoint
+            ) as EmbeddedInertiaPage;
+          }
 
-        resolve();
-        this.trigger('load');
-        if (this.settings!.onLoad) {
-          this.settings!.onLoad();
+          Craft.initUiElements(this.$content);
+          Craft.cp.elementThumbLoader.load($(this.$content));
+
+          if (data.sidebar) {
+            Craft.initUiElements(this.$sidebar);
+            Craft.cp.elementThumbLoader.load(this.$sidebar);
+          }
+
+          if (!isMobileBrowser() && !this.isOpening) {
+            this.setFocusWithin();
+          }
+
+          resolve();
+          this.trigger('load');
+          if (this.settings!.onLoad) {
+            this.settings!.onLoad();
+          }
+        } catch (error) {
+          reject(error);
         }
       });
     });
+  }
+
+  unmountInertiaPage(): void {
+    this.inertiaApp?.unmount();
+    this.inertiaApp = null;
+    this.inertiaPage = null;
   }
 
   override setFocusWithin(): void {
@@ -700,9 +735,7 @@ export class CpScreenSlideout extends Slideout {
     const action = this.$container.attr('action');
     const options = {
       data,
-      headers: {
-        'X-Craft-Namespace': this.namespace,
-      },
+      headers: this.hasInertiaPage ? {} : {'X-Craft-Namespace': this.namespace},
     };
     const request = action
       ? axios.post(action, data, {
@@ -724,6 +757,7 @@ export class CpScreenSlideout extends Slideout {
 
   handleSubmitResponse(response: any): void {
     this.clearErrors();
+    this.inertiaPage?.setErrors?.({});
     const data = response.data || {};
     if (data.message) {
       Craft.cp.displaySuccess(data.message, data.notificationSettings);
@@ -758,7 +792,11 @@ export class CpScreenSlideout extends Slideout {
     const data = e.response.data || {};
     Craft.cp.displayError(data.message);
     if (data.errors) {
-      this.showErrors(data.errors);
+      if (this.hasInertiaPage) {
+        this.inertiaPage?.setErrors?.(data.errors);
+      } else {
+        this.showErrors(data.errors);
+      }
     }
 
     if (data.errorSummary) {
@@ -943,6 +981,11 @@ export class CpScreenSlideout extends Slideout {
       this.ignoreFailedRequest = true;
       this.cancelToken.cancel();
     }
+  }
+
+  override destroy(): void {
+    this.unmountInertiaPage();
+    super.destroy();
   }
 }
 

@@ -169,11 +169,6 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ]);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -212,54 +207,6 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ->label(t('Max Date'))
                 ->visibleWhen(Condition::equals('showDate', true))
                 ->readOnly($readOnly),
-        ]);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        if ($this->showDate && ! $this->showTime) {
-            $dateTimeValue = 'showDate';
-        } elseif ($this->showTime && ! $this->showDate) {
-            $dateTimeValue = 'showTime';
-        } else {
-            $dateTimeValue = 'showBoth';
-        }
-
-        $incrementOptions = [5, 10, 15, 30, 60];
-        $incrementOptions = array_combine($incrementOptions, $incrementOptions);
-
-        $options = [
-            [
-                'label' => t('Show date'),
-                'value' => 'showDate',
-            ],
-        ];
-
-        // Only allow the "Show date and time" option if it's already selected
-        if ($dateTimeValue === 'showTime') {
-            $options[] = [
-                'label' => t('Show time'),
-                'value' => 'showTime',
-            ];
-        }
-
-        $options[] = [
-            'label' => t('Show date and time'),
-            'value' => 'showBoth',
-        ];
-
-        return template('_components/fieldtypes/Date/settings', [
-            'options' => $options,
-            'value' => $dateTimeValue,
-            'incrementOptions' => $incrementOptions,
-            'field' => $this,
-            'readOnly' => $readOnly,
         ]);
     }
 

@@ -23,6 +23,8 @@ class FieldEditViewModel extends ViewModel
         private readonly FieldInterface $field,
         private readonly Fields $fieldsService,
         private readonly bool $readOnly = false,
+        private readonly bool $embedded = false,
+        private readonly bool $multiInstanceTypesOnly = false,
     ) {}
 
     /** @return array{
@@ -60,6 +62,11 @@ class FieldEditViewModel extends ViewModel
         return $this->readOnly;
     }
 
+    public function embedded(): bool
+    {
+        return $this->embedded;
+    }
+
     /** @return array<int, array{
      *     value: class-string<FieldInterface>,
      *     label: string,
@@ -84,7 +91,10 @@ class FieldEditViewModel extends ViewModel
         foreach ($allFieldTypes as $class) {
             $isCurrent = $class === $currentType;
 
-            if (! $isCurrent && ! $class::isSelectable()) {
+            if (
+                ! $isCurrent &&
+                (! $class::isSelectable() || ($this->multiInstanceTypesOnly && ! $class::isMultiInstance()))
+            ) {
                 continue;
             }
 

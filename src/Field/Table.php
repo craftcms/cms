@@ -11,7 +11,6 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
@@ -21,9 +20,7 @@ use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
@@ -31,7 +28,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\TableSettingsAsset;
 use CraftCms\Cms\View\LegacyAssets\TimepickerAsset;
 use DateTimeInterface;
 use GraphQL\Type\Definition\InputObjectType;
@@ -267,17 +263,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return (bool) $this->maxRows;
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -383,124 +368,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }
 
         return $columns;
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $columnSettings = [
-            'heading' => [
-                'heading' => t('Column Heading'),
-                'type' => 'singleline',
-                'autopopulate' => 'handle',
-            ],
-            'handle' => [
-                'heading' => t('Handle'),
-                'code' => true,
-                'type' => 'singleline',
-            ],
-            'width' => [
-                'heading' => t('Width'),
-                'code' => true,
-                'type' => 'singleline',
-                'width' => 50,
-            ],
-            'type' => [
-                'heading' => t('Type'),
-                'class' => 'thin',
-                'type' => 'select',
-                'options' => self::typeOptions(),
-            ],
-        ];
-
-        $dropdownSettingsCols = [
-            'label' => [
-                'heading' => t('Option Label'),
-                'type' => 'singleline',
-                'autopopulate' => 'value',
-                'class' => 'option-label',
-            ],
-            'value' => [
-                'heading' => t('Value'),
-                'type' => 'singleline',
-                'class' => 'option-value code',
-            ],
-            'default' => [
-                'heading' => t('Default?'),
-                'type' => 'checkbox',
-                'radioMode' => true,
-                'class' => 'option-default thin',
-            ],
-        ];
-
-        $dropdownSettingsHtml = FormFields::editableTableFieldHtml([
-            'label' => t('Dropdown Options'),
-            'instructions' => t('Define the available options.'),
-            'id' => '__ID__',
-            'name' => '__NAME__',
-            'addRowLabel' => t('Add an option'),
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'cols' => $dropdownSettingsCols,
-            'initJs' => false,
-        ]);
-
-        // Replace heading columns with singleline, for the Default Values table
-        $columns = array_map(function (array $column) {
-            if ($column['type'] === 'heading') {
-                $column['type'] = 'singleline';
-                $column['class'] = 'heading';
-            }
-
-            return $column;
-        }, $this->columns);
-
-        app(InternalAssetRegistry::class)->register(TimepickerAsset::class);
-        app(InternalAssetRegistry::class)->register(TableSettingsAsset::class);
-        HtmlStack::js('new Craft.TableFieldSettings('.
-            Json::encode(InputNamespace::namespaceInputName('columns')).', '.
-            Json::encode(InputNamespace::namespaceInputName('defaults')).', '.
-            Json::encode($columns).', '.
-            Json::encode($this->defaults ?? []).', '.
-            Json::encode($columnSettings).', '.
-            Json::encode($dropdownSettingsHtml).', '.
-            Json::encode($dropdownSettingsCols).', '.
-            Json::encode($this->staticRows).', '.
-            ');');
-
-        $columnsField = template('_components/fieldtypes/Table/columntable', [
-            'cols' => $columnSettings,
-            'rows' => $this->columns,
-            'errors' => $this->errors()->get('columns'),
-            'readOnly' => $readOnly,
-        ]);
-
-        $defaultsField = FormFields::editableTableFieldHtml([
-            'label' => t('Default Values'),
-            'instructions' => t('Define the default values for the field.'),
-            'id' => 'defaults',
-            'name' => 'defaults',
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'cols' => $columns,
-            'rows' => array_map(function (array $row) {
-                // make sure the row has a UUID
-                $row['rowId'] ??= Str::uuid()->toString();
-
-                return $row;
-            }, $this->defaults ?? []),
-            'initJs' => false,
-            'static' => $readOnly,
-            'includeRowId' => true,
-        ]);
-
-        return template('_components/fieldtypes/Table/settings', [
-            'field' => $this,
-            'columnsField' => $columnsField,
-            'defaultsField' => $defaultsField,
-            'readOnly' => $readOnly,
-        ]);
     }
 
     #[Override]

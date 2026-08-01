@@ -33,14 +33,12 @@ use Money\Money as MoneyLibrary;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Money field type
  *
  * @property-read array $contentGqlMutationArgumentType
  * @property-read array[] $elementValidationRules
- * @property-read null|string $settingsHtml
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
  */
@@ -152,11 +150,6 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return self::currencyIcon($this->currency);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -194,29 +187,6 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 ->label(t('Size'))
                 ->min(1)
                 ->readOnly($readOnly),
-        ]);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        foreach (['defaultValue', 'min', 'max'] as $attr) {
-            if ($this->$attr !== null) {
-                $value = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
-                $this->$attr = $value !== false ? (float) $value : null;
-            }
-        }
-
-        return template('_components/fieldtypes/Money/settings', [
-            'field' => $this,
-            'currencies' => $this->_isoCurrencies,
-            'subUnits' => $this->subunits(),
-            'readOnly' => $readOnly,
         ]);
     }
 

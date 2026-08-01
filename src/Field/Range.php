@@ -20,7 +20,6 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
@@ -106,25 +105,6 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
             'max' => ['nullable', 'numeric', 'gte:min'],
             'step' => ['nullable', 'numeric'],
             'defaultValue' => ['nullable', 'numeric'],
-        ]);
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return template('_components/fieldtypes/Range/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
         ]);
     }
 

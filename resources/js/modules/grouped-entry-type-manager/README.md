@@ -3,8 +3,8 @@
 A TypeScript port of the legacy jQuery `Craft.GroupedEntryTypeManager` (+ its
 `Group` inner class) and the cross-group behaviors of
 `Craft.GroupedEntryTypeSelectInput` onto the modern **`@craftcms/garnish`**
-`Base`. It powers the Matrix field settings' grouped entry type UI
-(`_components/fieldtypes/Matrix/settings.twig`), orchestrating the self-booting
+`Base`. It powers the Matrix field settings' grouped entry type UI,
+orchestrating the self-booting
 [`<craft-component-select>`](../component-select/component-select.ts) elements
 that replaced the legacy `Craft.ComponentSelectInput` chain.
 

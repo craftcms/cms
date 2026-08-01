@@ -155,11 +155,6 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         );
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -172,55 +167,6 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 ->label(t('Allow custom colors'))
                 ->readOnly($readOnly),
         ]);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-
-        return
-            Html::beginTag('craft-field-group').
-            FormFields::editableTableFieldHtml([
-                'label' => t('Palette'),
-                'name' => 'palette',
-                'instructions' => t('Define the available colors to choose from.'),
-                'cols' => [
-                    'color' => [
-                        'type' => 'color',
-                        'heading' => t('Color'),
-                    ],
-                    'label' => [
-                        'type' => 'singleline',
-                        'heading' => t('Label'),
-                    ],
-                    'default' => [
-                        'type' => 'checkbox',
-                        'heading' => t('Default'),
-                        'radioMode' => true,
-                    ],
-                ],
-                'rows' => $this->palette,
-                'allowAdd' => true,
-                'allowReorder' => true,
-                'allowDelete' => true,
-                'addRowLabel' => t('Add a color'),
-                'errors' => $this->errors()->get('palette'),
-                'data' => ['error-key' => 'palette'],
-                'static' => $readOnly,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Allow custom colors'),
-                'id' => 'allow-custom-colors',
-                'name' => 'allowCustomColors',
-                'on' => $this->allowCustomColors,
-                'disabled' => $readOnly,
-            ]).
-            Html::endTag('craft-field-group');
     }
 
     #[Override]

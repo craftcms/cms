@@ -793,6 +793,10 @@ class CpScreenResponse implements Responsable
             'bodyClass' => $this->slideoutBodyClass,
             'formAttributes' => $this->formAttributes,
             'action' => $this->action,
+            'inertiaPage' => $this->inertiaPage,
+            'inertiaProps' => $this->inertiaProps instanceof Arrayable
+                ? $this->inertiaProps->toArray()
+                : $this->inertiaProps,
             'extraToolbarItems' => $extraToolbarItems,
             'submitButtonLabel' => $this->submitButtonLabel,
             'actionMenu' => $this->actionMenu(withDestructive: false, config: [

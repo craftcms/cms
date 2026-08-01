@@ -353,17 +353,6 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         ], $this->linkSettingsRules());
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -470,19 +459,6 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->options($this->htmlSanitizerOptions()->all())
                 ->visibleWhen(Condition::equals('sanitizeHtml', true))
                 ->readOnly($readOnly),
-        ]);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return template('_components/fieldtypes/Markdown/settings', [
-            'field' => $this,
-            'flavorOptions' => self::flavorOptions(),
-            'htmlSanitizerOptions' => $this->htmlSanitizerOptions(),
-            'linkSettings' => $this->linkSettingsProps($readOnly),
-            'toolbarButtonOptions' => self::toolbarButtonOptions(),
-            'volumeOptions' => $this->volumeOptions(),
-            'readOnly' => $readOnly,
         ]);
     }
 

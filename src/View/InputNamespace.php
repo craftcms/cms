@@ -102,8 +102,8 @@ class InputNamespace
      * registered by the callable.
      *
      * ```php
-     * $settingsHtml = InputNamespace::namespaceInputs(function() use ($widget) {
-     *     return $widget->getSettingsHtml();
+     * $fragmentHtml = InputNamespace::namespaceInputs(function() use ($fragment) {
+     *     return $fragment->render();
      * }, 'widget-settings');
      * ```
      *

@@ -8,7 +8,6 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonContains;
 use CraftCms\Cms\Database\QueryParam;
@@ -24,7 +23,6 @@ use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
@@ -275,89 +273,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         if ($hasInvalidColors) {
             $validator->errors()->add('options', t('All color values must be valid.'));
         }
-    }
-
-    public function getSettingsHtml(): string
-    {
-        if (empty($this->options)) {
-            // Give it a default row
-            $this->options = [['label' => '', 'value' => '']];
-        }
-
-        $cols = [];
-        if (static::$optgroups) {
-            $cols['isOptgroup'] = [
-                'heading' => t('Optgroup?'),
-                'type' => 'checkbox',
-                'class' => 'thin',
-                'toggle' => ['!value', '!icon', '!color', '!default'],
-            ];
-        }
-        $cols['label'] = [
-            'heading' => t('Option Label'),
-            'type' => 'singleline',
-            'autopopulate' => 'value',
-        ];
-        $cols['value'] = [
-            'heading' => t('Value'),
-            'type' => 'singleline',
-            'class' => 'code',
-        ];
-        if (static::$optionIcons) {
-            $cols['icon'] = [
-                'heading' => t('Icon'),
-                'type' => 'icon',
-                'class' => 'thin',
-            ];
-        }
-        if (static::$optionColors) {
-            $cols['color'] = [
-                'heading' => t('Color'),
-                'type' => 'color',
-            ];
-        }
-        $cols['default'] = [
-            'heading' => t('Default?'),
-            'type' => 'checkbox',
-            'radioMode' => ! static::$multi,
-            'class' => 'thin',
-        ];
-
-        $rows = [];
-        foreach ($this->options as $option) {
-            if (isset($option['optgroup'])) {
-                $option['isOptgroup'] = true;
-                $option['label'] = Arr::pull($option, 'optgroup');
-            }
-            $rows[] = $option;
-        }
-
-        $html = FormFields::editableTableFieldHtml([
-            'label' => $this->optionsSettingLabel(),
-            'instructions' => t('Define the available options.'),
-            'id' => 'options',
-            'name' => 'options',
-            'addRowLabel' => t('Add an option'),
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'cols' => $cols,
-            'rows' => $rows,
-            'width' => 'full',
-            'errors' => $this->errors()->get('options'),
-            'data' => ['error-key' => 'options'],
-        ]);
-
-        if (static::$allowCustomOptions) {
-            $html .= FormFields::lightswitchFieldHtml([
-                'label' => t('Allow custom options'),
-                'id' => 'custom-options',
-                'name' => 'customOptions',
-                'on' => $this->customOptions,
-            ]);
-        }
-
-        return $html;
     }
 
     #[Override]

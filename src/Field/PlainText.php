@@ -126,11 +126,6 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         ]);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -168,20 +163,6 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                 ->min(1)
                 ->visibleWhen(Condition::equals('multiline', true))
                 ->readOnly($readOnly),
-        ]);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return template('_components/fieldtypes/PlainText/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
         ]);
     }
 

@@ -51,8 +51,6 @@ use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
@@ -365,11 +363,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     protected bool $allowLargeThumbsView = false;
 
     /**
-     * @var string Template to use for settings rendering
-     */
-    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings.twig';
-
-    /**
      * @var string Template to use for field rendering
      */
     protected string $inputTemplate = '_includes/forms/elementSelect.twig';
@@ -549,28 +542,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $settings['useTargetSite'] = $this->targetSiteId !== null;
 
         return $settings;
-    }
-
-    public function getSettingsHtml(): string
-    {
-        $variables = $this->settingsTemplateVariables();
-
-        HtmlStack::jsWithVars(fn ($args) => <<<JS
-new Craft.ElementFieldSettings(...$args)
-JS, [
-            [
-                $this->allowMultipleSources,
-                InputNamespace::namespaceId('maintain-hierarchy-field'),
-                InputNamespace::namespaceId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
-                InputNamespace::namespaceId('branch-limit-field'),
-                InputNamespace::namespaceId('min-relations-field'),
-                InputNamespace::namespaceId('max-relations-field'),
-                InputNamespace::namespaceId('default-placement-field'),
-                InputNamespace::namespaceId('viewMode-field'),
-            ],
-        ]);
-
-        return template($this->settingsTemplate, $variables);
     }
 
     #[Override]
@@ -1789,37 +1760,6 @@ JS, [
     /**
      * Returns an array of variables that should be passed to the settings template.
      */
-    protected function settingsTemplateVariables(): array
-    {
-        $elementType = static::elementType();
-
-        $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
-        if ($selectionCondition) {
-            $selectionCondition->mainTag = 'div';
-            $selectionCondition->id = 'selection-condition';
-            $selectionCondition->name = 'selectionCondition';
-            $selectionCondition->forProjectConfig = true;
-            $selectionCondition->queryParams[] = 'site';
-
-            $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
-                'label' => t('Selectable {type} Condition', [
-                    'type' => $elementType::pluralDisplayName(),
-                ]),
-                'instructions' => mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ])),
-            ]);
-        }
-
-        return [
-            'field' => $this,
-            'upperElementType' => $elementType::displayName(),
-            'elementType' => $elementType::lowerDisplayName(),
-            'pluralElementType' => $elementType::pluralLowerDisplayName(),
-            'selectionCondition' => $selectionConditionHtml ?? null,
-        ];
-    }
-
     /**
      * Returns an array of variables that should be passed to the input template.
      *

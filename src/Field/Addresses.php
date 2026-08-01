@@ -38,8 +38,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -50,10 +48,8 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Addresses field type.
@@ -313,17 +309,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $value->count();
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -346,17 +331,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                     ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
                 ])
                 ->readOnly($readOnly),
-        ]);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
-
-        return template('_components/fieldtypes/Addresses/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
-            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
         ]);
     }
 

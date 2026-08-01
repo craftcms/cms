@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -64,11 +63,6 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -77,25 +71,6 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
                 ->readOnly($readOnly),
-        ]);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return FormFields::textFieldHtml([
-            'label' => t('Placeholder Text'),
-            'instructions' => t('The text that will be shown if the field doesn’t have a value.'),
-            'id' => 'placeholder',
-            'name' => 'placeholder',
-            'value' => $this->placeholder,
-            'errors' => $this->errors()->get('placeholder'),
-            'disabled' => $readOnly,
         ]);
     }
 

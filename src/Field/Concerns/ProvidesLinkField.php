@@ -12,12 +12,9 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Field\Link;
-use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Template;
 use Illuminate\Support\Collection;
 
@@ -168,33 +165,6 @@ trait ProvidesLinkField
         return $options;
     }
 
-    protected function linkSettingsProps(bool $readOnly): array
-    {
-        $types = $this->orderedLinkSettingsTypes();
-        $namespace = $this->linkSettingsNamespace();
-        $typeSettingsNamespace = $namespace === null
-            ? 'typeSettings'
-            : sprintf('%s[typeSettings]', $namespace);
-
-        return [
-            'advancedFieldOptions' => $this->linkAdvancedFieldOptions(),
-            'advancedFields' => $this->{$this->namespacedAttribute('advancedFields')},
-            'allowedTypes' => $this->{$this->namespacedAttribute('types')},
-            'field' => $this,
-            'linkTypeOptions' => $this->linkTypeOptions($types),
-            'linkTypeSettings' => $this->linkTypeSettingsHtml(
-                $types,
-                $this->configuredLinkTypesForSettings(),
-                $this->{$this->namespacedAttribute('typeSettings')},
-                $readOnly,
-                $typeSettingsNamespace,
-            ),
-            'namespace' => $namespace,
-            'readOnly' => $readOnly,
-            'showLabelField' => $this->{$this->namespacedAttribute('showLabelField')},
-        ];
-    }
-
     protected function linkPickerConfig(): array
     {
         $availableTypes = Link::types();
@@ -332,43 +302,5 @@ trait ProvidesLinkField
         }
 
         return $options;
-    }
-
-    protected function linkTypeSettingsHtml(
-        iterable $types,
-        array $configuredLinkTypes,
-        array $typeSettings,
-        bool $readOnly,
-        string $namespace = 'typeSettings',
-    ): array {
-        $settings = [];
-
-        foreach ($types as $typeId => $typeClass) {
-            /** @var BaseLinkType $linkType */
-            $linkType = $configuredLinkTypes[$typeId] ?? ComponentHelper::createComponent([
-                'type' => $typeClass,
-                'settings' => $typeSettings[$typeId] ?? [],
-            ], BaseLinkType::class);
-            $html = InputNamespace::namespaceInputs(
-                fn () => $readOnly ? $linkType->getReadOnlySettingsHtml() : $linkType->getSettingsHtml(),
-                sprintf('%s[%s]', $namespace, $typeId),
-            );
-
-            if ($html !== null && $html !== '') {
-                $settings[$typeId] = [
-                    'html' => Html::tag('craft-field-group', $html),
-                    'label' => $this->linkTypeSettingsLabel($typeClass),
-                ];
-            }
-        }
-
-        return $settings;
-    }
-
-    private function linkTypeSettingsLabel(string $type): string
-    {
-        return is_a($type, BaseElementLinkType::class, true)
-            ? t('{type} Link settings', ['type' => $type::displayName()])
-            : t('{type} settings', ['type' => $type::displayName()]);
     }
 }

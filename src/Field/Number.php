@@ -173,11 +173,6 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
         ]);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -235,20 +230,6 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
                 ])
                 ->visibleWhen(Condition::equals('previewFormat', self::FORMAT_CURRENCY))
                 ->readOnly($readOnly),
-        ]);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return template('_components/fieldtypes/Number/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
         ]);
     }
 

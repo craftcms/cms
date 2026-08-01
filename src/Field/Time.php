@@ -105,11 +105,6 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ]);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
@@ -133,26 +128,6 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             TimeInputElement::make('max')
                 ->label(t('Max Time'))
                 ->readOnly($readOnly),
-        ]);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $incrementOptions = [5, 10, 15, 30, 60];
-        $incrementOptions = array_combine($incrementOptions, $incrementOptions);
-
-        return template('_components/fieldtypes/Time/settings', [
-            'incrementOptions' => $incrementOptions,
-            'field' => $this,
-            'min' => $this->min ? DateTimeHelper::toDateTime(['time' => $this->min], true) : null,
-            'max' => $this->max ? DateTimeHelper::toDateTime(['time' => $this->max], true) : null,
-            'readOnly' => $readOnly,
         ]);
     }
 

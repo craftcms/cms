@@ -171,7 +171,7 @@ it('renders the edit screen read-only without admin changes', function () {
             )));
 });
 
-it('serves the legacy screen to slideout requests', function (?callable $setUp) {
+it('serves the native field editor to slideout requests', function (?callable $setUp) {
     $fieldId = $setUp ? $setUp()->id : null;
 
     $this->getJson(
@@ -180,8 +180,11 @@ it('serves the legacy screen to slideout requests', function (?callable $setUp) 
     )
         ->assertOk()
         ->assertJsonPath('action', 'fields/save-field')
+        ->assertJsonPath('inertiaPage', 'settings/fields/Edit')
+        ->assertJsonPath('inertiaProps.embedded', true)
+        ->assertJsonMissingPath('settingsHtml')
         ->assertJson(fn (AssertableJson $json) => $json
-            ->whereType('content', 'string')
+            ->whereType('inertiaProps.settingsDefinition.elements', 'array')
             ->etc());
 })->with([
     'new field' => [null],
@@ -219,12 +222,12 @@ it('rejects unsupported settings protocols', function () {
         ->assertJsonValidationErrors('settings');
 });
 
-it('continues serving settings HTML to the legacy field editor', function () {
+it('always serves the native settings contract', function () {
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => PlainText::class,
     ])->assertOk()
-        ->assertJsonPath('settingsHtml', fn ($html) => is_string($html) && $html !== '')
-        ->assertJsonMissingPath('definition');
+        ->assertJsonFragment(['type' => 'craft:select-input', 'name' => 'uiMode'])
+        ->assertJsonMissingPath('settingsHtml');
 });
 
 it('preserves values between rendering settings', function () {

@@ -56,13 +56,16 @@ describe('relational settings renderers', () => {
       container.querySelector<HTMLElementTagNameMap['craft-input']>(
         'craft-input'
       )!;
-    const checkboxGroup =
-      container.querySelector<CheckboxGroupElement>('craft-checkbox-group')!;
+    const checkboxGroup = container.querySelector<CheckboxGroupElement>(
+      'craft-checkbox-group'
+    )!;
 
     await checkboxGroup.registrationComplete;
     await checkboxGroup.updateComplete;
     await vi.waitFor(() => {
-      expect(container.querySelector('[data-condition-rule-value]')).not.toBeNull();
+      expect(
+        container.querySelector('[data-condition-rule-value]')
+      ).not.toBeNull();
     });
     const condition = container.querySelector<HTMLInputElement>(
       '[data-condition-rule-value]'
@@ -147,7 +150,9 @@ describe('relational settings renderers', () => {
       container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
     );
     await vi.waitFor(() => {
-      expect(container.querySelector('[data-condition-rule-value]')).not.toBeNull();
+      expect(
+        container.querySelector('[data-condition-rule-value]')
+      ).not.toBeNull();
     });
     const condition = container.querySelector<HTMLInputElement>(
       '[data-condition-rule-value]'

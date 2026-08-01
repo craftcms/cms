@@ -7,8 +7,6 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Cp\Components\Button;
-use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -42,7 +40,6 @@ use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Link represents a Link field.
@@ -221,17 +218,6 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return UrlType::id();
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
@@ -256,60 +242,6 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         return FormDefinition::make($elements);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $html = template('_components/fieldtypes/Link/link-settings', $this->linkSettingsProps($readOnly));
-
-        $html .=
-            Html::tag('hr').
-            Html::beginTag('craft-disclosure').
-            Button::make()
-                ->label(t('Advanced'))
-                ->icon('chevron-down')
-                ->variant(ButtonVariant::Plain)
-                ->attributes([
-                    'slot' => 'invoker',
-                    'class' => 'justify-self-start',
-                ]).
-            Html::beginTag('div', [
-                'slot' => 'content',
-            ]).
-            Html::beginTag('craft-field-group').
-            FormFields::textFieldHtml([
-                'label' => t('Max Length'),
-                'instructions' => t('The maximum length (in bytes) the field can hold.'),
-                'id' => 'maxLength',
-                'name' => 'maxLength',
-                'type' => 'number',
-                'min' => '10',
-                'step' => '10',
-                'value' => $this->maxLength,
-                'errors' => $this->errors()->get('maxLength'),
-                'data' => ['error-key' => 'maxLength'],
-                'disabled' => $readOnly,
-            ]);
-
-        if (Cms::config()->enableGql) {
-            $html .=
-                FormFields::selectFieldHtml([
-                    'label' => t('GraphQL Mode'),
-                    'id' => 'graphql-mode',
-                    'name' => 'graphqlMode',
-                    'options' => [
-                        ['label' => t('Full data'), 'value' => 'full'],
-                        ['label' => t('URL only'), 'value' => 'url'],
-                    ],
-                    'value' => $this->fullGraphqlData ? 'full' : 'url',
-                    'disabled' => $readOnly,
-                ]);
-        }
-
-        $html .= Html::endTag('craft-field-group');
-        $html .= Html::endTag('div');
-
-        return $html.Html::endTag('craft-disclosure');
     }
 
     private function prepareLegacyAdvancedFieldConfig(array $config): array

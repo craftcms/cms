@@ -1,11 +1,5 @@
 <script setup lang="ts">
-  import {
-    nextTick,
-    onBeforeUnmount,
-    onMounted,
-    ref,
-    useTemplateRef,
-  } from 'vue';
+  import {nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef} from 'vue';
   import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
   import ConditionsController from '@actions/ConditionsController';
   import {expandFormData} from '@/common/utils/forms';
@@ -43,13 +37,15 @@
         headers: {
           Accept: 'text/html',
           'HX-Request': 'true',
-          ...((window as any).Craft?._actionHeaders?.()),
+          ...(window as any).Craft?._actionHeaders?.(),
         },
         body: builderRequest(),
       });
 
       if (!response.ok) {
-        throw new Error(`Condition builder request failed (${response.status}).`);
+        throw new Error(
+          `Condition builder request failed (${response.status}).`
+        );
       }
 
       const template = document.createElement('template');
@@ -182,10 +178,7 @@
         );
       }
 
-      emit(
-        'update:value',
-        condition.conditionRules?.length ? condition : null
-      );
+      emit('update:value', condition.conditionRules?.length ? condition : null);
     });
   }
 

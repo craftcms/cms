@@ -10,7 +10,6 @@ use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -54,37 +53,6 @@ class Asset extends BaseElementLinkType
     protected static function elementType(): string
     {
         return AssetElement::class;
-    }
-
-    #[Override]
-    public function getSettingsHtml(): string
-    {
-        return
-            parent::getSettingsHtml().
-            FormFields::checkboxSelectFieldHtml([
-                'label' => t('Allowed File Types'),
-                'name' => 'allowedKinds',
-                'options' => Collection::make(AssetsHelper::getAllowedFileKinds())
-                    ->map(fn (array $kind, string $value) => [
-                        'value' => $value,
-                        'label' => $kind['label'],
-                    ])
-                    ->all(),
-                'values' => $this->allowedKinds ?? '*',
-                'showAllOption' => true,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show unpermitted volumes'),
-                'instructions' => t('Whether to show volumes that the user doesn’t have permission to view.'),
-                'name' => 'showUnpermittedVolumes',
-                'on' => $this->showUnpermittedVolumes,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show unpermitted files'),
-                'instructions' => t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'),
-                'name' => 'showUnpermittedFiles',
-                'on' => $this->showUnpermittedFiles,
-            ]);
     }
 
     /** @return list<FormElement> */
