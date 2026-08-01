@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Widgets\QuickPost;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 
 trait InteractsWithWidgets
@@ -51,29 +50,25 @@ trait InteractsWithWidgets
         ];
     }
 
+    /**
+     * @return array{
+     *     settingsDefinition: array{elements: list<array<string, mixed>>}|null,
+     *     settingsValues: array<string, array<string, mixed>>,
+     *     settingsErrors: array<string, string[]>,
+     *     settingsBindingScope: string,
+     *     settingsInputNamespace: string,
+     *     settingsReadOnly: bool,
+     * }
+     */
     protected function getWidgetSettingsInfo(WidgetInterface $widget, string $namespace): array
     {
         $definition = InputNamespace::with(
             $namespace,
             fn (): ?array => $widget->getSettingsFormDefinition(false)?->toArray(),
         );
-        $values = $widget->getSettings();
-
-        if ($widget instanceof QuickPost && $definition !== null) {
-            foreach ($definition['elements'] as $field) {
-                $name = $field['children'][0]['name'] ?? null;
-
-                if (! is_string($name) || ! str_starts_with($name, 'sections.')) {
-                    continue;
-                }
-
-                [, $sectionId] = explode('.', $name);
-                $value = (int) $sectionId === $widget->section
-                    ? $widget->entryType
-                    : ($field['children'][0]['props']['options'][0]['value'] ?? null);
-                Arr::set($values, $name, $value);
-            }
-        }
+        $values = $widget instanceof QuickPost
+            ? $widget->getSettingsFormValues()
+            : $widget->getSettings();
 
         $errors = [];
 

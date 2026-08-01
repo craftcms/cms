@@ -44,9 +44,9 @@ class QuickPost extends Widget
     public ?int $siteId = null;
 
     /**
-     * @var int The ID of the section that the widget should create entries for.
+     * @var int|null The ID of the section that the widget should create entries for.
      */
-    public int $section;
+    public ?int $section = null;
 
     /**
      * @var int|null The ID of the entry type that the widget should create entries with.
@@ -92,6 +92,12 @@ class QuickPost extends Widget
     }
 
     #[Override]
+    public static function isSelectable(): bool
+    {
+        return parent::isSelectable() && self::availableSections() !== [];
+    }
+
+    #[Override]
     public function getRules(): array
     {
         return [
@@ -101,12 +107,12 @@ class QuickPost extends Widget
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
-        $sections = $this->availableSections();
+        $sections = self::availableSections();
 
         if ($sections === []) {
-            return FormDefinition::make([]);
+            return null;
         }
 
         $elements = [];
@@ -161,6 +167,21 @@ class QuickPost extends Widget
             ->readOnly($readOnly);
 
         return FormDefinition::make($elements);
+    }
+
+    /** @return array<string, mixed> */
+    public function getSettingsFormValues(): array
+    {
+        $values = $this->getSettings();
+
+        foreach (self::availableSections() as $section) {
+            $entryTypeId = $section->id === $this->section
+                ? $this->entryType()?->id
+                : $section->getEntryTypes()[0]->id;
+            Arr::set($values, "sections.{$section->id}.entryType", $entryTypeId);
+        }
+
+        return $values;
     }
 
     #[Override]
@@ -309,11 +330,11 @@ JS, [
     }
 
     /** @return list<Section> */
-    private function availableSections(): array
+    private static function availableSections(): array
     {
         return Sections::getAllSections()
             ->filter(fn (Section $section): bool => $section->type !== SectionType::Single
-                && currentUser()->can('createEntries:'.$section->uid))
+                && currentUser()->can("createEntries:{$section->uid}"))
             ->values()
             ->all();
     }

@@ -104,6 +104,24 @@ readonly class DashboardController
         return redirect(route('craft.cp.dashboard'));
     }
 
+    /**
+     * @param array{
+     *     settingsDefinition: array{elements: list<array<string, mixed>>}|null,
+     *     settingsValues: array<string, array<string, mixed>>,
+     *     settingsErrors: array<string, string[]>,
+     *     settingsBindingScope: string,
+     *     settingsInputNamespace: string,
+     *     settingsReadOnly: bool,
+     * } $info
+     * @return array{
+     *     definition: array{elements: list<array<string, mixed>>},
+     *     values: array<string, array<string, mixed>>,
+     *     errors: array<string, string[]>,
+     *     bindingScope: string,
+     *     inputNamespace: string,
+     *     readOnly: bool,
+     * }|null
+     */
     private function settingsContext(array $info): ?array
     {
         if ($info['settingsDefinition'] === null) {

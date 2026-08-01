@@ -10,6 +10,7 @@ use CraftCms\Cms\Dashboard\Widgets\RecentEntries;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
 
@@ -68,6 +69,30 @@ it('projects quick post entry types with reversible section visibility', functio
         'operator' => 'equals',
         'value' => $news->id,
     ]);
+});
+
+it('projects settings for an unsaved quick post', function () {
+    $article = EntryType::factory()->create(['name' => 'Article']);
+    $news = Section::factory()->withEntryTypes($article)->create([
+        'name' => 'News',
+        'type' => SectionType::Channel,
+    ]);
+    $widget = new QuickPost;
+
+    expect($widget->getSettingsFormValues())->toMatchArray([
+        'section' => null,
+        'entryType' => null,
+        'sections' => [
+            $news->id => ['entryType' => $article->id],
+        ],
+    ]);
+});
+
+it('omits an unavailable quick post instead of showing an empty settings form', function () {
+    Sections::shouldReceive('getAllSections')->twice()->andReturn(collect());
+
+    expect(QuickPost::isSelectable())->toBeFalse()
+        ->and(new QuickPost()->getSettingsFormDefinition(false))->toBeNull();
 });
 
 function widgetSettingNames(?array $definition): array
