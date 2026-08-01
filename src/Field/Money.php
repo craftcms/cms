@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -164,11 +164,11 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $fractionDigits = $this->subunits();
 
         return FormDefinition::make([
-            SelectInput::make('currency')
+            FieldComponent::make()
                 ->label(t('Currency'))
-                ->options($currencyOptions)
                 ->required()
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Select::make()->name('currency')->options($currencyOptions)),
             MoneyInput::make('defaultValue')
                 ->label(t('Default Value'))
                 ->fractionDigits($fractionDigits)

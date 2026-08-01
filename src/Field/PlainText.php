@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -131,14 +131,18 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            SelectInput::make('uiMode')
+            FieldComponent::make()
                 ->label(t('UI Mode'))
                 ->instructions(t('How the field should be presented in the control panel.'))
-                ->options([
-                    ['label' => t('Normal'), 'value' => 'normal'],
-                    ['label' => t('Enlarged'), 'value' => 'enlarged'],
-                ])
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('uiMode')
+                        ->options([
+                            ['label' => t('Normal'), 'value' => 'normal'],
+                            ['label' => t('Enlarged'), 'value' => 'enlarged'],
+                        ]),
+                ),
             FieldComponent::make()
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))

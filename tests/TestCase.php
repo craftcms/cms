@@ -64,6 +64,10 @@ class TestCase extends Orchestra
         // This is so route registration in tests work
         $_SERVER['CRAFT_EDITION'] = Edition::Pro->handle();
 
+        if ($this->applicationWasFlushed()) {
+            $this->app = null;
+        }
+
         parent::setUp();
 
         config()->set('app.debug', true);
@@ -120,16 +124,23 @@ class TestCase extends Orchestra
     #[Override]
     protected function tearDown(): void
     {
-        Gate::clearResolvedInstances();
+        if ($this->setUpHasRun) {
+            Gate::clearResolvedInstances();
 
-        app(ProjectConfig::class)->reset();
+            app(ProjectConfig::class)->reset();
 
-        self::resetStaticCaches();
+            self::resetStaticCaches();
 
-        unset($_SERVER['CRAFT_SITE']);
-        unset($_SERVER['CRAFT_SITE_UPPER']);
+            unset($_SERVER['CRAFT_SITE']);
+            unset($_SERVER['CRAFT_SITE_UPPER']);
+        }
 
         parent::tearDown();
+    }
+
+    private function applicationWasFlushed(): bool
+    {
+        return $this->app !== null && ! $this->app->bound('events');
     }
 
     /**

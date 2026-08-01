@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -324,14 +324,18 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
                 ->readOnly($readOnly)
                 ->input(NumberInput::make()->name('maxAddresses')->min(0)),
-            SelectInput::make('viewMode')
+            FieldComponent::make()
                 ->label(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
-                ->options([
-                    ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
-                    ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
-                ])
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('viewMode')
+                        ->options([
+                            ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                            ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                        ]),
+                ),
         ]);
     }
 

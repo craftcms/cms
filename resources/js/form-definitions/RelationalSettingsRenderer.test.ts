@@ -87,8 +87,8 @@ describe('relational settings renderers', () => {
     });
     expect(Array.from(checkboxes, ({checked}) => checked)).toEqual([
       true,
-      false,
-      false,
+      true,
+      true,
     ]);
     expect(checkboxes[0]!.name).toBe('settings[sources][]');
     expect(

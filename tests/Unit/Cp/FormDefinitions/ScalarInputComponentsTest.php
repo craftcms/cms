@@ -130,10 +130,10 @@ it('requires a local Input Name for scalar projection', function (ProjectableFor
             sprintf('%s option "name" is not supported for Form Definition output.', $component::class),
         );
 })->with([
-    'text' => [fn () => TextInput::make()],
-    'number' => [fn () => NumberInput::make()],
-    'date' => [fn () => DateInput::make()],
-    'time' => [fn () => TimeInput::make()],
+    'text' => [TextInput::make()],
+    'number' => [NumberInput::make()],
+    'date' => [DateInput::make()],
+    'time' => [TimeInput::make()],
 ]);
 
 it('rejects explicitly configured host-owned scalar state during projection', function (

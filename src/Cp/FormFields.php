@@ -19,6 +19,7 @@ use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
+use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -790,14 +791,76 @@ readonly class FormFields
 
     public static function selectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/select', $config);
+        return self::selectFromConfig($config)->toHtml();
     }
 
     public static function selectFieldHtml(array $config): string
     {
         $config['id'] ??= 'select'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/select', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::selectFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    public static function selectFromConfig(array $config): SelectComponent
+    {
+        $options = [];
+        $group = null;
+
+        foreach ($config['options'] ?? [] as $key => $option) {
+            if (is_array($option) && array_key_exists('optgroup', $option)) {
+                $options[] = [
+                    'type' => 'optgroup',
+                    'label' => $option['optgroup'],
+                    'options' => [],
+                ];
+                $group = array_key_last($options);
+
+                continue;
+            }
+
+            $option = is_array($option) ? $option : [
+                'label' => $option,
+                'value' => $key,
+            ];
+
+            if ($group === null) {
+                $options[] = $option;
+
+                continue;
+            }
+
+            $options[$group]['options'][] = $option;
+        }
+
+        $inputAttributes = $config['inputAttributes'] ?? [];
+        $aria = $inputAttributes['aria'] ?? [];
+
+        return SelectComponent::make()
+            ->id($config['id'] ?? null)
+            ->name($config['name'] ?? null)
+            ->value($config['value'] ?? null)
+            ->options($options)
+            ->small((bool) ($config['small'] ?? false))
+            ->autofocus((bool) ($config['autofocus'] ?? false))
+            ->autocomplete($config['autocomplete'] ?? null)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->labelledBy(empty($aria['label']) ? ($config['labelledBy'] ?? null) : null)
+            ->describedBy($config['describedBy'] ?? $aria['describedby'] ?? null)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ))
+            ->inputAttributes(Arr::merge([
+                'class' => array_filter([
+                    ($config['toggle'] ?? false) ? 'fieldtoggle' : null,
+                ]),
+                'data' => [
+                    'target-prefix' => ($config['toggle'] ?? false) ? ($config['targetPrefix'] ?? '#') : null,
+                ],
+            ], $inputAttributes));
     }
 
     public static function customSelectHtml(array $config): string

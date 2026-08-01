@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -89,30 +90,38 @@ class NewUsers extends Widget
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         $elements = [
-            SelectInput::make('dateRange')
+            Field::make()
                 ->label(t('Date Range'))
-                ->options([
-                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
-                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'value' => 'd30'],
-                    ['label' => t('Last Week'), 'value' => 'lastweek'],
-                    ['label' => t('Last Month'), 'value' => 'lastmonth'],
-                ])
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('dateRange')
+                        ->options([
+                            ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
+                            ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'value' => 'd30'],
+                            ['label' => t('Last Week'), 'value' => 'lastweek'],
+                            ['label' => t('Last Month'), 'value' => 'lastmonth'],
+                        ]),
+                ),
         ];
 
         $userGroups = UserGroups::getAllGroups();
 
         if ($userGroups->isNotEmpty()) {
-            $elements[] = SelectInput::make('userGroupId')
+            $elements[] = Field::make()
                 ->label(t('User Group'))
-                ->options([
-                    ['label' => t('All'), 'value' => null],
-                    ...$userGroups->map(fn ($userGroup): array => [
-                        'label' => t($userGroup->name, category: 'site'),
-                        'value' => $userGroup->id,
-                    ])->all(),
-                ])
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('userGroupId')
+                        ->options([
+                            ['label' => t('All'), 'value' => null],
+                            ...$userGroups->map(fn ($userGroup): array => [
+                                'label' => t($userGroup->name, category: 'site'),
+                                'value' => $userGroup->id,
+                            ])->all(),
+                        ]),
+                );
         }
 
         return FormDefinition::make($elements);

@@ -6,7 +6,17 @@
   type Option = {
     label: string;
     value: string | number | boolean | null;
+    disabled?: boolean;
+    hidden?: boolean;
+    data?: Record<string, JsonValue>;
   };
+  type Optgroup = {
+    type: 'optgroup';
+    label: string;
+    options: Option[];
+    disabled?: boolean;
+  };
+  type Choice = Option | Optgroup;
 
   const props = defineProps<{
     config: Record<string, JsonValue>;
@@ -18,10 +28,15 @@
     'update:value': [value: Option['value']];
   }>();
 
-  const options = computed<Option[]>(() =>
+  const options = computed<Choice[]>(() =>
     Array.isArray(props.config.options)
-      ? (props.config.options as Option[])
+      ? (props.config.options as Choice[])
       : []
+  );
+  const flatOptions = computed<Option[]>(() =>
+    options.value.flatMap((option) =>
+      isOptgroup(option) ? option.options : [option]
+    )
   );
   const value = computed(() => String(props.binding?.value ?? ''));
 
@@ -33,11 +48,24 @@
             (event.currentTarget as HTMLElementTagNameMap['craft-select'])
               .modelValue ?? ''
           );
-    const option = options.value.find(
+    const option = flatOptions.value.find(
       ({value}) => String(value ?? '') === selectedValue
     );
 
     emit('update:value', option?.value ?? null);
+  }
+
+  function isOptgroup(option: Choice): option is Optgroup {
+    return 'type' in option && option.type === 'optgroup';
+  }
+
+  function dataAttributes(option: Option): Record<string, JsonValue> {
+    return Object.fromEntries(
+      Object.entries(option.data ?? {}).map(([name, value]) => [
+        `data-${name}`,
+        value,
+      ])
+    );
   }
 </script>
 
@@ -49,13 +77,33 @@
     @change="updateValue"
   >
     <select slot="input" :value="value" :disabled="binding?.readOnly">
-      <option
-        v-for="option in options"
-        :key="String(option.value)"
-        :value="String(option.value ?? '')"
-      >
-        {{ option.label }}
-      </option>
+      <template v-for="option in options" :key="option.label">
+        <optgroup
+          v-if="isOptgroup(option)"
+          :label="option.label"
+          :disabled="option.disabled"
+        >
+          <option
+            v-for="child in option.options"
+            :key="String(child.value)"
+            v-bind="dataAttributes(child)"
+            :value="String(child.value ?? '')"
+            :disabled="child.disabled"
+            :hidden="child.hidden"
+          >
+            {{ child.label }}
+          </option>
+        </optgroup>
+        <option
+          v-else
+          v-bind="dataAttributes(option)"
+          :value="String(option.value ?? '')"
+          :disabled="option.disabled"
+          :hidden="option.hidden"
+        >
+          {{ option.label }}
+        </option>
+      </template>
     </select>
   </craft-select>
 </template>

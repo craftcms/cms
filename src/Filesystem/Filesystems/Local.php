@@ -6,7 +6,8 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\ComboboxInput;
+use CraftCms\Cms\Cp\Components\Combobox;
+use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Support\Env;
@@ -116,14 +117,18 @@ class Local extends Filesystem
     {
         return FormDefinition::make([
             ...$this->settingsFormElements($readOnly),
-            ComboboxInput::make('path')
+            Field::make()
                 ->label(t('Base Path'))
                 ->instructions(t('The base folder path that should be used as the root of the filesystem.'))
-                ->options(SelectOptions::getEnvSuggestions(true))
-                ->placeholder(t('/path/to/folder'))
-                ->allowAliases()
                 ->required()
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    Combobox::make()
+                        ->name('path')
+                        ->options(SelectOptions::getEnvSuggestions(true))
+                        ->placeholder(t('/path/to/folder'))
+                        ->allowAliases(),
+                ),
         ]);
     }
 

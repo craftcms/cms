@@ -6,8 +6,9 @@ namespace CraftCms\Cms\Field\Concerns;
 
 use Closure;
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
@@ -221,23 +222,31 @@ trait ProvidesLinkField
         );
 
         return [
-            CheckboxSelectInput::make('types')
+            Field::make()
                 ->label(t('Allowed Link Types'))
                 ->instructions(t('The link types that should be available when inserting links.'))
-                ->options($this->linkTypeOptions($types))
-                ->sortable()
                 ->required()
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    CheckboxSelect::make()
+                        ->name('types')
+                        ->options($this->linkTypeOptions($types))
+                        ->sortable(),
+                ),
             ...$elements,
             LightswitchInput::make('showLabelField')
                 ->label(t('Show the “Label” field'))
                 ->readOnly($readOnly),
-            CheckboxSelectInput::make('advancedFields')
+            Field::make()
                 ->label(t('Advanced Fields'))
                 ->instructions(t('Choose which advanced fields should be available when inserting links.'))
-                ->options($advancedFieldOptions)
-                ->sortable()
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    CheckboxSelect::make()
+                        ->name('advancedFields')
+                        ->options($advancedFieldOptions)
+                        ->sortable(),
+                ),
         ];
     }
 

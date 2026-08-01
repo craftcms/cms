@@ -12,12 +12,12 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -274,28 +274,32 @@ class Assets extends BaseRelationField
             );
         }
 
-        $previewMode = SelectInput::make('previewMode')
+        $previewMode = FieldComponent::make()
             ->label(t('Preview Mode'))
             ->instructions(t('How the related {type} should be displayed within element indexes.', [
                 'type' => Asset::pluralLowerDisplayName(),
             ]))
-            ->options([
-                ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
-                ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
-            ])
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input(
+                Select::make()
+                    ->name('previewMode')
+                    ->options([
+                        ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
+                        ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
+                    ]),
+            );
         $selectionCondition = $this->selectionConditionFormElement($readOnly);
 
         return FormDefinition::make([
             LightswitchInput::make('restrictLocation')
                 ->label(t('Restrict assets to a single location'))
                 ->readOnly($readOnly),
-            SelectInput::make('restrictedLocationSource')
+            FieldComponent::make()
                 ->label(t('Asset Location Source'))
                 ->instructions(t('The source where assets can be selected from.'))
-                ->options($options)
                 ->visibleWhen($restricted)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Select::make()->name('restrictedLocationSource')->options($options)),
             FieldComponent::make()
                 ->label(t('Asset Location Subpath'))
                 ->instructions(t('The subpath where assets can be selected from.'))
@@ -327,12 +331,12 @@ class Assets extends BaseRelationField
                 ),
             $this->sourceFormElement($sourceOptions, $readOnly)
                 ->visibleWhen($unrestricted),
-            SelectInput::make('defaultUploadLocationSource')
+            FieldComponent::make()
                 ->label(t('Default Upload Location Source'))
                 ->instructions(t('The source where assets should be stored when they are uploaded directly to the field.'))
-                ->options($options)
                 ->visibleWhen($unrestricted)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Select::make()->name('defaultUploadLocationSource')->options($options)),
             FieldComponent::make()
                 ->label(t('Default Upload Location Subpath'))
                 ->instructions(t('The subpath where assets should be stored when they are uploaded directly to the field.'))
@@ -356,11 +360,15 @@ class Assets extends BaseRelationField
             LightswitchInput::make('restrictFiles')
                 ->label(t('Restrict allowed file types'))
                 ->readOnly($readOnly),
-            CheckboxSelectInput::make('allowedKinds')
+            FieldComponent::make()
                 ->label(t('Allowed Kinds'))
-                ->options($this->formDefinitionOptions($this->getFileKindOptions()))
                 ->visibleWhen(Condition::equals('restrictFiles', true))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    CheckboxSelect::make()
+                        ->name('allowedKinds')
+                        ->options($this->formDefinitionOptions($this->getFileKindOptions())),
+                ),
             LightswitchInput::make('allowUploads')
                 ->label(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))

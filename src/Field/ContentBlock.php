@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -365,14 +366,18 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                 ->availableElements($this->fieldLayoutElementOptions())
                 ->withGeneratedFields()
                 ->readOnly($readOnly),
-            SelectInput::make('viewMode')
+            FieldComponent::make()
                 ->label(t('View Mode'))
-                ->options([
-                    ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
-                    ['label' => t('In a pane'), 'value' => self::VIEW_MODE_PANE],
-                    ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
-                ])
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('viewMode')
+                        ->options([
+                            ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
+                            ['label' => t('In a pane'), 'value' => self::VIEW_MODE_PANE],
+                            ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
+                        ]),
+                ),
         ]);
     }
 

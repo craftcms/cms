@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -120,40 +120,51 @@ class QuickPost extends Widget
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {
-            $elements[] = SelectInput::make('siteId')
+            $elements[] = Field::make()
                 ->label(t('Site'))
-                ->options($editableSites->map(fn ($site): array => [
-                    'label' => t($site->getName(), category: 'site'),
-                    'value' => $site->id,
-                ])->all())
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('siteId')
+                        ->options($editableSites->map(fn ($site): array => [
+                            'label' => t($site->getName(), category: 'site'),
+                            'value' => $site->id,
+                        ])->all()),
+                );
         }
 
-        $elements[] = SelectInput::make('section')
+        $elements[] = Field::make()
             ->label(t('Section'))
             ->instructions(t('Which section do you want to save entries to?'))
-            ->options(array_map(fn (Section $section): array => [
-                'label' => t($section->name, category: 'site'),
-                'value' => $section->id,
-            ], $sections))
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input(
+                Select::make()
+                    ->name('section')
+                    ->options(array_map(fn (Section $section): array => [
+                        'label' => t($section->name, category: 'site'),
+                        'value' => $section->id,
+                    ], $sections)),
+            );
 
         foreach ($sections as $section) {
             $entryTypes = $section->getEntryTypes();
-            $entryType = SelectInput::make("sections.{$section->id}.entryType")
+            $entryTypeInput = Select::make()
+                ->name("sections.{$section->id}.entryType")
                 ->options(array_map(fn (EntryType $entryType): array => [
                     'label' => t($entryType->name, category: 'site'),
                     'value' => $entryType->id,
-                ], $entryTypes))
+                ], $entryTypes));
+            $entryType = Field::make()
                 ->visibleWhen(Condition::equals('section', $section->id))
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input($entryTypeInput);
 
             if (count($entryTypes) > 1) {
                 $entryType
                     ->label(t('Entry Type'))
                     ->instructions(t('Which type of entries do you want to create?'));
             } else {
-                $entryType->attributes(['hidden' => true]);
+                $entryTypeInput->attributes(['hidden' => true]);
             }
 
             $elements[] = $entryType;

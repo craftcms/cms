@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\RequestedSite;
@@ -82,7 +84,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         parent::__construct($config);
     }
 
-    /** @return list<FormElement> */
+    /** @return list<FormElement|ProjectableFormElement> */
     #[Override]
     protected function settingsFormElements(bool $readOnly): array
     {
@@ -98,16 +100,19 @@ abstract class BaseElementLinkType extends BaseLinkType
             array_unshift($sources, ['label' => t('All'), 'value' => '*']);
         }
 
-        $element = CheckboxSelectInput::make('sources')
+        $input = CheckboxSelect::make()
+            ->name('sources')
+            ->options($sources);
+        $element = Field::make()
             ->label(t('{type} Sources', [
                 'type' => static::elementType()::displayName(),
             ]))
-            ->options($sources)
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input($input);
 
         return [$sources === []
             ? $element->warning(t('No sources exist yet.'))->readOnly()
-            : $element->allOption('*')];
+            : $element->input($input->allOption('*'))];
     }
 
     /**

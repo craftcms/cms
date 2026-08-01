@@ -7,8 +7,9 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
+use CraftCms\Cms\Cp\Components\Combobox;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\ComboboxInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -113,7 +114,7 @@ abstract class Filesystem extends Component implements FsInterface
         return $elements === [] ? null : FormDefinition::make($elements);
     }
 
-    /** @return list<FormElement> */
+    /** @return list<FormElement|FieldComponent> */
     protected function settingsFormElements(bool $readOnly): array
     {
         $elements = [];
@@ -125,13 +126,17 @@ abstract class Filesystem extends Component implements FsInterface
         }
 
         if ($this->getShowUrlSetting()) {
-            $url = ComboboxInput::make('url')
+            $url = FieldComponent::make()
                 ->label(t('Base URL'))
                 ->instructions(t('The base URL to the files in this filesystem.'))
-                ->options(SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)))
-                ->placeholder('//example.com/path/to/folder')
                 ->required()
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input(
+                    Combobox::make()
+                        ->name('url')
+                        ->options(SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)))
+                        ->placeholder('//example.com/path/to/folder'),
+                );
 
             if ($this->getShowHasUrlSetting()) {
                 $url->visibleWhen(Condition::equals('hasUrls', true));

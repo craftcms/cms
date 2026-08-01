@@ -6,14 +6,14 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -359,10 +359,12 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     {
         $volumeOptions = $this->volumeOptions();
         $availableVolumeOptions = $volumeOptions;
-        $availableVolumes = CheckboxSelectInput::make('availableVolumes')
+        $availableVolumesInput = CheckboxSelect::make()->name('availableVolumes');
+        $availableVolumes = FieldComponent::make()
             ->label(t('Available Volumes'))
             ->instructions(t('The volumes that should be available when selecting assets.'))
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input($availableVolumesInput);
 
         if ($availableVolumeOptions === []) {
             $availableVolumes
@@ -370,18 +372,18 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->readOnly();
         } else {
             array_unshift($availableVolumeOptions, ['label' => t('All'), 'value' => '*']);
-            $availableVolumes
+            $availableVolumesInput
                 ->options($availableVolumeOptions)
                 ->allOption('*');
         }
 
         return FormDefinition::make([
-            SelectInput::make('flavor')
+            FieldComponent::make()
                 ->label(t('Markdown Flavor'))
                 ->instructions(t('The Markdown flavor that should be used when rendering this field.'))
-                ->options(self::flavorOptions())
                 ->visibleWhen(Condition::equals('encode', false))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Select::make()->name('flavor')->options(self::flavorOptions())),
             LightswitchInput::make('inlineOnly')
                 ->label(t('Inline Only'))
                 ->instructions(t('Whether the field should only render inline Markdown, without wrapping paragraphs.'))
@@ -390,12 +392,12 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->label(t('Show Toolbar'))
                 ->instructions(t('Whether the editor toolbar should be visible.'))
                 ->readOnly($readOnly),
-            CheckboxSelectInput::make('toolbarButtons')
+            FieldComponent::make()
                 ->label(t('Toolbar Buttons'))
                 ->instructions(t('Choose which buttons should be available in the editor toolbar.'))
-                ->options(self::toolbarButtonOptions())
                 ->visibleWhen(Condition::equals('showToolbar', true))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(CheckboxSelect::make()->name('toolbarButtons')->options(self::toolbarButtonOptions())),
             LightswitchInput::make('showStats')
                 ->label(t('Show Stats'))
                 ->instructions(t('Whether the editor should show character, word, and line counts.'))
@@ -433,14 +435,18 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
                 ->readOnly($readOnly),
             ...($volumeOptions === [] ? [] : [
-                SelectInput::make('uploadVolume')
+                FieldComponent::make()
                     ->label(t('Upload Volume'))
                     ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
-                    ->options([
-                        ['label' => t('No uploads'), 'value' => ''],
-                        ...$volumeOptions,
-                    ])
-                    ->readOnly($readOnly),
+                    ->readOnly($readOnly)
+                    ->input(
+                        Select::make()
+                            ->name('uploadVolume')
+                            ->options([
+                                ['label' => t('No uploads'), 'value' => ''],
+                                ...$volumeOptions,
+                            ]),
+                    ),
             ]),
             LightswitchInput::make('encode')
                 ->label(t('Encode HTML'))
@@ -452,15 +458,15 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'))
                 ->warning(t('Disable this at your own risk!'))
                 ->readOnly($readOnly),
-            SelectInput::make('htmlSanitizer')
+            FieldComponent::make()
                 ->label(t('HTML Sanitizer'))
                 ->instructions(t('You can register custom HTML sanitizers as {ext} files in {path}.', [
                     'ext' => '`.php`',
                     'path' => '`config/craft/sanitizers/`',
                 ]))
-                ->options($this->htmlSanitizerOptions()->all())
                 ->visibleWhen(Condition::equals('sanitizeHtml', true))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Select::make()->name('htmlSanitizer')->options($this->htmlSanitizerOptions()->all())),
         ]);
     }
 

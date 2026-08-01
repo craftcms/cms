@@ -400,6 +400,14 @@ class Cp extends Component
     }
 
     /**
+     * Renders a select's HTML from the legacy select variables.
+     */
+    public function select(array $config = []): string
+    {
+        return FormFields::selectFromConfig($config)->toHtml();
+    }
+
+    /**
      * Renders a radio's HTML from the legacy radio variables.
      */
     public function radio(array $config = []): string

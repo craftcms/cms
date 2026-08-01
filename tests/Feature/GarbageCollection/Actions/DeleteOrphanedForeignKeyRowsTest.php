@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {
@@ -33,6 +34,12 @@ beforeEach(function () {
 });
 
 afterEach(function () {
+    $application = Facade::getFacadeApplication();
+
+    if ($application === null || ! $application->bound('db.schema')) {
+        return;
+    }
+
     Schema::dropIfExists('test_posts');
     Schema::dropIfExists('test_authors');
     Schema::enableForeignKeyConstraints();

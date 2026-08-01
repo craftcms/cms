@@ -30,6 +30,10 @@
       : undefined
   );
   const allowAliases = computed(() => props.config.allowAliases === true);
+  const limit = computed(() =>
+    typeof props.config.limit === 'number' ? props.config.limit : undefined
+  );
+  const clearable = computed(() => props.config.clearable === true);
 </script>
 
 <template>
@@ -38,6 +42,8 @@
     v-model="value"
     :options="options"
     :placeholder="placeholder"
+    :limit="limit"
+    :clearable="clearable"
     :disabled="binding?.readOnly"
   >
     <craft-callout

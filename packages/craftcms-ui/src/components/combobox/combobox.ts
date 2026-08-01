@@ -72,6 +72,9 @@ export default class CraftCombobox extends LionCombobox {
   /** Shows a clear button when a value is present. */
   @property({type: Boolean, reflect: true}) clearable = false;
 
+  /** Placeholder shown by the combobox textbox. */
+  @property({attribute: 'placeholder', reflect: true}) placeholder = '';
+
   constructor() {
     super();
     // Configure validators on construction.
@@ -94,6 +97,7 @@ export default class CraftCombobox extends LionCombobox {
       this.#lastNotifiedValue = this.modelValue;
     });
     this.#lastNotifiedValue = this.modelValue;
+    this.#syncPlaceholder();
     this.#renderOptions();
   }
 
@@ -107,12 +111,21 @@ export default class CraftCombobox extends LionCombobox {
     ) {
       this.#renderOptions();
     }
+    if (changed.has('placeholder')) {
+      this.#syncPlaceholder();
+    }
   }
 
   #onInput = () => {
     this.#renderOptions();
     this.#syncModelFromInput();
   };
+
+  #syncPlaceholder() {
+    if (this._inputNode) {
+      this._inputNode.placeholder = this.placeholder;
+    }
+  }
 
   /**
    * Keep the model value in sync with typed (free-text) input.

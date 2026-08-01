@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -220,23 +220,31 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
                 ->instructions(t('Text that should be shown after the input.'))
                 ->readOnly($readOnly)
                 ->input(TextInput::make()->name('suffix')),
-            SelectInput::make('previewFormat')
+            FieldComponent::make()
                 ->label(t('Preview Format'))
                 ->instructions(t('How field values will be formatted within element indexes.'))
-                ->options([
-                    ['label' => t('As decimal numbers'), 'value' => self::FORMAT_DECIMAL],
-                    ['label' => t('As currency values'), 'value' => self::FORMAT_CURRENCY],
-                    ['label' => t('Unformatted'), 'value' => self::FORMAT_NONE],
-                ])
-                ->readOnly($readOnly),
-            SelectInput::make('previewCurrency')
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('previewFormat')
+                        ->options([
+                            ['label' => t('As decimal numbers'), 'value' => self::FORMAT_DECIMAL],
+                            ['label' => t('As currency values'), 'value' => self::FORMAT_CURRENCY],
+                            ['label' => t('Unformatted'), 'value' => self::FORMAT_NONE],
+                        ]),
+                ),
+            FieldComponent::make()
                 ->label(t('Currency'))
-                ->options([
-                    ['label' => t('Choose a currency…'), 'value' => null],
-                    ...$currencyOptions,
-                ])
                 ->visibleWhen(Condition::equals('previewFormat', self::FORMAT_CURRENCY))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('previewCurrency')
+                        ->options([
+                            ['label' => t('Choose a currency…'), 'value' => null],
+                            ...$currencyOptions,
+                        ]),
+                ),
         ]);
     }
 

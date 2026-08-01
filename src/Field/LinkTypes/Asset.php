@@ -7,7 +7,9 @@ namespace CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Support\Facades\Volumes;
@@ -55,7 +57,7 @@ class Asset extends BaseElementLinkType
         return AssetElement::class;
     }
 
-    /** @return list<FormElement> */
+    /** @return list<FormElement|ProjectableFormElement> */
     #[Override]
     protected function settingsFormElements(bool $readOnly): array
     {
@@ -70,11 +72,15 @@ class Asset extends BaseElementLinkType
 
         return [
             ...parent::settingsFormElements($readOnly),
-            CheckboxSelectInput::make('allowedKinds')
+            Field::make()
                 ->label(t('Allowed File Types'))
-                ->options($allowedKinds)
-                ->allOption('*')
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    CheckboxSelect::make()
+                        ->name('allowedKinds')
+                        ->options($allowedKinds)
+                        ->allOption('*'),
+                ),
             LightswitchInput::make('showUnpermittedVolumes')
                 ->label(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))

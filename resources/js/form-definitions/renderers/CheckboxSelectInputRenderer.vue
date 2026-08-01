@@ -8,7 +8,13 @@
   import '@craftcms/ui/components/reorder-button/reorder-button';
 
   type OptionValue = string | number | boolean | null;
-  type Option = {label: string; value: OptionValue; icon?: string};
+  type Option = {
+    label: string;
+    value: OptionValue;
+    icon?: string;
+    color?: string;
+    disabled?: boolean;
+  };
 
   const props = defineProps<{
     config: Record<string, JsonValue>;
@@ -52,9 +58,25 @@
       (option) => option.value !== allOption.value && checked(option.value)
     )
   );
+  const allSelected = computed(
+    () =>
+      allOption.value !== undefined &&
+      selectedValues.value.some((value) => value === allOption.value)
+  );
 
   function checked(value: OptionValue): boolean {
-    return selectedValues.value.some((selected) => selected === value);
+    return (
+      allSelected.value ||
+      selectedValues.value.some((selected) => selected === value)
+    );
+  }
+
+  function disabled(option: Option): boolean {
+    return Boolean(
+      props.binding?.readOnly ||
+      option.disabled ||
+      (allSelected.value && option.value !== allOption.value)
+    );
   }
 
   function updateValue(option: Option, event: Event): void {
@@ -141,7 +163,7 @@
       id: index === 0 ? id : `${id}-${index}`,
       name: groupName.value,
       value: String(option.value ?? ''),
-      disabled: props.binding?.readOnly,
+      disabled: disabled(option),
     };
   }
 
@@ -156,7 +178,7 @@
 </script>
 
 <template>
-  <craft-checkbox-group :name="groupName">
+  <craft-checkbox-group v-bind="attributes" :name="groupName">
     <div
       v-for="(option, index) in options"
       :key="String(option.value)"
@@ -167,6 +189,7 @@
         v-if="sortable && option.value !== allOption"
         :disabled="
           binding?.readOnly ||
+          allSelected ||
           !checked(option.value) ||
           selectedOptions.length < 2
         "
@@ -175,7 +198,7 @@
       />
       <craft-checkbox
         :checked="checked(option.value)"
-        :disabled="binding?.readOnly"
+        :disabled="disabled(option)"
       >
         <input
           v-bind="inputAttributes(option, index)"
@@ -185,7 +208,17 @@
           @change="updateValue(option, $event)"
         />
         <label slot="label" :for="String(inputAttributes(option, index).id)">
-          <craft-icon v-if="option.icon" :name="option.icon"></craft-icon>
+          <craft-icon
+            v-if="option.icon"
+            :name="option.icon"
+            :style="option.color ? {color: option.color} : undefined"
+          ></craft-icon>
+          <span v-else-if="option.color" class="color small">
+            <span
+              class="color-preview"
+              :style="{backgroundColor: option.color}"
+            ></span>
+          </span>
           {{ option.label }}
         </label>
       </craft-checkbox>

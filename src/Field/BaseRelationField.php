@@ -6,16 +6,16 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -576,7 +576,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     /** @param list<array<string, mixed>> $sourceOptions */
-    protected function sourceFormElement(array $sourceOptions, bool $readOnly): FormElement
+    protected function sourceFormElement(array $sourceOptions, bool $readOnly): FieldComponent
     {
         $options = $this->formDefinitionOptions($sourceOptions);
         $elementType = static::elementType();
@@ -586,26 +586,29 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 array_unshift($options, ['label' => t('All'), 'value' => '*']);
             }
 
-            $element = CheckboxSelectInput::make('sources')
+            $input = CheckboxSelect::make()
+                ->name('sources')
+                ->options($options);
+            $element = FieldComponent::make()
                 ->label(t('Sources'))
                 ->instructions(t('Which sources do you want to select {type} from?', [
                     'type' => $elementType::pluralLowerDisplayName(),
                 ]))
-                ->options($options)
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input($input);
 
             return $options === []
                 ? $element->warning(t('No sources exist yet.'))->readOnly()
-                : $element->allOption('*');
+                : $element->input($input->allOption('*'));
         }
 
-        $element = SelectInput::make('source')
+        $element = FieldComponent::make()
             ->label(t('Source'))
             ->instructions(t('Which source do you want to select {type} from?', [
                 'type' => $elementType::pluralLowerDisplayName(),
             ]))
-            ->options($options)
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input(Select::make()->name('source')->options($options));
 
         return $options === []
             ? $element->warning(t('No sources exist yet.'))->readOnly()
@@ -636,9 +639,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     /**
-     * @param  list<FormElement>  $beforeAdvanced
+     * @param  list<FormElement|ProjectableFormElement>  $beforeAdvanced
      * @return list<FormElement|ProjectableFormElement>
-     * @return list<FormElement>
      */
     protected function relationBehaviorFormElements(
         bool $readOnly,
@@ -703,16 +705,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 $readOnly,
                 $hierarchyLimitCondition,
             )];
-        $defaultPlacement = SelectInput::make('defaultPlacement')
+        $defaultPlacement = FieldComponent::make()
             ->label(t('Default {type} Placement', ['type' => $elementType::displayName()]))
             ->instructions(t('Where new {type} should be placed by default in the field.', [
                 'type' => $pluralElements,
             ]))
-            ->options([
-                ['label' => t('Before other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
-                ['label' => t('After other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_END],
-            ])
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input(
+                Select::make()
+                    ->name('defaultPlacement')
+                    ->options([
+                        ['label' => t('Before other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
+                        ['label' => t('After other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_END],
+                    ]),
+            );
         $viewModeOptions = array_map(
             fn (string $label, string $value): array => ['label' => $label, 'value' => $value],
             $this->supportedViewModes(),
@@ -720,11 +726,11 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         );
         $viewMode = count($viewModeOptions) === 1
             ? []
-            : [SelectInput::make('viewMode')
+            : [FieldComponent::make()
                 ->label(t('View Mode'))
                 ->instructions(t('Choose how the field should look for authors.'))
-                ->options($viewModeOptions)
-                ->readOnly($readOnly)];
+                ->readOnly($readOnly)
+                ->input(Select::make()->name('viewMode')->options($viewModeOptions))];
 
         if ($regularLimitCondition !== null) {
             $defaultPlacement->visibleWhen($regularLimitCondition);
@@ -793,7 +799,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         return $element;
     }
 
-    /** @return list<FormElement> */
+    /** @return list<FormElement|FieldComponent> */
     protected function targetSiteFormElements(bool $readOnly): array
     {
         $elementType = static::elementType();
@@ -807,16 +813,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             LightswitchInput::make('useTargetSite')
                 ->label(t('Relate {type} from a specific site?', ['type' => $pluralElements]))
                 ->readOnly($readOnly),
-            SelectInput::make('targetSiteId')
+            FieldComponent::make()
                 ->label(t('Which site should {type} be related from?', ['type' => $pluralElements]))
-                ->options(Sites::getAllSites()
-                    ->map(fn ($site): array => [
-                        'label' => t($site->getName(), category: 'site'),
-                        'value' => $site->uid,
-                    ])
-                    ->all())
                 ->visibleWhen(Condition::equals('useTargetSite', true))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('targetSiteId')
+                        ->options(Sites::getAllSites()
+                            ->map(fn ($site): array => [
+                                'label' => t($site->getName(), category: 'site'),
+                                'value' => $site->uid,
+                            ])
+                            ->all()),
+                ),
         ];
 
         if (static::canShowSiteMenu()) {

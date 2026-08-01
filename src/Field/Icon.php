@@ -6,8 +6,9 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
@@ -119,13 +120,17 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ];
 
         if (Cms::config()->enableGql) {
-            $elements[] = SelectInput::make('fullGraphqlData')
+            $elements[] = FieldComponent::make()
                 ->label(t('GraphQL Mode'))
-                ->options([
-                    ['label' => t('Full data'), 'value' => true],
-                    ['label' => t('Name only'), 'value' => false],
-                ])
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('fullGraphqlData')
+                        ->options([
+                            ['label' => t('Full data'), 'value' => true],
+                            ['label' => t('Name only'), 'value' => false],
+                        ]),
+                );
         }
 
         return FormDefinition::make($elements);

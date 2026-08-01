@@ -9,7 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -237,13 +237,17 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ];
 
         if (Cms::config()->enableGql) {
-            $elements[] = SelectInput::make('fullGraphqlData')
+            $elements[] = FieldComponent::make()
                 ->label(t('GraphQL Mode'))
-                ->options([
-                    ['label' => t('Full data'), 'value' => true],
-                    ['label' => t('URL only'), 'value' => false],
-                ])
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input(
+                    Select::make()
+                        ->name('fullGraphqlData')
+                        ->options([
+                            ['label' => t('Full data'), 'value' => true],
+                            ['label' => t('URL only'), 'value' => false],
+                        ]),
+                );
         }
 
         return FormDefinition::make($elements);

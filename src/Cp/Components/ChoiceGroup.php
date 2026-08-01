@@ -17,14 +17,15 @@ abstract class ChoiceGroup extends ViewComponent
 {
     use HasId;
 
-    /** @var iterable<ViewComponent>|Closure */
+    /** @var iterable<mixed>|Closure */
     protected iterable|Closure $options = [];
 
     protected string|Closure|null $name = null;
 
-    /** @param iterable<ViewComponent>|Closure $options */
+    /** @param iterable<mixed>|Closure $options */
     public function options(iterable|Closure $options): static
     {
+        $this->trackConfiguration('options');
         $this->options = $options;
 
         return $this;
@@ -33,6 +34,7 @@ abstract class ChoiceGroup extends ViewComponent
     /** The group's base input name. */
     public function name(string|Closure|null $name): static
     {
+        $this->trackConfiguration('name');
         $this->name = $name;
 
         return $this;
@@ -59,14 +61,21 @@ abstract class ChoiceGroup extends ViewComponent
     #[\Override]
     protected function renderSlots(): string
     {
+        $options = $this->evaluatedOptions();
         $html = [$this->leadingHtml()];
 
-        foreach ($this->evaluate($this->options) as $option) {
+        foreach ($options as $option) {
             $html[] = Html::tag('div', $option->toHtml(), $this->optionWrapperAttributes($option));
         }
 
         $html[] = $this->trailingHtml();
 
         return implode('', $html).parent::renderSlots();
+    }
+
+    /** @return iterable<ViewComponent> */
+    protected function evaluatedOptions(): iterable
+    {
+        return $this->evaluate($this->options);
     }
 }
