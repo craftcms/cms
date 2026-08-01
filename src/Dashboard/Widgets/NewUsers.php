@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -15,7 +17,6 @@ use CraftCms\Cms\View\LegacyAssets\NewUsersAsset;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class NewUsers extends Widget
 {
@@ -85,11 +86,35 @@ class NewUsers extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
-        return template('_components/widgets/NewUsers/settings',
-            [
-                'widget' => $this,
-            ]);
+        $elements = [
+            SelectInput::make('dateRange')
+                ->label(t('Date Range'))
+                ->options([
+                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
+                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'value' => 'd30'],
+                    ['label' => t('Last Week'), 'value' => 'lastweek'],
+                    ['label' => t('Last Month'), 'value' => 'lastmonth'],
+                ])
+                ->readOnly($readOnly),
+        ];
+
+        $userGroups = UserGroups::getAllGroups();
+
+        if ($userGroups->isNotEmpty()) {
+            $elements[] = SelectInput::make('userGroupId')
+                ->label(t('User Group'))
+                ->options([
+                    ['label' => t('All'), 'value' => null],
+                    ...$userGroups->map(fn ($userGroup): array => [
+                        'label' => t($userGroup->name, category: 'site'),
+                        'value' => $userGroup->id,
+                    ])->all(),
+                ])
+                ->readOnly($readOnly);
+        }
+
+        return FormDefinition::make($elements);
     }
 }

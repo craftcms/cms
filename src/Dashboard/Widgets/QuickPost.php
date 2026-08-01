@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
@@ -97,28 +101,66 @@ class QuickPost extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
-        // Find the sections the user has permission to create entries in
-        $sections = [];
+        $sections = $this->availableSections();
 
-        foreach (Sections::getAllSections() as $section) {
-            if ($section->type === SectionType::Single) {
-                continue;
-            }
-            if (! currentUser()->can('createEntries:'.$section->uid)) {
-                continue;
-            }
-            $sections[] = $section;
+        if ($sections === []) {
+            return FormDefinition::make([]);
         }
 
-        return template('_components/widgets/QuickPost/settings', [
-            'sections' => $sections,
-            'widget' => $this,
-            'siteId' => $this->siteId,
-            'section' => $this->section(),
-            'entryType' => $this->entryType(),
-        ]);
+        $elements = [];
+        $editableSites = Sites::getEditableSites();
+
+        if (Sites::isMultiSite() && $editableSites->count() > 1) {
+            $elements[] = SelectInput::make('siteId')
+                ->label(t('Site'))
+                ->options($editableSites->map(fn ($site): array => [
+                    'label' => t($site->getName(), category: 'site'),
+                    'value' => $site->id,
+                ])->all())
+                ->readOnly($readOnly);
+        }
+
+        $elements[] = SelectInput::make('section')
+            ->label(t('Section'))
+            ->instructions(t('Which section do you want to save entries to?'))
+            ->options(array_map(fn (Section $section): array => [
+                'label' => t($section->name, category: 'site'),
+                'value' => $section->id,
+            ], $sections))
+            ->readOnly($readOnly);
+
+        foreach ($sections as $section) {
+            $entryTypes = $section->getEntryTypes();
+            $entryType = SelectInput::make("sections.{$section->id}.entryType")
+                ->options(array_map(fn (EntryType $entryType): array => [
+                    'label' => t($entryType->name, category: 'site'),
+                    'value' => $entryType->id,
+                ], $entryTypes))
+                ->visibleWhen(Condition::equals('section', $section->id))
+                ->readOnly($readOnly);
+
+            if (count($entryTypes) > 1) {
+                $entryType
+                    ->label(t('Entry Type'))
+                    ->instructions(t('Which type of entries do you want to create?'));
+            } else {
+                $entryType->attributes(['hidden' => true]);
+            }
+
+            $elements[] = $entryType;
+        }
+
+        $section = $this->section() ?? $sections[0];
+        $elements[] = TextInput::make('customTitle')
+            ->label(t('Widget Title'))
+            ->placeholder(t('Create a new {section} entry', [
+                'section' => $section->getUiLabel(),
+            ]))
+            ->readOnly($readOnly);
+
+        return FormDefinition::make($elements);
     }
 
     #[Override]
@@ -264,5 +306,15 @@ JS, [
         }
 
         return $this->_entryType ?: null;
+    }
+
+    /** @return list<Section> */
+    private function availableSections(): array
+    {
+        return Sections::getAllSections()
+            ->filter(fn (Section $section): bool => $section->type !== SectionType::Single
+                && currentUser()->can('createEntries:'.$section->uid))
+            ->values()
+            ->all();
     }
 }

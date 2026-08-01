@@ -64,6 +64,29 @@ import '@craftcms/ui';
       }
     },
 
+    getSettingsContext: function (info, namespace) {
+      if (info.settingsDefinition === null) {
+        return null;
+      }
+
+      const context = {
+        definition: info.settingsDefinition,
+        values: info.settingsValues,
+        errors: info.settingsErrors,
+        bindingScope: info.settingsBindingScope,
+        inputNamespace: info.settingsInputNamespace,
+        readOnly: info.settingsReadOnly,
+      };
+
+      if (!namespace) {
+        return context;
+      }
+
+      return JSON.parse(
+        JSON.stringify(context).replaceAll('__NAMESPACE__', namespace)
+      );
+    },
+
     handleNewWidgetOptionSelect: function (e) {
       this.$newWidgetBtn.data('trigger').hide();
       const $option = $(e.target);
@@ -75,19 +98,9 @@ import '@craftcms/ui';
         typeof responseData === 'undefined'
           ? `newwidget${Math.floor(Math.random() * 1000000000)}-settings`
           : `widget${responseData.id}-settings`;
-      const settingsHtml =
+      const settingsContext =
         typeof responseData === 'undefined'
-          ? this.getTypeInfo(type, 'settingsHtml', '').replace(
-              /__NAMESPACE__/g,
-              settingsNamespace
-            )
-          : null;
-      const settingsJs =
-        typeof responseData === 'undefined'
-          ? this.getTypeInfo(type, 'settingsJs', '').replace(
-              /__NAMESPACE__/g,
-              settingsNamespace
-            )
+          ? this.getSettingsContext(this.getTypeInfo(type), settingsNamespace)
           : null;
       const $gridItem = $(
         '<div class="item" data-colspan="1" style="display: block">'
@@ -157,7 +170,7 @@ import '@craftcms/ui';
         )
         .appendTo($gridItem);
 
-      if (settingsHtml) {
+      if (settingsContext) {
         $container.addClass('flipped');
         $container.children('.front').addClass('hidden');
       } else {
@@ -165,17 +178,7 @@ import '@craftcms/ui';
         $container.children('.back').addClass('hidden');
       }
 
-      const widget = new Craft.Widget(
-        $container,
-        settingsHtml
-          ? settingsHtml.replace(/__NAMESPACE__/g, settingsNamespace)
-          : null,
-        settingsJs
-          ? () => {
-              eval(settingsJs);
-            }
-          : $.noop
-      );
+      const widget = new Craft.Widget($container, settingsContext);
 
       // Append the new widget after the last one
       // (can't simply append it to the grid container, since that will place it after the resize listener object)
@@ -194,7 +197,7 @@ import '@craftcms/ui';
       if (typeof responseData !== 'undefined') {
         $container.removeClass('loading');
         widget.update(responseData);
-      } else if (!settingsHtml) {
+      } else if (!settingsContext) {
         const data = {
           type: type,
         };
@@ -363,6 +366,7 @@ import '@craftcms/ui';
     $settingsToggle: null,
     $saveBtn: null,
     $settingsErrorList: null,
+    settingsHost: null,
 
     id: null,
     type: null,
@@ -371,13 +375,12 @@ import '@craftcms/ui';
     storedSettings: null,
 
     totalCols: null,
-    settingsHtml: null,
-    initSettingsFn: null,
+    settingsContext: null,
     showingSettings: false,
 
     colspanPicker: null,
 
-    init: function (container, settingsHtml, initSettingsFn, storedSettings) {
+    init: function (container, settingsContext, storedSettings) {
       this.$container = $(container);
       this.storedSettings = storedSettings;
 
@@ -404,7 +407,7 @@ import '@craftcms/ui';
       this.$subtitle = this.$heading.find('> h5');
       this.$bodyContainer = this.$front.find('> .pane > .body');
 
-      this.setSettingsHtml(settingsHtml, initSettingsFn);
+      this.setSettingsContext(settingsContext);
 
       if (!this.$container.hasClass('flipped')) {
         this.onShowFront();
@@ -445,11 +448,10 @@ import '@craftcms/ui';
       return window.dashboard.getTypeInfo(this.type, property, defaultValue);
     },
 
-    setSettingsHtml: function (settingsHtml, initSettingsFn) {
-      this.settingsHtml = settingsHtml;
-      this.initSettingsFn = initSettingsFn;
+    setSettingsContext: function (settingsContext) {
+      this.settingsContext = settingsContext;
 
-      if (this.settingsHtml) {
+      if (this.settingsContext) {
         this.$settingsBtn.removeClass('hidden');
       } else {
         this.$settingsBtn.addClass('hidden');
@@ -457,12 +459,16 @@ import '@craftcms/ui';
     },
 
     refreshSettings: function () {
-      this.$settingsContainer.html(this.settingsHtml);
+      this.$settingsContainer.empty();
+      this.settingsHost = null;
 
-      Garnish.requestAnimationFrame(() => {
-        Craft.initUiElements(this.$settingsContainer);
-        this.initSettingsFn();
-      });
+      if (!this.settingsContext) {
+        return;
+      }
+
+      this.settingsHost = document.createElement('craft-form-definition');
+      this.settingsHost.context = structuredClone(this.settingsContext);
+      this.$settingsContainer.append(this.settingsHost);
     },
 
     showSettings: function () {
@@ -541,6 +547,17 @@ import '@craftcms/ui';
                 Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
 
                 if (response.data.errors) {
+                  if (this.settingsHost) {
+                    this.settingsHost.errors = Object.fromEntries(
+                      Object.entries(response.data.errors).map(
+                        ([attribute, messages]) => [
+                          `${this.settingsContext.bindingScope}.${attribute}`,
+                          messages,
+                        ]
+                      )
+                    );
+                  }
+
                   this.$settingsErrorList = Craft.ui
                     .createErrorList(response.data.errors)
                     .insertAfter(this.$settingsContainer);
@@ -623,9 +640,9 @@ import '@craftcms/ui';
 
       Craft.cp.elementThumbLoader.load(this.$bodyContainer);
 
-      this.setSettingsHtml(response.info.settingsHtml, function () {
-        eval(response.info.settingsJs);
-      });
+      this.setSettingsContext(
+        window.dashboard.getSettingsContext(response.info)
+      );
     },
 
     cancelSettings: function () {

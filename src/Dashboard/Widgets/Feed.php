@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\LegacyAssets\FeedAsset;
@@ -46,12 +49,23 @@ class Feed extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
-        return template('_components/widgets/Feed/settings',
-            [
-                'widget' => $this,
-            ]);
+        return FormDefinition::make([
+            TextInput::make('url')
+                ->label(t('URL'))
+                ->required()
+                ->readOnly($readOnly),
+            TextInput::make('title')
+                ->label(t('Title'))
+                ->required()
+                ->readOnly($readOnly),
+            NumberInput::make('limit')
+                ->label(t('Limit'))
+                ->min(1)
+                ->required()
+                ->readOnly($readOnly),
+        ]);
     }
 
     #[Override]

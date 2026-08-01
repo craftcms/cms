@@ -8,6 +8,7 @@ use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\Updates;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -71,6 +72,35 @@ it('can store namespaced settings', function () {
     ])->assertOk();
 
     expect(WidgetModel::count())->toBe(1);
+});
+
+it('returns the complete native settings host context', function () {
+    $response = postJson(action([WidgetsController::class, 'store']), [
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ])->assertOk();
+    $widget = WidgetModel::query()->firstOrFail();
+    $namespace = "widget{$widget->id}-settings";
+
+    expect($response->json('info.settingsDefinition.elements'))->toHaveCount(3)
+        ->and($response->json('info.settingsBindingScope'))->toBe($namespace)
+        ->and($response->json('info.settingsInputNamespace'))->toBe($namespace)
+        ->and($response->json("info.settingsValues.{$namespace}.title"))->toBe('Craft News')
+        ->and($response->json('info.settingsErrors'))->toBe([])
+        ->and($response->json('info.settingsReadOnly'))->toBeFalse()
+        ->and($response->json('info'))->not->toHaveKey('settingsHtml', 'settingsJs');
+});
+
+it('returns a null definition for a widget without settings', function () {
+    app(WidgetTypes::class)->register(NoSettingsWidget::class);
+
+    postJson(action([WidgetsController::class, 'store']), [
+        'type' => NoSettingsWidget::class,
+    ])->assertOk()
+        ->assertJsonPath('info.settingsDefinition', null);
 });
 
 it('can update a widget with settings', function () {
@@ -176,3 +206,5 @@ it('can delete a widget', function () {
 
     expect(WidgetModel::count())->toBe(0);
 });
+
+class NoSettingsWidget extends Widget {}

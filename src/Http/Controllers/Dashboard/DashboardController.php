@@ -8,7 +8,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\WidgetTypes;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\DashboardAsset;
@@ -31,28 +30,22 @@ readonly class DashboardController
     public function index()
     {
         /**
-         * @var Collection<string, array{iconSvg: mixed, name: string, maxColspan: int|null, settingsHtml?: string, settingsJs?: mixed, selectable: bool}> $widgetTypeInfo
+         * @var Collection<string, array<string, mixed>> $widgetTypeInfo
          */
         $widgetTypeInfo = $this->widgetTypes->types()
             /** @var class-string<WidgetInterface> $widgetType */
             ->filter(fn (string $widgetType) => $widgetType::isSelectable())
-            /** @phpstan-ignore argument.unresolvableType */
             ->mapWithKeys(function (string $widgetType) {
-                $this->HtmlStack->startJsBuffer();
                 $widget = $this->dashboard->createWidget($widgetType);
-                $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
-                $settingsJs = (string) $this->HtmlStack->clearJsBuffer(false);
 
                 return [$widget::class => [
                     'iconSvg' => $this->getWidgetIconSvg($widget),
                     'name' => $widget::displayName(),
                     'maxColspan' => $widget::maxColspan(),
-                    'settingsHtml' => $settingsHtml,
-                    'settingsJs' => $settingsJs,
                     'selectable' => true,
+                    ...$this->getWidgetSettingsInfo($widget, '__NAMESPACE__'),
                 ]];
             })
-            /** @phpstan-ignore argument.unresolvableType */
             ->sortBy('name');
 
         $variables = [];
@@ -81,8 +74,7 @@ readonly class DashboardController
 
                 $variables['widgets'][] = $info;
                 $allWidgetJs .= 'new Craft.Widget("#widget'.$widget->id.'", '.
-                    Json::encode($info['settingsHtml']).', '.
-                    '() => {'.$info['settingsJs'].'},'.
+                    Json::encode($this->settingsContext($info)).','.
                     Json::encode($info['settings']).
                     ");\n";
 
@@ -110,5 +102,21 @@ readonly class DashboardController
         }
 
         return redirect(route('craft.cp.dashboard'));
+    }
+
+    private function settingsContext(array $info): ?array
+    {
+        if ($info['settingsDefinition'] === null) {
+            return null;
+        }
+
+        return [
+            'definition' => $info['settingsDefinition'],
+            'values' => $info['settingsValues'],
+            'errors' => $info['settingsErrors'],
+            'bindingScope' => $info['settingsBindingScope'],
+            'inputNamespace' => $info['settingsInputNamespace'],
+            'readOnly' => $info['settingsReadOnly'],
+        ];
     }
 }

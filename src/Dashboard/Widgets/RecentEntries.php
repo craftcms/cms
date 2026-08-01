@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -64,12 +67,41 @@ class RecentEntries extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
-        return template('_components/widgets/RecentEntries/settings',
-            [
-                'widget' => $this,
-            ]);
+        $elements = [];
+        $editableSites = Sites::getEditableSites();
+
+        if (Sites::isMultiSite() && $editableSites->count() > 1) {
+            $elements[] = SelectInput::make('siteId')
+                ->label(t('Site'))
+                ->options($editableSites->map(fn ($site): array => [
+                    'label' => t($site->getName(), category: 'site'),
+                    'value' => $site->id,
+                ])->all())
+                ->readOnly($readOnly);
+        }
+
+        $elements[] = SelectInput::make('section')
+            ->label(t('Section'))
+            ->instructions(t('Which section do you want to pull recent entries from?'))
+            ->options([
+                ['label' => t('All'), 'value' => '*'],
+                ...Sections::getAllSections()
+                    ->filter(fn ($section): bool => $section->type !== SectionType::Single)
+                    ->map(fn ($section): array => [
+                        'label' => t($section->name, category: 'site'),
+                        'value' => $section->id,
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->readOnly($readOnly);
+        $elements[] = NumberInput::make('limit')
+            ->label(t('Limit'))
+            ->readOnly($readOnly);
+
+        return FormDefinition::make($elements);
     }
 
     #[Override]

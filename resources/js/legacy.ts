@@ -30,6 +30,7 @@ import './modules/prompt-handler/index';
 import './modules/link-field/index';
 import './modules/nested-element-manager/index';
 import './modules/ui/index';
+import './form-definitions/FormDefinitionHost';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
