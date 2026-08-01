@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TimeInput as TimeInputElement;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
@@ -105,6 +108,32 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        $minuteIncrementOptions = array_map(
+            static fn (int $increment): array => [
+                'label' => (string) $increment,
+                'value' => $increment,
+            ],
+            [5, 10, 15, 30, 60],
+        );
+
+        return FormDefinition::make([
+            SelectInput::make('minuteIncrement')
+                ->label(t('Minute Increment'))
+                ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
+                ->options($minuteIncrementOptions)
+                ->readOnly($readOnly),
+            TimeInputElement::make('min')
+                ->label(t('Min Time'))
+                ->readOnly($readOnly),
+            TimeInputElement::make('max')
+                ->label(t('Max Time'))
+                ->readOnly($readOnly),
+        ]);
     }
 
     #[Override]

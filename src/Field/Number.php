@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
@@ -26,6 +31,8 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use Money\Currencies\ISOCurrencies;
+use Money\Currency;
 use Override;
 use Throwable;
 
@@ -169,6 +176,66 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        $currencyOptions = array_map(
+            static fn (Currency $currency): array => [
+                'label' => $currency->getCode(),
+                'value' => $currency->getCode(),
+            ],
+            iterator_to_array(new ISOCurrencies),
+        );
+
+        return FormDefinition::make([
+            NumberInput::make('min')
+                ->label(t('Min Value'))
+                ->readOnly($readOnly),
+            NumberInput::make('max')
+                ->label(t('Max Value'))
+                ->readOnly($readOnly),
+            NumberInput::make('step')
+                ->label(t('Step Size'))
+                ->readOnly($readOnly),
+            NumberInput::make('decimals')
+                ->label(t('Decimal Points'))
+                ->min(0)
+                ->readOnly($readOnly),
+            NumberInput::make('size')
+                ->label(t('Size'))
+                ->min(1)
+                ->readOnly($readOnly),
+            NumberInput::make('defaultValue')
+                ->label(t('Default Value'))
+                ->readOnly($readOnly),
+            TextInput::make('prefix')
+                ->label(t('Prefix Text'))
+                ->instructions(t('Text that should be shown before the input.'))
+                ->readOnly($readOnly),
+            TextInput::make('suffix')
+                ->label(t('Suffix Text'))
+                ->instructions(t('Text that should be shown after the input.'))
+                ->readOnly($readOnly),
+            SelectInput::make('previewFormat')
+                ->label(t('Preview Format'))
+                ->instructions(t('How field values will be formatted within element indexes.'))
+                ->options([
+                    ['label' => t('As decimal numbers'), 'value' => self::FORMAT_DECIMAL],
+                    ['label' => t('As currency values'), 'value' => self::FORMAT_CURRENCY],
+                    ['label' => t('Unformatted'), 'value' => self::FORMAT_NONE],
+                ])
+                ->readOnly($readOnly),
+            SelectInput::make('previewCurrency')
+                ->label(t('Currency'))
+                ->options([
+                    ['label' => t('Choose a currency…'), 'value' => null],
+                    ...$currencyOptions,
+                ])
+                ->visibleWhen(Condition::equals('previewFormat', self::FORMAT_CURRENCY))
+                ->readOnly($readOnly),
+        ]);
     }
 
     #[Override]

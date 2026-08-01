@@ -3,7 +3,13 @@ import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import '@craftcms/ui/components/input/input';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
+import DateInputRenderer from './renderers/DateInputRenderer.vue';
+import LightswitchInputRenderer from './renderers/LightswitchInputRenderer.vue';
+import MoneyInputRenderer from './renderers/MoneyInputRenderer.vue';
+import NumberInputRenderer from './renderers/NumberInputRenderer.vue';
+import SelectInputRenderer from './renderers/SelectInputRenderer.vue';
 import TextInputRenderer from './renderers/TextInputRenderer.vue';
+import TimeInputRenderer from './renderers/TimeInputRenderer.vue';
 
 const definition = {
   elements: [
@@ -37,6 +43,131 @@ afterEach(() => {
 });
 
 describe('Form Definition renderer', () => {
+  it('renders scalar controls and preserves their host value types', async () => {
+    const registry = createCpComponentRegistry();
+    const values = reactive({
+      settings: {
+        uiMode: 'enlarged',
+        minuteIncrement: 15,
+        charLimit: null as number | null,
+        code: true,
+        minDate: '2026-01-02T00:00:00+00:00',
+        minTime: '08:30',
+        defaultValue: 1234,
+      },
+    });
+    const container = document.createElement('div');
+
+    registry.register('form-element:craft:select-input', SelectInputRenderer);
+    registry.register('form-element:craft:number-input', NumberInputRenderer);
+    registry.register(
+      'form-element:craft:lightswitch-input',
+      LightswitchInputRenderer
+    );
+    registry.register('form-element:craft:date-input', DateInputRenderer);
+    registry.register('form-element:craft:time-input', TimeInputRenderer);
+    registry.register('form-element:craft:money-input', MoneyInputRenderer);
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormDefinitionRenderer, {
+      definition: {
+        elements: [
+          {
+            type: 'craft:field',
+            props: {label: 'UI Mode', required: true},
+            children: [
+              {
+                type: 'craft:select-input',
+                name: 'uiMode',
+                props: {
+                  options: [
+                    {label: 'Normal', value: 'normal'},
+                    {label: 'Enlarged', value: 'enlarged'},
+                  ],
+                },
+              },
+            ],
+          },
+          scalarField('craft:select-input', 'minuteIncrement', {
+            options: [
+              {label: '15', value: 15},
+              {label: '30', value: 30},
+            ],
+          }),
+          scalarField('craft:number-input', 'charLimit', {min: 1}),
+          scalarField('craft:lightswitch-input', 'code'),
+          {
+            type: 'craft:field',
+            props: {tip: 'Dates use the project time zone.'},
+            children: [{type: 'craft:date-input', name: 'minDate'}],
+          },
+          scalarField('craft:time-input', 'minTime'),
+          scalarField('craft:money-input', 'defaultValue', {
+            fractionDigits: 2,
+          }),
+        ],
+      },
+      bindingScope: 'settings',
+      values,
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const select =
+      container.querySelector<HTMLElementTagNameMap['craft-select']>(
+        'craft-select'
+      )!;
+    const numericSelect = Array.from(
+      container.querySelectorAll('craft-select')
+    ).find((select) => select.name === 'settings[minuteIncrement]')!;
+    const number =
+      container.querySelector<HTMLElementTagNameMap['craft-input']>(
+        'craft-input'
+      )!;
+    const lightswitch =
+      container.querySelector<HTMLElementTagNameMap['craft-switch']>(
+        'craft-switch'
+      )!;
+    const inputs = Array.from(container.querySelectorAll('craft-input'));
+    const date = inputs.find((input) => input.type === 'date')!;
+    const time = inputs.find((input) => input.type === 'time')!;
+    const money = inputs.find(
+      (input) => input.name === 'settings[defaultValue]'
+    )!;
+
+    expect(select.modelValue).toBe('enlarged');
+    expect(select.getAttribute('aria-required')).toBe('true');
+    expect(container.querySelector('label')?.textContent).toContain('*');
+    expect(number.value).toBe('');
+    expect(number.type).toBe('number');
+    expect(number.getAttribute('min')).toBe('1');
+    expect(lightswitch.checked).toBe(true);
+    expect(date.value).toBe('2026-01-02');
+    expect(time.value).toBe('08:30');
+    expect(money.value).toBe('12.34');
+    expect(
+      container.querySelector('[data-form-element-tip]')?.textContent
+    ).toBe('Dates use the project time zone.');
+
+    number.value = '120';
+    number.dispatchEvent(new Event('input', {bubbles: true}));
+    lightswitch.checked = false;
+    lightswitch.dispatchEvent(new Event('change', {bubbles: true}));
+    money.value = '56.78';
+    money.dispatchEvent(new Event('input', {bubbles: true}));
+    const nativeNumericSelect = numericSelect.querySelector('select')!;
+    nativeNumericSelect.value = '30';
+    nativeNumericSelect.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(values.settings.charLimit).toBe(120);
+    expect(values.settings.code).toBe(false);
+    expect(values.settings.defaultValue).toBe(5678);
+    expect(values.settings.minuteIncrement).toBe(30);
+  });
+
   it('renders eager and lazy plugin renderers through the public renderer contract', async () => {
     for (const lazy of [false, true]) {
       const registry = createCpComponentRegistry();
@@ -664,5 +795,16 @@ function nativeInputField(name: string, key?: string) {
     type: 'craft:field',
     key,
     children: [{type: 'application:native-input', name}],
+  } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData;
+}
+
+function scalarField(
+  type: string,
+  name: string,
+  props?: Record<string, CraftCms.Cms.Cp.FormDefinitions.Data.JsonValue>
+) {
+  return {
+    type: 'craft:field',
+    children: [{type, name, props}],
   } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData;
 }

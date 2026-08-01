@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added native Form Definition rendering for text settings via `CraftCms\Cms\Cp\FormDefinitions\FormDefinition` and `CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput`.
+- Added native Form Definitions for core scalar field settings, with typed Craft controls for numbers, selections, lightswitches, dates, times, color palettes, and money values.
 - Added reactive Form Definition visibility conditions via `CraftCms\Cms\Cp\FormDefinitions\Condition`.
 - Added plugin-defined Form Elements via `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()` and exact `form-element:<type>` control-panel renderer registrations.
 - Added keyed Form Definition groups and tabs via `CraftCms\Cms\Cp\FormDefinitions\Elements\Group`, `Tabs`, and `Tab`.

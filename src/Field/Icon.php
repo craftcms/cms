@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Button;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -108,6 +111,30 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        $elements = [
+            LightswitchInput::make('includeProIcons')
+                ->label(t('Include Pro icons'))
+                ->instructions(t('Should icons that are exclusive to Font Awesome Pro be selectable?'))
+                ->tip(t('View Font Awesome Pro pricing: https://fontawesome.com/plans'))
+                ->readOnly($readOnly),
+        ];
+
+        if (Cms::config()->enableGql) {
+            $elements[] = SelectInput::make('fullGraphqlData')
+                ->label(t('GraphQL Mode'))
+                ->options([
+                    ['label' => t('Full data'), 'value' => true],
+                    ['label' => t('Name only'), 'value' => false],
+                ])
+                ->readOnly($readOnly);
+        }
+
+        return FormDefinition::make($elements);
     }
 
     #[Override]

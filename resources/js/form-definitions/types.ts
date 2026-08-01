@@ -18,6 +18,7 @@ export interface FieldContext {
   labelledBy?: string;
   describedBy?: string;
   readOnly: boolean;
+  required: boolean;
 }
 
 export interface RenderContext {

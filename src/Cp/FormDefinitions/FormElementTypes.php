@@ -5,11 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\FormDefinitions;
 
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\DateInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TimeInput;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Container\Attributes\Singleton;
 use InvalidArgumentException;
@@ -28,6 +35,13 @@ class FormElementTypes
             Tabs::type() => ['class' => Tabs::class, 'container' => true, 'plugin' => null],
             Tab::type() => ['class' => Tab::class, 'container' => true, 'plugin' => null],
             TextInput::type() => ['class' => TextInput::class, 'container' => false, 'plugin' => null],
+            NumberInput::type() => ['class' => NumberInput::class, 'container' => false, 'plugin' => null],
+            SelectInput::type() => ['class' => SelectInput::class, 'container' => false, 'plugin' => null],
+            LightswitchInput::type() => ['class' => LightswitchInput::class, 'container' => false, 'plugin' => null],
+            DateInput::type() => ['class' => DateInput::class, 'container' => false, 'plugin' => null],
+            TimeInput::type() => ['class' => TimeInput::class, 'container' => false, 'plugin' => null],
+            ColorPaletteInput::type() => ['class' => ColorPaletteInput::class, 'container' => false, 'plugin' => null],
+            MoneyInput::type() => ['class' => MoneyInput::class, 'container' => false, 'plugin' => null],
         ];
     }
 

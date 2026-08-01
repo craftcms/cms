@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -123,6 +129,46 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        return FormDefinition::make([
+            SelectInput::make('uiMode')
+                ->label(t('UI Mode'))
+                ->instructions(t('How the field should be presented in the control panel.'))
+                ->options([
+                    ['label' => t('Normal'), 'value' => 'normal'],
+                    ['label' => t('Enlarged'), 'value' => 'enlarged'],
+                ])
+                ->readOnly($readOnly),
+            TextInput::make('placeholder')
+                ->label(t('Placeholder Text'))
+                ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
+                ->readOnly($readOnly),
+            NumberInput::make('charLimit')
+                ->label(t('Character Limit'))
+                ->instructions(t('The maximum number of characters the field is allowed to have.'))
+                ->min(1)
+                ->readOnly($readOnly),
+            NumberInput::make('byteLimit')
+                ->label(t('Byte Limit'))
+                ->instructions(t('The maximum number of bytes the field is allowed to have.'))
+                ->min(1)
+                ->readOnly($readOnly),
+            LightswitchInput::make('code')
+                ->label(t('Use a monospaced font'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('multiline')
+                ->label(t('Allow line breaks'))
+                ->readOnly($readOnly),
+            NumberInput::make('initialRows')
+                ->label(t('Initial Rows'))
+                ->min(1)
+                ->visibleWhen(Condition::equals('multiline', true))
+                ->readOnly($readOnly),
+        ]);
     }
 
     #[Override]

@@ -16,6 +16,12 @@ abstract class InputElement extends FormElement
 
     private string|Closure|null $instructions = null;
 
+    private string|Closure|null $tip = null;
+
+    private string|Closure|null $warning = null;
+
+    private bool $required = false;
+
     private bool $readOnly = false;
 
     final protected function __construct(string $name)
@@ -42,6 +48,27 @@ abstract class InputElement extends FormElement
         return $this;
     }
 
+    public function tip(string|Closure|null $tip): static
+    {
+        $this->tip = $tip;
+
+        return $this;
+    }
+
+    public function warning(string|Closure|null $warning): static
+    {
+        $this->warning = $warning;
+
+        return $this;
+    }
+
+    public function required(bool $required = true): static
+    {
+        $this->required = $required;
+
+        return $this;
+    }
+
     public function readOnly(bool $readOnly = true): static
     {
         $this->readOnly = $readOnly;
@@ -55,6 +82,9 @@ abstract class InputElement extends FormElement
         $fieldProps = array_filter([
             'label' => $this->resolvedText($this->label),
             'instructions' => $this->resolvedText($this->instructions),
+            'tip' => $this->resolvedText($this->tip),
+            'warning' => $this->resolvedText($this->warning),
+            'required' => $this->required ?: null,
             'readOnly' => $this->readOnly ?: null,
         ], fn (mixed $value): bool => $value !== null);
         $inputProps = $this->props();

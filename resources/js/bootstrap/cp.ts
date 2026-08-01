@@ -24,6 +24,13 @@ import {createCpComponentRegistry} from './components.js';
 import {configureIcons} from './icons.js';
 import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
 import TextInputRenderer from '@/form-definitions/renderers/TextInputRenderer.vue';
+import DateInputRenderer from '@/form-definitions/renderers/DateInputRenderer.vue';
+import LightswitchInputRenderer from '@/form-definitions/renderers/LightswitchInputRenderer.vue';
+import NumberInputRenderer from '@/form-definitions/renderers/NumberInputRenderer.vue';
+import SelectInputRenderer from '@/form-definitions/renderers/SelectInputRenderer.vue';
+import TimeInputRenderer from '@/form-definitions/renderers/TimeInputRenderer.vue';
+import ColorPaletteInputRenderer from '@/form-definitions/renderers/ColorPaletteInputRenderer.vue';
+import MoneyInputRenderer from '@/form-definitions/renderers/MoneyInputRenderer.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -51,6 +58,19 @@ const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
 const components = createCpComponentRegistry();
 components.register('form-element:craft:text-input', TextInputRenderer);
+components.register('form-element:craft:number-input', NumberInputRenderer);
+components.register('form-element:craft:select-input', SelectInputRenderer);
+components.register(
+  'form-element:craft:lightswitch-input',
+  LightswitchInputRenderer
+);
+components.register('form-element:craft:date-input', DateInputRenderer);
+components.register('form-element:craft:time-input', TimeInputRenderer);
+components.register(
+  'form-element:craft:color-palette-input',
+  ColorPaletteInputRenderer
+);
+components.register('form-element:craft:money-input', MoneyInputRenderer);
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {

@@ -103,6 +103,9 @@
   );
   const label = computed(() => stringProp('label'));
   const instructions = computed(() => stringProp('instructions'));
+  const tip = computed(() => stringProp('tip'));
+  const warning = computed(() => stringProp('warning'));
+  const required = computed(() => props.element.props?.required === true);
   const fieldReadOnly = computed(
     () => props.context.readOnly || props.element.props?.readOnly === true
   );
@@ -118,10 +121,14 @@
   const labelId = computed(() => `${fieldInputId.value}-label`);
   const instructionsId = computed(() => `${fieldInputId.value}-instructions`);
   const errorsId = computed(() => `${fieldInputId.value}-errors`);
+  const tipId = computed(() => `${fieldInputId.value}-tip`);
+  const warningId = computed(() => `${fieldInputId.value}-warning`);
   const describedBy = computed(
     () =>
       [
         instructions.value ? instructionsId.value : undefined,
+        tip.value ? tipId.value : undefined,
+        warning.value ? warningId.value : undefined,
         fieldErrors.value.length ? errorsId.value : undefined,
       ]
         .filter((id): id is string => Boolean(id))
@@ -132,6 +139,7 @@
     labelledBy: label.value ? labelId.value : undefined,
     describedBy: describedBy.value,
     readOnly: fieldReadOnly.value,
+    required: required.value,
   }));
 
   const binding = computed<FormElementBinding | undefined>(() => {
@@ -161,6 +169,11 @@
       name: htmlInputName(path),
       readonly: binding.value.readOnly,
     };
+
+    if (props.fieldContext?.required) {
+      attributes.required = true;
+      attributes['aria-required'] = 'true';
+    }
 
     if (props.fieldContext?.labelledBy) {
       attributes['aria-labelledby'] = props.fieldContext.labelledBy;
@@ -271,9 +284,15 @@
     data-form-element="craft:field"
     :style="{width}"
   >
-    <label v-if="label" :id="labelId" :for="fieldInputId">{{ label }}</label>
+    <label v-if="label" :id="labelId" :for="fieldInputId">
+      {{ label }}<span v-if="required" aria-hidden="true"> *</span>
+    </label>
     <p v-if="instructions" :id="instructionsId" data-form-element-instructions>
       {{ instructions }}
+    </p>
+    <p v-if="tip" :id="tipId" data-form-element-tip>{{ tip }}</p>
+    <p v-if="warning" :id="warningId" data-form-element-warning role="alert">
+      {{ warning }}
     </p>
     <FormElementRenderer
       v-for="(child, index) in element.children"

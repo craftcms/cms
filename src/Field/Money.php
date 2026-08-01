@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -150,6 +155,46 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        $currencyOptions = array_map(
+            static fn (Currency $currency): array => [
+                'label' => $currency->getCode(),
+                'value' => $currency->getCode(),
+            ],
+            iterator_to_array($this->_isoCurrencies),
+        );
+        $fractionDigits = $this->subunits();
+
+        return FormDefinition::make([
+            SelectInput::make('currency')
+                ->label(t('Currency'))
+                ->options($currencyOptions)
+                ->required()
+                ->readOnly($readOnly),
+            MoneyInput::make('defaultValue')
+                ->label(t('Default Value'))
+                ->fractionDigits($fractionDigits)
+                ->readOnly($readOnly),
+            MoneyInput::make('min')
+                ->label(t('Min Value'))
+                ->fractionDigits($fractionDigits)
+                ->readOnly($readOnly),
+            MoneyInput::make('max')
+                ->label(t('Max Value'))
+                ->fractionDigits($fractionDigits)
+                ->readOnly($readOnly),
+            LightswitchInput::make('showCurrency')
+                ->label(t('Show Currency'))
+                ->readOnly($readOnly),
+            NumberInput::make('size')
+                ->label(t('Size'))
+                ->min(1)
+                ->readOnly($readOnly),
+        ]);
     }
 
     #[Override]
