@@ -1,4 +1,4 @@
-import {createApp, h, nextTick, ref} from 'vue';
+import {createApp, defineComponent, h, nextTick, onMounted, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from '@/form-definitions/FormDefinitionRenderer.vue';
@@ -218,6 +218,78 @@ describe('Legacy Settings Island', () => {
 
     expect(document.querySelector('[data-legacy-asset]')).toBeNull();
   });
+
+  it('preserves a selected mixed tab and mounts only inserted layout elements', async () => {
+    const registry = createCpComponentRegistry();
+    const mountedNativeInputs: string[] = [];
+    const nativeInputRenderer = defineComponent({
+      props: ['attributes', 'binding'],
+      setup(props) {
+        onMounted(() => mountedNativeInputs.push(props.binding.name));
+
+        return () =>
+          h('input', {
+            ...props.attributes,
+            value: props.binding.value,
+            'data-mixed-native-input': props.binding.name,
+          });
+      },
+    });
+
+    (window as any).Cp = {$components: registry};
+    (window as any).Craft = {initUiElements: vi.fn()};
+    vi.resetModules();
+    await import('../../legacy/web/assets/cpcompat/legacy-settings-island.js');
+    registry.register(
+      'form-element:application:native-field-input',
+      nativeInputRenderer
+    );
+
+    const definition = ref(mixedFieldLayoutDefinition(false));
+    const container = document.createElement('div');
+    const app = createApp({
+      setup() {
+        return () =>
+          h(FormDefinitionRenderer, {
+            definition: definition.value,
+            bindingScope: 'entry',
+            values: {entry: {fields: {body: 'Body', summary: ''}}},
+            errors: {},
+          });
+      },
+    });
+
+    document.body.appendChild(container);
+    mountedApps.push(app);
+    app.mount(container);
+
+    await vi.waitFor(() => {
+      expect(container.querySelector('[name="entry[legacyRating]"]')).not.toBeNull();
+    });
+
+    const bodyInput = container.querySelector(
+      '[data-mixed-native-input="fields.body"]'
+    );
+    const island = container.querySelector('craft-legacy-settings-island');
+    const legacyInput = container.querySelector('[name="entry[legacyRating]"]');
+
+    definition.value = mixedFieldLayoutDefinition(true);
+    await nextTick();
+
+    expect(
+      container.querySelector('[role="tab"][aria-selected="true"]')?.textContent
+    ).toContain('Content');
+    expect(
+      container.querySelector('[data-mixed-native-input="fields.body"]')
+    ).toBe(bodyInput);
+    expect(container.querySelector('craft-legacy-settings-island')).toBe(
+      island
+    );
+    expect(container.querySelector('[name="entry[legacyRating]"]')).toBe(
+      legacyInput
+    );
+    expect(mountedNativeInputs).toEqual(['fields.body', 'fields.summary']);
+  });
 });
 
 async function mountIsland(fragmentConfig: ReturnType<typeof fragment>) {
@@ -271,6 +343,70 @@ function islandDefinition(fragmentConfig: ReturnType<typeof fragment>) {
         type: 'yii2-adapter:legacy-settings',
         key: 'legacy-settings',
         props: {fragment: fragmentConfig},
+      },
+    ],
+  } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
+}
+
+function mixedFieldLayoutDefinition(refreshed: boolean) {
+  function nativeField(
+    key: string,
+    name: string
+  ): CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData {
+    return {
+      type: 'craft:field',
+      key,
+      props: {label: name},
+      children: [
+        {
+          type: 'application:native-field-input',
+          name,
+        },
+      ],
+    };
+  }
+
+  const contentTab: CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData = {
+    type: 'craft:tab',
+    key: 'content-tab',
+    props: {label: 'Content'},
+    children: [
+      ...(refreshed
+        ? [nativeField('summary-layout-element', 'fields.summary')]
+        : []),
+      nativeField('body-layout-element', 'fields.body'),
+      {
+        type: 'yii2-adapter:legacy-settings',
+        key: 'legacy-layout-element',
+        props: {
+          fragment: {
+            html: '<input name="entry[legacyRating]">',
+            headHtml: '',
+            bodyHtml: '',
+          },
+        },
+      },
+    ],
+  };
+
+  return {
+    elements: [
+      {
+        type: 'craft:tabs',
+        key: 'mixed-layout',
+        children: [
+          ...(refreshed
+            ? [
+                {
+                  type: 'craft:tab',
+                  key: 'general-tab',
+                  props: {label: 'General'},
+                  children: [],
+                } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData,
+              ]
+            : []),
+          contentTab,
+        ],
       },
     ],
   } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;

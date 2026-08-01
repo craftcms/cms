@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Closure;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -429,6 +430,25 @@ abstract class BaseField extends FieldLayoutElement
             // show errors regardless of whether the field is static
             'errors' => $this->fieldErrors($element),
         ]);
+    }
+
+    public function formElementValue(?ElementInterface $element = null): mixed
+    {
+        return $this->value($element);
+    }
+
+    public function configureFormElement(
+        InputElement $formElement,
+        ?ElementInterface $element = null,
+        bool $readOnly = false,
+    ): InputElement {
+        return $formElement
+            ->label($this->showLabel() ? $this->label() : null)
+            ->instructions($this->instructionsText($element, $readOnly))
+            ->tip($this->tipText($element, $readOnly))
+            ->warning($this->warningText($element, $readOnly))
+            ->required(! $readOnly && $this->required)
+            ->readOnly($readOnly);
     }
 
     /**
