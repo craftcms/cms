@@ -4229,7 +4229,7 @@ class Elements extends Component
                             $updated = false;
 
                             foreach ($generatedFields as $field) {
-                                $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+                                $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
 
                                 // handle 'true'/'false'/'null'/int/float values
                                 $value = App::normalizeValue($value) ?? '';

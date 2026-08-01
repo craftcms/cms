@@ -12,6 +12,7 @@
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5jmw-g85v-7jv2, GHSA-9c4j-cjw3-r3xx, GHSA-5r92-75j8-c534)
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-4mgp-5vf2-7c9m)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-hfjh-gw6x-7pv5)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-h9jh-v8vc-m5rp)
 
 ## 5.10.12 - 2026-07-22
 
