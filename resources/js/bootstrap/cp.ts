@@ -23,6 +23,8 @@ import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
 import {configureIcons} from './icons.js';
 import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
+import CheckboxSelectInputRenderer from '@/form-definitions/renderers/CheckboxSelectInputRenderer.vue';
+import ElementConditionInputRenderer from '@/form-definitions/renderers/ElementConditionInputRenderer.vue';
 import TextInputRenderer from '@/form-definitions/renderers/TextInputRenderer.vue';
 import DateInputRenderer from '@/form-definitions/renderers/DateInputRenderer.vue';
 import LightswitchInputRenderer from '@/form-definitions/renderers/LightswitchInputRenderer.vue';
@@ -58,6 +60,14 @@ function defaultPageLayout(name: string) {
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
 const components = createCpComponentRegistry();
+components.register(
+  'form-element:craft:checkbox-select-input',
+  CheckboxSelectInputRenderer
+);
+components.register(
+  'form-element:craft:element-condition-input',
+  ElementConditionInputRenderer
+);
 components.register('form-element:craft:text-input', TextInputRenderer);
 components.register('form-element:craft:number-input', NumberInputRenderer);
 components.register('form-element:craft:option-rows', OptionRowsRenderer);

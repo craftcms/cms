@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\FormDefinitions;
 
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\DateInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
@@ -36,6 +38,8 @@ class FormElementTypes
             Tabs::type() => ['class' => Tabs::class, 'container' => true, 'plugin' => null],
             Tab::type() => ['class' => Tab::class, 'container' => true, 'plugin' => null],
             TextInput::type() => ['class' => TextInput::class, 'container' => false, 'plugin' => null],
+            CheckboxSelectInput::type() => ['class' => CheckboxSelectInput::class, 'container' => false, 'plugin' => null],
+            ElementConditionInput::type() => ['class' => ElementConditionInput::class, 'container' => false, 'plugin' => null],
             NumberInput::type() => ['class' => NumberInput::class, 'container' => false, 'plugin' => null],
             SelectInput::type() => ['class' => SelectInput::class, 'container' => false, 'plugin' => null],
             LightswitchInput::type() => ['class' => LightswitchInput::class, 'container' => false, 'plugin' => null],

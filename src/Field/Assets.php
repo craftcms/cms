@@ -12,6 +12,12 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -37,9 +43,11 @@ use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -245,6 +253,114 @@ class Assets extends BaseRelationField
         }
 
         return $fileKindOptions;
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    {
+        $sourceOptions = $this->getSourceOptions();
+        $options = $this->formDefinitionOptions($sourceOptions);
+        $restricted = Condition::equals('restrictLocation', true);
+        $unrestricted = Condition::notEquals('restrictLocation', true);
+        $showSearchCondition = $this->singleSourceCondition($sourceOptions);
+        $showSearchCondition = $showSearchCondition === null
+            ? $restricted
+            : Condition::any($restricted, $showSearchCondition);
+        $dynamicPathTip = t('The path can contain variables like `{slug}` or `{author.username}`.');
+
+        if (Str::contains((string) InputNamespace::get(), Matrix::class)) {
+            $dynamicPathTip = Str::replace(
+                ['{slug}', '{author.username}'],
+                ['{owner.slug}', '{owner.author.username}'],
+                $dynamicPathTip,
+            );
+        }
+
+        $previewMode = SelectInput::make('previewMode')
+            ->label(t('Preview Mode'))
+            ->instructions(t('How the related {type} should be displayed within element indexes.', [
+                'type' => Asset::pluralLowerDisplayName(),
+            ]))
+            ->options([
+                ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
+                ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
+            ])
+            ->readOnly($readOnly);
+        $selectionCondition = $this->selectionConditionFormElement($readOnly);
+
+        return FormDefinition::make([
+            LightswitchInput::make('restrictLocation')
+                ->label(t('Restrict assets to a single location'))
+                ->readOnly($readOnly),
+            SelectInput::make('restrictedLocationSource')
+                ->label(t('Asset Location Source'))
+                ->instructions(t('The source where assets can be selected from.'))
+                ->options($options)
+                ->visibleWhen($restricted)
+                ->readOnly($readOnly),
+            TextInput::make('restrictedLocationSubpath')
+                ->label(t('Asset Location Subpath'))
+                ->instructions(t('The subpath where assets can be selected from.'))
+                ->tip($dynamicPathTip)
+                ->placeholder(t('path/to/subfolder'))
+                ->visibleWhen($restricted)
+                ->readOnly($readOnly),
+            LightswitchInput::make('allowSubfolders')
+                ->label(t('Allow subfolders'))
+                ->visibleWhen($restricted)
+                ->readOnly($readOnly),
+            TextInput::make('restrictedDefaultUploadSubpath')
+                ->label(t('Default Upload Location'))
+                ->instructions(t('Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'))
+                ->tip($dynamicPathTip)
+                ->placeholder(t('path/to/subfolder'))
+                ->visibleWhen(Condition::all(
+                    $restricted,
+                    Condition::equals('allowSubfolders', true),
+                ))
+                ->readOnly($readOnly),
+            $this->sourceFormElement($sourceOptions, $readOnly)
+                ->visibleWhen($unrestricted),
+            SelectInput::make('defaultUploadLocationSource')
+                ->label(t('Default Upload Location Source'))
+                ->instructions(t('The source where assets should be stored when they are uploaded directly to the field.'))
+                ->options($options)
+                ->visibleWhen($unrestricted)
+                ->readOnly($readOnly),
+            TextInput::make('defaultUploadLocationSubpath')
+                ->label(t('Default Upload Location Subpath'))
+                ->instructions(t('The subpath where assets should be stored when they are uploaded directly to the field.'))
+                ->tip($dynamicPathTip)
+                ->placeholder(t('path/to/subfolder'))
+                ->visibleWhen($unrestricted)
+                ->readOnly($readOnly),
+            ...($selectionCondition === null ? [] : [$selectionCondition]),
+            LightswitchInput::make('showUnpermittedVolumes')
+                ->label(t('Show unpermitted volumes'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('showUnpermittedFiles')
+                ->label(t('Show unpermitted files'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('restrictFiles')
+                ->label(t('Restrict allowed file types'))
+                ->readOnly($readOnly),
+            CheckboxSelectInput::make('allowedKinds')
+                ->label(t('Allowed Kinds'))
+                ->options($this->formDefinitionOptions($this->getFileKindOptions()))
+                ->visibleWhen(Condition::equals('restrictFiles', true))
+                ->readOnly($readOnly),
+            LightswitchInput::make('allowUploads')
+                ->label(t('Allow uploading directly to the field'))
+                ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
+                ->readOnly($readOnly),
+            ...$this->relationBehaviorFormElements(
+                $readOnly,
+                showSearchCondition: $showSearchCondition,
+                beforeAdvanced: [$previewMode],
+            ),
+        ]);
     }
 
     #[Override]

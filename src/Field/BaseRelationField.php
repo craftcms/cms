@@ -6,6 +6,15 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -537,6 +546,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $settings['selectionCondition'] = $selectionCondition->getConfig();
         }
 
+        $settings['useTargetSite'] = $this->targetSiteId !== null;
+
         return $settings;
     }
 
@@ -560,6 +571,367 @@ JS, [
         ]);
 
         return template($this->settingsTemplate, $variables);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    {
+        return FormDefinition::make($this->relationSettingsFormElements($readOnly));
+    }
+
+    /**
+     * @param  list<FormElement>  $afterSelectionCondition
+     * @return list<FormElement>
+     */
+    protected function relationSettingsFormElements(bool $readOnly, array $afterSelectionCondition = []): array
+    {
+        $sourceOptions = $this->getSourceOptions();
+        $structuredSourceCondition = $this->structuredSourceCondition($sourceOptions);
+        $selectionCondition = $this->selectionConditionFormElement($readOnly);
+
+        return [
+            $this->sourceFormElement($sourceOptions, $readOnly),
+            ...($selectionCondition === null ? [] : [$selectionCondition]),
+            ...$afterSelectionCondition,
+            ...$this->relationBehaviorFormElements(
+                $readOnly,
+                $structuredSourceCondition,
+                $this->singleSourceCondition($sourceOptions),
+                $structuredSourceCondition === null ? null : $this->negatedSourceCondition($sourceOptions),
+            ),
+        ];
+    }
+
+    /** @param list<array<string, mixed>> $sourceOptions */
+    protected function sourceFormElement(array $sourceOptions, bool $readOnly): FormElement
+    {
+        $options = $this->formDefinitionOptions($sourceOptions);
+        $elementType = static::elementType();
+
+        if ($this->allowMultipleSources) {
+            if ($options !== [] && ! array_any($options, fn (array $option): bool => $option['value'] === '*')) {
+                array_unshift($options, ['label' => t('All'), 'value' => '*']);
+            }
+
+            $element = CheckboxSelectInput::make('sources')
+                ->label(t('Sources'))
+                ->instructions(t('Which sources do you want to select {type} from?', [
+                    'type' => $elementType::pluralLowerDisplayName(),
+                ]))
+                ->options($options)
+                ->readOnly($readOnly);
+
+            return $options === []
+                ? $element->warning(t('No sources exist yet.'))->readOnly()
+                : $element->allOption('*');
+        }
+
+        $element = SelectInput::make('source')
+            ->label(t('Source'))
+            ->instructions(t('Which source do you want to select {type} from?', [
+                'type' => $elementType::pluralLowerDisplayName(),
+            ]))
+            ->options($options)
+            ->readOnly($readOnly);
+
+        return $options === []
+            ? $element->warning(t('No sources exist yet.'))->readOnly()
+            : $element;
+    }
+
+    protected function selectionConditionFormElement(bool $readOnly): ?ElementConditionInput
+    {
+        $elementType = static::elementType();
+        $condition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
+
+        if ($condition === null) {
+            return null;
+        }
+
+        return ElementConditionInput::make('selectionCondition')
+            ->label(t('Selectable {type} Condition', [
+                'type' => $elementType::pluralDisplayName(),
+            ]))
+            ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
+                'type' => $elementType::pluralLowerDisplayName(),
+            ])))
+            ->conditionClass($condition::class)
+            ->builderConfig($condition->getBuilderConfig())
+            ->sortable($condition->sortable)
+            ->addRuleLabel($condition->addRuleLabel)
+            ->readOnly($readOnly);
+    }
+
+    /**
+     * @param  list<FormElement>  $beforeAdvanced
+     * @return list<FormElement>
+     */
+    protected function relationBehaviorFormElements(
+        bool $readOnly,
+        ?Condition $structuredSourceCondition = null,
+        ?Condition $showSearchCondition = null,
+        ?Condition $unstructuredSourceCondition = null,
+        array $beforeAdvanced = [],
+    ): array {
+        $elementType = static::elementType();
+        $elementName = $elementType::lowerDisplayName();
+        $pluralElements = $elementType::pluralLowerDisplayName();
+        $maintainHierarchy = $structuredSourceCondition === null
+            ? []
+            : [LightswitchInput::make('maintainHierarchy')
+                ->label(t('Maintain hierarchy'))
+                ->instructions(t('Whether the structure of the related {type} should be maintained.', [
+                    'type' => $pluralElements,
+                ]))
+                ->visibleWhen($structuredSourceCondition)
+                ->readOnly($readOnly)];
+
+        if ($structuredSourceCondition !== null && $unstructuredSourceCondition === null) {
+            throw new RuntimeException('An unstructured source condition is required when structured sources are present.');
+        }
+
+        $regularLimitCondition = $structuredSourceCondition === null
+            ? null
+            : Condition::any(
+                Condition::notEquals('maintainHierarchy', true),
+                $unstructuredSourceCondition,
+            );
+        $hierarchyLimitCondition = $structuredSourceCondition === null
+            ? null
+            : Condition::all(
+                $structuredSourceCondition,
+                Condition::equals('maintainHierarchy', true),
+            );
+        $limits = $this->allowLimit
+            ? [
+                $this->numberSetting(
+                    'minRelations',
+                    t('Min Relations'),
+                    t('The minimum number of {type} that may be selected.', ['type' => $pluralElements]),
+                    $readOnly,
+                    $regularLimitCondition,
+                ),
+                $this->numberSetting(
+                    'maxRelations',
+                    t('Max Relations'),
+                    t('The maximum number of {type} that may be selected.', ['type' => $pluralElements]),
+                    $readOnly,
+                    $regularLimitCondition,
+                ),
+            ]
+            : [];
+        $branchLimit = $structuredSourceCondition === null
+            ? []
+            : [$this->numberSetting(
+                'branchLimit',
+                t('Branch Limit'),
+                t('Limit the number of selectable {type} branches.', ['type' => $elementName]),
+                $readOnly,
+                $hierarchyLimitCondition,
+            )];
+        $defaultPlacement = SelectInput::make('defaultPlacement')
+            ->label(t('Default {type} Placement', ['type' => $elementType::displayName()]))
+            ->instructions(t('Where new {type} should be placed by default in the field.', [
+                'type' => $pluralElements,
+            ]))
+            ->options([
+                ['label' => t('Before other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
+                ['label' => t('After other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_END],
+            ])
+            ->readOnly($readOnly);
+        $viewModeOptions = array_map(
+            fn (string $label, string $value): array => ['label' => $label, 'value' => $value],
+            $this->supportedViewModes(),
+            array_keys($this->supportedViewModes()),
+        );
+        $viewMode = count($viewModeOptions) === 1
+            ? []
+            : [SelectInput::make('viewMode')
+                ->label(t('View Mode'))
+                ->instructions(t('Choose how the field should look for authors.'))
+                ->options($viewModeOptions)
+                ->readOnly($readOnly)];
+
+        if ($regularLimitCondition !== null) {
+            $defaultPlacement->visibleWhen($regularLimitCondition);
+
+            foreach ($viewMode as $viewModeElement) {
+                $viewModeElement->visibleWhen($regularLimitCondition);
+            }
+        }
+
+        $showSearchInput = LightswitchInput::make('showSearchInput')
+            ->label(t('Show the search input'))
+            ->readOnly($readOnly);
+
+        if ($showSearchCondition !== null) {
+            $showSearchInput->visibleWhen($showSearchCondition);
+        }
+
+        return [
+            ...$maintainHierarchy,
+            ...$limits,
+            ...$branchLimit,
+            $defaultPlacement,
+            ...$viewMode,
+            TextInput::make('selectionLabel')
+                ->label(t('“Add” Button Label'))
+                ->instructions(t('The text label for {type} selection buttons.', ['type' => $elementName]))
+                ->placeholder(static::defaultSelectionLabel())
+                ->readOnly($readOnly),
+            $showSearchInput,
+            LightswitchInput::make('validateRelatedElements')
+                ->label(t('Validate related {type}', ['type' => $pluralElements]))
+                ->instructions(t('Whether validation errors on the related {type} should prevent the source element from being saved.', [
+                    'type' => $pluralElements,
+                ]))
+                ->readOnly($readOnly),
+            ...$beforeAdvanced,
+            LightswitchInput::make('allowSelfRelations')
+                ->label(t('Allow self relations'))
+                ->instructions(t('Whether {type} elements should be allowed to relate to themselves.', ['type' => $elementName]))
+                ->readOnly($readOnly),
+            ...$this->targetSiteFormElements($readOnly),
+        ];
+    }
+
+    protected function numberSetting(
+        string $name,
+        string $label,
+        string $instructions,
+        bool $readOnly,
+        ?Condition $visibleWhen = null,
+    ): NumberInput {
+        $element = NumberInput::make($name)
+            ->label($label)
+            ->instructions($instructions)
+            ->step(1)
+            ->readOnly($readOnly);
+
+        if ($visibleWhen !== null) {
+            $element->visibleWhen($visibleWhen);
+        }
+
+        return $element;
+    }
+
+    /** @return list<FormElement> */
+    protected function targetSiteFormElements(bool $readOnly): array
+    {
+        $elementType = static::elementType();
+
+        if (! Sites::isMultiSite() || ! $elementType::isLocalized()) {
+            return [];
+        }
+
+        $pluralElements = $elementType::pluralLowerDisplayName();
+        $elements = [
+            LightswitchInput::make('useTargetSite')
+                ->label(t('Relate {type} from a specific site?', ['type' => $pluralElements]))
+                ->readOnly($readOnly),
+            SelectInput::make('targetSiteId')
+                ->label(t('Which site should {type} be related from?', ['type' => $pluralElements]))
+                ->options(Sites::getAllSites()
+                    ->map(fn ($site): array => [
+                        'label' => t($site->getName(), category: 'site'),
+                        'value' => $site->uid,
+                    ])
+                    ->all())
+                ->visibleWhen(Condition::equals('useTargetSite', true))
+                ->readOnly($readOnly),
+        ];
+
+        if (static::canShowSiteMenu()) {
+            $elements[] = LightswitchInput::make('showSiteMenu')
+                ->label(t('Show the site menu'))
+                ->instructions(t('Whether the site menu should be shown for {type} selection modals.', [
+                    'type' => $elementType::lowerDisplayName(),
+                ]))
+                ->warning(t('Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.', [
+                    'type' => $pluralElements,
+                ]))
+                ->visibleWhen(Condition::notEquals('useTargetSite', true))
+                ->readOnly($readOnly);
+        }
+
+        return $elements;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $options
+     * @return list<array{label: string, value: string|int|float|bool|null}>
+     */
+    protected function formDefinitionOptions(array $options): array
+    {
+        return array_values(array_map(
+            fn (array $option): array => [
+                'label' => $option['label'],
+                'value' => $option['value'],
+            ],
+            $options,
+        ));
+    }
+
+    /** @param list<array<string, mixed>> $sourceOptions */
+    protected function structuredSourceCondition(array $sourceOptions): ?Condition
+    {
+        $conditions = $this->structuredSourceConditions($sourceOptions);
+
+        return $this->anyCondition($conditions);
+    }
+
+    /** @param list<array<string, mixed>> $sourceOptions */
+    protected function singleSourceCondition(array $sourceOptions): ?Condition
+    {
+        if (! $this->allowMultipleSources) {
+            return null;
+        }
+
+        return $this->anyCondition(array_values(array_map(
+            fn (array $option): Condition => Condition::equals('sources', [$option['value']]),
+            array_filter($sourceOptions, fn (array $option): bool => $option['value'] !== '*'),
+        )));
+    }
+
+    /** @param list<array<string, mixed>> $sourceOptions */
+    protected function negatedSourceCondition(array $sourceOptions): Condition
+    {
+        $conditions = $this->structuredSourceConditions($sourceOptions, negated: true);
+
+        return count($conditions) === 1 ? $conditions[0] : Condition::all(...$conditions);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $sourceOptions
+     * @return list<Condition>
+     */
+    protected function structuredSourceConditions(array $sourceOptions, bool $negated = false): array
+    {
+        $conditions = [];
+
+        foreach ($sourceOptions as $option) {
+            if (empty($option['data']['structure-id'])) {
+                continue;
+            }
+
+            $name = $this->allowMultipleSources ? 'sources' : 'source';
+            $value = $this->allowMultipleSources ? [$option['value']] : $option['value'];
+            $conditions[] = $negated
+                ? Condition::notEquals($name, $value)
+                : Condition::equals($name, $value);
+        }
+
+        return $conditions;
+    }
+
+    /** @param list<Condition> $conditions */
+    protected function anyCondition(array $conditions): ?Condition
+    {
+        if ($conditions === []) {
+            return null;
+        }
+
+        return count($conditions) === 1 ? $conditions[0] : Condition::any(...$conditions);
     }
 
     #[Override]

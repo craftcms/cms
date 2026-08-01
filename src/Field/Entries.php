@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -87,6 +89,21 @@ class Entries extends BaseRelationField
         }
 
         parent::__construct($config);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    {
+        return FormDefinition::make($this->relationSettingsFormElements($readOnly, [
+            LightswitchInput::make('showUnpermittedSections')
+                ->label(t('Show unpermitted sections'))
+                ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('showUnpermittedEntries')
+                ->label(t('Show unpermitted entries'))
+                ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
+                ->readOnly($readOnly),
+        ]));
     }
 
     #[Override]
