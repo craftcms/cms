@@ -25,6 +25,7 @@ import {configureIcons} from './icons.js';
 import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
 import CheckboxSelectInputRenderer from '@/form-definitions/renderers/CheckboxSelectInputRenderer.vue';
 import ElementConditionInputRenderer from '@/form-definitions/renderers/ElementConditionInputRenderer.vue';
+import EditableTableInputRenderer from '@/form-definitions/renderers/EditableTableInputRenderer.vue';
 import TextInputRenderer from '@/form-definitions/renderers/TextInputRenderer.vue';
 import DateInputRenderer from '@/form-definitions/renderers/DateInputRenderer.vue';
 import LightswitchInputRenderer from '@/form-definitions/renderers/LightswitchInputRenderer.vue';
@@ -70,6 +71,10 @@ components.register(
 components.register(
   'form-element:craft:element-condition-input',
   ElementConditionInputRenderer
+);
+components.register(
+  'form-element:craft:editable-table-input',
+  EditableTableInputRenderer
 );
 components.register('form-element:craft:text-input', TextInputRenderer);
 components.register('form-element:craft:number-input', NumberInputRenderer);

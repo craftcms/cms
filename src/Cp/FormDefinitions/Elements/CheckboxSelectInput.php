@@ -6,7 +6,13 @@ namespace CraftCms\Cms\Cp\FormDefinitions\Elements;
 
 class CheckboxSelectInput extends InputElement
 {
-    /** @var list<array{label: string, value: string|int|float|bool|null}> */
+    /**
+     * @var list<array{
+     *     label: string,
+     *     value: string|int|float|bool|null,
+     *     icon?: string,
+     * }>
+     */
     private array $options = [];
 
     private string|int|float|bool|null $allOption = null;
@@ -18,7 +24,13 @@ class CheckboxSelectInput extends InputElement
         return 'craft:checkbox-select-input';
     }
 
-    /** @param list<array{label: string, value: string|int|float|bool|null}> $options */
+    /**
+     * @param  list<array{
+     *     label: string,
+     *     value: string|int|float|bool|null,
+     *     icon?: string,
+     * }>  $options
+     */
     public function options(array $options): self
     {
         $this->options = $options;

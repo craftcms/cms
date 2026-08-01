@@ -6,6 +6,11 @@ namespace CraftCms\Cms\Field\Concerns;
 
 use Closure;
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
@@ -208,6 +213,62 @@ trait ProvidesLinkField
             })
             ->values()
             ->all();
+    }
+
+    /** @return list<FormElement> */
+    protected function linkSettingsFormElements(bool $readOnly): array
+    {
+        $types = $this->orderedLinkSettingsTypes();
+        $configuredTypes = $this->configuredLinkTypesForSettings();
+        $typeSettings = $this->{$this->namespacedAttribute('typeSettings')};
+        $elements = [];
+
+        foreach ($types as $typeId => $typeClass) {
+            $linkType = $configuredTypes[$typeId] ?? ComponentHelper::createComponent([
+                'type' => $typeClass,
+                'settings' => $typeSettings[$typeId] ?? [],
+            ], BaseLinkType::class);
+            $definition = $linkType->getSettingsFormDefinition($readOnly);
+
+            if ($definition !== null) {
+                $elements[] = Group::fromDefinition($definition, "typeSettings.{$typeId}")
+                    ->key("link-type:{$typeId}")
+                    ->visibleWhen(Condition::contains('types', $typeId));
+            }
+        }
+
+        $advancedFields = $this->{$this->namespacedAttribute('advancedFields')};
+        $advancedFields = [
+            ...$advancedFields,
+            ...array_values(array_diff($this->supportedLinkAdvancedFields(), $advancedFields)),
+        ];
+        $advancedFieldOptions = array_map(
+            fn (array $option): array => [
+                ...$option,
+                'label' => strip_tags((string) $option['label']),
+            ],
+            $this->linkAdvancedFieldOptions($advancedFields),
+        );
+
+        return [
+            CheckboxSelectInput::make('types')
+                ->label(t('Allowed Link Types'))
+                ->instructions(t('The link types that should be available when inserting links.'))
+                ->options($this->linkTypeOptions($types))
+                ->sortable()
+                ->required()
+                ->readOnly($readOnly),
+            ...$elements,
+            LightswitchInput::make('showLabelField')
+                ->label(t('Show the “Label” field'))
+                ->readOnly($readOnly),
+            CheckboxSelectInput::make('advancedFields')
+                ->label(t('Advanced Fields'))
+                ->instructions(t('Choose which advanced fields should be available when inserting links.'))
+                ->options($advancedFieldOptions)
+                ->sortable()
+                ->readOnly($readOnly),
+        ];
     }
 
     protected function orderedLinkSettingsTypes(): iterable

@@ -6,6 +6,9 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -319,6 +322,31 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        return FormDefinition::make([
+            NumberInput::make('minAddresses')
+                ->label(t('Min {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->min(0)
+                ->readOnly($readOnly),
+            NumberInput::make('maxAddresses')
+                ->label(t('Max {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->min(0)
+                ->readOnly($readOnly),
+            SelectInput::make('viewMode')
+                ->label(t('View Mode'))
+                ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
+                ->options([
+                    ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                    ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                ])
+                ->readOnly($readOnly),
+        ]);
     }
 
     private function settingsHtml(bool $readOnly): string

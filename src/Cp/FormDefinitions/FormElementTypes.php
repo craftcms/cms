@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\DateInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
@@ -43,6 +44,7 @@ class FormElementTypes
             TextInput::type() => ['class' => TextInput::class, 'container' => false, 'plugin' => null],
             CheckboxSelectInput::type() => ['class' => CheckboxSelectInput::class, 'container' => false, 'plugin' => null],
             ElementConditionInput::type() => ['class' => ElementConditionInput::class, 'container' => false, 'plugin' => null],
+            EditableTableInput::type() => ['class' => EditableTableInput::class, 'container' => false, 'plugin' => null],
             FieldLayoutInput::type() => ['class' => FieldLayoutInput::class, 'container' => false, 'plugin' => null],
             NumberInput::type() => ['class' => NumberInput::class, 'container' => false, 'plugin' => null],
             SelectInput::type() => ['class' => SelectInput::class, 'container' => false, 'plugin' => null],

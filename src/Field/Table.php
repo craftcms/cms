@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -41,6 +47,8 @@ use function CraftCms\Cms\template;
 
 /**
  * Table represents a Table field.
+ *
+ * @phpstan-import-type EditableTableColumn from EditableTableInput
  */
 class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
 {
@@ -268,6 +276,113 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        $dynamicRows = Condition::equals('staticRows', false);
+
+        return FormDefinition::make([
+            EditableTableInput::make('columns')
+                ->label(t('Table Columns'))
+                ->instructions(t('Define the columns your table should have.'))
+                ->columns([
+                    [
+                        'key' => 'heading',
+                        'label' => t('Column Heading'),
+                        'type' => 'text',
+                        'autoPopulate' => 'handle',
+                    ],
+                    [
+                        'key' => 'handle',
+                        'label' => t('Handle'),
+                        'type' => 'text',
+                        'code' => true,
+                    ],
+                    [
+                        'key' => 'width',
+                        'label' => t('Width'),
+                        'type' => 'text',
+                        'code' => true,
+                        'width' => 50,
+                    ],
+                    [
+                        'key' => 'type',
+                        'label' => t('Type'),
+                        'type' => 'select',
+                        'options' => array_map(
+                            fn (string $label, string $value): array => compact('label', 'value'),
+                            self::typeOptions(),
+                            array_keys(self::typeOptions()),
+                        ),
+                        'nestedOptions' => true,
+                    ],
+                ])
+                ->addRowLabel(t('Add a column'))
+                ->defaultRow([
+                    'heading' => '',
+                    'handle' => '',
+                    'width' => '',
+                    'type' => 'singleline',
+                ])
+                ->keyed()
+                ->definesColumns()
+                ->readOnly($readOnly),
+            EditableTableInput::make('defaults')
+                ->label(t('Default Values'))
+                ->instructions(t('Define the default values for the field.'))
+                ->columns($this->defaultValueColumns())
+                ->addRowLabel(t('Add a row'))
+                ->includeRowId()
+                ->columnsFrom('columns')
+                ->readOnly($readOnly),
+            LightswitchInput::make('staticRows')
+                ->label(t('Static Rows'))
+                ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
+                ->readOnly($readOnly),
+            NumberInput::make('minRows')
+                ->label(t('Min Rows'))
+                ->instructions(t('The minimum number of rows the field is allowed to have.'))
+                ->min(0)
+                ->visibleWhen($dynamicRows)
+                ->readOnly($readOnly),
+            NumberInput::make('maxRows')
+                ->label(t('Max Rows'))
+                ->instructions(t('The maximum number of rows the field is allowed to have.'))
+                ->min(0)
+                ->visibleWhen($dynamicRows)
+                ->readOnly($readOnly),
+            TextInput::make('addRowLabel')
+                ->label(t('Add Row Label'))
+                ->instructions(t('Insert the button label for adding a new row to the table.'))
+                ->visibleWhen($dynamicRows)
+                ->readOnly($readOnly),
+        ]);
+    }
+
+    /** @return list<EditableTableColumn> */
+    private function defaultValueColumns(): array
+    {
+        $columns = [];
+
+        foreach ($this->columns as $key => $column) {
+            $type = match ($column['type']) {
+                'heading', 'singleline' => 'text',
+                default => $column['type'],
+            };
+            $definition = array_filter([
+                'key' => $key,
+                'label' => (string) ($column['heading'] ?: $column['handle'] ?: $key),
+                'type' => $type,
+                'width' => $column['width'] ?? null,
+                'class' => $column['type'] === 'heading' ? 'heading' : null,
+                'options' => $type === 'select' ? array_values($column['options'] ?? []) : null,
+            ], fn (mixed $value): bool => $value !== null && $value !== '');
+            $columns[] = $definition;
+        }
+
+        return $columns;
     }
 
     private function settingsHtml(bool $readOnly): string

@@ -6,6 +6,14 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
@@ -354,6 +362,115 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        $volumeOptions = $this->volumeOptions();
+        $availableVolumeOptions = $volumeOptions;
+        $availableVolumes = CheckboxSelectInput::make('availableVolumes')
+            ->label(t('Available Volumes'))
+            ->instructions(t('The volumes that should be available when selecting assets.'))
+            ->readOnly($readOnly);
+
+        if ($availableVolumeOptions === []) {
+            $availableVolumes
+                ->warning(t('No volumes exist yet.'))
+                ->readOnly();
+        } else {
+            array_unshift($availableVolumeOptions, ['label' => t('All'), 'value' => '*']);
+            $availableVolumes
+                ->options($availableVolumeOptions)
+                ->allOption('*');
+        }
+
+        return FormDefinition::make([
+            SelectInput::make('flavor')
+                ->label(t('Markdown Flavor'))
+                ->instructions(t('The Markdown flavor that should be used when rendering this field.'))
+                ->options(self::flavorOptions())
+                ->visibleWhen(Condition::equals('encode', false))
+                ->readOnly($readOnly),
+            LightswitchInput::make('inlineOnly')
+                ->label(t('Inline Only'))
+                ->instructions(t('Whether the field should only render inline Markdown, without wrapping paragraphs.'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('showToolbar')
+                ->label(t('Show Toolbar'))
+                ->instructions(t('Whether the editor toolbar should be visible.'))
+                ->readOnly($readOnly),
+            CheckboxSelectInput::make('toolbarButtons')
+                ->label(t('Toolbar Buttons'))
+                ->instructions(t('Choose which buttons should be available in the editor toolbar.'))
+                ->options(self::toolbarButtonOptions())
+                ->visibleWhen(Condition::equals('showToolbar', true))
+                ->readOnly($readOnly),
+            LightswitchInput::make('showStats')
+                ->label(t('Show Stats'))
+                ->instructions(t('Whether the editor should show character, word, and line counts.'))
+                ->readOnly($readOnly),
+            TextInput::make('placeholder')
+                ->label(t('Placeholder Text'))
+                ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
+                ->readOnly($readOnly),
+            NumberInput::make('initialRows')
+                ->label(t('Initial Rows'))
+                ->min(1)
+                ->readOnly($readOnly),
+            NumberInput::make('charLimit')
+                ->label(t('Character Limit'))
+                ->instructions(t('The maximum number of characters the field is allowed to have.'))
+                ->min(1)
+                ->readOnly($readOnly),
+            NumberInput::make('byteLimit')
+                ->label(t('Byte Limit'))
+                ->instructions(t('The maximum number of bytes the field is allowed to have.'))
+                ->min(1)
+                ->readOnly($readOnly),
+            Group::fromDefinition(
+                FormDefinition::make($this->linkSettingsFormElements($readOnly)),
+                'linkSettings',
+            )->key('link-settings'),
+            $availableVolumes,
+            LightswitchInput::make('showUnpermittedVolumes')
+                ->label(t('Show unpermitted volumes'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('showUnpermittedFiles')
+                ->label(t('Show unpermitted files'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
+                ->readOnly($readOnly),
+            ...($volumeOptions === [] ? [] : [
+                SelectInput::make('uploadVolume')
+                    ->label(t('Upload Volume'))
+                    ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
+                    ->options([
+                        ['label' => t('No uploads'), 'value' => ''],
+                        ...$volumeOptions,
+                    ])
+                    ->readOnly($readOnly),
+            ]),
+            LightswitchInput::make('encode')
+                ->label(t('Encode HTML'))
+                ->instructions(t('Whether HTML should be encoded before rendering the Markdown.'))
+                ->warning(t('Enabling this will enforce the Original Markdown flavor.'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('sanitizeHtml')
+                ->label(t('Sanitize HTML'))
+                ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'))
+                ->warning(t('Disable this at your own risk!'))
+                ->readOnly($readOnly),
+            SelectInput::make('htmlSanitizer')
+                ->label(t('HTML Sanitizer'))
+                ->instructions(t('You can register custom HTML sanitizers as {ext} files in {path}.', [
+                    'ext' => '`.php`',
+                    'path' => '`config/craft/sanitizers/`',
+                ]))
+                ->options($this->htmlSanitizerOptions()->all())
+                ->visibleWhen(Condition::equals('sanitizeHtml', true))
+                ->readOnly($readOnly),
+        ]);
     }
 
     private function settingsHtml(bool $readOnly): string

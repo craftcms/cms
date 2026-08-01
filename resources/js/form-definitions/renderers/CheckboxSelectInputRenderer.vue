@@ -4,10 +4,11 @@
   import type {FormElementBinding, JsonValue} from '../types';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/checkbox-group/checkbox-group';
+  import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/reorder-button/reorder-button';
 
   type OptionValue = string | number | boolean | null;
-  type Option = {label: string; value: OptionValue};
+  type Option = {label: string; value: OptionValue; icon?: string};
 
   const props = defineProps<{
     config: Record<string, JsonValue>;
@@ -184,6 +185,7 @@
           @change="updateValue(option, $event)"
         />
         <label slot="label" :for="String(inputAttributes(option, index).id)">
+          <craft-icon v-if="option.icon" :name="option.icon"></craft-icon>
           {{ option.label }}
         </label>
       </craft-checkbox>

@@ -9,10 +9,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -239,53 +235,8 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
-        $types = $this->orderedLinkSettingsTypes();
-        $configuredTypes = $this->configuredLinkTypesForSettings();
-        $typeSettings = [];
-
-        foreach ($types as $typeId => $typeClass) {
-            $linkType = $configuredTypes[$typeId] ?? ComponentHelper::createComponent([
-                'type' => $typeClass,
-                'settings' => $this->typeSettings[$typeId] ?? [],
-            ], BaseLinkType::class);
-            $definition = $linkType->getSettingsFormDefinition($readOnly);
-
-            if ($definition !== null) {
-                $typeSettings[] = Group::fromDefinition($definition, "typeSettings.{$typeId}")
-                    ->key("link-type:{$typeId}")
-                    ->visibleWhen(Condition::contains('types', $typeId));
-            }
-        }
-
-        $advancedFields = [
-            ...$this->advancedFields,
-            ...array_values(array_diff($this->supportedLinkAdvancedFields(), $this->advancedFields)),
-        ];
-        $advancedFieldOptions = array_map(
-            fn (array $option): array => [
-                ...$option,
-                'label' => strip_tags((string) $option['label']),
-            ],
-            $this->linkAdvancedFieldOptions($advancedFields),
-        );
         $elements = [
-            CheckboxSelectInput::make('types')
-                ->label(t('Allowed Link Types'))
-                ->instructions(t('The link types that should be available when inserting links.'))
-                ->options($this->linkTypeOptions($types))
-                ->sortable()
-                ->required()
-                ->readOnly($readOnly),
-            ...$typeSettings,
-            LightswitchInput::make('showLabelField')
-                ->label(t('Show the “Label” field'))
-                ->readOnly($readOnly),
-            CheckboxSelectInput::make('advancedFields')
-                ->label(t('Advanced Fields'))
-                ->instructions(t('Choose which advanced fields should be available when inserting links.'))
-                ->options($advancedFieldOptions)
-                ->sortable()
-                ->readOnly($readOnly),
+            ...$this->linkSettingsFormElements($readOnly),
             NumberInput::make('maxLength')
                 ->label(t('Max Length'))
                 ->instructions(t('The maximum length (in bytes) the field can hold.'))
