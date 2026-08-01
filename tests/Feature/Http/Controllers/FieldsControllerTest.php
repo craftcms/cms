@@ -3,14 +3,18 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\FieldTypes;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\MultiSelect;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Collection;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
 
@@ -80,6 +84,8 @@ it('can render the index', function () {
 });
 
 it('can create a new field', function () {
+    $typeId = Html::id(PlainText::class);
+
     $this->get(action([FieldsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/fields/Edit')
@@ -90,7 +96,12 @@ it('can create a new field', function () {
             ->has('fieldTypeOptions')
             ->has('supportedTranslationMethods')
             ->has('translationMethodOptions', 5)
-            ->has('settings.html'));
+            ->where('settingsInputNamespace', "types[{$typeId}]")
+            ->where('settingsBindingScope', "types.{$typeId}")
+            ->where('settingsValues.types.'.$typeId.'.uiMode', 'normal')
+            ->where('settingsErrors', [])
+            ->has('settingsDefinition.elements')
+            ->missing('settings'));
 });
 
 it('preselects a requested field type when creating', function (mixed $type, string $expectedType) {
@@ -128,7 +139,7 @@ it('can edit a field', function () {
             ->where('field.type', PlainText::class)
             ->where('metadataHtml', fn ($value) => is_string($value) && $value !== '')
             ->where('missingFieldPlaceholder', null)
-            ->has('settings.html'));
+            ->has('settingsDefinition.elements'));
 });
 
 it('renders the edit screen read-only without admin changes', function () {
@@ -136,14 +147,28 @@ it('renders the edit screen read-only without admin changes', function () {
         'type' => PlainText::class,
         'name' => 'My plaintext field',
         'handle' => 'plainText',
+        'settings' => [
+            'placeholder' => 'Existing placeholder',
+            'multiline' => true,
+        ],
     ]));
 
     Cms::config()->allowAdminChanges(false);
+    $typeId = Html::id(PlainText::class);
 
     $this->get(sprintf('/%s/settings/fields/edit/%d', Cms::config()->cpTrigger, $field->id))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/fields/Edit')
-            ->where('readOnly', true));
+            ->where('readOnly', true)
+            ->where('settingsInputNamespace', "types[{$typeId}]")
+            ->where('settingsBindingScope', "types.{$typeId}")
+            ->where('settingsValues.types.'.$typeId.'.placeholder', 'Existing placeholder')
+            ->where('settingsValues.types.'.$typeId.'.multiline', true)
+            ->where('settingsErrors', [])
+            ->where('settingsDefinition', fn (Collection $definition): bool => array_all(
+                $definition->get('elements'),
+                fn (array $element): bool => ($element['props']['readOnly'] ?? false) === true,
+            )));
 });
 
 it('serves the legacy screen to slideout requests', function (?callable $setUp) {
@@ -172,9 +197,34 @@ it('serves the legacy screen to slideout requests', function (?callable $setUp) 
 ]);
 
 it('can render the settings of a field', function () {
+    $typeId = Html::id(PlainText::class);
+
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => PlainText::class,
-    ])->assertOk();
+        'settings' => [],
+    ])->assertOk()
+        ->assertJsonPath('inputNamespace', "types[{$typeId}]")
+        ->assertJsonPath('bindingScope', "types.{$typeId}")
+        ->assertJsonPath("values.types.{$typeId}.uiMode", 'normal')
+        ->assertJsonPath('errors', [])
+        ->assertJsonFragment(['type' => 'craft:select-input', 'name' => 'uiMode'])
+        ->assertJsonMissingPath('settingsHtml');
+});
+
+it('rejects unsupported settings protocols', function () {
+    $this->postJson(action([FieldsController::class, 'renderSettings']), [
+        'type' => PlainText::class,
+        'settings' => 42,
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('settings');
+});
+
+it('continues serving settings HTML to the legacy field editor', function () {
+    $this->postJson(action([FieldsController::class, 'renderSettings']), [
+        'type' => PlainText::class,
+    ])->assertOk()
+        ->assertJsonPath('settingsHtml', fn ($html) => is_string($html) && $html !== '')
+        ->assertJsonMissingPath('definition');
 });
 
 it('preserves values between rendering settings', function () {
@@ -183,17 +233,43 @@ it('preserves values between rendering settings', function () {
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => RadioButtons::class,
         'oldType' => MultiSelect::class,
-        'oldNamespace' => 'namespace',
-        'settings' => http_build_query([
-            'namespace' => [
-                'options' => [
-                    ['label' => $label, 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
-                ],
+        'settings' => [
+            'options' => [
+                ['label' => $label, 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
             ],
-        ]),
+        ],
     ])
         ->assertOk()
-        ->assertSee($label);
+        ->assertJsonPath('values.types.'.Html::id(RadioButtons::class).'.options.0.label', $label);
+});
+
+it('omits the settings section when the field type has no settings', function () {
+    app(FieldTypes::class)->register(SettingsFreeField::class);
+
+    $this->postJson(action([FieldsController::class, 'renderSettings']), [
+        'type' => SettingsFreeField::class,
+        'settings' => [],
+    ])->assertOk()
+        ->assertJsonPath('definition', null)
+        ->assertJsonMissingPath('settingsHtml');
+});
+
+it('preserves unavailable field settings behind Missing Component behavior', function () {
+    $expectedType = 'missing\\plugin\\Field';
+    $field = FieldModel::factory()->create([
+        'type' => $expectedType,
+        'settings' => ['customSetting' => 'preserved value'],
+    ]);
+    Fields::invalidateCaches();
+    $typeId = Html::id($expectedType);
+
+    $this->get(action([FieldsController::class, 'edit'], ['fieldId' => $field->id]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/fields/Edit')
+            ->where('field.type', $expectedType)
+            ->where('settingsDefinition', null)
+            ->where('settingsValues.types.'.$typeId.'.customSetting', 'preserved value')
+            ->where('missingFieldPlaceholder', fn ($html) => is_string($html) && $html !== ''));
 });
 
 it('can save a new field', function () {
@@ -213,27 +289,70 @@ it('can save a new field', function () {
     });
 });
 
-it('can save a new field with settings posted as a url-encoded string', function () {
+it('can save a new field with host-owned settings', function () {
+    $typeId = Html::id(PlainText::class);
+
     $this->postJson(action([FieldsController::class, 'store']), [
         'type' => PlainText::class,
         'name' => 'My plaintext field',
-        'handle' => 'plainTextViaString',
+        'handle' => 'plainTextWithNativeSettings',
+        'types' => [
+            $typeId => [
+                'placeholder' => 'Type something…',
+                'multiline' => true,
+            ],
+        ],
+    ])->assertOk();
+
+    tap(FieldModel::query()->latest('id')->firstOrFail(), function (FieldModel $field) {
+        expect($field->handle)->toBe('plainTextWithNativeSettings');
+        expect($field->settings['placeholder'])->toBe('Type something…');
+        expect($field->settings['multiline'])->toBeTrue();
+    });
+});
+
+it('uses live adapter island settings when saving a field', function () {
+    $typeId = Html::id(PlainText::class);
+
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'type' => PlainText::class,
+        'name' => 'My legacy plugin field',
+        'handle' => 'legacyPluginField',
+        'types' => [
+            $typeId => [
+                'placeholder' => 'Stale host value',
+            ],
+        ],
         'typeSettings' => http_build_query([
             'types' => [
-                'CraftCms-Cms-Field-PlainText' => [
-                    'placeholder' => 'Type something…',
-                    'multiline' => '1',
+                $typeId => [
+                    'placeholder' => 'Live island value',
                 ],
             ],
         ]),
     ])->assertOk();
 
-    tap(FieldModel::query()->latest('id')->firstOrFail(), function (FieldModel $field) {
-        expect($field->handle)->toBe('plainTextViaString');
-        expect($field->settings['placeholder'])->toBe('Type something…');
-        expect($field->settings['multiline'])->toBeTrue();
-    });
+    expect(FieldModel::query()->latest('id')->firstOrFail()->settings['placeholder'])
+        ->toBe('Live island value');
 });
+
+it('returns field setting validation errors under the binding scope', function () {
+    $typeId = Html::id(PlainText::class);
+
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'type' => PlainText::class,
+        'name' => 'Invalid plaintext field',
+        'handle' => 'invalidPlainText',
+        'types' => [
+            $typeId => [
+                'initialRows' => 0,
+            ],
+        ],
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors("types.{$typeId}.initialRows");
+});
+
+class SettingsFreeField extends Field {}
 
 it('can delete a field', function () {
     Fields::saveField($field = Fields::createField([

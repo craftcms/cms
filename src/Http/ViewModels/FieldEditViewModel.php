@@ -4,25 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Html\FieldHtml;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
-use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\View\HtmlFragment;
-use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\Support\Str;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class FieldEditViewModel extends ViewModel
 {
     public function __construct(
-        private readonly Field $field,
+        private readonly FieldInterface $field,
         private readonly Fields $fieldsService,
         private readonly bool $readOnly = false,
     ) {}
@@ -47,7 +45,7 @@ class FieldEditViewModel extends ViewModel
             'instructions' => $this->field->instructions,
             'searchable' => $this->field->searchable,
             'type' => $this->typeClass(),
-            'translationMethod' => $this->field->translationMethodValue,
+            'translationMethod' => $this->field->translationMethod,
             'translationKeyFormat' => $this->field->translationKeyFormat,
         ];
     }
@@ -94,7 +92,9 @@ class FieldEditViewModel extends ViewModel
             $options[] = [
                 'value' => $class,
                 'label' => $name,
-                'icon' => $isCurrent ? $this->field->getIcon() : $class::icon(),
+                'icon' => $isCurrent && $this->field instanceof Iconic
+                    ? $this->field->getIcon()
+                    : $class::icon(),
                 'id' => Html::id($class),
                 'compatible' => $isCurrent || $compatibleFieldTypes->contains($class),
             ];
@@ -164,18 +164,53 @@ class FieldEditViewModel extends ViewModel
         return Sites::isMultiSite();
     }
 
-    /**
-     * The current field type's settings, rendered as a legacy HTML island.
-     * Inputs are namespaced `types[<typeId>]` to match what the save and
-     * render-settings endpoints expect.
-     */
-    public function settings(): HtmlFragment
+    public function settingsInputNamespace(): string
     {
-        return HtmlStack::capture(fn (): string => template('settings/fields/_type-settings', [
-            'field' => $this->field,
-            'namespace' => sprintf('types[%s]', Html::id($this->typeClass())),
-            'readOnly' => $this->readOnly,
-        ], templateMode: TemplateMode::Cp));
+        return sprintf('types[%s]', $this->typeId());
+    }
+
+    public function settingsBindingScope(): string
+    {
+        return sprintf('types.%s', $this->typeId());
+    }
+
+    /** @return array{elements: list<array<string, mixed>>}|null */
+    public function settingsDefinition(): ?array
+    {
+        return InputNamespace::with(
+            $this->settingsInputNamespace(),
+            fn (): ?array => $this->field->getSettingsFormDefinition($this->readOnly)?->toArray(),
+        );
+    }
+
+    /** @return array{types: array<string, array<string, mixed>>} */
+    public function settingsValues(): array
+    {
+        $settings = $this->field instanceof MissingField
+            ? $this->field->settings ?? []
+            : $this->field->getSettings();
+
+        return [
+            'types' => [
+                $this->typeId() => $settings,
+            ],
+        ];
+    }
+
+    /** @return array<string, string[]> */
+    public function settingsErrors(): array
+    {
+        $settingsAttributes = array_flip($this->field->settingsAttributes());
+        $errors = [];
+
+        foreach ($this->field->errors()->getMessages() as $attribute => $messages) {
+            $path = isset($settingsAttributes[Str::before($attribute, '.')])
+                ? sprintf('%s.%s', $this->settingsBindingScope(), $attribute)
+                : $attribute;
+            $errors[$path] = $messages;
+        }
+
+        return $errors;
     }
 
     /**
@@ -187,5 +222,10 @@ class FieldEditViewModel extends ViewModel
         return $this->field instanceof MissingField
             ? $this->field->expectedType
             : $this->field::class;
+    }
+
+    private function typeId(): string
+    {
+        return Html::id($this->typeClass());
     }
 }

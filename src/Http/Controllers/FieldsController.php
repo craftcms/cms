@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use Closure;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -184,20 +185,36 @@ class FieldsController
         $request->validate([
             'type' => ['required', 'string'],
             'oldType' => ['nullable', 'string'],
-            'settings' => ['nullable', 'string'],
+            'settings' => [
+                'nullable',
+                static function (string $attribute, mixed $value, Closure $fail): void {
+                    if (! is_array($value) && ! is_string($value)) {
+                        $fail(t('The settings must be a string or an array.'));
+                    }
+                },
+            ],
+            'typeSettings' => ['nullable', 'string'],
             'namespace' => ['nullable', 'string'],
             'oldNamespace' => ['nullable', 'string'],
         ]);
 
         $type = $request->input('type');
         $oldType = $request->input('oldType');
+        $usesNativeSettingsProtocol = is_array($request->input('settings'));
         $field = $this->fieldsService->createField($type);
 
         if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
-            $settingsStr = $request->input('settings', '');
-            parse_str((string) $settingsStr, $postedOldSettings);
-            $oldNamespace = $request->input('oldNamespace');
-            $settings = Arr::get($postedOldSettings, $oldNamespace, []);
+            if ($usesNativeSettingsProtocol) {
+                $settings = $request->array('settings');
+            } else {
+                parse_str((string) $request->input('settings', ''), $postedOldSettings);
+                $settings = Arr::get($postedOldSettings, $request->input('oldNamespace'), []);
+            }
+
+            if (is_string($typeSettings = $request->input('typeSettings'))) {
+                parse_str($typeSettings, $postedOldSettings);
+                $settings = Arr::get($postedOldSettings, sprintf('types.%s', Html::id($oldType)), []);
+            }
 
             // Remove any settings that aren't defined by the same class between both types
             $settings = array_filter($settings, function ($attribute) use ($type, $oldType) {
@@ -214,15 +231,27 @@ class FieldsController
             Typecast::configure($field, $settings);
         }
 
-        $html = template('settings/fields/_type-settings', [
-            'field' => $field,
-            'namespace' => $request->input('namespace'),
-        ]);
+        if (! $usesNativeSettingsProtocol) {
+            return new JsonResponse([
+                'settingsHtml' => template('settings/fields/_type-settings', [
+                    'field' => $field,
+                    'namespace' => $request->input('namespace'),
+                ]),
+                'headHtml' => $this->HtmlStack->headHtml(),
+                'bodyHtml' => $this->HtmlStack->bodyHtml(),
+            ]);
+        }
+
+        /** @var Field $field */
+        $viewModel = new FieldEditViewModel($field, $this->fieldsService);
 
         return new JsonResponse([
-            'settingsHtml' => $html,
-            'headHtml' => $this->HtmlStack->headHtml(),
-            'bodyHtml' => $this->HtmlStack->bodyHtml(),
+            'definition' => $viewModel->settingsDefinition(),
+            'values' => $viewModel->settingsValues(),
+            'errors' => $viewModel->settingsErrors(),
+            'bindingScope' => $viewModel->settingsBindingScope(),
+            'inputNamespace' => $viewModel->settingsInputNamespace(),
+            'readOnly' => false,
         ]);
     }
 
@@ -237,6 +266,7 @@ class FieldsController
             'searchable' => ['nullable', 'boolean'],
             'translationMethod' => ['nullable', 'string'],
             'translationKeyFormat' => ['nullable', 'string'],
+            'types' => ['nullable', 'array'],
             'typeSettings' => ['nullable', 'string'],
         ]);
 
@@ -269,7 +299,9 @@ class FieldsController
         if (! $this->fieldsService->saveField($field)) {
             Flash::error(t('Couldn’t save field.'));
 
-            throw ValidationException::withMessages($field->errors()->getMessages());
+            throw ValidationException::withMessages(
+                new FieldEditViewModel($field, $this->fieldsService)->settingsErrors(),
+            );
         }
 
         if ($request->input('addAnother')) {
@@ -286,9 +318,8 @@ class FieldsController
     }
 
     /**
-     * The Inertia edit screen posts the field type settings island as a
-     * URL-encoded string (`typeSettings`), since its inputs are server-rendered
-     * HTML rather than form state. The legacy Twig form posts a `types` array.
+     * Native Inertia and legacy Twig forms post a `types` array. Adapter-owned
+     * Legacy Settings Islands post the live DOM as `typeSettings`.
      */
     private function typeSettingsFromRequest(Request $request, string $type): array
     {

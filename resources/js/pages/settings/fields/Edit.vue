@@ -8,9 +8,14 @@
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
-  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import Pane from '@/common/components/Pane.vue';
+  import FormDefinitionRenderer from '@/form-definitions/FormDefinitionRenderer.vue';
+  import type {
+    FormDefinitionData,
+    FormErrors,
+    FormValues,
+  } from '@/form-definitions/types';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {
@@ -24,6 +29,10 @@
     icon: string | null;
     id: string;
     compatible: boolean;
+  }
+
+  interface FieldSettingsValues extends FormValues {
+    types: Record<string, Record<string, any>>;
   }
 
   const props = defineProps<{
@@ -42,7 +51,11 @@
     supportedTranslationMethods: Record<string, string[]>;
     translationMethodOptions: Array<{value: string; label: string}>;
     isMultiSite: boolean;
-    settings: CraftCms.Cms.View.HtmlFragment;
+    settingsDefinition: FormDefinitionData | null;
+    settingsValues: FieldSettingsValues;
+    settingsErrors: FormErrors;
+    settingsBindingScope: string;
+    settingsInputNamespace: string;
     readOnly: boolean;
     metadataHtml: string | null;
     missingFieldPlaceholder: string | null;
@@ -58,7 +71,9 @@
     searchable: props.field.searchable,
     translationMethod: props.field.translationMethod,
     translationKeyFormat: props.field.translationKeyFormat ?? '',
+    ...props.settingsValues,
   });
+  const formDefinitionValues = form as unknown as FormValues;
 
   // Auto-generate the handle from the name until the user edits it directly.
   const handleGenerator = useInputGenerator(
@@ -70,69 +85,79 @@
     handleGenerator.stop();
   }
 
-  // The field type's own settings are a server-rendered legacy HTML island
-  // (each type's getSettingsHtml()), swapped out via `fields/render-settings`
-  // when the type changes. Its inputs — namespaced `types[<typeId>]` — aren't
-  // part of the Inertia form, so they're serialized out of the DOM at submit.
   const settingsHost = ref<HTMLElement | null>(null);
-  const settingsFragment = ref<CraftCms.Cms.View.HtmlFragment | null>(
-    props.settings
-  );
+  const settingsDefinition = ref(props.settingsDefinition);
+  const settingsBindingScope = ref(props.settingsBindingScope);
+  const settingsErrors = ref(props.settingsErrors);
+  const settingsType = ref(form.type);
+  const selectedType = ref(form.type);
   const settingsLoading = ref(false);
   let settingsRequestId = 0;
 
   const typeOptionFor = (type: string | undefined) =>
     props.fieldTypeOptions.find((option) => option.value === type);
-  const currentTypeOption = computed(() => typeOptionFor(form.type));
+  const currentTypeOption = computed(() => typeOptionFor(settingsType.value));
+  const formDefinitionErrors = computed(() => ({
+    ...settingsErrors.value,
+    ...form.errors,
+  }));
 
-  watch(
-    () => form.type,
-    async (type, oldType) => {
-      // Serialize before the island unmounts so compatible settings carry over.
-      const settings = settingsHost.value
-        ? serializeFormInputs(settingsHost.value)
-        : '';
+  function serializedLegacySettings(): string | undefined {
+    if (!settingsHost.value?.querySelector('craft-legacy-settings-island')) {
+      return undefined;
+    }
 
-      const requestId = ++settingsRequestId;
-      settingsLoading.value = true;
-      settingsFragment.value = null;
+    return serializeFormInputs(settingsHost.value);
+  }
 
-      try {
-        const {data} = await actionClient.post(renderSettings().url, {
-          type,
-          oldType,
-          settings,
-          namespace: `types[${typeOptionFor(type)?.id ?? ''}]`,
-          oldNamespace: `types[${typeOptionFor(oldType)?.id ?? ''}]`,
-        });
+  watch(selectedType, async (type) => {
+    if (type === settingsType.value) {
+      return;
+    }
 
-        if (requestId !== settingsRequestId) {
-          return;
-        }
+    const oldType = settingsType.value;
+    const oldTypeId = typeOptionFor(oldType)?.id;
 
-        settingsFragment.value = {
-          html: data.settingsHtml ?? '',
-          headHtml: data.headHtml ?? '',
-          bodyHtml: data.bodyHtml ?? '',
-        };
-      } catch {
-        if (requestId === settingsRequestId) {
-          settingsFragment.value = {html: '', headHtml: '', bodyHtml: ''};
-        }
-      } finally {
-        if (requestId === settingsRequestId) {
-          settingsLoading.value = false;
-        }
+    const requestId = ++settingsRequestId;
+    settingsLoading.value = true;
+
+    try {
+      const {data} = await actionClient.post(renderSettings().url, {
+        type,
+        oldType,
+        settings: oldTypeId ? (form.types[oldTypeId] ?? {}) : {},
+        typeSettings: serializedLegacySettings(),
+      });
+
+      if (requestId !== settingsRequestId) {
+        return;
       }
 
-      // Keep the translation method valid for the new type.
-      const supported = props.supportedTranslationMethods[type] ?? [];
+      settingsDefinition.value = data.definition;
+      settingsBindingScope.value = data.bindingScope;
+      settingsErrors.value = data.errors;
+      form.types = data.values.types;
+      form.type = type;
+      settingsType.value = type;
+    } catch (error) {
+      if (requestId === settingsRequestId) {
+        selectedType.value = settingsType.value;
+      }
 
-      if (!supported.includes(form.translationMethod)) {
-        form.translationMethod = supported[0] ?? 'none';
+      throw error;
+    } finally {
+      if (requestId === settingsRequestId) {
+        settingsLoading.value = false;
       }
     }
-  );
+
+    // Keep the translation method valid for the new type.
+    const supported = props.supportedTranslationMethods[type] ?? [];
+
+    if (!supported.includes(form.translationMethod)) {
+      form.translationMethod = supported[0] ?? 'none';
+    }
+  });
 
   const availableTranslationMethods = computed(
     () => props.supportedTranslationMethods[form.type] ?? []
@@ -154,12 +179,11 @@
   );
 
   const {save} = useSettingsSave(form, store, {
-    transform: (data) => ({
-      ...data,
-      typeSettings: settingsHost.value
-        ? serializeFormInputs(settingsHost.value)
-        : '',
-    }),
+    transform: (data) => {
+      const typeSettings = serializedLegacySettings();
+
+      return typeSettings === undefined ? data : {...data, typeSettings};
+    },
   });
 
   const formActionItems = computed(() => [
@@ -234,7 +258,7 @@
           :help-text="t('What type of field is this?')"
           id="type"
           name="type"
-          v-model="form.type"
+          v-model="selectedType"
           :error="form.errors.type"
           :disabled="readOnly"
         >
@@ -300,19 +324,27 @@
           />
         </template>
 
-        <hr />
+        <template v-if="settingsLoading || settingsDefinition">
+          <hr />
 
-        <div ref="settingsHost">
-          <div :id="currentTypeOption?.id">
-            <div v-if="settingsLoading" class="flex justify-center p-4">
-              <craft-spinner></craft-spinner>
+          <div ref="settingsHost" :aria-busy="settingsLoading">
+            <div :id="currentTypeOption?.id">
+              <div v-if="settingsLoading" class="flex justify-center p-4">
+                <craft-spinner></craft-spinner>
+              </div>
+              <div :inert="settingsLoading || undefined">
+                <FormDefinitionRenderer
+                  v-if="settingsDefinition"
+                  :definition="settingsDefinition"
+                  :binding-scope="settingsBindingScope"
+                  :values="formDefinitionValues"
+                  :errors="formDefinitionErrors"
+                  :read-only="readOnly"
+                />
+              </div>
             </div>
-            <HtmlFragmentRenderer
-              as="craft-field-group"
-              :fragment="settingsFragment"
-            />
           </div>
-        </div>
+        </template>
       </craft-field-group>
     </Pane>
     <div class="col-span-1" v-if="metadataHtml">
