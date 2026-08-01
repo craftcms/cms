@@ -5,6 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -551,6 +561,173 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    {
+        $indexMode = Condition::equals('viewMode', self::VIEW_MODE_INDEX);
+        $tableView = Condition::all($indexMode, Condition::equals('includeTableView', true));
+        $elements = [
+            ObjectSelectInput::make('entryTypes')
+                ->label(t('Entry Types'))
+                ->instructions(t('Choose the types of entries that can be created in this field.'))
+                ->options($this->entryTypeOptions())
+                ->identityKey('uid')
+                ->required()
+                ->readOnly($readOnly),
+        ];
+
+        if (Sites::isMultiSite()) {
+            $elements[] = SelectInput::make('propagationMethod')
+                ->label(t('Propagation Method'))
+                ->instructions(t('Which sites should entries be saved to?'))
+                ->options([
+                    ['label' => t('Only save entries to the site they were created in'), 'value' => PropagationMethod::None->value],
+                    ['label' => t('Save entries to other sites in the same site group'), 'value' => PropagationMethod::SiteGroup->value],
+                    ['label' => t('Save entries to other sites with the same language'), 'value' => PropagationMethod::Language->value],
+                    ['label' => t('Save entries to all sites the owner element is saved in'), 'value' => PropagationMethod::All->value],
+                    ['label' => t('Custom…'), 'value' => PropagationMethod::Custom->value],
+                ])
+                ->readOnly($readOnly);
+            $elements[] = TextInput::make('propagationKeyFormat')
+                ->label(t('Propagation Key Format'))
+                ->instructions(t('Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'))
+                ->attributes(['class' => 'code'])
+                ->visibleWhen(Condition::equals('propagationMethod', PropagationMethod::Custom->value))
+                ->readOnly($readOnly);
+        }
+
+        $columns = [[
+            'key' => 'uriFormat',
+            'label' => t('Entry URI Format'),
+            'placeholder' => t('Leave blank if entries don’t have URLs'),
+            'code' => true,
+        ]];
+
+        if (! Cms::config()->headlessMode) {
+            $columns[] = [
+                'key' => 'template',
+                'label' => t('Template'),
+                'code' => true,
+            ];
+        }
+
+        array_push(
+            $elements,
+            KeyedTableInput::make('siteSettings')
+                ->label(t('Site Settings'))
+                ->instructions(t('Choose the site-specific settings for nested entries.'))
+                ->columns($columns)
+                ->rows(Collection::make(Sites::getAllSites())->map(
+                    fn ($site): array => [
+                        'key' => $site->uid,
+                        'label' => t($site->name, category: 'site'),
+                    ],
+                )->values()->all())
+                ->readOnly($readOnly),
+            NumberInput::make('minEntries')
+                ->label(t('Min {type}', ['type' => t('Entries')]))
+                ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))
+                ->min(0)
+                ->readOnly($readOnly),
+            NumberInput::make('maxEntries')
+                ->label(t('Max {type}', ['type' => t('Entries')]))
+                ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('entries')]))
+                ->min(0)
+                ->readOnly($readOnly),
+            LightswitchInput::make('enableVersioning')
+                ->label(t('Enable versioning for entries in this field'))
+                ->readOnly($readOnly),
+            SelectInput::make('viewMode')
+                ->label(t('View Mode'))
+                ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('entries')]))
+                ->options([
+                    ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                    ['label' => t('Card grid'), 'value' => self::VIEW_MODE_CARDS_GRID],
+                    ['label' => t('Blocks'), 'value' => self::VIEW_MODE_BLOCKS],
+                    ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                ])
+                ->readOnly($readOnly),
+            LightswitchInput::make('includeTableView')
+                ->label(t('Include Table View'))
+                ->instructions(t('Whether the element index should allow viewing nested {type} in a table.', ['type' => t('entries')]))
+                ->visibleWhen($indexMode)
+                ->readOnly($readOnly),
+            CheckboxSelectInput::make('defaultTableColumns')
+                ->label(t('Default Table Columns'))
+                ->instructions(t('Choose which table columns should be visible by default.'))
+                ->options(array_map(
+                    fn (array $option): array => [
+                        'label' => strip_tags((string) $option['label']),
+                        'value' => $option['value'],
+                    ],
+                    self::defaultTableColumnOptions($this->_entryTypes),
+                ))
+                ->sortable()
+                ->visibleWhen($tableView)
+                ->readOnly($readOnly),
+            SelectInput::make('defaultIndexViewMode')
+                ->label(t('Default View Mode'))
+                ->options(array_map(
+                    fn (array $viewMode): array => [
+                        'label' => $viewMode['title'],
+                        'value' => $viewMode['mode'],
+                    ],
+                    array_values(array_filter(
+                        Entry::indexViewModes(),
+                        fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false),
+                    )),
+                ))
+                ->visibleWhen($tableView)
+                ->readOnly($readOnly),
+            SelectInput::make('pageSize')
+                ->label(t('{type} Per Page', ['type' => t('Entries')]))
+                ->instructions(t('The total number of {type} to display per page within the element index.', ['type' => t('entries')]))
+                ->options(array_map(
+                    fn (int $pageSize): array => ['label' => (string) $pageSize, 'value' => $pageSize],
+                    [10, 20, 50, 100],
+                ))
+                ->visibleWhen($indexMode)
+                ->readOnly($readOnly),
+            TextInput::make('createButtonLabel')
+                ->label(t('“New” Button Label'))
+                ->instructions(t('The text label for the entry creation button.'))
+                ->placeholder($this->defaultCreateButtonLabel())
+                ->readOnly($readOnly),
+        );
+
+        return FormDefinition::make($elements);
+    }
+
+    /**
+     * @return list<array{
+     *     key: string,
+     *     label: string,
+     *     value: array<string, mixed>,
+     * }>
+     */
+    private function entryTypeOptions(): array
+    {
+        $configured = [];
+
+        foreach ($this->_entryTypes as $entryType) {
+            $configured[(string) $entryType->uid] = $entryType;
+        }
+
+        $options = [];
+
+        foreach (app(EntryTypes::class)->getAllEntryTypes() as $entryType) {
+            $uid = (string) $entryType->uid;
+            $entryType = $configured[$uid] ?? $entryType;
+            $options[$uid] = [
+                'key' => $uid,
+                'label' => $entryType->getUiLabel(),
+                'value' => $entryType->getUsageConfig(),
+            ];
+        }
+
+        return array_values($options);
     }
 
     private function settingsHtml(bool $readOnly): string

@@ -34,6 +34,9 @@ import SelectInputRenderer from '@/form-definitions/renderers/SelectInputRendere
 import TimeInputRenderer from '@/form-definitions/renderers/TimeInputRenderer.vue';
 import ColorPaletteInputRenderer from '@/form-definitions/renderers/ColorPaletteInputRenderer.vue';
 import MoneyInputRenderer from '@/form-definitions/renderers/MoneyInputRenderer.vue';
+import FieldLayoutInputRenderer from '@/form-definitions/renderers/FieldLayoutInputRenderer.vue';
+import KeyedTableInputRenderer from '@/form-definitions/renderers/KeyedTableInputRenderer.vue';
+import ObjectSelectInputRenderer from '@/form-definitions/renderers/ObjectSelectInputRenderer.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -83,6 +86,18 @@ components.register(
   ColorPaletteInputRenderer
 );
 components.register('form-element:craft:money-input', MoneyInputRenderer);
+components.register(
+  'form-element:craft:field-layout-input',
+  FieldLayoutInputRenderer
+);
+components.register(
+  'form-element:craft:keyed-table-input',
+  KeyedTableInputRenderer
+);
+components.register(
+  'form-element:craft:object-select-input',
+  ObjectSelectInputRenderer
+);
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {

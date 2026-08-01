@@ -9,11 +9,14 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ColorPaletteInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\DateInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
@@ -40,10 +43,13 @@ class FormElementTypes
             TextInput::type() => ['class' => TextInput::class, 'container' => false, 'plugin' => null],
             CheckboxSelectInput::type() => ['class' => CheckboxSelectInput::class, 'container' => false, 'plugin' => null],
             ElementConditionInput::type() => ['class' => ElementConditionInput::class, 'container' => false, 'plugin' => null],
+            FieldLayoutInput::type() => ['class' => FieldLayoutInput::class, 'container' => false, 'plugin' => null],
             NumberInput::type() => ['class' => NumberInput::class, 'container' => false, 'plugin' => null],
             SelectInput::type() => ['class' => SelectInput::class, 'container' => false, 'plugin' => null],
             LightswitchInput::type() => ['class' => LightswitchInput::class, 'container' => false, 'plugin' => null],
+            KeyedTableInput::type() => ['class' => KeyedTableInput::class, 'container' => false, 'plugin' => null],
             OptionRows::type() => ['class' => OptionRows::class, 'container' => false, 'plugin' => null],
+            ObjectSelectInput::type() => ['class' => ObjectSelectInput::class, 'container' => false, 'plugin' => null],
             DateInput::type() => ['class' => DateInput::class, 'container' => false, 'plugin' => null],
             TimeInput::type() => ['class' => TimeInput::class, 'container' => false, 'plugin' => null],
             ColorPaletteInput::type() => ['class' => ColorPaletteInput::class, 'container' => false, 'plugin' => null],

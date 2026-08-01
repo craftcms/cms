@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -22,6 +25,8 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
@@ -362,6 +367,62 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    {
+        $fieldLayout = $this->getFieldLayout();
+
+        return FormDefinition::make([
+            FieldLayoutInput::make("fieldLayouts.{$fieldLayout->uid}")
+                ->label(t('Field Layout'))
+                ->availableElements($this->fieldLayoutElementOptions())
+                ->withGeneratedFields()
+                ->readOnly($readOnly),
+            SelectInput::make('viewMode')
+                ->label(t('View Mode'))
+                ->options([
+                    ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
+                    ['label' => t('In a pane'), 'value' => self::VIEW_MODE_PANE],
+                    ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
+                ])
+                ->readOnly($readOnly),
+        ]);
+    }
+
+    /**
+     * @return list<array{
+     *     key: string,
+     *     label: string,
+     *     value: array<string, mixed>,
+     *     multiple: bool,
+     * }>
+     */
+    private function fieldLayoutElementOptions(): array
+    {
+        $fieldLayout = $this->getFieldLayout();
+        $customFields = array_merge(...array_values($fieldLayout->getAvailableCustomFields()));
+        $elements = [
+            ...$fieldLayout->getAvailableNativeFields(),
+            ...$customFields,
+            ...$fieldLayout->getAvailableUiElements(),
+        ];
+
+        return array_map(function (FieldLayoutElement $element): array {
+            $label = html_entity_decode(strip_tags($element->selectorHtml()), ENT_QUOTES | ENT_HTML5);
+            $label = trim((string) preg_replace('/\s+/u', ' ', $label));
+            $key = $element instanceof CustomFieldElement
+                ? "field:{$element->getFieldUid()}"
+                : sprintf('%s:%s', $element::class, $element instanceof BaseField ? $element->attribute() : '');
+
+            return [
+                'key' => $key,
+                'label' => $label,
+                'value' => ['type' => $element::class] + $element->toArray(),
+                'multiple' => $element->isMultiInstance(),
+            ];
+        }, $elements);
     }
 
     private function settingsHtml(bool $readOnly): string
