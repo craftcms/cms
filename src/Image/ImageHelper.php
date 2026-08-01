@@ -10,7 +10,6 @@ use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\Log;
 use Imagick;
-use Imagine\Image\Format;
 use InvalidArgumentException;
 use Throwable;
 use TypeError;
@@ -84,7 +83,7 @@ class ImageHelper
     {
         $extension = strtolower($extension);
         if ($extension === 'heif') {
-            $extension = Format::ID_HEIC;
+            $extension = 'heic';
         }
 
         $formats = Images::getSupportedImageFormats();

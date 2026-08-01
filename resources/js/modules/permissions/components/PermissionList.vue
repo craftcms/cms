@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import {
     getNestedKeys,
     hasNested,
@@ -110,7 +110,7 @@
     <craft-button
       type="button"
       size="small"
-      appearance="plain"
+      :variant="ButtonVariant.Plain"
       :disabled="disabled"
       @click="toggleAll"
     >

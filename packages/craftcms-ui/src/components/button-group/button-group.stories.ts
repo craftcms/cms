@@ -70,29 +70,23 @@ export const RadioMode: Story = {
 };
 
 /**
- * Radio mode works across all button appearances. The selected button retains
- * its `active` styling regardless of the chosen appearance.
+ * Radio mode works across all button variants. The selected button retains
+ * its `active` styling regardless of the chosen variant.
  */
-export const RadioModeAppearances: Story = {
-  name: 'Radio mode — appearances',
+export const RadioModeVariants: Story = {
+  name: 'Radio mode — variants',
   render: () => html`
     <div style="display:flex;flex-direction:column;gap:1rem">
-      ${(['fill', 'plain'] as const).map(
-        (appearance) => html`
+      ${(['solid', 'fill', 'outline', 'dashed', 'plain'] as const).map(
+        (variant) => html`
           <div style="display:flex;align-items:center;gap:1rem">
             <span style="width:4rem;font-size:0.75rem;color:var(--c-text-muted)"
-              >${appearance}</span
+              >${variant}</span
             >
-            <craft-button-group name="view-${appearance}" value="b">
-              <craft-button appearance="${appearance}" value="a"
-                >A</craft-button
-              >
-              <craft-button appearance="${appearance}" value="b"
-                >B</craft-button
-              >
-              <craft-button appearance="${appearance}" value="c"
-                >C</craft-button
-              >
+            <craft-button-group name="view-${variant}" value="b">
+              <craft-button variant="${variant}" value="a">A</craft-button>
+              <craft-button variant="${variant}" value="b">B</craft-button>
+              <craft-button variant="${variant}" value="c">C</craft-button>
             </craft-button-group>
           </div>
         `
@@ -141,7 +135,7 @@ export const FormAssociated: Story = {
         <craft-button value="table">Table</craft-button>
         <craft-button value="thumbs">Thumbnails</craft-button>
       </craft-button-group>
-      <craft-button type="submit" appearance="filled">Submit</craft-button>
+      <craft-button type="submit" variant="fill">Submit</craft-button>
     </form>
   `,
 };

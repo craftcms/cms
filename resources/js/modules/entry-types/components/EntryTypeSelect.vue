@@ -4,6 +4,7 @@
   import {
     appendBodyHtml,
     appendHeadHtml,
+    ButtonVariant,
     serializeFormInputs,
     t,
   } from '@craftcms/ui';
@@ -88,9 +89,10 @@
   }
 
   function removeItem(itemId: number) {
-    emit('update:modelValue', [
-      ...props.modelValue.filter((item) => item.id !== itemId),
-    ]);
+    emit(
+      'update:modelValue',
+      props.modelValue.filter((item) => item.id !== itemId)
+    );
   }
 
   const slideout = ref<SlideoutInstance | undefined>(undefined);
@@ -315,7 +317,7 @@
       <craft-button
         type="button"
         slot="invoker"
-        appearance="filled"
+        :variant="ButtonVariant.Dashed"
         v-if="!readOnly"
       >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>

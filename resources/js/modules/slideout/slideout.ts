@@ -13,11 +13,13 @@
  *   `new.target === Slideout` guard below), and `index.ts` assigns the
  *   global as `compatify(Slideout)` so `.extend()`/`this.base()` dispatch
  *   into it.
- * - **The `$`-prefixed members are public API and stay jQuery collections.**
- *   External code reads them directly (`ElementEditor.js`'s
- *   `this.$container.data('slideout')`, `CP.js`'s
- *   `$modal.find('.slideout').data('slideout')`, `CpScreenSlideout`'s
- *   chrome). `declare const $` / `declare const Craft` are page globals.
+ * - **The `$`-prefixed members are public API.** External code reads them
+ *   directly (`ElementEditor.js`'s `this.$container.data('slideout')`,
+ *   `CP.js`'s `$modal.find('.slideout').data('slideout')`,
+ *   `CpScreenSlideout`'s chrome), so the names stay. Most are still jQuery
+ *   collections; {@link Slideout.$liveRegion} is a plain element, matching the
+ *   ported Garnish `Modal` — `Craft.cp.announce()` normalizes either form.
+ *   `declare const $` / `declare const Craft` are page globals.
  */
 
 import {
@@ -79,10 +81,16 @@ function resetBackgroundLayerVisibility(): void {
  * A single status live region shared by every slideout — it moves (not
  * clones) into whichever container most recently initialized, since screen
  * readers only announce one status region at a time.
+ *
+ * Built with the DOM API rather than `$('<span …>')` so that merely importing
+ * this module doesn't need jQuery: `cp.ts` pulls it in on every Inertia CP
+ * page, including ones that never load the legacy bundle, and a bare `$` at
+ * module scope would throw there and abort the whole CP bootstrap. Same
+ * construction as the modern Garnish `Modal` port's live region.
  */
-const $sharedLiveRegion = $(
-  '<span class="visually-hidden" role="status"></span>'
-);
+const sharedLiveRegion = document.createElement('span');
+sharedLiveRegion.className = 'visually-hidden';
+sharedLiveRegion.setAttribute('role', 'status');
 
 /**
  * Settings accepted by {@link Slideout}. Pass a `Partial<SlideoutSettings>` to
@@ -202,7 +210,8 @@ export class Slideout extends Base<SlideoutSettings> {
   $outerContainer: any = null;
   $container: any = null;
   $shade: any = null;
-  $liveRegion: any = null;
+  /** Plain element, not a jQuery collection — see the class docblock. */
+  $liveRegion: HTMLElement | null = null;
   $triggerElement: any = null;
   isOpen = false;
   isOpening = false;
@@ -253,8 +262,9 @@ export class Slideout extends Base<SlideoutSettings> {
 
     Craft.trapFocusWithin(this.$container);
 
-    this.$liveRegion = $sharedLiveRegion;
-    this.$liveRegion.appendTo(this.$container);
+    // `appendChild` moves the one shared node, same as `appendTo` did.
+    this.$liveRegion = sharedLiveRegion;
+    this.$container[0].appendChild(this.$liveRegion);
 
     if (this.settings!.autoOpen) {
       this.open();

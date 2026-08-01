@@ -13,7 +13,7 @@ import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
 import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
-import {Appearance, ButtonAppearance, ButtonVariant, t} from '@craftcms/ui';
+import {ButtonVariant, t} from '@craftcms/ui';
 import {Slideout} from '@/modules/slideout';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
@@ -192,7 +192,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     // Add the “New Field” button — Craft.ui returns jQuery; unwrap to native.
     const createFieldBtn = document.createElement('craft-button');
-    createFieldBtn.appearance = Appearance.Outline;
+    createFieldBtn.variant = ButtonVariant.Dashed;
     createFieldBtn.size = 'small';
     createFieldBtn.classList.add('w-full');
     createFieldBtn.innerText = t('New field');
@@ -365,7 +365,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       type="button" 
       class="w-full fld-add-btn" 
       command="--add-field"
-      appearance="outline"
+      variant="outline"
       size="small"
     >
       ${t('Add')}
@@ -546,12 +546,12 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     const cancelBtn = document.createElement('craft-button');
     cancelBtn.type = 'button';
-    cancelBtn.appearance = ButtonAppearance.Fill;
+    cancelBtn.variant = ButtonVariant.Fill;
     cancelBtn.innerText = t('Close');
     $footer.appendChild(cancelBtn);
 
     const submitBtn = document.createElement('craft-button');
-    submitBtn.variant = ButtonVariant.Accent;
+    submitBtn.variant = ButtonVariant.Primary;
     submitBtn.innerText = t('Apply');
     $footer.appendChild(submitBtn);
 

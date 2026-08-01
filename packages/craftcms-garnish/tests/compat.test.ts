@@ -9,7 +9,7 @@
  *   - (conditionally) `Garnish.Modal.extend({...})` works if Modal is exported
  */
 
-import {describe, it, expect, beforeEach, vi} from 'vitest';
+import {describe, it, expect, beforeEach, vi} from 'vite-plus/test';
 import GarnishCompat, {
   compatify,
   installGarnishCompat,

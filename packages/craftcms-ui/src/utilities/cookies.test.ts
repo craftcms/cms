@@ -1,5 +1,5 @@
 import {Cookies} from './cookies.js';
-import {beforeEach, describe, expect, test} from 'vitest';
+import {beforeEach, describe, expect, test} from 'vite-plus/test';
 
 describe('Cookies', () => {
   beforeEach(() => {

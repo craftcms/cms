@@ -18,8 +18,7 @@
     type="button"
     @click="emit('click')"
     size="small"
-    appearance="plain"
-    variant="danger"
+    variant="danger-plain"
     v-bind="$attrs"
   >
     <craft-icon :name="icon" :label="label"></craft-icon>

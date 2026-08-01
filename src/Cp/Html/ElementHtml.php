@@ -16,6 +16,7 @@ use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
+use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
@@ -24,9 +25,10 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -74,7 +76,6 @@ readonly class ElementHtml
             'showThumb' => true,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
-            'appearance' => null,
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -94,7 +95,6 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'appearance' => $config['appearance'],
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
@@ -334,6 +334,19 @@ readonly class ElementHtml
      * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
      * - `selectable` – Whether the card should include a checkbox input
      * - `showActionMenu` – Whether the card should include an action menu
+     * - `showNestedActions` – Whether the action menu should include
+     *   behavior-less Duplicate/Delete items (marked
+     *   `data-duplicate-action`/`data-delete-action`) for the hosting
+     *   controller to wire up. A server-side signal — set by the render
+     *   paths that know the card belongs to a nested-element context
+     *   ({@see NestedElementManager::getCardsHtml()},
+     *   `app/render-elements`), never by client-supplied configs — with each
+     *   item gated on the current user's permissions. May also be the owner
+     *   context as an array (`ownerElementType`/`ownerId`/`ownerSiteId`/
+     *   `attribute` — {@see NestedElementManager::getCardsData()}), in which
+     *   case the Duplicate and Delete items carry self-contained
+     *   `elements/duplicate`/`nested-elements/delete` actions instead of
+     *   relying on a hosting manager
      * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      */
@@ -343,11 +356,11 @@ readonly class ElementHtml
 
         $attributes = $this->cardAttributes($element, $config);
 
-        $html = Html::beginTag('div', $attributes).
+        $html = Html::beginTag('craft-card', $attributes).
             $this->elementCardHeaderHtml($element, $config).
             $this->elementCardContentHtml($element, $config).
             $this->elementCardFooterHtml($element, $config).
-            Html::endTag('div'); // .card
+            Html::endTag('craft-card'); // .card
 
         event($event = new ElementCardHtmlResolving($element, $config['context'], $html));
 
@@ -363,32 +376,75 @@ readonly class ElementHtml
     {
         $config = $this->normalizeCardConfig($element, $config);
 
+        [$showEditButton, $editAction] = $this->cardEditButtonConfig($element, $config);
+
+        return Html::beginTag('div', ['class' => 'card-titlebar']).
+            $this->elementCardLabelHtml($element, $config).
+            Html::beginTag('div', ['class' => 'card-actions-container']).
+            Html::beginTag('div', ['class' => 'card-actions']).
+            ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
+            $this->cardActionsHtml($element, $config, $showEditButton, $editAction).
+            Html::endTag('div'). // .card-actions
+            Html::endTag('div'). // .card-actions-container
+            Html::endTag('div'); // .card-titlebar
+    }
+
+    /**
+     * Renders the label portion of an element’s card header: its icon, card
+     * title, and modified-status badge. Suited to a card component's `label`
+     * slot. Accepts the same `$config` settings as {@see elementCardHtml()}.
+     */
+    public function elementCardLabelHtml(ElementInterface $element, array $config = []): string
+    {
+        $icon = $element instanceof Iconic ? $element->getIcon() : null;
+        $title = $element->getCardTitle();
+
+        return Html::beginTag('div', [
+            'class' => ['flex', 'flex-nowrap', 'gap-1', 'grow-1', 'items-center'],
+        ]).
+            ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
+            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
+            Html::endTag('div'). // .flex
+            $this->cardModifiedStatusHtml($element);
+    }
+
+    /**
+     * Renders the actions portion of an element’s card header — the edit
+     * button, action menu, and (when sortable) drag handle — as a plain
+     * fragment, suited to a card component's `actions` slot. Accepts the
+     * same `$config` settings as {@see elementCardHtml()}.
+     */
+    public function elementCardActionsHtml(ElementInterface $element, array $config = []): string
+    {
+        $config = $this->normalizeCardConfig($element, $config);
+
+        [$showEditButton, $editAction] = $this->cardEditButtonConfig($element, $config);
+
+        return $this->cardActionsHtml($element, $config, $showEditButton, $editAction);
+    }
+
+    /**
+     * Resolves whether the card gets an edit button and, when it does, the
+     * `craft:edit-element` event action it should run — handled by the
+     * slideout module's window listener, which opens an element editor
+     * slideout (or the element's edit page on ctrl-click).
+     *
+     * @return array{0: bool, 1: array<string, mixed>|null} `[showEditButton, editAction]`
+     */
+    private function cardEditButtonConfig(ElementInterface $element, array $config): array
+    {
         $showEditButton = $config['showEditButton'] && Gate::check('view', $element);
 
-        $editId = null;
-        if ($showEditButton) {
-            $editId = sprintf('action-edit-%s', mt_rand());
-            HtmlStack::jsWithVars(fn ($id, $elementType, $settings, $cpEditUrl) => <<<JS
-$('#' + $id).on('activate', (ev) => {
-  if ($cpEditUrl && Garnish.isCtrlKeyPressed(ev.originalEvent)) {
-    window.open($cpEditUrl)
-  } else {
-    // focus on the button so that when the slideout is closed, it's returned to the button
-    $(ev.currentTarget).focus();
+        if (! $showEditButton) {
+            return [false, null];
+        }
 
-    const settings = $settings;
-    // if settings have draftId but the replaced card doesn't have the data-draft-id attribute anymore,
-    // remove the draftId from the settings before creating element editor, so the correct element can be retrieved
-    if (settings.draftId && !Garnish.hasAttr($(ev.currentTarget).parents('.card'), 'data-draft-id')) {
-      delete settings.draftId;
-    }
-    Craft.createElementEditor($elementType, settings)
-  }
-});
-JS, [
-                InputNamespace::namespaceId($editId),
-                $element::class,
-                [
+        return [true, [
+            'type' => 'event',
+            'name' => 'craft:edit-element',
+            'detail' => [
+                'elementType' => $element::class,
+                'settings' => [
                     'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
                     'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
                     'revisionId' => $element->revisionId,
@@ -396,38 +452,26 @@ JS, [
                     'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                 ],
                 'cpEditUrl' => $element->getCpEditUrl(),
-            ]);
-        }
+            ],
+        ]];
+    }
 
-        $icon = $element instanceof Iconic ? $element->getIcon() : null;
-        $title = $element->getCardTitle();
-
-        return Html::beginTag('div', ['class' => 'card-titlebar']).
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-nowrap', 'gap-1', 'items-center'],
-            ]).
-            ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
-            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
-            Html::endTag('div'). // .flex
-            $this->cardModifiedStatusHtml($element).
-            Html::beginTag('div', ['class' => 'card-actions-container']).
-            Html::beginTag('div', ['class' => 'card-actions']).
-            ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
-            ($showEditButton ? Button::make()
-                ->icon('edit')
-                ->attributes([
-                    'class' => ['chromeless', 'small', 'edit-btn'],
-                    'id' => $editId,
-                    'title' => mb_ucfirst(t('Edit {type}', [
+    private function cardActionsHtml(ElementInterface $element, array $config, bool $showEditButton, ?array $editAction): string
+    {
+        return ($showEditButton ? Button::make()
+            ->icon('edit')
+            ->variant(ButtonVariant::Plain)
+            ->size('small')
+            ->action($editAction)
+            ->attributes([
+                'class' => ['edit-btn'],
+                'aria' => [
+                    'label' => mb_ucfirst(t('Edit {type}', [
                         'type' => $element::lowerDisplayName(),
                     ])),
-                    'aria' => [
-                        'label' => mb_ucfirst(t('Edit {type}', [
-                            'type' => $element::lowerDisplayName(),
-                        ])),
-                    ],
-                ]) : '').
-            ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton) : '').
+                ],
+            ]) : '').
+            ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton, $this->nestedCardActionItems($element, $config)) : '').
             ($config['sortable'] ? Button::make()
                 ->icon('move')
                 ->attributes([
@@ -438,10 +482,7 @@ JS, [
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
-                ]) : '').
-            Html::endTag('div'). // .card-actions
-            Html::endTag('div'). // .card-actions-container
-            Html::endTag('div'); // .card-titlebar
+                ]) : '');
     }
 
     /**
@@ -476,8 +517,15 @@ JS, [
             ($bodyContent !== '' ? Html::tag('div', $bodyContent, ['class' => 'card-body']) : '').
             Html::endTag('div'); // .card-content
 
-        $thumbHtml = $element->getThumbHtml(120);
-        $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
+        // Consumers that render the thumbnail themselves (e.g. a card
+        // component's `thumbnail` slot, via `elementCardThumbHtml()`) can
+        // opt out of the inline thumb.
+        if (! $config['withThumb']) {
+            return Html::beginTag('div', ['class' => 'card-main']).$contentHtml.Html::endTag('div');
+        }
+
+        $thumbHtml = $this->elementCardThumbHtml($element);
+        $thumbAlignment = $this->elementCardThumbAlignment($element);
 
         $html = Html::beginTag('div', ['class' => 'card-main']);
 
@@ -488,6 +536,27 @@ JS, [
         } // .card-main
 
         return $html.Html::endTag('div');
+    }
+
+    /**
+     * Renders an element card’s thumbnail, suited to a card component's
+     * `thumbnail` slot (pair with {@see elementCardThumbAlignment()}).
+     */
+    public function elementCardThumbHtml(ElementInterface $element): string
+    {
+        return $element->getThumbHtml(120) ?? '';
+    }
+
+    /**
+     * The card thumbnail alignment configured by the element’s field layout.
+     *
+     * @return 'start'|'end'
+     */
+    public function elementCardThumbAlignment(ElementInterface $element): string
+    {
+        $alignment = $element->getFieldLayout()?->getCardThumbAlignment();
+
+        return $alignment === 'start' ? 'start' : 'end';
     }
 
     /**
@@ -542,7 +611,9 @@ JS, [
             'inputName' => null,
             'selectable' => false,
             'showActionMenu' => false,
+            'showNestedActions' => false,
             'showEditButton' => true,
+            'withThumb' => true,
             'sortable' => false,
         ];
 
@@ -552,6 +623,104 @@ JS, [
         }
 
         return $config;
+    }
+
+    /**
+     * Builds the server-rendered nested-context items for a card's action
+     * menu.
+     *
+     * `showNestedActions` requests Move forward/backward (when `sortable`),
+     * Duplicate, and Delete items — marked with `data-move-forward-action`,
+     * `data-move-backward-action`, `data-duplicate-action`, and
+     * `data-delete-action` — for the hosting controller (e.g. the nested
+     * element manager) to wire up; the items carry no behavior of their own.
+     * The permission-bound items only render when the current user passes
+     * the corresponding gate (mirroring the card's
+     * `data-duplicatable`/`data-deletable` attributes), so client-supplied
+     * render configs (`app/render-elements`) can request them but never
+     * grant them.
+     */
+    private function nestedCardActionItems(ElementInterface $element, array $config): array
+    {
+        if (! $config['showNestedActions'] || ! Gate::check('view', $element)) {
+            return [];
+        }
+
+        $items = [];
+
+        if ($config['sortable']) {
+            $showInGrid = $config['showInGrid'] ?? false;
+            $ltr = I18N::getLocale()->getOrientation() === 'ltr';
+
+            $items[] = [
+                'icon' => $showInGrid ? ($ltr ? 'arrow-left' : 'arrow-right') : 'arrow-up',
+                'label' => $showInGrid ? t('Move forward') : t('Move up'),
+                'attributes' => [
+                    'data' => ['move-forward-action' => true],
+                ],
+            ];
+            $items[] = [
+                'icon' => $showInGrid ? ($ltr ? 'arrow-right' : 'arrow-left') : 'arrow-down',
+                'label' => $showInGrid ? t('Move backward') : t('Move down'),
+                'attributes' => [
+                    'data' => ['move-backward-action' => true],
+                ],
+            ];
+        }
+
+        if (Gate::check('duplicate', $element)) {
+            $item = [
+                'icon' => 'clone',
+                'label' => t('Duplicate'),
+                'attributes' => [
+                    'data' => ['duplicate-action' => true],
+                ],
+            ];
+
+            // With a known owner context (`showNestedActions` as an array —
+            // the data path, where no `Craft.NestedElementManager` wires the
+            // markers), the item carries a self-contained duplicate action,
+            // mirroring the legacy manager's `duplicateElement()` request.
+            if (is_array($config['showNestedActions'])) {
+                $item['action'] = 'elements/duplicate';
+                $item['params'] = [
+                    'elementType' => $element::class,
+                    'elementId' => $element->id,
+                    'ownerId' => $config['showNestedActions']['ownerId'],
+                    'siteId' => $config['showNestedActions']['ownerSiteId'],
+                ];
+            }
+
+            $items[] = $item;
+        }
+
+        if (Gate::check('delete', $element)) {
+            $item = [
+                'icon' => 'trash',
+                'label' => mb_ucfirst(t('Delete {type}', [
+                    'type' => $element::lowerDisplayName(),
+                ])),
+                'destructive' => true,
+                'attributes' => [
+                    'data' => ['delete-action' => true],
+                ],
+            ];
+
+            // With a known owner context (`showNestedActions` as an array —
+            // the data path, where no `Craft.NestedElementManager` wires the
+            // markers), the item carries a self-contained delete action.
+            if (is_array($config['showNestedActions'])) {
+                $item['action'] = 'nested-elements/delete';
+                $item['params'] = $config['showNestedActions'] + ['elementId' => $element->id];
+                $item['confirm'] = t('Are you sure you want to delete the selected {type}?', [
+                    'type' => $element::lowerDisplayName(),
+                ]);
+            }
+
+            $items[] = $item;
+        }
+
+        return $items;
     }
 
     /**
@@ -808,10 +977,10 @@ JS, [
      * `Craft.addActionsToChip()`) always has a `[slot="content"]` container
      * to inject into.
      */
-    private function componentActionMenu(Actionable $component, bool $withEdit = true): string
+    private function componentActionMenu(Actionable $component, bool $withEdit = true, array $extraItems = []): string
     {
         return InputNamespace::namespaceInputs(
-            function () use ($component, $withEdit): string {
+            function () use ($component, $withEdit, $extraItems): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
                     fn (array $item) => $item['showInChips'] ?? ! ($item['destructive'] ?? false)
@@ -833,15 +1002,18 @@ JS, [
                 // `disclosureMenuItems()` normalizes types, moves destructive
                 // items to the end (behind an `hr`), and trims leading/
                 // trailing/repeated `hr`s — all still desirable here.
-                $items = $this->menuHtml->disclosureMenuItems($actionMenuItems);
+                $items = $this->menuHtml->disclosureMenuItems([
+                    ...$actionMenuItems,
+                    ...$extraItems,
+                ]);
 
                 $invokerHtml = Html::tag('craft-button', Html::tag('craft-icon', '', [
                     'name' => 'ellipsis',
                 ]), [
                     'type' => 'button',
                     'slot' => 'invoker',
-                    'appearance' => 'plain',
-                    'variant' => 'inherit',
+                    'variant' => 'plain',
+                    'inherit' => true,
                     'size' => 'small',
                     // Bare `icon` attribute triggers the icon-only button styling
                     // (the icon itself is slotted content, not the `icon` prop —

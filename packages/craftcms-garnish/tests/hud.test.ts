@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 import {HUD} from '../src/hud';
 import {UiLayerManager} from '../src/managers/ui-layer-manager';
