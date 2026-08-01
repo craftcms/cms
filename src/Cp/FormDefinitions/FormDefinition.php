@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\FormDefinitions;
 
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormDefinitionData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use InvalidArgumentException;
 use JsonSerializable;
@@ -34,6 +35,10 @@ readonly class FormDefinition implements JsonSerializable
 
         foreach ($data->elements as $index => $element) {
             $this->validateElement($element, "elements[{$index}]", $names, root: true);
+        }
+
+        foreach ($data->elements as $index => $element) {
+            $this->validateElementVisibility($element, "elements[{$index}]", $names);
         }
 
         return $data;
@@ -115,6 +120,168 @@ readonly class FormDefinition implements JsonSerializable
         if (! in_array($element->type, ['craft:field', 'craft:text-input'], true)) {
             $this->fail($element, $path, 'unknown Form Element Type.');
         }
+    }
+
+    /**
+     * @param  FormElementData  $element  Element whose visibility is being validated.
+     * @param  string  $path  Element location in the tree.
+     * @param  array<string, string>  $names  Resolved Input Names.
+     */
+    private function validateElementVisibility(FormElementData $element, string $path, array $names): void
+    {
+        if ($element->visibleWhen !== null) {
+            $this->validateVisibilityCondition($element, $element->visibleWhen, "{$path}.visibleWhen", $names);
+        }
+
+        foreach ($element->children ?? [] as $index => $child) {
+            $this->validateElementVisibility($child, "{$path}.children[{$index}]", $names);
+        }
+    }
+
+    /**
+     * @param  FormElementData  $element  Element owning the condition.
+     * @param  VisibilityConditionData  $condition  Condition being validated.
+     * @param  string  $path  Condition location in the tree.
+     * @param  array<string, string>  $names  Resolved Input Names.
+     */
+    private function validateVisibilityCondition(
+        FormElementData $element,
+        VisibilityConditionData $condition,
+        string $path,
+        array $names,
+    ): void {
+        $data = $condition->condition;
+
+        foreach (['all', 'any'] as $group) {
+            if (! array_key_exists($group, $data)) {
+                continue;
+            }
+
+            if (count($data) !== 1 || ! is_array($data[$group]) || ! array_is_list($data[$group])) {
+                $this->fail($element, $path, "{$group} must be the condition's only property and contain a list.");
+            }
+
+            if ($data[$group] === []) {
+                $this->fail($element, $path, "{$group} groups cannot be empty.");
+            }
+
+            foreach ($data[$group] as $index => $child) {
+                if (! $child instanceof VisibilityConditionData) {
+                    $this->fail($element, "{$path}.{$group}[{$index}]", 'group members must be Visibility Conditions.');
+                }
+
+                $this->validateVisibilityCondition($element, $child, "{$path}.{$group}[{$index}]", $names);
+            }
+
+            return;
+        }
+
+        $name = $data['name'] ?? null;
+        $operator = $data['operator'] ?? null;
+
+        if (! is_string($name) || $name === '') {
+            $this->fail($element, $path, 'comparison name must be a non-empty Input Name.');
+        }
+
+        if (! isset($names[$name])) {
+            $this->fail($element, $path, "unresolved Input Name \"{$name}\".");
+        }
+
+        $operators = [
+            'equals',
+            'notEquals',
+            'lessThan',
+            'lessThanOrEqual',
+            'greaterThan',
+            'greaterThanOrEqual',
+            'beginsWith',
+            'endsWith',
+            'contains',
+            'in',
+            'notIn',
+            'empty',
+            'notEmpty',
+        ];
+
+        if (! is_string($operator) || ! in_array($operator, $operators, true)) {
+            $displayOperator = is_scalar($operator) ? (string) $operator : get_debug_type($operator);
+            $this->fail($element, $path, "unsupported operator \"{$displayOperator}\".");
+        }
+
+        $hasValue = array_key_exists('value', $data);
+        $expectedKeys = in_array($operator, ['empty', 'notEmpty'], true)
+            ? ['name', 'operator']
+            : ['name', 'operator', 'value'];
+
+        if (array_diff(array_keys($data), $expectedKeys) !== [] || array_diff($expectedKeys, array_keys($data)) !== []) {
+            if (in_array($operator, ['empty', 'notEmpty'], true) && $hasValue) {
+                $this->fail($element, $path, "{$operator} does not accept a value.");
+            }
+
+            $this->fail($element, $path, 'comparison has malformed operands.');
+        }
+
+        if (! $hasValue) {
+            return;
+        }
+
+        $value = $data['value'];
+
+        if (is_object($value) && is_callable($value)) {
+            $this->fail($element, $path, 'value cannot be executable.');
+        }
+
+        if (in_array($operator, ['lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual'], true)) {
+            if (! is_int($value) && (! is_float($value) || ! is_finite($value))) {
+                $this->fail($element, $path, "{$operator} requires a numeric value.");
+            }
+
+            return;
+        }
+
+        if (in_array($operator, ['beginsWith', 'endsWith'], true)) {
+            if (! is_string($value)) {
+                $this->fail($element, $path, "{$operator} requires a string value.");
+            }
+
+            return;
+        }
+
+        if (in_array($operator, ['in', 'notIn'], true)) {
+            if (! $this->isScalarList($value)) {
+                $this->fail($element, $path, "{$operator} requires a list of scalar values.");
+            }
+
+            return;
+        }
+
+        if ($operator === 'contains') {
+            if (! $this->isVisibilityScalar($value)) {
+                $this->fail($element, $path, 'contains requires a scalar value.');
+            }
+
+            return;
+        }
+
+        if (! $this->isVisibilityScalar($value) && ! $this->isScalarList($value)) {
+            $this->fail($element, $path, "{$operator} requires a scalar value or a list of scalar values.");
+        }
+    }
+
+    private function isVisibilityScalar(mixed $value): bool
+    {
+        return $value === null
+            || is_bool($value)
+            || is_int($value)
+            || is_string($value)
+            || (is_float($value) && is_finite($value));
+    }
+
+    private function isScalarList(mixed $value): bool
+    {
+        return is_array($value)
+            && array_is_list($value)
+            && array_all($value, fn (mixed $item): bool => $this->isVisibilityScalar($item));
     }
 
     /**

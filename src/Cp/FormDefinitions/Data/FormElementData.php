@@ -17,6 +17,7 @@ readonly class FormElementData implements JsonSerializable
      * @param  array<string, mixed>|null  $props  Type-specific renderer configuration.
      * @param  array<string, mixed>|null  $attributes  Trusted renderer attributes.
      * @param  list<FormElementData>|null  $children  Ordered child elements.
+     * @param  ?VisibilityConditionData  $visibleWhen  Presentation-only visibility predicate.
      */
     public function __construct(
         public string $type,
@@ -38,6 +39,8 @@ readonly class FormElementData implements JsonSerializable
         public ?array $attributes = null,
         #[Optional]
         public ?array $children = null,
+        #[Optional]
+        public ?VisibilityConditionData $visibleWhen = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -55,6 +58,7 @@ readonly class FormElementData implements JsonSerializable
                     fn (FormElementData $element): array => $element->jsonSerialize(),
                     $this->children,
                 ),
+            'visibleWhen' => $this->visibleWhen?->jsonSerialize(),
         ], fn (mixed $value): bool => $value !== null);
     }
 }

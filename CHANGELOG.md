@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added native Form Definition rendering for text settings via `CraftCms\Cms\Cp\FormDefinitions\FormDefinition` and `CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput`.
+- Added reactive Form Definition visibility conditions via `CraftCms\Cms\Cp\FormDefinitions\Condition`.
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.

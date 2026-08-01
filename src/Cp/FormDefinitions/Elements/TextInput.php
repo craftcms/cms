@@ -85,6 +85,7 @@ class TextInput extends FormElement
                 props: $inputProps === [] ? null : $inputProps,
                 attributes: $this->elementAttributes === [] ? null : $this->elementAttributes,
             )],
+            visibleWhen: $this->visibleWhen?->toData(),
         );
     }
 

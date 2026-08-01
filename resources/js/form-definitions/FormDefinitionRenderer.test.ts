@@ -37,6 +37,65 @@ afterEach(() => {
 });
 
 describe('Form Definition renderer', () => {
+  it('reactively hides a complete field and restores its unchanged control state', async () => {
+    const registry = createCpComponentRegistry();
+    const values = reactive({settings: {enabled: true, handle: 'news'}});
+    const container = document.createElement('div');
+    const conditionalDefinition: CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData =
+      {
+        elements: [
+          {
+            ...definition.elements[0]!,
+            visibleWhen: {name: 'enabled', operator: 'equals', value: true},
+          },
+        ],
+      };
+
+    registry.register('form-element:craft:text-input', TextInputRenderer);
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormDefinitionRenderer, {
+      definition: conditionalDefinition,
+      bindingScope: 'settings',
+      values,
+      errors: {'settings.handle': ['Keep this field complete.']},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const input =
+      container.querySelector<HTMLElementTagNameMap['craft-input']>(
+        'craft-input'
+      )!;
+    const field = container.querySelector<HTMLElement>(
+      '[data-form-element="craft:field"]'
+    )!;
+    input.dataset.transientState = 'preserved';
+    input.value = 'articles';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    values.settings.enabled = false;
+    await nextTick();
+
+    expect(field.style.display).toBe('none');
+    expect(field.querySelector('label')).not.toBeNull();
+    expect(field.querySelector('[data-form-element-errors]')).not.toBeNull();
+    expect(values.settings.handle).toBe('articles');
+
+    values.settings.enabled = true;
+    await nextTick();
+
+    expect(field.style.display).toBe('');
+    expect(container.querySelector('craft-input')).toBe(input);
+    expect(input.value).toBe('articles');
+    expect(input.dataset.transientState).toBe('preserved');
+    expect(
+      container.querySelector('[data-form-element-errors]')
+    ).not.toBeNull();
+  });
+
   it('renders and edits a scoped text setting with accessible field presentation', async () => {
     const registry = createCpComponentRegistry();
     const resolve = vi.spyOn(registry, 'resolve');

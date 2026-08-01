@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FormDefinitions\Elements;
 
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 
 abstract class FormElement
@@ -12,6 +13,8 @@ abstract class FormElement
 
     /** @var array<string, mixed> */
     protected array $elementAttributes = [];
+
+    protected ?Condition $visibleWhen = null;
 
     protected function __construct(
         protected readonly ?string $name = null,
@@ -34,6 +37,13 @@ abstract class FormElement
         return $this;
     }
 
+    public function visibleWhen(Condition $condition): static
+    {
+        $this->visibleWhen = $condition;
+
+        return $this;
+    }
+
     public function toData(): FormElementData
     {
         $props = $this->props();
@@ -51,6 +61,7 @@ abstract class FormElement
                     fn (FormElement $element): FormElementData => $element->toData(),
                     $children,
                 ),
+            visibleWhen: $this->visibleWhen?->toData(),
         );
     }
 

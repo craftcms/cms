@@ -15,6 +15,7 @@
     JsonValue,
     RenderContext,
   } from './types';
+  import {evaluateVisibilityCondition} from './visibility';
 
   const props = defineProps<{
     element: FormElementData;
@@ -124,6 +125,15 @@
   const width = computed(() =>
     props.element.width ? `${props.element.width}%` : undefined
   );
+  const visible = computed(() =>
+    props.element.visibleWhen
+      ? evaluateVisibilityCondition(
+          props.element.visibleWhen,
+          props.context.values,
+          props.context.bindingScope
+        )
+      : true
+  );
 
   function stringProp(name: string): string | undefined {
     const value = props.element.props?.[name];
@@ -151,6 +161,7 @@
 <template>
   <div
     v-if="element.type === 'craft:field'"
+    v-show="visible"
     data-form-element="craft:field"
     :style="{width}"
   >
@@ -178,6 +189,7 @@
   <component
     :is="renderer"
     v-else-if="renderer"
+    v-show="visible"
     :config="(element.props ?? {}) as Record<string, JsonValue>"
     :attributes="attributes"
     :binding="binding"

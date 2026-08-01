@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -56,6 +59,121 @@ it('keeps host workflow data outside the serialized definition', function () {
         ->not->toContain('bindingScope')
         ->not->toContain('route')
         ->not->toContain('persist');
+});
+
+it('projects nested visibility comparisons and groups', function () {
+    $definition = FormDefinition::make([
+        TextInput::make('enabled'),
+        TextInput::make('mode'),
+        TextInput::make('label')->visibleWhen(Condition::all(
+            Condition::equals('enabled', true),
+            Condition::any(
+                Condition::equals('mode', 'manual'),
+                Condition::notEquals('mode', 'automatic'),
+            ),
+        )),
+    ]);
+
+    expect($definition->toArray()['elements'][2]['visibleWhen'])->toBe([
+        'all' => [
+            ['name' => 'enabled', 'operator' => 'equals', 'value' => true],
+            ['any' => [
+                ['name' => 'mode', 'operator' => 'equals', 'value' => 'manual'],
+                ['name' => 'mode', 'operator' => 'notEquals', 'value' => 'automatic'],
+            ]],
+        ],
+    ]);
+});
+
+it('keeps callable-looking strings as visibility data', function () {
+    $definition = FormDefinition::make([
+        TextInput::make('source'),
+        TextInput::make('target')->visibleWhen(Condition::equals('source', 'trim')),
+    ]);
+
+    expect($definition->toArray()['elements'][1]['visibleWhen'])->toBe([
+        'name' => 'source',
+        'operator' => 'equals',
+        'value' => 'trim',
+    ]);
+});
+
+it('projects every visibility comparison operator', function (Condition $condition, array $expected) {
+    $definition = FormDefinition::make([
+        TextInput::make('source'),
+        TextInput::make('target')->visibleWhen($condition),
+    ]);
+
+    expect($definition->toArray()['elements'][1]['visibleWhen'])->toBe($expected);
+})->with([
+    'equals' => [Condition::equals('source', 1), ['name' => 'source', 'operator' => 'equals', 'value' => 1]],
+    'not equals' => [Condition::notEquals('source', 1), ['name' => 'source', 'operator' => 'notEquals', 'value' => 1]],
+    'less than' => [Condition::lessThan('source', 1), ['name' => 'source', 'operator' => 'lessThan', 'value' => 1]],
+    'less than or equal' => [Condition::lessThanOrEqual('source', 1), ['name' => 'source', 'operator' => 'lessThanOrEqual', 'value' => 1]],
+    'greater than' => [Condition::greaterThan('source', 1), ['name' => 'source', 'operator' => 'greaterThan', 'value' => 1]],
+    'greater than or equal' => [Condition::greaterThanOrEqual('source', 1), ['name' => 'source', 'operator' => 'greaterThanOrEqual', 'value' => 1]],
+    'begins with' => [Condition::beginsWith('source', 'a'), ['name' => 'source', 'operator' => 'beginsWith', 'value' => 'a']],
+    'ends with' => [Condition::endsWith('source', 'a'), ['name' => 'source', 'operator' => 'endsWith', 'value' => 'a']],
+    'contains' => [Condition::contains('source', 'a'), ['name' => 'source', 'operator' => 'contains', 'value' => 'a']],
+    'in' => [Condition::in('source', ['a']), ['name' => 'source', 'operator' => 'in', 'value' => ['a']]],
+    'not in' => [Condition::notIn('source', ['a']), ['name' => 'source', 'operator' => 'notIn', 'value' => ['a']]],
+    'empty' => [Condition::empty('source'), ['name' => 'source', 'operator' => 'empty']],
+    'not empty' => [Condition::notEmpty('source'), ['name' => 'source', 'operator' => 'notEmpty']],
+]);
+
+it('rejects malformed visibility conditions with type and tree location context', function (
+    array $condition,
+    string $message,
+) {
+    $definition = FormDefinition::make([
+        TestFormElement::make('craft:field', children: [
+            TestFormElement::make('craft:text-input', name: 'target'),
+        ], visibleWhen: new VisibilityConditionData($condition)),
+    ]);
+
+    expect(fn () => $definition->toArray())
+        ->toThrow(InvalidArgumentException::class, $message);
+})->with([
+    'empty all group' => [
+        ['all' => []],
+        'Form Element Type "craft:field" at elements[0].visibleWhen: all groups cannot be empty.',
+    ],
+    'unsupported operator' => [
+        ['name' => 'target', 'operator' => 'matches', 'value' => 'x'],
+        'Form Element Type "craft:field" at elements[0].visibleWhen: unsupported operator "matches".',
+    ],
+    'executable value' => [
+        ['name' => 'target', 'operator' => 'equals', 'value' => fn () => true],
+        'Form Element Type "craft:field" at elements[0].visibleWhen: value cannot be executable.',
+    ],
+    'numeric operator with string value' => [
+        ['name' => 'target', 'operator' => 'lessThan', 'value' => '1'],
+        'Form Element Type "craft:field" at elements[0].visibleWhen: lessThan requires a numeric value.',
+    ],
+    'text operator with array value' => [
+        ['name' => 'target', 'operator' => 'beginsWith', 'value' => ['a']],
+        'Form Element Type "craft:field" at elements[0].visibleWhen: beginsWith requires a string value.',
+    ],
+    'membership operator with scalar value' => [
+        ['name' => 'target', 'operator' => 'in', 'value' => 'a'],
+        'Form Element Type "craft:field" at elements[0].visibleWhen: in requires a list of scalar values.',
+    ],
+    'emptiness operator with value' => [
+        ['name' => 'target', 'operator' => 'empty', 'value' => null],
+        'Form Element Type "craft:field" at elements[0].visibleWhen: empty does not accept a value.',
+    ],
+]);
+
+it('rejects unresolved visibility input names with type and tree location context', function () {
+    $definition = FormDefinition::make([
+        TextInput::make('target')->visibleWhen(Condition::equals('missing', true)),
+    ]);
+
+    expect(fn () => $definition->toArray())
+        ->toThrow(
+            InvalidArgumentException::class,
+            'Form Element Type "craft:field" at elements[0].visibleWhen: unresolved Input Name "missing".',
+        );
 });
 
 it('rejects duplicate input names with type and tree location context', function () {
@@ -143,6 +261,7 @@ class TestFormElement extends FormElement
         ?string $name,
         private readonly array $elementProps,
         private readonly array $elementChildren,
+        private readonly ?VisibilityConditionData $elementVisibleWhen,
     ) {
         parent::__construct($name);
     }
@@ -158,8 +277,9 @@ class TestFormElement extends FormElement
         ?string $name = null,
         array $props = [],
         array $children = [],
+        ?VisibilityConditionData $visibleWhen = null,
     ): self {
-        return new self($type, $name, $props, $children);
+        return new self($type, $name, $props, $children, $visibleWhen);
     }
 
     public function type(): string
@@ -175,5 +295,20 @@ class TestFormElement extends FormElement
     protected function children(): array
     {
         return $this->elementChildren;
+    }
+
+    public function toData(): FormElementData
+    {
+        $data = parent::toData();
+
+        return new FormElementData(
+            type: $data->type,
+            name: $data->name,
+            width: $data->width,
+            props: $data->props,
+            attributes: $data->attributes,
+            children: $data->children,
+            visibleWhen: $this->elementVisibleWhen,
+        );
     }
 }
