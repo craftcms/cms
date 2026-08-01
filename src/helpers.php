@@ -237,9 +237,9 @@ function renderSandboxedString(string $template, array $variables = [], Template
     return Template::renderSandboxedString($template, $variables, $templateMode, $escapeHtml);
 }
 
-function renderObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
+function renderObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, string|false $escaperStrategy = false): string
 {
-    return Template::renderObjectTemplate($template, $object, $variables, $templateMode);
+    return Template::renderObjectTemplate($template, $object, $variables, $templateMode, $escaperStrategy);
 }
 
 function renderSandboxedObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string

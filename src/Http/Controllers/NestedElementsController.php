@@ -28,6 +28,8 @@ readonly class NestedElementsController
 
     public function reorder(NestedElementsRequest $request, ElementCaches $elementCaches): Response
     {
+        $request->authorizeReorder();
+
         $nestedElements = $request->nestedElements();
 
         if ($nestedElements instanceof ElementQueryInterface) {

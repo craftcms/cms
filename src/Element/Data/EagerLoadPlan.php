@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Data;
 
+use Closure;
+
 class EagerLoadPlan
 {
     public function __construct(
@@ -14,12 +16,12 @@ class EagerLoadPlan
         public bool $count = false,
 
         /**
-         * @var callable|null A PHP callable whose return value determines whether to apply eager-loaded elements to the given element.
+         * @var Closure|null A closure whose return value determines whether to apply eager-loaded elements to the given element.
          *
-         * The signature of the callable should be `function (\CraftCms\Cms\Element\Contracts\ElementInterface $element): bool`, where `$element` refers to the element
-         * the eager-loaded elements are about to be applied to. The callable should return a boolean value.
+         * The signature of the closure should be `function (\CraftCms\Cms\Element\Contracts\ElementInterface $element): bool`, where `$element` refers to the element
+         * the eager-loaded elements are about to be applied to. The closure should return a boolean value.
          */
-        public $when = null,
+        public ?Closure $when = null,
 
         /**
          * @var EagerLoadPlan[] Nested eager-loading plans to apply to the eager-loaded elements.

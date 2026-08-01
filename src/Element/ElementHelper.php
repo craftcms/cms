@@ -666,6 +666,7 @@ class ElementHelper
             'join',
             'having',
             'union',
+            'with',
             'withQueries',
             'params',
         ]);

@@ -241,13 +241,14 @@ class TemplateManager extends Manager
         mixed $object,
         array $variables = [],
         TemplateMode $templateMode = TemplateMode::Site,
+        string|false $escaperStrategy = false,
     ): string {
         $renderer = $this->twigRenderer();
 
         return $this->withRenderingState(
             'string:'.$template,
             $templateMode,
-            fn () => $renderer->renderObjectTemplate($template, $object, $variables, $templateMode),
+            fn () => $renderer->renderObjectTemplate($template, $object, $variables, $templateMode, $escaperStrategy),
         );
     }
 
