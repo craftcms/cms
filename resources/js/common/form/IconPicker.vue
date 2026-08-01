@@ -86,6 +86,10 @@
   }
 
   function openModal() {
+    if (props.disabled) {
+      return;
+    }
+
     if (iconHtml.value === null) {
       loadIcons();
     }
@@ -111,6 +115,10 @@
   const buttonLabel = computed(() => (model.value ? t('Change') : t('Choose')));
 
   function handleClick(event: MouseEvent) {
+    if (props.disabled) {
+      return;
+    }
+
     const target = event.target as HTMLElement;
     if (!target) {
       return;
@@ -133,6 +141,10 @@
   }
 
   function removeIcon() {
+    if (props.disabled) {
+      return;
+    }
+
     model.value = '';
     nextTick(() => {
       chooseButton.value?.focus();
@@ -166,6 +178,7 @@
           type="button"
           size="small"
           ref="chooseButton"
+          :disabled="disabled"
           @click.prevent="openModal"
           >{{ buttonLabel }}</craft-button
         >
@@ -173,6 +186,7 @@
           v-if="model"
           type="button"
           size="small"
+          :disabled="disabled"
           @click.prevent="removeIcon"
           >{{ t('Remove') }}</craft-button
         >

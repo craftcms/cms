@@ -12,6 +12,7 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\MoneyInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\NumberInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\SelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
@@ -38,6 +39,7 @@ class FormElementTypes
             NumberInput::type() => ['class' => NumberInput::class, 'container' => false, 'plugin' => null],
             SelectInput::type() => ['class' => SelectInput::class, 'container' => false, 'plugin' => null],
             LightswitchInput::type() => ['class' => LightswitchInput::class, 'container' => false, 'plugin' => null],
+            OptionRows::type() => ['class' => OptionRows::class, 'container' => false, 'plugin' => null],
             DateInput::type() => ['class' => DateInput::class, 'container' => false, 'plugin' => null],
             TimeInput::type() => ['class' => TimeInput::class, 'container' => false, 'plugin' => null],
             ColorPaletteInput::type() => ['class' => ColorPaletteInput::class, 'container' => false, 'plugin' => null],

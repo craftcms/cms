@@ -27,6 +27,7 @@ import TextInputRenderer from '@/form-definitions/renderers/TextInputRenderer.vu
 import DateInputRenderer from '@/form-definitions/renderers/DateInputRenderer.vue';
 import LightswitchInputRenderer from '@/form-definitions/renderers/LightswitchInputRenderer.vue';
 import NumberInputRenderer from '@/form-definitions/renderers/NumberInputRenderer.vue';
+import OptionRowsRenderer from '@/form-definitions/renderers/OptionRowsRenderer.vue';
 import SelectInputRenderer from '@/form-definitions/renderers/SelectInputRenderer.vue';
 import TimeInputRenderer from '@/form-definitions/renderers/TimeInputRenderer.vue';
 import ColorPaletteInputRenderer from '@/form-definitions/renderers/ColorPaletteInputRenderer.vue';
@@ -59,6 +60,7 @@ const queue = QueueService.getInstance();
 const components = createCpComponentRegistry();
 components.register('form-element:craft:text-input', TextInputRenderer);
 components.register('form-element:craft:number-input', NumberInputRenderer);
+components.register('form-element:craft:option-rows', OptionRowsRenderer);
 components.register('form-element:craft:select-input', SelectInputRenderer);
 components.register(
   'form-element:craft:lightswitch-input',

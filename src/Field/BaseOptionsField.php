@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonContains;
@@ -354,6 +358,35 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
 
         return $html;
+    }
+
+    #[Override]
+    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    {
+        return FormDefinition::make($this->settingsFormElements($readOnly));
+    }
+
+    /** @return list<FormElement> */
+    protected function settingsFormElements(bool $readOnly): array
+    {
+        $elements = [
+            OptionRows::make('options')
+                ->label($this->optionsSettingLabel())
+                ->instructions(t('Define the available options.'))
+                ->multipleDefaults(static::$multi)
+                ->optgroups(static::$optgroups)
+                ->icons(static::$optionIcons)
+                ->colors(static::$optionColors)
+                ->readOnly($readOnly),
+        ];
+
+        if (static::$allowCustomOptions) {
+            $elements[] = LightswitchInput::make('customOptions')
+                ->label(t('Allow custom options'))
+                ->readOnly($readOnly);
+        }
+
+        return $elements;
     }
 
     #[Override]
