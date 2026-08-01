@@ -11,7 +11,12 @@ use BackedEnum;
 use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Yii2Adapter\Cp\FormDefinitions\Elements\LegacySettings;
 use DateTime;
 use ReflectionClass;
 use ReflectionProperty;
@@ -74,6 +79,32 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
         }
 
         return $settings;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    {
+        $class = static::class;
+
+        Deprecator::log(
+            "legacy-settings-form-definition:{$class}",
+            "{$class} must implement getSettingsFormDefinition() to provide native settings.",
+            __FILE__,
+        );
+
+        $fragment = HtmlStack::capture(fn(): string => InputNamespace::namespaceInputs((string) ($readOnly
+            ? $this->getReadOnlySettingsHtml()
+            : $this->getSettingsHtml())));
+
+        if ($fragment->isEmpty()) {
+            return null;
+        }
+
+        return FormDefinition::make([
+            LegacySettings::make($fragment),
+        ]);
     }
 
     /**
