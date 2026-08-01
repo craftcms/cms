@@ -106,6 +106,8 @@
 - Fixed a bug where replacing an asset would fail silently. ([#19312](https://github.com/craftcms/cms/issues/19312))
 - Fixed JavaScript errors that could occur throughout the control panel. ([#19313](https://github.com/craftcms/cms/issues/19313))
 - Fixed a bug where `forms.checkboxField()` and `CraftCms\Cms\Cp\FormFields::checkboxFieldHtml()` rendered an empty field. ([#19338](https://github.com/craftcms/cms/pull/19338))
+- Fixed a bug where Utility pages weren’t rendering, and were logging `$ is not defined` and `window.Cp.config is not a function` errors to the console. ([#19340](https://github.com/craftcms/cms/pull/19340))
+- `Craft.cp.announce()` now accepts live regions that are plain elements as well as jQuery collections. ([#19340](https://github.com/craftcms/cms/pull/19340))
 
 ## 6.0.0-alpha.14 - 2026-07-22
 
