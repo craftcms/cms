@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
-  import {actionClient, serializeFormInputs, t, toHandle} from '@craftcms/ui';
+  import {actionClient, t, toHandle} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
@@ -11,6 +11,7 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import Pane from '@/common/components/Pane.vue';
   import FormDefinitionRenderer from '@/form-definitions/FormDefinitionRenderer.vue';
+  import {legacySettingsIslandValues} from '@/form-definitions/legacy-settings';
   import type {
     FormDefinitionData,
     FormErrors,
@@ -107,12 +108,10 @@
     ...form.errors,
   }));
 
-  function serializedLegacySettings(): string | undefined {
-    if (!settingsHost.value?.querySelector('craft-legacy-settings-island')) {
-      return undefined;
-    }
-
-    return serializeFormInputs(settingsHost.value);
+  function liveLegacySettings(): FieldSettingsValues | undefined {
+    return legacySettingsIslandValues(settingsHost.value) as
+      | FieldSettingsValues
+      | undefined;
   }
 
   watch(selectedType, async (type) => {
@@ -122,6 +121,7 @@
 
     const oldType = settingsType.value;
     const oldTypeId = typeOptionFor(oldType)?.id;
+    const liveSettings = liveLegacySettings();
 
     const requestId = ++settingsRequestId;
     settingsLoading.value = true;
@@ -130,8 +130,9 @@
       const {data} = await actionClient.post(renderSettings().url, {
         type,
         oldType,
-        settings: oldTypeId ? (form.types[oldTypeId] ?? {}) : {},
-        typeSettings: serializedLegacySettings(),
+        settings: oldTypeId
+          ? (liveSettings?.types[oldTypeId] ?? form.types[oldTypeId] ?? {})
+          : {},
       });
 
       if (requestId !== settingsRequestId) {
@@ -188,9 +189,11 @@
   if (!props.embedded) {
     ({save} = useSettingsSave(form, store, {
       transform: (data) => {
-        const typeSettings = serializedLegacySettings();
+        const liveTypes = liveLegacySettings()?.types;
 
-        return typeSettings === undefined ? data : {...data, typeSettings};
+        return liveTypes === undefined
+          ? data
+          : {...data, types: {...data.types, ...liveTypes}};
       },
     }));
   }

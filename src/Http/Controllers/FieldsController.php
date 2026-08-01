@@ -190,7 +190,6 @@ class FieldsController
             'type' => ['required', 'string'],
             'oldType' => ['nullable', 'string'],
             'settings' => ['nullable', 'array'],
-            'typeSettings' => ['nullable', 'string'],
         ]);
 
         $type = $request->input('type');
@@ -199,11 +198,6 @@ class FieldsController
 
         if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
             $settings = $request->array('settings');
-
-            if (is_string($typeSettings = $request->input('typeSettings'))) {
-                parse_str($typeSettings, $postedSettings);
-                $settings = Arr::get($postedSettings, sprintf('types.%s', Html::id($oldType)), []);
-            }
 
             // Remove any settings that aren't defined by the same class between both types
             $settings = array_filter($settings, function ($attribute) use ($type, $oldType) {
@@ -245,7 +239,6 @@ class FieldsController
             'translationMethod' => ['nullable', 'string'],
             'translationKeyFormat' => ['nullable', 'string'],
             'types' => ['nullable', 'array'],
-            'typeSettings' => ['nullable', 'string'],
         ]);
 
         $type = $request->input('type');
@@ -271,7 +264,7 @@ class FieldsController
             'searchable' => (bool) $request->input('searchable', true),
             'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
-            'settings' => $this->typeSettingsFromRequest($request, $type),
+            'settings' => $request->input('types', [])[Html::id($type)] ?? [],
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
@@ -293,23 +286,6 @@ class FieldsController
         return $this->asModelSuccess($field, t('Field saved.'), 'field', [
             'selectorHtml' => app(FieldLayoutDesigner::class)->layoutElementSelectorHtml(new CustomField($field), true),
         ], $redirect);
-    }
-
-    /**
-     * Native Inertia and legacy Twig forms post a `types` array. Adapter-owned
-     * Legacy Settings Islands post the live DOM as `typeSettings`.
-     */
-    private function typeSettingsFromRequest(Request $request, string $type): array
-    {
-        $settingsStr = $request->input('typeSettings');
-
-        if (is_string($settingsStr) && $settingsStr !== '') {
-            parse_str($settingsStr, $postedSettings);
-
-            return $postedSettings['types'][Html::id($type)] ?? [];
-        }
-
-        return $request->input('types', [])[Html::id($type)] ?? [];
     }
 
     public function destroy(Request $request, int $fieldId): Response

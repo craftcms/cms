@@ -94,11 +94,17 @@ it('encodes markdown when configured to encode html', function () {
         'encode' => true,
     ]);
 
+    $settings = markdownSettingsInputs($field);
+
     expect($field->validate())->toBeTrue()
         ->and($field->normalizeValue('<b>**bold**</b>', null)->getHtml())->toBe("<p>&lt;b&gt;<strong>bold</strong>&lt;/b&gt;</p>\n")
-        ->and($field->getSettingsHtml())->toContain('name="encode"')
-        ->and($field->getSettingsHtml())->toContain('Enabling this will enforce the Original Markdown flavor.')
-        ->and($field->getSettingsHtml())->toContain('id="markdown-flavor-settings" class="hidden"')
+        ->and($settings)->toHaveKeys(['encode', 'flavor'])
+        ->and($settings['encode']['fieldProps']['warning'])->toBe('Enabling this will enforce the Original Markdown flavor.')
+        ->and($settings['flavor']['visibleWhen'])->toBe([
+            'name' => 'encode',
+            'operator' => 'equals',
+            'value' => false,
+        ])
         ->and($field->getInputHtml('**bold**', null))->toContain(' encode');
 });
 
@@ -111,7 +117,7 @@ it('can render inline-only markdown', function () {
 
     expect($field->validate())->toBeTrue()
         ->and($field->normalizeValue("**bold**\nline", null)->getHtml())->toBe("<strong>bold</strong>\nline")
-        ->and($field->getSettingsHtml())->toContain('name="inlineOnly"')
+        ->and(markdownSettingsInputs($field))->toHaveKey('inlineOnly')
         ->and($field->getInputHtml('**bold**', null))->toContain('inline-only');
 });
 
@@ -272,9 +278,10 @@ it('renders only supported markdown link advanced field settings', function () {
         'linkSettingsAdvancedFields' => ['urlSuffix', 'title'],
     ]);
 
-    $advancedFieldValues = new Crawler($field->getSettingsHtml())
-        ->filter('input[name="linkSettings[advancedFields][]"]')
-        ->each(fn (Crawler $input): ?string => $input->attr('value'));
+    $advancedFieldValues = Arr::pluck(
+        markdownSettingsInputs($field)['linkSettings.advancedFields']['props']['options'],
+        'value',
+    );
 
     expect($advancedFieldValues)->toEqualCanonicalizing(['urlSuffix', 'title']);
 });
@@ -290,7 +297,7 @@ it('can show editor stats', function () {
 
     expect($field->validate())->toBeTrue()
         ->and($html)->toContain('show-stats')
-        ->and($field->getSettingsHtml())->toContain('name="showStats"');
+        ->and(markdownSettingsInputs($field))->toHaveKey('showStats');
 });
 
 it('sanitizes rendered html with the configured html sanitizer', function () {
@@ -379,23 +386,30 @@ it('validates and renders html sanitizer settings', function () {
         'sanitizeHtml' => false,
         'htmlSanitizer' => 'missing',
     ]);
-    $settings = new Crawler($field->getSettingsHtml());
+    $settings = markdownSettingsInputs($field);
 
     expect($field->validate())->toBeTrue()
-        ->and($settings->filter('input[name="sanitizeHtml"]')->count())->toBe(1)
-        ->and($settings->filter('select[name="htmlSanitizer"] option[selected]')->attr('value'))->toBe('paragraphs-only')
+        ->and($settings)->toHaveKeys(['sanitizeHtml', 'htmlSanitizer'])
+        ->and(Arr::pluck($settings['htmlSanitizer']['props']['options'], 'value'))->toContain('paragraphs-only')
+        ->and($settings['htmlSanitizer']['visibleWhen'])->toBe([
+            'name' => 'sanitizeHtml',
+            'operator' => 'equals',
+            'value' => true,
+        ])
+        ->and($field->getSettings()['htmlSanitizer'])->toBe('paragraphs-only')
         ->and($invalidField->validate())->toBeFalse()
         ->and($invalidField->errors()->has('htmlSanitizer'))->toBeTrue()
         ->and($disabledField->validate())->toBeTrue();
 });
 
 it('only shows toolbar button settings when the toolbar is enabled', function () {
-    $settingsHtml = new MarkdownField(['showToolbar' => false])->getSettingsHtml();
-    $enabledSettingsHtml = new MarkdownField(['showToolbar' => true])->getSettingsHtml();
+    $settings = markdownSettingsInputs(new MarkdownField(['showToolbar' => false]));
 
-    expect($settingsHtml)->toContain('data-target="toolbar-button-settings"')
-        ->and($settingsHtml)->toContain('id="toolbar-button-settings" class="hidden"')
-        ->and($enabledSettingsHtml)->not()->toContain('id="toolbar-button-settings" class="hidden"');
+    expect($settings['toolbarButtons']['visibleWhen'])->toBe([
+        'name' => 'showToolbar',
+        'operator' => 'equals',
+        'value' => true,
+    ]);
 });
 
 it('validates and applies asset selector volume settings', function () {
@@ -447,8 +461,36 @@ it('warns and resolves no asset sources when no volumes exist', function () {
     $assetSourceKeys = fn (): array => $this->assetSourceKeys();
 
     expect($assetSourceKeys->call($field))->toBe([])
-        ->and($field->getSettingsHtml())->toContain('No volumes exist yet.');
+        ->and(markdownSettingsInputs($field)['availableVolumes']['fieldProps']['warning'])
+        ->toBe('No volumes exist yet.');
 });
+
+/** @return array<string, array<string, mixed>> */
+function markdownSettingsInputs(MarkdownField $field): array
+{
+    $inputs = [];
+    $visit = function (array $elements) use (&$inputs, &$visit): void {
+        foreach ($elements as $element) {
+            if ($element['type'] === 'craft:field') {
+                $input = $element['children'][0];
+                $inputs[$input['name']] = [
+                    'type' => $input['type'],
+                    'props' => $input['props'] ?? [],
+                    'fieldProps' => $element['props'] ?? [],
+                    'visibleWhen' => $element['visibleWhen'] ?? null,
+                ];
+
+                continue;
+            }
+
+            $visit($element['children'] ?? []);
+        }
+    };
+
+    $visit($field->getSettingsFormDefinition(false)->toArray()['elements']);
+
+    return $inputs;
+}
 
 it('normalizes values without trimming markdown-significant whitespace', function () {
     $field = new MarkdownField(['flavor' => MarkdownService::FLAVOR_GFM]);

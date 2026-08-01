@@ -107,7 +107,7 @@ class FilesystemsController
     public function store(Request $request): Response
     {
         $type = $request->string('type')->toString();
-        $settings = Arr::whereNotNull($this->typeSettingsFromRequest($request, $type));
+        $settings = Arr::whereNotNull($request->input('types', [])[Html::id($type)] ?? []);
 
         $fs = $this->filesystems->createFilesystem([
             'type' => $type,
@@ -132,7 +132,6 @@ class FilesystemsController
             'type' => ['required', 'string'],
             'oldType' => ['nullable', 'string'],
             'settings' => ['nullable', 'array'],
-            'typeSettings' => ['nullable', 'string'],
         ]);
 
         $type = $request->string('type')->toString();
@@ -141,11 +140,6 @@ class FilesystemsController
 
         if (is_string($oldType) && ComponentHelper::validateComponentClass($oldType, FsInterface::class)) {
             $settings = $request->array('settings');
-
-            if (is_string($typeSettings = $request->input('typeSettings'))) {
-                parse_str($typeSettings, $postedSettings);
-                $settings = Arr::get($postedSettings, sprintf('types.%s', Html::id($oldType)), []);
-            }
 
             $settings = array_filter($settings, function (string $attribute) use ($type, $oldType): bool {
                 try {
@@ -182,19 +176,5 @@ class FilesystemsController
         }
 
         return $this->asSuccess();
-    }
-
-    private function typeSettingsFromRequest(Request $request, string $type): array
-    {
-        $settings = $request->input('typeSettings');
-
-        if (is_string($settings) && $settings !== '') {
-            parse_str($settings, $postedSettings);
-
-            return $postedSettings['types'][Html::id($type)] ?? [];
-        }
-
-        return $request->input('types', [])[Html::id($type)]
-            ?? $request->input('settings', []);
     }
 }

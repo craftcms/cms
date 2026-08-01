@@ -13,15 +13,17 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
-use DOMElement;
 use GraphQL\Type\Definition\Type;
 use Override;
-use Symfony\Component\DomCrawler\Crawler;
+
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -30,7 +32,7 @@ use function CraftCms\Cms\template;
  *
  * @deprecated in 6.0.0
  */
-class Tags extends \CraftCms\Cms\Field\BaseRelationField
+class Tags extends BaseRelationField
 {
     /**
      * {@inheritdoc}
@@ -95,17 +97,16 @@ class Tags extends \CraftCms\Cms\Field\BaseRelationField
      * {@inheritdoc}
      */
     #[Override]
-    public function getSettingsHtml(): string
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
-        $html = parent::getSettingsHtml();
+        return FormDefinition::make(array_values(array_filter(
+            $this->relationSettingsFormElements($readOnly),
+            function (FormElement $element): bool {
+                $children = $element->toData()->children;
 
-        // Remove the “Show the search input” field
-        $crawler = new Crawler("<html><body>$html</body></html>");
-        /** @var DOMElement $node */
-        $node = $crawler->filter('#show-search-input-field')->getNode(0);
-        $node->remove();
-
-        return $crawler->filter('body')->first()->html();
+                return $children === null || $children[0]->name !== 'showSearchInput';
+            },
+        )));
     }
 
     /**
@@ -122,7 +123,7 @@ class Tags extends \CraftCms\Cms\Field\BaseRelationField
             $value = $value
                 ->status(null)
                 ->all();
-        } elseif (!is_array($value)) {
+        } elseif (! is_array($value)) {
             $value = [];
         }
 
@@ -142,12 +143,12 @@ class Tags extends \CraftCms\Cms\Field\BaseRelationField
                     'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel,
                         category: 'site') : self::defaultSelectionLabel(),
-                    'allowSelfRelations' => (bool)$this->allowSelfRelations,
+                    'allowSelfRelations' => (bool) $this->allowSelfRelations,
                     'defaultPlacement' => $this->defaultPlacement,
                 ]);
         }
 
-        return '<p class="error">' . t('This field is not set to a valid source.') . '</p>';
+        return '<p class="error">'.t('This field is not set to a valid source.').'</p>';
     }
 
     /**
@@ -180,7 +181,7 @@ class Tags extends \CraftCms\Cms\Field\BaseRelationField
             'name' => $this->handle,
             'type' => Type::nonNull(Type::listOf(TagInterface::getType())),
             'args' => TagArguments::getArguments(),
-            'resolve' => TagResolver::class . '::resolve',
+            'resolve' => TagResolver::class.'::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
@@ -199,7 +200,7 @@ class Tags extends \CraftCms\Cms\Field\BaseRelationField
         }
 
         $tagsService = Craft::$app->getTags();
-        $tagGroupIds = array_filter(array_map(function(string $uid) use ($tagsService) {
+        $tagGroupIds = array_filter(array_map(function (string $uid) use ($tagsService) {
             $tagGroup = $tagsService->getTagGroupByUid($uid);
 
             return $tagGroup->id ?? null;
@@ -225,7 +226,7 @@ class Tags extends \CraftCms\Cms\Field\BaseRelationField
      */
     private function _getTagGroupUid(): ?string
     {
-        if (!isset($this->_tagGroupUid)) {
+        if (! isset($this->_tagGroupUid)) {
             if (preg_match('/^taggroup:([0-9a-f\-]+)$/', (string) $this->source, $matches)) {
                 $this->_tagGroupUid = $matches[1];
             } else {

@@ -246,7 +246,7 @@ it('preserves values between rendering settings', function () {
         ->assertJsonPath('values.types.'.Html::id(RadioButtons::class).'.options.0.label', $label);
 });
 
-it('preserves live adapter values when rendering replacement settings', function () {
+it('uses native host values when rendering replacement settings', function () {
     $label = Str::random();
 
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
@@ -254,14 +254,14 @@ it('preserves live adapter values when rendering replacement settings', function
         'oldType' => MultiSelect::class,
         'settings' => [
             'options' => [
-                ['label' => 'Stale label', 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
+                ['label' => $label, 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
             ],
         ],
         'typeSettings' => http_build_query([
             'types' => [
                 Html::id(MultiSelect::class) => [
                     'options' => [
-                        ['label' => $label, 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
+                        ['label' => 'Ignored compatibility value', 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
                     ],
                 ],
             ],
@@ -339,7 +339,7 @@ it('can save a new field with host-owned settings', function () {
     });
 });
 
-it('uses live adapter island settings when saving a field', function () {
+it('saves native host settings without a compatibility fallback', function () {
     $typeId = Html::id(PlainText::class);
 
     $this->postJson(action([FieldsController::class, 'store']), [
@@ -348,20 +348,20 @@ it('uses live adapter island settings when saving a field', function () {
         'handle' => 'legacyPluginField',
         'types' => [
             $typeId => [
-                'placeholder' => 'Stale host value',
+                'placeholder' => 'Live host value',
             ],
         ],
         'typeSettings' => http_build_query([
             'types' => [
                 $typeId => [
-                    'placeholder' => 'Live island value',
+                    'placeholder' => 'Ignored compatibility value',
                 ],
             ],
         ]),
     ])->assertOk();
 
     expect(FieldModel::query()->latest('id')->firstOrFail()->settings['placeholder'])
-        ->toBe('Live island value');
+        ->toBe('Live host value');
 });
 
 it('returns field setting validation errors under the binding scope', function () {
