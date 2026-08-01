@@ -1,8 +1,10 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, ref, watch} from 'vue';
+  import type {ReorderDirection} from '@craftcms/ui';
   import type {FormElementBinding, JsonValue} from '../types';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/checkbox-group/checkbox-group';
+  import '@craftcms/ui/components/reorder-button/reorder-button';
 
   type OptionValue = string | number | boolean | null;
   type Option = {label: string; value: OptionValue};
@@ -17,12 +19,17 @@
     'update:value': [value: OptionValue | OptionValue[]];
   }>();
 
-  const options = computed<Option[]>(() =>
-    Array.isArray(props.config.options)
-      ? (props.config.options as Option[])
-      : []
+  const options = ref<Option[]>([]);
+
+  watch(
+    () => props.config.options,
+    (value) => {
+      options.value = Array.isArray(value) ? (value as Option[]) : [];
+    },
+    {immediate: true}
   );
   const groupName = computed(() => `${String(props.attributes.name)}[]`);
+  const sortable = computed(() => props.config.sortable === true);
   const allOption = computed<OptionValue | undefined>(() => {
     const value = props.config.allOption;
 
@@ -31,10 +38,19 @@
   const selectedValues = computed<OptionValue[]>(() => {
     const value = props.binding?.value;
 
+    if (value == null && allOption.value !== undefined) {
+      return [allOption.value];
+    }
+
     return Array.isArray(value)
       ? (value as OptionValue[])
       : [value as OptionValue];
   });
+  const selectedOptions = computed(() =>
+    options.value.filter(
+      (option) => option.value !== allOption.value && checked(option.value)
+    )
+  );
 
   function checked(value: OptionValue): boolean {
     return selectedValues.value.some((selected) => selected === value);
@@ -49,15 +65,66 @@
       return;
     }
 
-    const values = selectedValues.value.filter(
-      (value) => value !== allOption.value && value !== option.value
+    const values = new Set(
+      selectedValues.value.filter((value) => value !== allOption.value)
     );
 
     if (input.checked) {
-      values.push(option.value);
+      values.add(option.value);
+    } else {
+      values.delete(option.value);
     }
 
-    emit('update:value', values);
+    emit(
+      'update:value',
+      options.value
+        .filter(({value}) => value !== allOption.value && values.has(value))
+        .map(({value}) => value)
+    );
+  }
+
+  function reorder(
+    option: Option,
+    event: CustomEvent<{direction: ReorderDirection}>
+  ) {
+    const selectedIndex = selectedOptions.value.indexOf(option);
+    const target =
+      event.detail.direction === 'down'
+        ? selectedOptions.value[selectedIndex + 1]
+        : selectedOptions.value[selectedIndex - 1];
+
+    if (!target) {
+      return;
+    }
+
+    const reordered = options.value.slice();
+    reordered.splice(reordered.indexOf(option), 1);
+    const targetIndex = reordered.indexOf(target);
+    reordered.splice(
+      event.detail.direction === 'down' ? targetIndex + 1 : targetIndex,
+      0,
+      option
+    );
+    options.value = reordered;
+    emit(
+      'update:value',
+      reordered
+        .filter(
+          (candidate) =>
+            candidate.value !== allOption.value && checked(candidate.value)
+        )
+        .map(({value}) => value)
+    );
+  }
+
+  function reorderPosition(option: Option): 'first' | 'middle' | 'last' {
+    const index = selectedOptions.value.indexOf(option);
+
+    if (index === 0) {
+      return 'first';
+    }
+
+    return index === selectedOptions.value.length - 1 ? 'last' : 'middle';
   }
 
   function inputAttributes(option: Option, index: number) {
@@ -89,22 +156,46 @@
 
 <template>
   <craft-checkbox-group :name="groupName">
-    <craft-checkbox
+    <div
       v-for="(option, index) in options"
       :key="String(option.value)"
-      :checked="checked(option.value)"
-      :disabled="binding?.readOnly"
+      class="checkbox-select-option"
+      :class="{'checkbox-select-option--sortable': sortable}"
     >
-      <input
-        v-bind="inputAttributes(option, index)"
-        slot="input"
-        type="checkbox"
-        :checked="checked(option.value)"
-        @change="updateValue(option, $event)"
+      <craft-reorder-button
+        v-if="sortable && option.value !== allOption"
+        :disabled="
+          binding?.readOnly ||
+          !checked(option.value) ||
+          selectedOptions.length < 2
+        "
+        :position="reorderPosition(option)"
+        @reorder="reorder(option, $event)"
       />
-      <label slot="label" :for="String(inputAttributes(option, index).id)">
-        {{ option.label }}
-      </label>
-    </craft-checkbox>
+      <craft-checkbox
+        :checked="checked(option.value)"
+        :disabled="binding?.readOnly"
+      >
+        <input
+          v-bind="inputAttributes(option, index)"
+          slot="input"
+          type="checkbox"
+          :checked="checked(option.value)"
+          @change="updateValue(option, $event)"
+        />
+        <label slot="label" :for="String(inputAttributes(option, index).id)">
+          {{ option.label }}
+        </label>
+      </craft-checkbox>
+    </div>
   </craft-checkbox-group>
 </template>
+
+<style scoped>
+  .checkbox-select-option--sortable {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+  }
+</style>

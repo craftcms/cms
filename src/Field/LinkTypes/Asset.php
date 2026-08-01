@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
@@ -82,6 +85,37 @@ class Asset extends BaseElementLinkType
                 'name' => 'showUnpermittedFiles',
                 'on' => $this->showUnpermittedFiles,
             ]);
+    }
+
+    /** @return list<FormElement> */
+    #[Override]
+    protected function settingsFormElements(bool $readOnly): array
+    {
+        $allowedKinds = Collection::make(AssetsHelper::getAllowedFileKinds())
+            ->map(fn (array $kind, string $value): array => [
+                'value' => $value,
+                'label' => (string) $kind['label'],
+            ])
+            ->values()
+            ->all();
+        array_unshift($allowedKinds, ['label' => t('All'), 'value' => '*']);
+
+        return [
+            ...parent::settingsFormElements($readOnly),
+            CheckboxSelectInput::make('allowedKinds')
+                ->label(t('Allowed File Types'))
+                ->options($allowedKinds)
+                ->allOption('*')
+                ->readOnly($readOnly),
+            LightswitchInput::make('showUnpermittedVolumes')
+                ->label(t('Show unpermitted volumes'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('showUnpermittedFiles')
+                ->label(t('Show unpermitted files'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
+                ->readOnly($readOnly),
+        ];
     }
 
     #[Override]

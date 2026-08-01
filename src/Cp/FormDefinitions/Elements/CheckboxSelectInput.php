@@ -11,6 +11,8 @@ class CheckboxSelectInput extends InputElement
 
     private string|int|float|bool|null $allOption = null;
 
+    private bool $sortable = false;
+
     public static function type(): string
     {
         return 'craft:checkbox-select-input';
@@ -31,12 +33,20 @@ class CheckboxSelectInput extends InputElement
         return $this;
     }
 
+    public function sortable(bool $sortable = true): self
+    {
+        $this->sortable = $sortable;
+
+        return $this;
+    }
+
     #[\Override]
     protected function props(): array
     {
         return array_filter([
             'options' => $this->options,
             'allOption' => $this->allOption,
+            'sortable' => $this->sortable ?: null,
         ], fn (mixed $value): bool => $value !== null);
     }
 }

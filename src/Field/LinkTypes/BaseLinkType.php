@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Field\Link;
 
 abstract class BaseLinkType extends Component implements ConfigurableComponentInterface
@@ -18,6 +20,19 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
      * Link fields’ [[\craft\fields\Link::types]] settings.
      */
     abstract public static function id(): string;
+
+    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    {
+        $elements = $this->settingsFormElements($readOnly);
+
+        return $elements === [] ? null : FormDefinition::make($elements);
+    }
+
+    /** @return list<FormElement> */
+    protected function settingsFormElements(bool $readOnly): array
+    {
+        return [];
+    }
 
     /**
      * Returns whether the given value is supported by this link type.

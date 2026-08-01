@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormFields;
 use Exception;
 use League\Uri\Uri;
@@ -91,6 +93,23 @@ class Url extends BaseTextLinkType
                 'name' => 'allowCustomSchemes',
                 'on' => $this->allowCustomSchemes,
             ]);
+    }
+
+    /** @return list<FormElement> */
+    #[\Override]
+    protected function settingsFormElements(bool $readOnly): array
+    {
+        return [
+            LightswitchInput::make('allowRootRelativeUrls')
+                ->label(t('Allow root-relative URLs'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('allowAnchors')
+                ->label(t('Allow anchors'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('allowCustomSchemes')
+                ->label(t('Allow custom URL schemes'))
+                ->readOnly($readOnly),
+        ];
     }
 
     #[\Override]

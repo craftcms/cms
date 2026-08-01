@@ -217,9 +217,9 @@ trait ProvidesLinkField
         $selectedTypes = Collection::make();
         $allowedTypes = $this->{$this->namespacedAttribute('types')};
 
-        foreach ($allTypes as $typeId => $type) {
-            if (in_array($typeId, $allowedTypes, true)) {
-                $selectedTypes[$typeId] = $type;
+        foreach ($allowedTypes as $typeId) {
+            if (isset($allTypes[$typeId])) {
+                $selectedTypes[$typeId] = $allTypes[$typeId];
             }
         }
 

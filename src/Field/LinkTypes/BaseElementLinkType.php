@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\CheckboxSelectInput;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -83,6 +85,34 @@ abstract class BaseElementLinkType extends BaseLinkType
     public function getSettingsHtml(): ?string
     {
         return $this->sourcesSettingHtml();
+    }
+
+    /** @return list<FormElement> */
+    #[Override]
+    protected function settingsFormElements(bool $readOnly): array
+    {
+        $sources = Collection::make($this->availableSources())
+            ->map(fn (array $source): array => [
+                'label' => (string) $source['label'],
+                'value' => $source['key'],
+            ])
+            ->values()
+            ->all();
+
+        if ($sources !== []) {
+            array_unshift($sources, ['label' => t('All'), 'value' => '*']);
+        }
+
+        $element = CheckboxSelectInput::make('sources')
+            ->label(t('{type} Sources', [
+                'type' => static::elementType()::displayName(),
+            ]))
+            ->options($sources)
+            ->readOnly($readOnly);
+
+        return [$sources === []
+            ? $element->warning(t('No sources exist yet.'))->readOnly()
+            : $element->allOption('*')];
     }
 
     /**

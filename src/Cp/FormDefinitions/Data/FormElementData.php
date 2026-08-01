@@ -90,4 +90,24 @@ readonly class FormElementData implements JsonSerializable
             plugin: $ownership($this->type),
         );
     }
+
+    public function withInputNamePrefix(string $prefix): self
+    {
+        return new self(
+            type: $this->type,
+            key: $this->key,
+            name: $this->name === null ? null : "{$prefix}.{$this->name}",
+            width: $this->width,
+            props: $this->props,
+            attributes: $this->attributes,
+            children: $this->children === null
+                ? null
+                : array_map(
+                    fn (self $child): self => $child->withInputNamePrefix($prefix),
+                    $this->children,
+                ),
+            visibleWhen: $this->visibleWhen?->withInputNamePrefix($prefix),
+            plugin: $this->plugin,
+        );
+    }
 }

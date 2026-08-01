@@ -30,4 +30,24 @@ readonly class VisibilityConditionData implements JsonSerializable
             $this->condition,
         );
     }
+
+    public function withInputNamePrefix(string $prefix): self
+    {
+        $condition = $this->condition;
+
+        if (isset($condition['name'])) {
+            $condition['name'] = "{$prefix}.{$condition['name']}";
+        }
+
+        foreach (['all', 'any'] as $group) {
+            if (isset($condition[$group])) {
+                $condition[$group] = array_map(
+                    fn (self $child): self => $child->withInputNamePrefix($prefix),
+                    $condition[$group],
+                );
+            }
+        }
+
+        return new self($condition);
+    }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
+use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -70,6 +72,23 @@ class Entry extends BaseElementLinkType
                 'name' => 'showUnpermittedEntries',
                 'on' => $this->showUnpermittedEntries,
             ]);
+    }
+
+    /** @return list<FormElement> */
+    #[Override]
+    protected function settingsFormElements(bool $readOnly): array
+    {
+        return [
+            ...parent::settingsFormElements($readOnly),
+            LightswitchInput::make('showUnpermittedSections')
+                ->label(t('Show unpermitted sections'))
+                ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
+                ->readOnly($readOnly),
+            LightswitchInput::make('showUnpermittedEntries')
+                ->label(t('Show unpermitted entries'))
+                ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
+                ->readOnly($readOnly),
+        ];
     }
 
     #[Override]
