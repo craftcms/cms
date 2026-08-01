@@ -20,6 +20,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     use Concerns\HasElementTypes;
     use Concerns\HasFieldtypes;
     use Concerns\HasFilesystemTypes;
+    use Concerns\HasFormElementTypes;
     use Concerns\HasFrontendAssets;
     use Concerns\HasGql;
     use Concerns\HasLinkTypes;

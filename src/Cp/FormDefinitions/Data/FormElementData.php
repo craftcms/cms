@@ -18,6 +18,7 @@ readonly class FormElementData implements JsonSerializable
      * @param  array<string, mixed>|null  $attributes  Trusted renderer attributes.
      * @param  list<FormElementData>|null  $children  Ordered child elements.
      * @param  ?VisibilityConditionData  $visibleWhen  Presentation-only visibility predicate.
+     * @param  ?PluginData  $plugin  Derived plugin ownership for diagnostics.
      */
     public function __construct(
         public string $type,
@@ -41,6 +42,8 @@ readonly class FormElementData implements JsonSerializable
         public ?array $children = null,
         #[Optional]
         public ?VisibilityConditionData $visibleWhen = null,
+        #[Optional]
+        public ?PluginData $plugin = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -59,6 +62,27 @@ readonly class FormElementData implements JsonSerializable
                     $this->children,
                 ),
             'visibleWhen' => $this->visibleWhen?->jsonSerialize(),
+            'plugin' => $this->plugin?->jsonSerialize(),
         ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /** @param callable(string): ?PluginData $ownership */
+    public function withPluginOwnership(callable $ownership): self
+    {
+        return new self(
+            type: $this->type,
+            name: $this->name,
+            width: $this->width,
+            props: $this->props,
+            attributes: $this->attributes,
+            children: $this->children === null
+                ? null
+                : array_map(
+                    fn (self $child): self => $child->withPluginOwnership($ownership),
+                    $this->children,
+                ),
+            visibleWhen: $this->visibleWhen,
+            plugin: $ownership($this->type),
+        );
     }
 }

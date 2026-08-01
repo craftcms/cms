@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, onErrorCaptured, ref} from 'vue';
   import {t} from '@craftcms/ui/utilities/translate';
+  import type {FormElementBinding} from '@craftcms/ui';
   import {
     htmlInputName,
     inputId,
@@ -10,7 +11,6 @@
   } from './binding';
   import type {
     FieldContext,
-    FormElementBinding,
     FormElementData,
     JsonValue,
     RenderContext,
@@ -32,13 +32,60 @@
       `form-element:${props.element.type}`
     );
 
-    if (!component) {
+    if (!component && !props.element.plugin) {
       throw new Error(
         `Missing Form Element Renderer for ${props.element.type}.`
       );
     }
 
     return component;
+  });
+  const rendererFailure = ref<Error>();
+  const missingRenderer = computed(
+    () => props.element.type !== 'craft:field' && !renderer.value
+  );
+  const missingRendererMessage = computed(() => {
+    const plugin = props.element.plugin!;
+
+    return t(
+      'Missing Form Element Renderer for {type} from {name} ({handle}, {packageName}). Ensure the plugin is enabled and its control-panel assets are available.',
+      {
+        type: props.element.type,
+        name: plugin.name,
+        handle: plugin.handle,
+        packageName: plugin.packageName,
+      }
+    );
+  });
+  const failedRendererMessage = computed(() => {
+    const plugin = props.element.plugin;
+    const context = plugin
+      ? ` ${t('for {name} ({handle}, {packageName})', {
+          name: plugin.name,
+          handle: plugin.handle,
+          packageName: plugin.packageName,
+        })}`
+      : '';
+
+    return t(
+      'Form Element Renderer {type} failed{context}: {message} Check the renderer implementation.',
+      {
+        type: props.element.type,
+        context,
+        message: rendererFailure.value?.message,
+      }
+    );
+  });
+
+  onErrorCaptured((error) => {
+    if (props.element.type === 'craft:field' || !renderer.value) {
+      return;
+    }
+
+    rendererFailure.value =
+      error instanceof Error ? error : new Error(String(error));
+
+    return false;
   });
 
   const inputChild = computed(() => props.element.children?.[0]);
@@ -186,14 +233,27 @@
     </ul>
   </div>
 
-  <component
-    :is="renderer"
-    v-else-if="renderer"
-    v-show="visible"
-    :config="(element.props ?? {}) as Record<string, JsonValue>"
-    :attributes="attributes"
-    :binding="binding"
-    :style="{width}"
-    @update:value="updateValue"
-  />
+  <div v-else v-show="visible" :style="{width}">
+    <div v-if="missingRenderer" data-form-element-missing-renderer>
+      {{ missingRendererMessage }}
+    </div>
+    <div v-else-if="rendererFailure" data-form-element-failed-renderer>
+      {{ failedRendererMessage }}
+    </div>
+    <component
+      :is="renderer"
+      v-else-if="renderer"
+      :config="(element.props ?? {}) as Record<string, JsonValue>"
+      :attributes="attributes"
+      :binding="binding"
+      @update:value="updateValue"
+    >
+      <FormElementRenderer
+        v-for="(child, index) in element.children"
+        :key="reconciliationKey(child, index)"
+        :element="child"
+        :context="context"
+      />
+    </component>
+  </div>
 </template>

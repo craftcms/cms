@@ -26,8 +26,9 @@ readonly class FormDefinition implements JsonSerializable
 
     public function toData(): FormDefinitionData
     {
+        $types = app(FormElementTypes::class);
         $data = new FormDefinitionData(array_map(
-            fn (FormElement $element): FormElementData => $element->toData(),
+            fn (FormElement $element): FormElementData => $element->toData()->withPluginOwnership($types->ownership(...)),
             $this->elements,
         ));
 
@@ -74,7 +75,9 @@ readonly class FormDefinition implements JsonSerializable
             $this->fail($element, $path, 'width must be between 1 and 100.');
         }
 
-        if ($root && $element->type !== 'craft:field') {
+        $types = app(FormElementTypes::class);
+
+        if ($root && $element->type !== 'craft:field' && ! $types->isContainer($element->type)) {
             $this->fail($element, $path, 'an input must be wrapped in a Field Container.');
         }
 
@@ -89,10 +92,13 @@ readonly class FormDefinition implements JsonSerializable
             if (
                 $element->name !== null
                 || count($element->children ?? []) !== 1
-                || $element->children[0]->type !== 'craft:text-input'
                 || $element->children[0]->name === null
             ) {
                 $this->fail($element, $path, 'a Field Container must contain exactly one input.');
+            }
+        } elseif ($types->isContainer($element->type)) {
+            if ($element->name !== null) {
+                $this->fail($element, $path, 'a Form Container cannot define an Input Name.');
             }
         } elseif ($element->children !== null) {
             $this->fail($element, $path, 'this type cannot contain children.');
@@ -117,8 +123,8 @@ readonly class FormDefinition implements JsonSerializable
 
     private function validateType(FormElementData $element, string $path): void
     {
-        if (! in_array($element->type, ['craft:field', 'craft:text-input'], true)) {
-            $this->fail($element, $path, 'unknown Form Element Type.');
+        if (! app(FormElementTypes::class)->isRegistered($element->type)) {
+            $this->fail($element, $path, 'unknown or unregistered Form Element Type.');
         }
     }
 

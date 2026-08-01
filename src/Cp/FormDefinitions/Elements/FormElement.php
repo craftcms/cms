@@ -20,7 +20,12 @@ abstract class FormElement
         protected readonly ?string $name = null,
     ) {}
 
-    abstract public function type(): string;
+    abstract public static function type(): string;
+
+    public static function isContainer(): bool
+    {
+        return false;
+    }
 
     public function width(int $width): static
     {
@@ -50,7 +55,7 @@ abstract class FormElement
         $children = $this->children();
 
         return new FormElementData(
-            type: $this->type(),
+            type: static::type(),
             name: $this->name,
             width: $this->width,
             props: $props === [] ? null : $props,

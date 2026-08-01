@@ -7,11 +7,11 @@ export type JsonValue = CraftCms.Cms.Cp.FormDefinitions.Data.JsonValue;
 export type FormValues = Record<string, unknown>;
 export type FormErrors = Record<string, string | string[]>;
 
-export interface FormElementBinding {
-  name: string;
-  value: unknown;
-  readOnly: boolean;
-}
+export type {
+  FormElementAttributes,
+  FormElementBinding,
+  FormElementRendererProps,
+} from '@craftcms/ui';
 
 export interface FieldContext {
   inputId: string;

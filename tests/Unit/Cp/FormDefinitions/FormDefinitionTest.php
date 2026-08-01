@@ -198,13 +198,13 @@ it('rejects malformed elements with type and tree location context', function (
 })->with([
     'unknown type' => [
         fn () => TestFormElement::make('plugin:unknown'),
-        'Form Element Type "plugin:unknown" at elements[0]: unknown Form Element Type.',
+        'Form Element Type "plugin:unknown" at elements[0]: unknown or unregistered Form Element Type.',
     ],
     'nested unknown type' => [
         fn () => TestFormElement::make('craft:field', children: [
             TestFormElement::make('plugin:unknown', name: 'title'),
         ]),
-        'Form Element Type "plugin:unknown" at elements[0].children[0]: unknown Form Element Type.',
+        'Form Element Type "plugin:unknown" at elements[0].children[0]: unknown or unregistered Form Element Type.',
     ],
     'invalid width' => [
         fn () => TextInput::make('title')->width(0),
@@ -226,7 +226,7 @@ it('rejects malformed elements with type and tree location context', function (
                 TestFormElement::make('craft:text-input', name: 'nested'),
             ]),
         ]),
-        'Form Element Type "craft:field" at elements[0]: a Field Container must contain exactly one input.',
+        'Form Element Type "craft:field" at elements[0].children[0]: a Field Container must contain exactly one input.',
     ],
     'unwrapped input' => [
         fn () => TestFormElement::make('craft:text-input', name: 'title'),
@@ -282,32 +282,38 @@ class TestFormElement extends FormElement
         return new self($type, $name, $props, $children, $visibleWhen);
     }
 
-    public function type(): string
+    public static function type(): string
     {
-        return $this->elementType;
+        return 'test:element';
     }
 
+    #[\Override]
     protected function props(): array
     {
         return $this->elementProps;
     }
 
+    #[\Override]
     protected function children(): array
     {
         return $this->elementChildren;
     }
 
+    #[\Override]
     public function toData(): FormElementData
     {
-        $data = parent::toData();
-
         return new FormElementData(
-            type: $data->type,
-            name: $data->name,
-            width: $data->width,
-            props: $data->props,
-            attributes: $data->attributes,
-            children: $data->children,
+            type: $this->elementType,
+            name: $this->name,
+            width: $this->width,
+            props: $this->elementProps === [] ? null : $this->elementProps,
+            attributes: $this->elementAttributes === [] ? null : $this->elementAttributes,
+            children: $this->elementChildren === []
+                ? null
+                : array_map(
+                    fn (FormElement $element): FormElementData => $element->toData(),
+                    $this->elementChildren,
+                ),
             visibleWhen: $this->elementVisibleWhen,
         );
     }
