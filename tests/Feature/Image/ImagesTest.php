@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\Raster;
 use CraftCms\Cms\Image\Svg;
 use CraftCms\Cms\Support\Facades\Images as ImagesFacade;
 use Illuminate\Support\Facades\File;
-use Imagine\Image\Format;
 
 beforeEach(function () {
     $this->service = app(Images::class);
@@ -34,6 +34,13 @@ it('is a singleton', function () {
         ->and($this->service)->toBe(app(Images::class));
 });
 
+it('reports the active driver', function () {
+    expect($this->service->getDriver())->toBeInstanceOf(ImageDriver::class)
+        ->and($this->service->getIsGd())->toBe($this->service->getDriver() === ImageDriver::Gd)
+        ->and($this->service->getIsImagick())->toBe($this->service->getDriver() === ImageDriver::Imagick)
+        ->and($this->service->getIsVips())->toBe($this->service->getDriver() === ImageDriver::Vips);
+});
+
 describe('loadImage', function () {
     it('returns raster for non-svg images', function () {
         $image = $this->service->loadImage($this->fixturesPath.'/google.png');
@@ -48,8 +55,8 @@ describe('loadImage', function () {
     });
 
     it('rasterizes svg when requested', function () {
-        if (! $this->service->getIsImagick()) {
-            $this->markTestSkipped('Rasterized SVG loading requires Imagick in this environment.');
+        if (! $this->service->getCanRasterizeSvg()) {
+            $this->markTestSkipped('Rasterized SVG loading is not supported by the active image driver.');
         }
 
         $image = $this->service->loadImage($this->fixturesPath.'/craft-logo.svg', true, 500);
@@ -104,15 +111,15 @@ it('includes baseline supported image formats', function () {
     expect($formats)->toContain('jpg', 'jpeg', 'gif', 'png');
 
     if ($this->service->getSupportsWebP()) {
-        expect($formats)->toContain(Format::ID_WEBP);
+        expect($formats)->toContain('webp');
     }
 
     if ($this->service->getSupportsAvif()) {
-        expect($formats)->toContain(Format::ID_AVIF);
+        expect($formats)->toContain('avif');
     }
 
     if ($this->service->getSupportsHeic()) {
-        expect($formats)->toContain(Format::ID_HEIC);
+        expect($formats)->toContain('heic');
     }
 });
 

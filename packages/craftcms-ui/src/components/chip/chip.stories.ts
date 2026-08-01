@@ -29,7 +29,7 @@ export const PrefixAndSuffix: Story = {
     <craft-chip>
       <craft-status slot="prefix" status="live"></craft-status>
       This is a chip
-      <craft-button icon size="small" appearance="plain" slot="suffix">
+      <craft-button icon size="small" variant="plain" slot="suffix">
         <craft-icon name="ellipsis" label="Actions"></craft-icon>
       </craft-button>
     </craft-chip>
@@ -42,7 +42,7 @@ export const Thumbnail: Story = {
     <craft-chip>
       <img slot="thumbnail" src="https://picsum.photos/300/300" alt="" />
       This is a chip
-      <craft-button icon size="small" appearance="plain" slot="suffix">
+      <craft-button icon size="small" variant="plain" slot="suffix">
         <craft-icon name="ellipsis" label="Actions"></craft-icon>
       </craft-button>
     </craft-chip>
@@ -63,7 +63,7 @@ export const SuffixOnly: Story = {
   args: {},
   render: (args) => html`
     <craft-chip>
-      <craft-button icon size="small" appearance="plain" slot="suffix">
+      <craft-button icon size="small" variant="plain" slot="suffix">
         <craft-icon name="ellipsis" label="Actions"></craft-icon>
       </craft-button>
       This is a chip
@@ -81,11 +81,7 @@ export const Colors: Story = {
           ([name, value]) =>
             html`<craft-chip data-color="${value}">
               ${name}
-              <craft-button
-                size="small"
-                slot="suffix"
-                variant="inherit"
-                appearance="plain"
+              <craft-button size="small" slot="suffix" inherit variant="plain"
                 >Button</craft-button
               >
             </craft-chip>`

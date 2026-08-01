@@ -58,7 +58,7 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
     group: baseHelper.group,
 
     date(accessor, config = {}) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line @typescript-eslint/no-unused-vars
       const {format, ...rest} = config;
       return baseHelper.accessor(accessor, {
         cell: (cellContext: CellContext<T, any>) => {
@@ -85,7 +85,7 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
         header: t('Actions'),
         meta: {
           headerSrOnly: true,
-          ...(config.meta || {}),
+          ...config.meta,
         },
         cell: (cellContext) =>
           h(

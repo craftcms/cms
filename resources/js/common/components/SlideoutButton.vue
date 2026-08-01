@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {useTemplateRef} from 'vue';
+  import {ButtonVariant} from '@craftcms/ui';
 
   defineProps<{
     url: string;
@@ -27,7 +28,7 @@
 <template>
   <craft-button
     type="button"
-    appearance="filled"
+    :variant="ButtonVariant.Dashed"
     @click="openSlideout(url)"
     ref="invoker"
   >

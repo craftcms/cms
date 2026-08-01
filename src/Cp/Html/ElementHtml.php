@@ -16,7 +16,7 @@ use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
-use CraftCms\Cms\Cp\Enums\Appearance;
+use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
@@ -76,7 +76,6 @@ readonly class ElementHtml
             'showThumb' => true,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
-            'appearance' => null,
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -96,7 +95,6 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'appearance' => $config['appearance'],
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
@@ -462,7 +460,7 @@ readonly class ElementHtml
     {
         return ($showEditButton ? Button::make()
             ->icon('edit')
-            ->appearance(Appearance::Plain)
+            ->variant(ButtonVariant::Plain)
             ->size('small')
             ->action($editAction)
             ->attributes([
@@ -1014,8 +1012,8 @@ readonly class ElementHtml
                 ]), [
                     'type' => 'button',
                     'slot' => 'invoker',
-                    'appearance' => 'plain',
-                    'variant' => 'inherit',
+                    'variant' => 'plain',
+                    'inherit' => true,
                     'size' => 'small',
                     // Bare `icon` attribute triggers the icon-only button styling
                     // (the icon itself is slotted content, not the `icon` prop —
