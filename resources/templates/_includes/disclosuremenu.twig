@@ -78,7 +78,7 @@
           <span class="visually-hidden">, selected</span>
         {% endif %}
         {% if item.info is defined and item.info is not empty %}
-          <span class="info">{{ item.info|e|cpmd }}</span>
+          <craft-info-icon>{{ item.info|e|cpmd }}</craft-info-icon>
         {% endif %}
       {% endapply -%}
     {% endtag %}
@@ -110,8 +110,8 @@
 
   {% tag 'craft-button' with {
     type: 'button',
-    appearance: 'plain',
-    variant: 'inherit',
+    variant: 'plain',
+    inherit: true,
     icon: 'craft-icon' in (buttonHtml ?? ''),
     size: 'small',
     aria: {

@@ -25,6 +25,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
@@ -58,6 +59,16 @@ use yii\validators\Validator;
  */
 trait LegacyFieldConstants
 {
+    public const string TRANSLATION_METHOD_NONE = TranslationMethod::None->value;
+
+    public const string TRANSLATION_METHOD_SITE = TranslationMethod::Site->value;
+
+    public const string TRANSLATION_METHOD_SITE_GROUP = TranslationMethod::SiteGroup->value;
+
+    public const string TRANSLATION_METHOD_LANGUAGE = TranslationMethod::Language->value;
+
+    public const string TRANSLATION_METHOD_CUSTOM = TranslationMethod::Custom->value;
+
     public const string EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
 
     public const string EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';

@@ -12,6 +12,14 @@ interface PasswordConfirmationOptions<T> {
 interface UseSettingsSaveOptions<T extends Record<string, any>> {
   transform?: (data: T) => Record<string, any>;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
+  /**
+   * Sugar over {@link passwordConfirmation}: require an elevated session when the
+   * named fields differ from their initial values, or `'*'` for any dirty change
+   * (via Inertia's `form.isDirty`). Ignored when `passwordConfirmation` is set
+   * explicitly — reach for that when you need a custom predicate or
+   * `minimumRemainingSeconds`.
+   */
+  elevatedFields?: Array<keyof T> | '*';
 }
 
 export function useSettingsSave<T extends Record<string, any>>(
@@ -23,6 +31,13 @@ export function useSettingsSave<T extends Record<string, any>>(
     redirectUrl?: string;
   }>();
   const redirectUrl = computed(() => page.props.redirectUrl);
+
+  // `elevatedFields` is sugar that generates a `passwordConfirmation` config, so
+  // the proactive check and the 423 retry below both flow through one path. An
+  // explicit `passwordConfirmation` always wins.
+  const passwordConfirmation =
+    options.passwordConfirmation ??
+    elevatedFieldsConfirmation(form, options.elevatedFields);
 
   // Handle cmd + s events
   useEventListener('keydown', (event) => {
@@ -64,11 +79,7 @@ export function useSettingsSave<T extends Record<string, any>>(
         .submit(action(), {
           ...submitOptions,
           onHttpException: (response) => {
-            if (
-              !options.passwordConfirmation ||
-              response.status !== 423 ||
-              retried
-            ) {
+            if (!passwordConfirmation || response.status !== 423 || retried) {
               return;
             }
 
@@ -76,7 +87,7 @@ export function useSettingsSave<T extends Record<string, any>>(
               .require({
                 force: true,
                 minimumRemainingSeconds:
-                  options.passwordConfirmation?.minimumRemainingSeconds,
+                  passwordConfirmation.minimumRemainingSeconds,
               })
               .then((confirmed) => {
                 if (confirmed) {
@@ -89,11 +100,10 @@ export function useSettingsSave<T extends Record<string, any>>(
         });
     }
 
-    if (options.passwordConfirmation?.required(form.data())) {
+    if (passwordConfirmation?.required(form.data())) {
       elevatedSessionManager
         .require({
-          minimumRemainingSeconds:
-            options.passwordConfirmation.minimumRemainingSeconds,
+          minimumRemainingSeconds: passwordConfirmation.minimumRemainingSeconds,
         })
         .then((confirmed) => {
           if (confirmed) {
@@ -108,4 +118,41 @@ export function useSettingsSave<T extends Record<string, any>>(
   }
 
   return {save};
+}
+
+/**
+ * Build a {@link PasswordConfirmationOptions} from the `elevatedFields` sugar.
+ * An array snapshots each field's initial value and requires elevation when any
+ * changes; `'*'` defers to Inertia's own dirty tracking.
+ */
+function elevatedFieldsConfirmation<T extends Record<string, any>>(
+  form: InertiaForm<T>,
+  fields: Array<keyof T> | '*' | undefined
+): PasswordConfirmationOptions<T> | undefined {
+  if (!fields) {
+    return undefined;
+  }
+
+  if (fields === '*') {
+    return {required: () => form.isDirty};
+  }
+
+  const baseline = new Map<keyof T, string>(
+    fields.map((field) => [field, normalize(form[field])])
+  );
+
+  return {
+    required: (data) =>
+      fields.some((field) => normalize(data[field]) !== baseline.get(field)),
+  };
+}
+
+/**
+ * Stringify a field value for change comparison. Arrays are sorted first so a set
+ * of permissions/groups compares equal regardless of order.
+ */
+function normalize(value: unknown): string {
+  return Array.isArray(value)
+    ? JSON.stringify([...value].sort())
+    : JSON.stringify(value);
 }

@@ -24,9 +24,9 @@ use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Imagine\Image\Format;
 use InvalidArgumentException;
 use Symfony\Component\Finder\Finder;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -135,13 +135,27 @@ class ImageTransformHelper
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         try {
-            $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
+            $disk = $volume->sourceDisk();
+            $isLocalFs = $disk instanceof LocalFilesystemAdapter;
 
             if (! $isLocalFs) {
                 // This is a non-local fs
-                if (! is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
+                $remoteDateModified = null;
+                if (is_file($imageSourcePath) && filesize($imageSourcePath) !== 0) {
+                    try {
+                        $remoteDateModified = $disk->lastModified($asset->getPath());
+                    } catch (Throwable) {
+                        // Can't tell whether the cache is still fresh; assume it is rather than
+                        // re-downloading on every request just because the fs is being flaky.
+                    }
+                }
+
+                // Stale if the remote object has been modified more recently than our local copy.
+                $sourceIsStale = $remoteDateModified !== null && filemtime($imageSourcePath) < $remoteDateModified;
+
+                if (! is_file($imageSourcePath) || filesize($imageSourcePath) === 0 || $sourceIsStale) {
                     if (is_file($imageSourcePath)) {
-                        // Delete since it's a 0-byter
+                        // Delete since it's either a 0-byter or stale
                         File::delete($imageSourcePath);
                     }
 
@@ -163,7 +177,7 @@ class ImageTransformHelper
                         File::delete($file->getPathname());
                     }
 
-                    AssetsHelper::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
+                    AssetsHelper::downloadFile($disk, $asset->getPath(), $tempFilePath);
 
                     if (! is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {
@@ -384,12 +398,7 @@ class ImageTransformHelper
         $format = $transform->format ?: self::detectTransformFormat($asset);
         $imagesService = app(Images::class);
 
-        $supported = match ($format) {
-            Format::ID_WEBP => $imagesService->getSupportsWebP(),
-            Format::ID_AVIF => $imagesService->getSupportsAvif(),
-            Format::ID_HEIC => $imagesService->getSupportsHeic(),
-            default => true,
-        };
+        $supported = $format === 'svg' || $imagesService->supportsFormat($format);
 
         if (! $supported) {
             throw new ImageTransformException("The `$format` format is not supported on this server.");
@@ -450,8 +459,7 @@ class ImageTransformHelper
 
         // Save it!
 
-        // It's important that the temp filename has the target file extension, as CraftCms\Cms\Image\Raster::saveAs() uses it
-        // to determine the options that should be passed to Imagine\Image\ManipulatorInterface::save().
+        // Raster::saveAs() uses the target extension to select the encoder.
         $tempFilename = File::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
         $tempPath = Path::temp($tempFilename);
         $image->saveAs($tempPath);

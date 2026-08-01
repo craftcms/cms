@@ -47,7 +47,6 @@ export default class CraftInputPassword extends LionInput {
         size="small"
         variant="plain"
         @click="${this.reveal}"
-        appearance="plain"
       >
         <span class="icon"
           >${this._visible

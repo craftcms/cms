@@ -47,6 +47,17 @@ describe('input', function () {
         expect($html)->toContain('value="1.78"');
     });
 
+    it('nests the always-post hidden input in the host, ahead of the checkbox', function () {
+        $html = Checkbox::make()->id('cb')->name('remember')->toHtml();
+
+        // The control has to be a single root element, or it can't be slotted
+        // into a <craft-field> — the slot attribute would land on the hidden
+        // input and the host would never render.
+        expect($html)->toStartWith('<craft-checkbox>')
+            ->and($html)->toEndWith('</craft-checkbox>')
+            ->and(strpos($html, 'type="hidden"'))->toBeLessThan(strpos($html, 'type="checkbox"'));
+    });
+
     it('skips the always-post hidden input for array names', function () {
         expect(Checkbox::make()->name('options[]')->toHtml())
             ->not->toContain('type="hidden"');
@@ -107,7 +118,7 @@ describe('label', function () {
     it('renders markdown info beside the label', function () {
         $html = Checkbox::make()->id('cb')->label('Opt')->info('Some *info*')->toHtml();
 
-        expect($html)->toContain('class="info"')
+        expect($html)->toContain('<craft-info-icon>')
             ->and($html)->toContain('<em>info</em>');
     });
 });

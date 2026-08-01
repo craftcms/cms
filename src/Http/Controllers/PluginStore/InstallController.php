@@ -28,6 +28,10 @@ class InstallController extends BaseUpdaterController
 
     public const string ACTION_MIGRATE = 'migrate';
 
+    // TODO: Remove this once the Plugin Store installer has been ported to Inertia.
+    #[Override]
+    protected bool $usesStepUrls = false;
+
     public function __construct(
         Request $request,
         GeneralConfig $generalConfig,

@@ -225,7 +225,9 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     })
       .then(({data}) => {
         if (this.settings.context === 'index') {
-          document.location.href = Craft.getUrl(data.element.cpEditUrl, {fresh: 1});
+          document.location.href = Craft.getUrl(data.element.cpEditUrl, {
+            fresh: 1,
+          });
         } else {
           const slideout = Craft.createElementEditor(this.elementType, {
             siteId: this.siteId,

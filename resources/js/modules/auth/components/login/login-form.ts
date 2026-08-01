@@ -206,7 +206,7 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #setError(message: string) {
-    const { announce } = useAnnouncer();
+    const {announce} = useAnnouncer();
     this._error = message.trim();
     announce(this._error);
   }
@@ -306,7 +306,7 @@ export default class CraftLoginForm extends LitElement {
                     <craft-button
                       type="button"
                       size="small"
-                      appearance="plain"
+                      variant="link"
                       @click="${this.#showResetPasswordForm}"
                       style="margin-block-start: var(--c-spacing-sm)"
                     >
@@ -356,7 +356,7 @@ export default class CraftLoginForm extends LitElement {
                 ? html`
                     <craft-button
                       type="button"
-                      appearance="filled"
+                      variant="fill"
                       ?loading="${this._passkeyBusy}"
                       @click="${this.#loginWithPasskey}"
                       style="width: 100%"

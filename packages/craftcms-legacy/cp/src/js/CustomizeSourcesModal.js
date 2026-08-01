@@ -717,9 +717,10 @@ Craft.CustomizeSourcesModal.PageSettingsModal = Garnish.Modal.extend({
       this.name = $nameInput.val();
     });
 
-    const iconPicker = $iconField.find('.icon-picker').data('iconpicker');
-    iconPicker.on('change', (ev) => {
-      this.icon = ev.iconName;
+    // <craft-icon-picker> re-emits its model changes as a bubbling `change`
+    // CustomEvent with the icon name on `detail.value`.
+    $iconField.find('craft-icon-picker').on('change', (ev) => {
+      this.icon = ev.originalEvent?.detail?.value ?? '';
     });
 
     $cancelBtn.on('activate', () => {
