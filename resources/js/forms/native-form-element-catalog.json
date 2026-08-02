@@ -11,7 +11,6 @@
   {"type": "craft:money-input", "container": false},
   {"type": "craft:number-input", "container": false},
   {"type": "craft:object-select-input", "container": false},
-  {"type": "craft:option-rows", "container": false},
   {"type": "craft:select-input", "container": false},
   {"type": "craft:tab", "container": true},
   {"type": "craft:tabs", "container": true},

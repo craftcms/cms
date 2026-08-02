@@ -19,7 +19,7 @@ use Override;
  * @phpstan-type EditableTableColumn array{
  *     key: string,
  *     label: string,
- *     type: 'checkbox'|'color'|'date'|'email'|'lightswitch'|'multiline'|'number'|'select'|'text'|'time'|'url',
+ *     type: 'checkbox'|'color'|'date'|'email'|'icon'|'lightswitch'|'multiline'|'number'|'select'|'text'|'time'|'url',
  *     width?: string|int,
  *     class?: string,
  *     code?: bool,
@@ -27,6 +27,7 @@ use Override;
  *     autoPopulate?: string,
  *     nestedOptions?: bool,
  *     radioMode?: bool,
+ *     toggle?: list<string>,
  *     options?: list<EditableTableOption>,
  * }
  * @phpstan-type EditableTableFixedRow array{key: string, label: string}
@@ -38,6 +39,7 @@ class EditableTable extends ViewComponent implements FormElement
         'color',
         'date',
         'email',
+        'icon',
         'lightswitch',
         'multiline',
         'number',
@@ -328,7 +330,7 @@ class EditableTable extends ViewComponent implements FormElement
             $this->unsupportedOutputOption("columns[{$index}]", $output);
         }
 
-        $supported = ['key', 'label', 'type', 'width', 'class', 'code', 'placeholder', 'autoPopulate', 'nestedOptions', 'radioMode', 'options'];
+        $supported = ['key', 'label', 'type', 'width', 'class', 'code', 'placeholder', 'autoPopulate', 'nestedOptions', 'radioMode', 'toggle', 'options'];
 
         foreach (array_keys($column) as $property) {
             if (! in_array($property, $supported, true)) {
@@ -360,6 +362,10 @@ class EditableTable extends ViewComponent implements FormElement
             if (array_key_exists($property, $column) && ! is_bool($column[$property])) {
                 $this->unsupportedOutputOption("columns[{$index}].{$property}", $output);
             }
+        }
+
+        if (array_key_exists('toggle', $column) && (! is_array($column['toggle']) || ! array_is_list($column['toggle']) || ! array_all($column['toggle'], fn (mixed $target): bool => is_string($target)))) {
+            $this->unsupportedOutputOption("columns[{$index}].toggle", $output);
         }
 
         if (array_key_exists('options', $column)) {

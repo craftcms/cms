@@ -54,10 +54,6 @@ export {
   type ObjectSelectOption,
 } from './components/object-select/object-select.js';
 export {default as CraftOption} from './components/option/option.js';
-export {
-  default as CraftOptionRows,
-  type OptionRow,
-} from './components/option-rows/option-rows.js';
 export {default as CraftPane} from './components/pane/pane.js';
 export {default as CraftPopover} from './components/popover/popover.js';
 export {default as CraftProgressBar} from './components/progress-bar/progress-bar.js';

@@ -10,13 +10,11 @@ import '../button/button.js';
 import '../checkbox/checkbox.js';
 import '../input-color/input-color.js';
 import '../input/input.js';
-import '../option-rows/option-rows.js';
 import '../reorder-button/reorder-button.js';
 import '../select/select.js';
 import '../switch/switch.js';
 import '../visually-hidden/visually-hidden.js';
 import styles from '../table/table.styles.js';
-import type CraftOptionRows from '../option-rows/option-rows.js';
 
 export type EditableTableOption = {
   label: string;
@@ -32,6 +30,7 @@ export type EditableTableColumn = {
     | 'color'
     | 'date'
     | 'email'
+    | 'icon'
     | 'lightswitch'
     | 'multiline'
     | 'number'
@@ -46,6 +45,7 @@ export type EditableTableColumn = {
   autoPopulate?: string;
   nestedOptions?: boolean;
   radioMode?: boolean;
+  toggle?: string[];
   options?: EditableTableOption[];
 };
 
@@ -61,11 +61,30 @@ export type EditableTableValue =
 
 type RenderedRow = {key: string; row: EditableTableRow};
 
+const nestedOptionColumns: EditableTableColumn[] = [
+  {
+    key: 'label',
+    label: t('Option Label'),
+    type: 'text',
+    autoPopulate: 'value',
+  },
+  {key: 'value', label: t('Value'), type: 'text', code: true},
+  {
+    key: 'default',
+    label: t('Default?'),
+    type: 'checkbox',
+    radioMode: true,
+  },
+];
+
+let nextTableId = 0;
+
 const columnTypes = [
   'checkbox',
   'color',
   'date',
   'email',
+  'icon',
   'lightswitch',
   'multiline',
   'number',
@@ -125,6 +144,7 @@ function assertColumns(value: unknown): asserts value is EditableTableColumn[] {
       'autoPopulate',
       'nestedOptions',
       'radioMode',
+      'toggle',
       'options',
     ];
     const unsupported = Object.keys(column).find(
@@ -183,6 +203,16 @@ function assertColumns(value: unknown): asserts value is EditableTableColumn[] {
           `Editable table column ${index} has an invalid ${property}.`
         );
       }
+    }
+
+    if (
+      Object.hasOwn(column, 'toggle') &&
+      (!Array.isArray(column.toggle) ||
+        column.toggle.some((target: unknown) => typeof target !== 'string'))
+    ) {
+      throw new TypeError(
+        `Editable table column ${index} has an invalid toggle.`
+      );
     }
 
     if (Object.hasOwn(column, 'options')) {
@@ -347,6 +377,7 @@ export default class CraftEditableTable extends LitElement {
   readOnly = false;
 
   private _nextRowKey = 0;
+  private _tableId = nextTableId++;
   private _hasPublishedColumns = false;
   private _receivedColumns?: EditableTableColumn[];
   private _renderedRows: RenderedRow[] = [];
@@ -426,7 +457,11 @@ export default class CraftEditableTable extends LitElement {
               columns,
               ({key}) => key,
               (column) => html`
-                <th scope="col" style=${styleMap(this._cellStyle(column))}>
+                <th
+                  id=${this._columnHeadingId(column)}
+                  scope="col"
+                  style=${styleMap(this._cellStyle(column))}
+                >
                   ${column.label}
                 </th>
               `
@@ -462,6 +497,7 @@ export default class CraftEditableTable extends LitElement {
 
   private _rowTemplate(renderedRow: RenderedRow, index: number) {
     const columns = this._effectiveColumns();
+    const disabled = this._rowDisabled(renderedRow.row);
 
     return html`
       <tr data-editable-table-row data-row-key=${renderedRow.key}>
@@ -483,7 +519,7 @@ export default class CraftEditableTable extends LitElement {
                 <craft-reorder-button
                   position=${this._position(index)}
                   label=${t('Reorder row {number}', {number: index + 1})}
-                  ?disabled=${this.readOnly}
+                  ?disabled=${disabled}
                   @reorder=${(event: CustomEvent<{direction: 'up' | 'down'}>) =>
                     this._reorderRow(index, event)}
                 ></craft-reorder-button>
@@ -492,7 +528,7 @@ export default class CraftEditableTable extends LitElement {
                   size="small"
                   variant="plain"
                   aria-label=${t('Delete row {number}', {number: index + 1})}
-                  ?disabled=${this.readOnly}
+                  ?disabled=${disabled}
                   data-delete-row
                   @click=${() => this._deleteRow(index)}
                 >
@@ -505,15 +541,17 @@ export default class CraftEditableTable extends LitElement {
       ${this._hasNestedOptions(renderedRow.row)
         ? html`<tr data-table-nested-options>
             <td colspan=${columns.length + 1}>
-              <craft-option-rows
+              <craft-editable-table
                 name=${ifDefined(
                   this._inputName(index, renderedRow, 'options')
                 )}
+                .columns=${nestedOptionColumns}
                 .modelValue=${this._nestedOptions(renderedRow.row)}
-                ?readonly=${this.readOnly}
+                add-row-label=${t('Add an option')}
+                ?readonly=${disabled}
                 @model-value-changed=${(event: Event) =>
                   this._updateNestedOptions(index, event)}
-              ></craft-option-rows>
+              ></craft-editable-table>
             </td>
           </tr>`
         : nothing}
@@ -528,17 +566,15 @@ export default class CraftEditableTable extends LitElement {
     const name = this._inputName(index, renderedRow, column.key);
     const cell = `${renderedRow.key}:${column.key}`;
     const value = renderedRow.row[column.key];
+    const disabled = this._cellDisabled(renderedRow.row, column);
 
     if (column.type === 'select') {
-      return html`<craft-select
-        ?disabled=${this.readOnly}
-        data-table-cell=${cell}
-      >
+      return html`<craft-select ?disabled=${disabled} data-table-cell=${cell}>
         <select
           slot="input"
           name=${ifDefined(name)}
           .value=${this._textValue(value)}
-          ?disabled=${this.readOnly}
+          ?disabled=${disabled}
           aria-label=${column.label}
           @change=${(event: Event) =>
             this._updateCell(index, column, this._selectedValue(event, column))}
@@ -559,8 +595,8 @@ export default class CraftEditableTable extends LitElement {
         name=${ifDefined(name)}
         label=${column.label}
         label-sr-only
-        .checked=${Boolean(value)}
-        ?disabled=${this.readOnly}
+        .checked=${this._booleanValue(value)}
+        ?disabled=${disabled}
         data-table-cell=${cell}
         @change=${(event: Event) =>
           this._updateCell(
@@ -576,8 +612,8 @@ export default class CraftEditableTable extends LitElement {
         name=${ifDefined(name)}
         label=${column.label}
         label-sr-only
-        .checked=${Boolean(value)}
-        ?disabled=${this.readOnly}
+        .checked=${this._booleanValue(value)}
+        ?disabled=${disabled}
         data-table-cell=${cell}
         @change=${(event: Event) =>
           this._updateCell(
@@ -593,7 +629,7 @@ export default class CraftEditableTable extends LitElement {
       return html`<textarea
         name=${ifDefined(name)}
         .value=${this._textValue(value)}
-        ?readonly=${this.readOnly}
+        ?readonly=${disabled}
         aria-label=${column.label}
         data-table-cell=${cell}
         @input=${(event: Event) =>
@@ -610,7 +646,8 @@ export default class CraftEditableTable extends LitElement {
       return html`<craft-input-color
         name=${ifDefined(name)}
         .modelValue=${this._textValue(value)}
-        ?readonly=${this.readOnly}
+        ?readonly=${disabled}
+        ?disabled=${disabled}
         label=${column.label}
         label-sr-only
         data-table-cell=${cell}
@@ -625,12 +662,25 @@ export default class CraftEditableTable extends LitElement {
       ></craft-input-color>`;
     }
 
+    if (column.type === 'icon') {
+      return html`<craft-icon-picker
+        value=${this._textValue(value)}
+        ?disabled=${disabled}
+        labelled-by=${this._columnHeadingId(column)}
+        data-table-cell=${cell}
+        @change=${(event: CustomEvent<{value: string}>) => {
+          event.stopPropagation();
+          this._updateCell(index, column, event.detail.value);
+        }}
+      ></craft-icon-picker>`;
+    }
+
     return html`<craft-input
       name=${ifDefined(name)}
       type=${this._inputType(column.type)}
       .modelValue=${this._textValue(value)}
       placeholder=${ifDefined(column.placeholder)}
-      ?readonly=${this.readOnly}
+      ?readonly=${disabled}
       class=${[column.class, column.code ? 'code' : '']
         .filter(Boolean)
         .join(' ')}
@@ -714,6 +764,10 @@ export default class CraftEditableTable extends LitElement {
     };
   }
 
+  private _columnHeadingId(column: EditableTableColumn): string {
+    return `editable-table-${this._tableId}-${column.key}`;
+  }
+
   private _inputName(
     index: number,
     renderedRow: RenderedRow,
@@ -759,6 +813,29 @@ export default class CraftEditableTable extends LitElement {
     return '';
   }
 
+  private _booleanValue(value: unknown): boolean {
+    return value === true || value === 1 || value === '1';
+  }
+
+  private _rowDisabled(row: EditableTableRow): boolean {
+    return this.readOnly || this._booleanValue(row.disabled);
+  }
+
+  private _cellDisabled(
+    row: EditableTableRow,
+    column: EditableTableColumn
+  ): boolean {
+    return (
+      this._rowDisabled(row) ||
+      this._effectiveColumns().some(
+        (candidate) =>
+          candidate.type === 'checkbox' &&
+          this._booleanValue(row[candidate.key]) &&
+          candidate.toggle?.includes(`!${column.key}`)
+      )
+    );
+  }
+
   private _changedRow(
     renderedRow: RenderedRow,
     changes: EditableTableRow
@@ -775,7 +852,9 @@ export default class CraftEditableTable extends LitElement {
   }
 
   private _updateRow(index: number, changes: EditableTableRow) {
-    if (this.readOnly) {
+    const row = this._renderedRows[index]?.row;
+
+    if (!row || this._rowDisabled(row)) {
       return;
     }
 
@@ -795,11 +874,34 @@ export default class CraftEditableTable extends LitElement {
   ) {
     const renderedRow = this._renderedRows[index];
 
-    if (!renderedRow || this.readOnly) {
+    if (!renderedRow || this._cellDisabled(renderedRow.row, column)) {
       return;
     }
 
     const changes: EditableTableRow = {[column.key]: value};
+
+    if (column.type === 'checkbox' && column.toggle && value === false) {
+      for (const target of column.toggle.map((key) => key.replace(/^!/, ''))) {
+        if (Object.hasOwn(renderedRow.row, target)) {
+          continue;
+        }
+
+        const targetColumn = this._effectiveColumns().find(
+          ({key}) => key === target
+        );
+        const sourceColumn = this._effectiveColumns().find(
+          ({autoPopulate}) => autoPopulate === target
+        );
+
+        if (targetColumn) {
+          changes[target] = sourceColumn
+            ? this._generatedValue(
+                this._textValue(renderedRow.row[sourceColumn.key])
+              )
+            : this._defaultValue(targetColumn);
+        }
+      }
+    }
 
     if (column.type === 'checkbox' && column.radioMode && value === true) {
       this._updateValue(
@@ -860,7 +962,7 @@ export default class CraftEditableTable extends LitElement {
   private _updateNestedOptions(index: number, event: Event) {
     event.stopPropagation();
     this._updateRow(index, {
-      options: (event.currentTarget as CraftOptionRows).modelValue,
+      options: (event.currentTarget as CraftEditableTable).modelValue,
     });
   }
 
@@ -919,7 +1021,9 @@ export default class CraftEditableTable extends LitElement {
       return;
     }
 
-    if (this.readOnly) {
+    const row = this._renderedRows[index]?.row;
+
+    if (!row || this._rowDisabled(row)) {
       return;
     }
 
@@ -940,7 +1044,9 @@ export default class CraftEditableTable extends LitElement {
       return;
     }
 
-    if (this.readOnly) {
+    const row = this._renderedRows[index]?.row;
+
+    if (!row || this._rowDisabled(row)) {
       return;
     }
 

@@ -39,7 +39,6 @@ class ComponentRegistry
         'money-input' => MoneyInput::class,
         'number-input' => NumberInput::class,
         'object-select' => ObjectSelect::class,
-        'option-rows' => OptionRows::class,
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,
         'select' => Select::class,

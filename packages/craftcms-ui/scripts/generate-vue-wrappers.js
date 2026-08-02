@@ -225,15 +225,6 @@ const VALUE_COMPONENTS = [
     importPath: '../components/object-select/object-select',
   },
   {
-    tagName: 'craft-option-rows',
-    className: 'CraftOptionRows',
-    fileName: 'CraftOptionRows',
-    modelType: 'OptionRow[]',
-    modelTypeImports: ['OptionRow'],
-    modelDefault: '[]',
-    importPath: '../components/option-rows/option-rows',
-  },
-  {
     tagName: 'craft-editable-table',
     className: 'CraftEditableTable',
     fileName: 'CraftEditableTable',

@@ -4,13 +4,11 @@ import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
 import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 import CraftInputMoney from '@craftcms/ui/vue/CraftInputMoney.vue';
 import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
-import CraftOptionRows from '@craftcms/ui/vue/CraftOptionRows.vue';
 import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import '@craftcms/ui/components/editable-table/editable-table';
 import '@craftcms/ui/components/input/input';
 import '@craftcms/ui/components/object-select/object-select';
-import '@craftcms/ui/components/option-rows/option-rows';
 import '@craftcms/ui/components/select/select';
 import '@craftcms/ui/components/switch/switch';
 import '@/modules/icon-picker';
@@ -36,7 +34,6 @@ export const nativeFormElementRenderers = {
   'craft:money-input': CraftInputMoney,
   'craft:number-input': CraftInput,
   'craft:object-select-input': CraftObjectSelect,
-  'craft:option-rows': CraftOptionRows,
   'craft:select-input': CraftSelect,
   'craft:text-input': CraftInput,
   'craft:time-input': CraftInput,

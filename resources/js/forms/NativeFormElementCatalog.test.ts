@@ -1,6 +1,5 @@
 import {expect, it} from 'vite-plus/test';
 import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
-import CraftOptionRows from '@craftcms/ui/vue/CraftOptionRows.vue';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import catalog from './native-form-element-catalog.json';
 import {
@@ -34,7 +33,6 @@ it('pairs every native Form Element Type with its declared Vue rendering path', 
 it.each([
   ['craft:object-select-input', CraftObjectSelect],
   ['craft:field-layout-designer', FieldLayoutDesignerValueAdapter],
-  ['craft:option-rows', CraftOptionRows],
 ])('registers the %s renderer', (type, wrapper) => {
   const registry = createCpComponentRegistry();
 

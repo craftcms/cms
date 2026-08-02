@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Html\FieldHtml;
+use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
@@ -199,6 +200,20 @@ class FieldEditViewModel extends ViewModel
         $settings = $this->field instanceof MissingField
             ? $this->field->settings ?? []
             : $this->field->getSettings();
+
+        if ($this->field instanceof BaseOptionsField) {
+            $settings['options'] = array_map(static function (array $option): array {
+                if (! isset($option['optgroup'])) {
+                    return $option;
+                }
+
+                $option['isOptgroup'] = true;
+                $option['label'] = $option['optgroup'];
+                unset($option['optgroup']);
+
+                return $option;
+            }, $settings['options']);
+        }
 
         return [
             'types' => [

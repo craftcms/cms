@@ -207,6 +207,102 @@ describe('craft-editable-table', () => {
     expect(element.modelValue).toEqual([{default: false}, {default: true}]);
   });
 
+  it('covers option fields with typed, toggled, and nested table cells', async () => {
+    const element = document.createElement('craft-editable-table');
+
+    element.columns = [
+      {
+        key: 'isOptgroup',
+        label: 'Optgroup?',
+        type: 'checkbox',
+        toggle: ['!value', '!icon', '!default'],
+      },
+      {key: 'label', label: 'Label', type: 'text', autoPopulate: 'value'},
+      {key: 'value', label: 'Value', type: 'text'},
+      {key: 'icon', label: 'Icon', type: 'icon'},
+      {
+        key: 'default',
+        label: 'Default?',
+        type: 'checkbox',
+        radioMode: true,
+      },
+      {
+        key: 'type',
+        label: 'Type',
+        type: 'select',
+        nestedOptions: true,
+        options: [{label: 'Dropdown', value: 'select'}],
+      },
+    ];
+    element.modelValue = [
+      {isOptgroup: true, label: 'Published'},
+      {
+        isOptgroup: false,
+        label: 'News',
+        value: 'news',
+        icon: 'newspaper',
+        default: '1',
+        type: 'select',
+        options: [{label: 'Featured', value: 'featured', default: true}],
+      },
+    ];
+    document.body.append(element);
+    await element.updateComplete;
+
+    const root = element.shadowRoot!;
+    const groupIcon = root.querySelector<HTMLElement>(
+      '[data-table-cell="row-0:icon"]'
+    )!;
+    const optionIcon = root.querySelector<HTMLElement>(
+      '[data-table-cell="row-1:icon"]'
+    )!;
+    const optionDefault = root.querySelector<CraftCheckbox>(
+      '[data-table-cell="row-1:default"]'
+    )!;
+    const nested = root.querySelector<CraftEditableTable>(
+      '[data-table-nested-options] craft-editable-table'
+    )!;
+
+    expect(groupIcon.hasAttribute('disabled')).toBe(true);
+    expect(optionDefault.checked).toBe(true);
+    expect(nested.columns.map(({key}) => key)).toEqual([
+      'label',
+      'value',
+      'default',
+    ]);
+
+    const optgroup = root.querySelector<CraftCheckbox>(
+      '[data-table-cell="row-0:isOptgroup"]'
+    )!;
+
+    optgroup.checked = false;
+    optgroup.dispatchEvent(
+      new Event('change', {bubbles: true, composed: true})
+    );
+    await element.updateComplete;
+
+    expect((element.modelValue as Array<Record<string, unknown>>)[0]).toEqual({
+      isOptgroup: false,
+      label: 'Published',
+      value: 'published',
+      icon: '',
+      default: false,
+    });
+
+    optionIcon.dispatchEvent(
+      new CustomEvent('change', {
+        bubbles: true,
+        composed: true,
+        detail: {value: 'star'},
+      })
+    );
+    await element.updateComplete;
+
+    expect(
+      (element.modelValue as Array<Record<string, unknown>>)[1]!.icon
+    ).toBe('star');
+  });
+
   it('shares edited column definitions with a dependent table', async () => {
     const form = document.createElement('form');
     const source = document.createElement('craft-editable-table');

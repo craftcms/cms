@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Components\EditableTable;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch;
-use CraftCms\Cms\Cp\Components\OptionRows;
 use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonContains;
@@ -284,13 +284,61 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     /** @return list<FieldComponent> */
     protected function settingsFormElements(bool $readOnly): array
     {
+        $columns = [];
+
+        if (static::$optgroups) {
+            $columns[] = [
+                'key' => 'isOptgroup',
+                'label' => t('Optgroup?'),
+                'type' => 'checkbox',
+                'class' => 'thin',
+                'toggle' => ['!value', '!icon', '!color', '!default'],
+            ];
+        }
+
+        $columns[] = [
+            'key' => 'label',
+            'label' => t('Option Label'),
+            'type' => 'text',
+            'autoPopulate' => 'value',
+        ];
+        $columns[] = [
+            'key' => 'value',
+            'label' => t('Value'),
+            'type' => 'text',
+            'code' => true,
+        ];
+
+        if (static::$optionIcons) {
+            $columns[] = [
+                'key' => 'icon',
+                'label' => t('Icon'),
+                'type' => 'icon',
+                'class' => 'thin',
+            ];
+        }
+
+        if (static::$optionColors) {
+            $columns[] = [
+                'key' => 'color',
+                'label' => t('Color'),
+                'type' => 'color',
+            ];
+        }
+
+        $columns[] = [
+            'key' => 'default',
+            'label' => t('Default?'),
+            'type' => 'checkbox',
+            'radioMode' => ! static::$multi,
+            'class' => 'thin',
+        ];
+
         $elements = [
-            FieldComponent::make(OptionRows::make()
+            FieldComponent::make(EditableTable::make()
                 ->name('options')
-                ->multipleDefaults(static::$multi)
-                ->optgroups(static::$optgroups)
-                ->icons(static::$optionIcons)
-                ->colors(static::$optionColors))
+                ->columns($columns)
+                ->addRowLabel(t('Add an option')))
                 ->label($this->optionsSettingLabel())
                 ->instructions(t('Define the available options.'))
                 ->readOnly($readOnly),

@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Added native Forms for core scalar field settings, with typed Craft controls for numbers, selections, lightswitches, dates, times, color palettes, and money values.
-- Added native Forms for core option field settings, including ordered option authoring via `CraftCms\Cms\Cp\Components\OptionRows` and `<craft-option-rows>`.
+- Added native Forms for core option field settings, including ordered option authoring via `CraftCms\Cms\Cp\Components\EditableTable` and `<craft-editable-table>`.
 - Added native Forms for relational field settings, with typed Craft controls for sources, limits, view modes, and relation behavior, including element condition editing via `CraftCms\Cms\Cp\Components\ElementCondition` and `<craft-element-condition>`.
 - Added native Forms for Link field and link type settings, including ordered link types and reusable element source selection.
 - Added native Forms for `CraftCms\Cms\Field\ContentBlock` and `CraftCms\Cms\Field\Matrix` settings, including structured Field Layout, ordered object selection via `CraftCms\Cms\Cp\Components\ObjectSelect` and `<craft-object-select>`, and site settings via `CraftCms\Cms\Cp\Components\EditableTable` and `<craft-editable-table>`.

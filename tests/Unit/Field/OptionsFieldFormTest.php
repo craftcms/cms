@@ -6,13 +6,17 @@ use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\ButtonGroup;
 use CraftCms\Cms\Field\Checkboxes;
 use CraftCms\Cms\Field\Dropdown;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MultiSelect;
 use CraftCms\Cms\Field\RadioButtons;
+use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
+use CraftCms\Cms\Support\Html;
 
 it('projects every option field setting through native form elements', function (
     Closure $makeField,
     string $optionLabel,
-    array $optionProps,
+    array $columnKeys,
+    bool $radioMode,
     array $additionalInputs,
 ) {
     $options = [
@@ -49,12 +53,14 @@ it('projects every option field setting through native form elements', function 
                 'instructions' => 'Define the available options.',
                 'readOnly' => true,
             ],
-            'children' => [[
-                'type' => 'craft:option-rows',
-                'name' => 'options',
-                'props' => $optionProps,
-            ]],
-        ]);
+        ])
+        ->and($definition['elements'][0]['children'][0])->toMatchArray([
+            'type' => 'craft:editable-table-input',
+            'name' => 'options',
+        ])
+        ->and($definition['elements'][0]['children'][0]['props']['addRowLabel'])->toBe('Add an option')
+        ->and(array_column($definition['elements'][0]['children'][0]['props']['columns'], 'key'))->toBe($columnKeys)
+        ->and($definition['elements'][0]['children'][0]['props']['columns'][array_search('default', $columnKeys, true)]['radioMode'])->toBe($radioMode);
 
     foreach ($definition['elements'] as $element) {
         expect($element['props']['readOnly'])->toBeTrue();
@@ -63,31 +69,36 @@ it('projects every option field setting through native form elements', function 
     'checkboxes' => [
         fn (array $options): Checkboxes => new Checkboxes(compact('options')),
         'Checkbox Options',
-        ['multipleDefaults' => true, 'icons' => true, 'colors' => true],
+        ['label', 'value', 'icon', 'color', 'default'],
+        false,
         ['customOptions'],
     ],
     'radio buttons' => [
         fn (array $options): RadioButtons => new RadioButtons(compact('options')),
         'Radio Button Options',
-        ['icons' => true, 'colors' => true],
+        ['label', 'value', 'icon', 'color', 'default'],
+        true,
         ['customOptions'],
     ],
     'dropdown' => [
         fn (array $options): Dropdown => new Dropdown(compact('options')),
         'Dropdown Options',
-        ['optgroups' => true, 'icons' => true, 'colors' => true],
+        ['isOptgroup', 'label', 'value', 'icon', 'color', 'default'],
+        true,
         [],
     ],
     'multi-select' => [
         fn (array $options): MultiSelect => new MultiSelect(compact('options')),
         'Multi-select Options',
-        ['multipleDefaults' => true, 'optgroups' => true, 'icons' => true, 'colors' => true],
+        ['isOptgroup', 'label', 'value', 'icon', 'color', 'default'],
+        false,
         [],
     ],
     'button group' => [
         fn (array $options): ButtonGroup => new ButtonGroup(compact('options')),
         'Options',
-        ['icons' => true],
+        ['label', 'value', 'icon', 'default'],
+        true,
         ['iconsOnly'],
     ],
 ]);
@@ -98,8 +109,13 @@ it('preserves optgroup rows and generated option values outside the definition',
         ['label' => 'Breaking News', 'value' => 'breakingNews', 'default' => '1'],
     ];
     $field = new Dropdown(compact('options'));
+    $values = new FieldEditViewModel($field, app(Fields::class))->settingsValues();
 
-    expect($field->getSettingsForm(false)->toArray()['elements'][0]['children'][0]['props'])
-        ->toBe(['optgroups' => true, 'icons' => true, 'colors' => true])
+    expect($field->getSettingsForm(false)->toArray()['elements'][0]['children'][0]['type'])
+        ->toBe('craft:editable-table-input')
+        ->and($values['types'][Html::id(Dropdown::class)]['options'])->toBe([
+            ['isOptgroup' => true, 'label' => 'Published'],
+            ['label' => 'Breaking News', 'value' => 'breakingNews', 'default' => '1'],
+        ])
         ->and($field->options)->toBe($options);
 });

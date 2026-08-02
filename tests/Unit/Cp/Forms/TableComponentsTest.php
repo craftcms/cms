@@ -11,7 +11,8 @@ use CraftCms\Cms\Cp\Forms\FormElementTypes;
 it('renders editable table configuration and host values through the shared primitive', function () {
     $columns = [
         ['key' => 'title', 'label' => 'Title', 'type' => 'text'],
-        ['key' => 'published', 'label' => 'Published', 'type' => 'checkbox', 'radioMode' => true],
+        ['key' => 'icon', 'label' => 'Icon', 'type' => 'icon'],
+        ['key' => 'published', 'label' => 'Published', 'type' => 'checkbox', 'radioMode' => true, 'toggle' => ['!icon']],
     ];
     $value = [
         ['rowId' => 'story-row', 'title' => 'Lead story', 'published' => true],
@@ -140,6 +141,12 @@ it('rejects invalid portable table configuration before projection', function (E
     'non-serializable editable default' => [
         fn () => EditableTable::make()->name('rows')->defaultRow(['value' => fn () => 'value']),
         'defaultRow[value]',
+    ],
+    'invalid editable toggle' => [
+        fn () => EditableTable::make()->name('rows')->columns([
+            ['key' => 'value', 'label' => 'Value', 'type' => 'text', 'toggle' => ['value', 1]],
+        ]),
+        'columns[0].toggle',
     ],
     'invalid fixed row' => [
         fn () => EditableTable::make()->name('rows')->fixedRows([
