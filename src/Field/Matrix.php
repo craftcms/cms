@@ -8,11 +8,11 @@ use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\KeyedTable;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -610,17 +610,21 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         array_push(
             $elements,
-            KeyedTableInput::make('siteSettings')
+            FieldComponent::make()
                 ->label(t('Site Settings'))
                 ->instructions(t('Choose the site-specific settings for nested entries.'))
-                ->columns($columns)
-                ->rows(Collection::make(Sites::getAllSites())->map(
-                    fn ($site): array => [
-                        'key' => $site->uid,
-                        'label' => t($site->name, category: 'site'),
-                    ],
-                )->values()->all())
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    KeyedTable::make()
+                        ->name('siteSettings')
+                        ->columns($columns)
+                        ->rows(Collection::make(Sites::getAllSites())->map(
+                            fn ($site): array => [
+                                'key' => $site->uid,
+                                'label' => t($site->name, category: 'site'),
+                            ],
+                        )->values()->all()),
+                ),
             FieldComponent::make()
                 ->label(t('Min {type}', ['type' => t('Entries')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))

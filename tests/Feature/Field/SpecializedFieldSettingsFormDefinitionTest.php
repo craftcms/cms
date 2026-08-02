@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
+use CraftCms\Cms\Cp\Components\EditableTable;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Markdown;
 use CraftCms\Cms\Field\Table;
@@ -224,9 +224,9 @@ it('projects ordered table columns and type-specific default inputs', function (
 });
 
 it('rejects unsupported editable table column types', function () {
-    expect(fn () => EditableTableInput::make('settings')->columns([
+    expect(fn () => EditableTable::make()->name('settings')->columns([
         ['key' => 'value', 'label' => 'Value', 'type' => 'unsupported'],
-    ]))->toThrow(InvalidArgumentException::class, 'craft:editable-table-input');
+    ])->toFormElementData())->toThrow(InvalidArgumentException::class, 'columns[0].type');
 });
 
 function specializedFieldInputs(?array $definition): array

@@ -32,6 +32,13 @@ export {default as CraftCopyButton} from './components/copy-button/copy-button.j
 export {default as CraftDialog} from './components/dialog/dialog.js';
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftEmpty} from './components/empty/empty.js';
+export {
+  default as CraftEditableTable,
+  type EditableTableColumn,
+  type EditableTableOption,
+  type EditableTableRow,
+  type EditableTableValue,
+} from './components/editable-table/editable-table.js';
 export {default as CraftField} from './components/field/field.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export {default as CraftIcon} from './components/icon/icon.js';
@@ -43,6 +50,12 @@ export {default as CraftInputHandle} from './components/input-handle/input-handl
 export {default as CraftInputMoney} from './components/input-money/input-money.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
 export {default as CraftInput} from './components/input/input.js';
+export {
+  default as CraftKeyedTable,
+  type KeyedTableColumn,
+  type KeyedTableRow,
+  type KeyedTableValue,
+} from './components/keyed-table/keyed-table.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
 export {default as CraftOption} from './components/option/option.js';

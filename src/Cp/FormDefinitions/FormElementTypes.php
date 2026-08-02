@@ -8,7 +8,9 @@ use CraftCms\Cms\Cp\Components\CheckboxSelect as CheckboxSelectComponent;
 use CraftCms\Cms\Cp\Components\ColorPalette as ColorPaletteComponent;
 use CraftCms\Cms\Cp\Components\Combobox as ComboboxComponent;
 use CraftCms\Cms\Cp\Components\DateInput as DateInputComponent;
+use CraftCms\Cms\Cp\Components\EditableTable as EditableTableComponent;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\KeyedTable as KeyedTableComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
 use CraftCms\Cms\Cp\Components\MoneyInput as MoneyInputComponent;
 use CraftCms\Cms\Cp\Components\NumberInput as NumberInputComponent;
@@ -18,12 +20,10 @@ use CraftCms\Cms\Cp\Components\TextInput as TextInputComponent;
 use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
@@ -70,7 +70,11 @@ class FormElementTypes
                 'plugin' => null,
             ],
             ElementConditionInput::type() => ['class' => ElementConditionInput::class, 'container' => false, 'plugin' => null],
-            EditableTableInput::type() => ['class' => EditableTableInput::class, 'container' => false, 'plugin' => null],
+            EditableTableComponent::formElementType() => [
+                'class' => EditableTableComponent::class,
+                'container' => EditableTableComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             FieldLayoutInput::type() => ['class' => FieldLayoutInput::class, 'container' => false, 'plugin' => null],
             NumberInputComponent::formElementType() => [
                 'class' => NumberInputComponent::class,
@@ -87,7 +91,11 @@ class FormElementTypes
                 'container' => LightswitchComponent::isFormElementContainer(),
                 'plugin' => null,
             ],
-            KeyedTableInput::type() => ['class' => KeyedTableInput::class, 'container' => false, 'plugin' => null],
+            KeyedTableComponent::formElementType() => [
+                'class' => KeyedTableComponent::class,
+                'container' => KeyedTableComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             OptionRowsComponent::formElementType() => [
                 'class' => OptionRowsComponent::class,
                 'container' => OptionRowsComponent::isFormElementContainer(),

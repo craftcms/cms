@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
+use CraftCms\Cms\Cp\Components\EditableTable;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\EditableTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -45,7 +45,7 @@ use function CraftCms\Cms\template;
 /**
  * Table represents a Table field.
  *
- * @phpstan-import-type EditableTableColumn from EditableTableInput
+ * @phpstan-import-type EditableTableColumn from EditableTable
  */
 class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
 {
@@ -270,59 +270,67 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $dynamicRows = Condition::equals('staticRows', false);
 
         return FormDefinition::make([
-            EditableTableInput::make('columns')
+            FieldComponent::make()
                 ->label(t('Table Columns'))
                 ->instructions(t('Define the columns your table should have.'))
-                ->columns([
-                    [
-                        'key' => 'heading',
-                        'label' => t('Column Heading'),
-                        'type' => 'text',
-                        'autoPopulate' => 'handle',
-                    ],
-                    [
-                        'key' => 'handle',
-                        'label' => t('Handle'),
-                        'type' => 'text',
-                        'code' => true,
-                    ],
-                    [
-                        'key' => 'width',
-                        'label' => t('Width'),
-                        'type' => 'text',
-                        'code' => true,
-                        'width' => 50,
-                    ],
-                    [
-                        'key' => 'type',
-                        'label' => t('Type'),
-                        'type' => 'select',
-                        'options' => array_map(
-                            fn (string $label, string $value): array => compact('label', 'value'),
-                            self::typeOptions(),
-                            array_keys(self::typeOptions()),
-                        ),
-                        'nestedOptions' => true,
-                    ],
-                ])
-                ->addRowLabel(t('Add a column'))
-                ->defaultRow([
-                    'heading' => '',
-                    'handle' => '',
-                    'width' => '',
-                    'type' => 'singleline',
-                ])
-                ->keyed()
-                ->definesColumns()
-                ->readOnly($readOnly),
-            EditableTableInput::make('defaults')
+                ->readOnly($readOnly)
+                ->input(
+                    EditableTable::make()
+                        ->name('columns')
+                        ->columns([
+                            [
+                                'key' => 'heading',
+                                'label' => t('Column Heading'),
+                                'type' => 'text',
+                                'autoPopulate' => 'handle',
+                            ],
+                            [
+                                'key' => 'handle',
+                                'label' => t('Handle'),
+                                'type' => 'text',
+                                'code' => true,
+                            ],
+                            [
+                                'key' => 'width',
+                                'label' => t('Width'),
+                                'type' => 'text',
+                                'code' => true,
+                                'width' => 50,
+                            ],
+                            [
+                                'key' => 'type',
+                                'label' => t('Type'),
+                                'type' => 'select',
+                                'options' => array_map(
+                                    fn (string $label, string $value): array => compact('label', 'value'),
+                                    self::typeOptions(),
+                                    array_keys(self::typeOptions()),
+                                ),
+                                'nestedOptions' => true,
+                            ],
+                        ])
+                        ->addRowLabel(t('Add a column'))
+                        ->defaultRow([
+                            'heading' => '',
+                            'handle' => '',
+                            'width' => '',
+                            'type' => 'singleline',
+                        ])
+                        ->keyed()
+                        ->definesColumns(),
+                ),
+            FieldComponent::make()
                 ->label(t('Default Values'))
                 ->instructions(t('Define the default values for the field.'))
-                ->columns($this->defaultValueColumns())
-                ->addRowLabel(t('Add a row'))
-                ->includeRowId()
-                ->columnsFrom('columns')
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    EditableTable::make()
+                        ->name('defaults')
+                        ->columns($this->defaultValueColumns())
+                        ->addRowLabel(t('Add a row'))
+                        ->includeRowId()
+                        ->columnsFrom('columns'),
+                ),
             LightswitchInput::make('staticRows')
                 ->label(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))

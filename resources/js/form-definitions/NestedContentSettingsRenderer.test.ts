@@ -160,13 +160,21 @@ describe('nested content settings renderers', () => {
       },
     });
     const container = mount(values);
-    const uriInput = container.querySelector<
+    const table =
+      container.querySelector<HTMLElementTagNameMap['craft-keyed-table']>(
+        'craft-keyed-table'
+      )!;
+
+    await nextTick();
+    await table.updateComplete;
+    const uriInput = table.shadowRoot!.querySelector<
       HTMLElementTagNameMap['craft-input']
     >('[data-keyed-table-cell="english:uriFormat"]')!;
 
     uriInput.value = 'stories/{slug}';
     uriInput.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
+    await table.updateComplete;
 
     expect(values.settings.siteSettings.english).toEqual({
       uriFormat: 'stories/{slug}',
@@ -199,7 +207,7 @@ describe('nested content settings renderers', () => {
     expect(values.settings.defaultTableColumns).toEqual(['title']);
   });
 
-  it('cannot weaken host read-only state for complex controls', () => {
+  it('cannot weaken host read-only state for complex controls', async () => {
     const values = reactive({
       settings: {
         fieldLayouts: {
@@ -221,18 +229,69 @@ describe('nested content settings renderers', () => {
       },
     });
     const container = mount(values, true);
+    const keyedTable =
+      container.querySelector<HTMLElementTagNameMap['craft-keyed-table']>(
+        'craft-keyed-table'
+      )!;
+
+    await nextTick();
+    await keyedTable.updateComplete;
 
     expect(
-      Array.from(
-        container.querySelectorAll<HTMLElement & {disabled: boolean}>(
-          'craft-reorder-button, craft-button, craft-input'
-        )
-      ).every(({disabled}) => disabled)
+      [
+        ...Array.from(
+          container.querySelectorAll<
+            HTMLElement & {disabled?: boolean; readOnly?: boolean}
+          >('craft-reorder-button, craft-button, craft-input')
+        ),
+        ...Array.from(
+          keyedTable.shadowRoot!.querySelectorAll<
+            HTMLElement & {disabled?: boolean; readOnly?: boolean}
+          >('craft-input')
+        ),
+      ].every((control) => control.disabled || control.readOnly)
     ).toBe(true);
+  });
+
+  it('wires keyed table labels and errors through the mounted field', async () => {
+    const container = mount(
+      {settings: {siteSettings: {english: {uriFormat: ''}}}},
+      false,
+      {'settings.siteSettings': ['Enter a URI format.']},
+      accessibleKeyedTableDefinition
+    );
+    const field =
+      container.querySelector<HTMLElementTagNameMap['craft-field']>(
+        'craft-field'
+      )!;
+    const table =
+      container.querySelector<HTMLElementTagNameMap['craft-keyed-table']>(
+        'craft-keyed-table'
+      )!;
+
+    await nextTick();
+    await field.updateComplete;
+    await field.updateComplete;
+
+    const label = field.querySelector<HTMLElement>('[slot="label"]')!;
+    const feedback = field.querySelector<HTMLElement>('[slot="feedback"]')!;
+
+    expect(feedback.textContent).toContain('Enter a URI format.');
+    expect(table.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      label.id
+    );
+    expect(table.getAttribute('aria-describedby')?.split(/\s+/)).toContain(
+      feedback.id
+    );
   });
 });
 
-function mount(values: Record<string, unknown>, readOnly = false): HTMLElement {
+function mount(
+  values: Record<string, unknown>,
+  readOnly = false,
+  errors: Record<string, string | string[]> = {},
+  formDefinition: CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData = definition
+): HTMLElement {
   const registry = createCpComponentRegistry();
   const container = document.createElement('div');
 
@@ -260,10 +319,10 @@ function mount(values: Record<string, unknown>, readOnly = false): HTMLElement {
   (window as any).Cp = {$components: registry};
   document.body.appendChild(container);
   const app = createApp(FormDefinitionRenderer, {
-    definition,
+    definition: formDefinition,
     bindingScope: 'settings',
     values,
-    errors: {},
+    errors,
     readOnly,
   });
 
@@ -335,6 +394,28 @@ const definition = {
         ],
       }
     ),
+  ],
+} satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
+
+const accessibleKeyedTableDefinition = {
+  elements: [
+    {
+      type: 'craft:field',
+      props: {
+        label: 'Site settings',
+        instructions: 'Configure the site routes.',
+      },
+      children: [
+        {
+          type: 'craft:keyed-table-input',
+          name: 'siteSettings',
+          props: {
+            columns: [{key: 'uriFormat', label: 'URI format'}],
+            rows: [{key: 'english', label: 'English'}],
+          },
+        },
+      ],
+    },
   ],
 } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
 

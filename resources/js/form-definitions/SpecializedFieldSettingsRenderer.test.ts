@@ -114,12 +114,20 @@ describe('specialized field settings renderer', () => {
       },
     });
     const container = mount(tableDefinition, values);
+    const columnsTable = container.querySelector<
+      HTMLElementTagNameMap['craft-editable-table']
+    >('[data-editable-table="columns"]')!;
+    const defaultsTable = container.querySelector<
+      HTMLElementTagNameMap['craft-editable-table']
+    >('[data-editable-table="defaults"]')!;
+
+    await settleTables(columnsTable, defaultsTable);
+    const columnsRoot = columnsTable.shadowRoot!;
+    const defaultsRoot = defaultsTable.shadowRoot!;
 
     expect(
       Array.from(
-        container.querySelectorAll<HTMLElement>(
-          '[data-editable-table="columns"] [data-editable-table-row]'
-        ),
+        columnsRoot.querySelectorAll<HTMLElement>('[data-editable-table-row]'),
         (row) => row.dataset.rowKey
       )
     ).toEqual(['headline', 'published', 'category']);
@@ -129,7 +137,7 @@ describe('specialized field settings renderer', () => {
       )!.value
     ).toBe('first-row');
 
-    const optionRows = container.querySelector<
+    const optionRows = columnsRoot.querySelector<
       HTMLElementTagNameMap['craft-option-rows']
     >('[data-table-nested-options] craft-option-rows')!;
     await optionRows.updateComplete;
@@ -142,9 +150,9 @@ describe('specialized field settings renderer', () => {
 
     expect(values.settings.columns.category.options[0]!.value).toBe('article');
 
-    container
+    columnsRoot
       .querySelector<HTMLElement>(
-        '[data-editable-table="columns"] [data-row-key="category"] craft-reorder-button'
+        '[data-row-key="category"] craft-reorder-button'
       )!
       .dispatchEvent(
         new CustomEvent('reorder', {
@@ -152,7 +160,7 @@ describe('specialized field settings renderer', () => {
           detail: {direction: 'up'},
         })
       );
-    await nextTick();
+    await settleTables(columnsTable, defaultsTable);
 
     expect(Object.keys(values.settings.columns)).toEqual([
       'headline',
@@ -167,27 +175,23 @@ describe('specialized field settings renderer', () => {
     ]);
     expect(
       Array.from(
-        container.querySelectorAll(
-          '[data-editable-table="defaults"] thead th:not(:last-child)'
-        ),
+        defaultsRoot.querySelectorAll('thead th:not(:last-child)'),
         (heading) => heading.textContent?.trim()
       )
     ).toEqual(['Headline', 'Category', 'Published?']);
 
-    const categoryHeading = container.querySelector<
+    const categoryHeading = columnsRoot.querySelector<
       HTMLElementTagNameMap['craft-input']
     >('[data-row-key="category"] [data-table-cell="category:heading"]')!;
     categoryHeading.value = 'Topic';
     categoryHeading.dispatchEvent(new Event('input', {bubbles: true}));
-    await nextTick();
+    await settleTables(columnsTable, defaultsTable);
 
     expect(
-      container.querySelector(
-        '[data-editable-table="defaults"] thead th:nth-child(2)'
-      )?.textContent
+      defaultsRoot.querySelector('thead th:nth-child(2)')?.textContent
     ).toContain('Topic');
 
-    const published = container.querySelector<CraftCheckbox>(
+    const published = defaultsRoot.querySelector<CraftCheckbox>(
       'craft-checkbox[name="settings[defaults][1][published]"]'
     )!;
     published.checked = true;
@@ -196,9 +200,9 @@ describe('specialized field settings renderer', () => {
 
     expect(values.settings.defaults[1]!.published).toBe(true);
 
-    container
+    defaultsRoot
       .querySelector<HTMLElement>(
-        '[data-editable-table="defaults"] [data-row-key="second-row"] craft-reorder-button'
+        '[data-row-key="second-row"] craft-reorder-button'
       )!
       .dispatchEvent(
         new CustomEvent('reorder', {
@@ -206,35 +210,27 @@ describe('specialized field settings renderer', () => {
           detail: {direction: 'up'},
         })
       );
-    await nextTick();
+    await settleTables(columnsTable, defaultsTable);
 
     expect(values.settings.defaults.map((row) => row.rowId)).toEqual([
       'second-row',
       'first-row',
     ]);
 
-    while (
-      container.querySelector(
-        '[data-editable-table="columns"] [data-delete-row]'
-      )
-    ) {
-      container
-        .querySelector<HTMLElement>(
-          '[data-editable-table="columns"] [data-delete-row]'
-        )!
-        .click();
-      await nextTick();
+    while (columnsRoot.querySelector('[data-delete-row]')) {
+      columnsRoot.querySelector<HTMLElement>('[data-delete-row]')!.click();
+      await settleTables(columnsTable, defaultsTable);
     }
 
     expect(values.settings.defaults).toEqual([]);
     expect(
-      container.querySelector<HTMLElementTagNameMap['craft-button']>(
-        '[data-editable-table="defaults"] [data-add-row]'
+      defaultsRoot.querySelector<HTMLElementTagNameMap['craft-button']>(
+        '[data-add-row]'
       )!.disabled
     ).toBe(true);
   });
 
-  it('honors generic read-only state for editable tables', () => {
+  it('honors generic read-only state for editable tables', async () => {
     const container = mount(
       tableDefinition,
       {
@@ -252,13 +248,23 @@ describe('specialized field settings renderer', () => {
       },
       true
     );
+    const tables = Array.from(
+      container.querySelectorAll<HTMLElementTagNameMap['craft-editable-table']>(
+        'craft-editable-table'
+      )
+    );
+
+    await settleTables(...tables);
 
     expect(
-      Array.from(
-        container.querySelectorAll<HTMLElement>(
-          'craft-input, craft-select, craft-checkbox, craft-switch, craft-button, craft-reorder-button'
+      tables
+        .flatMap((table) =>
+          Array.from(
+            table.shadowRoot!.querySelectorAll<HTMLElement>(
+              'craft-input, craft-select, craft-checkbox, craft-switch, craft-button, craft-reorder-button'
+            )
+          )
         )
-      )
         .filter(
           (control) =>
             !(control as {readOnly?: boolean}).readOnly &&
@@ -276,8 +282,13 @@ describe('specialized field settings renderer', () => {
       },
     });
     const container = mount(tableDefinition, values);
-    const row = container.querySelector<HTMLElement>(
-      '[data-editable-table="defaults"] [data-editable-table-row]'
+    const defaultsTable = container.querySelector<
+      HTMLElementTagNameMap['craft-editable-table']
+    >('[data-editable-table="defaults"]')!;
+
+    await settleTables(defaultsTable);
+    const row = defaultsTable.shadowRoot!.querySelector<HTMLElement>(
+      '[data-editable-table-row]'
     )!;
     const input =
       row.querySelector<HTMLElementTagNameMap['craft-input']>(
@@ -289,24 +300,102 @@ describe('specialized field settings renderer', () => {
 
     input.value = 'Ready';
     input.dispatchEvent(new Event('input', {bubbles: true}));
-    await nextTick();
+    await settleTables(defaultsTable);
 
     expect(
-      container.querySelector(
-        '[data-editable-table="defaults"] [data-editable-table-row]'
-      )
+      defaultsTable.shadowRoot!.querySelector('[data-editable-table-row]')
     ).toBe(row);
     expect(values.settings.defaults[0]).toEqual({
       headline: 'Ready',
       rowId,
     });
   });
+
+  it('isolates editable table column coordination by Form Definition', async () => {
+    const first = mount(tableDefinition, {
+      settings: {
+        columns: {
+          first: {
+            heading: 'First heading',
+            handle: 'first',
+            width: '',
+            type: 'singleline',
+          },
+        },
+        defaults: [{rowId: 'first-row', first: 'First value'}],
+      },
+    });
+    const second = mount(tableDefinition, {
+      settings: {
+        columns: {
+          second: {
+            heading: 'Second heading',
+            handle: 'second',
+            width: '',
+            type: 'singleline',
+          },
+        },
+        defaults: [{rowId: 'second-row', second: 'Second value'}],
+      },
+    });
+    const firstTables = Array.from(
+      first.querySelectorAll<HTMLElementTagNameMap['craft-editable-table']>(
+        'craft-editable-table'
+      )
+    );
+    const secondTables = Array.from(
+      second.querySelectorAll<HTMLElementTagNameMap['craft-editable-table']>(
+        'craft-editable-table'
+      )
+    );
+
+    await settleTables(...firstTables, ...secondTables);
+
+    expect(
+      firstTables[1]!.shadowRoot!.querySelector('thead th')?.textContent
+    ).toContain('First heading');
+    expect(
+      secondTables[1]!.shadowRoot!.querySelector('thead th')?.textContent
+    ).toContain('Second heading');
+  });
+
+  it('wires editable table labels and errors through the mounted field', async () => {
+    const container = mount(
+      accessibleEditableTableDefinition,
+      {settings: {rows: []}},
+      false,
+      {'settings.rows': ['Add at least one row.']}
+    );
+    const field =
+      container.querySelector<HTMLElementTagNameMap['craft-field']>(
+        'craft-field'
+      )!;
+    const table = container.querySelector<
+      HTMLElementTagNameMap['craft-editable-table']
+    >('craft-editable-table')!;
+
+    await nextTick();
+    await field.updateComplete;
+    await field.updateComplete;
+
+    const label = field.querySelector<HTMLElement>('[slot="label"]')!;
+    const feedback = field.querySelector<HTMLElement>('[slot="feedback"]')!;
+
+    expect(feedback.textContent).toContain('Add at least one row.');
+    expect(table.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      label.id
+    );
+    expect(table.getAttribute('aria-describedby')?.split(/\s+/)).toContain(
+      feedback.id
+    );
+  });
 });
 
 function mount(
   definition: CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData,
   values: Record<string, unknown>,
-  readOnly = false
+  readOnly = false,
+  errors: Record<string, string | string[]> = {}
 ): HTMLElement {
   const registry = createCpComponentRegistry();
   const container = document.createElement('div');
@@ -330,7 +419,7 @@ function mount(
     definition,
     bindingScope: 'settings',
     values,
-    errors: {},
+    errors,
     readOnly,
   });
 
@@ -338,6 +427,13 @@ function mount(
   app.mount(container);
 
   return container;
+}
+
+async function settleTables(
+  ...tables: Array<HTMLElementTagNameMap['craft-editable-table']>
+): Promise<void> {
+  await nextTick();
+  await Promise.all(tables.map((table) => table.updateComplete));
 }
 
 const markdownDefinition = {
@@ -418,6 +514,24 @@ const tableDefinition = {
       includeRowId: true,
       columnsFrom: 'columns',
     }),
+  ],
+} satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
+
+const accessibleEditableTableDefinition = {
+  elements: [
+    {
+      type: 'craft:field',
+      props: {label: 'Rows', instructions: 'Add the table rows.'},
+      children: [
+        {
+          type: 'craft:editable-table-input',
+          name: 'rows',
+          props: {
+            columns: [{key: 'title', label: 'Title', type: 'text'}],
+          },
+        },
+      ],
+    },
   ],
 } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
 

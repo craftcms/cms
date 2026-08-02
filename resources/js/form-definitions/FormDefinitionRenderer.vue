@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed, provide} from 'vue';
-  import {editableTableColumnsEventTarget} from './editable-table-columns';
+  import {editableTableCoordinationScope} from './editable-table-columns';
   import FormElementRenderer from './FormElementRenderer.vue';
   import {isSharedContainer} from './form-element-types';
   import {reconciliationKey} from './reconciliation';
@@ -22,7 +22,7 @@
     {readOnly: false}
   );
 
-  provide(editableTableColumnsEventTarget, new EventTarget());
+  provide(editableTableCoordinationScope, {});
 
   const context = computed(() => ({
     bindingScope: props.bindingScope,

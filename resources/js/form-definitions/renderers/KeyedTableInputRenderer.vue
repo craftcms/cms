@@ -1,15 +1,14 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, useAttrs} from 'vue';
+  import type {
+    KeyedTableColumn,
+    KeyedTableRow,
+    KeyedTableValue,
+  } from '@craftcms/ui';
+  import '@craftcms/ui/components/keyed-table/keyed-table';
   import type {FormElementBinding, JsonValue} from '../types';
-  import '@craftcms/ui/components/input/input';
 
-  type Column = {
-    key: string;
-    label: string;
-    placeholder?: string;
-    code?: boolean;
-  };
-  type Row = {key: string; label: string};
+  defineOptions({inheritAttrs: false});
 
   const props = defineProps<{
     config: Record<string, JsonValue>;
@@ -18,117 +17,43 @@
   }>();
 
   const emit = defineEmits<{
-    'update:value': [value: Record<string, unknown>];
+    'update:value': [value: KeyedTableValue];
   }>();
-
-  const columns = computed<Column[]>(() =>
+  const attrs = useAttrs();
+  const hostAttributes = computed(() => ({...props.attributes, ...attrs}));
+  const columns = computed<KeyedTableColumn[]>(() =>
     Array.isArray(props.config.columns)
-      ? (props.config.columns as Column[])
+      ? (props.config.columns as KeyedTableColumn[])
       : []
   );
-  const rows = computed<Row[]>(() =>
-    Array.isArray(props.config.rows) ? (props.config.rows as Row[]) : []
+  const rows = computed<KeyedTableRow[]>(() =>
+    Array.isArray(props.config.rows)
+      ? (props.config.rows as KeyedTableRow[])
+      : []
   );
-  const values = computed<Record<string, unknown>>(() =>
-    props.binding?.value && typeof props.binding.value === 'object'
-      ? (props.binding.value as Record<string, unknown>)
-      : {}
-  );
+  const value = computed<KeyedTableValue>(() => {
+    const value = props.binding?.value;
 
-  function cellValue(row: Row, column: Column): string {
-    const rowValue = values.value[row.key];
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as KeyedTableValue)
+      : {};
+  });
 
-    if (!rowValue || typeof rowValue !== 'object') {
-      return '';
-    }
-
-    return String((rowValue as Record<string, unknown>)[column.key] ?? '');
-  }
-
-  function inputName(row: Row, column: Column): string | undefined {
-    const name = props.attributes.name;
-
-    return typeof name === 'string'
-      ? `${name}[${row.key}][${column.key}]`
-      : undefined;
-  }
-
-  function update(row: Row, column: Column, event: Event): void {
-    const currentRow = values.value[row.key];
-    const rowValue =
-      currentRow && typeof currentRow === 'object'
-        ? (currentRow as Record<string, unknown>)
-        : {};
-
-    emit('update:value', {
-      ...values.value,
-      [row.key]: {
-        ...rowValue,
-        [column.key]: (event.target as HTMLElementTagNameMap['craft-input'])
-          .value,
-      },
-    });
+  function updateValue(event: Event): void {
+    emit(
+      'update:value',
+      (event.target as HTMLElementTagNameMap['craft-keyed-table']).value
+    );
   }
 </script>
 
 <template>
-  <div
-    :id="typeof attributes.id === 'string' ? attributes.id : undefined"
-    class="keyed-table"
-    role="group"
-    :aria-labelledby="
-      typeof attributes['aria-labelledby'] === 'string'
-        ? attributes['aria-labelledby']
-        : undefined
-    "
-    :aria-describedby="
-      typeof attributes['aria-describedby'] === 'string'
-        ? attributes['aria-describedby']
-        : undefined
-    "
-  >
-    <table>
-      <thead>
-        <tr>
-          <th scope="col"></th>
-          <th v-for="column in columns" :key="column.key" scope="col">
-            {{ column.label }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="row in rows" :key="row.key" data-keyed-table-row>
-          <th scope="row">{{ row.label }}</th>
-          <td v-for="column in columns" :key="column.key">
-            <craft-input
-              :data-keyed-table-cell="`${row.key}:${column.key}`"
-              :name="inputName(row, column)"
-              :value="cellValue(row, column)"
-              :placeholder="column.placeholder"
-              :class="{code: column.code}"
-              :disabled="binding?.readOnly"
-              @input="update(row, column, $event)"
-            ></craft-input>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <craft-keyed-table
+    v-bind="hostAttributes"
+    .value="value"
+    .columns="columns"
+    .rows="rows"
+    :readonly="binding?.readOnly ?? false"
+    @input="updateValue"
+  ></craft-keyed-table>
 </template>
-
-<style scoped>
-  .keyed-table {
-    overflow-x: auto;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  th,
-  td {
-    padding: var(--c-spacing-xs);
-    text-align: start;
-  }
-</style>
