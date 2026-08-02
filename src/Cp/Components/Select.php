@@ -57,7 +57,6 @@ class Select extends ViewComponent implements FormElement
 
     public function name(string|Closure|null $name): static
     {
-        $this->trackConfiguration('name');
         $this->name = $name;
 
         return $this;
@@ -66,7 +65,6 @@ class Select extends ViewComponent implements FormElement
     /** @param array<array-key, mixed>|Closure $options */
     public function options(array|Closure $options): static
     {
-        $this->trackConfiguration('options');
         $this->options = $options;
 
         return $this;
@@ -74,7 +72,6 @@ class Select extends ViewComponent implements FormElement
 
     public function value(string|int|float|bool|Closure|null $value): static
     {
-        $this->trackConfiguration('value');
         $this->value = $value;
 
         return $this;
@@ -82,7 +79,6 @@ class Select extends ViewComponent implements FormElement
 
     public function small(bool|Closure $small = true): static
     {
-        $this->trackConfiguration('small');
         $this->small = $small;
 
         return $this;
@@ -90,7 +86,6 @@ class Select extends ViewComponent implements FormElement
 
     public function autofocus(bool|Closure $autofocus = true): static
     {
-        $this->trackConfiguration('autofocus');
         $this->autofocus = $autofocus;
 
         return $this;
@@ -98,7 +93,6 @@ class Select extends ViewComponent implements FormElement
 
     public function autocomplete(string|bool|Closure|null $autocomplete): static
     {
-        $this->trackConfiguration('autocomplete');
         $this->autocomplete = $autocomplete;
 
         return $this;
@@ -106,7 +100,6 @@ class Select extends ViewComponent implements FormElement
 
     public function labelledBy(string|Closure|null $labelledBy): static
     {
-        $this->trackConfiguration('labelledBy');
         $this->labelledBy = $labelledBy;
 
         return $this;
@@ -114,7 +107,6 @@ class Select extends ViewComponent implements FormElement
 
     public function describedBy(string|Closure|null $describedBy): static
     {
-        $this->trackConfiguration('describedBy');
         $this->describedBy = $describedBy;
 
         return $this;
@@ -123,7 +115,6 @@ class Select extends ViewComponent implements FormElement
     /** @param array<string, mixed> $attributes */
     public function inputAttributes(array $attributes): static
     {
-        $this->trackConfiguration('inputAttributes');
         $this->inputAttributes = Arr::merge(
             static::normalizeClasses($this->inputAttributes),
             static::normalizeClasses($attributes),
@@ -143,19 +134,6 @@ class Select extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions([
-            'value',
-            'small',
-            'autofocus',
-            'autocomplete',
-            'labelledBy',
-            'describedBy',
-            'inputAttributes',
-            'disabled',
-            'id',
-            'slot',
-        ], 'Form');
-
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
@@ -168,22 +146,16 @@ class Select extends ViewComponent implements FormElement
             $this->unsupportedOutputOption('options', 'Form');
         }
 
-        $attributes = $this->formElementAttributes;
-
-        foreach (array_keys($attributes) as $attribute) {
-            if (in_array(strtolower((string) $attribute), [
-                'aria-describedby',
-                'aria-labelledby',
-                'disabled',
-                'id',
-                'name',
-                'readonly',
-                'slot',
-                'value',
-            ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
-            }
-        }
+        $attributes = $this->withoutAttributes($this->formElementAttributes, [
+            'aria-describedby',
+            'aria-labelledby',
+            'disabled',
+            'id',
+            'name',
+            'readonly',
+            'slot',
+            'value',
+        ]);
 
         return new FormElementData(
             type: static::formElementType(),

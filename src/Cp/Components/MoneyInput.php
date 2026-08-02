@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
@@ -42,7 +41,6 @@ class MoneyInput extends ScalarInput
 
     public function currency(string|Closure|null $currency): static
     {
-        $this->trackConfiguration('currency');
         $this->currency = $currency;
 
         return $this;
@@ -50,7 +48,6 @@ class MoneyInput extends ScalarInput
 
     public function currencyLabel(string|Closure|null $currencyLabel): static
     {
-        $this->trackConfiguration('currencyLabel');
         $this->currencyLabel = $currencyLabel;
 
         return $this;
@@ -58,7 +55,6 @@ class MoneyInput extends ScalarInput
 
     public function fractionDigits(int|Closure $fractionDigits): static
     {
-        $this->trackConfiguration('fractionDigits');
         $this->fractionDigits = $fractionDigits;
 
         return $this;
@@ -66,7 +62,6 @@ class MoneyInput extends ScalarInput
 
     public function formattingLocale(string|Closure|null $formattingLocale): static
     {
-        $this->trackConfiguration('formattingLocale');
         $this->formattingLocale = $formattingLocale;
 
         return $this;
@@ -74,7 +69,6 @@ class MoneyInput extends ScalarInput
 
     public function decimalSeparator(string|Closure|null $decimalSeparator): static
     {
-        $this->trackConfiguration('decimalSeparator');
         $this->decimalSeparator = $decimalSeparator;
 
         return $this;
@@ -82,23 +76,9 @@ class MoneyInput extends ScalarInput
 
     public function groupSeparator(string|Closure|null $groupSeparator): static
     {
-        $this->trackConfiguration('groupSeparator');
         $this->groupSeparator = $groupSeparator;
 
         return $this;
-    }
-
-    #[Override]
-    public function toFormElementData(): FormElementData
-    {
-        $this->rejectConfiguredOptions([
-            'currencyLabel',
-            'decimalSeparator',
-            'formattingLocale',
-            'groupSeparator',
-        ], 'Form');
-
-        return parent::toFormElementData();
     }
 
     #[Override]
@@ -116,12 +96,6 @@ class MoneyInput extends ScalarInput
             'minorUnits' => true,
             'placeholder' => $this->portableText('placeholder', $this->placeholder),
         ];
-    }
-
-    #[Override]
-    protected function unsupportedPortableOptions(): array
-    {
-        return ['min', 'max', 'step'];
     }
 
     #[Override]

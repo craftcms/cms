@@ -47,9 +47,6 @@ abstract class ViewComponent implements Htmlable, Stringable
     /** @var array<string, mixed> Slot content keyed by slot name. */
     protected array $slots = [];
 
-    /** @var array<string, true> */
-    private array $configuredOptions = [];
-
     final public function __construct() {}
 
     public static function make(): static
@@ -95,7 +92,6 @@ abstract class ViewComponent implements Htmlable, Stringable
      */
     public function attributes(array $attributes): static
     {
-        $this->trackConfiguration('attributes');
         $this->attributes = Arr::merge(
             self::normalizeClasses($this->attributes),
             self::normalizeClasses($attributes),
@@ -109,7 +105,6 @@ abstract class ViewComponent implements Htmlable, Stringable
      */
     public function slot(string $name): static
     {
-        $this->trackConfiguration('slot');
         $this->attributes['slot'] = $name;
 
         return $this;
@@ -281,26 +276,37 @@ abstract class ViewComponent implements Htmlable, Stringable
         return $attributes;
     }
 
-    protected function trackConfiguration(string $option): void
-    {
-        $this->configuredOptions[$option] = true;
-    }
-
-    protected function optionWasConfigured(string $option): bool
-    {
-        return isset($this->configuredOptions[$option]);
-    }
-
     /**
-     * @param  list<string>  $options
+     * @param  list<string>  $excluded
+     * @return array<string, mixed>
      */
-    protected function rejectConfiguredOptions(array $options, string $output): void
+    protected function withoutAttributes(array $attributes, array $excluded): array
     {
-        foreach ($options as $option) {
-            if (isset($this->configuredOptions[$option])) {
-                $this->unsupportedOutputOption($option, $output);
+        foreach ($attributes as $attribute => $value) {
+            $attribute = (string) $attribute;
+
+            if (in_array(strtolower($attribute), $excluded, true)) {
+                unset($attributes[$attribute]);
+
+                continue;
+            }
+
+            if (! is_array($value)) {
+                continue;
+            }
+
+            foreach (array_keys($value) as $nestedAttribute) {
+                if (in_array(strtolower("{$attribute}-{$nestedAttribute}"), $excluded, true)) {
+                    unset($attributes[$attribute][$nestedAttribute]);
+                }
+            }
+
+            if ($attributes[$attribute] === []) {
+                unset($attributes[$attribute]);
             }
         }
+
+        return $attributes;
     }
 
     protected function unsupportedOutputOption(string $option, string $output): never

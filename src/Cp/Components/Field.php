@@ -146,7 +146,6 @@ class Field extends ViewComponent implements FormElement
     /** @param 'before'|'after'|Closure $position Relative to the input. */
     public function instructionsPosition(string|Closure $position): static
     {
-        $this->trackConfiguration('instructionsPosition');
         $this->instructionsPosition = $position;
 
         return $this;
@@ -161,7 +160,6 @@ class Field extends ViewComponent implements FormElement
 
     public function translatable(bool|Closure $translatable = true, string|Closure|null $description = null): static
     {
-        $this->trackConfiguration('translatable');
         $this->translatable = $translatable;
 
         if ($description !== null) {
@@ -174,7 +172,6 @@ class Field extends ViewComponent implements FormElement
     /** Renders the label as a group legend (`role="group"`) instead of a `<label>`. */
     public function fieldset(bool|Closure $fieldset = true): static
     {
-        $this->trackConfiguration('fieldset');
         $this->fieldset = $fieldset;
 
         return $this;
@@ -182,7 +179,6 @@ class Field extends ViewComponent implements FormElement
 
     public function status(string|Closure|null $status, string|Closure|null $label = null): static
     {
-        $this->trackConfiguration('status');
         $this->status = $status;
 
         if ($label !== null) {
@@ -195,7 +191,6 @@ class Field extends ViewComponent implements FormElement
     /** @param 'ltr'|'rtl'|Closure|null $orientation */
     public function orientation(string|Closure|null $orientation): static
     {
-        $this->trackConfiguration('orientation');
         $this->orientation = $orientation;
 
         return $this;
@@ -212,7 +207,6 @@ class Field extends ViewComponent implements FormElement
     /** Heading content rendered before the label. Strings are trusted HTML. */
     public function headingPrefix(string|Htmlable|Stringable|ViewComponent|Closure|null $headingPrefix): static
     {
-        $this->trackConfiguration('headingPrefix');
         $this->headingPrefix = $headingPrefix;
 
         return $this;
@@ -221,7 +215,6 @@ class Field extends ViewComponent implements FormElement
     /** Heading content rendered after the label extras. Strings are trusted HTML. */
     public function headingSuffix(string|Htmlable|Stringable|ViewComponent|Closure|null $headingSuffix): static
     {
-        $this->trackConfiguration('headingSuffix');
         $this->headingSuffix = $headingSuffix;
 
         return $this;
@@ -230,7 +223,6 @@ class Field extends ViewComponent implements FormElement
     /** @param array<array-key, string>|Closure $errors Plain-text messages; encoded on render. */
     public function errors(array|Closure $errors): static
     {
-        $this->trackConfiguration('errors');
         $this->errors = $errors;
 
         return $this;
@@ -255,7 +247,6 @@ class Field extends ViewComponent implements FormElement
     /** Extra heading content (handle-copy buttons, action menus). Strings are trusted HTML. */
     public function labelExtra(string|Htmlable|Stringable|ViewComponent|Closure|null $labelExtra): static
     {
-        $this->trackConfiguration('labelExtra');
         $this->labelExtra = $labelExtra;
 
         return $this;
@@ -271,7 +262,6 @@ class Field extends ViewComponent implements FormElement
      */
     public function width(string|Closure|null $width): static
     {
-        $this->trackConfiguration('width');
         $this->width = $width;
 
         return $this;
@@ -279,7 +269,6 @@ class Field extends ViewComponent implements FormElement
 
     public function key(string|Closure|null $key): static
     {
-        $this->trackConfiguration('key');
         $this->elementKey = $key;
 
         return $this;
@@ -287,7 +276,6 @@ class Field extends ViewComponent implements FormElement
 
     public function columnWidth(int|Closure|null $width): static
     {
-        $this->trackConfiguration('columnWidth');
         $this->columnWidth = $width;
 
         return $this;
@@ -295,43 +283,13 @@ class Field extends ViewComponent implements FormElement
 
     public function visibleWhen(Condition|Closure|null $condition): static
     {
-        $this->trackConfiguration('visibleWhen');
         $this->visibilityCondition = $condition;
 
         return $this;
     }
 
-    #[Override]
-    public function toHtml(): string
-    {
-        $this->rejectConfiguredOptions([
-            'key',
-            'columnWidth',
-            'visibleWhen',
-        ], 'HTML');
-
-        return parent::toHtml();
-    }
-
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions([
-            'attributes',
-            'disabled',
-            'id',
-            'slot',
-            'instructionsPosition',
-            'translatable',
-            'fieldset',
-            'status',
-            'orientation',
-            'width',
-            'headingPrefix',
-            'headingSuffix',
-            'errors',
-            'labelExtra',
-        ], 'Form');
-
         $input = $this->evaluate($this->input);
 
         if (! $input instanceof FormElement || $input::isFormElementContainer()) {

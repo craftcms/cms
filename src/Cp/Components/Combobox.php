@@ -59,7 +59,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function name(string|Closure|null $name): static
     {
-        $this->trackConfiguration('name');
         $this->name = $name;
 
         return $this;
@@ -68,7 +67,6 @@ class Combobox extends ViewComponent implements FormElement
     /** @param array<array-key, mixed>|Closure $options */
     public function options(array|Closure $options): static
     {
-        $this->trackConfiguration('options');
         $this->options = $options;
 
         return $this;
@@ -76,7 +74,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function value(string|Closure|null $value): static
     {
-        $this->trackConfiguration('value');
         $this->value = $value;
 
         return $this;
@@ -84,7 +81,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function placeholder(string|Closure|null $placeholder): static
     {
-        $this->trackConfiguration('placeholder');
         $this->placeholder = $placeholder;
 
         return $this;
@@ -92,7 +88,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function allowAliases(bool|Closure $allowAliases = true): static
     {
-        $this->trackConfiguration('allowAliases');
         $this->allowAliases = $allowAliases;
 
         return $this;
@@ -100,7 +95,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function limit(int|Closure $limit): static
     {
-        $this->trackConfiguration('limit');
         $this->limit = $limit;
 
         return $this;
@@ -108,7 +102,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function clearable(bool|Closure $clearable = true): static
     {
-        $this->trackConfiguration('clearable');
         $this->clearable = $clearable;
 
         return $this;
@@ -116,7 +109,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function labelledBy(string|Closure|null $labelledBy): static
     {
-        $this->trackConfiguration('labelledBy');
         $this->labelledBy = $labelledBy;
 
         return $this;
@@ -124,7 +116,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function describedBy(string|Closure|null $describedBy): static
     {
-        $this->trackConfiguration('describedBy');
         $this->describedBy = $describedBy;
 
         return $this;
@@ -141,16 +132,6 @@ class Combobox extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions([
-            'value',
-            'allowAliases',
-            'labelledBy',
-            'describedBy',
-            'disabled',
-            'id',
-            'slot',
-        ], 'Form');
-
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
@@ -174,23 +155,17 @@ class Combobox extends ViewComponent implements FormElement
             $this->unsupportedOutputOption('clearable', 'Form');
         }
 
-        $attributes = $this->formElementAttributes;
-
-        foreach (array_keys($attributes) as $attribute) {
-            if (in_array(strtolower((string) $attribute), [
-                'aria-describedby',
-                'aria-labelledby',
-                'disabled',
-                'id',
-                'model-value',
-                'name',
-                'readonly',
-                'slot',
-                'value',
-            ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
-            }
-        }
+        $attributes = $this->withoutAttributes($this->formElementAttributes, [
+            'aria-describedby',
+            'aria-labelledby',
+            'disabled',
+            'id',
+            'model-value',
+            'name',
+            'readonly',
+            'slot',
+            'value',
+        ]);
 
         $props = array_filter([
             'options' => $options,

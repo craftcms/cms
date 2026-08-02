@@ -199,44 +199,27 @@ it('rejects executable projected attributes', function () {
         );
 });
 
-it('rejects host-owned Lightswitch attributes', function (string $attribute) {
+it('ignores host-owned Lightswitch attributes', function () {
     $form = Form::make([
         Field::make(Lightswitch::make()
             ->name('enabled')
-            ->attributes([$attribute => 'configured'])),
+            ->attributes([
+                'checked' => true,
+                'id' => 'configured',
+                'value' => 'configured',
+                'aria' => ['labelledby' => 'external-label'],
+            ])),
     ]);
 
-    expect(fn () => $form->toArray())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf(
-                '%s option "attributes.%s" is not supported for Form output.',
-                Lightswitch::class,
-                $attribute,
-            ),
-        );
-})->with([
-    'current value' => 'checked',
-    'final ID' => 'id',
-    'accessibility reference' => 'aria-labelledby',
-    'submission value' => 'value',
-]);
-
-it('rejects nested host-owned Lightswitch accessibility attributes', function () {
-    $form = Form::make([
-        Field::make(Lightswitch::make()
-            ->name('enabled')
-            ->attributes(['aria' => ['labelledby' => 'external-label']])),
+    expect($form->toArray())->toBe([
+        'elements' => [[
+            'type' => 'craft:field',
+            'children' => [[
+                'type' => 'craft:lightswitch-input',
+                'name' => 'enabled',
+            ]],
+        ]],
     ]);
-
-    expect(fn () => $form->toArray())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf(
-                '%s option "attributes.aria-labelledby" is not supported for Form output.',
-                Lightswitch::class,
-            ),
-        );
 });
 
 it('rejects Lightswitch sizes unsupported by the Form renderer', function () {
@@ -251,66 +234,48 @@ it('rejects Lightswitch sizes unsupported by the Form renderer', function () {
         );
 });
 
-it('rejects explicitly configured Field HTML-only options during projection', function (Field $field, string $option) {
-    $field->input(Lightswitch::make()->name('enabled'));
+it('ignores output-specific component options', function () {
+    $input = Lightswitch::make()
+        ->name('enabled')
+        ->on()
+        ->indeterminate()
+        ->disabled()
+        ->id('enabled-input')
+        ->slot('content')
+        ->buttonAttributes(['class' => 'configured'])
+        ->value('yes')
+        ->toggle('settings');
+    $field = Field::make($input)
+        ->attributes(['class' => 'configured'])
+        ->instructionsPosition('after')
+        ->translatable()
+        ->key('feature')
+        ->columnWidth(50)
+        ->visibleWhen(Condition::equals('available', true));
 
-    expect(fn () => Form::make([$field])->toArray())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf('%s option "%s" is not supported for Form output.', Field::class, $option),
-        );
-})->with([
-    'attributes' => [fn () => Field::make()->attributes([]), 'attributes'],
-    'disabled default' => [fn () => Field::make()->disabled(false), 'disabled'],
-    'id default' => [fn () => Field::make()->id(null), 'id'],
-    'slot' => [fn () => Field::make()->slot('content'), 'slot'],
-    'instructions position default' => [fn () => Field::make()->instructionsPosition('before'), 'instructionsPosition'],
-    'translatable default' => [fn () => Field::make()->translatable(false), 'translatable'],
-    'fieldset default' => [fn () => Field::make()->fieldset(false), 'fieldset'],
-    'status default' => [fn () => Field::make()->status(null), 'status'],
-    'orientation default' => [fn () => Field::make()->orientation(null), 'orientation'],
-    'HTML width default' => [fn () => Field::make()->width(null), 'width'],
-    'heading prefix default' => [fn () => Field::make()->headingPrefix(null), 'headingPrefix'],
-    'heading suffix default' => [fn () => Field::make()->headingSuffix(null), 'headingSuffix'],
-    'errors default' => [fn () => Field::make()->errors([]), 'errors'],
-    'label extra default' => [fn () => Field::make()->labelExtra(null), 'labelExtra'],
-]);
-
-it('rejects explicitly configured Lightswitch HTML-only options during projection', function (
-    Lightswitch $lightswitch,
-    string $option,
-) {
-    $lightswitch->name('enabled');
-
-    expect(fn () => Form::make([Field::make($lightswitch)])->toArray())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf('%s option "%s" is not supported for Form output.', Lightswitch::class, $option),
-        );
-})->with([
-    'checked default' => [fn () => Lightswitch::make()->on(false), 'on'],
-    'indeterminate default' => [fn () => Lightswitch::make()->indeterminate(false), 'indeterminate'],
-    'disabled default' => [fn () => Lightswitch::make()->disabled(false), 'disabled'],
-    'id default' => [fn () => Lightswitch::make()->id(null), 'id'],
-    'slot' => [fn () => Lightswitch::make()->slot('content'), 'slot'],
-    'button attributes default' => [fn () => Lightswitch::make()->buttonAttributes([]), 'buttonAttributes'],
-    'posting value default' => [fn () => Lightswitch::make()->value('1'), 'value'],
-    'indeterminate value default' => [fn () => Lightswitch::make()->indeterminateValue('-'), 'indeterminateValue'],
-    'toggle default' => [fn () => Lightswitch::make()->toggle(null), 'toggle'],
-    'reverse toggle default' => [fn () => Lightswitch::make()->reverseToggle(null), 'reverseToggle'],
-    'labelled by default' => [fn () => Lightswitch::make()->labelledBy(null), 'labelledBy'],
-    'described by default' => [fn () => Lightswitch::make()->describedBy(null), 'describedBy'],
-    'instructions default' => [fn () => Lightswitch::make()->instructions(null), 'instructions'],
-]);
-
-it('rejects Form-only Field options during HTML rendering', function (Field $field, string $option) {
-    expect(fn () => $field->toHtml())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf('%s option "%s" is not supported for HTML output.', Field::class, $option),
-        );
-})->with([
-    'key default' => [fn () => Field::make()->key(null), 'key'],
-    'column width default' => [fn () => Field::make()->columnWidth(null), 'columnWidth'],
-    'visibility default' => [fn () => Field::make()->visibleWhen(null), 'visibleWhen'],
-]);
+    expect(Form::make([
+        Field::make(TextInput::make()->name('available')),
+        $field,
+    ])->toArray())->toBe([
+        'elements' => [[
+            'type' => 'craft:field',
+            'children' => [[
+                'type' => 'craft:text-input',
+                'name' => 'available',
+            ]],
+        ], [
+            'type' => 'craft:field',
+            'key' => 'feature',
+            'width' => 50,
+            'children' => [[
+                'type' => 'craft:lightswitch-input',
+                'name' => 'enabled',
+            ]],
+            'visibleWhen' => [
+                'name' => 'available',
+                'operator' => 'equals',
+                'value' => true,
+            ],
+        ]],
+    ])->and($field->toHtml())->toContainTag('craft-field');
+});

@@ -135,45 +135,32 @@ it('requires a local Input Name for scalar projection', function (FormElement $c
     'time' => [TimeInput::make()],
 ]);
 
-it('rejects explicitly configured host-owned scalar state during projection', function (
-    FormElement $component,
-    string $option,
-) {
-    expect(fn () => Form::make([
-        Field::make($component),
-    ])->toArray())->toThrow(
-        InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', $component::class, $option),
-    );
-})->with([
-    'current value' => [fn () => TextInput::make()->name('setting')->value(null), 'value'],
-    'effective read-only state' => [fn () => NumberInput::make()->name('setting')->readOnly(false), 'readOnly'],
-    'final ID' => [fn () => DateInput::make()->name('setting')->id(null), 'id'],
-    'accessibility reference' => [fn () => TimeInput::make()->name('setting')->describedBy(null), 'describedBy'],
-    'native input attributes' => [fn () => TextInput::make()->name('setting')->inputAttributes([]), 'inputAttributes'],
-]);
-
-it('rejects host-owned scalar attributes during projection', function (string $attribute) {
+it('ignores host-owned scalar state during projection', function () {
     $component = TextInput::make()
         ->name('setting')
-        ->attributes([$attribute => 'configured']);
+        ->value('current')
+        ->readOnly()
+        ->id('setting-input')
+        ->describedBy('setting-description')
+        ->inputAttributes(['class' => 'configured'])
+        ->attributes([
+            'name' => 'other',
+            'id' => 'other',
+            'value' => 'other',
+            'readonly' => true,
+            'type' => 'number',
+        ]);
 
-    expect(fn () => Form::make([Field::make($component)])->toArray())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf(
-                '%s option "attributes.%s" is not supported for Form output.',
-                TextInput::class,
-                $attribute,
-            ),
-        );
-})->with([
-    'final name' => 'name',
-    'final ID' => 'id',
-    'current value' => 'value',
-    'effective read-only state' => 'readonly',
-    'semantic type' => 'type',
-]);
+    expect(Form::make([Field::make($component)])->toArray())->toBe([
+        'elements' => [[
+            'type' => 'craft:field',
+            'children' => [[
+                'type' => 'craft:text-input',
+                'name' => 'setting',
+            ]],
+        ]],
+    ]);
+});
 
 it('rejects invalid portable scalar values', function (FormElement $component, string $option) {
     expect(fn () => Form::make([Field::make($component)])->toArray())
@@ -186,16 +173,18 @@ it('rejects invalid portable scalar values', function (FormElement $component, s
     'number minimum' => [fn () => NumberInput::make()->name('setting')->min('zero'), 'min'],
 ]);
 
-it('does not allow a semantic scalar component to change its native input type', function () {
+it('ignores native input type overrides during scalar projection', function () {
     $component = TextInput::make()->name('setting')->type('number');
 
-    expect(fn () => $component->toHtml())->toThrow(
-        InvalidArgumentException::class,
-        sprintf('%s option "type" is not supported for HTML output.', TextInput::class),
-    )->and(fn () => Form::make([Field::make($component)])->toArray())->toThrow(
-        InvalidArgumentException::class,
-        sprintf('%s option "type" is not supported for Form output.', TextInput::class),
-    );
+    expect(Form::make([Field::make($component)])->toArray())->toBe([
+        'elements' => [[
+            'type' => 'craft:field',
+            'children' => [[
+                'type' => 'craft:text-input',
+                'name' => 'setting',
+            ]],
+        ]],
+    ]);
 });
 
 it('does not allow native input attributes to override a semantic scalar type', function () {

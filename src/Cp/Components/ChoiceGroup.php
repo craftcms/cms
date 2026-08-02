@@ -25,7 +25,6 @@ abstract class ChoiceGroup extends ViewComponent
     /** @param iterable<mixed>|Closure $options */
     public function options(iterable|Closure $options): static
     {
-        $this->trackConfiguration('options');
         $this->options = $options;
 
         return $this;
@@ -34,7 +33,6 @@ abstract class ChoiceGroup extends ViewComponent
     /** The group's base input name. */
     public function name(string|Closure|null $name): static
     {
-        $this->trackConfiguration('name');
         $this->name = $name;
 
         return $this;

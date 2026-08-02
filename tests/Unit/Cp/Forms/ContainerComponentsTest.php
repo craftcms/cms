@@ -277,35 +277,27 @@ it('registers every Form Element container with matching type metadata', functio
         ->and($types->isContainer(Tab::formElementType()))->toBeTrue();
 });
 
-it('keeps tab selection and structural slots host-owned during projection', function (
-    FormContainer $container,
-    string $component,
-    string $option,
-) {
-    expect(fn () => Form::make([$container])->toArray())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf('%s option "%s" is not supported for Form output.', $component, $option),
-        );
+it('ignores tab selection and structural slots during projection', function (FormContainer $container) {
+    expect(Form::make([$container])->toArray())->toBeArray();
 })->with([
     'selected tab' => [
         fn () => Tabs::make([Tab::make('content', 'Content')])->attributes(['selected-index' => 0]),
-        Tabs::class,
-        'attributes.selected-index',
     ],
     'tab structural slot' => [
         fn () => Tabs::make([
             Tab::make('content', 'Content')->attributes(['slot' => 'other']),
         ]),
-        Tab::class,
-        'attributes.slot',
     ],
     'group structural slot setter' => [
         fn () => Group::make()->slot('other'),
-        Group::class,
-        'slot',
     ],
 ]);
+
+it('ignores Form-only container options during HTML rendering', function () {
+    expect(Group::make()
+        ->visibleWhen(Condition::equals('enabled', true))
+        ->toHtml())->toBeString();
+});
 
 it('rejects unsupported container options during HTML rendering', function (
     FormContainer $container,
@@ -317,10 +309,6 @@ it('rejects unsupported container options during HTML rendering', function (
             sprintf('%s option "%s" is not supported for HTML output.', $container::class, $option),
         );
 })->with([
-    'group visibility' => [
-        fn () => Group::make()->visibleWhen(Condition::equals('enabled', true)),
-        'visibleWhen',
-    ],
     'nested form' => [
         fn () => Group::fromForm(Form::make([]), 'nested'),
         'form',

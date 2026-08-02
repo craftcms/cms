@@ -106,7 +106,6 @@ class Input extends ViewComponent
 
     public function type(string|Closure $type): static
     {
-        $this->trackConfiguration('type');
         $this->type = $type;
 
         return $this;
@@ -114,7 +113,6 @@ class Input extends ViewComponent
 
     public function name(string|Closure|null $name): static
     {
-        $this->trackConfiguration('name');
         $this->name = $name;
 
         return $this;
@@ -122,7 +120,6 @@ class Input extends ViewComponent
 
     public function value(string|int|float|Stringable|Closure|null $value): static
     {
-        $this->trackConfiguration('value');
         $this->value = $value;
 
         return $this;
@@ -134,7 +131,6 @@ class Input extends ViewComponent
      */
     public function maxlength(int|Closure|null $maxlength): static
     {
-        $this->trackConfiguration('maxlength');
         $this->maxlength = $maxlength;
 
         return $this;
@@ -143,7 +139,6 @@ class Input extends ViewComponent
     /** The native input's character-width `size` attribute. */
     public function inputSize(int|Closure|null $inputSize): static
     {
-        $this->trackConfiguration('inputSize');
         $this->inputSize = $inputSize;
 
         return $this;
@@ -156,7 +151,6 @@ class Input extends ViewComponent
      */
     public function width(string|Closure|null $width): static
     {
-        $this->trackConfiguration('width');
         $this->width = $width;
 
         return $this;
@@ -165,7 +159,6 @@ class Input extends ViewComponent
     /** Renders the input at a smaller size. */
     public function small(bool|Closure $small = true): static
     {
-        $this->trackConfiguration('small');
         $this->small = $small;
 
         return $this;
@@ -174,7 +167,6 @@ class Input extends ViewComponent
     /** Center-aligns the input text. */
     public function center(bool|Closure $center = true): static
     {
-        $this->trackConfiguration('center');
         $this->center = $center;
 
         return $this;
@@ -183,7 +175,6 @@ class Input extends ViewComponent
     /** Renders the input value in a monospace font. */
     public function monospace(bool|Closure $monospace = true): static
     {
-        $this->trackConfiguration('monospace');
         $this->monospace = $monospace;
 
         return $this;
@@ -195,7 +186,6 @@ class Input extends ViewComponent
      */
     public function hiddenInput(bool|Closure $hiddenInput = true): static
     {
-        $this->trackConfiguration('hiddenInput');
         $this->hiddenInput = $hiddenInput;
 
         return $this;
@@ -204,7 +194,6 @@ class Input extends ViewComponent
     /** Honored only when the current user prefers autofocus (and not on mobile). */
     public function autofocus(bool|Closure $autofocus = true): static
     {
-        $this->trackConfiguration('autofocus');
         $this->autofocus = $autofocus;
 
         return $this;
@@ -213,7 +202,6 @@ class Input extends ViewComponent
     /** Booleans render as `on`/`off`; strings (e.g. `postal-code`) pass through. */
     public function autocomplete(bool|string|Closure $autocomplete): static
     {
-        $this->trackConfiguration('autocomplete');
         $this->autocomplete = $autocomplete;
 
         return $this;
@@ -222,7 +210,6 @@ class Input extends ViewComponent
     /** `false` renders `autocorrect="off"`; `true` omits the attribute. */
     public function autocorrect(bool|Closure $autocorrect = true): static
     {
-        $this->trackConfiguration('autocorrect');
         $this->autocorrect = $autocorrect;
 
         return $this;
@@ -231,7 +218,6 @@ class Input extends ViewComponent
     /** `false` renders `autocapitalize="none"`; `true` omits the attribute. */
     public function autocapitalize(bool|Closure $autocapitalize = true): static
     {
-        $this->trackConfiguration('autocapitalize');
         $this->autocapitalize = $autocapitalize;
 
         return $this;
@@ -239,7 +225,6 @@ class Input extends ViewComponent
 
     public function readOnly(bool|Closure $readOnly = true): static
     {
-        $this->trackConfiguration('readOnly');
         $this->readOnly = $readOnly;
 
         return $this;
@@ -247,7 +232,6 @@ class Input extends ViewComponent
 
     public function title(string|Closure|null $title): static
     {
-        $this->trackConfiguration('title');
         $this->title = $title;
 
         return $this;
@@ -255,7 +239,6 @@ class Input extends ViewComponent
 
     public function placeholder(string|Closure|null $placeholder): static
     {
-        $this->trackConfiguration('placeholder');
         $this->placeholder = $placeholder;
 
         return $this;
@@ -263,7 +246,6 @@ class Input extends ViewComponent
 
     public function min(string|int|float|Closure|null $min): static
     {
-        $this->trackConfiguration('min');
         $this->min = $min;
 
         return $this;
@@ -271,7 +253,6 @@ class Input extends ViewComponent
 
     public function max(string|int|float|Closure|null $max): static
     {
-        $this->trackConfiguration('max');
         $this->max = $max;
 
         return $this;
@@ -279,7 +260,6 @@ class Input extends ViewComponent
 
     public function step(string|int|float|Closure|null $step): static
     {
-        $this->trackConfiguration('step');
         $this->step = $step;
 
         return $this;
@@ -287,7 +267,6 @@ class Input extends ViewComponent
 
     public function inputmode(string|Closure|null $inputmode): static
     {
-        $this->trackConfiguration('inputmode');
         $this->inputmode = $inputmode;
 
         return $this;
@@ -296,7 +275,6 @@ class Input extends ViewComponent
     /** Writing direction (`ltr`/`rtl`); defaults to the app locale's orientation. */
     public function orientation(string|Closure|null $orientation): static
     {
-        $this->trackConfiguration('orientation');
         $this->orientation = $orientation;
 
         return $this;
@@ -304,7 +282,6 @@ class Input extends ViewComponent
 
     public function role(string|Closure|null $role): static
     {
-        $this->trackConfiguration('role');
         $this->role = $role;
 
         return $this;
@@ -313,7 +290,6 @@ class Input extends ViewComponent
     /** `aria-expanded` state; defaults to `false` when the role is `combobox`. */
     public function expanded(bool|string|Closure|null $expanded): static
     {
-        $this->trackConfiguration('expanded');
         $this->expanded = $expanded;
 
         return $this;
@@ -325,7 +301,6 @@ class Input extends ViewComponent
      */
     public function suffix(string|Stringable|Closure|null $suffix): static
     {
-        $this->trackConfiguration('suffix');
         $this->suffix = $suffix;
 
         return $this;
@@ -334,7 +309,6 @@ class Input extends ViewComponent
     /** Id of the suffix description element; defaults to `{id}-desc`. */
     public function descriptionId(string|Closure|null $descriptionId): static
     {
-        $this->trackConfiguration('descriptionId');
         $this->descriptionId = $descriptionId;
 
         return $this;
@@ -346,7 +320,6 @@ class Input extends ViewComponent
      */
     public function showCharsLeft(bool|Closure $showCharsLeft = true): static
     {
-        $this->trackConfiguration('showCharsLeft');
         $this->showCharsLeft = $showCharsLeft;
 
         return $this;
@@ -354,7 +327,6 @@ class Input extends ViewComponent
 
     public function labelledBy(string|Closure|null $labelledBy): static
     {
-        $this->trackConfiguration('labelledBy');
         $this->labelledBy = $labelledBy;
 
         return $this;
@@ -362,7 +334,6 @@ class Input extends ViewComponent
 
     public function describedBy(string|Closure|null $describedBy): static
     {
-        $this->trackConfiguration('describedBy');
         $this->describedBy = $describedBy;
 
         return $this;
@@ -377,7 +348,6 @@ class Input extends ViewComponent
      */
     public function inputAttributes(array $attributes): static
     {
-        $this->trackConfiguration('inputAttributes');
         $this->inputAttributes = Arr::merge(
             static::normalizeClasses($this->inputAttributes),
             static::normalizeClasses($attributes),

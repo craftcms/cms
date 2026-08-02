@@ -59,7 +59,6 @@ class ElementCondition extends ViewComponent implements FormElement
 
     public function name(string|Closure|null $name): static
     {
-        $this->trackConfiguration('name');
         $this->name = $name;
 
         return $this;
@@ -68,7 +67,6 @@ class ElementCondition extends ViewComponent implements FormElement
     /** @param class-string<ConditionInterface>|Closure|null $conditionClass */
     public function conditionClass(string|Closure|null $conditionClass): static
     {
-        $this->trackConfiguration('conditionClass');
         $this->conditionClass = $conditionClass;
 
         return $this;
@@ -77,7 +75,6 @@ class ElementCondition extends ViewComponent implements FormElement
     /** @param array<string, mixed>|Closure $builderConfig */
     public function builderConfig(array|Closure $builderConfig): static
     {
-        $this->trackConfiguration('builderConfig');
         $this->builderConfig = $builderConfig;
 
         return $this;
@@ -85,7 +82,6 @@ class ElementCondition extends ViewComponent implements FormElement
 
     public function sortable(bool|Closure $sortable = true): static
     {
-        $this->trackConfiguration('sortable');
         $this->sortable = $sortable;
 
         return $this;
@@ -93,7 +89,6 @@ class ElementCondition extends ViewComponent implements FormElement
 
     public function addRuleLabel(string|Closure|null $addRuleLabel): static
     {
-        $this->trackConfiguration('addRuleLabel');
         $this->addRuleLabel = $addRuleLabel;
 
         return $this;
@@ -101,7 +96,6 @@ class ElementCondition extends ViewComponent implements FormElement
 
     public function condition(ConditionInterface|Closure|null $condition): static
     {
-        $this->trackConfiguration('condition');
         $this->condition = $condition;
 
         return $this;
@@ -109,7 +103,6 @@ class ElementCondition extends ViewComponent implements FormElement
 
     public function readOnly(bool|Closure $readOnly = true): static
     {
-        $this->trackConfiguration('readOnly');
         $this->readOnly = $readOnly;
 
         return $this;
@@ -126,8 +119,6 @@ class ElementCondition extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['condition', 'readOnly', 'slot'], 'Form');
-
         $name = $this->portableText('name', $this->name);
         $conditionClass = $this->portableText('conditionClass', $this->conditionClass);
 
@@ -147,14 +138,13 @@ class ElementCondition extends ViewComponent implements FormElement
             'sortable' => $this->resolvedBool('sortable', $this->sortable, 'Form'),
             'addRuleLabel' => $this->resolvedText('addRuleLabel', $this->addRuleLabel, 'Form'),
         ], fn (mixed $value): bool => $value !== null);
-
-        $this->validateAttributes();
+        $attributes = $this->formElementAttributes();
 
         return new FormElementData(
             type: static::formElementType(),
             name: $name,
             props: $props,
-            attributes: $this->formElementAttributes === [] ? null : $this->formElementAttributes,
+            attributes: $attributes === [] ? null : $attributes,
         );
     }
 
@@ -180,21 +170,9 @@ class ElementCondition extends ViewComponent implements FormElement
             $this->unsupportedOutputOption('conditionClass', 'HTML');
         }
 
-        if ($this->optionWasConfigured('builderConfig') && $this->resolvedBuilderConfig('HTML') !== $condition->getBuilderConfig()) {
-            $this->unsupportedOutputOption('builderConfig', 'HTML');
-        }
-
         $condition->name = $name;
         $condition->mainTag = 'div';
         $condition->forProjectConfig = true;
-
-        if ($this->optionWasConfigured('sortable')) {
-            $condition->sortable = $this->resolvedBool('sortable', $this->sortable, 'HTML');
-        }
-
-        if ($this->optionWasConfigured('addRuleLabel')) {
-            $condition->addRuleLabel = $this->resolvedText('addRuleLabel', $this->addRuleLabel, 'HTML');
-        }
 
         $attributes = Arr::merge(
             static::normalizeClasses($this->renderedAttributes()),
@@ -268,35 +246,20 @@ class ElementCondition extends ViewComponent implements FormElement
         return $value;
     }
 
-    private function validateAttributes(): void
+    /** @return array<string, mixed> */
+    private function formElementAttributes(): array
     {
-        foreach (array_keys($this->formElementAttributes) as $attribute) {
-            if (in_array(strtolower((string) $attribute), [
-                'aria-describedby',
-                'aria-disabled',
-                'aria-labelledby',
-                'disabled',
-                'id',
-                'name',
-                'readonly',
-                'required',
-                'slot',
-                'value',
-            ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
-            }
-        }
-
-        $aria = $this->formElementAttributes['aria'] ?? null;
-
-        if (! is_array($aria)) {
-            return;
-        }
-
-        foreach (['describedby', 'disabled', 'labelledby'] as $attribute) {
-            if (array_key_exists($attribute, $aria)) {
-                $this->unsupportedOutputOption("attributes.aria-{$attribute}", 'Form');
-            }
-        }
+        return $this->withoutAttributes($this->formElementAttributes, [
+            'aria-describedby',
+            'aria-disabled',
+            'aria-labelledby',
+            'disabled',
+            'id',
+            'name',
+            'readonly',
+            'required',
+            'slot',
+            'value',
+        ]);
     }
 }

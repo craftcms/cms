@@ -55,35 +55,19 @@ abstract class FormContainer extends ViewComponent implements FormElement
 
     public function visibleWhen(Condition|Closure|null $condition): static
     {
-        $this->trackConfiguration('visibleWhen');
         $this->visibilityCondition = $condition;
 
         return $this;
     }
 
-    #[Override]
-    public function toHtml(): string
-    {
-        $this->rejectConfiguredOptions(['visibleWhen'], 'HTML');
-
-        return parent::toHtml();
-    }
-
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['slot'], 'Form');
-
-        foreach (array_keys($this->attributes) as $attribute) {
-            if (in_array(strtolower((string) $attribute), $this->hostOwnedFormElementAttributes(), true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
-            }
-        }
-
         $key = $this->resolvedElementKey('Form');
         $width = $this->resolvedColumnWidth('Form');
         $condition = $this->resolvedVisibilityCondition('Form');
 
         $props = $this->formElementProps();
+        $attributes = $this->withoutAttributes($this->attributes, $this->hostOwnedFormElementAttributes());
         $children = $this->formElementChildren();
 
         return new FormElementData(
@@ -91,7 +75,7 @@ abstract class FormContainer extends ViewComponent implements FormElement
             key: $key,
             width: $width,
             props: $props === [] ? null : $props,
-            attributes: $this->attributes === [] ? null : $this->attributes,
+            attributes: $attributes === [] ? null : $attributes,
             children: $children === [] ? null : $children,
             visibleWhen: $condition?->toData(),
         );

@@ -88,7 +88,6 @@ class Lightswitch extends ViewComponent implements FormElement
 
     public function on(bool|Closure $on = true): static
     {
-        $this->trackConfiguration('on');
         $this->on = $on;
 
         return $this;
@@ -97,7 +96,6 @@ class Lightswitch extends ViewComponent implements FormElement
     /** Mixed state; only meaningful while the switch is off. */
     public function indeterminate(bool|Closure $indeterminate = true): static
     {
-        $this->trackConfiguration('indeterminate');
         $this->indeterminate = $indeterminate;
 
         return $this;
@@ -114,7 +112,6 @@ class Lightswitch extends ViewComponent implements FormElement
     /** The value posted when the switch is on. */
     public function value(string|int|float|Closure $value): static
     {
-        $this->trackConfiguration('value');
         $this->value = is_int($value) || is_float($value) ? (string) $value : $value;
 
         return $this;
@@ -123,7 +120,6 @@ class Lightswitch extends ViewComponent implements FormElement
     /** The value posted when the switch is indeterminate. */
     public function indeterminateValue(string|Closure $indeterminateValue): static
     {
-        $this->trackConfiguration('indeterminateValue');
         $this->indeterminateValue = $indeterminateValue;
 
         return $this;
@@ -155,7 +151,6 @@ class Lightswitch extends ViewComponent implements FormElement
     /** Selector (or element id) of a container to reveal while the switch is on. */
     public function toggle(string|Closure|null $toggle): static
     {
-        $this->trackConfiguration('toggle');
         $this->toggle = $toggle;
 
         return $this;
@@ -164,7 +159,6 @@ class Lightswitch extends ViewComponent implements FormElement
     /** Selector (or element id) of a container to reveal while the switch is off. */
     public function reverseToggle(string|Closure|null $reverseToggle): static
     {
-        $this->trackConfiguration('reverseToggle');
         $this->reverseToggle = $reverseToggle;
 
         return $this;
@@ -172,7 +166,6 @@ class Lightswitch extends ViewComponent implements FormElement
 
     public function labelledBy(string|Closure|null $labelledBy): static
     {
-        $this->trackConfiguration('labelledBy');
         $this->labelledBy = $labelledBy;
 
         return $this;
@@ -180,7 +173,6 @@ class Lightswitch extends ViewComponent implements FormElement
 
     public function describedBy(string|Closure|null $describedBy): static
     {
-        $this->trackConfiguration('describedBy');
         $this->describedBy = $describedBy;
 
         return $this;
@@ -189,7 +181,6 @@ class Lightswitch extends ViewComponent implements FormElement
     /** Help text below the switch; supports markdown. */
     public function instructions(string|Stringable|Closure|null $instructions): static
     {
-        $this->trackConfiguration('instructions');
         $this->instructions = $instructions;
 
         return $this;
@@ -243,7 +234,6 @@ class Lightswitch extends ViewComponent implements FormElement
      */
     public function buttonAttributes(array $attributes): static
     {
-        $this->trackConfiguration('buttonAttributes');
         $this->buttonAttributes = Arr::merge(
             static::normalizeClasses($this->buttonAttributes),
             static::normalizeClasses($attributes),
@@ -311,49 +301,27 @@ class Lightswitch extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions([
-            'on',
-            'indeterminate',
-            'disabled',
-            'id',
-            'slot',
-            'buttonAttributes',
-            'value',
-            'indeterminateValue',
-            'toggle',
-            'reverseToggle',
-            'labelledBy',
-            'describedBy',
-            'instructions',
-        ], 'Form');
-
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
             $this->unsupportedOutputOption('name', 'Form');
         }
 
-        $attributes = Html::normalizeTagAttributes($this->attributes);
-
-        foreach (array_keys($attributes) as $attribute) {
-            if (in_array(strtolower((string) $attribute), [
-                'aria-describedby',
-                'aria-labelledby',
-                'aria-required',
-                'checked',
-                'disabled',
-                'id',
-                'indeterminate',
-                'indeterminate-value',
-                'name',
-                'readonly',
-                'required',
-                'slot',
-                'value',
-            ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
-            }
-        }
+        $attributes = $this->withoutAttributes(Html::normalizeTagAttributes($this->attributes), [
+            'aria-describedby',
+            'aria-labelledby',
+            'aria-required',
+            'checked',
+            'disabled',
+            'id',
+            'indeterminate',
+            'indeterminate-value',
+            'name',
+            'readonly',
+            'required',
+            'slot',
+            'value',
+        ]);
 
         $props = array_filter([
             'label' => $this->portableText('label', $this->label),

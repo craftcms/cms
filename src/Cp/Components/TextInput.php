@@ -20,10 +20,4 @@ class TextInput extends ScalarInput
             'placeholder' => $this->portableText('placeholder', $this->placeholder),
         ];
     }
-
-    #[Override]
-    protected function unsupportedPortableOptions(): array
-    {
-        return ['min', 'max', 'step'];
-    }
 }

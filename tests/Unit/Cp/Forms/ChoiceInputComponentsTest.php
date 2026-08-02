@@ -306,25 +306,24 @@ it('requires a local Input Name for choice projection', function (FormElement $c
     'checkbox select' => [fn () => CheckboxSelect::make()->options([])],
 ]);
 
-it('rejects host-owned choice state during projection', function (
-    FormElement $component,
-    string $option,
-) {
-    expect(fn () => Form::make([
+it('ignores host-owned choice state during projection', function (FormElement $component) {
+    expect(Form::make([
         Field::make($component),
-    ])->toArray())->toThrow(
-        InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', $component::class, $option),
-    );
+    ])->toArray())->toHaveKey('elements.0.children.0.name');
 })->with([
-    'select value' => [fn () => Select::make()->name('status')->options([])->value(null), 'value'],
-    'combobox value' => [fn () => Combobox::make()->name('path')->options([])->value(null), 'value'],
-    'combobox alias guidance' => [fn () => Combobox::make()->name('path')->options([])->allowAliases(), 'allowAliases'],
-    'checkbox values' => [fn () => CheckboxSelect::make()->name('sources')->options([])->values([]), 'values'],
-    'checkbox HTML options' => [
-        fn () => CheckboxSelect::make()->name('sources')->options([
-            Checkbox::make()->label('Images')->value('images'),
-        ]),
-        'options',
-    ],
+    'select value' => [fn () => Select::make()->name('status')->options([])->value(null)],
+    'combobox value' => [fn () => Combobox::make()->name('path')->options([])->value(null)],
+    'combobox alias guidance' => [fn () => Combobox::make()->name('path')->options([])->allowAliases()],
+    'checkbox values' => [fn () => CheckboxSelect::make()->name('sources')->options([])->values([])],
 ]);
+
+it('rejects non-portable checkbox options during projection', function () {
+    $component = CheckboxSelect::make()->name('sources')->options([
+        Checkbox::make()->label('Images')->value('images'),
+    ]);
+
+    expect(fn () => Form::make([Field::make($component)])->toArray())->toThrow(
+        InvalidArgumentException::class,
+        sprintf('%s option "options" is not supported for Form output.', CheckboxSelect::class),
+    );
+});

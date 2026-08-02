@@ -34,7 +34,6 @@ class FieldLayoutDesigner extends ViewComponent implements FormElement
 
     public function name(string|Closure|null $name): static
     {
-        $this->trackConfiguration('name');
         $this->name = $name;
 
         return $this;
@@ -63,8 +62,6 @@ class FieldLayoutDesigner extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['attributes', 'slot'], 'Form');
-
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
@@ -104,8 +101,6 @@ class FieldLayoutDesigner extends ViewComponent implements FormElement
     #[Override]
     protected function renderMarkup(): string
     {
-        $this->rejectConfiguredOptions(['name', 'attributes', 'slot'], 'HTML');
-
         return app(Designer::class)->fieldHtml($this->resolvedFieldLayout('HTML'), [
             'withGeneratedFields' => $this->resolvedBool('withGeneratedFields', $this->withGeneratedFields, 'HTML'),
             'disabled' => $this->resolvedBool('readOnly', $this->readOnly, 'HTML'),

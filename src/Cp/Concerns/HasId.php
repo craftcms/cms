@@ -16,7 +16,6 @@ trait HasId
 
     public function id(string|Closure|null $id): static
     {
-        $this->trackConfiguration('id');
         $this->id = $id;
 
         return $this;

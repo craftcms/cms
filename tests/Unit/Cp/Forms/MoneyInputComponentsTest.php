@@ -125,20 +125,26 @@ it('registers and projects the money component', function () {
         ]);
 });
 
-it('keeps host values and HTML-only options out of specialized projection', function (
-    FormElement $component,
-    string $option,
-) {
-    expect(fn () => Form::make([
+it('keeps host values and HTML-only options out of specialized projection', function (FormElement $component) {
+    expect(Form::make([
         Field::make($component),
-    ])->toArray())->toThrow(
-        InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', $component::class, $option),
-    );
+    ])->toArray())->toBe([
+        'elements' => [[
+            'type' => 'craft:field',
+            'children' => [[
+                'type' => 'craft:money-input',
+                'name' => 'amount',
+                'props' => [
+                    'fractionDigits' => 2,
+                    'minorUnits' => true,
+                ],
+            ]],
+        ]],
+    ]);
 })->with([
-    'money value' => [fn () => MoneyInput::make()->name('amount')->value(null), 'value'],
-    'money locale' => [fn () => MoneyInput::make()->name('amount')->formattingLocale('en-US'), 'formattingLocale'],
-    'money currency label' => [fn () => MoneyInput::make()->name('amount')->currencyLabel('US dollars'), 'currencyLabel'],
+    'money value' => [fn () => MoneyInput::make()->name('amount')->value(null)],
+    'money locale' => [fn () => MoneyInput::make()->name('amount')->formattingLocale('en-US')],
+    'money currency label' => [fn () => MoneyInput::make()->name('amount')->currencyLabel('US dollars')],
 ]);
 
 it('rejects invalid portable specialized configuration', function (FormElement $component, string $option) {

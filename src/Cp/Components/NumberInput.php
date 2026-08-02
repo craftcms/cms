@@ -26,10 +26,4 @@ class NumberInput extends ScalarInput
             'step' => $this->portableNumber('step', $this->step),
         ];
     }
-
-    #[Override]
-    protected function unsupportedPortableOptions(): array
-    {
-        return ['placeholder'];
-    }
 }

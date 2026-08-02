@@ -21,7 +21,6 @@ abstract class ScalarInput extends Input implements FormElement
     #[Override]
     public function toHtml(): string
     {
-        $this->rejectConfiguredOptions(['type'], 'HTML');
         $this->rejectNativeTypeOverride();
 
         return parent::toHtml();
@@ -38,64 +37,25 @@ abstract class ScalarInput extends Input implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions([
-            'type',
-            'value',
-            'maxlength',
-            'inputSize',
-            'width',
-            'small',
-            'center',
-            'monospace',
-            'hiddenInput',
-            'autofocus',
-            'autocomplete',
-            'autocorrect',
-            'autocapitalize',
-            'readOnly',
-            'title',
-            'inputmode',
-            'orientation',
-            'role',
-            'expanded',
-            'suffix',
-            'descriptionId',
-            'showCharsLeft',
-            'labelledBy',
-            'describedBy',
-            'inputAttributes',
-            'disabled',
-            'id',
-            'size',
-            'slot',
-            ...$this->unsupportedPortableOptions(),
-        ], 'Form');
-
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
             $this->unsupportedOutputOption('name', 'Form');
         }
 
-        $attributes = $this->formElementAttributes;
-
-        foreach (array_keys($attributes) as $attribute) {
-            if (in_array(strtolower((string) $attribute), [
-                'aria-describedby',
-                'aria-labelledby',
-                'aria-required',
-                'disabled',
-                'id',
-                'name',
-                'readonly',
-                'required',
-                'slot',
-                'type',
-                'value',
-            ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
-            }
-        }
+        $attributes = $this->withoutAttributes($this->formElementAttributes, [
+            'aria-describedby',
+            'aria-labelledby',
+            'aria-required',
+            'disabled',
+            'id',
+            'name',
+            'readonly',
+            'required',
+            'slot',
+            'type',
+            'value',
+        ]);
 
         $props = array_filter(
             $this->formElementProps(),
@@ -114,12 +74,6 @@ abstract class ScalarInput extends Input implements FormElement
     protected function formElementProps(): array
     {
         return [];
-    }
-
-    /** @return list<string> */
-    protected function unsupportedPortableOptions(): array
-    {
-        return ['placeholder', 'min', 'max', 'step'];
     }
 
     protected function portableNumber(string $option, mixed $value): int|float|null

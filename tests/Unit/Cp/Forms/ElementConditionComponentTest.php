@@ -87,27 +87,22 @@ it('registers and deterministically projects serializable condition editor confi
         ->and($form->toArray())->toBe($firstProjection);
 });
 
-it('rejects host-owned condition editor state during projection', function (ElementCondition $component, string $option) {
-    expect(fn () => Form::make([
+it('ignores host-owned condition editor state during projection', function (ElementCondition $component) {
+    expect(Form::make([
         Field::make($component),
-    ])->toArray())->toThrow(
-        InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', ElementCondition::class, $option),
-    );
+    ])->toArray())->toHaveKey('elements.0.children.0.name', 'selectionCondition');
 })->with([
     'executable condition' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
             ->conditionClass(TestElementCondition::class)
             ->condition(new TestElementCondition),
-        'condition',
     ],
     'read-only authorization state' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
             ->conditionClass(TestElementCondition::class)
             ->readOnly(false),
-        'readOnly',
     ],
 ]);
 
@@ -141,13 +136,6 @@ it('rejects invalid portable condition editor configuration', function (ElementC
             ->conditionClass(TestElementCondition::class)
             ->addRuleLabel(fn (): int => 1),
         'addRuleLabel',
-    ],
-    'host-owned attribute' => [
-        fn () => ElementCondition::make()
-            ->name('selectionCondition')
-            ->conditionClass(TestElementCondition::class)
-            ->attributes(['id' => 'selection-condition']),
-        'attributes.id',
     ],
 ]);
 

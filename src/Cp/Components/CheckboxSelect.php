@@ -62,7 +62,6 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
     /** The "All" checkbox, rendered before the items. */
     public function allCheckbox(Checkbox|Closure|null $allCheckbox): static
     {
-        $this->trackConfiguration('allCheckbox');
         $this->allCheckbox = $allCheckbox;
 
         return $this;
@@ -70,7 +69,6 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
 
     public function allOption(string|int|float|bool|Closure|null $value): static
     {
-        $this->trackConfiguration('allOption');
         $this->allOption = $value;
         $this->hasAllOption = true;
 
@@ -79,7 +77,6 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
 
     public function values(array|string|int|float|bool|Closure|null $values): static
     {
-        $this->trackConfiguration('values');
         $this->values = $values;
 
         return $this;
@@ -88,7 +85,6 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
     /** Wraps the component in a `<craft-sortable-checkbox-select>`. */
     public function sortable(bool|Closure $sortable = true): static
     {
-        $this->trackConfiguration('sortable');
         $this->sortable = $sortable;
 
         return $this;
@@ -97,7 +93,6 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
     /** Storage key for persisting the sort order client-side. */
     public function storageKey(string|Closure|null $storageKey): static
     {
-        $this->trackConfiguration('storageKey');
         $this->storageKey = $storageKey;
 
         return $this;
@@ -114,15 +109,6 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions([
-            'allCheckbox',
-            'values',
-            'storageKey',
-            'disabled',
-            'id',
-            'slot',
-        ], 'Form');
-
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
@@ -157,22 +143,16 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
             $props['sortable'] = true;
         }
 
-        $attributes = $this->formElementAttributes;
-
-        foreach (array_keys($attributes) as $attribute) {
-            if (in_array(strtolower((string) $attribute), [
-                'aria-describedby',
-                'aria-labelledby',
-                'disabled',
-                'id',
-                'name',
-                'readonly',
-                'slot',
-                'value',
-            ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
-            }
-        }
+        $attributes = $this->withoutAttributes($this->formElementAttributes, [
+            'aria-describedby',
+            'aria-labelledby',
+            'disabled',
+            'id',
+            'name',
+            'readonly',
+            'slot',
+            'value',
+        ]);
 
         return new FormElementData(
             type: static::formElementType(),
