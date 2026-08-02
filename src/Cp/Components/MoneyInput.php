@@ -12,8 +12,10 @@ use Override;
 
 class MoneyInput extends ScalarInput
 {
+    #[Override]
     protected string|Closure $type = 'text';
 
+    #[Override]
     protected string|Closure|null $inputmode = 'decimal';
 
     protected string|Closure|null $currency = null;

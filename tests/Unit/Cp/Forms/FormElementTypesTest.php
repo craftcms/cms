@@ -430,6 +430,7 @@ class ApplicationComponent extends ColorMapComponent
 
 class PaletteGroupComponent extends FormContainer
 {
+    #[\Override]
     public static function make(iterable $children = []): static
     {
         return parent::make()->children($children);

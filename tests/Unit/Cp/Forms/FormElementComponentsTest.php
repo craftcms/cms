@@ -150,7 +150,7 @@ it('rejects non-Form-Element Field inputs and portable raw markup', function (Fi
             sprintf('%s option "%s" is not supported for Form output.', Field::class, $option),
         );
 })->with([
-    'missing input' => [fn () => Field::make(null), 'input'],
+    'missing input' => [fn () => Field::make()->input(null), 'input'],
     'non-Form-Element component' => [fn () => Field::make(Button::make()), 'input'],
     'multiple inputs' => [
         fn () => Field::make(fn (): array => [

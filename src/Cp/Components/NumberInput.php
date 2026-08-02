@@ -9,6 +9,7 @@ use Override;
 
 class NumberInput extends ScalarInput
 {
+    #[Override]
     protected string|Closure $type = 'number';
 
     public static function formElementType(): string

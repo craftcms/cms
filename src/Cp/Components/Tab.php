@@ -22,6 +22,7 @@ class Tab extends FormContainer
 
     private bool $withinTabs = false;
 
+    #[Override]
     public static function make(
         ?string $key = null,
         string|Closure|null $label = null,

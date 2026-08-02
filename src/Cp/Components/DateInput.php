@@ -8,6 +8,7 @@ use Closure;
 
 class DateInput extends ScalarInput
 {
+    #[\Override]
     protected string|Closure $type = 'date';
 
     public static function formElementType(): string
@@ -16,6 +17,7 @@ class DateInput extends ScalarInput
     }
 
     /** @return array<string, mixed> */
+    #[\Override]
     protected function formElementProps(): array
     {
         return ['type' => 'date'];

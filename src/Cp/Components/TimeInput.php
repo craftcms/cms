@@ -8,6 +8,7 @@ use Closure;
 
 class TimeInput extends ScalarInput
 {
+    #[\Override]
     protected string|Closure $type = 'time';
 
     public static function formElementType(): string
@@ -16,6 +17,7 @@ class TimeInput extends ScalarInput
     }
 
     /** @return array<string, mixed> */
+    #[\Override]
     protected function formElementProps(): array
     {
         return ['type' => 'time'];

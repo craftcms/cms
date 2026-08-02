@@ -15,6 +15,7 @@ class Group extends FormContainer
 
     private string $inputNamePrefix = '';
 
+    #[Override]
     public static function make(iterable|Closure $children = []): static
     {
         return parent::make()->children($children);

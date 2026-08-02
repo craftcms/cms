@@ -11,6 +11,7 @@ use Override;
 
 class Tabs extends FormContainer
 {
+    #[Override]
     public static function make(iterable|Closure $children = []): static
     {
         return parent::make()->children($children);

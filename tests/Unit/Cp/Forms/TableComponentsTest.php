@@ -115,7 +115,7 @@ it('rejects invalid portable table configuration before projection', function (E
         sprintf('%s option "%s" is not supported for Form output.', $component::class, $option),
     );
 })->with([
-    'editable name' => [fn () => EditableTable::make(), 'name'],
+    'editable name' => [fn () => EditableTable::make()->name(null), 'name'],
     'unsupported editable column' => [
         fn () => EditableTable::make()->name('rows')->columns([
             ['key' => 'value', 'label' => 'Value', 'type' => 'unsupported'],
