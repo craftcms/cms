@@ -3,6 +3,7 @@ import {fileURLToPath} from 'node:url';
 import {playwright} from 'vite-plus/test/browser-playwright';
 
 import {defineConfig} from 'vite-plus';
+import vue from '@vitejs/plugin-vue';
 
 import {storybookTest} from '@storybook/addon-vitest/vitest-plugin';
 
@@ -52,6 +53,22 @@ export default defineConfig({
         test: {
           name: 'factory',
           root: './src/factory',
+          environment: 'happy-dom',
+        },
+      },
+      {
+        plugins: [
+          vue({
+            template: {
+              compilerOptions: {
+                isCustomElement: (tag) => tag.startsWith('craft-'),
+              },
+            },
+          }),
+        ],
+        test: {
+          name: 'vue-wrappers',
+          root: './scripts',
           environment: 'happy-dom',
         },
       },
