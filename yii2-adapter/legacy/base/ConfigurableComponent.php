@@ -49,7 +49,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
         $names = [];
 
         foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (! $property->isStatic() && ! $property->getDeclaringClass()->isAbstract()) {
+            if (!$property->isStatic() && !$property->getDeclaringClass()->isAbstract()) {
                 $names[] = $property->getName();
             }
         }
@@ -98,7 +98,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
             __FILE__,
         );
 
-        $fragment = HtmlStack::capture(fn (): string => InputNamespace::namespaceInputs((string) ($readOnly
+        $fragment = HtmlStack::capture(fn(): string => InputNamespace::namespaceInputs((string) ($readOnly
             ? $this->getReadOnlySettingsHtml()
             : $this->getSettingsHtml())));
 
@@ -125,6 +125,6 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     public function getReadOnlySettingsHtml(): ?string
     {
         // Just return the settings HTML with disabled inputs by default
-        return Html::disableInputs(fn () => $this->getSettingsHtml());
+        return Html::disableInputs(fn() => $this->getSettingsHtml());
     }
 }
