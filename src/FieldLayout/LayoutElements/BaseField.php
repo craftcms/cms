@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
+use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -438,10 +438,10 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     public function configureFormElement(
-        InputElement $formElement,
+        Field $formElement,
         ?ElementInterface $element = null,
         bool $readOnly = false,
-    ): InputElement {
+    ): Field {
         return $formElement
             ->label($this->showLabel() ? $this->label() : null)
             ->instructions($this->instructionsText($element, $readOnly))

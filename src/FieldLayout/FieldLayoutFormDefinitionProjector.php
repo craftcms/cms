@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -92,7 +92,7 @@ class FieldLayoutFormDefinitionProjector
     private function projectElement(
         FieldLayoutElement $layoutElement,
         FieldLayoutFormDefinitionContext $context,
-    ): ?FormElement {
+    ): FieldComponent|FormElement|null {
         $readOnly = $context->readOnly
             || ($layoutElement instanceof CustomField && ! $layoutElement->editable($context->element));
         $inputName = $layoutElement instanceof BaseField ? $layoutElement->attribute() : null;
@@ -113,30 +113,42 @@ class FieldLayoutFormDefinitionProjector
             inputNamespace: $context->inputNamespace,
         );
 
-        $formElement = $provider instanceof FieldLayoutFormElementProviderInterface
-            ? $provider->formElement($elementContext)
-            : $this->unsupportedElement($layoutElement, $elementContext);
+        if ($provider instanceof FieldLayoutFormElementProviderInterface) {
+            $input = $provider->formElement($elementContext);
 
-        if ($formElement === null) {
-            return null;
-        }
+            if ($input === null) {
+                return null;
+            }
 
-        if ($layoutElement instanceof BaseField) {
-            if (! $formElement instanceof InputElement) {
+            if ($input::isFormElementContainer()) {
                 throw new LogicException(sprintf(
-                    '%s must provide an InputElement when projecting %s.',
+                    '%s must provide a projectable input component when projecting %s.',
                     $provider::class,
                     $layoutElement::class,
                 ));
             }
 
-            $layoutElement->configureFormElement($formElement, $context->element, $readOnly);
+            $formElement = FieldComponent::make()->input($input);
+
+            if ($layoutElement instanceof BaseField) {
+                $layoutElement->configureFormElement($formElement, $context->element, $readOnly);
+            }
+        } else {
+            $formElement = $this->unsupportedElement($layoutElement, $elementContext);
+        }
+
+        if ($formElement === null) {
+            return null;
         }
 
         $formElement->key($layoutElement->uid);
 
         if ($layoutElement->hasCustomWidth()) {
-            $formElement->width($layoutElement->width);
+            if ($formElement instanceof FieldComponent) {
+                $formElement->columnWidth($layoutElement->width);
+            } else {
+                $formElement->width($layoutElement->width);
+            }
         }
 
         return $formElement;

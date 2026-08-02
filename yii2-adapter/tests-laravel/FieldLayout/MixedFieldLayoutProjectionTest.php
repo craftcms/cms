@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Tests\FieldLayout;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
@@ -72,6 +71,7 @@ class MixedFieldLayoutProjectionTest extends TestCase
         self::assertTrue($elements[0]['props']['readOnly']);
         self::assertSame('yii2-adapter:legacy-settings', $elements[1]['type']);
         self::assertSame('title-layout-element', $tabs[1]['children'][0]['key']);
+        self::assertSame('title', $tabs[1]['children'][0]['children'][0]['name']);
         self::assertStringContainsString(
             'name="elements[123][legacyRating]"',
             $elements[1]['props']['fragment']['html'],
@@ -82,9 +82,9 @@ class MixedFieldLayoutProjectionTest extends TestCase
 
 class AdapterProjectableField extends Field implements FieldLayoutFormElementProviderInterface
 {
-    public function formElement(FieldLayoutFormElementContext $context): ?FormElement
+    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
     {
-        return AdapterTextInput::make($context->inputName ?? throw new \LogicException('Input Name is required.'));
+        return TextInput::make()->name($context->inputName ?? throw new \LogicException('Input Name is required.'));
     }
 }
 
@@ -108,9 +108,9 @@ class AdapterProjectableLayoutElement extends FieldLayoutElement implements Fiel
         return null;
     }
 
-    public function formElement(FieldLayoutFormElementContext $context): ?FormElement
+    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
     {
-        return AdapterTextInput::make('title');
+        return TextInput::make()->name('title');
     }
 }
 
@@ -140,13 +140,5 @@ class LegacyLayoutElement extends FieldLayoutElement
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return '<input name="legacyRating">';
-    }
-}
-
-class AdapterTextInput extends InputElement
-{
-    public static function type(): string
-    {
-        return 'craft:text-input';
     }
 }

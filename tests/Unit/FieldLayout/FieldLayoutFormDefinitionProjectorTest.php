@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
+use CraftCms\Cms\Cp\Components\Group;
+use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
@@ -45,7 +45,12 @@ it('projects applicable field layout content through provider form elements', fu
         ]),
     ]);
 
-    $definition = new FieldLayoutFormDefinitionProjector()->project(
+    $projector = new FieldLayoutFormDefinitionProjector;
+    $definition = $projector->project(
+        $layout,
+        new FieldLayoutFormDefinitionContext,
+    )->toArray();
+    $repeatedDefinition = $projector->project(
         $layout,
         new FieldLayoutFormDefinitionContext,
     )->toArray();
@@ -79,7 +84,8 @@ it('projects applicable field layout content through provider form elements', fu
             'type' => 'craft:text-input',
             'name' => 'fields.body',
             'props' => ['placeholder' => 'Projected body'],
-        ])->and($definition)->not->toHaveKey('bindingScope')
+        ])->and($repeatedDefinition)->toBe($definition)
+        ->and($definition)->not->toHaveKey('bindingScope')
         ->and(json_encode($definition, JSON_THROW_ON_ERROR))->not->toContain(
             'userCondition',
             'elementCondition',
@@ -87,6 +93,23 @@ it('projects applicable field layout content through provider form elements', fu
             'hidden-element',
             'hidden-tab',
         );
+});
+
+it('rejects provider components that are not inputs', function () {
+    $layout = new FieldLayout(['uid' => 'invalid-provider-layout']);
+    $layout->setTabs([
+        new FieldLayoutTab([
+            'uid' => 'content-tab',
+            'name' => 'Content',
+            'layout' => $layout,
+            'elements' => [new ContainerProvidingLayoutElement(['uid' => 'invalid-provider'])],
+        ]),
+    ]);
+
+    expect(fn () => new FieldLayoutFormDefinitionProjector()->project(
+        $layout,
+        new FieldLayoutFormDefinitionContext,
+    ))->toThrow(LogicException::class, 'must provide a projectable input component');
 });
 
 it('fails loudly when an applicable layout element has no provider or adapter fallback', function () {
@@ -141,9 +164,10 @@ it('fails loudly when a projected layout element has no stable source UID', func
 
 class ProjectableField extends Field implements FieldLayoutFormElementProviderInterface
 {
-    public function formElement(FieldLayoutFormElementContext $context): ?FormElement
+    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
     {
-        return ProjectorTextInput::make($context->inputName ?? throw new LogicException('Input Name is required.'))
+        return TextInput::make()
+            ->name($context->inputName ?? throw new LogicException('Input Name is required.'))
             ->placeholder('Projected body');
     }
 }
@@ -184,9 +208,9 @@ class InapplicableFormElement extends FieldLayoutElement implements FieldLayoutF
         return false;
     }
 
-    public function formElement(FieldLayoutFormElementContext $context): ?FormElement
+    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
     {
-        return ProjectorTextInput::make('hidden');
+        return TextInput::make()->name('hidden');
     }
 }
 
@@ -203,27 +227,20 @@ class UnsupportedFormElement extends FieldLayoutElement
     }
 }
 
-class ProjectorTextInput extends InputElement
+class ContainerProvidingLayoutElement extends FieldLayoutElement implements FieldLayoutFormElementProviderInterface
 {
-    private ?string $placeholder = null;
-
-    public static function type(): string
+    public function selectorHtml(): string
     {
-        return 'craft:text-input';
+        return '';
     }
 
-    public function placeholder(?string $placeholder): static
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $this->placeholder = $placeholder;
-
-        return $this;
+        return null;
     }
 
-    #[Override]
-    protected function props(): array
+    public function formElement(FieldLayoutFormElementContext $context): ?Group
     {
-        return array_filter([
-            'placeholder' => $this->placeholder,
-        ], fn (mixed $value): bool => $value !== null);
+        return Group::make([]);
     }
 }

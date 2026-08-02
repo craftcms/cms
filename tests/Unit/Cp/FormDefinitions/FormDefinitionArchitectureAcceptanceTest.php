@@ -64,6 +64,10 @@ it('matches the shared architecture fixture through public registration and proj
             ],
         ]),
     ]);
+    $projector = new FieldLayoutFormDefinitionProjector;
+    $projector->handleUnsupportedElementsUsing(
+        fn (): FormElement => ArchitectureAcceptanceLegacyIsland::make(),
+    );
 
     $actual = [
         'ordinary' => FormDefinition::make([
@@ -95,7 +99,7 @@ it('matches the shared architecture fixture through public registration and proj
                 ->key('plugin-palette')
                 ->label('Palette'),
         ])->toArray(),
-        'fieldLayout' => new FieldLayoutFormDefinitionProjector()->project(
+        'fieldLayout' => $projector->project(
             $layout,
             new FieldLayoutFormDefinitionContext,
         )->toArray(),
@@ -126,35 +130,11 @@ class ArchitectureAcceptanceColorMap extends InputElement
 
 class ArchitectureAcceptanceField extends Field implements FieldLayoutFormElementProviderInterface
 {
-    public function formElement(FieldLayoutFormElementContext $context): ?InputElement
+    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
     {
-        return ArchitectureAcceptanceTextInput::make($context->inputName ?? throw new LogicException('Input Name is required.'))
+        return TextInput::make()
+            ->name($context->inputName ?? throw new LogicException('Input Name is required.'))
             ->placeholder("Projected {$this->handle}");
-    }
-}
-
-class ArchitectureAcceptanceTextInput extends InputElement
-{
-    private ?string $placeholder = null;
-
-    public static function type(): string
-    {
-        return 'craft:text-input';
-    }
-
-    public function placeholder(?string $placeholder): static
-    {
-        $this->placeholder = $placeholder;
-
-        return $this;
-    }
-
-    #[Override]
-    protected function props(): array
-    {
-        return array_filter([
-            'placeholder' => $this->placeholder,
-        ], fn (mixed $value): bool => $value !== null);
     }
 }
 
@@ -177,7 +157,7 @@ class ArchitectureAcceptanceLegacyIsland extends FormElement
     }
 }
 
-class ArchitectureAcceptanceLegacyLayoutElement extends FieldLayoutElement implements FieldLayoutFormElementProviderInterface
+class ArchitectureAcceptanceLegacyLayoutElement extends FieldLayoutElement
 {
     public function selectorHtml(): string
     {
@@ -187,10 +167,5 @@ class ArchitectureAcceptanceLegacyLayoutElement extends FieldLayoutElement imple
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
-    }
-
-    public function formElement(FieldLayoutFormElementContext $context): ?FormElement
-    {
-        return ArchitectureAcceptanceLegacyIsland::make();
     }
 }
