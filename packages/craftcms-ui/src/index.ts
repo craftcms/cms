@@ -41,6 +41,14 @@ export {
   type EditableTableValue,
 } from './components/editable-table/editable-table.js';
 export {default as CraftField} from './components/field/field.js';
+export {
+  default as CraftFieldLayout,
+  type AvailableFieldLayoutElement,
+  type FieldLayoutElement,
+  type FieldLayoutTab,
+  type FieldLayoutValue,
+  type GeneratedField,
+} from './components/field-layout/field-layout.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export {default as CraftIcon} from './components/icon/icon.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';

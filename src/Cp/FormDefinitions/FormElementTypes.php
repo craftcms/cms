@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Components\DateInput as DateInputComponent;
 use CraftCms\Cms\Cp\Components\EditableTable as EditableTableComponent;
 use CraftCms\Cms\Cp\Components\ElementCondition as ElementConditionComponent;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\FieldLayout as FieldLayoutComponent;
 use CraftCms\Cms\Cp\Components\KeyedTable as KeyedTableComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
 use CraftCms\Cms\Cp\Components\MoneyInput as MoneyInputComponent;
@@ -22,7 +23,6 @@ use CraftCms\Cms\Cp\Components\TextInput as TextInputComponent;
 use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
@@ -79,7 +79,11 @@ class FormElementTypes
                 'container' => EditableTableComponent::isFormElementContainer(),
                 'plugin' => null,
             ],
-            FieldLayoutInput::type() => ['class' => FieldLayoutInput::class, 'container' => false, 'plugin' => null],
+            FieldLayoutComponent::formElementType() => [
+                'class' => FieldLayoutComponent::class,
+                'container' => FieldLayoutComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             NumberInputComponent::formElementType() => [
                 'class' => NumberInputComponent::class,
                 'container' => NumberInputComponent::isFormElementContainer(),

@@ -1,4 +1,12 @@
-import {createApp, nextTick, reactive, toRaw} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  reactive,
+  ref,
+  toRaw,
+} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
@@ -100,7 +108,14 @@ describe('nested content settings renderers', () => {
       },
     });
     const container = mount(values);
-    const layoutRows = container.querySelectorAll<HTMLElement>(
+    const fieldLayout =
+      container.querySelector<HTMLElementTagNameMap['craft-field-layout']>(
+        'craft-field-layout'
+      )!;
+
+    await nextTick();
+    await fieldLayout.updateComplete;
+    const layoutRows = fieldLayout.shadowRoot!.querySelectorAll<HTMLElement>(
       '[data-field-layout-element]'
     );
 
@@ -120,6 +135,137 @@ describe('nested content settings renderers', () => {
     expect(values.settings.fieldLayouts['layout-1'].marker).toBe(layoutMarker);
   });
 
+  it('adds and removes field layout elements through the mounted renderer', async () => {
+    const values = reactive({
+      settings: {
+        fieldLayouts: {
+          'layout-1': {
+            tabs: [
+              {
+                uid: 'content-tab',
+                name: 'Content',
+                elements: [{uid: 'title-element', type: 'TitleField'}],
+              },
+            ],
+          },
+        },
+      },
+    });
+    const container = mount(values);
+    const fieldLayout =
+      container.querySelector<HTMLElementTagNameMap['craft-field-layout']>(
+        'craft-field-layout'
+      )!;
+
+    await nextTick();
+    await fieldLayout.updateComplete;
+    const select = fieldLayout.shadowRoot!.querySelector<HTMLSelectElement>(
+      '[data-field-layout-available]'
+    )!;
+
+    select.value = 'field:body';
+    select.dispatchEvent(new Event('change', {bubbles: true}));
+    fieldLayout
+      .shadowRoot!.querySelector('[data-field-layout-add]')!
+      .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
+    await nextTick();
+    await fieldLayout.updateComplete;
+
+    expect(
+      values.settings.fieldLayouts['layout-1'].tabs[0]!.elements.map(
+        ({type}) => type
+      )
+    ).toEqual(['TitleField', 'BodyField']);
+
+    const bodyRow = Array.from(
+      fieldLayout.shadowRoot!.querySelectorAll<HTMLElement>(
+        '[data-field-layout-element]'
+      )
+    ).find((row) => row.textContent?.includes('Body'))!;
+
+    bodyRow
+      .querySelector('[data-field-layout-remove]')!
+      .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
+    await nextTick();
+
+    expect(
+      values.settings.fieldLayouts['layout-1'].tabs[0]!.elements.map(
+        ({type}) => type
+      )
+    ).toEqual(['TitleField']);
+  });
+
+  it('preserves field layout controls across complete definition refreshes', async () => {
+    const registry = createCpComponentRegistry();
+    const formDefinition = ref(accessibleFieldLayoutDefinition);
+    const values = reactive({
+      settings: {
+        fieldLayouts: {
+          'layout-1': {
+            tabs: [
+              {
+                uid: 'content-tab',
+                name: 'Content',
+                elements: [{uid: 'title-element', type: 'TitleField'}],
+              },
+            ],
+          },
+        },
+      },
+    });
+    const container = document.createElement('div');
+    const Host = defineComponent(
+      () => () =>
+        h(FormDefinitionRenderer, {
+          definition: formDefinition.value,
+          bindingScope: 'settings',
+          values,
+          errors: {},
+        })
+    );
+
+    registry.register(
+      'form-element:craft:field-layout-input',
+      FieldLayoutInputRenderer
+    );
+    (window as any).Cp = {$components: registry};
+    document.body.append(container);
+    const app = createApp(Host);
+
+    mountedApps.push(app);
+    app.mount(container);
+    await nextTick();
+
+    const fieldLayout =
+      container.querySelector<HTMLElementTagNameMap['craft-field-layout']>(
+        'craft-field-layout'
+      )!;
+
+    await fieldLayout.updateComplete;
+    const tab = fieldLayout.shadowRoot!.querySelector(
+      '[data-field-layout-tab="content-tab"]'
+    );
+    const row = fieldLayout.shadowRoot!.querySelector(
+      '[data-field-layout-element="title-element"]'
+    );
+
+    formDefinition.value = structuredClone(accessibleFieldLayoutDefinition);
+    await nextTick();
+    await fieldLayout.updateComplete;
+
+    expect(container.querySelector('craft-field-layout')).toBe(fieldLayout);
+    expect(
+      fieldLayout.shadowRoot!.querySelector(
+        '[data-field-layout-tab="content-tab"]'
+      )
+    ).toBe(tab);
+    expect(
+      fieldLayout.shadowRoot!.querySelector(
+        '[data-field-layout-element="title-element"]'
+      )
+    ).toBe(row);
+  });
+
   it('reorders generated fields without changing their configuration', async () => {
     const values = reactive({
       settings: {
@@ -135,9 +281,17 @@ describe('nested content settings renderers', () => {
       },
     });
     const container = mount(values);
-    const generatedFields = container.querySelectorAll<HTMLElement>(
-      '[data-generated-field]'
-    );
+    const fieldLayout =
+      container.querySelector<HTMLElementTagNameMap['craft-field-layout']>(
+        'craft-field-layout'
+      )!;
+
+    await nextTick();
+    await fieldLayout.updateComplete;
+    const generatedFields =
+      fieldLayout.shadowRoot!.querySelectorAll<HTMLElement>(
+        '[data-generated-field]'
+      );
 
     generatedFields[0]!.querySelector('craft-reorder-button')!.dispatchEvent(
       new CustomEvent('reorder', {
@@ -167,8 +321,15 @@ describe('nested content settings renderers', () => {
       },
     });
     const container = mount(values);
-    const template = container.querySelector<HTMLTextAreaElement>(
-      'textarea[name="settings[fieldLayouts][layout-1][generatedFields][0][template]"]'
+    const fieldLayout =
+      container.querySelector<HTMLElementTagNameMap['craft-field-layout']>(
+        'craft-field-layout'
+      )!;
+
+    await nextTick();
+    await fieldLayout.updateComplete;
+    const template = fieldLayout.shadowRoot!.querySelector<HTMLTextAreaElement>(
+      'textarea[aria-label="Template"]'
     )!;
 
     template.value = 'line one\nline two';
@@ -262,9 +423,14 @@ describe('nested content settings renderers', () => {
       container.querySelector<HTMLElementTagNameMap['craft-keyed-table']>(
         'craft-keyed-table'
       )!;
+    const fieldLayout =
+      container.querySelector<HTMLElementTagNameMap['craft-field-layout']>(
+        'craft-field-layout'
+      )!;
 
     await nextTick();
     await keyedTable.updateComplete;
+    await fieldLayout.updateComplete;
 
     expect(
       [
@@ -280,6 +446,56 @@ describe('nested content settings renderers', () => {
         ),
       ].every((control) => control.disabled || control.readOnly)
     ).toBe(true);
+    expect(fieldLayout.readOnly).toBe(true);
+    expect(
+      Array.from(
+        fieldLayout.shadowRoot!.querySelectorAll<
+          HTMLElement & {disabled?: boolean}
+        >('craft-reorder-button, craft-button, craft-input, select, textarea')
+      ).every((control) => control.disabled)
+    ).toBe(true);
+  });
+
+  it('wires field layout errors, read-only state, and accessibility through the mounted field', async () => {
+    const container = mount(
+      {
+        settings: {
+          fieldLayouts: {
+            'layout-1': {
+              tabs: [{uid: 'content-tab', name: 'Content', elements: []}],
+            },
+          },
+        },
+      },
+      true,
+      {'settings.fieldLayouts.layout-1': ['Add at least one field.']},
+      accessibleFieldLayoutDefinition
+    );
+    const field =
+      container.querySelector<HTMLElementTagNameMap['craft-field']>(
+        'craft-field'
+      )!;
+    const fieldLayout =
+      container.querySelector<HTMLElementTagNameMap['craft-field-layout']>(
+        'craft-field-layout'
+      )!;
+
+    await nextTick();
+    await field.updateComplete;
+    await field.updateComplete;
+    await fieldLayout.updateComplete;
+
+    const label = field.querySelector<HTMLElement>('[slot="label"]')!;
+    const feedback = field.querySelector<HTMLElement>('[slot="feedback"]')!;
+
+    expect(feedback.textContent).toContain('Add at least one field.');
+    expect(fieldLayout.readOnly).toBe(true);
+    expect(fieldLayout.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      label.id
+    );
+    expect(
+      fieldLayout.getAttribute('aria-describedby')?.split(/\s+/)
+    ).toContain(feedback.id);
   });
 
   it('wires keyed table labels and errors through the mounted field', async () => {
@@ -474,6 +690,28 @@ const accessibleKeyedTableDefinition = {
           props: {
             columns: [{key: 'uriFormat', label: 'URI format'}],
             rows: [{key: 'english', label: 'English'}],
+          },
+        },
+      ],
+    },
+  ],
+} satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
+
+const accessibleFieldLayoutDefinition = {
+  elements: [
+    {
+      type: 'craft:field',
+      props: {
+        label: 'Field layout',
+        instructions: 'Arrange the content fields.',
+      },
+      children: [
+        {
+          type: 'craft:field-layout-input',
+          name: 'fieldLayouts.layout-1',
+          props: {
+            availableElements: [],
+            withGeneratedFields: false,
           },
         },
       ],

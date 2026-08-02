@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\FieldLayout as FieldLayoutComponent;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -361,14 +361,16 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         $fieldLayout = $this->getFieldLayout();
 
         return FormDefinition::make([
-            FieldLayoutInput::make("fieldLayouts.{$fieldLayout->uid}")
+            FieldComponent::make()
                 ->label(t('Field Layout'))
-                ->availableElements($this->fieldLayoutElementOptions())
-                ->withGeneratedFields()
-                ->readOnly($readOnly),
+                ->input(
+                    FieldLayoutComponent::make()
+                        ->name("fieldLayouts.{$fieldLayout->uid}")
+                        ->availableElements($this->fieldLayoutElementOptions())
+                        ->withGeneratedFields(),
+                ),
             FieldComponent::make()
                 ->label(t('View Mode'))
-                ->readOnly($readOnly)
                 ->input(
                     Select::make()
                         ->name('viewMode')

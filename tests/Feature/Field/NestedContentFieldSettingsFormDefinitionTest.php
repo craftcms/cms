@@ -47,9 +47,7 @@ it('projects content block settings without serializing the field layout value',
         ->and($definition)->not->toHaveKey('fieldLayout')
         ->and(json_encode($definition, JSON_THROW_ON_ERROR))->not->toContain('content-tab', 'divider');
 
-    foreach (nestedContentFields($definition) as $projectedField) {
-        expect($projectedField['props']['readOnly'] ?? false)->toBeTrue();
-    }
+    expect($definition)->not->toContain('readOnly');
 });
 
 it('projects the complete matrix settings surface with complex values kept outside the definition', function () {
