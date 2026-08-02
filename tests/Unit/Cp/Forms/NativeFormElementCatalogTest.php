@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\Forms\FormElementTypes;
 
 it('locks every native Form Element Type to one CP UI Component', function () {
     $catalog = json_decode(
-        file_get_contents(dirname(__DIR__, 4).'/resources/js/forms/native-form-element-catalog.json'),
+        file_get_contents(dirname(__DIR__, 4).'/resources/js/modules/forms/native-form-element-catalog.json'),
         true,
         512,
         JSON_THROW_ON_ERROR,

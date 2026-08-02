@@ -1,3 +1,7 @@
+/**
+ * Bridges legacy, non-Vue CP code to the Vue form renderer.
+ * Inertia pages render FormRenderer directly; remove this host once its legacy consumers are migrated.
+ */
 import {createApp, reactive, type App} from 'vue';
 import FormRenderer from './FormRenderer.vue';
 import type {FormPayload, FormErrors, FormValues} from './types';
@@ -69,6 +73,6 @@ export class FormHost extends HTMLElement {
   }
 }
 
-if (!customElements.get('craft-form')) {
-  customElements.define('craft-form', FormHost);
+if (!customElements.get('craft-form-renderer')) {
+  customElements.define('craft-form-renderer', FormHost);
 }

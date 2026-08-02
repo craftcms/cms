@@ -1,7 +1,7 @@
 import {createApp, defineComponent, h, nextTick, onMounted, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import FormRenderer from '@/forms/FormRenderer.vue';
+import FormRenderer from '@/modules/forms/FormRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 

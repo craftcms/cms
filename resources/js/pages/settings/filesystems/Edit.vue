@@ -10,9 +10,13 @@
   import {renderSettings, store} from '@actions/Settings/FilesystemsController';
   import {computed, ref, watch} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import FormRenderer from '@/forms/FormRenderer.vue';
-  import {legacySettingsIslandValues} from '@/forms/legacy-settings';
-  import type {FormPayload, FormErrors, FormValues} from '@/forms/types';
+  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import {legacySettingsIslandValues} from '@/modules/forms/legacy-settings';
+  import type {
+    FormPayload,
+    FormErrors,
+    FormValues,
+  } from '@/modules/forms/types';
 
   defineOptions({
     inheritAttrs: false,

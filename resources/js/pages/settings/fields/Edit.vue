@@ -10,9 +10,13 @@
   import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import Pane from '@/common/components/Pane.vue';
-  import FormRenderer from '@/forms/FormRenderer.vue';
-  import {legacySettingsIslandValues} from '@/forms/legacy-settings';
-  import type {FormPayload, FormErrors, FormValues} from '@/forms/types';
+  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import {legacySettingsIslandValues} from '@/modules/forms/legacy-settings';
+  import type {
+    FormPayload,
+    FormErrors,
+    FormValues,
+  } from '@/modules/forms/types';
   import type {FormSaveOptions} from '@/common/types';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';

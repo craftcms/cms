@@ -466,7 +466,7 @@ import '@craftcms/ui';
         return;
       }
 
-      this.settingsHost = document.createElement('craft-form');
+      this.settingsHost = document.createElement('craft-form-renderer');
       this.settingsHost.context = structuredClone(this.settingsContext);
       this.$settingsContainer.append(this.settingsHost);
     },

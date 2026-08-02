@@ -46,7 +46,7 @@ import './modules/element-deletion-manager/index';
 import './modules/uploader/index';
 import './modules/nested-element-manager/index';
 import './modules/ui/index';
-import './forms/FormHost';
+import './modules/forms/FormHost';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 

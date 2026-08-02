@@ -34,7 +34,7 @@ describe('Form host', () => {
       readOnly: false,
     };
     const form = document.createElement('form');
-    const host = new FormHost();
+    const host = document.createElement('craft-form-renderer') as FormHost;
 
     formElements.register('craft:text-input', CraftInput);
     (window as any).Cp = {$components: components, $formElements: formElements};
