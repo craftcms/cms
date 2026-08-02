@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Field\Link;
 
@@ -28,7 +28,7 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
         return $elements === [] ? null : FormDefinition::make($elements);
     }
 
-    /** @return list<ProjectableFormElement> */
+    /** @return list<FormElement> */
     protected function settingsFormElements(bool $readOnly): array
     {
         return [];

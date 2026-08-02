@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Cp\Enums\Size;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Support\Arr;
@@ -32,7 +32,7 @@ use Stringable;
  * `indeterminateValue` when indeterminate, an empty string when off, nothing
  * when unnamed.
  */
-class Lightswitch extends ViewComponent implements ProjectableFormElement
+class Lightswitch extends ViewComponent implements FormElement
 {
     use HasDisabled;
     use HasId;

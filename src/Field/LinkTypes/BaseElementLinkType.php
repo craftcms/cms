@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -83,7 +83,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         parent::__construct($config);
     }
 
-    /** @return list<ProjectableFormElement> */
+    /** @return list<FormElement> */
     #[Override]
     protected function settingsFormElements(bool $readOnly): array
     {

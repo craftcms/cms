@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -15,7 +15,7 @@ use Illuminate\Support\HtmlString;
 
 use function CraftCms\Cms\t;
 
-class Combobox extends ViewComponent implements ProjectableFormElement
+class Combobox extends ViewComponent implements FormElement
 {
     use HasDisabled;
     use HasId;

@@ -1,12 +1,12 @@
 # Form Definition authoring and renderer extensions
 
-CP UI Components are the sole PHP authoring interface for native Form Definitions. `FormDefinition` projects configured components to immutable `FormElementData`; Vue renderers adapt that transport data to the browser runtime. Plugins extend the same model by pairing a projectable PHP CP UI Component with a Vue renderer under one stable Form Element Type.
+CP UI Components are the sole PHP authoring interface for native Form Definitions. `FormDefinition` projects configured components to immutable `FormElementData`; Vue renderers adapt that transport data to the browser runtime. Plugins extend the same model by pairing a PHP CP UI Component that implements `FormElement` with a Vue renderer under one stable Form Element Type.
 
 Types must be lowercase namespaced identifiers, such as `color-tools:color-map`. The `craft` namespace is reserved. Treat a published type as a public API: do not rename it within a compatible release. The type is independent of the PHP class name, PHP component-registry name, custom-element tag, and Vue renderer name.
 
 ## PHP registration
 
-A plugin Form Element implementation must extend `ViewComponent` and implement `ProjectableFormElement`. Input-shaped controls can extend `ScalarInput`, which provides the component rendering and projection mechanics while leaving the public type and browser primitive explicit:
+A plugin Form Element implementation must extend `ViewComponent` and implement `FormElement`. Input-shaped controls can extend `ScalarInput`, which provides the component rendering and projection mechanics while leaving the public type and browser primitive explicit:
 
 ```php
 use CraftCms\Cms\Cp\Components\ScalarInput;
@@ -65,9 +65,9 @@ $this->registerFormElementTypes(
 );
 ```
 
-Craft validates the complete batch before registering any class. Non-projectable classes fail during registration. Registering the same owner and class again is harmless. Another class or plugin cannot claim the type, and collision errors identify both claimants. During projection, Craft also verifies that the exact registered class emitted its declared type. Craft derives the plugin handle, display name, and Composer package from the plugin registration; component configuration cannot set or override that ownership.
+Craft validates the complete batch before registering any class. Classes that do not implement `FormElement` fail during registration. Registering the same owner and class again is harmless. Another class or plugin cannot claim the type, and collision errors identify both claimants. During projection, Craft also verifies that the exact registered class emitted its declared type. Craft derives the plugin handle, display name, and Composer package from the plugin registration; component configuration cannot set or override that ownership.
 
-The registered input can be used like a core input. A `Field` owns its label, instructions, width, read-only state, visibility, and the single projectable input child:
+The registered input can be used like a core input. A `Field` owns its label, instructions, width, read-only state, visibility, and its single input Form Element child:
 
 ```php
 use CraftCms\Cms\Cp\Components\Field;
@@ -84,13 +84,13 @@ FormDefinition::make([
 ]);
 ```
 
-Container components extend `FormContainer`, declare `formElementType()`, implement an HTML `tagName()`, and receive ordered projectable descendants through `children()`. Their container metadata is derived from the component contract. The generic Vue renderer traverses those children and passes their rendered output to the registered container renderer's default slot.
+Container components extend `FormContainer`, declare `formElementType()`, implement an HTML `tagName()`, and receive ordered Form Element descendants through `children()`. Their container metadata is derived from the component contract. The generic Vue renderer traverses those children and passes their rendered output to the registered container renderer's default slot.
 
-The former native `FormElement`, `InputElement`, and Form Definition `FormContainer` authoring bases no longer exist. To migrate an existing plugin, replace that base with an appropriate projectable CP component base, rename `type()` to `formElementType()`, move portable transport properties from `props()` to `formElementProps()`, add the component's honest HTML rendering path, and compose field presentation with `Field`. Continue using the same stable type and renderer key.
+The former `CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement`, `InputElement`, and `FormContainer` authoring bases no longer exist. To migrate an existing plugin, replace that base with an appropriate CP component base that implements the `CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement` contract, rename `type()` to `formElementType()`, move portable transport properties from `props()` to `formElementProps()`, add the component's honest HTML rendering path, and compose field presentation with `Field`. Continue using the same stable type and renderer key.
 
 `FormElementData` is projection output, not a control to configure or subclass. It keeps the serialized graph and generated TypeScript declaration stable while component classes own PHP configuration and HTML rendering.
 
-Applications can register ownerless projectable components through the `FormElementTypes` singleton. Ownerless elements must always have an available renderer because Missing Component UI is limited to plugin-owned types.
+Applications can register ownerless Form Element components through the `FormElementTypes` singleton. Ownerless elements must always have an available renderer because Missing Component UI is limited to plugin-owned types.
 
 ## Vue registration
 
@@ -128,7 +128,7 @@ If a plugin-owned renderer is unavailable, Craft shows the type and derived plug
 
 ## Legacy Settings Islands
 
-The Yii 2 adapter wraps conventional legacy settings HTML with its projectable `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component, which owns the internal `yii2-adapter:legacy-settings` Form Element Type. This compatibility component is not a native plugin authoring API or a general raw-HTML fallback. Plugins should implement a native Form Definition instead.
+The Yii 2 adapter wraps conventional legacy settings HTML with its `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component, which owns the internal `yii2-adapter:legacy-settings` Form Element Type. This compatibility component is not a native plugin authoring API or a general raw-HTML fallback. Plugins should implement a native Form Definition instead.
 
 The island mounts captured head assets, fragment HTML, and body assets in that order, then initializes legacy UI elements. Its live light DOM is serialized before replacement and form submission, and an unchanged keyed island keeps its actual DOM across a complete definition refresh.
 

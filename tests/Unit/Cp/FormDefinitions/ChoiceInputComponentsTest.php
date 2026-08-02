@@ -8,7 +8,7 @@ use CraftCms\Cms\Cp\Components\Combobox;
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Cp\FormFields;
@@ -186,7 +186,7 @@ it('registers each choice component with one stable Form Element Type', function
     $types = app(FormElementTypes::class);
 
     expect($component)->toBeInstanceOf($class)
-        ->and($component)->toBeInstanceOf(ProjectableFormElement::class)
+        ->and($component)->toBeInstanceOf(FormElement::class)
         ->and($class::formElementType())->toBe($type)
         ->and($class::isFormElementContainer())->toBeFalse()
         ->and($types->isRegistered($type))->toBeTrue()
@@ -291,7 +291,7 @@ it('projects immutable choice option data and portable presentation', function (
         ->toBe('Choose a status');
 });
 
-it('requires a local Input Name for choice projection', function (ProjectableFormElement $component) {
+it('requires a local Input Name for choice projection', function (FormElement $component) {
     expect(fn () => FormDefinition::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
@@ -304,7 +304,7 @@ it('requires a local Input Name for choice projection', function (ProjectableFor
 ]);
 
 it('rejects host-owned choice state during projection', function (
-    ProjectableFormElement $component,
+    FormElement $component,
     string $option,
 ) {
     expect(fn () => FormDefinition::make([

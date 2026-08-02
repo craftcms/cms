@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Lightswitch;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use Exception;
 use League\Uri\Uri;
 
@@ -75,7 +75,7 @@ class Url extends BaseTextLinkType
         return ['https://', 'http://'];
     }
 
-    /** @return list<ProjectableFormElement> */
+    /** @return list<FormElement> */
     #[\Override]
     protected function settingsFormElements(bool $readOnly): array
     {

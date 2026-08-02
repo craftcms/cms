@@ -8,11 +8,11 @@ use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\Components\TimeInput;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 
-it('renders each scalar component through the shared input primitive', function (ProjectableFormElement $component, string $type) {
+it('renders each scalar component through the shared input primitive', function (FormElement $component, string $type) {
     $html = $component->toHtml();
 
     expect($html)->toContainTag('craft-input')
@@ -38,7 +38,7 @@ it('registers each scalar component with one stable Form Element Type', function
     $types = app(FormElementTypes::class);
 
     expect($component)->toBeInstanceOf($class)
-        ->and($component)->toBeInstanceOf(ProjectableFormElement::class)
+        ->and($component)->toBeInstanceOf(FormElement::class)
         ->and($class::formElementType())->toBe($type)
         ->and($class::isFormElementContainer())->toBeFalse()
         ->and($types->isRegistered($type))->toBeTrue()
@@ -119,7 +119,7 @@ it('projects scalar names, attributes, placeholders, constraints, and null value
     ]);
 });
 
-it('requires a local Input Name for scalar projection', function (ProjectableFormElement $component) {
+it('requires a local Input Name for scalar projection', function (FormElement $component) {
     expect(fn () => FormDefinition::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
@@ -133,7 +133,7 @@ it('requires a local Input Name for scalar projection', function (ProjectableFor
 ]);
 
 it('rejects explicitly configured host-owned scalar state during projection', function (
-    ProjectableFormElement $component,
+    FormElement $component,
     string $option,
 ) {
     expect(fn () => FormDefinition::make([
@@ -172,7 +172,7 @@ it('rejects host-owned scalar attributes during projection', function (string $a
     'semantic type' => 'type',
 ]);
 
-it('rejects invalid portable scalar values', function (ProjectableFormElement $component, string $option) {
+it('rejects invalid portable scalar values', function (FormElement $component, string $option) {
     expect(fn () => FormDefinition::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,

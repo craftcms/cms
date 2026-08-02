@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use Override;
 
-abstract class ScalarInput extends Input implements ProjectableFormElement
+abstract class ScalarInput extends Input implements FormElement
 {
     /** @var array<string, mixed> */
     protected array $formElementAttributes = [];

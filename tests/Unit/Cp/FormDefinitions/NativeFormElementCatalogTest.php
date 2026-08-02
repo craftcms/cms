@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\ViewComponent;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 
-it('locks every native Form Element Type to one projectable CP UI Component', function () {
+it('locks every native Form Element Type to one CP UI Component', function () {
     $catalog = json_decode(
         file_get_contents(dirname(__DIR__, 4).'/resources/js/form-definitions/native-form-element-catalog.json'),
         true,
@@ -20,12 +20,12 @@ it('locks every native Form Element Type to one projectable CP UI Component', fu
 
     expect(array_values(array_column($registrations, 'class')))->toBe(array_values(array_filter(
         $components,
-        fn (string $class): bool => is_subclass_of($class, ProjectableFormElement::class),
+        fn (string $class): bool => is_subclass_of($class, FormElement::class),
     )));
 
     foreach ($registrations as $type => $registration) {
         expect(is_subclass_of($registration['class'], ViewComponent::class))->toBeTrue()
-            ->and(is_subclass_of($registration['class'], ProjectableFormElement::class))->toBeTrue()
+            ->and(is_subclass_of($registration['class'], FormElement::class))->toBeTrue()
             ->and($registration['class']::formElementType())->toBe($type)
             ->and($registration['class']::isFormElementContainer())->toBe($registration['container']);
 

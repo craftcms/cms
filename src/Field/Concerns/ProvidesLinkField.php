@@ -11,7 +11,7 @@ use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Group;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
@@ -186,7 +186,7 @@ trait ProvidesLinkField
             ->all();
     }
 
-    /** @return list<ProjectableFormElement> */
+    /** @return list<FormElement> */
     protected function linkSettingsFormElements(bool $readOnly): array
     {
         $types = $this->orderedLinkSettingsTypes();

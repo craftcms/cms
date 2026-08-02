@@ -6,13 +6,13 @@ namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Override;
 
-class ElementCondition extends ViewComponent implements ProjectableFormElement
+class ElementCondition extends ViewComponent implements FormElement
 {
     protected string|Closure|null $name = null;
 

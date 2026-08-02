@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Support\Json;
 use Override;
 
-class KeyedTable extends ViewComponent implements ProjectableFormElement
+class KeyedTable extends ViewComponent implements FormElement
 {
     protected string|Closure|null $name = null;
 

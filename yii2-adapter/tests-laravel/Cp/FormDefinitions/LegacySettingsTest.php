@@ -6,7 +6,7 @@ namespace CraftCms\Yii2Adapter\Tests\Cp\FormDefinitions;
 
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\FormContainer;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Support\Json;
@@ -28,7 +28,7 @@ class LegacySettingsTest extends TestCase
         ))->key('legacy-settings');
 
         self::assertInstanceOf(FormContainer::class, $component);
-        self::assertInstanceOf(ProjectableFormElement::class, $component);
+        self::assertInstanceOf(FormElement::class, $component);
 
         self::assertSame([
             'elements' => [[

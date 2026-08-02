@@ -11,7 +11,7 @@ use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 
@@ -152,16 +152,16 @@ it('identifies containers and invalid descendants during projection', function (
     expect(fn () => FormDefinition::make([$container])->toArray())
         ->toThrow(InvalidArgumentException::class, $message);
 })->with([
-    'group non-projectable child' => [
+    'group non-Form-Element child' => [
         fn () => Group::make([Button::make()]),
         sprintf(
             '%s child at index 0 (%s) must be %s for Form Definition output.',
             Group::class,
             Button::class,
-            ProjectableFormElement::class,
+            FormElement::class,
         ),
     ],
-    'tab non-projectable child' => [
+    'tab non-Form-Element child' => [
         fn () => Tabs::make([
             Tab::make('content', 'Content', [Button::make()]),
         ]),
@@ -169,7 +169,7 @@ it('identifies containers and invalid descendants during projection', function (
             '%s child at index 0 (%s) must be %s for Form Definition output.',
             Tab::class,
             Button::class,
-            ProjectableFormElement::class,
+            FormElement::class,
         ),
     ],
     'tabs non-tab child' => [
@@ -262,7 +262,7 @@ it('materializes one-shot child iterables without consuming the component config
     expect($definition->toArray())->toBe($first);
 });
 
-it('registers every projectable container with matching type metadata', function () {
+it('registers every Form Element container with matching type metadata', function () {
     $components = app(ComponentRegistry::class);
     $types = app(FormElementTypes::class);
 

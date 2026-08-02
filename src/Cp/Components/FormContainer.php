@@ -6,13 +6,13 @@ namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use InvalidArgumentException;
 use Override;
 
-abstract class FormContainer extends ViewComponent implements ProjectableFormElement
+abstract class FormContainer extends ViewComponent implements FormElement
 {
     protected iterable|Closure $children = [];
 
@@ -119,7 +119,7 @@ abstract class FormContainer extends ViewComponent implements ProjectableFormEle
                 $this->invalidChild($index, $child, 'a non-Tab form element', 'Form Definition');
             }
 
-            if ($child instanceof ProjectableFormElement) {
+            if ($child instanceof FormElement) {
                 $children[] = app(FormElementTypes::class)->project($child);
 
                 continue;
@@ -128,7 +128,7 @@ abstract class FormContainer extends ViewComponent implements ProjectableFormEle
             $this->invalidChild(
                 $index,
                 $child,
-                ProjectableFormElement::class,
+                FormElement::class,
                 'Form Definition',
             );
         }

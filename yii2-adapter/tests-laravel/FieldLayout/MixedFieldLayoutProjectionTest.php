@@ -23,7 +23,7 @@ class MixedFieldLayoutProjectionTest extends TestCase
     public function test_it_projects_a_policy_filtered_modern_and_legacy_layout_in_source_order(): void
     {
         $layout = new FieldLayout(['uid' => 'mixed-layout']);
-        $field = new AdapterProjectableField([
+        $field = new AdapterFormElementField([
             'uid' => 'body-field',
             'handle' => 'body',
             'name' => 'Body',
@@ -46,13 +46,13 @@ class MixedFieldLayoutProjectionTest extends TestCase
                 'uid' => 'metadata-tab',
                 'name' => 'Metadata',
                 'layout' => $layout,
-                'elements' => [new AdapterProjectableLayoutElement(['uid' => 'title-layout-element'])],
+                'elements' => [new AdapterFormElementLayoutElement(['uid' => 'title-layout-element'])],
             ]),
             new AdapterInapplicableFieldLayoutTab([
                 'uid' => 'hidden-tab',
                 'name' => 'Hidden',
                 'layout' => $layout,
-                'elements' => [new AdapterProjectableLayoutElement(['uid' => 'hidden-tab-element'])],
+                'elements' => [new AdapterFormElementLayoutElement(['uid' => 'hidden-tab-element'])],
             ]),
         ]);
 
@@ -84,7 +84,7 @@ class MixedFieldLayoutProjectionTest extends TestCase
     }
 }
 
-class AdapterProjectableField extends Field implements FieldLayoutFormElementProviderInterface
+class AdapterFormElementField extends Field implements FieldLayoutFormElementProviderInterface
 {
     public function formElement(FieldLayoutFormElementContext $context): ?TextInput
     {
@@ -100,7 +100,7 @@ class AdapterNonEditableCustomField extends CustomField
     }
 }
 
-class AdapterProjectableLayoutElement extends FieldLayoutElement implements FieldLayoutFormElementProviderInterface
+class AdapterFormElementLayoutElement extends FieldLayoutElement implements FieldLayoutFormElementProviderInterface
 {
     public function selectorHtml(): string
     {
@@ -118,7 +118,7 @@ class AdapterProjectableLayoutElement extends FieldLayoutElement implements Fiel
     }
 }
 
-class AdapterInapplicableLayoutElement extends AdapterProjectableLayoutElement
+class AdapterInapplicableLayoutElement extends AdapterFormElementLayoutElement
 {
     public function showInForm(?ElementInterface $element = null): bool
     {

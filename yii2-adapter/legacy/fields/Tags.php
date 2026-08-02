@@ -13,7 +13,7 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
@@ -103,7 +103,7 @@ class Tags extends BaseRelationField
         return FormDefinition::make(array_values(array_filter(
             $this->relationSettingsFormElements($readOnly),
             function (object $element): bool {
-                if ($element instanceof ProjectableFormElement) {
+                if ($element instanceof FormElement) {
                     $children = $element->toFormElementData()->children;
                 } elseif (method_exists($element, 'toData')) {
                     $children = $element->toData()->children;

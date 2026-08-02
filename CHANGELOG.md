@@ -10,10 +10,10 @@
 - Added native Form Definitions for `CraftCms\Cms\Field\ContentBlock` and `CraftCms\Cms\Field\Matrix` settings, including structured Field Layout, ordered object selection via `CraftCms\Cms\Cp\Components\ObjectSelect` and `<craft-object-select>`, and keyed tables via `CraftCms\Cms\Cp\Components\KeyedTable` and `<craft-keyed-table>`.
 - Added native Form Definitions for `CraftCms\Cms\Field\Addresses`, `CraftCms\Cms\Field\Markdown`, and `CraftCms\Cms\Field\Table` settings, including ordered editable tables via `CraftCms\Cms\Cp\Components\EditableTable` and `<craft-editable-table>`.
 - Added reactive Form Definition visibility conditions via `CraftCms\Cms\Cp\FormDefinitions\Condition`.
-- Added plugin-defined Form Elements through projectable CP UI Components registered by `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()` and paired exact `form-element:<type>` control-panel renderer registrations.
+- Added plugin-defined Form Elements through CP UI Components implementing `CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement`, registered by `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()`, and paired exact `form-element:<type>` control-panel renderer registrations.
 - Added keyed Form Definition groups and tabs via `CraftCms\Cms\Cp\Components\Group`, `Tabs`, and `Tab`.
-- Moved Yii 2 adapter legacy settings islands to the projectable `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component.
-- Made projectable CP UI Components the sole PHP Form Element authoring interface while retaining immutable Form Element data as the serialized Vue transport contract.
+- Moved Yii 2 adapter legacy settings islands to the `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component.
+- Made the `CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement` contract the sole PHP Form Element authoring interface while retaining immutable Form Element data as the serialized Vue transport contract.
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
@@ -73,7 +73,7 @@
 - Added `CraftCms\Cms\View\TemplateRoots`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Moved `CraftCms\Cms\Cp\Concerns\EvaluatesClosures` to `CraftCms\Cms\Support\Concerns\EvaluatesClosures`.
 - Changed `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::label()` to accept an optional label and return the field layout element when one is passed. Overrides must accept the new optional argument.
-- Changed `CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface::formElement()` to return a projectable CP input component, with Field Layout projection owning the surrounding `CraftCms\Cms\Cp\Components\Field` presentation.
+- Changed `CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface::formElement()` to return a CP input component implementing `CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement`, with Field Layout projection owning the surrounding `CraftCms\Cms\Cp\Components\Field` presentation.
 - Changed `CraftCms\Cms\Image\Raster::getTextBox()` to return a `width` and `height` array.
 - Renamed the protected `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::instructions()`, `tip()`, and `warning()` methods to `instructionsText()`, `tipText()`, and `warningText()`.
 - Removed `CraftCms\Cms\Asset\Events\AssetFileKindsResolving`. `CraftCms\Cms\Asset\AssetFileKinds::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))

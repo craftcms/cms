@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -17,7 +17,7 @@ use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 
 beforeEach(function () {
     app()->forgetInstance(FormElementTypes::class);
-    app(FormElementTypes::class)->register(TestProjectableContainer::class);
+    app(FormElementTypes::class)->register(TestFormElementContainer::class);
 });
 
 it('projects a native text setting through an explicit field container', function () {
@@ -124,7 +124,7 @@ it('rejects duplicate sibling keys', function () {
         );
 });
 
-it('rejects malformed container structures', function (ProjectableFormElement $element, string $message) {
+it('rejects malformed container structures', function (FormElement $element, string $message) {
     expect(fn () => FormDefinition::make([$element])->toArray())
         ->toThrow(InvalidArgumentException::class, $message);
 })->with([
@@ -239,7 +239,7 @@ it('rejects malformed visibility conditions with type and tree location context'
     string $message,
 ) {
     $definition = FormDefinition::make([
-        TestProjectableContainer::make()
+        TestFormElementContainer::make()
             ->children([
                 Field::make(TextInput::make()->name('target'))->toFormElementData(),
             ])
@@ -306,7 +306,7 @@ it('rejects duplicate input names with type and tree location context', function
 });
 
 it('rejects invalid widths and non-serializable portable data', function (
-    ProjectableFormElement $element,
+    FormElement $element,
     string $message,
 ) {
     expect(fn () => FormDefinition::make([$element])->toArray())
@@ -318,7 +318,7 @@ it('rejects invalid widths and non-serializable portable data', function (
         'Form Element Type "craft:field" at elements[0]: width must be between 1 and 100.',
     ],
     'non-serializable props' => [
-        fn () => TestProjectableContainer::make()->props(['bad' => new stdClass]),
+        fn () => TestFormElementContainer::make()->props(['bad' => new stdClass]),
         'Form Element Type "application:test-container" at elements[0]: props.bad is not serializable.',
     ],
     'non-serializable attributes' => [
@@ -329,7 +329,7 @@ it('rejects invalid widths and non-serializable portable data', function (
     ],
 ]);
 
-class TestProjectableContainer extends ViewComponent implements ProjectableFormElement
+class TestFormElementContainer extends ViewComponent implements FormElement
 {
     private ?array $elementProps = null;
 
@@ -381,6 +381,6 @@ class TestProjectableContainer extends ViewComponent implements ProjectableFormE
     #[Override]
     protected function tagName(): string
     {
-        return 'test-projectable-container';
+        return 'test-form-element-container';
     }
 }

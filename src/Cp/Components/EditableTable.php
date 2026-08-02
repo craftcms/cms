@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Support\Json;
 use Override;
@@ -28,7 +28,7 @@ use Override;
  *     options?: list<EditableTableOption>,
  * }
  */
-class EditableTable extends ViewComponent implements ProjectableFormElement
+class EditableTable extends ViewComponent implements FormElement
 {
     private const array COLUMN_TYPES = [
         'checkbox',

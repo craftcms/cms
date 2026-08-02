@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use Illuminate\Support\HtmlString;
@@ -74,7 +74,7 @@ it('projects a Field and Lightswitch alongside existing authoring objects', func
     ]);
 });
 
-it('constructs a Field around a projectable Lightswitch through make', function () {
+it('constructs a Field around a Lightswitch through make', function () {
     $input = Lightswitch::make()->name('enabled')->label('Feature');
     $shorthand = Field::make($input)->label('Feature state');
     $fluent = Field::make()->label('Feature state')->input($input);
@@ -101,14 +101,14 @@ it('preserves zero-argument Field construction and registry configuration', func
         ->toBe('<craft-field label="Feature"></craft-field>');
 });
 
-it('exposes projectable component metadata through the component and Form Element Type registries', function () {
+it('exposes Form Element component metadata through the component and Form Element Type registries', function () {
     $components = app(ComponentRegistry::class);
     $types = app(FormElementTypes::class);
 
     expect($components->make('field'))
-        ->toBeInstanceOf(ProjectableFormElement::class)
+        ->toBeInstanceOf(FormElement::class)
         ->and($components->make('lightswitch'))
-        ->toBeInstanceOf(ProjectableFormElement::class)
+        ->toBeInstanceOf(FormElement::class)
         ->and(Field::formElementType())->toBe('craft:field')
         ->and(Field::isFormElementContainer())->toBeTrue()
         ->and(Lightswitch::formElementType())->toBe('craft:lightswitch-input')
@@ -143,7 +143,7 @@ it('keeps raw Field input available for HTML and rejects it for Form Definition 
         );
 });
 
-it('rejects non-projectable Field inputs and portable raw markup', function (Field $field, string $option) {
+it('rejects non-Form-Element Field inputs and portable raw markup', function (Field $field, string $option) {
     expect(fn () => FormDefinition::make([$field])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
@@ -151,7 +151,7 @@ it('rejects non-projectable Field inputs and portable raw markup', function (Fie
         );
 })->with([
     'missing input' => [fn () => Field::make(null), 'input'],
-    'non-projectable component' => [fn () => Field::make(Button::make()), 'input'],
+    'non-Form-Element component' => [fn () => Field::make(Button::make()), 'input'],
     'multiple inputs' => [
         fn () => Field::make(fn (): array => [
             Lightswitch::make()->name('first'),

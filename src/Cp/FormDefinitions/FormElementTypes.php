@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Cp\FormDefinitions;
 
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\ViewComponent;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
@@ -18,7 +18,7 @@ class FormElementTypes
 {
     /**
      * @var array<string, array{
-     *     class: class-string<ViewComponent&ProjectableFormElement>,
+     *     class: class-string<ViewComponent&FormElement>,
      *     container: bool,
      *     plugin: PluginData|null,
      * }>
@@ -27,7 +27,7 @@ class FormElementTypes
 
     /**
      * @var array<string, array{
-     *     class: class-string<ViewComponent&ProjectableFormElement>,
+     *     class: class-string<ViewComponent&FormElement>,
      *     container: bool,
      * }>
      */
@@ -38,7 +38,7 @@ class FormElementTypes
         $this->registrations = [];
 
         foreach ($components->nativeComponents() as $class) {
-            if (! is_subclass_of($class, ProjectableFormElement::class)) {
+            if (! is_subclass_of($class, FormElement::class)) {
                 continue;
             }
 
@@ -64,7 +64,7 @@ class FormElementTypes
         }
     }
 
-    /** @param class-string<ViewComponent&ProjectableFormElement> ...$classes */
+    /** @param class-string<ViewComponent&FormElement> ...$classes */
     public function register(string ...$classes): void
     {
         $this->registerBatch(null, ...$classes);
@@ -73,7 +73,7 @@ class FormElementTypes
     /**
      * @internal Plugins should call Plugin::registerFormElementTypes().
      *
-     * @param  class-string<ViewComponent&ProjectableFormElement>  ...$classes
+     * @param  class-string<ViewComponent&FormElement>  ...$classes
      */
     public function registerForPlugin(PluginInterface $plugin, string ...$classes): void
     {
@@ -95,7 +95,7 @@ class FormElementTypes
      * @internal
      *
      * @return array<string, array{
-     *     class: class-string<ViewComponent&ProjectableFormElement>,
+     *     class: class-string<ViewComponent&FormElement>,
      *     container: bool,
      * }>
      */
@@ -119,7 +119,7 @@ class FormElementTypes
         return $this->registrations[$type]['container'] ?? false;
     }
 
-    public function project(ProjectableFormElement $component): FormElementData
+    public function project(FormElement $component): FormElementData
     {
         $type = $component::formElementType();
         $class = $component::class;
@@ -157,21 +157,21 @@ class FormElementTypes
         return $data;
     }
 
-    /** @param class-string<ViewComponent&ProjectableFormElement> ...$classes */
+    /** @param class-string<ViewComponent&FormElement> ...$classes */
     private function registerBatch(?PluginData $plugin, string ...$classes): void
     {
         $registrations = $this->registrations;
 
         foreach ($classes as $class) {
-            $projectable = is_subclass_of($class, ViewComponent::class)
-                && is_subclass_of($class, ProjectableFormElement::class);
+            $validClass = is_subclass_of($class, ViewComponent::class)
+                && is_subclass_of($class, FormElement::class);
 
-            if (! $projectable) {
+            if (! $validClass) {
                 throw new InvalidArgumentException(sprintf(
                     '%s must extend %s and implement %s.',
                     $class,
                     ViewComponent::class,
-                    ProjectableFormElement::class,
+                    FormElement::class,
                 ));
             }
 

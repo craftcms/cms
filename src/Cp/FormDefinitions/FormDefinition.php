@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FormDefinitions;
 
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormDefinitionData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
@@ -13,12 +13,12 @@ use JsonSerializable;
 
 readonly class FormDefinition implements JsonSerializable
 {
-    /** @param list<ProjectableFormElement> $elements */
+    /** @param list<FormElement> $elements */
     private function __construct(
         private array $elements,
     ) {}
 
-    /** @param list<ProjectableFormElement> $elements */
+    /** @param list<FormElement> $elements */
     public static function make(array $elements): self
     {
         return new self($elements);
@@ -28,7 +28,7 @@ readonly class FormDefinition implements JsonSerializable
     {
         $types = app(FormElementTypes::class);
         $data = new FormDefinitionData(array_map(
-            fn (ProjectableFormElement $element): FormElementData => $types
+            fn (FormElement $element): FormElementData => $types
                 ->project($element)
                 ->withPluginOwnership($types->ownership(...)),
             $this->elements,

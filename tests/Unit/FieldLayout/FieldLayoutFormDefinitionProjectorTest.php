@@ -17,7 +17,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 
 it('projects applicable field layout content through provider form elements', function () {
     $layout = new FieldLayout(['uid' => 'article-layout']);
-    $field = new ProjectableField([
+    $field = new FormElementField([
         'uid' => 'body-field',
         'handle' => 'body',
         'name' => 'Body',
@@ -109,7 +109,7 @@ it('rejects provider components that are not inputs', function () {
     expect(fn () => new FieldLayoutFormDefinitionProjector()->project(
         $layout,
         new FieldLayoutFormDefinitionContext,
-    ))->toThrow(LogicException::class, 'must provide a projectable input component');
+    ))->toThrow(LogicException::class, 'must provide an input Form Element');
 });
 
 it('fails loudly when an applicable layout element has no provider or adapter fallback', function () {
@@ -162,7 +162,7 @@ it('fails loudly when a projected layout element has no stable source UID', func
     ))->toThrow(LogicException::class, 'layout element must have a UID');
 });
 
-class ProjectableField extends Field implements FieldLayoutFormElementProviderInterface
+class FormElementField extends Field implements FieldLayoutFormElementProviderInterface
 {
     public function formElement(FieldLayoutFormElementContext $context): ?TextInput
     {

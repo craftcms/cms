@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 
-class ProjectableElementCondition extends BaseCondition
+class TestElementCondition extends BaseCondition
 {
     protected function selectableConditionRules(): array
     {
@@ -23,7 +23,7 @@ class ProjectableElementCondition extends BaseCondition
 }
 
 it('renders an executable condition through the shared primitive without mutating it', function () {
-    $condition = new ProjectableElementCondition([
+    $condition = new TestElementCondition([
         'id' => 'selection-condition',
         'sortable' => false,
         'addRuleLabel' => 'Add condition',
@@ -43,7 +43,7 @@ it('renders an executable condition through the shared primitive without mutatin
         ])
         ->toContainTag('input', [
             'name' => 'selectionCondition[class]',
-            'value' => ProjectableElementCondition::class,
+            'value' => TestElementCondition::class,
         ])
         ->and($condition->name)->toBe('condition')
         ->and($condition->mainTag)->toBe('form')
@@ -53,7 +53,7 @@ it('renders an executable condition through the shared primitive without mutatin
 it('registers and deterministically projects serializable condition editor configuration', function () {
     $component = ElementCondition::make()
         ->name('selectionCondition')
-        ->conditionClass(ProjectableElementCondition::class)
+        ->conditionClass(TestElementCondition::class)
         ->builderConfig(['scope' => 'entries'])
         ->sortable(false)
         ->addRuleLabel('Add condition')
@@ -68,7 +68,7 @@ it('registers and deterministically projects serializable condition editor confi
                 'type' => 'craft:element-condition-input',
                 'name' => 'selectionCondition',
                 'props' => [
-                    'conditionClass' => ProjectableElementCondition::class,
+                    'conditionClass' => TestElementCondition::class,
                     'builderConfig' => ['scope' => 'entries'],
                     'sortable' => false,
                     'addRuleLabel' => 'Add condition',
@@ -96,14 +96,14 @@ it('rejects host-owned condition editor state during projection', function (Elem
     'executable condition' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
-            ->conditionClass(ProjectableElementCondition::class)
-            ->condition(new ProjectableElementCondition),
+            ->conditionClass(TestElementCondition::class)
+            ->condition(new TestElementCondition),
         'condition',
     ],
     'read-only authorization state' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
-            ->conditionClass(ProjectableElementCondition::class)
+            ->conditionClass(TestElementCondition::class)
             ->readOnly(false),
         'readOnly',
     ],
@@ -117,33 +117,33 @@ it('rejects invalid portable condition editor configuration', function (ElementC
         sprintf('%s option "%s" is not supported for Form Definition output.', ElementCondition::class, $option),
     );
 })->with([
-    'name' => [fn () => ElementCondition::make()->conditionClass(ProjectableElementCondition::class), 'name'],
+    'name' => [fn () => ElementCondition::make()->conditionClass(TestElementCondition::class), 'name'],
     'condition class' => [fn () => ElementCondition::make()->name('selectionCondition')->conditionClass(stdClass::class), 'conditionClass'],
     'builder config' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
-            ->conditionClass(ProjectableElementCondition::class)
+            ->conditionClass(TestElementCondition::class)
             ->builderConfig(['condition' => new stdClass]),
         'builderConfig.condition',
     ],
     'sortable state' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
-            ->conditionClass(ProjectableElementCondition::class)
+            ->conditionClass(TestElementCondition::class)
             ->sortable(fn (): string => 'yes'),
         'sortable',
     ],
     'add rule label' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
-            ->conditionClass(ProjectableElementCondition::class)
+            ->conditionClass(TestElementCondition::class)
             ->addRuleLabel(fn (): int => 1),
         'addRuleLabel',
     ],
     'host-owned attribute' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
-            ->conditionClass(ProjectableElementCondition::class)
+            ->conditionClass(TestElementCondition::class)
             ->attributes(['id' => 'selection-condition']),
         'attributes.id',
     ],
@@ -160,13 +160,13 @@ it('fails HTML rendering when an executable condition is missing or incompatible
         fn () => ElementCondition::make()
             ->name('selectionCondition')
             ->conditionClass(BaseCondition::class)
-            ->condition(new ProjectableElementCondition),
+            ->condition(new TestElementCondition),
         'conditionClass',
     ],
     'invalid read-only state' => [
         fn () => ElementCondition::make()
             ->name('selectionCondition')
-            ->condition(new ProjectableElementCondition)
+            ->condition(new TestElementCondition)
             ->readOnly(fn (): string => 'yes'),
         'readOnly',
     ],

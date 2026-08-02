@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -37,7 +37,7 @@ use function CraftCms\Cms\t;
  * Every setter accepts a literal value or a Closure evaluated at render time
  * (with dependency injection — see {@see EvaluatesClosures}).
  */
-class Field extends ViewComponent implements ProjectableFormElement
+class Field extends ViewComponent implements FormElement
 {
     use HasDisabled;
     use HasId;
@@ -334,7 +334,7 @@ class Field extends ViewComponent implements ProjectableFormElement
 
         $input = $this->evaluate($this->input);
 
-        if (! $input instanceof ProjectableFormElement || $input::isFormElementContainer()) {
+        if (! $input instanceof FormElement || $input::isFormElementContainer()) {
             $this->unsupportedOutputOption('input', 'Form Definition');
         }
 

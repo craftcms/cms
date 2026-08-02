@@ -122,7 +122,7 @@ class FieldLayoutFormDefinitionProjector
 
             if ($input::isFormElementContainer()) {
                 throw new LogicException(sprintf(
-                    '%s must provide a projectable input component when projecting %s.',
+                    '%s must provide an input Form Element when projecting %s.',
                     $provider::class,
                     $layoutElement::class,
                 ));

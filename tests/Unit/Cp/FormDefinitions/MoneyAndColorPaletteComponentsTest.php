@@ -6,7 +6,7 @@ use CraftCms\Cms\Cp\Components\ColorPalette;
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\MoneyInput;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Cp\FormFields;
@@ -155,7 +155,7 @@ it('registers and projects money and color palette components', function () {
 });
 
 it('keeps host values and HTML-only options out of specialized projection', function (
-    ProjectableFormElement $component,
+    FormElement $component,
     string $option,
 ) {
     expect(fn () => FormDefinition::make([
@@ -172,7 +172,7 @@ it('keeps host values and HTML-only options out of specialized projection', func
     'palette read-only state' => [fn () => ColorPalette::make()->name('palette')->readOnly(false), 'readOnly'],
 ]);
 
-it('rejects invalid portable specialized configuration', function (ProjectableFormElement $component, string $option) {
+it('rejects invalid portable specialized configuration', function (FormElement $component, string $option) {
     expect(fn () => FormDefinition::make([
         Field::make($component),
     ])->toArray())->toThrow(

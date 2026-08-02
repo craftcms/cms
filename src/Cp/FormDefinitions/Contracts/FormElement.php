@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Cp\FormDefinitions\Contracts;
 
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 
-interface ProjectableFormElement
+interface FormElement
 {
     public static function formElementType(): string;
 

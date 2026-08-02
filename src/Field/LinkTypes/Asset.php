@@ -10,7 +10,7 @@ use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Lightswitch;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -56,7 +56,7 @@ class Asset extends BaseElementLinkType
         return AssetElement::class;
     }
 
-    /** @return list<ProjectableFormElement> */
+    /** @return list<FormElement> */
     #[Override]
     protected function settingsFormElements(bool $readOnly): array
     {

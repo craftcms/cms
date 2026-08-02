@@ -14,7 +14,7 @@ use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -552,8 +552,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     /**
-     * @param  list<ProjectableFormElement>  $afterSelectionCondition
-     * @return list<ProjectableFormElement>
+     * @param  list<FormElement>  $afterSelectionCondition
+     * @return list<FormElement>
      */
     protected function relationSettingsFormElements(bool $readOnly, array $afterSelectionCondition = []): array
     {
@@ -637,8 +637,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     /**
-     * @param  list<ProjectableFormElement>  $beforeAdvanced
-     * @return list<ProjectableFormElement>
+     * @param  list<FormElement>  $beforeAdvanced
+     * @return list<FormElement>
      */
     protected function relationBehaviorFormElements(
         bool $readOnly,

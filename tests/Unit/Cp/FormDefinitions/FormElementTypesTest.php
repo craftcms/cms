@@ -8,7 +8,7 @@ use CraftCms\Cms\Cp\Components\FormContainer;
 use CraftCms\Cms\Cp\Components\ScalarInput;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\Components\ViewComponent;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -66,7 +66,7 @@ it('validates a complete registration batch before committing it', function () {
 
     expect(fn () => $plugin->registerFormElementTypes(
         ColorMapComponent::class,
-        NonProjectableComponent::class,
+        NonFormElementComponent::class,
     ))->toThrow(InvalidArgumentException::class, 'must extend');
 
     expect(fn () => FormDefinition::make([
@@ -91,14 +91,14 @@ it('supports ownerless application component registrations', function () {
 });
 
 it('rejects ownerless registrations outside the CP UI Component catalog', function () {
-    expect(fn () => app(FormElementTypes::class)->register(NonComponentProjectable::class))
+    expect(fn () => app(FormElementTypes::class)->register(NonComponentFormElement::class))
         ->toThrow(
             InvalidArgumentException::class,
             sprintf(
                 '%s must extend %s and implement %s.',
-                NonComponentProjectable::class,
+                NonComponentFormElement::class,
                 ViewComponent::class,
-                ProjectableFormElement::class,
+                FormElement::class,
             ),
         );
 });
@@ -254,8 +254,8 @@ it('reserves core types and rejects malformed or invalid component classes', fun
 })->with([
     'core namespace' => [ReservedComponent::class, 'The "craft" Form Element namespace is reserved.'],
     'uppercase type' => [UppercaseComponent::class, 'must be a lowercase namespaced identifier'],
-    'non-projectable component' => [NonProjectableComponent::class, 'must extend'],
-    'projectable non-component' => [NonComponentProjectable::class, 'must extend'],
+    'non-Form-Element component' => [NonFormElementComponent::class, 'must extend'],
+    'Form Element non-component' => [NonComponentFormElement::class, 'must extend'],
 ]);
 
 it('rejects incomplete plugin ownership metadata', function (array $config, string $message) {
@@ -360,7 +360,7 @@ class UppercaseComponent extends ColorMapComponent
     }
 }
 
-class NonProjectableComponent extends ViewComponent
+class NonFormElementComponent extends ViewComponent
 {
     #[Override]
     protected function tagName(): string
@@ -369,7 +369,7 @@ class NonProjectableComponent extends ViewComponent
     }
 }
 
-class NonComponentProjectable implements ProjectableFormElement
+class NonComponentFormElement implements FormElement
 {
     public static function formElementType(): string
     {
