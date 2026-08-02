@@ -37,15 +37,10 @@ it('renders an executable condition through the shared primitive without mutatin
         ->toHtml();
 
     expect($html)
-        ->toContainTag('craft-element-condition', [
+        ->toContainTag('fieldset', [
             'id' => 'selection-condition',
             'class' => 'condition-container',
-            'name' => 'selectionCondition',
-            'condition-class' => TestElementCondition::class,
-            'builder-config' => json_encode(['scope' => 'entries'], JSON_THROW_ON_ERROR),
-            'sortable' => 'false',
-            'add-rule-label' => 'Add condition',
-            'readonly' => true,
+            'disabled' => true,
         ])
         ->toContainTag('input', [
             'name' => 'selectionCondition[class]',

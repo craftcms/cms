@@ -298,32 +298,6 @@ const VALUE_COMPONENTS = [
       },
     ],
   },
-  {
-    tagName: 'craft-element-condition',
-    className: 'CraftElementCondition',
-    fileName: 'CraftElementCondition',
-    modelType: 'ElementConditionValue | null',
-    modelTypeImports: ['ElementConditionValue'],
-    modelDefault: 'null',
-    importPath: '../components/element-condition/element-condition',
-    properties: [
-      {
-        name: 'builderConfig',
-        type: 'Record<string, unknown>',
-        defaultValue: '{}',
-      },
-      {name: 'conditionClass', type: 'string', defaultValue: 'undefined'},
-      {name: 'renderUrl', type: 'string', defaultValue: 'undefined'},
-      {name: 'sortable', type: 'boolean', defaultValue: 'true'},
-      {name: 'addRuleLabel', type: 'string', defaultValue: 'undefined'},
-      {
-        name: 'readonly',
-        target: 'readOnly',
-        type: 'boolean',
-        defaultValue: 'false',
-      },
-    ],
-  },
 ];
 
 /**

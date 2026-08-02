@@ -11,7 +11,6 @@ use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
 use Override;
 
 class ElementCondition extends ViewComponent implements FormElement
@@ -47,14 +46,14 @@ class ElementCondition extends ViewComponent implements FormElement
     #[Override]
     protected function tagName(): string
     {
-        return 'craft-element-condition';
+        return 'fieldset';
     }
 
     #[Override]
     protected function hostAttributes(): array
     {
         return [
-            'readonly' => $this->resolvedBool('readOnly', $this->readOnly, 'HTML'),
+            'disabled' => $this->resolvedBool('readOnly', $this->readOnly, 'HTML'),
         ];
     }
 
@@ -202,11 +201,6 @@ class ElementCondition extends ViewComponent implements FormElement
             [
                 'id' => $condition->id,
                 'class' => ['condition-container'],
-                'name' => $name,
-                'condition-class' => $condition::class,
-                'builder-config' => Json::encode($condition->getBuilderConfig(), JSON_THROW_ON_ERROR),
-                'sortable' => $condition->sortable ? 'true' : 'false',
-                'add-rule-label' => $condition->addRuleLabel,
             ],
         );
 
