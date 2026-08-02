@@ -21,7 +21,6 @@ use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
-use Deprecated;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
@@ -219,22 +218,5 @@ readonly class SectionsController
         return $this->asSuccess(t('Section “{name}” deleted.', [
             'name' => $name,
         ]));
-    }
-
-    #[Deprecated(message: 'in 6.0. Use `settings/sections` instead.')]
-    public function tableData(TableRequest $request, Sections $sections): Response
-    {
-        [$pagination, $tableData] = $sections->getSectionTableData(
-            page: $request->page(),
-            limit: $request->limit(),
-            searchTerm: $request->search(),
-            orderBy: $request->orderBy(),
-            sortDir: $request->sortDir(),
-        );
-
-        return $this->asSuccess(data: [
-            'pagination' => $pagination,
-            'data' => $tableData,
-        ]);
     }
 }

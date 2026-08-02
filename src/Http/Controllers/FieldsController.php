@@ -31,7 +31,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
-use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -382,23 +381,6 @@ class FieldsController
 
         return new JsonResponse([
             'previewHtml' => app(CardDesigner::class)->previewHtml($fieldLayout),
-        ]);
-    }
-
-    #[Deprecated(message: 'in 6.0. Use `settings/fields` instead.')]
-    public function tableData(TableRequest $request): Response
-    {
-        [$pagination, $tableData] = $this->fieldsService->getTableData(
-            page: $request->page(),
-            limit: $request->limit(),
-            searchTerm: $request->search(),
-            orderBy: $request->orderBy(),
-            sortDir: $request->sortDir(),
-        );
-
-        return $this->asSuccess(data: [
-            'pagination' => $pagination,
-            'data' => $tableData,
         ]);
     }
 

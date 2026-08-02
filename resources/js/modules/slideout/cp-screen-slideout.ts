@@ -996,6 +996,8 @@ export class CpScreenSlideout extends Slideout {
   }
 
   override close(): void {
+    this.unmountInertiaPage();
+
     if (this.showingSidebar) {
       this.hideSidebar();
     }

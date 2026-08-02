@@ -51,7 +51,6 @@ it('needs authentication and admin changes for the routes', function (string $me
     ['postJson', [FieldsController::class, 'applyLayoutTabSettings'], true],
     ['postJson', [FieldsController::class, 'applyLayoutElementSettings'], true],
     ['postJson', [FieldsController::class, 'renderCardPreview'], true],
-    ['getJson', [FieldsController::class, 'tableData'], false],
 ]);
 
 it('needs authentication and admin changes to delete', function () {

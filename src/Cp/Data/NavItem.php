@@ -31,6 +31,11 @@ class NavItem extends Component
 
     public bool $selected = false;
 
+    /**
+     * When true, the list will render as a non-collapsible semantic group
+     */
+    public bool $group = false;
+
     public array $linkAttributes = [];
 
     public function __construct(object|array $config = [])
@@ -123,6 +128,13 @@ class NavItem extends Component
     public function selected(bool $selected): self
     {
         $this->selected = $selected;
+
+        return $this;
+    }
+
+    public function group(bool $group): self
+    {
+        $this->group = $group;
 
         return $this;
     }
