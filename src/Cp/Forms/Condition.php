@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Forms;
 
 use CraftCms\Cms\Cp\Forms\Data\VisibilityConditionData;
+use CraftCms\Cms\Cp\Forms\Enums\ConditionOperator;
 
 readonly class Condition
 {
@@ -14,67 +15,67 @@ readonly class Condition
 
     public static function equals(string $name, mixed $value): self
     {
-        return self::comparison($name, 'equals', $value);
+        return self::comparison($name, ConditionOperator::Equals, $value);
     }
 
     public static function notEquals(string $name, mixed $value): self
     {
-        return self::comparison($name, 'notEquals', $value);
+        return self::comparison($name, ConditionOperator::NotEquals, $value);
     }
 
     public static function lessThan(string $name, mixed $value): self
     {
-        return self::comparison($name, 'lessThan', $value);
+        return self::comparison($name, ConditionOperator::LessThan, $value);
     }
 
     public static function lessThanOrEqual(string $name, mixed $value): self
     {
-        return self::comparison($name, 'lessThanOrEqual', $value);
+        return self::comparison($name, ConditionOperator::LessThanOrEqual, $value);
     }
 
     public static function greaterThan(string $name, mixed $value): self
     {
-        return self::comparison($name, 'greaterThan', $value);
+        return self::comparison($name, ConditionOperator::GreaterThan, $value);
     }
 
     public static function greaterThanOrEqual(string $name, mixed $value): self
     {
-        return self::comparison($name, 'greaterThanOrEqual', $value);
+        return self::comparison($name, ConditionOperator::GreaterThanOrEqual, $value);
     }
 
     public static function beginsWith(string $name, mixed $value): self
     {
-        return self::comparison($name, 'beginsWith', $value);
+        return self::comparison($name, ConditionOperator::BeginsWith, $value);
     }
 
     public static function endsWith(string $name, mixed $value): self
     {
-        return self::comparison($name, 'endsWith', $value);
+        return self::comparison($name, ConditionOperator::EndsWith, $value);
     }
 
     public static function contains(string $name, mixed $value): self
     {
-        return self::comparison($name, 'contains', $value);
+        return self::comparison($name, ConditionOperator::Contains, $value);
     }
 
     public static function in(string $name, mixed $value): self
     {
-        return self::comparison($name, 'in', $value);
+        return self::comparison($name, ConditionOperator::In, $value);
     }
 
     public static function notIn(string $name, mixed $value): self
     {
-        return self::comparison($name, 'notIn', $value);
+        return self::comparison($name, ConditionOperator::NotIn, $value);
     }
 
     public static function empty(string $name): self
     {
-        return self::comparisonWithoutValue($name, 'empty');
+        return self::comparisonWithoutValue($name, ConditionOperator::Empty);
     }
 
     public static function notEmpty(string $name): self
     {
-        return self::comparisonWithoutValue($name, 'notEmpty');
+        return self::comparisonWithoutValue($name, ConditionOperator::NotEmpty);
     }
 
     public static function all(self ...$conditions): self
@@ -92,20 +93,20 @@ readonly class Condition
         return $this->data;
     }
 
-    private static function comparison(string $name, string $operator, mixed $value): self
+    private static function comparison(string $name, ConditionOperator $operator, mixed $value): self
     {
         return new self(new VisibilityConditionData([
             'name' => $name,
-            'operator' => $operator,
+            'operator' => $operator->value,
             'value' => $value,
         ]));
     }
 
-    private static function comparisonWithoutValue(string $name, string $operator): self
+    private static function comparisonWithoutValue(string $name, ConditionOperator $operator): self
     {
         return new self(new VisibilityConditionData([
             'name' => $name,
-            'operator' => $operator,
+            'operator' => $operator->value,
         ]));
     }
 

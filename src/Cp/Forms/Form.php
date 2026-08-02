@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Cp\Forms\Data\FormPayload;
 use CraftCms\Cms\Cp\Forms\Data\VisibilityConditionData;
+use CraftCms\Cms\Cp\Forms\Enums\ConditionOperator;
 use InvalidArgumentException;
 use JsonSerializable;
 
@@ -251,7 +252,7 @@ readonly class Form implements JsonSerializable
         }
 
         $name = $data['name'] ?? null;
-        $operator = $data['operator'] ?? null;
+        $operatorValue = $data['operator'] ?? null;
 
         if (! is_string($name) || $name === '') {
             $this->fail($element, $path, 'comparison name must be a non-empty Input Name.');
@@ -261,35 +262,23 @@ readonly class Form implements JsonSerializable
             $this->fail($element, $path, "unresolved Input Name \"{$name}\".");
         }
 
-        $operators = [
-            'equals',
-            'notEquals',
-            'lessThan',
-            'lessThanOrEqual',
-            'greaterThan',
-            'greaterThanOrEqual',
-            'beginsWith',
-            'endsWith',
-            'contains',
-            'in',
-            'notIn',
-            'empty',
-            'notEmpty',
-        ];
+        $operator = is_string($operatorValue)
+            ? ConditionOperator::tryFrom($operatorValue)
+            : null;
 
-        if (! is_string($operator) || ! in_array($operator, $operators, true)) {
-            $displayOperator = is_scalar($operator) ? (string) $operator : get_debug_type($operator);
+        if ($operator === null) {
+            $displayOperator = is_scalar($operatorValue) ? (string) $operatorValue : get_debug_type($operatorValue);
             $this->fail($element, $path, "unsupported operator \"{$displayOperator}\".");
         }
 
         $hasValue = array_key_exists('value', $data);
-        $expectedKeys = in_array($operator, ['empty', 'notEmpty'], true)
-            ? ['name', 'operator']
-            : ['name', 'operator', 'value'];
+        $expectedKeys = $operator->requiresValue()
+            ? ['name', 'operator', 'value']
+            : ['name', 'operator'];
 
         if (array_diff(array_keys($data), $expectedKeys) !== [] || array_diff($expectedKeys, array_keys($data)) !== []) {
-            if (in_array($operator, ['empty', 'notEmpty'], true) && $hasValue) {
-                $this->fail($element, $path, "{$operator} does not accept a value.");
+            if (! $operator->requiresValue() && $hasValue) {
+                $this->fail($element, $path, "{$operator->value} does not accept a value.");
             }
 
             $this->fail($element, $path, 'comparison has malformed operands.');
@@ -305,31 +294,36 @@ readonly class Form implements JsonSerializable
             $this->fail($element, $path, 'value cannot be executable.');
         }
 
-        if (in_array($operator, ['lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual'], true)) {
+        if (in_array($operator, [
+            ConditionOperator::LessThan,
+            ConditionOperator::LessThanOrEqual,
+            ConditionOperator::GreaterThan,
+            ConditionOperator::GreaterThanOrEqual,
+        ], true)) {
             if (! is_int($value) && (! is_float($value) || ! is_finite($value))) {
-                $this->fail($element, $path, "{$operator} requires a numeric value.");
+                $this->fail($element, $path, "{$operator->value} requires a numeric value.");
             }
 
             return;
         }
 
-        if (in_array($operator, ['beginsWith', 'endsWith'], true)) {
+        if (in_array($operator, [ConditionOperator::BeginsWith, ConditionOperator::EndsWith], true)) {
             if (! is_string($value)) {
-                $this->fail($element, $path, "{$operator} requires a string value.");
+                $this->fail($element, $path, "{$operator->value} requires a string value.");
             }
 
             return;
         }
 
-        if (in_array($operator, ['in', 'notIn'], true)) {
+        if (in_array($operator, [ConditionOperator::In, ConditionOperator::NotIn], true)) {
             if (! $this->isScalarList($value)) {
-                $this->fail($element, $path, "{$operator} requires a list of scalar values.");
+                $this->fail($element, $path, "{$operator->value} requires a list of scalar values.");
             }
 
             return;
         }
 
-        if ($operator === 'contains') {
+        if ($operator === ConditionOperator::Contains) {
             if (! $this->isVisibilityScalar($value)) {
                 $this->fail($element, $path, 'contains requires a scalar value.');
             }
@@ -338,7 +332,7 @@ readonly class Form implements JsonSerializable
         }
 
         if (! $this->isVisibilityScalar($value) && ! $this->isScalarList($value)) {
-            $this->fail($element, $path, "{$operator} requires a scalar value or a list of scalar values.");
+            $this->fail($element, $path, "{$operator->value} requires a scalar value or a list of scalar values.");
         }
     }
 
