@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Forms\Condition;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Contracts\PositionableFormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Cp\Forms\FormElementTypes;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -37,7 +38,7 @@ use function CraftCms\Cms\t;
  * Every setter accepts a literal value or a Closure evaluated at render time
  * (with dependency injection — see {@see EvaluatesClosures}).
  */
-class Field extends ViewComponent implements FormElement
+class Field extends ViewComponent implements PositionableFormElement
 {
     use HasDisabled;
     use HasId;

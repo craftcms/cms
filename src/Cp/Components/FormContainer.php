@@ -7,13 +7,14 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Forms\Condition;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Contracts\PositionableFormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Forms\FormElementTypes;
 use InvalidArgumentException;
 use Override;
 
-abstract class FormContainer extends ViewComponent implements FormElement
+abstract class FormContainer extends ViewComponent implements PositionableFormElement
 {
     protected iterable|Closure $children = [];
 

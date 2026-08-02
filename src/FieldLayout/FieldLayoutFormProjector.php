@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
-use CraftCms\Cms\Cp\Components\Field as FieldComponent;
-use CraftCms\Cms\Cp\Components\FormContainer;
 use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
+use CraftCms\Cms\Cp\Components\ViewComponent;
+use CraftCms\Cms\Cp\Forms\Contracts\PositionableFormElement;
 use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
-use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\Exceptions\UnsupportedFieldLayoutFormElementException;
 use Illuminate\Container\Attributes\Singleton;
 use LogicException;
 
@@ -21,10 +20,10 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class FieldLayoutFormProjector
 {
-    /** @var (Closure(FieldLayoutElement, FieldLayoutFormElementContext): (FormContainer|null))|null */
+    /** @var (Closure(FieldLayoutElement, FieldLayoutFormElementContext): ((ViewComponent&PositionableFormElement)|null))|null */
     private ?Closure $unsupportedElementHandler = null;
 
-    /** @param Closure(FieldLayoutElement, FieldLayoutFormElementContext): (FormContainer|null) $handler */
+    /** @param Closure(FieldLayoutElement, FieldLayoutFormElementContext): ((ViewComponent&PositionableFormElement)|null) $handler */
     public function handleUnsupportedElementsUsing(Closure $handler): void
     {
         $this->unsupportedElementHandler = $handler;
@@ -92,49 +91,15 @@ class FieldLayoutFormProjector
     private function projectElement(
         FieldLayoutElement $layoutElement,
         FieldLayoutFormContext $context,
-    ): FieldComponent|FormContainer|null {
-        $readOnly = $context->readOnly
-            || ($layoutElement instanceof CustomField && ! $layoutElement->editable($context->element));
-        $inputName = $layoutElement instanceof BaseField ? $layoutElement->attribute() : null;
-        $value = $layoutElement instanceof BaseField ? $layoutElement->formElementValue($context->element) : null;
-        $provider = $layoutElement;
+    ): (ViewComponent&PositionableFormElement)|null {
+        $elementContext = $layoutElement->formElementContext($context);
 
-        if ($layoutElement instanceof CustomField) {
-            $provider = $layoutElement->getField();
-            $inputName = "fields.{$layoutElement->attribute()}";
-        }
-
-        $elementContext = new FieldLayoutFormElementContext(
-            layoutElement: $layoutElement,
-            element: $context->element,
-            inputName: $inputName,
-            value: $value,
-            readOnly: $readOnly,
-            inputNamespace: $context->inputNamespace,
-        );
-
-        if ($provider instanceof FieldLayoutFormElementProviderInterface) {
-            $input = $provider->formElement($elementContext);
-
-            if ($input === null) {
-                return null;
-            }
-
-            if ($input::isFormElementContainer()) {
-                throw new LogicException(sprintf(
-                    '%s must provide an input Form Element when projecting %s.',
-                    $provider::class,
-                    $layoutElement::class,
-                ));
-            }
-
-            $formElement = FieldComponent::make($input);
-
-            if ($layoutElement instanceof BaseField) {
-                $layoutElement->configureFormElement($formElement, $context->element, $readOnly);
-            }
-        } else {
-            $formElement = $this->unsupportedElement($layoutElement, $elementContext);
+        try {
+            $formElement = $layoutElement instanceof FieldLayoutFormElementProviderInterface
+                ? $layoutElement->formElement($elementContext)
+                : $this->unsupportedElement($layoutElement, $elementContext);
+        } catch (UnsupportedFieldLayoutFormElementException $exception) {
+            $formElement = $this->unsupportedElement($layoutElement, $elementContext, $exception);
         }
 
         if ($formElement === null) {
@@ -153,7 +118,8 @@ class FieldLayoutFormProjector
     private function unsupportedElement(
         FieldLayoutElement $layoutElement,
         FieldLayoutFormElementContext $context,
-    ): ?FormContainer {
+        ?UnsupportedFieldLayoutFormElementException $previous = null,
+    ): (ViewComponent&PositionableFormElement)|null {
         if ($this->unsupportedElementHandler !== null) {
             return ($this->unsupportedElementHandler)($layoutElement, $context);
         }
@@ -162,6 +128,6 @@ class FieldLayoutFormProjector
             '%s%s does not provide a Form Element and no compatibility fallback is registered.',
             $layoutElement::class,
             isset($layoutElement->uid) ? " ({$layoutElement->uid})" : '',
-        ));
+        ), previous: $previous);
     }
 }

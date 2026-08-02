@@ -6,13 +6,17 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Closure;
 use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutFormElementContext;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -432,23 +436,38 @@ abstract class BaseField extends FieldLayoutElement
         ]);
     }
 
-    public function formElementValue(?ElementInterface $element = null): mixed
+    #[Override]
+    public function formElementContext(FieldLayoutFormContext $context): FieldLayoutFormElementContext
     {
-        return $this->value($element);
+        return new FieldLayoutFormElementContext(
+            layoutElement: $this,
+            element: $context->element,
+            inputName: $this->attribute(),
+            value: $this->value($context->element),
+            readOnly: $context->readOnly,
+            inputNamespace: $context->inputNamespace,
+        );
     }
 
-    public function configureFormElement(
-        Field $formElement,
-        ?ElementInterface $element = null,
-        bool $readOnly = false,
+    protected function fieldFormElement(
+        ViewComponent&FormElement $input,
+        FieldLayoutFormElementContext $context,
     ): Field {
-        return $formElement
+        if ($input::isFormElementContainer()) {
+            throw new InvalidArgumentException(sprintf(
+                '%s requires an input Form Element, %s provided.',
+                static::class,
+                $input::class,
+            ));
+        }
+
+        return Field::make($input)
             ->label($this->showLabel() ? $this->label() : null)
-            ->instructions($this->instructionsText($element, $readOnly))
-            ->tip($this->tipText($element, $readOnly))
-            ->warning($this->warningText($element, $readOnly))
-            ->required(! $readOnly && $this->required)
-            ->readOnly($readOnly);
+            ->instructions($this->instructionsText($context->element, $context->readOnly))
+            ->tip($this->tipText($context->element, $context->readOnly))
+            ->warning($this->warningText($context->element, $context->readOnly))
+            ->required(! $context->readOnly && $this->required)
+            ->readOnly($context->readOnly);
     }
 
     /**

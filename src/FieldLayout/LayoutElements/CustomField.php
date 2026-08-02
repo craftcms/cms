@@ -7,6 +7,7 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use Closure;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -17,6 +18,11 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormInputProviderInterface;
+use CraftCms\Cms\FieldLayout\Exceptions\UnsupportedFieldLayoutFormElementException;
+use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutFormElementContext;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -45,7 +51,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-consistent-constructor
  */
-class CustomField extends BaseField
+class CustomField extends BaseField implements FieldLayoutFormElementProviderInterface
 {
     private static UserCondition $defaultEditCondition;
 
@@ -803,6 +809,41 @@ class CustomField extends BaseField
         }
 
         return true;
+    }
+
+    #[Override]
+    public function formElementContext(FieldLayoutFormContext $context): FieldLayoutFormElementContext
+    {
+        $elementContext = parent::formElementContext($context);
+
+        return new FieldLayoutFormElementContext(
+            layoutElement: $this,
+            element: $elementContext->element,
+            inputName: "fields.{$elementContext->inputName}",
+            value: $elementContext->value,
+            readOnly: $elementContext->readOnly || ! $this->editable($elementContext->element),
+            inputNamespace: $elementContext->inputNamespace,
+        );
+    }
+
+    public function formElement(FieldLayoutFormElementContext $context): ?FieldComponent
+    {
+        try {
+            $field = $this->getField();
+        } catch (FieldNotFoundException $exception) {
+            throw new UnsupportedFieldLayoutFormElementException(previous: $exception);
+        }
+
+        if (! $field instanceof FieldLayoutFormInputProviderInterface) {
+            throw new UnsupportedFieldLayoutFormElementException(sprintf(
+                '%s does not provide a Form input.',
+                $field::class,
+            ));
+        }
+
+        $input = $field->inputFormElement($context);
+
+        return $input === null ? null : $this->fieldFormElement($input, $context);
     }
 
     #[Override]

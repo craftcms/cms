@@ -59,6 +59,18 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
         return $this;
     }
 
+    public function formElementContext(FieldLayoutFormContext $context): FieldLayoutFormElementContext
+    {
+        return new FieldLayoutFormElementContext(
+            layoutElement: $this,
+            element: $context->element,
+            inputName: null,
+            value: null,
+            readOnly: $context->readOnly,
+            inputNamespace: $context->inputNamespace,
+        );
+    }
+
     /**
      * Returns the selector HTML that should be displayed within field layout designers.
      */

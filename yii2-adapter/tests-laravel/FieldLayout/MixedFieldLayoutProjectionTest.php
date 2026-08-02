@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Tests\FieldLayout;
 
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormInputProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
@@ -84,9 +86,9 @@ class MixedFieldLayoutProjectionTest extends TestCase
     }
 }
 
-class AdapterFormElementField extends Field implements FieldLayoutFormElementProviderInterface
+class AdapterFormElementField extends Field implements FieldLayoutFormInputProviderInterface
 {
-    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
+    public function inputFormElement(FieldLayoutFormElementContext $context): ?TextInput
     {
         return TextInput::make()->name($context->inputName ?? throw new \LogicException('Input Name is required.'));
     }
@@ -112,9 +114,9 @@ class AdapterFormElementLayoutElement extends FieldLayoutElement implements Fiel
         return null;
     }
 
-    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
+    public function formElement(FieldLayoutFormElementContext $context): ?FieldComponent
     {
-        return TextInput::make()->name('title');
+        return FieldComponent::make(TextInput::make()->name('title'));
     }
 }
 

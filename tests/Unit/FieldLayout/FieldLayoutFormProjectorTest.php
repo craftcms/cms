@@ -7,6 +7,7 @@ use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormInputProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
@@ -95,21 +96,65 @@ it('projects applicable field layout content through provider form elements', fu
         );
 });
 
-it('rejects provider components that are not inputs', function () {
-    $layout = new FieldLayout(['uid' => 'invalid-provider-layout']);
+it('accepts complete container form elements from layout elements', function () {
+    $layout = new FieldLayout(['uid' => 'container-provider-layout']);
     $layout->setTabs([
         new FieldLayoutTab([
             'uid' => 'content-tab',
             'name' => 'Content',
             'layout' => $layout,
-            'elements' => [new ContainerProvidingLayoutElement(['uid' => 'invalid-provider'])],
+            'elements' => [new ContainerProvidingLayoutElement([
+                'uid' => 'container-provider',
+                'width' => 50,
+            ])],
         ]),
     ]);
 
-    expect(fn () => new FieldLayoutFormProjector()->project(
+    $definition = new FieldLayoutFormProjector()->project(
         $layout,
         new FieldLayoutFormContext,
-    ))->toThrow(LogicException::class, 'must provide an input Form Element');
+    )->toArray();
+
+    expect($definition['elements'][0]['children'][0]['children'][0])->toMatchArray([
+        'type' => 'craft:group',
+        'key' => 'container-provider',
+    ]);
+});
+
+it('uses the compatibility fallback when a custom field has no form input provider', function () {
+    $layout = new FieldLayout(['uid' => 'legacy-custom-field-layout']);
+    $layout->setTabs([
+        new FieldLayoutTab([
+            'uid' => 'content-tab',
+            'name' => 'Content',
+            'layout' => $layout,
+            'elements' => [new CustomField(new LegacyFormElementField([
+                'uid' => 'legacy-field',
+                'handle' => 'legacyNotes',
+                'name' => 'Legacy notes',
+            ]), ['uid' => 'legacy-custom-field'])],
+        ]),
+    ]);
+    $elementContext = null;
+    $projector = new FieldLayoutFormProjector;
+    $projector->handleUnsupportedElementsUsing(function (
+        FieldLayoutElement $layoutElement,
+        FieldLayoutFormElementContext $context,
+    ) use (&$elementContext): Group {
+        $elementContext = $context;
+
+        return Group::make([]);
+    });
+
+    $definition = $projector->project($layout, new FieldLayoutFormContext)->toArray();
+
+    expect($definition['elements'][0]['children'][0]['children'][0])->toMatchArray([
+        'type' => 'craft:group',
+        'key' => 'legacy-custom-field',
+    ])->and($elementContext)->toBeInstanceOf(FieldLayoutFormElementContext::class)
+        ->and($elementContext->inputName)->toBe('fields.legacyNotes')
+        ->and($elementContext->value)->toBeNull()
+        ->and($elementContext->readOnly)->toBeFalse();
 });
 
 it('fails loudly when an applicable layout element has no provider or adapter fallback', function () {
@@ -162,15 +207,17 @@ it('fails loudly when a projected layout element has no stable source UID', func
     ))->toThrow(LogicException::class, 'layout element must have a UID');
 });
 
-class FormElementField extends Field implements FieldLayoutFormElementProviderInterface
+class FormElementField extends Field implements FieldLayoutFormInputProviderInterface
 {
-    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
+    public function inputFormElement(FieldLayoutFormElementContext $context): ?TextInput
     {
         return TextInput::make()
             ->name($context->inputName ?? throw new LogicException('Input Name is required.'))
             ->placeholder('Projected body');
     }
 }
+
+class LegacyFormElementField extends Field {}
 
 class NonEditableCustomField extends CustomField
 {
@@ -208,9 +255,9 @@ class InapplicableFormElement extends FieldLayoutElement implements FieldLayoutF
         return false;
     }
 
-    public function formElement(FieldLayoutFormElementContext $context): ?TextInput
+    public function formElement(FieldLayoutFormElementContext $context): ?Group
     {
-        return TextInput::make()->name('hidden');
+        return Group::make([]);
     }
 }
 
