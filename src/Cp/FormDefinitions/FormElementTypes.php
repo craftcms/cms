@@ -12,6 +12,7 @@ use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
 use CraftCms\Cms\Cp\Components\MoneyInput as MoneyInputComponent;
 use CraftCms\Cms\Cp\Components\NumberInput as NumberInputComponent;
+use CraftCms\Cms\Cp\Components\OptionRows as OptionRowsComponent;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Cp\Components\TextInput as TextInputComponent;
 use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
@@ -24,7 +25,6 @@ use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\KeyedTableInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
@@ -88,7 +88,11 @@ class FormElementTypes
                 'plugin' => null,
             ],
             KeyedTableInput::type() => ['class' => KeyedTableInput::class, 'container' => false, 'plugin' => null],
-            OptionRows::type() => ['class' => OptionRows::class, 'container' => false, 'plugin' => null],
+            OptionRowsComponent::formElementType() => [
+                'class' => OptionRowsComponent::class,
+                'container' => OptionRowsComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             ObjectSelectInput::type() => ['class' => ObjectSelectInput::class, 'container' => false, 'plugin' => null],
             DateInputComponent::formElementType() => [
                 'class' => DateInputComponent::class,

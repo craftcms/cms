@@ -4,7 +4,7 @@
 
 - Added native Form Definition rendering for text settings via `CraftCms\Cms\Cp\FormDefinitions\FormDefinition` and `CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput`.
 - Added native Form Definitions for core scalar field settings, with typed Craft controls for numbers, selections, lightswitches, dates, times, color palettes, and money values.
-- Added native Form Definitions for core option field settings, including ordered option authoring via `CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows`.
+- Added native Form Definitions for core option field settings, including ordered option authoring via `CraftCms\Cms\Cp\Components\OptionRows` and `<craft-option-rows>`.
 - Added native Form Definitions for relational field settings, with typed Craft controls for sources, selection conditions, limits, view modes, and relation behavior.
 - Added native Form Definitions for Link field and link type settings, including ordered link types and reusable element source selection.
 - Added native Form Definitions for `CraftCms\Cms\Field\ContentBlock` and `CraftCms\Cms\Field\Matrix` settings, including structured Field Layout, ordered object-selection, and keyed-table controls.

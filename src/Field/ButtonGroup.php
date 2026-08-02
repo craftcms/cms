@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup as ButtonGroupComponent;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
@@ -43,16 +43,17 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
      */
     public bool $iconsOnly = false;
 
-    /** @return list<FormElement> */
+    /** @return list<FieldComponent> */
     #[Override]
     protected function settingsFormElements(bool $readOnly): array
     {
         return [
             ...parent::settingsFormElements($readOnly),
-            LightswitchInput::make('iconsOnly')
+            FieldComponent::make()
                 ->label(t('Icons only'))
                 ->instructions(t('Whether buttons should only show their icons, hiding their text labels.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('iconsOnly')),
         ];
     }
 

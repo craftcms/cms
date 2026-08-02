@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\OptionRows;
+use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
+use CraftCms\Cms\Cp\Components\OptionRows;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonContains;
@@ -281,24 +281,29 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return FormDefinition::make($this->settingsFormElements($readOnly));
     }
 
-    /** @return list<FormElement> */
+    /** @return list<FieldComponent> */
     protected function settingsFormElements(bool $readOnly): array
     {
         $elements = [
-            OptionRows::make('options')
+            FieldComponent::make()
                 ->label($this->optionsSettingLabel())
                 ->instructions(t('Define the available options.'))
-                ->multipleDefaults(static::$multi)
-                ->optgroups(static::$optgroups)
-                ->icons(static::$optionIcons)
-                ->colors(static::$optionColors)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    OptionRows::make()
+                        ->name('options')
+                        ->multipleDefaults(static::$multi)
+                        ->optgroups(static::$optgroups)
+                        ->icons(static::$optionIcons)
+                        ->colors(static::$optionColors),
+                ),
         ];
 
         if (static::$allowCustomOptions) {
-            $elements[] = LightswitchInput::make('customOptions')
+            $elements[] = FieldComponent::make()
                 ->label(t('Allow custom options'))
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('customOptions'));
         }
 
         return $elements;

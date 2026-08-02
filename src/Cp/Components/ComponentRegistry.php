@@ -35,6 +35,7 @@ class ComponentRegistry
         'lightswitch' => Lightswitch::class,
         'money-input' => MoneyInput::class,
         'number-input' => NumberInput::class,
+        'option-rows' => OptionRows::class,
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,
         'select' => Select::class,

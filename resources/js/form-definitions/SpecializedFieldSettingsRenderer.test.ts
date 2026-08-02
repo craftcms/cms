@@ -129,9 +129,13 @@ describe('specialized field settings renderer', () => {
       )!.value
     ).toBe('first-row');
 
-    const optionValue = container.querySelector<
+    const optionRows = container.querySelector<
+      HTMLElementTagNameMap['craft-option-rows']
+    >('[data-table-nested-options] craft-option-rows')!;
+    await optionRows.updateComplete;
+    const optionValue = optionRows.shadowRoot!.querySelector<
       HTMLElementTagNameMap['craft-input']
-    >('[data-table-nested-options] [data-option-row="0"] [data-option-value]')!;
+    >('[data-option-row="0"] [data-option-value]')!;
     optionValue.value = 'article';
     optionValue.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
