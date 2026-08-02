@@ -67,3 +67,20 @@ export const FullWidthOverride: Story = {
 export const AutoWidth: Story = {
   render: () => html`<craft-input label="Handle" width="auto"></craft-input>`,
 };
+
+export const ServerSerializedDateAndTime: Story = {
+  render: () => html`
+    <div style="display: grid; gap: 16px; max-width: 320px;">
+      <craft-input
+        label="Publish date"
+        type="date"
+        .modelValue=${'2026-08-02T14:35:00+02:00'}
+      ></craft-input>
+      <craft-input
+        label="Publish time"
+        type="time"
+        .modelValue=${'14:35:00'}
+      ></craft-input>
+    </div>
+  `,
+};

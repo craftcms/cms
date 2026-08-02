@@ -6,6 +6,16 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 import './field.js';
 import '../input/input.js';
 
+function replaceInstructions(event: Event): void {
+  const field = (
+    event.currentTarget as HTMLElement
+  ).parentElement?.querySelector('craft-field');
+  const instructions = document.createElement('span');
+  instructions.slot = 'help-text';
+  instructions.textContent = 'These replacement instructions are now active.';
+  field?.querySelector('[slot="help-text"]')?.replaceWith(instructions);
+}
+
 const meta = {
   title: 'Controls/Field',
   component: 'craft-field',
@@ -151,5 +161,19 @@ export const WithCraftInput: Story = {
     >
       <craft-input slot="input" label-sr-only label="Site name"></craft-input>
     </craft-field>
+  `,
+};
+
+export const ReplacedInstructions: Story = {
+  render: () => html`
+    <div style="display: grid; gap: 16px;">
+      <craft-field label="Site name">
+        <span slot="help-text">These are the original instructions.</span>
+        <input slot="input" type="text" />
+      </craft-field>
+      <button type="button" @click=${replaceInstructions}>
+        Replace instructions
+      </button>
+    </div>
   `,
 };

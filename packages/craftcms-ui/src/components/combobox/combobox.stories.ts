@@ -62,6 +62,16 @@ export const Default: Story = {
     ></craft-combobox>`,
 };
 
+export const WithPlaceholder: Story = {
+  render: () =>
+    html`<craft-combobox
+      label="Country"
+      name="country"
+      placeholder="Search countries"
+      .options=${countries}
+    ></craft-combobox>`,
+};
+
 export const RichOptions: Story = {
   render: () =>
     html`<craft-combobox

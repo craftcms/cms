@@ -2,7 +2,20 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
 
+import type {SelectItem} from './select.js';
 import './select.js';
+
+const propertyOptions: SelectItem[] = [
+  {label: 'Choose a priority', value: null},
+  {
+    type: 'optgroup',
+    label: 'Priorities',
+    options: [
+      {label: 'Normal', value: 10, data: {level: 'normal'}},
+      {label: 'Urgent', value: 20, data: {level: 'urgent'}},
+    ],
+  },
+];
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
@@ -34,4 +47,15 @@ type Story = StoryObj<any>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default: Story = {
   args: {},
+};
+
+export const PropertyOptions: Story = {
+  render: () => html`
+    <craft-select
+      label="Priority"
+      name="priority"
+      .modelValue=${20}
+      .options=${propertyOptions}
+    ></craft-select>
+  `,
 };
