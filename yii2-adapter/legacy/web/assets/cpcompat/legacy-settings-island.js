@@ -1,6 +1,6 @@
 (() => {
   const elementName = 'craft-legacy-settings-island';
-  const rendererName = 'form-element:yii2-adapter:legacy-settings';
+  const formElementType = 'yii2-adapter:legacy-settings';
   const ownedAssets = new Map();
 
   class LegacySettingsIsland extends HTMLElement {
@@ -359,11 +359,11 @@
   }
 
   function registerRenderer() {
-    if (!window.Cp?.$components) {
+    if (!window.Cp?.$formElements) {
       return false;
     }
 
-    window.Cp.$components.register(rendererName, elementName);
+    window.Cp.$formElements.register(formElementType, elementName);
 
     return true;
   }

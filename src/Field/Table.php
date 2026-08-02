@@ -10,8 +10,8 @@ use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
@@ -265,11 +265,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
         $dynamicRows = Condition::equals('staticRows', false);
 
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(EditableTable::make()
                 ->name('columns')
                 ->sourceName('columns')

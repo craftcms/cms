@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Json;
 use Override;
 
@@ -114,19 +114,19 @@ class OptionRows extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form Definition');
+        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form');
 
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
         $props = array_filter([
-            'multipleDefaults' => $this->resolvedBool('multipleDefaults', $this->multipleDefaults, 'Form Definition'),
-            'optgroups' => $this->resolvedBool('optgroups', $this->optgroups, 'Form Definition'),
-            'icons' => $this->resolvedBool('icons', $this->icons, 'Form Definition'),
-            'colors' => $this->resolvedBool('colors', $this->colors, 'Form Definition'),
+            'multipleDefaults' => $this->resolvedBool('multipleDefaults', $this->multipleDefaults, 'Form'),
+            'optgroups' => $this->resolvedBool('optgroups', $this->optgroups, 'Form'),
+            'icons' => $this->resolvedBool('icons', $this->icons, 'Form'),
+            'colors' => $this->resolvedBool('colors', $this->colors, 'Form'),
         ]);
 
         foreach (array_keys($this->formElementAttributes) as $attribute) {
@@ -143,7 +143,7 @@ class OptionRows extends ViewComponent implements FormElement
                 'slot',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 

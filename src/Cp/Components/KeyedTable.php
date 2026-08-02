@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Json;
 use Override;
 
@@ -98,16 +98,16 @@ class KeyedTable extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form Definition');
+        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form');
 
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
-        $columns = $this->resolvedColumns('Form Definition');
-        $rows = $this->resolvedRows('Form Definition');
+        $columns = $this->resolvedColumns('Form');
+        $rows = $this->resolvedRows('Form');
 
         $this->validateAttributes();
 
@@ -256,7 +256,7 @@ class KeyedTable extends ViewComponent implements FormElement
                 'slot',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
     }

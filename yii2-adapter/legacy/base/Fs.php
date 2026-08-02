@@ -10,7 +10,7 @@
 namespace craft\base;
 
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -33,26 +33,26 @@ use yii\base\InvalidConfigException;
  */
 abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
 {
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
         $class = static::class;
 
         Deprecator::log(
-            "legacy-settings-form-definition:{$class}",
-            "{$class} must implement getSettingsFormDefinition() to provide native settings.",
+            "legacy-settings-form:{$class}",
+            "{$class} must implement getSettingsForm() to provide native settings.",
             __FILE__,
         );
 
-        $fragment = HtmlStack::capture(fn(): string => InputNamespace::namespaceInputs((string) ($readOnly
+        $fragment = HtmlStack::capture(fn (): string => InputNamespace::namespaceInputs((string) ($readOnly
             ? $this->getReadOnlySettingsHtml()
             : $this->getSettingsHtml())));
         $elements = $this->settingsFormElements($readOnly);
 
-        if (!$fragment->isEmpty()) {
+        if (! $fragment->isEmpty()) {
             $elements[] = LegacySettings::make($fragment);
         }
 
-        return $elements === [] ? null : FormDefinition::make($elements);
+        return $elements === [] ? null : Form::make($elements);
     }
 
     public function getSettingsHtml(): ?string
@@ -62,12 +62,12 @@ abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
 
     public function getReadOnlySettingsHtml(): ?string
     {
-        return Html::disableInputs(fn() => $this->getSettingsHtml());
+        return Html::disableInputs(fn () => $this->getSettingsHtml());
     }
 
     public function getDiskConfig(): array
     {
-        if (!is_string($this->handle) || $this->handle === '') {
+        if (! is_string($this->handle) || $this->handle === '') {
             throw new InvalidConfigException('Filesystem handle is missing.');
         }
 
@@ -90,7 +90,7 @@ abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
             rules: parent::getRules(),
             target: $this,
             yiiRules: $this->defineRules(),
-            validatorTarget: fn() => new ModelWrapper($this),
+            validatorTarget: fn () => new ModelWrapper($this),
             allowMethodValidators: true,
         );
     }

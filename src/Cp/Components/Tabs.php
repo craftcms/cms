@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
-use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\FormElementTypes;
 use Override;
 
 class Tabs extends FormContainer
@@ -40,7 +40,7 @@ class Tabs extends FormContainer
     {
         return array_map(
             fn (Tab $tab): FormElementData => app(FormElementTypes::class)->project($tab),
-            $this->resolvedTabs('Form Definition'),
+            $this->resolvedTabs('Form'),
         );
     }
 

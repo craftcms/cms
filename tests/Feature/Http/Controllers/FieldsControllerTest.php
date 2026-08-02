@@ -99,7 +99,7 @@ it('can create a new field', function () {
             ->where('settingsBindingScope', "types.{$typeId}")
             ->where('settingsValues.types.'.$typeId.'.uiMode', 'normal')
             ->where('settingsErrors', [])
-            ->has('settingsDefinition.elements')
+            ->has('settingsForm.elements')
             ->missing('settings'));
 });
 
@@ -138,7 +138,7 @@ it('can edit a field', function () {
             ->where('field.type', PlainText::class)
             ->where('metadataHtml', fn ($value) => is_string($value) && $value !== '')
             ->where('missingFieldPlaceholder', null)
-            ->has('settingsDefinition.elements'));
+            ->has('settingsForm.elements'));
 });
 
 it('renders the edit screen read-only without admin changes', function () {
@@ -164,8 +164,8 @@ it('renders the edit screen read-only without admin changes', function () {
             ->where('settingsValues.types.'.$typeId.'.placeholder', 'Existing placeholder')
             ->where('settingsValues.types.'.$typeId.'.multiline', true)
             ->where('settingsErrors', [])
-            ->where('settingsDefinition', fn (Collection $definition): bool => array_all(
-                $definition->get('elements'),
+            ->where('settingsForm', fn (Collection $form): bool => array_all(
+                $form->get('elements'),
                 fn (array $element): bool => ($element['props']['readOnly'] ?? false) === true,
             )));
 });
@@ -183,7 +183,7 @@ it('serves the native field editor to slideout requests', function (?callable $s
         ->assertJsonPath('inertiaProps.embedded', true)
         ->assertJsonMissingPath('settingsHtml')
         ->assertJson(fn (AssertableJson $json) => $json
-            ->whereType('inertiaProps.settingsDefinition.elements', 'array')
+            ->whereType('inertiaProps.settingsForm.elements', 'array')
             ->etc());
 })->with([
     'new field' => [null],
@@ -277,7 +277,7 @@ it('omits the settings section when the field type has no settings', function ()
         'type' => SettingsFreeField::class,
         'settings' => [],
     ])->assertOk()
-        ->assertJsonPath('definition', null)
+        ->assertJsonPath('form', null)
         ->assertJsonMissingPath('settingsHtml');
 });
 
@@ -294,7 +294,7 @@ it('preserves unavailable field settings behind Missing Component behavior', fun
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/fields/Edit')
             ->where('field.type', $expectedType)
-            ->where('settingsDefinition', null)
+            ->where('settingsForm', null)
             ->where('settingsValues.types.'.$typeId.'.customSetting', 'preserved value')
             ->where('missingFieldPlaceholder', fn ($html) => is_string($html) && $html !== ''));
 });

@@ -487,7 +487,7 @@ function markdownSettingsInputs(MarkdownField $field): array
         }
     };
 
-    $visit($field->getSettingsFormDefinition(false)->toArray()['elements']);
+    $visit($field->getSettingsForm(false)->toArray()['elements']);
 
     return $inputs;
 }

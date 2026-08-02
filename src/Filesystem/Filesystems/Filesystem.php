@@ -10,8 +10,8 @@ use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Cp\Components\Combobox;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Env;
@@ -106,11 +106,11 @@ abstract class Filesystem extends Component implements FsInterface
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
         $elements = $this->settingsFormElements($readOnly);
 
-        return $elements === [] ? null : FormDefinition::make($elements);
+        return $elements === [] ? null : Form::make($elements);
     }
 
     /** @return list<FieldComponent> */

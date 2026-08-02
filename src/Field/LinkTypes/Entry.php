@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Lightswitch;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\ElementSources;

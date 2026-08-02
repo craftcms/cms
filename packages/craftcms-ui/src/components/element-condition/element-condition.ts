@@ -204,7 +204,7 @@ export default class CraftElementCondition extends LitElement {
           : t('Unknown condition builder error.');
 
       this.error = t(
-        'Element Condition option “conditionRules” could not be rendered for Form Definition output: {reason}',
+        'Element Condition option “conditionRules” could not be rendered for Form output: {reason}',
         {reason}
       );
     } finally {

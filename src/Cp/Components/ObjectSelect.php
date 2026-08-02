@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Json;
 use Override;
 
@@ -96,17 +96,17 @@ class ObjectSelect extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form Definition');
+        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form');
 
         $name = $this->portableText('name', $this->name);
         $identityKey = $this->portableText('identityKey', $this->identityKey);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
         if ($identityKey === null) {
-            $this->unsupportedOutputOption('identityKey', 'Form Definition');
+            $this->unsupportedOutputOption('identityKey', 'Form');
         }
 
         $this->validateAttributes();
@@ -115,7 +115,7 @@ class ObjectSelect extends ViewComponent implements FormElement
             type: static::formElementType(),
             name: $name,
             props: [
-                'options' => $this->resolvedOptions('Form Definition'),
+                'options' => $this->resolvedOptions('Form'),
                 'identityKey' => $identityKey,
             ],
             attributes: $this->formElementAttributes === [] ? null : $this->formElementAttributes,
@@ -240,7 +240,7 @@ class ObjectSelect extends ViewComponent implements FormElement
                 'slot',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 
@@ -252,7 +252,7 @@ class ObjectSelect extends ViewComponent implements FormElement
 
         foreach (['describedby', 'labelledby', 'required'] as $attribute) {
             if (array_key_exists($attribute, $aria)) {
-                $this->unsupportedOutputOption("attributes.aria-{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.aria-{$attribute}", 'Form');
             }
         }
     }

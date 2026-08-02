@@ -1,12 +1,14 @@
-# Form Definition authoring and renderer extensions
+# Form Element renderers
 
-CP UI Components are the sole PHP authoring interface for native Form Definitions. `FormDefinition` projects configured components to immutable `FormElementData`; Vue renderers adapt that transport data to the browser runtime. Plugins extend the same model by pairing a PHP CP UI Component that implements `FormElement` with a Vue renderer under one stable Form Element Type.
+Plugins can add controls to native Forms by pairing a PHP CP UI Component with a Vue renderer. Both use the same Form Element Type, such as `color-tools:color-map`.
 
-Types must be lowercase namespaced identifiers, such as `color-tools:color-map`. The `craft` namespace is reserved. Treat a published type as a public API: do not rename it within a compatible release. The type is independent of the PHP class name, PHP component-registry name, custom-element tag, and Vue renderer name.
+Form Element Types must be lowercase, namespaced identifiers. The `craft` namespace is reserved. Treat the type as public API and do not rename it in a compatible release.
 
-## PHP registration
+## Define the PHP component
 
-A plugin Form Element implementation must extend `ViewComponent` and implement `FormElement`. Input-shaped controls can extend `ScalarInput`, which provides the component rendering and projection mechanics while leaving the public type and browser primitive explicit:
+The component must extend `ViewComponent` and implement `FormElement`. Input controls can extend `ScalarInput`, which provides the common input and projection behavior.
+
+`formElementType()` identifies the serialized Form Element and its Vue renderer. `tagName()` identifies the HTML element rendered by PHP and Twig. Both are required because multiple Form Element Types can use the same web component; for example, text, number, date, and time inputs all render `<craft-input>`.
 
 ```php
 use CraftCms\Cms\Cp\Components\ScalarInput;
@@ -54,62 +56,41 @@ class ColorMap extends ScalarInput
 }
 ```
 
-`tagName()` is the component's HTML output, not a renderer lookup convention. The plugin must ship the corresponding `color-tools-map` browser primitive so server-rendered uses remain functional. Do not return raw HTML from projection or rely on a tag name as an automatic Vue fallback.
+Ship the web component returned by `tagName()` so the control also works outside Vue. `formElementProps()` defines the values passed to the Vue renderer.
 
-Register one or more classes from the plugin:
-
-```php
-$this->registerFormElementTypes(
-    ColorMap::class,
-    Gradient::class,
-);
-```
-
-Craft validates the complete batch before registering any class. Classes that do not implement `FormElement` fail during registration. Registering the same owner and class again is harmless. Another class or plugin cannot claim the type, and collision errors identify both claimants. During projection, Craft also verifies that the exact registered class emitted its declared type. Craft derives the plugin handle, display name, and Composer package from the plugin registration; component configuration cannot set or override that ownership.
-
-The registered input can be used like a core input. A `Field` owns its label, instructions, width, read-only state, visibility, and its single input Form Element child:
+Register the component from your plugin:
 
 ```php
-use CraftCms\Cms\Cp\Components\Field;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
-
-FormDefinition::make([
-    Field::make()
-        ->label('Palette')
-        ->input(
-            ColorMap::make()
-                ->name('palette')
-                ->colors(['red', 'blue']),
-        ),
-]);
+$this->registerFormElementTypes(ColorMap::class);
 ```
 
-Container components extend `FormContainer`, declare `formElementType()`, implement an HTML `tagName()`, and receive ordered Form Element descendants through `children()`. Their container metadata is derived from the component contract. The generic Vue renderer traverses those children and passes their rendered output to the registered container renderer's default slot.
+Craft records the plugin as the type’s owner and rejects conflicting registrations.
 
-The former `CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement`, `InputElement`, and `FormContainer` authoring bases no longer exist. To migrate an existing plugin, replace that base with an appropriate CP component base that implements the `CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement` contract, rename `type()` to `formElementType()`, move portable transport properties from `props()` to `formElementProps()`, add the component's honest HTML rendering path, and compose field presentation with `Field`. Continue using the same stable type and renderer key.
+## Register the Vue renderer
 
-`FormElementData` is projection output, not a control to configure or subclass. It keeps the serialized graph and generated TypeScript declaration stable while component classes own PHP configuration and HTML rendering.
-
-Applications can register ownerless Form Element components through the `FormElementTypes` singleton. Ownerless elements must always have an available renderer because Missing Component UI is limited to plugin-owned types.
-
-## Vue registration
-
-Register the renderer through the shared control-panel component registry with the exact name `form-element:<type>`. Registrations can be eager or lazy:
+Register the renderer from your plugin’s control-panel JavaScript using its Form Element Type. Registration can be eager or lazy.
 
 ```ts
 import ColorMap from './components/ColorMap.vue'
 
-Cp.$components.register('form-element:color-tools:color-map', ColorMap)
+Cp.$formElements.register('color-tools:color-map', ColorMap)
 
-Cp.$components.register(
-  'form-element:color-tools:gradient',
+Cp.$formElements.register(
+  'color-tools:gradient',
   () => import('./components/Gradient.vue'),
 )
 ```
 
-PHP component or Form Element Type registration never performs this Vue registration. The plugin's control-panel assets must execute one of these explicit registrations. Registering only the PHP component, its template-facing name, or its custom-element tag leaves the Vue renderer unavailable.
+PHP registration does not register or load the Vue component. Your plugin’s control-panel assets must perform this step.
 
-The renderer is an ordinary Vue component. Craft passes the Form Element's type-specific props as flattened Vue props and its resolved HTML attributes as ordinary attributes. A value-bound renderer also receives the host-owned `modelValue`, and every renderer receives the effective `readonly` state. It emits `update:modelValue` to update host-owned state.
+The renderer receives:
+
+- Properties returned by `formElementProps()`.
+- Resolved HTML attributes, including `name`, `id`, required state, and accessibility attributes.
+- The current value as `modelValue` for value-bound elements.
+- The effective `readonly` state.
+
+Emit `update:modelValue` when the value changes:
 
 ```vue
 <script setup lang="ts">
@@ -123,26 +104,35 @@ The renderer is an ordinary Vue component. Craft passes the Form Element's type-
 </script>
 ```
 
-Final `name`, `id`, required state, accessibility state, and other resolved HTML attributes arrive through the ordinary Vue attribute channel. A renderer must forward applicable attributes to its actual form control. Craft gives host-owned values and attributes final precedence over type-specific props.
+Forward applicable HTML attributes to the renderer’s actual form control. Craft owns binding scopes, input names, IDs, values, validation errors, visibility, read-only state, and persistence.
 
-The host remains responsible for Binding Scope resolution, final names and IDs, runtime values, validation errors, effective read-only state, visibility, Field Container presentation, traversal, reconciliation, and renderer diagnostics. Renderers do not receive the complete definition, Binding Scope, validation collection, routes, submission, or persistence workflow. Runtime values remain in host state and do not enter the serialized Form Definition.
+Use a generated `@craftcms/ui` Vue wrapper directly when its value and properties already match your Form Element. Add a custom renderer only when additional Vue-specific behavior is required.
 
-Use a generated `@craftcms/ui` Vue wrapper directly when its props and transport value already match the Form Element. Keep a custom renderer only when it performs observable semantic work that an ordinary generated wrapper cannot represent. A custom renderer uses the same `modelValue` contract; there is no alternate adapter registration mode or compatibility API.
+## Use the component
 
-Plugins deliver PHP and JavaScript together and declare compatible Craft versions through Composer. Optional contract additions may ship in minor Craft releases; required properties or semantic changes require a major release.
+Wrap input components in `Field` to provide their label, instructions, width, validation presentation, visibility, and read-only state.
 
-If a plugin-owned renderer is unavailable, Craft shows the type and derived plugin ownership. Missing core or application renderers throw. Exceptions from registered renderers produce a separate failed-renderer diagnostic.
+```php
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Forms\Form;
 
-## Core renderers
+Form::make([
+    Field::make()
+        ->label('Palette')
+        ->input(
+            ColorMap::make()
+                ->name('palette')
+                ->colors(['red', 'blue']),
+        ),
+]);
+```
 
-Core Form Element Types register generated `@craftcms/ui` Vue wrappers directly. Runtime semantics belong to the corresponding web component so the same behavior is available to Form Definitions and server-rendered Twig markup. Add a custom renderer only when a type has observable Vue-specific behavior that cannot belong to its browser primitive.
+Container components can extend `FormContainer`. Craft passes their rendered children to the registered Vue renderer’s default slot.
 
-## Legacy Settings Islands
+## Missing renderers
 
-The Yii 2 adapter wraps conventional legacy settings HTML with its `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component, which owns the internal `yii2-adapter:legacy-settings` Form Element Type. This compatibility component is not a native plugin authoring API or a general raw-HTML fallback. Plugins should implement a native Form Definition instead.
+If a plugin-owned renderer is unavailable, Craft displays the Form Element Type and plugin ownership details. If a registered renderer throws, Craft displays a separate failed-renderer diagnostic.
 
-The island mounts captured head assets, fragment HTML, and body assets in that order, then initializes legacy UI elements. Its live light DOM is serialized before replacement and form submission, and an unchanged keyed island keeps its actual DOM across a complete definition refresh.
+## Legacy settings
 
-This behavior is best-effort. It does not provide native dirty tracking, reset behavior, reactive visibility, field-level errors, file-input serialization, unknown shadow-DOM control serialization, reliable teardown of arbitrary plugin listeners or global side effects, safe shared-asset ownership across islands, new diagnostics for silent asset failures, or full-page lifecycle equivalence. A plugin that depends on those behaviors must migrate to a native Form Definition.
-
-The compatibility element’s lifetime and removal follow the Yii 2 adapter package’s compatibility policy, independently of Craft CMS major releases.
+The Yii 2 adapter’s Legacy Settings component exists only for backward compatibility. It is not a native Form Element API or a general raw-HTML renderer. New and migrated plugins should provide a native component and renderer.

@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Html;
 
 /**
@@ -121,24 +121,24 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
             'disabled',
             'id',
             'slot',
-        ], 'Form Definition');
+        ], 'Form');
 
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
         $options = $this->evaluate($this->options);
 
         if (! is_array($options) || ! array_is_list($options) || array_any($options, fn (mixed $option): bool => ! is_array($option))) {
-            $this->unsupportedOutputOption('options', 'Form Definition');
+            $this->unsupportedOutputOption('options', 'Form');
         }
 
         $sortable = $this->evaluate($this->sortable);
 
         if (! is_bool($sortable)) {
-            $this->unsupportedOutputOption('sortable', 'Form Definition');
+            $this->unsupportedOutputOption('sortable', 'Form');
         }
 
         $props = ['options' => $options];
@@ -147,7 +147,7 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
             $allOption = $this->evaluate($this->allOption);
 
             if (! $this->isOptionValue($allOption)) {
-                $this->unsupportedOutputOption('allOption', 'Form Definition');
+                $this->unsupportedOutputOption('allOption', 'Form');
             }
 
             $props['allOption'] = $allOption;
@@ -170,7 +170,7 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
                 'slot',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 

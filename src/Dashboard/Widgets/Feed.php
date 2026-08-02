@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\LegacyAssets\FeedAsset;
@@ -50,9 +50,9 @@ class Feed extends Widget
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
-        return FormDefinition::make([
+        return Form::make([
             Field::make(TextInput::make()->name('url'))
                 ->label(t('URL'))
                 ->required()

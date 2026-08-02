@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
@@ -108,7 +108,7 @@ class QuickPost extends Widget
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
         $sections = self::availableSections();
 
@@ -172,7 +172,7 @@ class QuickPost extends Widget
             ->label(t('Widget Title'))
             ->readOnly($readOnly);
 
-        return FormDefinition::make($elements);
+        return Form::make($elements);
     }
 
     /** @return array<string, mixed> */

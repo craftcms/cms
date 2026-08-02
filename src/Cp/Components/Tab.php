@@ -95,7 +95,7 @@ class Tab extends FormContainer
         $hasErrors = $this->evaluate($this->hasErrors);
 
         if (! is_bool($hasErrors)) {
-            $this->unsupportedOutputOption('hasErrors', 'Form Definition');
+            $this->unsupportedOutputOption('hasErrors', 'Form');
         }
 
         return array_filter([

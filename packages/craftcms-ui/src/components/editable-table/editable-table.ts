@@ -270,7 +270,7 @@ export default class CraftEditableTable extends LitElement {
   /** Base input name used for nested row values. */
   @property({reflect: true}) name: string | null = null;
 
-  /** Local Form Definition name used to coordinate dependent tables. */
+  /** Local Form name used to coordinate dependent tables. */
   @property({attribute: 'source-name', reflect: true})
   sourceName: string | null = null;
 
@@ -945,7 +945,7 @@ export default class CraftEditableTable extends LitElement {
 
   private _scope(): object {
     return (
-      this.closest('[data-form-definition-root]') ??
+      this.closest('[data-form-root]') ??
       this.closest('form') ??
       this.getRootNode()
     );

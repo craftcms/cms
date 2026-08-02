@@ -9,8 +9,8 @@ use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -128,9 +128,9 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(Select::make()
                 ->name('uiMode')
                 ->options([

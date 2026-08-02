@@ -2,18 +2,19 @@
 
 ## Unreleased
 
-- Added native Form Definition rendering for text settings via `CraftCms\Cms\Cp\FormDefinitions\FormDefinition` and `CraftCms\Cms\Cp\Components\TextInput`.
-- Added native Form Definitions for core scalar field settings, with typed Craft controls for numbers, selections, lightswitches, dates, times, color palettes, and money values.
-- Added native Form Definitions for core option field settings, including ordered option authoring via `CraftCms\Cms\Cp\Components\OptionRows` and `<craft-option-rows>`.
-- Added native Form Definitions for relational field settings, with typed Craft controls for sources, limits, view modes, and relation behavior, including element condition editing via `CraftCms\Cms\Cp\Components\ElementCondition` and `<craft-element-condition>`.
-- Added native Form Definitions for Link field and link type settings, including ordered link types and reusable element source selection.
-- Added native Form Definitions for `CraftCms\Cms\Field\ContentBlock` and `CraftCms\Cms\Field\Matrix` settings, including structured Field Layout, ordered object selection via `CraftCms\Cms\Cp\Components\ObjectSelect` and `<craft-object-select>`, and keyed tables via `CraftCms\Cms\Cp\Components\KeyedTable` and `<craft-keyed-table>`.
-- Added native Form Definitions for `CraftCms\Cms\Field\Addresses`, `CraftCms\Cms\Field\Markdown`, and `CraftCms\Cms\Field\Table` settings, including ordered editable tables via `CraftCms\Cms\Cp\Components\EditableTable` and `<craft-editable-table>`.
-- Added reactive Form Definition visibility conditions via `CraftCms\Cms\Cp\FormDefinitions\Condition`.
-- Added plugin-defined Form Elements through CP UI Components implementing `CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement`, registered by `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()`, and paired exact `form-element:<type>` control-panel renderer registrations.
-- Added keyed Form Definition groups and tabs via `CraftCms\Cms\Cp\Components\Group`, `Tabs`, and `Tab`.
+- Added native Forms for core scalar field settings, with typed Craft controls for numbers, selections, lightswitches, dates, times, color palettes, and money values.
+- Added native Forms for core option field settings, including ordered option authoring via `CraftCms\Cms\Cp\Components\OptionRows` and `<craft-option-rows>`.
+- Added native Forms for relational field settings, with typed Craft controls for sources, limits, view modes, and relation behavior, including element condition editing via `CraftCms\Cms\Cp\Components\ElementCondition` and `<craft-element-condition>`.
+- Added native Forms for Link field and link type settings, including ordered link types and reusable element source selection.
+- Added native Forms for `CraftCms\Cms\Field\ContentBlock` and `CraftCms\Cms\Field\Matrix` settings, including structured Field Layout, ordered object selection via `CraftCms\Cms\Cp\Components\ObjectSelect` and `<craft-object-select>`, and keyed tables via `CraftCms\Cms\Cp\Components\KeyedTable` and `<craft-keyed-table>`.
+- Added native Forms for `CraftCms\Cms\Field\Addresses`, `CraftCms\Cms\Field\Markdown`, and `CraftCms\Cms\Field\Table` settings, including ordered editable tables via `CraftCms\Cms\Cp\Components\EditableTable` and `<craft-editable-table>`.
+- Added native Forms for core filesystem and dashboard widget settings.
+- Added reactive Form visibility conditions via `CraftCms\Cms\Cp\Forms\Condition`.
+- Added plugin-defined Form Elements through CP UI Components implementing `CraftCms\Cms\Cp\Forms\Contracts\FormElement`, registered by `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()`, with control-panel renderers registered through `Cp.$formElements`.
+- Added keyed Form groups and tabs via `CraftCms\Cms\Cp\Components\Group`, `CraftCms\Cms\Cp\Components\Tabs`, and `CraftCms\Cms\Cp\Components\Tab`.
+- Added `CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface` for projecting field layout elements to Forms.
 - Moved Yii 2 adapter legacy settings islands to the `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component.
-- Made the `CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement` contract the sole PHP Form Element authoring interface while retaining immutable Form Element data as the serialized Vue transport contract.
+- Replaced `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::getSettingsHtml()` and `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::getReadOnlySettingsHtml()` with `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::getSettingsForm()`.
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
@@ -73,7 +74,6 @@
 - Added `CraftCms\Cms\View\TemplateRoots`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Moved `CraftCms\Cms\Cp\Concerns\EvaluatesClosures` to `CraftCms\Cms\Support\Concerns\EvaluatesClosures`.
 - Changed `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::label()` to accept an optional label and return the field layout element when one is passed. Overrides must accept the new optional argument.
-- Changed `CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface::formElement()` to return a CP input component implementing `CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement`, with Field Layout projection owning the surrounding `CraftCms\Cms\Cp\Components\Field` presentation.
 - Changed `CraftCms\Cms\Image\Raster::getTextBox()` to return a `width` and `height` array.
 - Renamed the protected `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::instructions()`, `tip()`, and `warning()` methods to `instructionsText()`, `tipText()`, and `warningText()`.
 - Removed `CraftCms\Cms\Asset\Events\AssetFileKindsResolving`. `CraftCms\Cms\Asset\AssetFileKinds::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
@@ -87,6 +87,7 @@
 - Removed `CraftCms\Cms\Field\Events\LinkTypesResolving`. `CraftCms\Cms\Field\LinkTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving`. `CraftCms\Cms\Field\NestedEntryFieldTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving`. `CraftCms\Cms\FieldLayout\NativeFields::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Filesystem\Contracts\FsInterface::hasLegacySettingsHtml()`.
 - Removed `CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving`. `CraftCms\Cms\Filesystem\FilesystemTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving`. `CraftCms\Cms\Gql\GqlArguments::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Gql\Events\GqlDirectivesResolving`. `CraftCms\Cms\Gql\GqlDirectives::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))

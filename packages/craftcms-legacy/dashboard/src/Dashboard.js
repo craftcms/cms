@@ -65,12 +65,12 @@ import '@craftcms/ui';
     },
 
     getSettingsContext: function (info, namespace) {
-      if (info.settingsDefinition === null) {
+      if (info.settingsForm === null) {
         return null;
       }
 
       const context = {
-        definition: info.settingsDefinition,
+        form: info.settingsForm,
         values: info.settingsValues,
         errors: info.settingsErrors,
         bindingScope: info.settingsBindingScope,
@@ -466,7 +466,7 @@ import '@craftcms/ui';
         return;
       }
 
-      this.settingsHost = document.createElement('craft-form-definition');
+      this.settingsHost = document.createElement('craft-form');
       this.settingsHost.context = structuredClone(this.settingsContext);
       this.$settingsContainer.append(this.settingsHost);
     },

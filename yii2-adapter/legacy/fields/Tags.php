@@ -13,8 +13,8 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -98,9 +98,9 @@ class Tags extends BaseRelationField
      * {@inheritdoc}
      */
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
-        return FormDefinition::make(array_values(array_filter(
+        return Form::make(array_values(array_filter(
             $this->relationSettingsFormElements($readOnly),
             function (object $element): bool {
                 if ($element instanceof FormElement) {

@@ -10,8 +10,8 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -220,7 +220,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
         $elements = [
             ...$this->linkSettingsFormElements($readOnly),
@@ -244,7 +244,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ->readOnly($readOnly);
         }
 
-        return FormDefinition::make($elements);
+        return Form::make($elements);
     }
 
     private function prepareLegacyAdvancedFieldConfig(array $config): array

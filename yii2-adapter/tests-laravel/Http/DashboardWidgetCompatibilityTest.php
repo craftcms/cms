@@ -40,15 +40,15 @@ class DashboardWidgetCompatibilityTest extends TestCase
 
         self::assertSame(
             'yii2-adapter:legacy-settings',
-            $response->json('info.settingsDefinition.elements.0.type'),
+            $response->json('info.settingsForm.elements.0.type'),
         );
         self::assertStringContainsString(
             "name=\"{$namespace}[label]\"",
-            $response->json('info.settingsDefinition.elements.0.props.fragment.html'),
+            $response->json('info.settingsForm.elements.0.props.fragment.html'),
         );
         self::assertStringContainsString(
             '.adapter-widget { color: red; }',
-            $response->json('info.settingsDefinition.elements.0.props.fragment.headHtml'),
+            $response->json('info.settingsForm.elements.0.props.fragment.headHtml'),
         );
         self::assertSame($namespace, $response->json('info.settingsInputNamespace'));
     }

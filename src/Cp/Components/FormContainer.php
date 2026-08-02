@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
-use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\FormElementTypes;
 use InvalidArgumentException;
 use Override;
 
@@ -71,17 +71,17 @@ abstract class FormContainer extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['slot'], 'Form Definition');
+        $this->rejectConfiguredOptions(['slot'], 'Form');
 
         foreach (array_keys($this->attributes) as $attribute) {
             if (in_array(strtolower((string) $attribute), $this->hostOwnedFormElementAttributes(), true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 
-        $key = $this->resolvedElementKey('Form Definition');
-        $width = $this->resolvedColumnWidth('Form Definition');
-        $condition = $this->resolvedVisibilityCondition('Form Definition');
+        $key = $this->resolvedElementKey('Form');
+        $width = $this->resolvedColumnWidth('Form');
+        $condition = $this->resolvedVisibilityCondition('Form');
 
         $props = $this->formElementProps();
         $children = $this->formElementChildren();
@@ -114,9 +114,9 @@ abstract class FormContainer extends ViewComponent implements FormElement
     {
         $children = [];
 
-        foreach ($this->resolvedChildren('Form Definition') as $index => $child) {
+        foreach ($this->resolvedChildren('Form') as $index => $child) {
             if ($child instanceof Tab) {
-                $this->invalidChild($index, $child, 'a non-Tab form element', 'Form Definition');
+                $this->invalidChild($index, $child, 'a non-Tab form element', 'Form');
             }
 
             if ($child instanceof FormElement) {
@@ -129,7 +129,7 @@ abstract class FormContainer extends ViewComponent implements FormElement
                 $index,
                 $child,
                 FormElement::class,
-                'Form Definition',
+                'Form',
             );
         }
 

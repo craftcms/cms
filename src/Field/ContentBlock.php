@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\FieldLayout as FieldLayoutComponent;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -356,11 +356,11 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
         $fieldLayout = $this->getFieldLayout();
 
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(FieldLayoutComponent::make()
                 ->name("fieldLayouts.{$fieldLayout->uid}")
                 ->availableElements($this->fieldLayoutElementOptions())

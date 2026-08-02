@@ -9,8 +9,8 @@ use CraftCms\Cms\Cp\Components\DateInput;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\DateFieldConditionRule;
@@ -171,7 +171,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
         $minuteIncrementOptions = array_map(
             static fn (int $increment): array => [
@@ -181,7 +181,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             [5, 10, 15, 30, 60],
         );
 
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(Lightswitch::make()->name('showDate'))
                 ->label(t('Show date'))
                 ->readOnly($readOnly),

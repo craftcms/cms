@@ -13,8 +13,8 @@ use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
@@ -355,7 +355,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
         $volumeOptions = $this->volumeOptions();
         $availableVolumeOptions = $volumeOptions;
@@ -376,7 +376,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->allOption('*');
         }
 
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(Select::make()->name('flavor')->options(self::flavorOptions()))
                 ->label(t('Markdown Flavor'))
                 ->instructions(t('The Markdown flavor that should be used when rendering this field.'))
@@ -414,8 +414,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->label(t('Byte Limit'))
                 ->instructions(t('The maximum number of bytes the field is allowed to have.'))
                 ->readOnly($readOnly),
-            Group::fromDefinition(
-                FormDefinition::make($this->linkSettingsFormElements($readOnly)),
+            Group::fromForm(
+                Form::make($this->linkSettingsFormElements($readOnly)),
                 'linkSettings',
             )->key('link-settings'),
             $availableVolumes,

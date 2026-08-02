@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Form;
 use Override;
 
 class Group extends FormContainer
 {
-    private ?FormDefinition $definition = null;
+    private ?Form $form = null;
 
     private string $inputNamePrefix = '';
 
@@ -20,10 +20,10 @@ class Group extends FormContainer
         return parent::make()->children($children);
     }
 
-    public static function fromDefinition(FormDefinition $definition, string $inputNamePrefix): static
+    public static function fromForm(Form $form, string $inputNamePrefix): static
     {
         $group = parent::make();
-        $group->definition = $definition;
+        $group->form = $form;
         $group->inputNamePrefix = $inputNamePrefix;
 
         return $group;
@@ -43,8 +43,8 @@ class Group extends FormContainer
     #[Override]
     public function toHtml(): string
     {
-        if ($this->definition !== null) {
-            $this->unsupportedOutputOption('definition', 'HTML');
+        if ($this->form !== null) {
+            $this->unsupportedOutputOption('form', 'HTML');
         }
 
         return parent::toHtml();
@@ -54,13 +54,13 @@ class Group extends FormContainer
     #[Override]
     protected function formElementChildren(): array
     {
-        if ($this->definition === null) {
+        if ($this->form === null) {
             return parent::formElementChildren();
         }
 
         return array_map(
             fn (FormElementData $element): FormElementData => $element->withInputNamePrefix($this->inputNamePrefix),
-            $this->definition->toData()->elements,
+            $this->form->toData()->elements,
         );
     }
 }

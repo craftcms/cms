@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
-use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\FormElementTypes;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\Markdown;
@@ -330,12 +330,12 @@ class Field extends ViewComponent implements FormElement
             'headingSuffix',
             'errors',
             'labelExtra',
-        ], 'Form Definition');
+        ], 'Form');
 
         $input = $this->evaluate($this->input);
 
         if (! $input instanceof FormElement || $input::isFormElementContainer()) {
-            $this->unsupportedOutputOption('input', 'Form Definition');
+            $this->unsupportedOutputOption('input', 'Form');
         }
 
         $props = array_filter([
@@ -351,15 +351,15 @@ class Field extends ViewComponent implements FormElement
         $condition = $this->evaluate($this->visibilityCondition);
 
         if ($key !== null && ! is_string($key)) {
-            $this->unsupportedOutputOption('key', 'Form Definition');
+            $this->unsupportedOutputOption('key', 'Form');
         }
 
         if ($columnWidth !== null && ! is_int($columnWidth)) {
-            $this->unsupportedOutputOption('columnWidth', 'Form Definition');
+            $this->unsupportedOutputOption('columnWidth', 'Form');
         }
 
         if ($condition !== null && ! $condition instanceof Condition) {
-            $this->unsupportedOutputOption('visibleWhen', 'Form Definition');
+            $this->unsupportedOutputOption('visibleWhen', 'Form');
         }
 
         return new FormElementData(
@@ -477,7 +477,7 @@ class Field extends ViewComponent implements FormElement
         $value = $this->evaluate($value);
 
         if (! is_bool($value)) {
-            $this->unsupportedOutputOption($option, 'Form Definition');
+            $this->unsupportedOutputOption($option, 'Form');
         }
 
         return $value;

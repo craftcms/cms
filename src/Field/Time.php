@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
@@ -107,7 +107,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
         $minuteIncrementOptions = array_map(
             static fn (int $increment): array => [
@@ -117,7 +117,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             [5, 10, 15, 30, 60],
         );
 
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(Select::make()->name('minuteIncrement')->options($minuteIncrementOptions))
                 ->label(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))

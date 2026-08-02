@@ -111,7 +111,7 @@ test('edit shows create form for new filesystem', function () {
             ->where('settingsValues.types.'.$typeId.'.path', null)
             ->where('settingsErrors', [])
             ->where('readOnly', false)
-            ->has('settingsDefinition.elements', 3)
+            ->has('settingsForm.elements', 3)
             ->missing('fsInstances'));
 });
 
@@ -130,7 +130,7 @@ test('can render settings while preserving compatible host values', function () 
         ],
     ])
         ->assertOk()
-        ->assertJsonPath('definition', null)
+        ->assertJsonPath('form', null)
         ->assertJsonPath('inputNamespace', "types[{$tempTypeId}]")
         ->assertJsonPath('bindingScope', "types.{$tempTypeId}")
         ->assertJsonPath("values.types.{$tempTypeId}.hasUrls", false)
@@ -218,8 +218,8 @@ test('edit supplies read-only filesystem settings through the host contract', fu
             ->where('settingsBindingScope', "types.{$typeId}")
             ->where('settingsValues.types.'.$typeId.'.path', File::normalizePath(sys_get_temp_dir().'/read-only-filesystem', '/'))
             ->where('settingsErrors', [])
-            ->where('settingsDefinition', fn (Collection $definition): bool => array_all(
-                $definition->get('elements'),
+            ->where('settingsForm', fn (Collection $form): bool => array_all(
+                $form->get('elements'),
                 fn (array $element): bool => ($element['props']['readOnly'] ?? false) === true,
             )));
 });

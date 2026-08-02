@@ -10,8 +10,8 @@ use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Group;
 use CraftCms\Cms\Cp\Components\Lightswitch;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
@@ -199,10 +199,10 @@ trait ProvidesLinkField
                 'type' => $typeClass,
                 'settings' => $typeSettings[$typeId] ?? [],
             ], BaseLinkType::class);
-            $definition = $linkType->getSettingsFormDefinition($readOnly);
+            $form = $linkType->getSettingsForm($readOnly);
 
-            if ($definition !== null) {
-                $elements[] = Group::fromDefinition($definition, "typeSettings.{$typeId}")
+            if ($form !== null) {
+                $elements[] = Group::fromForm($form, "typeSettings.{$typeId}")
                     ->key("link-type:{$typeId}")
                     ->visibleWhen(Condition::contains('types', $typeId));
             }

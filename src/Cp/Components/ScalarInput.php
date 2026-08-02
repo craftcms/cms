@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use Override;
 
 abstract class ScalarInput extends Input implements FormElement
@@ -69,12 +69,12 @@ abstract class ScalarInput extends Input implements FormElement
             'size',
             'slot',
             ...$this->unsupportedPortableOptions(),
-        ], 'Form Definition');
+        ], 'Form');
 
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
         $attributes = $this->formElementAttributes;
@@ -93,7 +93,7 @@ abstract class ScalarInput extends Input implements FormElement
                 'type',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 
@@ -127,7 +127,7 @@ abstract class ScalarInput extends Input implements FormElement
         $value = $this->evaluate($value);
 
         if ($value !== null && ! is_int($value) && ! is_float($value)) {
-            $this->unsupportedOutputOption($option, 'Form Definition');
+            $this->unsupportedOutputOption($option, 'Form');
         }
 
         return $value;

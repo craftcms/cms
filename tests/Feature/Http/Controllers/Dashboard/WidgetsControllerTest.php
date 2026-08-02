@@ -85,7 +85,7 @@ it('returns the complete native settings host context', function () {
     $widget = WidgetModel::query()->firstOrFail();
     $namespace = "widget{$widget->id}-settings";
 
-    expect($response->json('info.settingsDefinition.elements'))->toHaveCount(3)
+    expect($response->json('info.settingsForm.elements'))->toHaveCount(3)
         ->and($response->json('info.settingsBindingScope'))->toBe($namespace)
         ->and($response->json('info.settingsInputNamespace'))->toBe($namespace)
         ->and($response->json("info.settingsValues.{$namespace}.title"))->toBe('Craft News')
@@ -94,13 +94,13 @@ it('returns the complete native settings host context', function () {
         ->and($response->json('info'))->not->toHaveKey('settingsHtml', 'settingsJs');
 });
 
-it('returns a null definition for a widget without settings', function () {
+it('returns a null form for a widget without settings', function () {
     app(WidgetTypes::class)->register(NoSettingsWidget::class);
 
     postJson(action([WidgetsController::class, 'store']), [
         'type' => NoSettingsWidget::class,
     ])->assertOk()
-        ->assertJsonPath('info.settingsDefinition', null);
+        ->assertJsonPath('info.settingsForm', null);
 });
 
 it('can update a widget with settings', function () {

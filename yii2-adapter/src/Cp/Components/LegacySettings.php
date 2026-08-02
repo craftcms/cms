@@ -47,7 +47,7 @@ class LegacySettings extends FormContainer
     #[Override]
     protected function formElementProps(): array
     {
-        return ['fragment' => $this->resolvedFragment('Form Definition')->toArray()];
+        return ['fragment' => $this->resolvedFragment('Form')->toArray()];
     }
 
     /** @return array<string, mixed> */

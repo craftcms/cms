@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -127,26 +127,26 @@ class ElementCondition extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['condition', 'readOnly', 'slot'], 'Form Definition');
+        $this->rejectConfiguredOptions(['condition', 'readOnly', 'slot'], 'Form');
 
         $name = $this->portableText('name', $this->name);
         $conditionClass = $this->portableText('conditionClass', $this->conditionClass);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
         if ($conditionClass === null || ! is_subclass_of($conditionClass, ConditionInterface::class)) {
-            $this->unsupportedOutputOption('conditionClass', 'Form Definition');
+            $this->unsupportedOutputOption('conditionClass', 'Form');
         }
 
-        $builderConfig = $this->resolvedBuilderConfig('Form Definition');
+        $builderConfig = $this->resolvedBuilderConfig('Form');
         $props = array_filter([
             'conditionClass' => $conditionClass,
             'builderConfig' => $builderConfig,
             'renderUrl' => action([ConditionsController::class, 'show']),
-            'sortable' => $this->resolvedBool('sortable', $this->sortable, 'Form Definition'),
-            'addRuleLabel' => $this->resolvedText('addRuleLabel', $this->addRuleLabel, 'Form Definition'),
+            'sortable' => $this->resolvedBool('sortable', $this->sortable, 'Form'),
+            'addRuleLabel' => $this->resolvedText('addRuleLabel', $this->addRuleLabel, 'Form'),
         ], fn (mixed $value): bool => $value !== null);
 
         $this->validateAttributes();
@@ -289,7 +289,7 @@ class ElementCondition extends ViewComponent implements FormElement
                 'slot',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 
@@ -301,7 +301,7 @@ class ElementCondition extends ViewComponent implements FormElement
 
         foreach (['describedby', 'disabled', 'labelledby'] as $attribute) {
             if (array_key_exists($attribute, $aria)) {
-                $this->unsupportedOutputOption("attributes.aria-{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.aria-{$attribute}", 'Form');
             }
         }
     }

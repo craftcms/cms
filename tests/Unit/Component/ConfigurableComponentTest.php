@@ -10,7 +10,7 @@ use CraftCms\Cms\Filesystem\FilesystemTypes;
 
 it('exposes only the native settings form contract', function () {
     expect(get_class_methods(ConfigurableComponentInterface::class))
-        ->toContain('getSettingsFormDefinition')
+        ->toContain('getSettingsForm')
         ->not->toContain('getSettingsHtml', 'getReadOnlySettingsHtml');
 });
 

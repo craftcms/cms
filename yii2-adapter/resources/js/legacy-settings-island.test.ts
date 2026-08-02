@@ -1,7 +1,7 @@
 import {createApp, defineComponent, h, nextTick, onMounted, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import FormDefinitionRenderer from '@/form-definitions/FormDefinitionRenderer.vue';
+import FormRenderer from '@/forms/FormRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 
@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe('Legacy Settings Island', () => {
-  it('waits for the CP component registry before registering its renderer', async () => {
+  it('waits for the Form Element registry before registering its renderer', async () => {
     (window as any).Cp = {};
     vi.resetModules();
 
@@ -27,19 +27,19 @@ describe('Legacy Settings Island', () => {
 
     const registry = createCpComponentRegistry();
 
-    (window as any).Cp = {$components: registry};
+    (window as any).Cp = {$formElements: registry};
 
-    expect(registry.resolve('form-element:yii2-adapter:legacy-settings')).toBe(
+    expect(registry.resolve('yii2-adapter:legacy-settings')).toBe(
       'craft-legacy-settings-island'
     );
   });
 
   it('fails loudly when the adapter renderer is unavailable', () => {
-    (window as any).Cp = {$components: createCpComponentRegistry()};
+    (window as any).Cp = {$formElements: createCpComponentRegistry()};
 
     const container = document.createElement('div');
-    const app = createApp(FormDefinitionRenderer, {
-      definition: islandDefinition(fragment('Unavailable')),
+    const app = createApp(FormRenderer, {
+      form: islandForm(fragment('Unavailable')),
       bindingScope: 'settings',
       values: {},
       errors: {},
@@ -51,7 +51,7 @@ describe('Legacy Settings Island', () => {
   });
 
   it('mounts a fragment configured by server-rendered component HTML', async () => {
-    (window as any).Cp = {$components: createCpComponentRegistry()};
+    (window as any).Cp = {$formElements: createCpComponentRegistry()};
     (window as any).Craft = {initUiElements: vi.fn()};
     vi.resetModules();
     await import('../../legacy/web/assets/cpcompat/legacy-settings-island.js');
@@ -101,7 +101,7 @@ describe('Legacy Settings Island', () => {
   });
 
   it('serializes live controls before replacement and submission', async () => {
-    const {container, definition} = await mountIsland(fragment('Original'));
+    const {container, formPayload} = await mountIsland(fragment('Original'));
     const form = container.closest('form')!;
     const input = container.querySelector<HTMLInputElement>(
       '[name="settings[label]"]'
@@ -114,7 +114,7 @@ describe('Legacy Settings Island', () => {
     container.addEventListener('legacy-settings:serialized', serialized);
     input.value = 'Edited';
     enabled.checked = false;
-    definition.value = islandDefinition({
+    formPayload.value = islandForm({
       ...fragment('Server value'),
       html: `${fragment('Server value').html}<input name="settings[new]">`,
     });
@@ -170,7 +170,7 @@ describe('Legacy Settings Island', () => {
       return appendChild.call(this, node) as any;
     });
 
-    const {container, definition} = await mountIsland({
+    const {container, formPayload} = await mountIsland({
       ...fragment('Original'),
       bodyHtml: '<script src="/slow-legacy-settings.js"></script>',
     });
@@ -184,7 +184,7 @@ describe('Legacy Settings Island', () => {
     container.querySelector<HTMLInputElement>(
       '[name="settings[label]"]'
     )!.value = 'Edited while loading';
-    definition.value = islandDefinition({
+    formPayload.value = islandForm({
       ...fragment('Server value'),
       bodyHtml: '<script src="/slow-legacy-settings.js"></script>',
     });
@@ -224,7 +224,7 @@ describe('Legacy Settings Island', () => {
   });
 
   it('preserves an unchanged keyed island and disposes its owned assets', async () => {
-    const {app, container, definition} = await mountIsland({
+    const {app, container, formPayload} = await mountIsland({
       ...fragment('Original'),
       headHtml: '<style data-legacy-asset>.legacy { color: red; }</style>',
       bodyHtml: '<div data-legacy-asset data-legacy-body></div>',
@@ -234,8 +234,12 @@ describe('Legacy Settings Island', () => {
       '[name="settings[label]"]'
     )!;
 
+    await vi.waitFor(() => {
+      expect((window as any).Craft.initUiElements).toHaveBeenCalledOnce();
+    });
+
     input.dataset.initializedState = 'preserved';
-    definition.value = islandDefinition({
+    formPayload.value = islandForm({
       ...fragment('Original'),
       headHtml: '<style data-legacy-asset>.legacy { color: red; }</style>',
       bodyHtml: '<div data-legacy-asset data-legacy-body></div>',
@@ -272,22 +276,22 @@ describe('Legacy Settings Island', () => {
       },
     });
 
-    (window as any).Cp = {$components: registry};
+    (window as any).Cp = {$formElements: registry};
     (window as any).Craft = {initUiElements: vi.fn()};
     vi.resetModules();
     await import('../../legacy/web/assets/cpcompat/legacy-settings-island.js');
     registry.register(
-      'form-element:application:native-field-input',
+      'application:native-field-input',
       nativeInputRenderer
     );
 
-    const definition = ref(mixedFieldLayoutDefinition(false));
+    const formPayload = ref(mixedFieldLayoutForm(false));
     const container = document.createElement('div');
     const app = createApp({
       setup() {
         return () =>
-          h(FormDefinitionRenderer, {
-            definition: definition.value,
+          h(FormRenderer, {
+            form: formPayload.value,
             bindingScope: 'entry',
             values: {entry: {fields: {body: 'Body', summary: ''}}},
             errors: {},
@@ -311,7 +315,7 @@ describe('Legacy Settings Island', () => {
     const island = container.querySelector('craft-legacy-settings-island');
     const legacyInput = container.querySelector('[name="entry[legacyRating]"]');
 
-    definition.value = mixedFieldLayoutDefinition(true);
+    formPayload.value = mixedFieldLayoutForm(true);
     await nextTick();
 
     expect(
@@ -338,7 +342,7 @@ describe('Legacy Settings Island', () => {
 async function mountIsland(fragmentConfig: ReturnType<typeof fragment>) {
   const registry = createCpComponentRegistry();
 
-  (window as any).Cp = {$components: registry};
+  (window as any).Cp = {$formElements: registry};
   (window as any).Craft = {
     initUiElements: vi.fn(() => {
       ((window as any).legacyMountOrder ??= []).push('init');
@@ -347,14 +351,14 @@ async function mountIsland(fragmentConfig: ReturnType<typeof fragment>) {
   vi.resetModules();
   await import('../../legacy/web/assets/cpcompat/legacy-settings-island.js');
 
-  const definition = ref(islandDefinition(fragmentConfig));
+  const formPayload = ref(islandForm(fragmentConfig));
   const host = document.createElement('form');
   const container = document.createElement('div');
   const app = createApp({
     setup() {
       return () =>
-        h(FormDefinitionRenderer, {
-          definition: definition.value,
+        h(FormRenderer, {
+          form: formPayload.value,
           bindingScope: 'settings',
           values: {},
           errors: {},
@@ -368,7 +372,7 @@ async function mountIsland(fragmentConfig: ReturnType<typeof fragment>) {
   app.mount(container);
   await nextTick();
 
-  return {app, container, definition};
+  return {app, container, formPayload};
 }
 
 function fragment(value: string) {
@@ -379,7 +383,7 @@ function fragment(value: string) {
   };
 }
 
-function islandDefinition(fragmentConfig: ReturnType<typeof fragment>) {
+function islandForm(fragmentConfig: ReturnType<typeof fragment>) {
   return {
     elements: [
       {
@@ -388,14 +392,14 @@ function islandDefinition(fragmentConfig: ReturnType<typeof fragment>) {
         props: {fragment: fragmentConfig},
       },
     ],
-  } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
+  } satisfies CraftCms.Cms.Cp.Forms.Data.FormPayload;
 }
 
-function mixedFieldLayoutDefinition(refreshed: boolean) {
+function mixedFieldLayoutForm(refreshed: boolean) {
   function nativeField(
     key: string,
     name: string
-  ): CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData {
+  ): CraftCms.Cms.Cp.Forms.Data.FormElementData {
     return {
       type: 'craft:field',
       key,
@@ -409,7 +413,7 @@ function mixedFieldLayoutDefinition(refreshed: boolean) {
     };
   }
 
-  const contentTab: CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData = {
+  const contentTab: CraftCms.Cms.Cp.Forms.Data.FormElementData = {
     type: 'craft:tab',
     key: 'content-tab',
     props: {label: 'Content'},
@@ -445,12 +449,12 @@ function mixedFieldLayoutDefinition(refreshed: boolean) {
                   key: 'general-tab',
                   props: {label: 'General'},
                   children: [],
-                } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormElementData,
+                } satisfies CraftCms.Cms.Cp.Forms.Data.FormElementData,
               ]
             : []),
           contentTab,
         ],
       },
     ],
-  } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
+  } satisfies CraftCms.Cms.Cp.Forms.Data.FormPayload;
 }

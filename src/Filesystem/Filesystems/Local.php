@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Combobox;
 use CraftCms\Cms\Cp\Components\Field;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
@@ -113,9 +113,9 @@ class Local extends Filesystem
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
-        return FormDefinition::make([
+        return Form::make([
             ...$this->settingsFormElements($readOnly),
             Field::make(Combobox::make()
                 ->name('path')

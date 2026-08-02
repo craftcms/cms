@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use craft\base\BaseFsInterface;
+use craft\base\Fs;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Data\FsListing;
@@ -14,7 +15,7 @@ use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\UnableToListContents;
 
-it('resolves legacy bridge disks after Laravel rebinds the driver creator', function() {
+it('resolves legacy bridge disks after Laravel rebinds the driver creator', function () {
     $filesystem = new LegacyFilesystemCompatibilityTestFs([
         'name' => 'Legacy Compatibility',
         'handle' => 'legacy-compatibility',
@@ -28,7 +29,7 @@ it('resolves legacy bridge disks after Laravel rebinds the driver creator', func
         ->and($disk->get('legacy.txt'))->toBe('legacy');
 });
 
-it('generates permanent URLs with the scoped prefix once', function() {
+it('generates permanent URLs with the scoped prefix once', function () {
     $filesystem = new LegacyFilesystemCompatibilityTestFs([
         'name' => 'Legacy Compatibility',
         'handle' => 'legacy-compatibility',
@@ -47,7 +48,7 @@ it('generates permanent URLs with the scoped prefix once', function() {
         ->toBe('https://assets.example.test/root/volume/images/photo.jpg');
 });
 
-it('fails when legacy listings contain invalid values', function() {
+it('fails when legacy listings contain invalid values', function () {
     $filesystem = new LegacyFilesystemCompatibilityTestFs([
         'name' => 'Legacy Compatibility',
         'handle' => 'legacy-compatibility',
@@ -55,11 +56,11 @@ it('fails when legacy listings contain invalid values', function() {
     $filesystem->listingValues = ['invalid'];
     $filesystem->register();
 
-    expect(fn() => Storage::disk('legacy-compatibility')->listContents('', true)->toArray())
+    expect(fn () => Storage::disk('legacy-compatibility')->listContents('', true)->toArray())
         ->toThrow(UnableToListContents::class);
 });
 
-it('logs one actionable deprecation per concrete legacy filesystem class', function() {
+it('logs one actionable deprecation per concrete legacy filesystem class', function () {
     $filesystem = new LegacyFilesystemCompatibilityTestFs([
         'name' => 'Legacy Compatibility',
         'handle' => 'legacy-compatibility',
@@ -74,7 +75,7 @@ it('logs one actionable deprecation per concrete legacy filesystem class', funct
     Storage::disk('legacy-compatibility-copy');
 
     $logs = collect(Deprecator::getRequestLogs())
-        ->where('key', 'filesystem-bridge:' . LegacyFilesystemCompatibilityTestFs::class)
+        ->where('key', 'filesystem-bridge:'.LegacyFilesystemCompatibilityTestFs::class)
         ->values();
 
     expect($logs)->toHaveCount(1)
@@ -82,12 +83,12 @@ it('logs one actionable deprecation per concrete legacy filesystem class', funct
         ->toContain('getDiskConfig()');
 });
 
-it('projects adapter filesystem settings through the final namespaced legacy island', function() {
+it('projects adapter filesystem settings through the final namespaced legacy island', function () {
     $filesystem = adapterSettingsFilesystem();
 
     $definition = InputNamespace::with(
         'types[legacy-fs]',
-        fn(): ?array => $filesystem->getSettingsFormDefinition(false)?->toArray(),
+        fn (): ?array => $filesystem->getSettingsForm(false)?->toArray(),
     );
 
     expect($definition['elements'])->toHaveCount(3)
@@ -110,11 +111,11 @@ class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsIn
 
     public function register(): void
     {
-        app()->instance(FilesystemsService::class, new class($this) extends FilesystemsService {
+        app()->instance(FilesystemsService::class, new class($this) extends FilesystemsService
+        {
             public function __construct(
                 private readonly FsInterface $filesystem,
-            ) {
-            }
+            ) {}
 
             public function getFilesystemByHandle(string $handle): ?FsInterface
             {
@@ -124,7 +125,7 @@ class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsIn
 
         new FilesystemCompatibility()->register(app());
 
-        config()->set('filesystems.disks.' . $this->handle, [
+        config()->set('filesystems.disks.'.$this->handle, [
             'driver' => 'craft-fs-bridge',
             'fsHandle' => $this->handle,
         ]);
@@ -215,23 +216,17 @@ class LegacyFilesystemCompatibilityTestFs extends Filesystem implements BaseFsIn
         return true;
     }
 
-    public function createDirectory(string $path, array $config = []): void
-    {
-    }
+    public function createDirectory(string $path, array $config = []): void {}
 
-    public function deleteDirectory(string $path): void
-    {
-    }
+    public function deleteDirectory(string $path): void {}
 
-    public function renameDirectory(string $path, string $newName): void
-    {
-    }
+    public function renameDirectory(string $path, string $newName): void {}
 }
 
 function adapterSettingsFilesystem(): FsInterface
 {
-    if (!class_exists('AdapterSettingsFilesystemTestFs', false)) {
-        class AdapterSettingsFilesystemTestFs extends craft\base\Fs
+    if (! class_exists('AdapterSettingsFilesystemTestFs', false)) {
+        class AdapterSettingsFilesystemTestFs extends Fs
         {
             public function getSettingsHtml(): ?string
             {
@@ -253,35 +248,25 @@ function adapterSettingsFilesystem(): FsInterface
                 return 0;
             }
 
-            public function write(string $path, string $contents, array $config = []): void
-            {
-            }
+            public function write(string $path, string $contents, array $config = []): void {}
 
             public function read(string $path): string
             {
                 return '';
             }
 
-            public function writeFileFromStream(string $path, $stream, array $config = []): void
-            {
-            }
+            public function writeFileFromStream(string $path, $stream, array $config = []): void {}
 
             public function fileExists(string $path): bool
             {
                 return false;
             }
 
-            public function deleteFile(string $uri): void
-            {
-            }
+            public function deleteFile(string $uri): void {}
 
-            public function renameFile(string $path, string $newPath, array $config = []): void
-            {
-            }
+            public function renameFile(string $path, string $newPath, array $config = []): void {}
 
-            public function copyFile(string $path, string $newPath, array $config = []): void
-            {
-            }
+            public function copyFile(string $path, string $newPath, array $config = []): void {}
 
             public function getFileStream(string $uriPath)
             {
@@ -293,17 +278,11 @@ function adapterSettingsFilesystem(): FsInterface
                 return false;
             }
 
-            public function createDirectory(string $path, array $config = []): void
-            {
-            }
+            public function createDirectory(string $path, array $config = []): void {}
 
-            public function deleteDirectory(string $path): void
-            {
-            }
+            public function deleteDirectory(string $path): void {}
 
-            public function renameDirectory(string $path, string $newName): void
-            {
-            }
+            public function renameDirectory(string $path, string $newName): void {}
         }
     }
 

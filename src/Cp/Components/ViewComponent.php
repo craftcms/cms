@@ -318,7 +318,7 @@ abstract class ViewComponent implements Htmlable, Stringable
         $value = $this->evaluate($value);
 
         if ($value !== null && ! is_string($value)) {
-            $this->unsupportedOutputOption($option, 'Form Definition');
+            $this->unsupportedOutputOption($option, 'Form');
         }
 
         return $value;

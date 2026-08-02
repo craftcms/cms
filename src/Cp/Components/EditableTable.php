@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Json;
 use Override;
 
@@ -190,19 +190,19 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form Definition');
+        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form');
 
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
-        $columns = $this->resolvedColumns('Form Definition');
-        $defaultRow = $this->resolvedDefaultRow('Form Definition');
-        $keyed = $this->resolvedBool('keyed', $this->keyed, 'Form Definition');
-        $includeRowId = $this->resolvedBool('includeRowId', $this->includeRowId, 'Form Definition');
-        $definesColumns = $this->resolvedBool('definesColumns', $this->definesColumns, 'Form Definition');
+        $columns = $this->resolvedColumns('Form');
+        $defaultRow = $this->resolvedDefaultRow('Form');
+        $keyed = $this->resolvedBool('keyed', $this->keyed, 'Form');
+        $includeRowId = $this->resolvedBool('includeRowId', $this->includeRowId, 'Form');
+        $definesColumns = $this->resolvedBool('definesColumns', $this->definesColumns, 'Form');
 
         $this->validateAttributes();
 
@@ -446,7 +446,7 @@ class EditableTable extends ViewComponent implements FormElement
                 'source-name',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
     }

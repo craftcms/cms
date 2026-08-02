@@ -9,8 +9,8 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Cp\Enums\Size;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -325,12 +325,12 @@ class Lightswitch extends ViewComponent implements FormElement
             'labelledBy',
             'describedBy',
             'instructions',
-        ], 'Form Definition');
+        ], 'Form');
 
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
         $attributes = Html::normalizeTagAttributes($this->attributes);
@@ -351,7 +351,7 @@ class Lightswitch extends ViewComponent implements FormElement
                 'slot',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 
@@ -389,7 +389,7 @@ class Lightswitch extends ViewComponent implements FormElement
         }
 
         if ($size !== null && ! in_array($size, [Size::Small->value, Size::Medium->value], true)) {
-            $this->unsupportedOutputOption('size', 'Form Definition');
+            $this->unsupportedOutputOption('size', 'Form');
         }
 
         return $size;

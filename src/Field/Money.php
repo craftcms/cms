@@ -9,8 +9,8 @@ use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\MoneyInput;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
@@ -152,7 +152,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
         $currencyOptions = array_map(
             static fn (Currency $currency): array => [
@@ -163,7 +163,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         );
         $fractionDigits = $this->subunits();
 
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(Select::make()->name('currency')->options($currencyOptions))
                 ->label(t('Currency'))
                 ->required()

@@ -17,8 +17,8 @@ use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -254,10 +254,10 @@ class Assets extends BaseRelationField
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
         $sourceOptions = $this->getSourceOptions();
-        $options = $this->formDefinitionOptions($sourceOptions);
+        $options = $this->formOptions($sourceOptions);
         $restricted = Condition::equals('restrictLocation', true);
         $unrestricted = Condition::notEquals('restrictLocation', true);
         $showSearchCondition = $this->singleSourceCondition($sourceOptions);
@@ -287,7 +287,7 @@ class Assets extends BaseRelationField
             ->readOnly($readOnly);
         $selectionCondition = $this->selectionConditionFormElement($readOnly);
 
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(Lightswitch::make()->name('restrictLocation'))
                 ->label(t('Restrict assets to a single location'))
                 ->readOnly($readOnly),
@@ -348,7 +348,7 @@ class Assets extends BaseRelationField
                 ->readOnly($readOnly),
             FieldComponent::make(CheckboxSelect::make()
                 ->name('allowedKinds')
-                ->options($this->formDefinitionOptions($this->getFileKindOptions())))
+                ->options($this->formOptions($this->getFileKindOptions())))
                 ->label(t('Allowed Kinds'))
                 ->visibleWhen(Condition::equals('restrictFiles', true))
                 ->readOnly($readOnly),

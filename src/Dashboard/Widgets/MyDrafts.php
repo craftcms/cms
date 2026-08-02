@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\NumberInput;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -50,9 +50,9 @@ class MyDrafts extends Widget
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
-        return FormDefinition::make([
+        return Form::make([
             Field::make(NumberInput::make()->name('limit')->min(1))
                 ->label(t('Limit'))
                 ->required()

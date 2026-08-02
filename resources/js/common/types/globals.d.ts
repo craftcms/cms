@@ -62,6 +62,7 @@ interface CpServices {
 
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
+  $formElements: Pick<CpComponentRegistry, 'register' | 'resolve'>;
   $inertia: InertiaPageRegistry;
 }
 

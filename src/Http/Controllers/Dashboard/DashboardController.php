@@ -106,7 +106,7 @@ readonly class DashboardController
 
     /**
      * @param array{
-     *     settingsDefinition: array{elements: list<array<string, mixed>>}|null,
+     *     settingsForm: array{elements: list<array<string, mixed>>}|null,
      *     settingsValues: array<string, array<string, mixed>>,
      *     settingsErrors: array<string, string[]>,
      *     settingsBindingScope: string,
@@ -114,7 +114,7 @@ readonly class DashboardController
      *     settingsReadOnly: bool,
      * } $info
      * @return array{
-     *     definition: array{elements: list<array<string, mixed>>},
+     *     form: array{elements: list<array<string, mixed>>},
      *     values: array<string, array<string, mixed>>,
      *     errors: array<string, string[]>,
      *     bindingScope: string,
@@ -124,12 +124,12 @@ readonly class DashboardController
      */
     private function settingsContext(array $info): ?array
     {
-        if ($info['settingsDefinition'] === null) {
+        if ($info['settingsForm'] === null) {
             return null;
         }
 
         return [
-            'definition' => $info['settingsDefinition'],
+            'form' => $info['settingsForm'],
             'values' => $info['settingsValues'],
             'errors' => $info['settingsErrors'],
             'bindingScope' => $info['settingsBindingScope'],

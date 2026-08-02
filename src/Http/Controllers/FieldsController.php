@@ -217,7 +217,7 @@ class FieldsController
         $viewModel = new FieldEditViewModel($field, $this->fieldsService);
 
         return new JsonResponse([
-            'definition' => $viewModel->settingsDefinition(),
+            'form' => $viewModel->settingsForm(),
             'values' => $viewModel->settingsValues(),
             'errors' => $viewModel->settingsErrors(),
             'bindingScope' => $viewModel->settingsBindingScope(),

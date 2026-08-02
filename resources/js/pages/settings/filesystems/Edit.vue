@@ -10,13 +10,9 @@
   import {renderSettings, store} from '@actions/Settings/FilesystemsController';
   import {computed, ref, watch} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import FormDefinitionRenderer from '@/form-definitions/FormDefinitionRenderer.vue';
-  import {legacySettingsIslandValues} from '@/form-definitions/legacy-settings';
-  import type {
-    FormDefinitionData,
-    FormErrors,
-    FormValues,
-  } from '@/form-definitions/types';
+  import FormRenderer from '@/forms/FormRenderer.vue';
+  import {legacySettingsIslandValues} from '@/forms/legacy-settings';
+  import type {FormPayload, FormErrors, FormValues} from '@/forms/types';
 
   defineOptions({
     inheritAttrs: false,
@@ -36,11 +32,11 @@
     type: props.filesystem.type ?? '',
     ...props.settingsValues,
   });
-  const formDefinitionValues = form as unknown as FormValues;
+  const formValues = form as unknown as FormValues;
 
   const settingsHost = ref<HTMLElement | null>(null);
-  const settingsDefinition = ref<FormDefinitionData | null>(
-    props.settingsDefinition as FormDefinitionData | null
+  const settingsForm = ref<FormPayload | null>(
+    props.settingsForm as FormPayload | null
   );
   const settingsBindingScope = ref(props.settingsBindingScope);
   const settingsErrors = ref<FormErrors>(props.settingsErrors);
@@ -57,7 +53,7 @@
   const typeOptionFor = (type: string | undefined) =>
     props.fsOptions.find((option) => option.value === type);
   const currentTypeOption = computed(() => typeOptionFor(settingsType.value));
-  const formDefinitionErrors = computed(() => ({
+  const formErrors = computed(() => ({
     ...settingsErrors.value,
     ...form.errors,
   }));
@@ -93,7 +89,7 @@
         return;
       }
 
-      settingsDefinition.value = data.definition;
+      settingsForm.value = data.form;
       settingsBindingScope.value = data.bindingScope;
       settingsErrors.value = data.errors;
       form.types = data.values.types;
@@ -171,19 +167,19 @@
         />
       </template>
 
-      <template v-if="settingsLoading || settingsDefinition">
+      <template v-if="settingsLoading || settingsForm">
         <div ref="settingsHost" :aria-busy="settingsLoading">
           <div :id="currentTypeOption?.id">
             <div v-if="settingsLoading" class="flex justify-center p-4">
               <craft-spinner></craft-spinner>
             </div>
             <div :inert="settingsLoading || undefined">
-              <FormDefinitionRenderer
-                v-if="settingsDefinition"
-                :definition="settingsDefinition"
+              <FormRenderer
+                v-if="settingsForm"
+                :form="settingsForm"
                 :binding-scope="settingsBindingScope"
-                :values="formDefinitionValues"
-                :errors="formDefinitionErrors"
+                :values="formValues"
+                :errors="formErrors"
                 :read-only="props.readOnly"
               />
             </div>

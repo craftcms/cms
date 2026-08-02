@@ -43,12 +43,10 @@ describe('CP component registry', () => {
   it('resolves a component by its exact registered name', () => {
     const registry = createCpComponentRegistry();
 
-    registry.register('form-element:craft:text-input', testComponent);
+    registry.register('TestComponent', testComponent);
 
-    expect(registry.resolve('form-element:craft:text-input')).toBe(
-      testComponent
-    );
-    expect(registry.resolve('FormElement:Craft:TextInput')).toBeUndefined();
+    expect(registry.resolve('TestComponent')).toBe(testComponent);
+    expect(registry.resolve('test-component')).toBeUndefined();
   });
 
   it('fails duplicate registrations with a different value', () => {

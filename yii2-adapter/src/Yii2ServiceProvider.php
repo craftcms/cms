@@ -11,12 +11,12 @@ use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
+use CraftCms\Cms\Cp\Forms\FormElementTypes;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
-use CraftCms\Cms\FieldLayout\FieldLayoutFormDefinitionProjector;
+use CraftCms\Cms\FieldLayout\FieldLayoutFormProjector;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
@@ -44,7 +44,7 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Cp\Components\LegacySettings as LegacySettingsComponent;
-use CraftCms\Yii2Adapter\Cp\FormDefinitions\LegacyFieldLayoutElementProjector;
+use CraftCms\Yii2Adapter\Cp\Forms\LegacyFieldLayoutElementProjector;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
@@ -112,7 +112,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
         $this->app->make(FormElementTypes::class)->register(LegacySettingsComponent::class);
-        $this->app->make(FieldLayoutFormDefinitionProjector::class)->handleUnsupportedElementsUsing(
+        $this->app->make(FieldLayoutFormProjector::class)->handleUnsupportedElementsUsing(
             $this->app->make(LegacyFieldLayoutElementProjector::class)->project(...),
         );
         /**
@@ -122,8 +122,8 @@ class Yii2ServiceProvider extends ServiceProvider
          * URL rules registered via UrlManager::EVENT_REGISTER_CP_URL_RULES
          * and EVENT_REGISTER_SITE_URL_RULES are honored).
          */
-        $this->app->booted(function(): void {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->app->booted(function (): void {
+            $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         });
 
         $this->setLaravelDefaults();
@@ -162,20 +162,20 @@ class Yii2ServiceProvider extends ServiceProvider
      */
     protected function setLaravelDefaults(): void
     {
-        if (!file_exists(config_path('app.php'))) {
+        if (! file_exists(config_path('app.php'))) {
             Config::set('app.debug', Env::get('APP_DEBUG', Env::get('CRAFT_DEV_MODE', false)));
             Config::set('app.env', Env::get('APP_ENV', Env::get('CRAFT_ENVIRONMENT', Env::get('ENVIRONMENT', 'local'))));
         }
 
-        if (!file_exists(config_path('session.php'))) {
+        if (! file_exists(config_path('session.php'))) {
             Config::set('session.driver', Env::get('SESSION_DRIVER', 'file'));
         }
 
-        if (!file_exists(config_path('cache.php'))) {
+        if (! file_exists(config_path('cache.php'))) {
             Config::set('cache.default', Env::get('CACHE_STORE', 'file'));
         }
 
-        if (!file_exists(config_path('database.php'))) {
+        if (! file_exists(config_path('database.php'))) {
             Config::set('database.default', Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER', 'mysql')));
         }
     }
@@ -184,13 +184,13 @@ class Yii2ServiceProvider extends ServiceProvider
     {
         $handler = $this->app->make(ExceptionHandler::class);
 
-        if (!$handler instanceof Handler) {
+        if (! $handler instanceof Handler) {
             return;
         }
 
         $handler->dontReport([ExitException::class]);
-        $handler->renderable(fn(ExitException $exception) => LegacyMiddleware::createResponse());
-        $handler->renderable(function(Throwable $exception) {
+        $handler->renderable(fn (ExitException $exception) => LegacyMiddleware::createResponse());
+        $handler->renderable(function (Throwable $exception) {
             $this->triggerLegacyBeforeHandleException($exception);
 
             $response = class_exists(Craft::class) ? Craft::$app?->getResponse() : null;
@@ -205,13 +205,13 @@ class Yii2ServiceProvider extends ServiceProvider
 
     private function triggerLegacyBeforeHandleException(Throwable $exception): void
     {
-        if ($exception instanceof ExitException || !class_exists(Craft::class) || !Craft::$app) {
+        if ($exception instanceof ExitException || ! class_exists(Craft::class) || ! Craft::$app) {
             return;
         }
 
         $errorHandler = Craft::$app->getErrorHandler();
 
-        if (!$errorHandler->hasEventHandlers(ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION)) {
+        if (! $errorHandler->hasEventHandlers(ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION)) {
             return;
         }
 
@@ -222,7 +222,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
     private function toLegacyException(Throwable $exception): Throwable
     {
-        if (!$exception instanceof HttpExceptionInterface) {
+        if (! $exception instanceof HttpExceptionInterface) {
             return $exception;
         }
 
@@ -238,7 +238,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
             $kernel->getGlobalMiddleware(),
-            fn(string $middleware) => $middleware !== HandleActionRequest::class,
+            fn (string $middleware) => $middleware !== HandleActionRequest::class,
         ));
         $tokenIndex = array_search(HandleTokenRequest::class, $middleware, true);
 
@@ -254,7 +254,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft.cp', RegisterLegacyCompatAssets::class);
 
         $this->publishes([
-            __DIR__ . '/../legacy/web/assets/cpcompat' => public_path('vendor/craft/adapter/cpcompat'),
+            __DIR__.'/../legacy/web/assets/cpcompat' => public_path('vendor/craft/adapter/cpcompat'),
         ], ['craftcms', 'craftcms-assets']);
 
         $this->commands([
@@ -288,22 +288,22 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new RebrandCompatibility()->boot();
 
-        CraftVariable::mixin(new CraftVariableMixin());
+        CraftVariable::mixin(new CraftVariableMixin);
         $this->registerCraftVariableCompatibility();
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.
          */
-        Event::listen(FieldCachesInvalidated::class, fn() => Craft::populateCustomFieldBehavior());
+        Event::listen(FieldCachesInvalidated::class, fn () => Craft::populateCustomFieldBehavior());
 
-        $this->app->booted(function() {
+        $this->app->booted(function () {
             $this->ensureNewMigrationTable();
             $this->ensureNewSessionsTable();
         });
 
-        $this->app->terminating(fn() => $this->triggerAfterRequestForLaravelRequest());
+        $this->app->terminating(fn () => $this->triggerAfterRequestForLaravelRequest());
 
-        if (!$this->app->runningInConsole()) {
+        if (! $this->app->runningInConsole()) {
             return;
         }
 
@@ -312,7 +312,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
     private function triggerAfterRequestForLaravelRequest(): void
     {
-        if (!Craft::$app instanceof WebApplication) {
+        if (! Craft::$app instanceof WebApplication) {
             return;
         }
 
@@ -327,11 +327,11 @@ class Yii2ServiceProvider extends ServiceProvider
 
     private function registerCraftVariableCompatibility(): void
     {
-        $this->app->afterResolving(CraftVariable::class, function() {
-            $legacyVariable = new LegacyCraftVariable();
+        $this->app->afterResolving(CraftVariable::class, function () {
+            $legacyVariable = new LegacyCraftVariable;
 
             foreach (array_keys($legacyVariable->getComponents()) as $name) {
-                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
+                CraftVariable::macro($name, fn () => $legacyVariable->get($name));
             }
         });
     }
@@ -351,7 +351,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 return;
             }
 
-            if (!Cms::config()->allowAdminChanges) {
+            if (! Cms::config()->allowAdminChanges) {
                 throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
             }
 
@@ -374,7 +374,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 return;
             }
 
-            if (!Schema::hasTable(Table::SESSIONS)) {
+            if (! Schema::hasTable(Table::SESSIONS)) {
                 app(LaravelMigrations::class)->ensureSessionsTable();
 
                 return;
@@ -384,7 +384,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 return;
             }
 
-            if (!Cms::config()->allowAdminChanges) {
+            if (! Cms::config()->allowAdminChanges) {
                 throw new RuntimeException('The sessions table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:sessions-table` to migrate the table to the new format.');
             }
 

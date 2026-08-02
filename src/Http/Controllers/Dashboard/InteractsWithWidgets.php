@@ -52,7 +52,7 @@ trait InteractsWithWidgets
 
     /**
      * @return array{
-     *     settingsDefinition: array{elements: list<array<string, mixed>>}|null,
+     *     settingsForm: array{elements: list<array<string, mixed>>}|null,
      *     settingsValues: array<string, array<string, mixed>>,
      *     settingsErrors: array<string, string[]>,
      *     settingsBindingScope: string,
@@ -62,9 +62,9 @@ trait InteractsWithWidgets
      */
     protected function getWidgetSettingsInfo(WidgetInterface $widget, string $namespace): array
     {
-        $definition = InputNamespace::with(
+        $form = InputNamespace::with(
             $namespace,
-            fn (): ?array => $widget->getSettingsFormDefinition(false)?->toArray(),
+            fn (): ?array => $widget->getSettingsForm(false)?->toArray(),
         );
         $values = $widget instanceof QuickPost
             ? $widget->getSettingsFormValues()
@@ -77,7 +77,7 @@ trait InteractsWithWidgets
         }
 
         return [
-            'settingsDefinition' => $definition,
+            'settingsForm' => $form,
             'settingsValues' => [$namespace => $values],
             'settingsErrors' => $errors,
             'settingsBindingScope' => $namespace,

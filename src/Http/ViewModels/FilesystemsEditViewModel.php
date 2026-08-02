@@ -78,11 +78,11 @@ class FilesystemsEditViewModel extends ViewModel
     }
 
     /** @return array{elements: list<array<string, mixed>>}|null */
-    public function settingsDefinition(): ?array
+    public function settingsForm(): ?array
     {
         return InputNamespace::with(
             $this->settingsInputNamespace(),
-            fn (): ?array => $this->filesystem->getSettingsFormDefinition($this->readOnly)?->toArray(),
+            fn (): ?array => $this->filesystem->getSettingsForm($this->readOnly)?->toArray(),
         );
     }
 

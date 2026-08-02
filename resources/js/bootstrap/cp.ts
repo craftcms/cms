@@ -22,7 +22,7 @@ import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
 import {configureIcons} from './icons.js';
-import {registerNativeFormElementRenderers} from '@/form-definitions/form-element-types';
+import {registerNativeFormElementRenderers} from '@/forms/form-element-types';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -49,7 +49,8 @@ function defaultPageLayout(name: string) {
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
 const components = createCpComponentRegistry();
-registerNativeFormElementRenderers(components);
+const formElements = createCpComponentRegistry();
+registerNativeFormElementRenderers(formElements);
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {
@@ -81,6 +82,10 @@ const Cp = {
 
   get $components() {
     return components;
+  },
+
+  get $formElements() {
+    return formElements;
   },
 
   booted(callback: (instance: any) => void) {

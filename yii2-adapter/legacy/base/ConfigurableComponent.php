@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -11,7 +13,7 @@ use BackedEnum;
 use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -25,18 +27,20 @@ use ReflectionProperty;
  * Component is the base class for classes representing Craft components that are configurable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
  */
 abstract class ConfigurableComponent extends Component implements ConfigurableComponentInterface
 {
     /**
      * @event DefineValueEvent The event that is triggered when defining the component’s settings attributes, as returned by [[settingsAttributes()]].
+     *
      * @since 3.7.0
      */
     public const EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function settingsAttributes(): array
     {
@@ -45,7 +49,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
         $names = [];
 
         foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic() && !$property->getDeclaringClass()->isAbstract()) {
+            if (! $property->isStatic() && ! $property->getDeclaringClass()->isAbstract()) {
                 $names[] = $property->getName();
             }
         }
@@ -61,7 +65,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSettings(): array
     {
@@ -82,19 +86,19 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
         $class = static::class;
 
         Deprecator::log(
-            "legacy-settings-form-definition:{$class}",
-            "{$class} must implement getSettingsFormDefinition() to provide native settings.",
+            "legacy-settings-form:{$class}",
+            "{$class} must implement getSettingsForm() to provide native settings.",
             __FILE__,
         );
 
-        $fragment = HtmlStack::capture(fn(): string => InputNamespace::namespaceInputs((string) ($readOnly
+        $fragment = HtmlStack::capture(fn (): string => InputNamespace::namespaceInputs((string) ($readOnly
             ? $this->getReadOnlySettingsHtml()
             : $this->getSettingsHtml())));
 
@@ -102,13 +106,13 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
             return null;
         }
 
-        return FormDefinition::make([
+        return Form::make([
             LegacySettings::make($fragment),
         ]);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSettingsHtml(): ?string
     {
@@ -116,11 +120,11 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getReadOnlySettingsHtml(): ?string
     {
         // Just return the settings HTML with disabled inputs by default
-        return Html::disableInputs(fn() => $this->getSettingsHtml());
+        return Html::disableInputs(fn () => $this->getSettingsHtml());
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
@@ -96,7 +96,7 @@ class MoneyInput extends ScalarInput
             'decimalSeparator',
             'formattingLocale',
             'groupSeparator',
-        ], 'Form Definition');
+        ], 'Form');
 
         return parent::toFormElementData();
     }
@@ -107,7 +107,7 @@ class MoneyInput extends ScalarInput
         $fractionDigits = $this->evaluate($this->fractionDigits);
 
         if (! is_int($fractionDigits) || $fractionDigits < 0) {
-            $this->unsupportedOutputOption('fractionDigits', 'Form Definition');
+            $this->unsupportedOutputOption('fractionDigits', 'Form');
         }
 
         return [

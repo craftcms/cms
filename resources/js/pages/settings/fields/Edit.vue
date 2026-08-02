@@ -10,13 +10,9 @@
   import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import Pane from '@/common/components/Pane.vue';
-  import FormDefinitionRenderer from '@/form-definitions/FormDefinitionRenderer.vue';
-  import {legacySettingsIslandValues} from '@/form-definitions/legacy-settings';
-  import type {
-    FormDefinitionData,
-    FormErrors,
-    FormValues,
-  } from '@/form-definitions/types';
+  import FormRenderer from '@/forms/FormRenderer.vue';
+  import {legacySettingsIslandValues} from '@/forms/legacy-settings';
+  import type {FormPayload, FormErrors, FormValues} from '@/forms/types';
   import type {FormSaveOptions} from '@/common/types';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -54,7 +50,7 @@
       supportedTranslationMethods: Record<string, string[]>;
       translationMethodOptions: Array<{value: string; label: string}>;
       isMultiSite: boolean;
-      settingsDefinition: FormDefinitionData | null;
+      settingsForm: FormPayload | null;
       settingsValues: FieldSettingsValues;
       settingsErrors: FormErrors;
       settingsBindingScope: string;
@@ -79,7 +75,7 @@
     translationKeyFormat: props.field.translationKeyFormat ?? '',
     ...props.settingsValues,
   });
-  const formDefinitionValues = form as unknown as FormValues;
+  const formValues = form as unknown as FormValues;
 
   // Auto-generate the handle from the name until the user edits it directly.
   const handleGenerator = useInputGenerator(
@@ -92,7 +88,7 @@
   }
 
   const settingsHost = ref<HTMLElement | null>(null);
-  const settingsDefinition = ref(props.settingsDefinition);
+  const settingsForm = ref(props.settingsForm);
   const settingsBindingScope = ref(props.settingsBindingScope);
   const settingsErrors = ref(props.settingsErrors);
   const settingsType = ref(form.type);
@@ -103,7 +99,7 @@
   const typeOptionFor = (type: string | undefined) =>
     props.fieldTypeOptions.find((option) => option.value === type);
   const currentTypeOption = computed(() => typeOptionFor(settingsType.value));
-  const formDefinitionErrors = computed(() => ({
+  const formErrors = computed(() => ({
     ...settingsErrors.value,
     ...form.errors,
   }));
@@ -139,7 +135,7 @@
         return;
       }
 
-      settingsDefinition.value = data.definition;
+      settingsForm.value = data.form;
       settingsBindingScope.value = data.bindingScope;
       settingsErrors.value = data.errors;
       form.types = data.values.types;
@@ -358,7 +354,7 @@
           />
         </template>
 
-        <template v-if="settingsLoading || settingsDefinition">
+        <template v-if="settingsLoading || settingsForm">
           <hr />
 
           <div ref="settingsHost" :aria-busy="settingsLoading">
@@ -367,12 +363,12 @@
                 <craft-spinner></craft-spinner>
               </div>
               <div :inert="settingsLoading || undefined">
-                <FormDefinitionRenderer
-                  v-if="settingsDefinition"
-                  :definition="settingsDefinition"
+                <FormRenderer
+                  v-if="settingsForm"
+                  :form="settingsForm"
                   :binding-scope="settingsBindingScope"
-                  :values="formDefinitionValues"
-                  :errors="formDefinitionErrors"
+                  :values="formValues"
+                  :errors="formErrors"
                   :read-only="readOnly"
                 />
               </div>

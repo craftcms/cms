@@ -9,8 +9,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -109,7 +109,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
         $elements = [
             FieldComponent::make(Lightswitch::make()->name('includeProIcons'))
@@ -130,7 +130,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 ->readOnly($readOnly);
         }
 
-        return FormDefinition::make($elements);
+        return Form::make($elements);
     }
 
     #[Override]

@@ -13,10 +13,10 @@ use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\ElementRelationParamFilter;
@@ -546,9 +546,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
-        return FormDefinition::make($this->relationSettingsFormElements($readOnly));
+        return Form::make($this->relationSettingsFormElements($readOnly));
     }
 
     /**
@@ -577,7 +577,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /** @param list<array<string, mixed>> $sourceOptions */
     protected function sourceFormElement(array $sourceOptions, bool $readOnly): FieldComponent
     {
-        $options = $this->formDefinitionOptions($sourceOptions);
+        $options = $this->formOptions($sourceOptions);
         $elementType = static::elementType();
 
         if ($this->allowMultipleSources) {
@@ -836,7 +836,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * @param  list<array<string, mixed>>  $options
      * @return list<array{label: string, value: string|int|float|bool|null}>
      */
-    protected function formDefinitionOptions(array $options): array
+    protected function formOptions(array $options): array
     {
         return array_values(array_map(
             fn (array $option): array => [

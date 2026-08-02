@@ -158,7 +158,7 @@ class FilesystemsController
         $viewModel = new FilesystemsEditViewModel($filesystem, $this->filesystems);
 
         return new JsonResponse([
-            'definition' => $viewModel->settingsDefinition(),
+            'form' => $viewModel->settingsForm(),
             'values' => $viewModel->settingsValues(),
             'errors' => $viewModel->settingsErrors(),
             'bindingScope' => $viewModel->settingsBindingScope(),

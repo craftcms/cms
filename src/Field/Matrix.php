@@ -14,8 +14,8 @@ use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\ObjectSelect;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -551,7 +551,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
+    public function getSettingsForm(bool $readOnly): ?Form
     {
         $indexMode = Condition::equals('viewMode', self::VIEW_MODE_INDEX);
         $tableView = Condition::all($indexMode, Condition::equals('includeTableView', true));
@@ -691,7 +691,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->readOnly($readOnly),
         );
 
-        return FormDefinition::make($elements);
+        return Form::make($elements);
     }
 
     /**

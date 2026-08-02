@@ -8,8 +8,8 @@ use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
@@ -175,7 +175,7 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
         $currencyOptions = array_map(
             static fn (Currency $currency): array => [
@@ -185,7 +185,7 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
             iterator_to_array(new ISOCurrencies),
         );
 
-        return FormDefinition::make([
+        return Form::make([
             FieldComponent::make(NumberInput::make()->name('min'))
                 ->label(t('Min Value'))
                 ->readOnly($readOnly),

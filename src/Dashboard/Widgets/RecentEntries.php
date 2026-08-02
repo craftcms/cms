@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -68,7 +68,7 @@ class RecentEntries extends Widget
     }
 
     #[Override]
-    public function getSettingsFormDefinition(bool $readOnly): FormDefinition
+    public function getSettingsForm(bool $readOnly): Form
     {
         $elements = [];
         $editableSites = Sites::getEditableSites();
@@ -104,7 +104,7 @@ class RecentEntries extends Widget
             ->label(t('Limit'))
             ->readOnly($readOnly);
 
-        return FormDefinition::make($elements);
+        return Form::make($elements);
     }
 
     #[Override]

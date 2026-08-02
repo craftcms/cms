@@ -1,0 +1,960 @@
+import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
+import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import CraftColorPalette from '@craftcms/ui/vue/CraftColorPalette.vue';
+import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
+import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+import '@craftcms/ui/components/color-palette/color-palette';
+import '@craftcms/ui/components/editable-table/editable-table';
+import '@craftcms/ui/components/input/input';
+import {createCpComponentRegistry} from '@/bootstrap/components';
+import FormRenderer from './FormRenderer.vue';
+
+const form = {
+  elements: [
+    {
+      type: 'craft:field',
+      width: 50,
+      props: {
+        label: 'Handle',
+        instructions: 'How templates refer to this component.',
+      },
+      children: [
+        {
+          type: 'craft:text-input',
+          name: 'handle',
+          props: {placeholder: 'myComponent'},
+          attributes: {
+            autocomplete: 'off',
+            'data-setting': 'handle',
+          },
+        },
+      ],
+    },
+  ],
+} satisfies CraftCms.Cms.Cp.Forms.Data.FormPayload;
+
+const mountedApps: Array<ReturnType<typeof createApp>> = [];
+
+afterEach(() => {
+  mountedApps.splice(0).forEach((app) => app.unmount());
+  document.body.innerHTML = '';
+});
+
+describe('Form renderer', () => {
+  it('renders eager and lazy plugin renderers through the public renderer contract', async () => {
+    for (const lazy of [false, true]) {
+      const registry = createCpComponentRegistry();
+      const values = reactive({settings: {palette: 'sunset'}});
+      const container = document.createElement('div');
+      const pluginRenderer = defineComponent({
+        inheritAttrs: false,
+        props: {
+          colors: {type: Array, required: true},
+          modelValue: {type: String, required: true},
+          readonly: Boolean,
+        },
+        emits: ['update:modelValue'],
+        setup(props, {attrs, emit}) {
+          return () =>
+            h(
+              'button',
+              {
+                ...attrs,
+                'data-plugin-renderer': '',
+                'data-readonly': String(props.readonly),
+                onClick: () => emit('update:modelValue', 'ocean'),
+              },
+              `${props.colors.join(',')}:${props.modelValue}`
+            );
+        },
+      });
+      const pluginForm = {
+        elements: [
+          {
+            type: 'craft:field',
+            props: {required: true},
+            children: [
+              {
+                type: 'color-tools:color-map',
+                name: 'palette',
+                props: {colors: ['red', 'blue']},
+                attributes: {'data-setting': 'palette'},
+                plugin: {
+                  handle: 'color-tools',
+                  name: 'Color Tools',
+                  packageName: 'vendor/color-tools',
+                },
+              },
+            ],
+          },
+        ],
+      } satisfies CraftCms.Cms.Cp.Forms.Data.FormPayload;
+
+      registry.register(
+        'color-tools:color-map',
+        lazy ? async () => ({default: pluginRenderer}) : pluginRenderer
+      );
+      (window as any).Cp = {$formElements: registry};
+      document.body.appendChild(container);
+      const app = createApp(FormRenderer, {
+        form: pluginForm,
+        bindingScope: 'settings',
+        values,
+        errors: {},
+      });
+
+      mountedApps.push(app);
+      app.mount(container);
+
+      await vi.waitFor(() => {
+        expect(
+          container.querySelector('[data-plugin-renderer]')
+        ).not.toBeNull();
+      });
+
+      const renderer = container.querySelector<HTMLButtonElement>(
+        '[data-plugin-renderer]'
+      )!;
+      expect(renderer.textContent).toBe('red,blue:sunset');
+      expect(renderer.dataset.setting).toBe('palette');
+      expect(renderer.dataset.readonly).toBe('false');
+      expect(renderer.name).toBe('settings[palette]');
+      expect(renderer.id).toBe('form-element-settings--palette');
+      expect(renderer.getAttribute('aria-required')).toBe('true');
+      expect(renderer.hasAttribute('required')).toBe(true);
+      expect(renderer.hasAttribute('config')).toBe(false);
+      expect(renderer.hasAttribute('binding')).toBe(false);
+
+      renderer.click();
+      await nextTick();
+
+      expect(values.settings.palette).toBe('ocean');
+      app.unmount();
+      mountedApps.pop();
+      container.remove();
+    }
+  });
+
+  it('runs a generated wrapper through the registry without setup events changing host state', async () => {
+    const registry = createCpComponentRegistry();
+    const initial = [{color: '#ff0000', label: 'Red', default: true}];
+    const values = reactive({settings: {palette: initial}});
+    const container = document.createElement('div');
+
+    registry.register('color-tools:color-map', CraftColorPalette);
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormRenderer, {
+      form: {
+        elements: [
+          {
+            type: 'craft:field',
+            children: [
+              {
+                type: 'color-tools:color-map',
+                name: 'palette',
+                plugin: {
+                  handle: 'color-tools',
+                  name: 'Color Tools',
+                  packageName: 'vendor/color-tools',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values,
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const palette = container.querySelector<
+      HTMLElementTagNameMap['craft-color-palette']
+    >('craft-color-palette')!;
+
+    expect(palette.value).toEqual(initial);
+
+    palette.value = [];
+    palette.dispatchEvent(
+      new CustomEvent('input', {
+        bubbles: true,
+        detail: {initialize: true},
+      })
+    );
+    await nextTick();
+
+    expect(values.settings.palette).toEqual(initial);
+
+    const edited = [{color: '#00ff00', label: 'Green', default: false}];
+    palette.value = edited;
+    palette.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(values.settings.palette).toEqual(edited);
+  });
+
+  it('updates final attributes on a preserved adapter during reconciliation', async () => {
+    const registry = createCpComponentRegistry();
+    const inputName = ref('primaryRows');
+    const values = reactive({
+      settings: {
+        primaryRows: [{label: 'Primary'}],
+        secondaryRows: [{label: 'Secondary'}],
+      },
+    });
+    const container = document.createElement('div');
+    const host = defineComponent({
+      setup() {
+        return () =>
+          h(FormRenderer, {
+            form: {
+              elements: [
+                {
+                  type: 'craft:field',
+                  key: 'rows-field',
+                  children: [
+                    {
+                      type: 'craft:editable-table-input',
+                      key: 'rows-input',
+                      name: inputName.value,
+                      props: {sourceName: 'rows'},
+                    },
+                  ],
+                },
+              ],
+            },
+            bindingScope: 'settings',
+            values,
+            errors: {},
+          });
+      },
+    });
+
+    registry.register('craft:editable-table-input', CraftEditableTable);
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(host);
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const table = container.querySelector<
+      HTMLElementTagNameMap['craft-editable-table']
+    >('craft-editable-table')!;
+
+    expect(table.name).toBe('settings[primaryRows]');
+    expect(table.value).toEqual([{label: 'Primary'}]);
+
+    inputName.value = 'secondaryRows';
+    await nextTick();
+
+    expect(container.querySelector('craft-editable-table')).toBe(table);
+    expect(table.name).toBe('settings[secondaryRows]');
+    expect(table.id).toBe('form-element-settings--secondaryRows');
+    expect(table.value).toEqual([{label: 'Secondary'}]);
+  });
+
+  it('shows plugin ownership when its renderer is unavailable', () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormRenderer, {
+      form: {
+        elements: [
+          {
+            type: 'craft:field',
+            children: [
+              {
+                type: 'color-tools:color-map',
+                name: 'palette',
+                plugin: {
+                  handle: 'color-tools',
+                  name: 'Color Tools',
+                  packageName: 'vendor/color-tools',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values: {settings: {palette: 'sunset'}},
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const diagnostic = container.querySelector(
+      '[data-form-element-missing-renderer]'
+    )!;
+    expect(diagnostic.textContent).toContain('color-tools:color-map');
+    expect(diagnostic.textContent).toContain('Color Tools');
+    expect(diagnostic.textContent).toContain('color-tools');
+    expect(diagnostic.textContent).toContain('vendor/color-tools');
+  });
+
+  it('gives a plugin container its rendered children while retaining generic presentation state', async () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+    const values = reactive({settings: {enabled: true, handle: 'news'}});
+    const pluginContainer = defineComponent({
+      inheritAttrs: false,
+      setup(_, {slots}) {
+        return () =>
+          h('section', {'data-plugin-container': ''}, slots.default?.());
+      },
+    });
+
+    registry.register('color-tools:palette-group', pluginContainer);
+    registry.register('craft:text-input', CraftInput);
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormRenderer, {
+      form: {
+        elements: [
+          {
+            type: 'color-tools:palette-group',
+            width: 50,
+            visibleWhen: {name: 'enabled', operator: 'equals', value: true},
+            plugin: {
+              handle: 'color-tools',
+              name: 'Color Tools',
+              packageName: 'vendor/color-tools',
+            },
+            children: form.elements,
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values,
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    expect(
+      container.querySelector('[data-plugin-container] craft-input')
+    ).not.toBeNull();
+    expect(container.querySelector('craft-input')!.name).toBe(
+      'settings[handle]'
+    );
+    const plugin = container.querySelector<HTMLElement>(
+      '[data-plugin-container]'
+    )!;
+    const wrapper = plugin.parentElement!;
+    expect(wrapper.style.width).toBe('50%');
+
+    values.settings.enabled = false;
+    await nextTick();
+
+    expect(wrapper.style.display).toBe('none');
+    expect(container.querySelector('[data-plugin-container]')).toBe(plugin);
+  });
+
+  it('preserves keyed tabs, focus, cursor, and unchanged DOM across a complete form refresh', async () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+    const values = reactive({settings: {slug: 'article', subtitle: ''}});
+    const currentForm = ref(tabbedForm(false));
+    const nativeInputRenderer = defineComponent({
+      inheritAttrs: false,
+      props: ['modelValue'],
+      emits: ['update:modelValue'],
+      setup(props, {attrs, emit}) {
+        return () =>
+          h('input', {
+            ...attrs,
+            value: props.modelValue,
+            'data-native-input': attrs.name,
+            onInput: (event) =>
+              emit(
+                'update:modelValue',
+                (event.target as HTMLInputElement).value
+              ),
+          });
+      },
+    });
+    const host = defineComponent({
+      setup() {
+        return () =>
+          h(FormRenderer, {
+            form: currentForm.value,
+            bindingScope: 'settings',
+            values,
+            errors: {},
+          });
+      },
+    });
+
+    registry.register('application:native-input', nativeInputRenderer);
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(host);
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    expect(container.querySelector('[role="tablist"]')).toBeNull();
+
+    const tabsElement = container.querySelector(
+      '[data-form-element="craft:tabs"]'
+    )!;
+    expect(tabsElement.tagName).toBe('CRAFT-TABS');
+    expect(
+      container.querySelector('[data-form-element="craft:group"]')?.tagName
+    ).toBe('CRAFT-FIELD-GROUP');
+    expect(
+      container.querySelector<HTMLElement>('[data-form-element="craft:group"]')
+        ?.dataset.container
+    ).toBe('group');
+    expect((tabsElement as HTMLElement).dataset.container).toBe('tabs');
+    const metadataPanel = container.querySelector(
+      '[data-form-tab-panel="metadata"]'
+    )!;
+    expect(metadataPanel.tagName).toBe('CRAFT-FIELD-GROUP');
+    const slugInput = container.querySelector<HTMLInputElement>(
+      '[data-native-input="settings[slug]"]'
+    )!;
+    slugInput.focus();
+    slugInput.setSelectionRange(2, 5);
+
+    currentForm.value = tabbedForm(true);
+    await nextTick();
+    await vi.waitFor(() => {
+      expect(container.querySelectorAll('[role="tab"]')).toHaveLength(3);
+    });
+
+    const tabs = container.querySelectorAll<HTMLElement>('[role="tab"]');
+    expect(Array.from(tabs, (tab) => tab.textContent?.trim())).toEqual([
+      'New',
+      'Content',
+      'Metadata',
+    ]);
+    expect(tabs[2]!.dataset.container).toBe('tab');
+    expect(
+      tabs[2]!.querySelector<HTMLElementTagNameMap['craft-indicator']>(
+        'craft-indicator'
+      )!.label
+    ).toBe('Contains errors');
+    const selectedTab = container.querySelector(
+      '[role="tab"][aria-selected="true"]'
+    )!;
+    expect(selectedTab.textContent).toContain('Metadata');
+    expect(container.querySelector('[data-form-element="craft:tabs"]')).toBe(
+      tabsElement
+    );
+    expect(container.querySelector('[data-form-tab-panel="metadata"]')).toBe(
+      metadataPanel
+    );
+    expect(
+      container.querySelector('[data-native-input="settings[slug]"]')
+    ).toBe(slugInput);
+    expect(document.activeElement).toBe(slugInput);
+    expect(slugInput.selectionStart).toBe(2);
+    expect(slugInput.selectionEnd).toBe(5);
+    expect(
+      container.querySelector('[data-native-input="settings[subtitle]"]')
+    ).not.toBeNull();
+    expect(slugInput.name).toBe('settings[slug]');
+
+    selectedTab.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Home', bubbles: true})
+    );
+    selectedTab.dispatchEvent(
+      new KeyboardEvent('keyup', {key: 'Home', bubbles: true})
+    );
+    await nextTick();
+    expect(
+      container.querySelector('[role="tab"][aria-selected="true"]')!.textContent
+    ).toContain('New');
+  });
+
+  it('suppresses tab navigation when only one tab is present', () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+
+    registry.register('craft:text-input', CraftInput);
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormRenderer, {
+      form: {
+        elements: [
+          {
+            type: 'craft:tabs',
+            key: 'settings-tabs',
+            children: [
+              {
+                type: 'craft:tab',
+                key: 'content',
+                props: {label: 'Content'},
+                children: form.elements,
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values: {settings: {handle: 'news'}},
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    expect(container.querySelector('[role="tablist"]')).toBeNull();
+    expect(container.querySelector('craft-input')).not.toBeNull();
+  });
+
+  it('preserves projected tab attributes, visibility, and width', async () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+    const values = reactive({settings: {enabled: true}});
+
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormRenderer, {
+      form: {
+        elements: [
+          {
+            type: 'craft:tabs',
+            children: [
+              {
+                type: 'craft:tab',
+                key: 'content',
+                width: 60,
+                attributes: {data: {container: 'content'}},
+                props: {label: 'Content'},
+                visibleWhen: {
+                  name: 'enabled',
+                  operator: 'equals',
+                  value: true,
+                },
+                children: [],
+              },
+              {
+                type: 'craft:tab',
+                key: 'metadata',
+                props: {label: 'Metadata'},
+                visibleWhen: {
+                  name: 'enabled',
+                  operator: 'equals',
+                  value: false,
+                },
+                children: [],
+              },
+              {
+                type: 'craft:tab',
+                key: 'general',
+                props: {label: 'General'},
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values,
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    await vi.waitFor(() => {
+      expect(container.querySelectorAll('craft-tab')).toHaveLength(3);
+    });
+
+    const contentTab = Array.from(
+      container.querySelectorAll<HTMLElement>('craft-tab')
+    ).find((tab) => tab.textContent?.includes('Content'))!;
+    const metadataTab = Array.from(
+      container.querySelectorAll<HTMLElement>('craft-tab')
+    ).find((tab) => tab.textContent?.includes('Metadata'))!;
+    const contentPanel = container.querySelector<HTMLElement>(
+      '[data-form-tab-panel="content"]'
+    )!;
+    const metadataPanel = container.querySelector<HTMLElement>(
+      '[data-form-tab-panel="metadata"]'
+    )!;
+
+    expect(contentTab.dataset.container).toBe('content');
+    expect(contentTab.style.display).not.toBe('none');
+    expect(metadataTab.style.display).toBe('none');
+    expect(contentPanel.style.width).toBe('60%');
+    expect(metadataPanel.style.display).toBe('none');
+
+    values.settings.enabled = false;
+    await nextTick();
+
+    expect(contentTab.style.display).toBe('none');
+    expect(contentPanel.style.display).toBe('none');
+    expect(metadataTab.style.display).not.toBe('none');
+    expect(metadataPanel.style.display).not.toBe('none');
+    expect(
+      container.querySelector<HTMLElementTagNameMap['craft-tabs']>(
+        'craft-tabs'
+      )!.selectedIndex
+    ).toBe(1);
+  });
+
+  it('throws for an unavailable application renderer inside a plugin container', () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+    const pluginContainer = defineComponent({
+      inheritAttrs: false,
+      setup(_, {slots}) {
+        return () => h('section', slots.default?.());
+      },
+    });
+
+    registry.register('color-tools:palette-group', pluginContainer);
+    (window as any).Cp = {$formElements: registry};
+
+    expect(() =>
+      createApp(FormRenderer, {
+        form: {
+          elements: [
+            {
+              type: 'color-tools:palette-group',
+              plugin: {
+                handle: 'color-tools',
+                name: 'Color Tools',
+                packageName: 'vendor/color-tools',
+              },
+              children: [{type: 'application:control', name: 'setting'}],
+            },
+          ],
+        },
+        bindingScope: 'settings',
+        values: {settings: {setting: null}},
+        errors: {},
+      }).mount(container)
+    ).toThrow('Missing Form Element Renderer for application:control.');
+
+    expect(
+      container.querySelector('[data-form-element-failed-renderer]')
+    ).toBeNull();
+  });
+
+  it('throws when a core or application renderer is unavailable', () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+
+    (window as any).Cp = {$formElements: registry};
+
+    expect(() =>
+      createApp(FormRenderer, {
+        form: {
+          elements: [
+            {
+              type: 'craft:field',
+              children: [{type: 'application:control', name: 'setting'}],
+            },
+          ],
+        },
+        bindingScope: 'settings',
+        values: {settings: {setting: null}},
+        errors: {},
+      }).mount(container)
+    ).toThrow('Missing Form Element Renderer for application:control.');
+  });
+
+  it('distinguishes a failed registered renderer from a missing plugin', async () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+    const failedRenderer = defineComponent({
+      setup() {
+        throw new Error('Renderer exploded.');
+      },
+    });
+
+    registry.register('color-tools:color-map', failedRenderer);
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormRenderer, {
+      form: {
+        elements: [
+          {
+            type: 'craft:field',
+            children: [
+              {
+                type: 'color-tools:color-map',
+                name: 'palette',
+                plugin: {
+                  handle: 'color-tools',
+                  name: 'Color Tools',
+                  packageName: 'vendor/color-tools',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values: {settings: {palette: 'sunset'}},
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+    await nextTick();
+
+    expect(
+      container.querySelector('[data-form-element-missing-renderer]')
+    ).toBeNull();
+    const diagnostic = container.querySelector(
+      '[data-form-element-failed-renderer]'
+    )!;
+    expect(diagnostic.textContent).toContain('color-tools:color-map');
+    expect(diagnostic.textContent).toContain('Color Tools');
+    expect(diagnostic.textContent).toContain('Renderer exploded.');
+  });
+
+  it('reactively hides a complete field and restores its unchanged control state', async () => {
+    const registry = createCpComponentRegistry();
+    const values = reactive({settings: {enabled: true, handle: 'news'}});
+    const container = document.createElement('div');
+    const conditionalForm: CraftCms.Cms.Cp.Forms.Data.FormPayload = {
+      elements: [
+        {
+          ...form.elements[0]!,
+          visibleWhen: {name: 'enabled', operator: 'equals', value: true},
+        },
+      ],
+    };
+
+    registry.register('craft:text-input', CraftInput);
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormRenderer, {
+      form: conditionalForm,
+      bindingScope: 'settings',
+      values,
+      errors: {'settings.handle': ['Keep this field complete.']},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const input =
+      container.querySelector<HTMLElementTagNameMap['craft-input']>(
+        'craft-input'
+      )!;
+    const field = container.querySelector<HTMLElement>(
+      '[data-form-element="craft:field"]'
+    )!;
+    input.dataset.transientState = 'preserved';
+    input.modelValue = 'articles';
+    input.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
+    await nextTick();
+
+    values.settings.enabled = false;
+    await nextTick();
+
+    expect(field.style.display).toBe('none');
+    expect(field.querySelector('label')).not.toBeNull();
+    expect(field.querySelector('[data-form-element-errors]')).not.toBeNull();
+    expect(values.settings.handle).toBe('articles');
+
+    values.settings.enabled = true;
+    await nextTick();
+
+    expect(field.style.display).toBe('');
+    expect(container.querySelector('craft-input')).toBe(input);
+    expect(input.value).toBe('articles');
+    expect(input.dataset.transientState).toBe('preserved');
+    expect(
+      container.querySelector('[data-form-element-errors]')
+    ).not.toBeNull();
+  });
+
+  it('renders and edits a scoped text setting with accessible field presentation', async () => {
+    const registry = createCpComponentRegistry();
+    const resolve = vi.spyOn(registry, 'resolve');
+    const values = reactive({settings: {handle: 'news'}});
+    const errors = reactive({
+      'settings.handle': ['A handle is required.'],
+    });
+    const container = document.createElement('div');
+
+    registry.register('craft:text-input', CraftInput);
+    (window as any).Cp = {$formElements: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormRenderer, {
+      form,
+      bindingScope: 'settings',
+      values,
+      errors,
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const field = container.querySelector<HTMLElementTagNameMap['craft-field']>(
+      '[data-form-element="craft:field"]'
+    )!;
+    await field.updateComplete;
+    await field.updateComplete;
+    const label = field.querySelector<HTMLLabelElement>(
+      ':scope > label[slot="label"]'
+    )!;
+    const instructions = field.querySelector<HTMLElement>(
+      '[data-form-element-instructions]'
+    )!;
+    const feedback = field.querySelector<HTMLElement>(
+      '[data-form-element-errors]'
+    )!;
+    const input =
+      field.querySelector<HTMLElementTagNameMap['craft-input']>('craft-input')!;
+
+    expect(resolve).toHaveBeenCalledWith('craft:text-input');
+    expect(field.tagName).toBe('CRAFT-FIELD');
+    expect(field.style.width).toBe('50%');
+    expect(label.textContent).toBe('Handle');
+    expect(label.htmlFor).toBe(input.id);
+    expect(instructions.textContent).toBe(
+      'How templates refer to this component.'
+    );
+    expect(feedback.textContent).toContain('A handle is required.');
+    expect(input.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(input.getAttribute('aria-describedby')?.split(' ')).toEqual([
+      instructions.id,
+      feedback.id,
+    ]);
+    expect(input.id).toBe('form-element-settings--handle');
+    expect(input.name).toBe('settings[handle]');
+    expect(input.value).toBe('news');
+    expect(input.placeholder).toBe('myComponent');
+    expect(input.autocomplete).toBe('off');
+    expect(input.dataset.setting).toBe('handle');
+    expect(input.slot).toBe('input');
+    expect(feedback.slot).toBe('feedback');
+
+    input.modelValue = 'articles';
+    input.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
+    await nextTick();
+
+    expect(values.settings.handle).toBe('articles');
+
+    errors['settings.handle'] = ['Handles must be unique.'];
+    await nextTick();
+    expect(feedback.textContent).toContain('Handles must be unique.');
+    expect(input.getAttribute('aria-describedby')?.split(' ')).toContain(
+      feedback.id
+    );
+
+    errors['settings.handle'] = [];
+    await nextTick();
+    await field.updateComplete;
+    expect(field.querySelector('[data-form-element-errors]')).toBeNull();
+    expect(input.getAttribute('aria-describedby')?.split(' ')).toEqual([
+      instructions.id,
+    ]);
+  });
+
+  it('combines host and field read-only state', async () => {
+    for (const [hostReadOnly, fieldReadOnly] of [
+      [true, false],
+      [false, true],
+    ] as const) {
+      const registry = createCpComponentRegistry();
+      const container = document.createElement('div');
+      const renderedForm: CraftCms.Cms.Cp.Forms.Data.FormPayload = {
+        elements: form.elements.map((element) => ({
+          ...element,
+          props: {...element.props, readOnly: fieldReadOnly},
+        })),
+      };
+
+      registry.register('craft:text-input', CraftInput);
+      (window as any).Cp = {$formElements: registry};
+      document.body.appendChild(container);
+      const app = createApp(FormRenderer, {
+        form: renderedForm,
+        bindingScope: 'settings',
+        values: {settings: {handle: 'news'}},
+        errors: {},
+        readOnly: hostReadOnly,
+      });
+
+      mountedApps.push(app);
+      app.mount(container);
+
+      expect(
+        container.querySelector('craft-input')!.hasAttribute('readonly')
+      ).toBe(true);
+      const field =
+        container.querySelector<HTMLElementTagNameMap['craft-field']>(
+          'craft-field'
+        )!;
+      await field.updateComplete;
+      expect(
+        field.shadowRoot?.querySelector('.read-only-badge')?.textContent
+      ).toBe('Read Only');
+    }
+  });
+});
+
+function tabbedForm(insertSubtitle: boolean) {
+  const metadataTab = {
+    type: 'craft:tab',
+    key: 'metadata',
+    attributes: {data: {container: 'tab'}},
+    props: {label: 'Metadata', hasErrors: true},
+    children: [
+      ...(insertSubtitle
+        ? [nativeInputField('subtitle', 'subtitle-field')]
+        : []),
+      nativeInputField('slug'),
+    ],
+  } satisfies CraftCms.Cms.Cp.Forms.Data.FormElementData;
+
+  return {
+    elements: [
+      {
+        type: 'craft:group',
+        key: 'settings',
+        attributes: {data: {container: 'group'}},
+        children: [
+          {
+            type: 'craft:tabs',
+            key: 'settings-tabs',
+            attributes: {data: {container: 'tabs'}},
+            children: insertSubtitle
+              ? [
+                  {
+                    type: 'craft:tab',
+                    key: 'new-tab',
+                    props: {label: 'New'},
+                    children: [],
+                  },
+                  {
+                    type: 'craft:tab',
+                    key: 'content',
+                    props: {label: 'Content'},
+                    children: [],
+                  },
+                  metadataTab,
+                ]
+              : [metadataTab],
+          },
+        ],
+      },
+    ],
+  } satisfies CraftCms.Cms.Cp.Forms.Data.FormPayload;
+}
+
+function nativeInputField(name: string, key?: string) {
+  return {
+    type: 'craft:field',
+    key,
+    children: [{type: 'application:native-input', name}],
+  } satisfies CraftCms.Cms.Cp.Forms.Data.FormElementData;
+}

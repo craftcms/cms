@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Cp\Components;
 use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\HtmlString;
@@ -149,29 +149,29 @@ class Combobox extends ViewComponent implements FormElement
             'disabled',
             'id',
             'slot',
-        ], 'Form Definition');
+        ], 'Form');
 
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
         $options = $this->evaluate($this->options);
 
         if (! is_array($options) || ! array_is_list($options)) {
-            $this->unsupportedOutputOption('options', 'Form Definition');
+            $this->unsupportedOutputOption('options', 'Form');
         }
 
         $limit = $this->evaluate($this->limit);
         $clearable = $this->evaluate($this->clearable);
 
         if (! is_int($limit) || $limit < 1) {
-            $this->unsupportedOutputOption('limit', 'Form Definition');
+            $this->unsupportedOutputOption('limit', 'Form');
         }
 
         if (! is_bool($clearable)) {
-            $this->unsupportedOutputOption('clearable', 'Form Definition');
+            $this->unsupportedOutputOption('clearable', 'Form');
         }
 
         $attributes = $this->formElementAttributes;
@@ -188,7 +188,7 @@ class Combobox extends ViewComponent implements FormElement
                 'slot',
                 'value',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 

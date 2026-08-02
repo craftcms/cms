@@ -10,9 +10,9 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\FieldLayoutFormDefinitionContext;
-use CraftCms\Cms\FieldLayout\FieldLayoutFormDefinitionProjector;
+use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormElementContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutFormProjector;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Json;
@@ -56,9 +56,9 @@ class MixedFieldLayoutProjectionTest extends TestCase
             ]),
         ]);
 
-        $definition = app(FieldLayoutFormDefinitionProjector::class)->project(
+        $definition = app(FieldLayoutFormProjector::class)->project(
             $layout,
-            new FieldLayoutFormDefinitionContext(inputNamespace: 'elements[123]'),
+            new FieldLayoutFormContext(inputNamespace: 'elements[123]'),
         )->toArray();
 
         $tabs = $definition['elements'][0]['children'];

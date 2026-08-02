@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
-use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Support\Json;
 use Override;
 
@@ -110,19 +110,19 @@ class FieldLayout extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form Definition');
+        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form');
 
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form Definition');
+            $this->unsupportedOutputOption('name', 'Form');
         }
 
         $this->validateAttributes();
 
         $props = [
-            'availableElements' => $this->resolvedAvailableElements('Form Definition'),
-            'withGeneratedFields' => $this->resolvedBool('withGeneratedFields', $this->withGeneratedFields, 'Form Definition'),
+            'availableElements' => $this->resolvedAvailableElements('Form'),
+            'withGeneratedFields' => $this->resolvedBool('withGeneratedFields', $this->withGeneratedFields, 'Form'),
         ];
 
         return new FormElementData(
@@ -248,7 +248,7 @@ class FieldLayout extends ViewComponent implements FormElement
                 'value',
                 'with-generated-fields',
             ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
             }
         }
 
@@ -260,7 +260,7 @@ class FieldLayout extends ViewComponent implements FormElement
 
         foreach (['describedby', 'labelledby'] as $attribute) {
             if (array_key_exists($attribute, $aria)) {
-                $this->unsupportedOutputOption("attributes.aria-{$attribute}", 'Form Definition');
+                $this->unsupportedOutputOption("attributes.aria-{$attribute}", 'Form');
             }
         }
     }
