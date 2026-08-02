@@ -14,4 +14,10 @@ class TimeInput extends ScalarInput
     {
         return 'craft:time-input';
     }
+
+    /** @return array<string, mixed> */
+    protected function formElementProps(): array
+    {
+        return ['type' => 'time'];
+    }
 }

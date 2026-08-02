@@ -8,14 +8,16 @@ import {
   toRaw,
 } from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import CraftCheckboxSelect from '@craftcms/ui/vue/CraftCheckboxSelect.vue';
 import CraftFieldLayout from '@craftcms/ui/vue/CraftFieldLayout.vue';
 import CraftKeyedTable from '@craftcms/ui/vue/CraftKeyedTable.vue';
 import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
+import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+import '@craftcms/ui/components/checkbox-select/checkbox-select';
+import '@craftcms/ui/components/select/select';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
-import CheckboxSelectInputRenderer from './renderers/CheckboxSelectInputRenderer.vue';
-import SelectInputRenderer from './renderers/SelectInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 
@@ -575,22 +577,16 @@ function mount(
 
   registry.register(
     'form-element:craft:checkbox-select-input',
-    CheckboxSelectInputRenderer
+    CraftCheckboxSelect
   );
-  registry.register(
-    'form-element:craft:field-layout-input',
-    CraftFieldLayout
-  );
-  registry.register(
-    'form-element:craft:keyed-table-input',
-    CraftKeyedTable
-  );
+  registry.register('form-element:craft:field-layout-input', CraftFieldLayout);
+  registry.register('form-element:craft:keyed-table-input', CraftKeyedTable);
   registry.register('form-element:craft:lightswitch-input', CraftSwitch);
   registry.register(
     'form-element:craft:object-select-input',
     CraftObjectSelect
   );
-  registry.register('form-element:craft:select-input', SelectInputRenderer);
+  registry.register('form-element:craft:select-input', CraftSelect);
   (window as any).Cp = {$components: registry};
   document.body.appendChild(container);
   const app = createApp(FormDefinitionRenderer, {

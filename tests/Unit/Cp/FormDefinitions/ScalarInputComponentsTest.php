@@ -89,19 +89,21 @@ it('projects scalar names, attributes, placeholders, constraints, and null value
             'children' => [[
                 'type' => 'craft:number-input',
                 'name' => 'limit',
-                'props' => ['min' => 0, 'max' => 100, 'step' => 0.5],
+                'props' => ['type' => 'number', 'min' => 0, 'max' => 100, 'step' => 0.5],
             ]],
         ], [
             'type' => 'craft:field',
             'children' => [[
                 'type' => 'craft:date-input',
                 'name' => 'startDate',
+                'props' => ['type' => 'date'],
             ]],
         ], [
             'type' => 'craft:field',
             'children' => [[
                 'type' => 'craft:time-input',
                 'name' => 'startTime',
+                'props' => ['type' => 'time'],
             ]],
         ], [
             'type' => 'craft:field',
@@ -114,6 +116,7 @@ it('projects scalar names, attributes, placeholders, constraints, and null value
             'children' => [[
                 'type' => 'craft:number-input',
                 'name' => 'nullableNumber',
+                'props' => ['type' => 'number'],
             ]],
         ]],
     ]);

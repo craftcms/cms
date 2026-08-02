@@ -1,16 +1,14 @@
 import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import CraftCheckboxSelect from '@craftcms/ui/vue/CraftCheckboxSelect.vue';
+import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
+import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
+import '@craftcms/ui/components/checkbox-select/checkbox-select';
+import '@craftcms/ui/components/select/select';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
-import CheckboxSelectInputRenderer from './renderers/CheckboxSelectInputRenderer.vue';
-import ComboboxInputRenderer from './renderers/ComboboxInputRenderer.vue';
-import SelectInputRenderer from './renderers/SelectInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
-type CheckboxGroupElement = HTMLElement & {
-  registrationComplete: Promise<unknown>;
-  updateComplete: Promise<unknown>;
-};
 
 afterEach(() => {
   mountedApps.splice(0).forEach((app) => app.unmount());
@@ -30,14 +28,11 @@ describe('choice input renderers', () => {
       },
     });
 
-    registry.register('form-element:craft:select-input', SelectInputRenderer);
-    registry.register(
-      'form-element:craft:combobox-input',
-      ComboboxInputRenderer
-    );
+    registry.register('form-element:craft:select-input', CraftSelect);
+    registry.register('form-element:craft:combobox-input', CraftCombobox);
     registry.register(
       'form-element:craft:checkbox-select-input',
-      CheckboxSelectInputRenderer
+      CraftCheckboxSelect
     );
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
@@ -74,20 +69,22 @@ describe('choice input renderers', () => {
       container.querySelector<HTMLElementTagNameMap['craft-combobox']>(
         'craft-combobox'
       )!;
-    const checkboxGroup = container.querySelector<CheckboxGroupElement>(
-      'craft-checkbox-group'
-    )!;
+    const checkboxSelect = container.querySelector<
+      HTMLElementTagNameMap['craft-checkbox-select']
+    >('craft-checkbox-select')!;
     const comboboxInput = (
       combobox as unknown as {_inputNode: HTMLInputElement}
     )._inputNode;
 
     await Promise.all(fields.map((field) => field.updateComplete));
+    await select.updateComplete;
     await combobox.updateComplete;
-    await checkboxGroup.registrationComplete;
-    await checkboxGroup.updateComplete;
+    await checkboxSelect.updateComplete;
 
     const checkboxes = Array.from(
-      checkboxGroup.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+      checkboxSelect.querySelectorAll<HTMLInputElement>(
+        'input[type="checkbox"]'
+      )
     );
     const selectOptions = nativeSelect.querySelectorAll('option');
     const labels = fields.map((field) =>
@@ -111,6 +108,9 @@ describe('choice input renderers', () => {
     ]);
     expect(combobox.limit).toBe(25);
     expect(combobox.clearable).toBe(true);
+    expect(
+      fields[1]!.querySelector('[data-form-element-tip]')?.textContent
+    ).toBe('This can begin with an environment variable or alias.');
     expect(checkboxes.map(({checked}) => checked)).toEqual([
       false,
       true,
@@ -119,15 +119,15 @@ describe('choice input renderers', () => {
     ]);
     expect(checkboxes[2]!.disabled).toBe(true);
     expect(
-      checkboxGroup.querySelector<HTMLElement>('.color-preview')!.style
+      checkboxSelect.querySelector<HTMLElement>('.color-preview')!.style
         .backgroundColor
     ).toBe('#ff0000');
     expect(labels[0]!.htmlFor).toBe(select.id);
     expect(labels[1]!.htmlFor).toBe(combobox.id);
-    expect(labels[2]!.htmlFor).toBe(checkboxGroup.id);
+    expect(labels[2]!.htmlFor).toBe(checkboxSelect.id);
     expect(select.getAttribute('aria-labelledby')).toBe(labels[0]!.id);
     expect(combobox.getAttribute('aria-labelledby')).toBe(labels[1]!.id);
-    expect(checkboxGroup.getAttribute('aria-labelledby')).toBe(labels[2]!.id);
+    expect(checkboxSelect.getAttribute('aria-labelledby')).toBe(labels[2]!.id);
 
     values.settings.sources = '*';
     await nextTick();
@@ -153,9 +153,11 @@ describe('choice input renderers', () => {
 
     expect(container.querySelector('craft-select')).toBe(select);
     expect(container.querySelector('craft-combobox')).toBe(combobox);
-    expect(container.querySelector('craft-checkbox-group')).toBe(checkboxGroup);
+    expect(container.querySelector('craft-checkbox-select')).toBe(
+      checkboxSelect
+    );
     expect(select.disabled).toBe(true);
-    expect(combobox.disabled).toBe(true);
+    expect(combobox.readOnly).toBe(true);
     expect(checkboxes.every(({disabled}) => disabled)).toBe(true);
     expect(values.settings).toEqual({
       status: null,
@@ -183,7 +185,9 @@ describe('choice input renderers', () => {
     });
     expect(container.querySelector('craft-select')).toBe(select);
     expect(container.querySelector('craft-combobox')).toBe(combobox);
-    expect(container.querySelector('craft-checkbox-group')).toBe(checkboxGroup);
+    expect(container.querySelector('craft-checkbox-select')).toBe(
+      checkboxSelect
+    );
   });
 });
 
@@ -214,19 +218,24 @@ const definition = {
         },
       ],
     }),
-    field('Path', 'craft:combobox-input', 'path', {
-      options: [
-        {
-          type: 'optgroup',
-          label: 'Aliases',
-          options: [{label: '@storage', value: '@storage'}],
-        },
-      ],
-      placeholder: '/path/to/folder',
-      allowAliases: true,
-      limit: 25,
-      clearable: true,
-    }),
+    {
+      ...field('Path', 'craft:combobox-input', 'path', {
+        options: [
+          {
+            type: 'optgroup',
+            label: 'Aliases',
+            options: [{label: '@storage', value: '@storage'}],
+          },
+        ],
+        placeholder: '/path/to/folder',
+        limit: 25,
+        clearable: true,
+      }),
+      props: {
+        label: 'Path',
+        tip: 'This can begin with an environment variable or alias.',
+      },
+    },
     field('Sources', 'craft:checkbox-select-input', 'sources', {
       options: [
         {label: 'All', value: '*'},

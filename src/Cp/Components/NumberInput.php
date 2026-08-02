@@ -20,6 +20,7 @@ class NumberInput extends ScalarInput
     protected function formElementProps(): array
     {
         return [
+            'type' => 'number',
             'min' => $this->portableNumber('min', $this->min),
             'max' => $this->portableNumber('max', $this->max),
             'step' => $this->portableNumber('step', $this->step),

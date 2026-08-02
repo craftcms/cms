@@ -20,10 +20,22 @@ describe('Visibility Conditions', () => {
       true,
     ],
     [
-      'equals rejects coercion',
+      'equals normalizes numeric form values',
       {name: 'source', operator: 'equals', value: 1},
       '1',
-      false,
+      true,
+    ],
+    [
+      'equals normalizes checked form values',
+      {name: 'source', operator: 'equals', value: true},
+      '1',
+      true,
+    ],
+    [
+      'equals normalizes empty nullable form values',
+      {name: 'source', operator: 'equals', value: null},
+      '',
+      true,
     ],
     [
       'equals compares arrays strictly by value',
@@ -46,7 +58,7 @@ describe('Visibility Conditions', () => {
     [
       'notEquals rejects incompatible values',
       {name: 'source', operator: 'notEquals', value: 1},
-      '1',
+      'not a number',
       false,
     ],
     [
@@ -56,10 +68,10 @@ describe('Visibility Conditions', () => {
       true,
     ],
     [
-      'lessThan rejects strings',
+      'lessThan normalizes numeric form values',
       {name: 'source', operator: 'lessThan', value: 2},
       '1',
-      false,
+      true,
     ],
     [
       'lessThanOrEqual includes equality',
@@ -80,10 +92,10 @@ describe('Visibility Conditions', () => {
       true,
     ],
     [
-      'greaterThan rejects strings',
+      'greaterThan normalizes numeric form values',
       {name: 'source', operator: 'greaterThan', value: 1},
       '2',
-      false,
+      true,
     ],
     [
       'greaterThanOrEqual includes equality',
@@ -140,10 +152,10 @@ describe('Visibility Conditions', () => {
       true,
     ],
     [
-      'contains rejects coercive array members',
+      'contains normalizes numeric form values',
       {name: 'source', operator: 'contains', value: 1},
       ['1'],
-      false,
+      true,
     ],
     [
       'in finds a scalar in the expected list',
@@ -154,7 +166,7 @@ describe('Visibility Conditions', () => {
     [
       'in finds any array member in the expected list',
       {name: 'source', operator: 'in', value: ['news', 1]},
-      ['other', 1],
+      ['other', '1'],
       true,
     ],
     [
@@ -221,32 +233,32 @@ describe('Visibility Conditions', () => {
     [
       'equals',
       {name: 'source', operator: 'equals', value: 1},
-      ['1', true, null, [], {}, undefined],
+      ['not a number', true, null, [], {}, undefined],
     ],
     [
       'notEquals',
       {name: 'source', operator: 'notEquals', value: 1},
-      ['1', true, null, [], {}, undefined],
+      ['not a number', true, null, [], {}, undefined],
     ],
     [
       'lessThan',
       {name: 'source', operator: 'lessThan', value: 1},
-      ['1', true, null, [], {}, undefined, Number.NaN],
+      ['', 'not a number', true, null, [], {}, undefined, Number.NaN],
     ],
     [
       'lessThanOrEqual',
       {name: 'source', operator: 'lessThanOrEqual', value: 1},
-      ['1', true, null, [], {}, undefined, Number.NaN],
+      ['', 'not a number', true, null, [], {}, undefined, Number.NaN],
     ],
     [
       'greaterThan',
       {name: 'source', operator: 'greaterThan', value: 1},
-      ['1', true, null, [], {}, undefined, Number.NaN],
+      ['', 'not a number', true, null, [], {}, undefined, Number.NaN],
     ],
     [
       'greaterThanOrEqual',
       {name: 'source', operator: 'greaterThanOrEqual', value: 1},
-      ['1', true, null, [], {}, undefined, Number.NaN],
+      ['', 'not a number', true, null, [], {}, undefined, Number.NaN],
     ],
     [
       'beginsWith',

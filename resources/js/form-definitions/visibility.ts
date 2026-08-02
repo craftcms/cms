@@ -47,21 +47,23 @@ function evaluateComparison(
       );
     case 'lessThan':
       return (
-        numbers(actual, condition.value) && actual < (condition.value as number)
+        numbers(actual, condition.value) &&
+        Number(actual) < (condition.value as number)
       );
     case 'lessThanOrEqual':
       return (
         numbers(actual, condition.value) &&
-        actual <= (condition.value as number)
+        Number(actual) <= (condition.value as number)
       );
     case 'greaterThan':
       return (
-        numbers(actual, condition.value) && actual > (condition.value as number)
+        numbers(actual, condition.value) &&
+        Number(actual) > (condition.value as number)
       );
     case 'greaterThanOrEqual':
       return (
         numbers(actual, condition.value) &&
-        actual >= (condition.value as number)
+        Number(actual) >= (condition.value as number)
       );
     case 'beginsWith':
       return (
@@ -123,9 +125,11 @@ function membership(actual: unknown, expected: unknown): boolean | null {
 
 function comparable(actual: unknown, expected: unknown): boolean {
   if (scalar(actual) && scalar(expected)) {
-    return actual === null || expected === null
-      ? actual === null && expected === null
-      : typeof actual === typeof expected;
+    const normalizedActual = normalizeFormValue(actual, expected);
+
+    return normalizedActual === null || expected === null
+      ? normalizedActual === null && expected === null
+      : typeof normalizedActual === typeof expected;
   }
 
   return scalarList(actual) && scalarList(expected);
@@ -139,16 +143,34 @@ function equal(actual: unknown, expected: unknown): boolean {
     );
   }
 
-  return actual === expected;
+  return normalizeFormValue(actual, expected) === expected;
 }
 
-function numbers(actual: unknown, expected: unknown): actual is number {
+function numbers(actual: unknown, expected: unknown): boolean {
   return (
-    typeof actual === 'number' &&
-    Number.isFinite(actual) &&
     typeof expected === 'number' &&
-    Number.isFinite(expected)
+    Number.isFinite(expected) &&
+    ((typeof actual === 'number' && Number.isFinite(actual)) ||
+      (typeof actual === 'string' &&
+        actual.trim() !== '' &&
+        Number.isFinite(Number(actual))))
   );
+}
+
+function normalizeFormValue(actual: unknown, expected: unknown): unknown {
+  if (numbers(actual, expected)) {
+    return Number(actual);
+  }
+
+  if (actual === '1' && expected === true) {
+    return true;
+  }
+
+  if (actual === '' && (expected === false || expected === null)) {
+    return expected;
+  }
+
+  return actual;
 }
 
 function strings(actual: unknown, expected: unknown): actual is string {

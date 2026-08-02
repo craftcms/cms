@@ -450,7 +450,12 @@ readonly class FormFields
                     || (isset($option['value']) && is_array($values) && in_array($option['value'], $values)),
                 'disabled' => ($showAllOption && $allChecked) || $disabled,
                 'targetPrefix' => $config['targetPrefix'] ?? null,
-            ], $option)))
+            ], $option, [
+                'inputAttributes' => Arr::merge(
+                    ['data' => ['option-disabled' => ($option['disabled'] ?? false) ? 'true' : 'false']],
+                    $option['inputAttributes'] ?? [],
+                ),
+            ])))
             ->all();
 
         return CheckboxSelect::make()

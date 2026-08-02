@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Components\ElementCondition;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
+use CraftCms\Cms\Http\Controllers\ConditionsController;
 
 class TestElementCondition extends BaseCondition
 {
@@ -39,6 +40,11 @@ it('renders an executable condition through the shared primitive without mutatin
         ->toContainTag('craft-element-condition', [
             'id' => 'selection-condition',
             'class' => 'condition-container',
+            'name' => 'selectionCondition',
+            'condition-class' => TestElementCondition::class,
+            'builder-config' => json_encode(['scope' => 'entries'], JSON_THROW_ON_ERROR),
+            'sortable' => 'false',
+            'add-rule-label' => 'Add condition',
             'readonly' => true,
         ])
         ->toContainTag('input', [
@@ -70,6 +76,7 @@ it('registers and deterministically projects serializable condition editor confi
                 'props' => [
                     'conditionClass' => TestElementCondition::class,
                     'builderConfig' => ['scope' => 'entries'],
+                    'renderUrl' => action([ConditionsController::class, 'show']),
                     'sortable' => false,
                     'addRuleLabel' => 'Add condition',
                 ],

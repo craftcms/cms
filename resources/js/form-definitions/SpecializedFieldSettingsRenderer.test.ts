@@ -2,11 +2,14 @@ import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import type CraftCheckbox from '@craftcms/ui/components/checkbox/checkbox';
+import CraftCheckboxSelect from '@craftcms/ui/vue/CraftCheckboxSelect.vue';
+import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
+import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+import '@craftcms/ui/components/checkbox-select/checkbox-select';
+import '@craftcms/ui/components/editable-table/editable-table';
+import '@craftcms/ui/components/select/select';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
-import CheckboxSelectInputRenderer from './renderers/CheckboxSelectInputRenderer.vue';
-import EditableTableInputRenderer from './renderers/EditableTableInputRenderer.vue';
-import SelectInputRenderer from './renderers/SelectInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 
@@ -114,12 +117,14 @@ describe('specialized field settings renderer', () => {
       },
     });
     const container = mount(tableDefinition, values);
-    const columnsTable = container.querySelector<
-      HTMLElementTagNameMap['craft-editable-table']
-    >('[data-editable-table="columnDefinitions"]')!;
-    const defaultsTable = container.querySelector<
-      HTMLElementTagNameMap['craft-editable-table']
-    >('[data-editable-table="defaultRows"]')!;
+    const [columnsTable, defaultsTable] = Array.from(
+      container.querySelectorAll<HTMLElementTagNameMap['craft-editable-table']>(
+        'craft-editable-table'
+      )
+    ) as [
+      HTMLElementTagNameMap['craft-editable-table'],
+      HTMLElementTagNameMap['craft-editable-table'],
+    ];
 
     await settleTables(columnsTable, defaultsTable);
     const columnsRoot = columnsTable.shadowRoot!;
@@ -286,9 +291,9 @@ describe('specialized field settings renderer', () => {
       },
     });
     const container = mount(tableDefinition, values);
-    const defaultsTable = container.querySelector<
+    const defaultsTable = container.querySelectorAll<
       HTMLElementTagNameMap['craft-editable-table']
-    >('[data-editable-table="defaultRows"]')!;
+    >('craft-editable-table')[1]!;
 
     await settleTables(defaultsTable);
     const row = defaultsTable.shadowRoot!.querySelector<HTMLElement>(
@@ -406,14 +411,14 @@ function mount(
 
   registry.register(
     'form-element:craft:checkbox-select-input',
-    CheckboxSelectInputRenderer
+    CraftCheckboxSelect
   );
   registry.register(
     'form-element:craft:editable-table-input',
-    EditableTableInputRenderer
+    CraftEditableTable
   );
   registry.register('form-element:craft:lightswitch-input', CraftSwitch);
-  registry.register('form-element:craft:select-input', SelectInputRenderer);
+  registry.register('form-element:craft:select-input', CraftSelect);
   (window as any).Cp = {$components: registry};
   document.body.appendChild(container);
   const app = createApp(FormDefinitionRenderer, {

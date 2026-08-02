@@ -8,8 +8,10 @@ use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use Override;
 
 class ElementCondition extends ViewComponent implements FormElement
@@ -142,6 +144,7 @@ class ElementCondition extends ViewComponent implements FormElement
         $props = array_filter([
             'conditionClass' => $conditionClass,
             'builderConfig' => $builderConfig,
+            'renderUrl' => action([ConditionsController::class, 'show']),
             'sortable' => $this->resolvedBool('sortable', $this->sortable, 'Form Definition'),
             'addRuleLabel' => $this->resolvedText('addRuleLabel', $this->addRuleLabel, 'Form Definition'),
         ], fn (mixed $value): bool => $value !== null);
@@ -199,6 +202,11 @@ class ElementCondition extends ViewComponent implements FormElement
             [
                 'id' => $condition->id,
                 'class' => ['condition-container'],
+                'name' => $name,
+                'condition-class' => $condition::class,
+                'builder-config' => Json::encode($condition->getBuilderConfig(), JSON_THROW_ON_ERROR),
+                'sortable' => $condition->sortable ? 'true' : 'false',
+                'add-rule-label' => $condition->addRuleLabel,
             ],
         );
 

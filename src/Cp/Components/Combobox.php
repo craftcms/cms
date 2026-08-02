@@ -143,6 +143,7 @@ class Combobox extends ViewComponent implements FormElement
     {
         $this->rejectConfiguredOptions([
             'value',
+            'allowAliases',
             'labelledBy',
             'describedBy',
             'disabled',
@@ -162,13 +163,8 @@ class Combobox extends ViewComponent implements FormElement
             $this->unsupportedOutputOption('options', 'Form Definition');
         }
 
-        $allowAliases = $this->evaluate($this->allowAliases);
         $limit = $this->evaluate($this->limit);
         $clearable = $this->evaluate($this->clearable);
-
-        if (! is_bool($allowAliases)) {
-            $this->unsupportedOutputOption('allowAliases', 'Form Definition');
-        }
 
         if (! is_int($limit) || $limit < 1) {
             $this->unsupportedOutputOption('limit', 'Form Definition');
@@ -199,7 +195,6 @@ class Combobox extends ViewComponent implements FormElement
         $props = array_filter([
             'options' => $options,
             'placeholder' => $this->portableText('placeholder', $this->placeholder),
-            'allowAliases' => $allowAliases ?: null,
             'limit' => $limit === 150 ? null : $limit,
             'clearable' => $clearable ?: null,
         ], fn (mixed $value): bool => $value !== null);

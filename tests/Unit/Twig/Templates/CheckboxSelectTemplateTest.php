@@ -6,24 +6,24 @@ use CraftCms\Cms\View\TemplateMode;
 
 use function CraftCms\Cms\renderString;
 
-it('renders the fieldset from the legacy checkboxSelect variables', function () {
+it('renders the component from the legacy checkboxSelect variables', function () {
     $html = renderString(
         "{% include '_includes/forms/checkboxSelect' with {id: 's', name: 'sources', options: {a: 'Alpha', b: 'Beta'}, values: ['b']} only %}",
         templateMode: TemplateMode::Cp,
     );
 
-    expect($html)->toContain('<fieldset')
+    expect($html)->toContain('<craft-checkbox-select')
         ->and($html)->toContain('id="s"')
         ->and($html)->toContain('class="cp-checkbox-select"')
         ->and($html)->toContain('<input type="hidden" name="sources" value>')
         ->and($html)->toContain('name="sources[]"')
         ->and($html)->toContain('<div class="cp-checkbox-select__item">')
-        ->and(substr_count($html, '<craft-checkbox'))->toBe(2);
+        ->and(substr_count($html, '<craft-checkbox>'))->toBe(2);
 });
 
 it('renders a checked All option that disables the items', function () {
     $html = renderString(
-        "{% include '_includes/forms/checkboxSelect' with {id: 's', name: 'sources', options: {a: 'Alpha'}, values: '*', showAllOption: true} only %}",
+        "{% include '_includes/forms/checkboxSelect' with {id: 's', name: 'sources', options: [{label: 'Alpha', value: 'a', disabled: true}], values: '*', showAllOption: true} only %}",
         templateMode: TemplateMode::Cp,
     );
 
@@ -32,6 +32,7 @@ it('renders a checked All option that disables the items', function () {
         ->and($html)->toContain('value="*"')
         ->and(substr_count($html, 'type="hidden"'))->toBe(1)
         ->and(substr_count($html, ' checked'))->toBeGreaterThanOrEqual(2) // All + item
+        ->and($html)->toContain('data-option-disabled="true"')
         ->and($html)->toContain(' disabled');
 });
 

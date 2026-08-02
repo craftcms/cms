@@ -54,6 +54,24 @@ export default class CraftInput extends LionInput {
       }
     }
   }
+
+  override formatter(value: unknown) {
+    const formatted = super.formatter(value);
+
+    if (typeof formatted !== 'string') {
+      return formatted;
+    }
+
+    if (this.type === 'date') {
+      return formatted.slice(0, 10);
+    }
+
+    if (this.type === 'time') {
+      return formatted.slice(0, 5);
+    }
+
+    return formatted;
+  }
 }
 
 if (!customElements.get('craft-input')) {

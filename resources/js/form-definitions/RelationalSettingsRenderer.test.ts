@@ -1,18 +1,15 @@
 import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+import CraftCheckboxSelect from '@craftcms/ui/vue/CraftCheckboxSelect.vue';
+import CraftElementCondition from '@craftcms/ui/vue/CraftElementCondition.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+import '@craftcms/ui/components/checkbox-select/checkbox-select';
+import '@craftcms/ui/components/element-condition/element-condition';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
-import CheckboxSelectInputRenderer from './renderers/CheckboxSelectInputRenderer.vue';
-import ElementConditionInputRenderer from './renderers/ElementConditionInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
-type CheckboxGroupElement = HTMLElement & {
-  registrationComplete: Promise<unknown>;
-  updateComplete: Promise<unknown>;
-};
-
 beforeEach(() => {
   vi.spyOn(globalThis, 'fetch').mockImplementation((_input, init) => {
     const request = init?.body as FormData;
@@ -56,12 +53,11 @@ describe('relational settings renderers', () => {
       container.querySelector<HTMLElementTagNameMap['craft-input']>(
         'craft-input'
       )!;
-    const checkboxGroup = container.querySelector<CheckboxGroupElement>(
-      'craft-checkbox-group'
-    )!;
+    const checkboxSelect = container.querySelector<
+      HTMLElementTagNameMap['craft-checkbox-select']
+    >('craft-checkbox-select')!;
 
-    await checkboxGroup.registrationComplete;
-    await checkboxGroup.updateComplete;
+    await checkboxSelect.updateComplete;
     await vi.waitFor(() => {
       expect(
         container.querySelector('[data-condition-rule-value]')
@@ -91,7 +87,8 @@ describe('relational settings renderers', () => {
       true,
       true,
     ]);
-    expect(checkboxes[0]!.name).toBe('settings[sources][]');
+    expect(checkboxes[0]!.name).toBe('settings[sources]');
+    expect(checkboxes[1]!.name).toBe('settings[sources][]');
     expect(
       restrictedSubpath.closest<HTMLElement>('[data-form-element]')!.style
         .display
@@ -201,13 +198,15 @@ describe('relational settings renderers', () => {
     const {container} = mount(values, false, {
       'settings.selectionCondition': ['Add at least one condition rule.'],
     });
-
-    await vi.waitFor(() => {
-      expect(container.querySelector('[role="alert"]')).not.toBeNull();
-    });
     const condition = container.querySelector<
       HTMLElementTagNameMap['craft-element-condition']
     >('craft-element-condition')!;
+
+    await vi.waitFor(() => {
+      expect(
+        condition.shadowRoot!.querySelector('[role="alert"]')
+      ).not.toBeNull();
+    });
     const field =
       condition.closest<HTMLElementTagNameMap['craft-field']>('craft-field')!;
     await field.updateComplete;
@@ -219,7 +218,8 @@ describe('relational settings renderers', () => {
     const feedback = field.querySelector<HTMLElement>(
       '[data-form-element-errors]'
     )!;
-    const error = condition.querySelector<HTMLElement>('[role="alert"]')!;
+    const error =
+      condition.shadowRoot!.querySelector<HTMLElement>('[role="alert"]')!;
 
     expect(error.textContent).toContain('Element Condition');
     expect(error.textContent).toContain('conditionRules');
@@ -247,11 +247,11 @@ function mount(
 
   registry.register(
     'form-element:craft:checkbox-select-input',
-    CheckboxSelectInputRenderer
+    CraftCheckboxSelect
   );
   registry.register(
     'form-element:craft:element-condition-input',
-    ElementConditionInputRenderer
+    CraftElementCondition
   );
   registry.register('form-element:craft:lightswitch-input', CraftSwitch);
   registry.register('form-element:craft:text-input', CraftInput);
@@ -294,6 +294,7 @@ const definition = {
       {
         conditionClass: 'AssetCondition',
         builderConfig: {},
+        renderUrl: '/actions/conditions/render',
         sortable: true,
         addRuleLabel: 'Add a rule',
       },

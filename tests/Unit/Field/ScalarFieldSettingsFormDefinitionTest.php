@@ -72,7 +72,7 @@ it('projects the complete Plain Text settings surface', function () {
                 'children' => [[
                     'type' => 'craft:number-input',
                     'name' => 'charLimit',
-                    'props' => ['min' => 1],
+                    'props' => ['type' => 'number', 'min' => 1],
                 ]],
             ],
             [
@@ -84,7 +84,7 @@ it('projects the complete Plain Text settings surface', function () {
                 'children' => [[
                     'type' => 'craft:number-input',
                     'name' => 'byteLimit',
-                    'props' => ['min' => 1],
+                    'props' => ['type' => 'number', 'min' => 1],
                 ]],
             ],
             [
@@ -109,7 +109,7 @@ it('projects the complete Plain Text settings surface', function () {
                 'children' => [[
                     'type' => 'craft:number-input',
                     'name' => 'initialRows',
-                    'props' => ['min' => 1],
+                    'props' => ['type' => 'number', 'min' => 1],
                 ]],
                 'visibleWhen' => [
                     'name' => 'multiline',
@@ -172,11 +172,11 @@ it('projects the complete Number settings surface', function () {
     ])->and($inputs['decimals'])->toMatchArray([
         'type' => 'craft:number-input',
         'label' => 'Decimal Points',
-        'props' => ['min' => 0],
+        'props' => ['type' => 'number', 'min' => 0],
     ])->and($inputs['size'])->toMatchArray([
         'type' => 'craft:number-input',
         'label' => 'Size',
-        'props' => ['min' => 1],
+        'props' => ['type' => 'number', 'min' => 1],
     ])->and($inputs['defaultValue'])->toMatchArray([
         'type' => 'craft:number-input',
         'label' => 'Default Value',
@@ -470,22 +470,22 @@ it('projects the complete Money settings surface with currency subunits', functi
     ])->and($inputs['defaultValue'])->toMatchArray([
         'type' => 'craft:money-input',
         'label' => 'Default Value',
-        'props' => ['fractionDigits' => 2],
+        'props' => ['fractionDigits' => 2, 'minorUnits' => true],
     ])->and($inputs['min'])->toMatchArray([
         'type' => 'craft:money-input',
         'label' => 'Min Value',
-        'props' => ['fractionDigits' => 2],
+        'props' => ['fractionDigits' => 2, 'minorUnits' => true],
     ])->and($inputs['max'])->toMatchArray([
         'type' => 'craft:money-input',
         'label' => 'Max Value',
-        'props' => ['fractionDigits' => 2],
+        'props' => ['fractionDigits' => 2, 'minorUnits' => true],
     ])->and($inputs['showCurrency'])->toMatchArray([
         'type' => 'craft:lightswitch-input',
         'label' => 'Show Currency',
     ])->and($inputs['size'])->toMatchArray([
         'type' => 'craft:number-input',
         'label' => 'Size',
-        'props' => ['min' => 1],
+        'props' => ['type' => 'number', 'min' => 1],
     ]);
 });
 

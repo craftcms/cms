@@ -1,5 +1,4 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
-import type CraftInputMoney from './input-money.js';
 import './input-money.js';
 
 beforeEach(() => {
@@ -57,5 +56,30 @@ describe('craft-input-money', () => {
     expect(input.type).toBe('text');
     expect(input.pattern).toBe('-?[0-9,]+');
     expect(input.value).toBe('');
+  });
+
+  it('formats and parses minor-unit model values without losing precision', () => {
+    const element = document.createElement('craft-input-money');
+
+    element.minorUnits = true;
+    element.fractionDigits = 2;
+
+    expect(element.formatter(1234)).toBe('12.34');
+    expect(element.formatter(null)).toBe('');
+    expect(element.formatter('900719925474099301')).toBe('9007199254740993.01');
+    expect(element.parser('12.34')).toBe(1234);
+    expect(element.parser('9007199254740993.01')).toBe('900719925474099301');
+    expect(element.parser('')).toBe('');
+  });
+
+  it('uses the configured decimal separator for minor-unit values', () => {
+    const element = document.createElement('craft-input-money');
+
+    element.minorUnits = true;
+    element.decimalSeparator = ',';
+    element.groupSeparator = '.';
+
+    expect(element.formatter(1234)).toBe('12,34');
+    expect(element.parser('1.234,56')).toBe(123456);
   });
 });

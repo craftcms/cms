@@ -113,6 +113,7 @@ class MoneyInput extends ScalarInput
         return [
             'currency' => $this->portableText('currency', $this->currency),
             'fractionDigits' => $fractionDigits,
+            'minorUnits' => true,
             'placeholder' => $this->portableText('placeholder', $this->placeholder),
         ];
     }

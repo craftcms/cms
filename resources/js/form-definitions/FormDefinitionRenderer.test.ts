@@ -1,18 +1,17 @@
 import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import CraftColorPalette from '@craftcms/ui/vue/CraftColorPalette.vue';
+import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
 import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+import CraftInputMoney from '@craftcms/ui/vue/CraftInputMoney.vue';
+import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import '@craftcms/ui/components/color-palette/color-palette';
+import '@craftcms/ui/components/editable-table/editable-table';
 import '@craftcms/ui/components/input/input';
+import '@craftcms/ui/components/select/select';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
-import DateInputRenderer from './renderers/DateInputRenderer.vue';
-import EditableTableInputRenderer from './renderers/EditableTableInputRenderer.vue';
-import MoneyInputRenderer from './renderers/MoneyInputRenderer.vue';
-import NumberInputRenderer from './renderers/NumberInputRenderer.vue';
-import SelectInputRenderer from './renderers/SelectInputRenderer.vue';
-import TimeInputRenderer from './renderers/TimeInputRenderer.vue';
 
 const definition = {
   elements: [
@@ -46,7 +45,7 @@ afterEach(() => {
 });
 
 describe('Form Definition renderer', () => {
-  it('renders scalar controls and preserves their host value types', async () => {
+  it('renders scalar controls with browser-native form values', async () => {
     const registry = createCpComponentRegistry();
     const values = reactive({
       settings: {
@@ -62,13 +61,13 @@ describe('Form Definition renderer', () => {
     });
     const container = document.createElement('div');
 
-    registry.register('form-element:craft:select-input', SelectInputRenderer);
+    registry.register('form-element:craft:select-input', CraftSelect);
     registry.register('form-element:craft:text-input', CraftInput);
-    registry.register('form-element:craft:number-input', NumberInputRenderer);
+    registry.register('form-element:craft:number-input', CraftInput);
     registry.register('form-element:craft:lightswitch-input', CraftSwitch);
-    registry.register('form-element:craft:date-input', DateInputRenderer);
-    registry.register('form-element:craft:time-input', TimeInputRenderer);
-    registry.register('form-element:craft:money-input', MoneyInputRenderer);
+    registry.register('form-element:craft:date-input', CraftInput);
+    registry.register('form-element:craft:time-input', CraftInput);
+    registry.register('form-element:craft:money-input', CraftInputMoney);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
     const app = createApp(FormDefinitionRenderer, {
@@ -99,17 +98,27 @@ describe('Form Definition renderer', () => {
           scalarField('craft:text-input', 'title', {
             placeholder: 'Article title',
           }),
-          scalarField('craft:number-input', 'charLimit', {min: 1}),
+          scalarField('craft:number-input', 'charLimit', {
+            type: 'number',
+            min: 1,
+          }),
           scalarField('craft:lightswitch-input', 'code'),
           {
             type: 'craft:field',
             props: {tip: 'Dates use the project time zone.'},
-            children: [{type: 'craft:date-input', name: 'minDate'}],
+            children: [
+              {
+                type: 'craft:date-input',
+                name: 'minDate',
+                props: {type: 'date'},
+              },
+            ],
           },
-          scalarField('craft:time-input', 'minTime'),
+          scalarField('craft:time-input', 'minTime', {type: 'time'}),
           scalarField('craft:money-input', 'defaultValue', {
             currency: 'USD',
             fractionDigits: 2,
+            minorUnits: true,
             placeholder: '0.00',
           }),
         ],
@@ -161,9 +170,9 @@ describe('Form Definition renderer', () => {
     expect(text.value).toBe('Craft');
     expect(text.placeholder).toBe('Article title');
     expect(lightswitch.checked).toBe(true);
-    expect(date.value).toBe('2026-01-02');
-    expect(time.value).toBe('08:30');
-    expect(money.value).toBe('12.34');
+    expect(date.formatter(date.modelValue)).toBe('2026-01-02');
+    expect(time.formatter(time.modelValue)).toBe('08:30');
+    expect(money.formatter(money.modelValue)).toBe('12.34');
     expect(money.currency).toBe('USD');
     expect(money.fractionDigits).toBe(2);
     expect(money.placeholder).toBe('0.00');
@@ -179,8 +188,10 @@ describe('Form Definition renderer', () => {
     lightswitch.dispatchEvent(
       new Event('model-value-changed', {bubbles: true})
     );
-    money.value = '56.78';
-    money.dispatchEvent(new Event('input', {bubbles: true}));
+    money.modelValue = 5678;
+    money.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
     date.modelValue = '2027-03-04';
     date.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     time.modelValue = '09:45';
@@ -191,34 +202,36 @@ describe('Form Definition renderer', () => {
     await nextTick();
 
     expect(values.settings.title).toBe('Craft CMS');
-    expect(values.settings.charLimit).toBe(120);
+    expect(values.settings.charLimit).toBe('120');
     expect(values.settings.code).toBe(false);
     expect(values.settings.defaultValue).toBe(5678);
-    expect(values.settings.minuteIncrement).toBe(30);
+    expect(values.settings.minuteIncrement).toBe('30');
     expect(values.settings.minDate).toBe('2027-03-04');
     expect(values.settings.minTime).toBe('09:45');
 
     number.modelValue = '';
     number.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
-    money.value = '';
-    money.dispatchEvent(new Event('input', {bubbles: true}));
+    money.modelValue = '';
+    money.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
     date.modelValue = '';
     date.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     time.modelValue = '';
     time.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     await nextTick();
 
-    expect(values.settings.charLimit).toBeNull();
-    expect(values.settings.defaultValue).toBeNull();
-    expect(values.settings.minDate).toBeNull();
-    expect(values.settings.minTime).toBeNull();
+    expect(values.settings.charLimit).toBe('');
+    expect(values.settings.defaultValue).toBe('');
+    expect(values.settings.minDate).toBe('');
+    expect(values.settings.minTime).toBe('');
   });
 
   it('applies host errors, read-only state, and accessibility to money inputs', async () => {
     const registry = createCpComponentRegistry();
     const container = document.createElement('div');
 
-    registry.register('form-element:craft:money-input', MoneyInputRenderer);
+    registry.register('form-element:craft:money-input', CraftInputMoney);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
     const app = createApp(FormDefinitionRenderer, {
@@ -231,7 +244,11 @@ describe('Form Definition renderer', () => {
               {
                 type: 'craft:money-input',
                 name: 'minimum',
-                props: {currency: 'EUR', fractionDigits: 2},
+                props: {
+                  currency: 'EUR',
+                  fractionDigits: 2,
+                  minorUnits: true,
+                },
               },
             ],
           },
@@ -253,7 +270,7 @@ describe('Form Definition renderer', () => {
 
     await money.updateComplete;
 
-    expect(money.value).toBe('2.50');
+    expect(money.formatter(money.modelValue)).toBe('2.50');
     expect(money.name).toBe('settings[minimum]');
     expect(money.readOnly).toBe(true);
     expect(money.getAttribute('aria-required')).toBe('true');
@@ -461,7 +478,7 @@ describe('Form Definition renderer', () => {
 
     registry.register(
       'form-element:craft:editable-table-input',
-      EditableTableInputRenderer
+      CraftEditableTable
     );
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);

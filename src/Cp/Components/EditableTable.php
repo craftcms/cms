@@ -228,8 +228,6 @@ class EditableTable extends ViewComponent implements FormElement
     #[Override]
     protected function hostAttributes(): array
     {
-        $this->rejectConfiguredOptions(['sourceName'], 'HTML');
-
         $columns = $this->resolvedColumns('HTML');
         $defaultRow = $this->resolvedDefaultRow('HTML');
         $keyed = $this->resolvedBool('keyed', $this->keyed, 'HTML');
@@ -239,6 +237,7 @@ class EditableTable extends ViewComponent implements FormElement
 
         return [
             'name' => $this->resolvedText('name', $this->name, 'HTML'),
+            'source-name' => $this->resolvedText('sourceName', $this->sourceName, 'HTML'),
             'value' => Json::encode($value, JSON_THROW_ON_ERROR),
             'columns' => Json::encode($columns, JSON_THROW_ON_ERROR),
             'add-row-label' => $this->resolvedText('addRowLabel', $this->addRowLabel, 'HTML'),

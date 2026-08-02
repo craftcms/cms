@@ -21,7 +21,7 @@ describe('scalar and checked Form Element Renderers', () => {
         enabled: true,
         date: '2026-01-02T03:04:05+00:00' as string | null,
         time: '08:30:59' as string | null,
-        limit: 42 as number | null,
+        limit: 42 as number | string,
       },
     });
     const container = document.createElement('div');
@@ -36,9 +36,9 @@ describe('scalar and checked Form Element Renderers', () => {
         elements: [
           input('craft:text-input', 'title', {placeholder: 'Title'}),
           input('craft:lightswitch-input', 'enabled'),
-          input('craft:date-input', 'date'),
-          input('craft:time-input', 'time'),
-          input('craft:number-input', 'limit', {min: 1}),
+          input('craft:date-input', 'date', {type: 'date'}),
+          input('craft:time-input', 'time', {type: 'time'}),
+          input('craft:number-input', 'limit', {type: 'number', min: 1}),
         ],
       },
       bindingScope: 'settings',
@@ -61,9 +61,11 @@ describe('scalar and checked Form Element Renderers', () => {
     expect(text.modelValue).toBe('Craft');
     expect(text.placeholder).toBe('Title');
     expect(lightswitch.checked).toBe(true);
-    expect(date.modelValue).toBe('2026-01-02');
-    expect(time.modelValue).toBe('08:30');
-    expect(number.modelValue).toBe('42');
+    expect(date.modelValue).toBe('2026-01-02T03:04:05+00:00');
+    expect(date.formatter(date.modelValue)).toBe('2026-01-02');
+    expect(time.modelValue).toBe('08:30:59');
+    expect(time.formatter(time.modelValue)).toBe('08:30');
+    expect(number.modelValue).toBe(42);
     expect(number.getAttribute('min')).toBe('1');
 
     dispatchInitializationEvent(text, '');
@@ -88,7 +90,7 @@ describe('scalar and checked Form Element Renderers', () => {
       enabled: false,
       date: '2027-03-04',
       time: '09:45',
-      limit: 120,
+      limit: '120',
     });
 
     update(date, '');
@@ -96,9 +98,9 @@ describe('scalar and checked Form Element Renderers', () => {
     update(number, '');
     await nextTick();
 
-    expect(values.settings.date).toBeNull();
-    expect(values.settings.time).toBeNull();
-    expect(values.settings.limit).toBeNull();
+    expect(values.settings.date).toBe('');
+    expect(values.settings.time).toBe('');
+    expect(values.settings.limit).toBe('');
   });
 
   it('disables a checked control in an effectively read-only form', () => {

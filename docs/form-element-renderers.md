@@ -133,23 +133,9 @@ Plugins deliver PHP and JavaScript together and declare compatible Craft version
 
 If a plugin-owned renderer is unavailable, Craft shows the type and derived plugin ownership. Missing core or application renderers throw. Exceptions from registered renderers produce a separate failed-renderer diagnostic.
 
-## Retained core semantic adapters
+## Core renderers
 
-Core registers generated wrappers directly unless one of these Form Element Renderers owns additional semantics:
-
-| Form Element Type | Retained responsibility |
-| --- | --- |
-| `craft:checkbox-select-input` | Restores typed option values, authored and sortable selection order, per-option disabled state, and the special “all” selection. |
-| `craft:combobox-input` | Preserves string editing and adds the alias-specific explanatory callout. |
-| `craft:date-input` | Truncates date-time input to `YYYY-MM-DD` and converts an empty value to `null`. |
-| `craft:editable-table-input` | Connects the explicit source name and column coordination scope while preserving keyed or unkeyed row values. |
-| `craft:element-condition-input` | Requests and initializes server-rendered condition UI, applies returned assets, and synchronizes later DOM changes to the host value. |
-| `craft:money-input` | Converts between displayed major units and transport minor units at the configured precision without losing large integer values. |
-| `craft:number-input` | Converts the browser string value to a numeric or `null` transport value. |
-| `craft:select-input` | Renders authored options and restores their original string, number, boolean, or `null` value after DOM selection. |
-| `craft:time-input` | Truncates time input to `HH:mm` and converts an empty value to `null`. |
-
-An adapter without a responsibility in this inventory should be replaced by its generated wrapper.
+Core Form Element Types register generated `@craftcms/ui` Vue wrappers directly. Runtime semantics belong to the corresponding web component so the same behavior is available to Form Definitions and server-rendered Twig markup. Add a custom renderer only when a type has observable Vue-specific behavior that cannot belong to its browser primitive.
 
 ## Legacy Settings Islands
 

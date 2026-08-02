@@ -271,10 +271,8 @@ export default class CraftEditableTable extends LitElement {
   @property({reflect: true}) name: string | null = null;
 
   /** Local Form Definition name used to coordinate dependent tables. */
-  @property({attribute: false}) sourceName: string | null = null;
-
-  /** Host-owned identity that isolates related table coordination. */
-  @property({attribute: false}) coordinationScope: object | null = null;
+  @property({attribute: 'source-name', reflect: true})
+  sourceName: string | null = null;
 
   /** Current ordered or keyed rows. */
   @property({converter: valueConverter}) value: EditableTableValue = [];
@@ -352,7 +350,6 @@ export default class CraftEditableTable extends LitElement {
     if (
       changedProperties.has('columnsFrom') ||
       changedProperties.has('sourceName') ||
-      changedProperties.has('coordinationScope') ||
       changedProperties.has('name')
     ) {
       this._connectColumns();
@@ -947,7 +944,11 @@ export default class CraftEditableTable extends LitElement {
   }
 
   private _scope(): object {
-    return this.coordinationScope ?? this.closest('form') ?? this.getRootNode();
+    return (
+      this.closest('[data-form-definition-root]') ??
+      this.closest('form') ??
+      this.getRootNode()
+    );
   }
 
   private _connectColumns() {

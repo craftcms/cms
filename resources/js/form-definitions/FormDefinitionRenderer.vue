@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import {computed, provide} from 'vue';
-  import {editableTableCoordinationScope} from './editable-table-columns';
+  import {computed} from 'vue';
   import FormElementRenderer from './FormElementRenderer.vue';
   import {isSharedContainer} from './form-element-types';
   import {reconciliationKey} from './reconciliation';
@@ -21,8 +20,6 @@
     }>(),
     {readOnly: false}
   );
-
-  provide(editableTableCoordinationScope, {});
 
   const context = computed(() => ({
     bindingScope: props.bindingScope,
@@ -53,10 +50,12 @@
 </script>
 
 <template>
-  <FormElementRenderer
-    v-for="(element, index) in renderableElements"
-    :key="reconciliationKey(element, index)"
-    :element="element"
-    :context="context"
-  />
+  <div data-form-definition-root style="display: contents">
+    <FormElementRenderer
+      v-for="(element, index) in renderableElements"
+      :key="reconciliationKey(element, index)"
+      :element="element"
+      :context="context"
+    />
+  </div>
 </template>

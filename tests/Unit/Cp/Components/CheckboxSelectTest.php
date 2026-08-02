@@ -6,7 +6,7 @@ use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 
 describe('checkbox select', function () {
-    it('renders the fieldset with wrapped items', function () {
+    it('renders the checkbox-select component with wrapped items', function () {
         $html = CheckboxSelect::make()
             ->id('sources')
             ->name('sources')
@@ -15,7 +15,7 @@ describe('checkbox select', function () {
             ])
             ->toHtml();
 
-        expect($html)->toContain('<fieldset id="sources" class="cp-checkbox-select">')
+        expect($html)->toContain('<craft-checkbox-select id="sources" name="sources" class="cp-checkbox-select">')
             ->and($html)->toContain('<input type="hidden" name="sources" value>')
             ->and($html)->toContain('<div class="cp-checkbox-select__item">');
     });

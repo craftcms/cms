@@ -19,6 +19,7 @@ it('renders editable table configuration and host values through the shared prim
     ];
     $html = EditableTable::make()
         ->name('rows')
+        ->sourceName('storyRows')
         ->value($value)
         ->columns($columns)
         ->addRowLabel('Add story')
@@ -29,6 +30,7 @@ it('renders editable table configuration and host values through the shared prim
 
     expect($html)->toContainTag('craft-editable-table', [
         'name' => 'rows',
+        'source-name' => 'storyRows',
         'value' => json_encode($value, JSON_THROW_ON_ERROR),
         'columns' => json_encode($columns, JSON_THROW_ON_ERROR),
         'add-row-label' => 'Add story',
@@ -184,7 +186,6 @@ it('rejects unsupported HTML table configuration before rendering', function (Ed
         sprintf('%s option "%s" is not supported for HTML output.', $component::class, $option),
     );
 })->with([
-    'editable source name' => [fn () => EditableTable::make()->sourceName('rows'), 'sourceName'],
     'editable value' => [
         fn () => EditableTable::make()->value([['value' => fn () => 'value']]),
         'value[0][value]',

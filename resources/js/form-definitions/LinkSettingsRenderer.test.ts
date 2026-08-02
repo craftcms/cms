@@ -1,9 +1,10 @@
 import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import CraftCheckboxSelect from '@craftcms/ui/vue/CraftCheckboxSelect.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+import '@craftcms/ui/components/checkbox-select/checkbox-select';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
-import CheckboxSelectInputRenderer from './renderers/CheckboxSelectInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 
@@ -29,7 +30,7 @@ describe('Link settings renderer', () => {
 
     registry.register(
       'form-element:craft:checkbox-select-input',
-      CheckboxSelectInputRenderer
+      CraftCheckboxSelect
     );
     registry.register('form-element:craft:lightswitch-input', CraftSwitch);
     (window as any).Cp = {$components: registry};

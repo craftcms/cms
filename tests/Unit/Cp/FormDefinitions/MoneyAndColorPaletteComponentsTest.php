@@ -141,6 +141,7 @@ it('registers and projects money and color palette components', function () {
                     'props' => [
                         'currency' => 'USD',
                         'fractionDigits' => 2,
+                        'minorUnits' => true,
                         'placeholder' => '0.00',
                     ],
                 ]],

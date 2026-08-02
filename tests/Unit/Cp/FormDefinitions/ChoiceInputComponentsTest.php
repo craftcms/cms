@@ -134,14 +134,16 @@ it('renders checkbox selection order, all behavior, and sortable presentation', 
         ->toHtml();
 
     expect($html)->toStartWith('<craft-sortable-checkbox-select>')
-        ->and($html)->toContainTag('fieldset', [
+        ->and($html)->toContainTag('craft-checkbox-select', [
             'id' => 'sources',
+            'name' => 'sources',
             'class' => 'cp-checkbox-select',
         ])
         ->and($html)->toContain('value="documents" checked')
         ->and(strpos($html, 'value="documents"'))->toBeLessThan(strpos($html, 'value="images"'))
         ->and($html)->toContain('background-color: #ff0000')
-        ->and($html)->toContain('value="locked" disabled');
+        ->and($html)->toContain('value="locked" disabled')
+        ->and($html)->toContain('data-option-disabled="true"');
 
     $allHtml = CheckboxSelect::make()
         ->id('all-sources')
@@ -239,9 +241,9 @@ it('projects immutable choice option data and portable presentation', function (
             ->name('path')
             ->options($comboboxOptions)
             ->placeholder('/path/to/folder')
-            ->allowAliases()
             ->limit(25)
-            ->clearable()),
+            ->clearable())
+            ->tip('This can begin with an environment variable or alias.'),
         Field::make(CheckboxSelect::make()
             ->name('sources')
             ->options($checkboxOptions)
@@ -260,13 +262,15 @@ it('projects immutable choice option data and portable presentation', function (
             ]],
         ], [
             'type' => 'craft:field',
+            'props' => [
+                'tip' => 'This can begin with an environment variable or alias.',
+            ],
             'children' => [[
                 'type' => 'craft:combobox-input',
                 'name' => 'path',
                 'props' => [
                     'options' => $comboboxOptions,
                     'placeholder' => '/path/to/folder',
-                    'allowAliases' => true,
                     'limit' => 25,
                     'clearable' => true,
                 ],
@@ -316,6 +320,7 @@ it('rejects host-owned choice state during projection', function (
 })->with([
     'select value' => [fn () => Select::make()->name('status')->options([])->value(null), 'value'],
     'combobox value' => [fn () => Combobox::make()->name('path')->options([])->value(null), 'value'],
+    'combobox alias guidance' => [fn () => Combobox::make()->name('path')->options([])->allowAliases(), 'allowAliases'],
     'checkbox values' => [fn () => CheckboxSelect::make()->name('sources')->options([])->values([]), 'values'],
     'checkbox HTML options' => [
         fn () => CheckboxSelect::make()->name('sources')->options([

@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Html;
 /**
  * Checkbox select — the PHP counterpart to the legacy
  * `_includes/forms/checkboxSelect` template. Renders a
- * `fieldset.cp-checkbox-select` of {@see Checkbox} items, with an optional
+ * `craft-checkbox-select.cp-checkbox-select` of {@see Checkbox} items, with an optional
  * "All" checkbox (or an always-post hidden input) first, optionally wrapped
  * in a `<craft-sortable-checkbox-select>` for drag reordering.
  *
@@ -56,7 +56,7 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
 
     protected function tagName(): string
     {
-        return 'fieldset';
+        return 'craft-checkbox-select';
     }
 
     /** The "All" checkbox, rendered before the items. */
@@ -85,7 +85,7 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
         return $this;
     }
 
-    /** Wraps the fieldset in a `<craft-sortable-checkbox-select>`. */
+    /** Wraps the component in a `<craft-sortable-checkbox-select>`. */
     public function sortable(bool|Closure $sortable = true): static
     {
         $this->trackConfiguration('sortable');
@@ -185,8 +185,14 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
     #[\Override]
     protected function hostAttributes(): array
     {
+        $allOption = $this->hasAllOption ? $this->evaluate($this->allOption) : null;
+
         return [
             'id' => $this->getId(),
+            'name' => $this->evaluate($this->name),
+            'all-option' => $this->hasAllOption ? $this->htmlOptionValue($allOption) : null,
+            'sortable' => (bool) $this->evaluate($this->sortable),
+            'disabled' => $this->isDisabled(),
             'class' => 'cp-checkbox-select',
             'data' => [
                 'storage-key' => $this->evaluate($this->storageKey),
@@ -275,7 +281,10 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
                 ->icon($option['icon'] ?? null)
                 ->color($option['color'] ?? null)
                 ->checked($allChecked || (is_array($values) && in_array($optionValue, $values)))
-                ->disabled($allChecked || $this->isDisabled() || (bool) ($option['disabled'] ?? false));
+                ->disabled($allChecked || $this->isDisabled() || (bool) ($option['disabled'] ?? false))
+                ->inputAttributes([
+                    'data' => ['option-disabled' => ($option['disabled'] ?? false) ? 'true' : 'false'],
+                ]);
 
             if ($isAll) {
                 $this->resolvedAllCheckbox = $checkbox;
@@ -295,7 +304,7 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
         return ['class' => 'cp-checkbox-select__item'];
     }
 
-    /** Wraps the fieldset in the sortable web component when enabled. */
+    /** Wraps the component in the sortable web component when enabled. */
     #[\Override]
     protected function renderMarkup(): string
     {

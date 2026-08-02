@@ -3,6 +3,8 @@ import {resolve} from 'node:path';
 import {createApp, defineComponent, h, nextTick, ref} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import CraftColorPalette from '../dist/vue/CraftColorPalette.vue';
+import CraftEditableTable from '../dist/vue/CraftEditableTable.vue';
+import CraftElementCondition from '../dist/vue/CraftElementCondition.vue';
 import CraftFieldLayout from '../dist/vue/CraftFieldLayout.vue';
 import CraftKeyedTable from '../dist/vue/CraftKeyedTable.vue';
 import CraftObjectSelect from '../dist/vue/CraftObjectSelect.vue';
@@ -36,6 +38,8 @@ describe('generated property-value wrappers', () => {
   it('generates wrappers for every aligned structured control', () => {
     expect([
       CraftColorPalette,
+      CraftEditableTable,
+      CraftElementCondition,
       CraftKeyedTable,
       CraftObjectSelect,
       CraftFieldLayout,
@@ -138,6 +142,14 @@ describe('generated property-value wrappers', () => {
       resolve(process.cwd(), 'dist/vue/CraftSwitch.vue.d.ts'),
       'utf8'
     );
+    const editableTableWrapper = readFileSync(
+      resolve(process.cwd(), 'dist/vue/CraftEditableTable.vue'),
+      'utf8'
+    );
+    const elementConditionWrapper = readFileSync(
+      resolve(process.cwd(), 'dist/vue/CraftElementCondition.vue'),
+      'utf8'
+    );
 
     expect(propertyDeclaration).toContain('modelValue?: ColorPaletteRow[];');
     expect(propertyDeclaration).toContain(
@@ -146,5 +158,13 @@ describe('generated property-value wrappers', () => {
     expect(checkedDeclaration).toContain('modelValue?: boolean | null;');
     expect(checkedDeclaration).toContain('readonly?: boolean;');
     expect(checkedDeclaration).toContain('onLabel?: string;');
+    expect(editableTableWrapper).toContain('.columns="props.columns ?? []"');
+    expect(editableTableWrapper).toContain(
+      '.readOnly="props.readonly ?? false"'
+    );
+    expect(elementConditionWrapper).toContain('@value-changed="onInput"');
+    expect(elementConditionWrapper).toContain(
+      '.sortable="props.sortable ?? true"'
+    );
   });
 });

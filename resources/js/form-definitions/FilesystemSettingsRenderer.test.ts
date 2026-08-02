@@ -1,9 +1,9 @@
 import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
-import ComboboxInputRenderer from './renderers/ComboboxInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 
@@ -26,10 +26,7 @@ describe('filesystem settings renderer', () => {
     });
     const container = document.createElement('div');
 
-    registry.register(
-      'form-element:craft:combobox-input',
-      ComboboxInputRenderer
-    );
+    registry.register('form-element:craft:combobox-input', CraftCombobox);
     registry.register('form-element:craft:lightswitch-input', CraftSwitch);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
@@ -49,10 +46,12 @@ describe('filesystem settings renderer', () => {
               value: true,
             },
           },
-          field('craft:combobox-input', 'path', {
-            options: [],
-            allowAliases: true,
-          }),
+          {
+            ...field('craft:combobox-input', 'path', {options: []}),
+            props: {
+              tip: 'This can begin with an environment variable or alias.',
+            },
+          },
         ],
       },
       bindingScope: 'types.local',

@@ -14,4 +14,10 @@ class DateInput extends ScalarInput
     {
         return 'craft:date-input';
     }
+
+    /** @return array<string, mixed> */
+    protected function formElementProps(): array
+    {
+        return ['type' => 'date'];
+    }
 }

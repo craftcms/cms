@@ -25,6 +25,10 @@ export default class CraftInputMoney extends CraftInput {
   @property({attribute: 'fraction-digits', reflect: true, type: Number})
   fractionDigits = 2;
 
+  /** Treats the model value as minor currency units. */
+  @property({attribute: 'minor-units', reflect: true, type: Boolean})
+  minorUnits = false;
+
   /** Decimal separator accepted by the formatting locale. */
   @property({attribute: 'decimal-separator', reflect: true})
   decimalSeparator = '.';
@@ -36,6 +40,47 @@ export default class CraftInputMoney extends CraftInput {
   constructor() {
     super();
     this.type = 'text';
+  }
+
+  override parser(value: string) {
+    if (!this.minorUnits || value === '') {
+      return value;
+    }
+
+    const normalized = value.split(this.groupSeparator).join('');
+    const sign = normalized.startsWith('-') ? '-' : '';
+    const [whole = '0', fraction = ''] = normalized
+      .replace(/^-/, '')
+      .split(this.decimalSeparator);
+    const amount =
+      `${whole || '0'}${fraction.padEnd(this.fractionDigits, '0').slice(0, this.fractionDigits)}`.replace(
+        /^0+(?=\d)/,
+        ''
+      );
+    const minorUnits = `${sign}${amount}`;
+    const numericValue = Number(minorUnits);
+
+    return Number.isSafeInteger(numericValue) ? numericValue : minorUnits;
+  }
+
+  override formatter(value: unknown) {
+    if (!this.minorUnits) {
+      return super.formatter(value);
+    }
+
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+
+    const raw = String(value);
+    const sign = raw.startsWith('-') ? '-' : '';
+    const amount = raw.replace(/^-/, '').padStart(this.fractionDigits + 1, '0');
+
+    if (this.fractionDigits === 0) {
+      return `${sign}${amount}`;
+    }
+
+    return `${sign}${amount.slice(0, -this.fractionDigits)}${this.decimalSeparator}${amount.slice(-this.fractionDigits)}`;
   }
 
   override updated(changedProperties: PropertyValues) {

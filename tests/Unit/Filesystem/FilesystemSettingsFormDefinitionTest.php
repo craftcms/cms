@@ -49,6 +49,7 @@ it('projects the complete local filesystem settings surface', function () {
             'props' => [
                 'label' => 'Base Path',
                 'instructions' => 'The base folder path that should be used as the root of the filesystem.',
+                'tip' => 'This can begin with an environment variable or alias.',
                 'required' => true,
             ],
         ])
@@ -58,7 +59,6 @@ it('projects the complete local filesystem settings surface', function () {
         ])
         ->and($fields['path']['children'][0]['props'])->toMatchArray([
             'placeholder' => '/path/to/folder',
-            'allowAliases' => true,
         ])
         ->and($fields['path']['children'][0]['props']['options'])->toBeArray();
 });

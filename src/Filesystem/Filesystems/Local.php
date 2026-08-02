@@ -120,10 +120,10 @@ class Local extends Filesystem
             Field::make(Combobox::make()
                 ->name('path')
                 ->options(SelectOptions::getEnvSuggestions(true))
-                ->placeholder(t('/path/to/folder'))
-                ->allowAliases())
+                ->placeholder(t('/path/to/folder')))
                 ->label(t('Base Path'))
                 ->instructions(t('The base folder path that should be used as the root of the filesystem.'))
+                ->tip(t('This can begin with an environment variable or alias.'))
                 ->required()
                 ->readOnly($readOnly),
         ]);
