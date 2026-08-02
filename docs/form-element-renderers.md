@@ -1,22 +1,24 @@
 # Form Element renderer extensions
 
-Plugins can add native Form Elements by registering a PHP Form Element class and a Vue renderer under the same stable Form Element Type.
+Plugins can add native Form Elements by pairing a projectable PHP CP UI Component with a Vue renderer under the same stable Form Element Type.
 
-Types must be lowercase namespaced identifiers, such as `color-tools:color-map`. The `craft` namespace is reserved. Treat a published type as a public API: do not rename it within a compatible release.
+Types must be lowercase namespaced identifiers, such as `color-tools:color-map`. The `craft` namespace is reserved. Treat a published type as a public API: do not rename it within a compatible release. The type is independent of the PHP class name, PHP component-registry name, custom-element tag, and Vue renderer name.
 
 ## PHP registration
 
-An input class extends `InputElement`, declares its type independently of its PHP class name, and exposes typed fluent configuration. `InputElement::make()` supplies the local Input Name and projects the required Field Container:
+A plugin Form Element implementation must extend `ViewComponent` and implement `ProjectableFormElement`. Input-shaped controls can extend `ScalarInput`, which provides the component rendering and projection mechanics while leaving the public type and browser primitive explicit:
 
 ```php
-use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
+use CraftCms\Cms\Cp\Components\ScalarInput;
+use CraftCms\Cms\Support\Json;
+use Override;
 
-class ColorMap extends InputElement
+class ColorMap extends ScalarInput
 {
     /** @var list<string> */
     private array $colors = [];
 
-    public static function type(): string
+    public static function formElementType(): string
     {
         return 'color-tools:color-map';
     }
@@ -29,12 +31,30 @@ class ColorMap extends InputElement
         return $this;
     }
 
-    protected function props(): array
+    #[Override]
+    protected function tagName(): string
+    {
+        return 'color-tools-map';
+    }
+
+    #[Override]
+    protected function hostAttributes(): array
+    {
+        return [
+            ...parent::hostAttributes(),
+            'colors' => Json::encode($this->colors),
+        ];
+    }
+
+    #[Override]
+    protected function formElementProps(): array
     {
         return ['colors' => $this->colors];
     }
 }
 ```
+
+`tagName()` is the component's HTML output, not a renderer lookup convention. The plugin must ship the corresponding `color-tools-map` browser primitive so server-rendered uses remain functional. Do not return raw HTML from projection or rely on a tag name as an automatic Vue fallback.
 
 Register one or more classes from the plugin:
 
@@ -45,23 +65,30 @@ $this->registerFormElementTypes(
 );
 ```
 
-Craft validates the complete batch before registering any class. Registering the same class again is harmless. A different class cannot replace an existing type. Craft derives the plugin handle, display name, and Composer package from the plugin registration; Form Element configuration cannot set or override that ownership.
+Craft validates the complete batch before registering any class. Non-projectable classes fail during registration. Registering the same owner and class again is harmless. Another class or plugin cannot claim the type, and collision errors identify both claimants. During projection, Craft also verifies that the exact registered class emitted its declared type. Craft derives the plugin handle, display name, and Composer package from the plugin registration; component configuration cannot set or override that ownership.
 
-The registered input can be used like a core input. Its label, instructions, width, read-only state, attributes, and visibility use the inherited fluent API:
+The registered input can be used like a core input. A `Field` owns its label, instructions, width, read-only state, visibility, and the single projectable input child:
 
 ```php
+use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 
 FormDefinition::make([
-    ColorMap::make('palette')
+    Field::make()
         ->label('Palette')
-        ->colors(['red', 'blue']),
+        ->input(
+            ColorMap::make()
+                ->name('palette')
+                ->colors(['red', 'blue']),
+        ),
 ]);
 ```
 
-Container Form Elements extend `FormElement`, override `isContainer()` to return `true`, and return their ordered elements from `children()`. The generic renderer traverses those children and passes their rendered output to the Vue renderer’s default slot.
+Container components extend `FormContainer`, declare `formElementType()`, implement an HTML `tagName()`, and receive ordered projectable descendants through `children()`. Their container metadata is derived from the component contract. The generic Vue renderer traverses those children and passes their rendered output to the registered container renderer's default slot.
 
-Applications can register ownerless Form Elements through the `FormElementTypes` singleton. Ownerless elements must always have an available renderer because Missing Component UI is limited to plugin-owned types.
+To migrate an existing plugin Form Element, replace its `FormElement` or `InputElement` base with an appropriate projectable CP component base, rename `type()` to `formElementType()`, move transport properties from `props()` to `formElementProps()`, add the component's honest HTML rendering path, and compose field presentation with `Field`. Continue using the same stable type and renderer key.
+
+Applications can register ownerless projectable components through the `FormElementTypes` singleton. Ownerless elements must always have an available renderer because Missing Component UI is limited to plugin-owned types.
 
 ## Vue registration
 
@@ -77,6 +104,8 @@ Cp.$components.register(
   () => import('./components/Gradient.vue'),
 )
 ```
+
+PHP component or Form Element Type registration never performs this Vue registration. The plugin's control-panel assets must execute one of these explicit registrations. Registering only the PHP component, its template-facing name, or its custom-element tag leaves the Vue renderer unavailable.
 
 The renderer receives the exported `FormElementRendererProps<TConfig, TValue>` contract: its typed `config`, trusted `attributes`, and an optional binding containing the local Input Name, current value, and effective read-only state. It emits `update:value` to update host-owned state.
 

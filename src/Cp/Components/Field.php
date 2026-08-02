@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
+use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\Markdown;
@@ -354,7 +355,7 @@ class Field extends ViewComponent implements ProjectableFormElement
             key: $key,
             width: $columnWidth,
             props: $props === [] ? null : $props,
-            children: [$input->toFormElementData()],
+            children: [app(FormElementTypes::class)->project($input)],
             visibleWhen: $condition?->toData(),
         );
     }

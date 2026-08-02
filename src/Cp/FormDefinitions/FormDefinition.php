@@ -31,7 +31,7 @@ readonly class FormDefinition implements JsonSerializable
         $data = new FormDefinitionData(array_map(
             fn (FormElement|ProjectableFormElement $element): FormElementData => (
                 $element instanceof ProjectableFormElement
-                    ? $element->toFormElementData()
+                    ? $types->project($element)
                     : $element->toData()
             )->withPluginOwnership($types->ownership(...)),
             $this->elements,

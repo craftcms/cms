@@ -24,7 +24,9 @@ use CraftCms\Cms\Cp\Components\Tab as TabComponent;
 use CraftCms\Cms\Cp\Components\Tabs as TabsComponent;
 use CraftCms\Cms\Cp\Components\TextInput as TextInputComponent;
 use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
+use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
+use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
@@ -149,16 +151,16 @@ class FormElementTypes
         ];
     }
 
-    /** @param class-string<FormElement> ...$classes */
+    /** @param class-string<FormElement|ProjectableFormElement> ...$classes */
     public function register(string ...$classes): void
     {
-        $this->registerBatch(null, ...$classes);
+        $this->registerBatch(null, false, ...$classes);
     }
 
     /**
      * @internal Plugins should call Plugin::registerFormElementTypes().
      *
-     * @param  class-string<FormElement>  ...$classes
+     * @param  class-string<ViewComponent&ProjectableFormElement>  ...$classes
      */
     public function registerForPlugin(PluginInterface $plugin, string ...$classes): void
     {
@@ -166,11 +168,15 @@ class FormElementTypes
             throw new InvalidArgumentException("Plugin {$plugin->handle} must define its name and Composer package before registering Form Elements.");
         }
 
-        $this->registerBatch(new PluginData(
-            handle: $plugin->handle,
-            name: $plugin->name,
-            packageName: $plugin->packageName,
-        ), ...$classes);
+        $this->registerBatch(
+            new PluginData(
+                handle: $plugin->handle,
+                name: $plugin->name,
+                packageName: $plugin->packageName,
+            ),
+            true,
+            ...$classes,
+        );
     }
 
     public function ownership(string $type): ?PluginData
@@ -188,17 +194,73 @@ class FormElementTypes
         return $this->registrations[$type]['container'] ?? false;
     }
 
-    /** @param class-string<FormElement> ...$classes */
-    private function registerBatch(?PluginData $plugin, string ...$classes): void
+    public function project(ProjectableFormElement $component): FormElementData
+    {
+        $type = $component::formElementType();
+        $class = $component::class;
+        $registration = $this->registrations[$type] ?? null;
+
+        if ($registration === null) {
+            throw new InvalidArgumentException(sprintf(
+                '%s declares unknown or unregistered Form Element Type "%s".',
+                $class,
+                $type,
+            ));
+        }
+
+        if ($registration['class'] !== $class) {
+            throw new InvalidArgumentException(sprintf(
+                'Form Element Type "%s" is registered by %s%s; %s cannot project it.',
+                $type,
+                $registration['class'] ?? 'Craft',
+                $this->ownerLabel($type, $registration['plugin']),
+                $class,
+            ));
+        }
+
+        $data = $component->toFormElementData();
+
+        if ($data->type !== $type) {
+            throw new InvalidArgumentException(sprintf(
+                '%s declares Form Element Type "%s" but projected "%s".',
+                $class,
+                $type,
+                $data->type,
+            ));
+        }
+
+        return $data;
+    }
+
+    /** @param class-string<FormElement|ProjectableFormElement> ...$classes */
+    private function registerBatch(?PluginData $plugin, bool $projectableOnly, string ...$classes): void
     {
         $registrations = $this->registrations;
 
         foreach ($classes as $class) {
-            if (! is_subclass_of($class, FormElement::class)) {
-                throw new InvalidArgumentException(sprintf('%s must extend %s.', $class, FormElement::class));
+            $projectable = is_subclass_of($class, ViewComponent::class)
+                && is_subclass_of($class, ProjectableFormElement::class);
+
+            if ($projectableOnly && ! $projectable) {
+                throw new InvalidArgumentException(sprintf(
+                    '%s must extend %s and implement %s.',
+                    $class,
+                    ViewComponent::class,
+                    ProjectableFormElement::class,
+                ));
             }
 
-            $type = $class::type();
+            if (! $projectable && ! is_subclass_of($class, FormElement::class)) {
+                throw new InvalidArgumentException(sprintf(
+                    '%s must extend %s, or extend %s and implement %s.',
+                    $class,
+                    FormElement::class,
+                    ViewComponent::class,
+                    ProjectableFormElement::class,
+                ));
+            }
+
+            $type = $projectable ? $class::formElementType() : $class::type();
 
             if (preg_match('/^[a-z][a-z0-9-]*:[a-z][a-z0-9-]*$/D', $type) !== 1) {
                 throw new InvalidArgumentException("Form Element Type \"{$type}\" must be a lowercase namespaced identifier.");
@@ -210,7 +272,9 @@ class FormElementTypes
 
             $registration = [
                 'class' => $class,
-                'container' => $class::isContainer(),
+                'container' => $projectable
+                    ? $class::isFormElementContainer()
+                    : $class::isContainer(),
                 'plugin' => $plugin,
             ];
             $existing = $registrations[$type] ?? null;
@@ -228,9 +292,9 @@ class FormElementTypes
                     'Form Element Type "%s" is already registered by %s%s; %s%s cannot claim it.',
                     $type,
                     $existing['class'] ?? 'Craft',
-                    $this->pluginLabel($existing['plugin']),
+                    $this->ownerLabel($type, $existing['plugin']),
                     $class,
-                    $this->pluginLabel($plugin),
+                    $this->ownerLabel($type, $plugin),
                 ));
             }
 
@@ -240,8 +304,12 @@ class FormElementTypes
         $this->registrations = $registrations;
     }
 
-    private function pluginLabel(?PluginData $plugin): string
+    private function ownerLabel(string $type, ?PluginData $plugin): string
     {
-        return $plugin === null ? ' for the application' : " for plugin {$plugin->handle}";
+        return match (true) {
+            $plugin !== null => " for plugin {$plugin->handle}",
+            str_starts_with($type, 'craft:') => ' for Craft',
+            default => ' for the application',
+        };
     }
 }

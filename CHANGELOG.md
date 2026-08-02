@@ -10,7 +10,7 @@
 - Added native Form Definitions for `CraftCms\Cms\Field\ContentBlock` and `CraftCms\Cms\Field\Matrix` settings, including structured Field Layout, ordered object selection via `CraftCms\Cms\Cp\Components\ObjectSelect` and `<craft-object-select>`, and keyed tables via `CraftCms\Cms\Cp\Components\KeyedTable` and `<craft-keyed-table>`.
 - Added native Form Definitions for `CraftCms\Cms\Field\Addresses`, `CraftCms\Cms\Field\Markdown`, and `CraftCms\Cms\Field\Table` settings, including ordered editable tables via `CraftCms\Cms\Cp\Components\EditableTable` and `<craft-editable-table>`.
 - Added reactive Form Definition visibility conditions via `CraftCms\Cms\Cp\FormDefinitions\Condition`.
-- Added plugin-defined Form Elements via `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()` and exact `form-element:<type>` control-panel renderer registrations.
+- Added plugin-defined Form Elements through projectable CP UI Components registered by `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()` and paired exact `form-element:<type>` control-panel renderer registrations.
 - Added keyed Form Definition groups and tabs via `CraftCms\Cms\Cp\Components\Group`, `Tabs`, and `Tab`.
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.

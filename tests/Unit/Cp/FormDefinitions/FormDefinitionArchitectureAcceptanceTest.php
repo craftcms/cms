@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\ScalarInput;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -95,9 +95,10 @@ it('matches the shared architecture fixture through public registration and proj
                 ->input(TextInput::make()->name('details')),
         ])->toArray(),
         'plugin' => FormDefinition::make([
-            ArchitectureAcceptanceColorMap::make('palette')
+            FieldComponent::make()
                 ->key('plugin-palette')
-                ->label('Palette'),
+                ->label('Palette')
+                ->input(ArchitectureAcceptanceColorMap::make()->name('palette')),
         ])->toArray(),
         'fieldLayout' => $projector->project(
             $layout,
@@ -114,15 +115,21 @@ it('matches the shared architecture fixture through public registration and proj
     expect($actual)->toBe($fixture);
 });
 
-class ArchitectureAcceptanceColorMap extends InputElement
+class ArchitectureAcceptanceColorMap extends ScalarInput
 {
-    public static function type(): string
+    public static function formElementType(): string
     {
         return 'color-tools:color-map';
     }
 
     #[Override]
-    protected function props(): array
+    protected function tagName(): string
+    {
+        return 'color-tools-map';
+    }
+
+    #[Override]
+    protected function formElementProps(): array
     {
         return ['colors' => ['red', 'blue']];
     }

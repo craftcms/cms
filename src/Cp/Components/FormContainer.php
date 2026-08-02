@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
+use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use InvalidArgumentException;
 use Override;
 
@@ -120,7 +121,7 @@ abstract class FormContainer extends ViewComponent implements ProjectableFormEle
             }
 
             if ($child instanceof ProjectableFormElement) {
-                $children[] = $child->toFormElementData();
+                $children[] = app(FormElementTypes::class)->project($child);
 
                 continue;
             }
