@@ -11,9 +11,7 @@ import {classMap} from 'lit/directives/class-map.js';
 import {type BaseAction, normalizeAction, runAction} from '@src/actions';
 
 export const ButtonVariant = {
-  Accent: 'accent',
   Primary: 'primary',
-  Neutral: 'neutral',
   Danger: 'danger',
   DangerPlain: 'danger-plain',
   Solid: 'solid',
