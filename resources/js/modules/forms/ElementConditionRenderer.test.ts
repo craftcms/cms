@@ -38,7 +38,8 @@ it('renders and normalizes the existing server condition builder', async () => {
           builderConfig: {elementType: 'entry'},
           renderUrl: '/actions/conditions/render',
           modelValue: condition.value,
-          'onUpdate:modelValue': (value) => (condition.value = value),
+          'onUpdate:modelValue': (value: ConditionConfig | null) =>
+            (condition.value = value),
         });
     },
   });
