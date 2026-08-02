@@ -133,7 +133,7 @@ readonly class FormFields
             isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
         ]));
 
-        return Field::make()
+        return Field::make($input)
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
             ->required((bool) ($config['required'] ?? false))
@@ -151,7 +151,6 @@ readonly class FormFields
             ->headingPrefix($config['headingPrefix'] ?? null)
             ->headingSuffix($config['headingSuffix'] ?? null)
             ->labelExtra($labelExtra !== '' ? $labelExtra : null)
-            ->input($input)
             ->width($config['width'] ?? null)
             ->attributes(Arr::merge(
                 [

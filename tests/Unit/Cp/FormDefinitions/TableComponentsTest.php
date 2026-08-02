@@ -88,8 +88,8 @@ it('registers and deterministically projects both table contracts without host s
         ->columns([['key' => 'uri', 'label' => 'URI']])
         ->rows([['key' => 'english', 'label' => 'English']]);
     $definition = FormDefinition::make([
-        Field::make()->input($editable),
-        Field::make()->input($keyed),
+        Field::make($editable),
+        Field::make($keyed),
     ]);
     $expected = [
         'elements' => [[
@@ -130,7 +130,7 @@ it('registers and deterministically projects both table contracts without host s
 
 it('rejects host-owned table state during projection', function (EditableTable|KeyedTable $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', $component::class, $option),
@@ -144,7 +144,7 @@ it('rejects host-owned table state during projection', function (EditableTable|K
 
 it('rejects invalid portable table configuration before projection', function (EditableTable|KeyedTable $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', $component::class, $option),

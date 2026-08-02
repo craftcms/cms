@@ -42,7 +42,7 @@ it('registers and deterministically projects object selection without host-owned
         ->identityKey('uid')
         ->attributes(['data' => ['setting' => 'entryTypes']]);
     $definition = FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ]);
     $expected = [
         'elements' => [[
@@ -71,7 +71,7 @@ it('registers and deterministically projects object selection without host-owned
 
 it('rejects host-owned object selection state during projection', function (ObjectSelect $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', ObjectSelect::class, $option),
@@ -83,7 +83,7 @@ it('rejects host-owned object selection state during projection', function (Obje
 
 it('rejects invalid portable object selection configuration', function (ObjectSelect $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', ObjectSelect::class, $option),

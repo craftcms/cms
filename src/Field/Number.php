@@ -186,65 +186,51 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
         );
 
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(NumberInput::make()->name('min'))
                 ->label(t('Min Value'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('min')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('max'))
                 ->label(t('Max Value'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('max')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('step'))
                 ->label(t('Step Size'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('step')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('decimals')->min(0))
                 ->label(t('Decimal Points'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('decimals')->min(0)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('size')->min(1))
                 ->label(t('Size'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('size')->min(1)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('defaultValue'))
                 ->label(t('Default Value'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('defaultValue')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()->name('prefix'))
                 ->label(t('Prefix Text'))
                 ->instructions(t('Text that should be shown before the input.'))
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('prefix')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()->name('suffix'))
                 ->label(t('Suffix Text'))
                 ->instructions(t('Text that should be shown after the input.'))
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('suffix')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()
+                ->name('previewFormat')
+                ->options([
+                    ['label' => t('As decimal numbers'), 'value' => self::FORMAT_DECIMAL],
+                    ['label' => t('As currency values'), 'value' => self::FORMAT_CURRENCY],
+                    ['label' => t('Unformatted'), 'value' => self::FORMAT_NONE],
+                ]))
                 ->label(t('Preview Format'))
                 ->instructions(t('How field values will be formatted within element indexes.'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('previewFormat')
-                        ->options([
-                            ['label' => t('As decimal numbers'), 'value' => self::FORMAT_DECIMAL],
-                            ['label' => t('As currency values'), 'value' => self::FORMAT_CURRENCY],
-                            ['label' => t('Unformatted'), 'value' => self::FORMAT_NONE],
-                        ]),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()
+                ->name('previewCurrency')
+                ->options([
+                    ['label' => t('Choose a currency…'), 'value' => null],
+                    ...$currencyOptions,
+                ]))
                 ->label(t('Currency'))
                 ->visibleWhen(Condition::equals('previewFormat', self::FORMAT_CURRENCY))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('previewCurrency')
-                        ->options([
-                            ['label' => t('Choose a currency…'), 'value' => null],
-                            ...$currencyOptions,
-                        ]),
-                ),
+                ->readOnly($readOnly),
         ]);
     }
 

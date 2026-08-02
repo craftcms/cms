@@ -18,16 +18,16 @@ use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 it('projects ordered nested containers with their portable presentation state', function () {
     $definition = FormDefinition::make([
         Group::make(fn (): array => [
-            Field::make()->input(TextInput::make()->name('enabled')),
+            Field::make(TextInput::make()->name('enabled')),
             Tabs::make([
                 Tab::make('content', fn (): string => 'Content', [
-                    Field::make()->input(TextInput::make()->name('title')),
+                    Field::make(TextInput::make()->name('title')),
                 ])
                     ->columnWidth(60)
                     ->attributes(['data' => ['container' => 'content']])
                     ->visibleWhen(Condition::equals('enabled', true)),
                 Tab::make('metadata', 'Metadata', [
-                    Field::make()->input(TextInput::make()->name('slug')),
+                    Field::make(TextInput::make()->name('slug')),
                 ])->hasErrors(fn (): bool => true),
             ])
                 ->key('settings-tabs')
@@ -110,9 +110,8 @@ it('renders nested containers through the shared browser primitives', function (
     $html = Group::make([
         Tabs::make([
             Tab::make('content', 'Content', [
-                Field::make()
-                    ->label('Title')
-                    ->input(TextInput::make()->name('title')),
+                Field::make(TextInput::make()->name('title'))
+                    ->label('Title'),
             ])->hasErrors(),
         ])->key('settings-tabs'),
     ])
@@ -186,13 +185,12 @@ it('identifies containers and invalid descendants during projection', function (
 
 it('composes nested definitions with local Input Name prefixes and no Binding Scope', function () {
     $nested = FormDefinition::make([
-        Field::make()->input(TextInput::make()->name('enabled')),
-        Field::make()
-            ->visibleWhen(Condition::equals('enabled', true))
-            ->input(TextInput::make()->name('title')),
+        Field::make(TextInput::make()->name('enabled')),
+        Field::make(TextInput::make()->name('title'))
+            ->visibleWhen(Condition::equals('enabled', true)),
     ]);
     $definition = FormDefinition::make([
-        Field::make()->input(TextInput::make()->name('mode')),
+        Field::make(TextInput::make()->name('mode')),
         Group::fromDefinition($nested, 'nested')
             ->key('nested-settings')
             ->visibleWhen(Condition::equals('mode', 'advanced')),
@@ -238,7 +236,7 @@ it('composes nested definitions with local Input Name prefixes and no Binding Sc
 
 it('projects repeatedly without mutating containers or descendants', function () {
     $input = TextInput::make()->name('title');
-    $field = Field::make()->label('Title')->input($input);
+    $field = Field::make($input)->label('Title');
     $tab = Tab::make('content', 'Content', [$field]);
     $tabs = Tabs::make([$tab]);
     $group = Group::make([$tabs])->key('settings');
@@ -254,7 +252,7 @@ it('projects repeatedly without mutating containers or descendants', function ()
 
 it('materializes one-shot child iterables without consuming the component configuration', function () {
     $children = (function (): Generator {
-        yield Field::make()->input(TextInput::make()->name('title'));
+        yield Field::make(TextInput::make()->name('title'));
     })();
     $definition = FormDefinition::make([
         Group::make($children),

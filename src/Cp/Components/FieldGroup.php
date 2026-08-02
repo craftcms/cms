@@ -11,8 +11,8 @@ use Closure;
  * container for a list of fields.
  *
  *     FieldGroup::make()->children([
- *         Field::make()->label(t('Name'))->input(...),
- *         Field::make()->label(t('Handle'))->input(...),
+ *         Field::make(...)->label(t('Name')),
+ *         Field::make(...)->label(t('Handle')),
  *     ]);
  *
  * Renders directly (no Blade view). Children may be components, `Htmlable`s,

@@ -53,21 +53,18 @@ class Feed extends Widget
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            Field::make()
+            Field::make(TextInput::make()->name('url'))
                 ->label(t('URL'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('url')),
-            Field::make()
+                ->readOnly($readOnly),
+            Field::make(TextInput::make()->name('title'))
                 ->label(t('Title'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('title')),
-            Field::make()
+                ->readOnly($readOnly),
+            Field::make(NumberInput::make()->name('limit')->min(1))
                 ->label(t('Limit'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('limit')->min(1)),
+                ->readOnly($readOnly),
         ]);
     }
 

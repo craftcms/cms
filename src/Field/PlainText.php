@@ -131,46 +131,37 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(Select::make()
+                ->name('uiMode')
+                ->options([
+                    ['label' => t('Normal'), 'value' => 'normal'],
+                    ['label' => t('Enlarged'), 'value' => 'enlarged'],
+                ]))
                 ->label(t('UI Mode'))
                 ->instructions(t('How the field should be presented in the control panel.'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('uiMode')
-                        ->options([
-                            ['label' => t('Normal'), 'value' => 'normal'],
-                            ['label' => t('Enlarged'), 'value' => 'enlarged'],
-                        ]),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()->name('placeholder'))
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('placeholder')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('charLimit')->min(1))
                 ->label(t('Character Limit'))
                 ->instructions(t('The maximum number of characters the field is allowed to have.'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('charLimit')->min(1)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('byteLimit')->min(1))
                 ->label(t('Byte Limit'))
                 ->instructions(t('The maximum number of bytes the field is allowed to have.'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('byteLimit')->min(1)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('code'))
                 ->label(t('Use a monospaced font'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('code')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('multiline'))
                 ->label(t('Allow line breaks'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('multiline')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('initialRows')->min(1))
                 ->label(t('Initial Rows'))
                 ->visibleWhen(Condition::equals('multiline', true))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('initialRows')->min(1)),
+                ->readOnly($readOnly),
         ]);
     }
 

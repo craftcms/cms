@@ -189,13 +189,11 @@ class PublicDefinitionLinkType extends Url
     public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
         return FormDefinition::make([
-            Field::make()
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('customSetting')),
-            Field::make()
+            Field::make(Lightswitch::make()->name('customSetting'))
+                ->readOnly($readOnly),
+            Field::make(Lightswitch::make()->name('dependentSetting'))
                 ->visibleWhen(Condition::equals('customSetting', true))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('dependentSetting')),
+                ->readOnly($readOnly),
         ]);
     }
 }

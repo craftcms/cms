@@ -270,90 +270,80 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $dynamicRows = Condition::equals('staticRows', false);
 
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(EditableTable::make()
+                ->name('columns')
+                ->columns([
+                    [
+                        'key' => 'heading',
+                        'label' => t('Column Heading'),
+                        'type' => 'text',
+                        'autoPopulate' => 'handle',
+                    ],
+                    [
+                        'key' => 'handle',
+                        'label' => t('Handle'),
+                        'type' => 'text',
+                        'code' => true,
+                    ],
+                    [
+                        'key' => 'width',
+                        'label' => t('Width'),
+                        'type' => 'text',
+                        'code' => true,
+                        'width' => 50,
+                    ],
+                    [
+                        'key' => 'type',
+                        'label' => t('Type'),
+                        'type' => 'select',
+                        'options' => array_map(
+                            fn (string $label, string $value): array => compact('label', 'value'),
+                            self::typeOptions(),
+                            array_keys(self::typeOptions()),
+                        ),
+                        'nestedOptions' => true,
+                    ],
+                ])
+                ->addRowLabel(t('Add a column'))
+                ->defaultRow([
+                    'heading' => '',
+                    'handle' => '',
+                    'width' => '',
+                    'type' => 'singleline',
+                ])
+                ->keyed()
+                ->definesColumns())
                 ->label(t('Table Columns'))
                 ->instructions(t('Define the columns your table should have.'))
-                ->readOnly($readOnly)
-                ->input(
-                    EditableTable::make()
-                        ->name('columns')
-                        ->columns([
-                            [
-                                'key' => 'heading',
-                                'label' => t('Column Heading'),
-                                'type' => 'text',
-                                'autoPopulate' => 'handle',
-                            ],
-                            [
-                                'key' => 'handle',
-                                'label' => t('Handle'),
-                                'type' => 'text',
-                                'code' => true,
-                            ],
-                            [
-                                'key' => 'width',
-                                'label' => t('Width'),
-                                'type' => 'text',
-                                'code' => true,
-                                'width' => 50,
-                            ],
-                            [
-                                'key' => 'type',
-                                'label' => t('Type'),
-                                'type' => 'select',
-                                'options' => array_map(
-                                    fn (string $label, string $value): array => compact('label', 'value'),
-                                    self::typeOptions(),
-                                    array_keys(self::typeOptions()),
-                                ),
-                                'nestedOptions' => true,
-                            ],
-                        ])
-                        ->addRowLabel(t('Add a column'))
-                        ->defaultRow([
-                            'heading' => '',
-                            'handle' => '',
-                            'width' => '',
-                            'type' => 'singleline',
-                        ])
-                        ->keyed()
-                        ->definesColumns(),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(EditableTable::make()
+                ->name('defaults')
+                ->columns($this->defaultValueColumns())
+                ->addRowLabel(t('Add a row'))
+                ->includeRowId()
+                ->columnsFrom('columns'))
                 ->label(t('Default Values'))
                 ->instructions(t('Define the default values for the field.'))
-                ->readOnly($readOnly)
-                ->input(
-                    EditableTable::make()
-                        ->name('defaults')
-                        ->columns($this->defaultValueColumns())
-                        ->addRowLabel(t('Add a row'))
-                        ->includeRowId()
-                        ->columnsFrom('columns'),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('staticRows'))
                 ->label(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('staticRows')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('minRows')->min(0))
                 ->label(t('Min Rows'))
                 ->instructions(t('The minimum number of rows the field is allowed to have.'))
                 ->visibleWhen($dynamicRows)
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('minRows')->min(0)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('maxRows')->min(0))
                 ->label(t('Max Rows'))
                 ->instructions(t('The maximum number of rows the field is allowed to have.'))
                 ->visibleWhen($dynamicRows)
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('maxRows')->min(0)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()->name('addRowLabel'))
                 ->label(t('Add Row Label'))
                 ->instructions(t('Insert the button label for adding a new row to the table.'))
                 ->visibleWhen($dynamicRows)
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('addRowLabel')),
+                ->readOnly($readOnly),
         ]);
     }
 

@@ -80,18 +80,15 @@ class Url extends BaseTextLinkType
     protected function settingsFormElements(bool $readOnly): array
     {
         return [
-            Field::make()
+            Field::make(Lightswitch::make()->name('allowRootRelativeUrls'))
                 ->label(t('Allow root-relative URLs'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('allowRootRelativeUrls')),
-            Field::make()
+                ->readOnly($readOnly),
+            Field::make(Lightswitch::make()->name('allowAnchors'))
                 ->label(t('Allow anchors'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('allowAnchors')),
-            Field::make()
+                ->readOnly($readOnly),
+            Field::make(Lightswitch::make()->name('allowCustomSchemes'))
                 ->label(t('Allow custom URL schemes'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('allowCustomSchemes')),
+                ->readOnly($readOnly),
         ];
     }
 

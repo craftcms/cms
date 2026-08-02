@@ -556,45 +556,36 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $indexMode = Condition::equals('viewMode', self::VIEW_MODE_INDEX);
         $tableView = Condition::all($indexMode, Condition::equals('includeTableView', true));
         $elements = [
-            FieldComponent::make()
+            FieldComponent::make(ObjectSelect::make()
+                ->name('entryTypes')
+                ->options($this->entryTypeOptions())
+                ->identityKey('uid'))
                 ->label(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(
-                    ObjectSelect::make()
-                        ->name('entryTypes')
-                        ->options($this->entryTypeOptions())
-                        ->identityKey('uid'),
-                ),
+                ->readOnly($readOnly),
         ];
 
         if (Sites::isMultiSite()) {
-            $elements[] = FieldComponent::make()
+            $elements[] = FieldComponent::make(Select::make()
+                ->name('propagationMethod')
+                ->options([
+                    ['label' => t('Only save entries to the site they were created in'), 'value' => PropagationMethod::None->value],
+                    ['label' => t('Save entries to other sites in the same site group'), 'value' => PropagationMethod::SiteGroup->value],
+                    ['label' => t('Save entries to other sites with the same language'), 'value' => PropagationMethod::Language->value],
+                    ['label' => t('Save entries to all sites the owner element is saved in'), 'value' => PropagationMethod::All->value],
+                    ['label' => t('Custom…'), 'value' => PropagationMethod::Custom->value],
+                ]))
                 ->label(t('Propagation Method'))
                 ->instructions(t('Which sites should entries be saved to?'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('propagationMethod')
-                        ->options([
-                            ['label' => t('Only save entries to the site they were created in'), 'value' => PropagationMethod::None->value],
-                            ['label' => t('Save entries to other sites in the same site group'), 'value' => PropagationMethod::SiteGroup->value],
-                            ['label' => t('Save entries to other sites with the same language'), 'value' => PropagationMethod::Language->value],
-                            ['label' => t('Save entries to all sites the owner element is saved in'), 'value' => PropagationMethod::All->value],
-                            ['label' => t('Custom…'), 'value' => PropagationMethod::Custom->value],
-                        ]),
-                );
-            $elements[] = FieldComponent::make()
+                ->readOnly($readOnly);
+            $elements[] = FieldComponent::make(TextInput::make()
+                ->name('propagationKeyFormat')
+                ->attributes(['class' => 'code']))
                 ->label(t('Propagation Key Format'))
                 ->instructions(t('Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'))
                 ->visibleWhen(Condition::equals('propagationMethod', PropagationMethod::Custom->value))
-                ->readOnly($readOnly)
-                ->input(
-                    TextInput::make()
-                        ->name('propagationKeyFormat')
-                        ->attributes(['class' => 'code']),
-                );
+                ->readOnly($readOnly);
         }
 
         $columns = [[
@@ -614,112 +605,90 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         array_push(
             $elements,
-            FieldComponent::make()
+            FieldComponent::make(KeyedTable::make()
+                ->name('siteSettings')
+                ->columns($columns)
+                ->rows(Collection::make(Sites::getAllSites())->map(
+                    fn ($site): array => [
+                        'key' => $site->uid,
+                        'label' => t($site->name, category: 'site'),
+                    ],
+                )->values()->all()))
                 ->label(t('Site Settings'))
                 ->instructions(t('Choose the site-specific settings for nested entries.'))
-                ->readOnly($readOnly)
-                ->input(
-                    KeyedTable::make()
-                        ->name('siteSettings')
-                        ->columns($columns)
-                        ->rows(Collection::make(Sites::getAllSites())->map(
-                            fn ($site): array => [
-                                'key' => $site->uid,
-                                'label' => t($site->name, category: 'site'),
-                            ],
-                        )->values()->all()),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('minEntries')->min(0))
                 ->label(t('Min {type}', ['type' => t('Entries')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('minEntries')->min(0)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('maxEntries')->min(0))
                 ->label(t('Max {type}', ['type' => t('Entries')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('entries')]))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('maxEntries')->min(0)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('enableVersioning'))
                 ->label(t('Enable versioning for entries in this field'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('enableVersioning')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()
+                ->name('viewMode')
+                ->options([
+                    ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                    ['label' => t('Card grid'), 'value' => self::VIEW_MODE_CARDS_GRID],
+                    ['label' => t('Blocks'), 'value' => self::VIEW_MODE_BLOCKS],
+                    ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                ]))
                 ->label(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('entries')]))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('viewMode')
-                        ->options([
-                            ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
-                            ['label' => t('Card grid'), 'value' => self::VIEW_MODE_CARDS_GRID],
-                            ['label' => t('Blocks'), 'value' => self::VIEW_MODE_BLOCKS],
-                            ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
-                        ]),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('includeTableView'))
                 ->label(t('Include Table View'))
                 ->instructions(t('Whether the element index should allow viewing nested {type} in a table.', ['type' => t('entries')]))
                 ->visibleWhen($indexMode)
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('includeTableView')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(CheckboxSelect::make()
+                ->name('defaultTableColumns')
+                ->options(array_map(
+                    fn (array $option): array => [
+                        'label' => strip_tags((string) $option['label']),
+                        'value' => $option['value'],
+                    ],
+                    self::defaultTableColumnOptions($this->_entryTypes),
+                ))
+                ->sortable())
                 ->label(t('Default Table Columns'))
                 ->instructions(t('Choose which table columns should be visible by default.'))
                 ->visibleWhen($tableView)
-                ->readOnly($readOnly)
-                ->input(
-                    CheckboxSelect::make()
-                        ->name('defaultTableColumns')
-                        ->options(array_map(
-                            fn (array $option): array => [
-                                'label' => strip_tags((string) $option['label']),
-                                'value' => $option['value'],
-                            ],
-                            self::defaultTableColumnOptions($this->_entryTypes),
-                        ))
-                        ->sortable(),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()
+                ->name('defaultIndexViewMode')
+                ->options(array_map(
+                    fn (array $viewMode): array => [
+                        'label' => $viewMode['title'],
+                        'value' => $viewMode['mode'],
+                    ],
+                    array_values(array_filter(
+                        Entry::indexViewModes(),
+                        fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false),
+                    )),
+                )))
                 ->label(t('Default View Mode'))
                 ->visibleWhen($tableView)
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('defaultIndexViewMode')
-                        ->options(array_map(
-                            fn (array $viewMode): array => [
-                                'label' => $viewMode['title'],
-                                'value' => $viewMode['mode'],
-                            ],
-                            array_values(array_filter(
-                                Entry::indexViewModes(),
-                                fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false),
-                            )),
-                        )),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()
+                ->name('pageSize')
+                ->options(array_map(
+                    fn (int $pageSize): array => ['label' => (string) $pageSize, 'value' => $pageSize],
+                    [10, 20, 50, 100],
+                )))
                 ->label(t('{type} Per Page', ['type' => t('Entries')]))
                 ->instructions(t('The total number of {type} to display per page within the element index.', ['type' => t('entries')]))
                 ->visibleWhen($indexMode)
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('pageSize')
-                        ->options(array_map(
-                            fn (int $pageSize): array => ['label' => (string) $pageSize, 'value' => $pageSize],
-                            [10, 20, 50, 100],
-                        )),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()
+                ->name('createButtonLabel')
+                ->placeholder($this->defaultCreateButtonLabel()))
                 ->label(t('“New” Button Label'))
                 ->instructions(t('The text label for the entry creation button.'))
-                ->readOnly($readOnly)
-                ->input(
-                    TextInput::make()
-                        ->name('createButtonLabel')
-                        ->placeholder($this->defaultCreateButtonLabel()),
-                ),
+                ->readOnly($readOnly),
         );
 
         return FormDefinition::make($elements);

@@ -164,31 +164,25 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $fractionDigits = $this->subunits();
 
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(Select::make()->name('currency')->options($currencyOptions))
                 ->label(t('Currency'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(Select::make()->name('currency')->options($currencyOptions)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(MoneyInput::make()->name('defaultValue')->fractionDigits($fractionDigits))
                 ->label(t('Default Value'))
-                ->readOnly($readOnly)
-                ->input(MoneyInput::make()->name('defaultValue')->fractionDigits($fractionDigits)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(MoneyInput::make()->name('min')->fractionDigits($fractionDigits))
                 ->label(t('Min Value'))
-                ->readOnly($readOnly)
-                ->input(MoneyInput::make()->name('min')->fractionDigits($fractionDigits)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(MoneyInput::make()->name('max')->fractionDigits($fractionDigits))
                 ->label(t('Max Value'))
-                ->readOnly($readOnly)
-                ->input(MoneyInput::make()->name('max')->fractionDigits($fractionDigits)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('showCurrency'))
                 ->label(t('Show Currency'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showCurrency')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('size')->min(1))
                 ->label(t('Size'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('size')->min(1)),
+                ->readOnly($readOnly),
         ]);
     }
 

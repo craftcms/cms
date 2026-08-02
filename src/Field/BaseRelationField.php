@@ -588,26 +588,24 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $input = CheckboxSelect::make()
                 ->name('sources')
                 ->options($options);
-            $element = FieldComponent::make()
+            $element = FieldComponent::make($input)
                 ->label(t('Sources'))
                 ->instructions(t('Which sources do you want to select {type} from?', [
                     'type' => $elementType::pluralLowerDisplayName(),
                 ]))
-                ->readOnly($readOnly)
-                ->input($input);
+                ->readOnly($readOnly);
 
             return $options === []
                 ? $element->warning(t('No sources exist yet.'))->readOnly()
                 : $element->input($input->allOption('*'));
         }
 
-        $element = FieldComponent::make()
+        $element = FieldComponent::make(Select::make()->name('source')->options($options))
             ->label(t('Source'))
             ->instructions(t('Which source do you want to select {type} from?', [
                 'type' => $elementType::pluralLowerDisplayName(),
             ]))
-            ->readOnly($readOnly)
-            ->input(Select::make()->name('source')->options($options));
+            ->readOnly($readOnly);
 
         return $options === []
             ? $element->warning(t('No sources exist yet.'))->readOnly()
@@ -623,22 +621,19 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             return null;
         }
 
-        return FieldComponent::make()
+        return FieldComponent::make(ElementConditionComponent::make()
+            ->name('selectionCondition')
+            ->conditionClass($condition::class)
+            ->builderConfig($condition->getBuilderConfig())
+            ->sortable($condition->sortable)
+            ->addRuleLabel($condition->addRuleLabel))
             ->label(t('Selectable {type} Condition', [
                 'type' => $elementType::pluralDisplayName(),
             ]))
             ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
                 'type' => $elementType::pluralLowerDisplayName(),
             ])))
-            ->readOnly($readOnly)
-            ->input(
-                ElementConditionComponent::make()
-                    ->name('selectionCondition')
-                    ->conditionClass($condition::class)
-                    ->builderConfig($condition->getBuilderConfig())
-                    ->sortable($condition->sortable)
-                    ->addRuleLabel($condition->addRuleLabel),
-            );
+            ->readOnly($readOnly);
     }
 
     /**
@@ -657,14 +652,13 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $pluralElements = $elementType::pluralLowerDisplayName();
         $maintainHierarchy = $structuredSourceCondition === null
             ? []
-            : [FieldComponent::make()
+            : [FieldComponent::make(Lightswitch::make()->name('maintainHierarchy'))
                 ->label(t('Maintain hierarchy'))
                 ->instructions(t('Whether the structure of the related {type} should be maintained.', [
                     'type' => $pluralElements,
                 ]))
                 ->visibleWhen($structuredSourceCondition)
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('maintainHierarchy'))];
+                ->readOnly($readOnly)];
 
         if ($structuredSourceCondition !== null && $unstructuredSourceCondition === null) {
             throw new RuntimeException('An unstructured source condition is required when structured sources are present.');
@@ -709,20 +703,17 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 $readOnly,
                 $hierarchyLimitCondition,
             )];
-        $defaultPlacement = FieldComponent::make()
+        $defaultPlacement = FieldComponent::make(Select::make()
+            ->name('defaultPlacement')
+            ->options([
+                ['label' => t('Before other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
+                ['label' => t('After other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_END],
+            ]))
             ->label(t('Default {type} Placement', ['type' => $elementType::displayName()]))
             ->instructions(t('Where new {type} should be placed by default in the field.', [
                 'type' => $pluralElements,
             ]))
-            ->readOnly($readOnly)
-            ->input(
-                Select::make()
-                    ->name('defaultPlacement')
-                    ->options([
-                        ['label' => t('Before other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
-                        ['label' => t('After other {type}', ['type' => $pluralElements]), 'value' => self::DEFAULT_PLACEMENT_END],
-                    ]),
-            );
+            ->readOnly($readOnly);
         $viewModeOptions = array_map(
             fn (string $label, string $value): array => ['label' => $label, 'value' => $value],
             $this->supportedViewModes(),
@@ -730,11 +721,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         );
         $viewMode = count($viewModeOptions) === 1
             ? []
-            : [FieldComponent::make()
+            : [FieldComponent::make(Select::make()->name('viewMode')->options($viewModeOptions))
                 ->label(t('View Mode'))
                 ->instructions(t('Choose how the field should look for authors.'))
-                ->readOnly($readOnly)
-                ->input(Select::make()->name('viewMode')->options($viewModeOptions))];
+                ->readOnly($readOnly)];
 
         if ($regularLimitCondition !== null) {
             $defaultPlacement->visibleWhen($regularLimitCondition);
@@ -744,10 +734,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             }
         }
 
-        $showSearchInput = FieldComponent::make()
+        $showSearchInput = FieldComponent::make(Lightswitch::make()->name('showSearchInput'))
             ->label(t('Show the search input'))
-            ->readOnly($readOnly)
-            ->input(Lightswitch::make()->name('showSearchInput'));
+            ->readOnly($readOnly);
 
         if ($showSearchCondition !== null) {
             $showSearchInput->visibleWhen($showSearchCondition);
@@ -759,29 +748,24 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ...$branchLimit,
             $defaultPlacement,
             ...$viewMode,
-            FieldComponent::make()
+            FieldComponent::make(TextInput::make()
+                ->name('selectionLabel')
+                ->placeholder(static::defaultSelectionLabel()))
                 ->label(t('“Add” Button Label'))
                 ->instructions(t('The text label for {type} selection buttons.', ['type' => $elementName]))
-                ->readOnly($readOnly)
-                ->input(
-                    TextInput::make()
-                        ->name('selectionLabel')
-                        ->placeholder(static::defaultSelectionLabel()),
-                ),
+                ->readOnly($readOnly),
             $showSearchInput,
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('validateRelatedElements'))
                 ->label(t('Validate related {type}', ['type' => $pluralElements]))
                 ->instructions(t('Whether validation errors on the related {type} should prevent the source element from being saved.', [
                     'type' => $pluralElements,
                 ]))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('validateRelatedElements')),
+                ->readOnly($readOnly),
             ...$beforeAdvanced,
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('allowSelfRelations'))
                 ->label(t('Allow self relations'))
                 ->instructions(t('Whether {type} elements should be allowed to relate to themselves.', ['type' => $elementName]))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('allowSelfRelations')),
+                ->readOnly($readOnly),
             ...$this->targetSiteFormElements($readOnly),
         ];
     }
@@ -793,11 +777,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         bool $readOnly,
         ?Condition $visibleWhen = null,
     ): FieldComponent {
-        $element = FieldComponent::make()
+        $element = FieldComponent::make(NumberInput::make()->name($name)->step(1))
             ->label($label)
             ->instructions($instructions)
-            ->readOnly($readOnly)
-            ->input(NumberInput::make()->name($name)->step(1));
+            ->readOnly($readOnly);
 
         if ($visibleWhen !== null) {
             $element->visibleWhen($visibleWhen);
@@ -817,28 +800,24 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
         $pluralElements = $elementType::pluralLowerDisplayName();
         $elements = [
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('useTargetSite'))
                 ->label(t('Relate {type} from a specific site?', ['type' => $pluralElements]))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('useTargetSite')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()
+                ->name('targetSiteId')
+                ->options(Sites::getAllSites()
+                    ->map(fn ($site): array => [
+                        'label' => t($site->getName(), category: 'site'),
+                        'value' => $site->uid,
+                    ])
+                    ->all()))
                 ->label(t('Which site should {type} be related from?', ['type' => $pluralElements]))
                 ->visibleWhen(Condition::equals('useTargetSite', true))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('targetSiteId')
-                        ->options(Sites::getAllSites()
-                            ->map(fn ($site): array => [
-                                'label' => t($site->getName(), category: 'site'),
-                                'value' => $site->uid,
-                            ])
-                            ->all()),
-                ),
+                ->readOnly($readOnly),
         ];
 
         if (static::canShowSiteMenu()) {
-            $elements[] = FieldComponent::make()
+            $elements[] = FieldComponent::make(Lightswitch::make()->name('showSiteMenu'))
                 ->label(t('Show the site menu'))
                 ->instructions(t('Whether the site menu should be shown for {type} selection modals.', [
                     'type' => $elementType::lowerDisplayName(),
@@ -847,8 +826,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                     'type' => $pluralElements,
                 ]))
                 ->visibleWhen(Condition::notEquals('useTargetSite', true))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showSiteMenu'));
+                ->readOnly($readOnly);
         }
 
         return $elements;

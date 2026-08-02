@@ -274,50 +274,43 @@ class Assets extends BaseRelationField
             );
         }
 
-        $previewMode = FieldComponent::make()
+        $previewMode = FieldComponent::make(Select::make()
+            ->name('previewMode')
+            ->options([
+                ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
+                ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
+            ]))
             ->label(t('Preview Mode'))
             ->instructions(t('How the related {type} should be displayed within element indexes.', [
                 'type' => Asset::pluralLowerDisplayName(),
             ]))
-            ->readOnly($readOnly)
-            ->input(
-                Select::make()
-                    ->name('previewMode')
-                    ->options([
-                        ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
-                        ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
-                    ]),
-            );
+            ->readOnly($readOnly);
         $selectionCondition = $this->selectionConditionFormElement($readOnly);
 
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('restrictLocation'))
                 ->label(t('Restrict assets to a single location'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('restrictLocation')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()->name('restrictedLocationSource')->options($options))
                 ->label(t('Asset Location Source'))
                 ->instructions(t('The source where assets can be selected from.'))
                 ->visibleWhen($restricted)
-                ->readOnly($readOnly)
-                ->input(Select::make()->name('restrictedLocationSource')->options($options)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()
+                ->name('restrictedLocationSubpath')
+                ->placeholder(t('path/to/subfolder')))
                 ->label(t('Asset Location Subpath'))
                 ->instructions(t('The subpath where assets can be selected from.'))
                 ->tip($dynamicPathTip)
                 ->visibleWhen($restricted)
-                ->readOnly($readOnly)
-                ->input(
-                    TextInput::make()
-                        ->name('restrictedLocationSubpath')
-                        ->placeholder(t('path/to/subfolder')),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('allowSubfolders'))
                 ->label(t('Allow subfolders'))
                 ->visibleWhen($restricted)
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('allowSubfolders')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()
+                ->name('restrictedDefaultUploadSubpath')
+                ->placeholder(t('path/to/subfolder')))
                 ->label(t('Default Upload Location'))
                 ->instructions(t('Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'))
                 ->tip($dynamicPathTip)
@@ -325,60 +318,44 @@ class Assets extends BaseRelationField
                     $restricted,
                     Condition::equals('allowSubfolders', true),
                 ))
-                ->readOnly($readOnly)
-                ->input(
-                    TextInput::make()
-                        ->name('restrictedDefaultUploadSubpath')
-                        ->placeholder(t('path/to/subfolder')),
-                ),
+                ->readOnly($readOnly),
             $this->sourceFormElement($sourceOptions, $readOnly)
                 ->visibleWhen($unrestricted),
-            FieldComponent::make()
+            FieldComponent::make(Select::make()->name('defaultUploadLocationSource')->options($options))
                 ->label(t('Default Upload Location Source'))
                 ->instructions(t('The source where assets should be stored when they are uploaded directly to the field.'))
                 ->visibleWhen($unrestricted)
-                ->readOnly($readOnly)
-                ->input(Select::make()->name('defaultUploadLocationSource')->options($options)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()
+                ->name('defaultUploadLocationSubpath')
+                ->placeholder(t('path/to/subfolder')))
                 ->label(t('Default Upload Location Subpath'))
                 ->instructions(t('The subpath where assets should be stored when they are uploaded directly to the field.'))
                 ->tip($dynamicPathTip)
                 ->visibleWhen($unrestricted)
-                ->readOnly($readOnly)
-                ->input(
-                    TextInput::make()
-                        ->name('defaultUploadLocationSubpath')
-                        ->placeholder(t('path/to/subfolder')),
-                ),
+                ->readOnly($readOnly),
             ...($selectionCondition === null ? [] : [$selectionCondition]),
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('showUnpermittedVolumes'))
                 ->label(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showUnpermittedVolumes')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('showUnpermittedFiles'))
                 ->label(t('Show unpermitted files'))
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showUnpermittedFiles')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('restrictFiles'))
                 ->label(t('Restrict allowed file types'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('restrictFiles')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(CheckboxSelect::make()
+                ->name('allowedKinds')
+                ->options($this->formDefinitionOptions($this->getFileKindOptions())))
                 ->label(t('Allowed Kinds'))
                 ->visibleWhen(Condition::equals('restrictFiles', true))
-                ->readOnly($readOnly)
-                ->input(
-                    CheckboxSelect::make()
-                        ->name('allowedKinds')
-                        ->options($this->formDefinitionOptions($this->getFileKindOptions())),
-                ),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('allowUploads'))
                 ->label(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('allowUploads')),
+                ->readOnly($readOnly),
             ...$this->relationBehaviorFormElements(
                 $readOnly,
                 showSearchCondition: $showSearchCondition,

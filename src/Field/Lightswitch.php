@@ -113,25 +113,21 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(LightswitchComponent::make()->name('default'))
                 ->label(t('Default Value'))
-                ->readOnly($readOnly)
-                ->input(LightswitchComponent::make()->name('default')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()->name('offLabel'))
                 ->label(t('OFF Label'))
                 ->instructions(t('The label text to display beside the lightswitch’s disabled state.'))
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('offLabel')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()->name('onLabel'))
                 ->label(t('ON Label'))
                 ->instructions(t('The label text to display beside the lightswitch’s enabled state.'))
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('onLabel')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(LightswitchComponent::make()->name('showLabelsInCards'))
                 ->label(t('Show ON/OFF labels in cards'))
                 ->instructions(t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'))
-                ->readOnly($readOnly)
-                ->input(LightswitchComponent::make()->name('showLabelsInCards')),
+                ->readOnly($readOnly),
         ]);
     }
 

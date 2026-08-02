@@ -56,7 +56,7 @@ it('registers and deterministically projects portable field layout configuration
         ->withGeneratedFields()
         ->attributes(['data' => ['setting' => 'field-layout']]);
     $definition = FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ]);
     $expected = [
         'elements' => [[
@@ -87,7 +87,7 @@ it('registers and deterministically projects portable field layout configuration
 
 it('preserves the complete default transport contract', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(FieldLayout::make()->name('fieldLayout')),
+        Field::make(FieldLayout::make()->name('fieldLayout')),
     ]);
 
     expect($definition->toArray())->toBe([
@@ -107,7 +107,7 @@ it('preserves the complete default transport contract', function () {
 
 it('rejects host-owned field layout state during projection', function (FieldLayout $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', FieldLayout::class, $option),
@@ -119,7 +119,7 @@ it('rejects host-owned field layout state during projection', function (FieldLay
 
 it('rejects invalid portable field layout configuration', function (FieldLayout $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', FieldLayout::class, $option),

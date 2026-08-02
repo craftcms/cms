@@ -59,16 +59,14 @@ class Entry extends BaseElementLinkType
     {
         return [
             ...parent::settingsFormElements($readOnly),
-            Field::make()
+            Field::make(Lightswitch::make()->name('showUnpermittedSections'))
                 ->label(t('Show unpermitted sections'))
                 ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showUnpermittedSections')),
-            Field::make()
+                ->readOnly($readOnly),
+            Field::make(Lightswitch::make()->name('showUnpermittedEntries'))
                 ->label(t('Show unpermitted entries'))
                 ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showUnpermittedEntries')),
+                ->readOnly($readOnly),
         ];
     }
 

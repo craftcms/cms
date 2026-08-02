@@ -71,34 +71,28 @@ it('matches the shared architecture fixture through public registration and proj
 
     $actual = [
         'ordinary' => FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(TextInput::make()
+                ->name('title')
+                ->placeholder('Article title')
+                ->attributes(['autocomplete' => 'off']))
                 ->key('ordinary-title')
                 ->label('Title')
                 ->instructions('Shown in article listings.')
-                ->columnWidth(50)
-                ->input(
-                    TextInput::make()
-                        ->name('title')
-                        ->placeholder('Article title')
-                        ->attributes(['autocomplete' => 'off']),
-                ),
+                ->columnWidth(50),
         ])->toArray(),
         'conditionalVisibility' => FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(TextInput::make()->name('mode'))
                 ->key('visibility-mode')
-                ->label('Mode')
-                ->input(TextInput::make()->name('mode')),
-            FieldComponent::make()
+                ->label('Mode'),
+            FieldComponent::make(TextInput::make()->name('details'))
                 ->key('visibility-details')
                 ->label('Details')
-                ->visibleWhen(Condition::equals('mode', 'advanced'))
-                ->input(TextInput::make()->name('details')),
+                ->visibleWhen(Condition::equals('mode', 'advanced')),
         ])->toArray(),
         'plugin' => FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(ArchitectureAcceptanceColorMap::make()->name('palette'))
                 ->key('plugin-palette')
-                ->label('Palette')
-                ->input(ArchitectureAcceptanceColorMap::make()->name('palette')),
+                ->label('Palette'),
         ])->toArray(),
         'fieldLayout' => $projector->project(
             $layout,

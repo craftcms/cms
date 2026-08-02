@@ -118,14 +118,12 @@ it('registers and projects money and color palette components', function () {
     $registry = app(ComponentRegistry::class);
     $types = app(FormElementTypes::class);
     $definition = FormDefinition::make([
-        Field::make()->input(
-            MoneyInput::make()
-                ->name('amount')
-                ->currency('USD')
-                ->fractionDigits(2)
-                ->placeholder('0.00'),
-        ),
-        Field::make()->input(ColorPalette::make()->name('palette')),
+        Field::make(MoneyInput::make()
+            ->name('amount')
+            ->currency('USD')
+            ->fractionDigits(2)
+            ->placeholder('0.00')),
+        Field::make(ColorPalette::make()->name('palette')),
     ]);
 
     expect($registry->make('money-input'))->toBeInstanceOf(MoneyInput::class)
@@ -161,7 +159,7 @@ it('keeps host values and HTML-only options out of specialized projection', func
     string $option,
 ) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', $component::class, $option),
@@ -176,7 +174,7 @@ it('keeps host values and HTML-only options out of specialized projection', func
 
 it('rejects invalid portable specialized configuration', function (ProjectableFormElement $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', $component::class, $option),

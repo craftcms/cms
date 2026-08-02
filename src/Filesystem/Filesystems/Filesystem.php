@@ -119,24 +119,20 @@ abstract class Filesystem extends Component implements FsInterface
         $elements = [];
 
         if ($this->getShowHasUrlSetting()) {
-            $elements[] = FieldComponent::make()
+            $elements[] = FieldComponent::make(Lightswitch::make()->name('hasUrls'))
                 ->label(t('Files in this filesystem have public URLs'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('hasUrls'));
+                ->readOnly($readOnly);
         }
 
         if ($this->getShowUrlSetting()) {
-            $url = FieldComponent::make()
+            $url = FieldComponent::make(Combobox::make()
+                ->name('url')
+                ->options(SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)))
+                ->placeholder('//example.com/path/to/folder'))
                 ->label(t('Base URL'))
                 ->instructions(t('The base URL to the files in this filesystem.'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(
-                    Combobox::make()
-                        ->name('url')
-                        ->options(SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)))
-                        ->placeholder('//example.com/path/to/folder'),
-                );
+                ->readOnly($readOnly);
 
             if ($this->getShowHasUrlSetting()) {
                 $url->visibleWhen(Condition::equals('hasUrls', true));

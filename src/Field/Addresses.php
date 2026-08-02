@@ -314,28 +314,23 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(NumberInput::make()->name('minAddresses')->min(0))
                 ->label(t('Min {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('minAddresses')->min(0)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('maxAddresses')->min(0))
                 ->label(t('Max {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('maxAddresses')->min(0)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()
+                ->name('viewMode')
+                ->options([
+                    ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                    ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                ]))
                 ->label(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('viewMode')
-                        ->options([
-                            ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
-                            ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
-                        ]),
-                ),
+                ->readOnly($readOnly),
         ]);
     }
 

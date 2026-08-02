@@ -360,11 +360,10 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         $volumeOptions = $this->volumeOptions();
         $availableVolumeOptions = $volumeOptions;
         $availableVolumesInput = CheckboxSelect::make()->name('availableVolumes');
-        $availableVolumes = FieldComponent::make()
+        $availableVolumes = FieldComponent::make($availableVolumesInput)
             ->label(t('Available Volumes'))
             ->instructions(t('The volumes that should be available when selecting assets.'))
-            ->readOnly($readOnly)
-            ->input($availableVolumesInput);
+            ->readOnly($readOnly);
 
         if ($availableVolumeOptions === []) {
             $availableVolumes
@@ -378,102 +377,85 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         }
 
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(Select::make()->name('flavor')->options(self::flavorOptions()))
                 ->label(t('Markdown Flavor'))
                 ->instructions(t('The Markdown flavor that should be used when rendering this field.'))
                 ->visibleWhen(Condition::equals('encode', false))
-                ->readOnly($readOnly)
-                ->input(Select::make()->name('flavor')->options(self::flavorOptions())),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('inlineOnly'))
                 ->label(t('Inline Only'))
                 ->instructions(t('Whether the field should only render inline Markdown, without wrapping paragraphs.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('inlineOnly')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('showToolbar'))
                 ->label(t('Show Toolbar'))
                 ->instructions(t('Whether the editor toolbar should be visible.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showToolbar')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(CheckboxSelect::make()->name('toolbarButtons')->options(self::toolbarButtonOptions()))
                 ->label(t('Toolbar Buttons'))
                 ->instructions(t('Choose which buttons should be available in the editor toolbar.'))
                 ->visibleWhen(Condition::equals('showToolbar', true))
-                ->readOnly($readOnly)
-                ->input(CheckboxSelect::make()->name('toolbarButtons')->options(self::toolbarButtonOptions())),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('showStats'))
                 ->label(t('Show Stats'))
                 ->instructions(t('Whether the editor should show character, word, and line counts.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showStats')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TextInput::make()->name('placeholder'))
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('placeholder')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('initialRows')->min(1))
                 ->label(t('Initial Rows'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('initialRows')->min(1)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('charLimit')->min(1))
                 ->label(t('Character Limit'))
                 ->instructions(t('The maximum number of characters the field is allowed to have.'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('charLimit')->min(1)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(NumberInput::make()->name('byteLimit')->min(1))
                 ->label(t('Byte Limit'))
                 ->instructions(t('The maximum number of bytes the field is allowed to have.'))
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('byteLimit')->min(1)),
+                ->readOnly($readOnly),
             Group::fromDefinition(
                 FormDefinition::make($this->linkSettingsFormElements($readOnly)),
                 'linkSettings',
             )->key('link-settings'),
             $availableVolumes,
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('showUnpermittedVolumes'))
                 ->label(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showUnpermittedVolumes')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('showUnpermittedFiles'))
                 ->label(t('Show unpermitted files'))
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showUnpermittedFiles')),
+                ->readOnly($readOnly),
             ...($volumeOptions === [] ? [] : [
-                FieldComponent::make()
+                FieldComponent::make(Select::make()
+                    ->name('uploadVolume')
+                    ->options([
+                        ['label' => t('No uploads'), 'value' => ''],
+                        ...$volumeOptions,
+                    ]))
                     ->label(t('Upload Volume'))
                     ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
-                    ->readOnly($readOnly)
-                    ->input(
-                        Select::make()
-                            ->name('uploadVolume')
-                            ->options([
-                                ['label' => t('No uploads'), 'value' => ''],
-                                ...$volumeOptions,
-                            ]),
-                    ),
+                    ->readOnly($readOnly),
             ]),
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('encode'))
                 ->label(t('Encode HTML'))
                 ->instructions(t('Whether HTML should be encoded before rendering the Markdown.'))
                 ->warning(t('Enabling this will enforce the Original Markdown flavor.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('encode')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('sanitizeHtml'))
                 ->label(t('Sanitize HTML'))
                 ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'))
                 ->warning(t('Disable this at your own risk!'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('sanitizeHtml')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()->name('htmlSanitizer')->options($this->htmlSanitizerOptions()->all()))
                 ->label(t('HTML Sanitizer'))
                 ->instructions(t('You can register custom HTML sanitizers as {ext} files in {path}.', [
                     'ext' => '`.php`',
                     'path' => '`config/craft/sanitizers/`',
                 ]))
                 ->visibleWhen(Condition::equals('sanitizeHtml', true))
-                ->readOnly($readOnly)
-                ->input(Select::make()->name('htmlSanitizer')->options($this->htmlSanitizerOptions()->all())),
+                ->readOnly($readOnly),
         ]);
     }
 

@@ -222,32 +222,25 @@ trait ProvidesLinkField
         );
 
         return [
-            Field::make()
+            Field::make(CheckboxSelect::make()
+                ->name('types')
+                ->options($this->linkTypeOptions($types))
+                ->sortable())
                 ->label(t('Allowed Link Types'))
                 ->instructions(t('The link types that should be available when inserting links.'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(
-                    CheckboxSelect::make()
-                        ->name('types')
-                        ->options($this->linkTypeOptions($types))
-                        ->sortable(),
-                ),
+                ->readOnly($readOnly),
             ...$elements,
-            Field::make()
+            Field::make(Lightswitch::make()->name('showLabelField'))
                 ->label(t('Show the “Label” field'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showLabelField')),
-            Field::make()
+                ->readOnly($readOnly),
+            Field::make(CheckboxSelect::make()
+                ->name('advancedFields')
+                ->options($advancedFieldOptions)
+                ->sortable())
                 ->label(t('Advanced Fields'))
                 ->instructions(t('Choose which advanced fields should be available when inserting links.'))
-                ->readOnly($readOnly)
-                ->input(
-                    CheckboxSelect::make()
-                        ->name('advancedFields')
-                        ->options($advancedFieldOptions)
-                        ->sortable(),
-                ),
+                ->readOnly($readOnly),
         ];
     }
 

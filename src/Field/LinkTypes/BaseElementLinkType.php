@@ -102,12 +102,11 @@ abstract class BaseElementLinkType extends BaseLinkType
         $input = CheckboxSelect::make()
             ->name('sources')
             ->options($sources);
-        $element = Field::make()
+        $element = Field::make($input)
             ->label(t('{type} Sources', [
                 'type' => static::elementType()::displayName(),
             ]))
-            ->readOnly($readOnly)
-            ->input($input);
+            ->readOnly($readOnly);
 
         return [$sources === []
             ? $element->warning(t('No sources exist yet.'))->readOnly()

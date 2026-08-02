@@ -224,30 +224,24 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     {
         $elements = [
             ...$this->linkSettingsFormElements($readOnly),
-            FieldComponent::make()
+            FieldComponent::make(NumberInput::make()
+                ->name('maxLength')
+                ->min(10)
+                ->step(10))
                 ->label(t('Max Length'))
                 ->instructions(t('The maximum length (in bytes) the field can hold.'))
-                ->readOnly($readOnly)
-                ->input(
-                    NumberInput::make()
-                        ->name('maxLength')
-                        ->min(10)
-                        ->step(10),
-                ),
+                ->readOnly($readOnly),
         ];
 
         if (Cms::config()->enableGql) {
-            $elements[] = FieldComponent::make()
+            $elements[] = FieldComponent::make(Select::make()
+                ->name('fullGraphqlData')
+                ->options([
+                    ['label' => t('Full data'), 'value' => true],
+                    ['label' => t('URL only'), 'value' => false],
+                ]))
                 ->label(t('GraphQL Mode'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('fullGraphqlData')
-                        ->options([
-                            ['label' => t('Full data'), 'value' => true],
-                            ['label' => t('URL only'), 'value' => false],
-                        ]),
-                );
+                ->readOnly($readOnly);
         }
 
         return FormDefinition::make($elements);

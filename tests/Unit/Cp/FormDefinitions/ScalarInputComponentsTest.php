@@ -52,27 +52,23 @@ it('registers each scalar component with one stable Form Element Type', function
 
 it('projects scalar names, attributes, placeholders, constraints, and null values', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(
-            TextInput::make()
-                ->name(fn (): string => 'title')
-                ->placeholder(fn (): string => 'Article title')
-                ->attributes([
-                    'class' => 'code',
-                    'data' => ['mode' => 'plain'],
-                    'aria' => ['label' => 'Title'],
-                ]),
-        ),
-        Field::make()->input(
-            NumberInput::make()
-                ->name('limit')
-                ->min(fn (): int => 0)
-                ->max(fn (): int => 100)
-                ->step(fn (): float => 0.5),
-        ),
-        Field::make()->input(DateInput::make()->name('startDate')),
-        Field::make()->input(TimeInput::make()->name('startTime')),
-        Field::make()->input(TextInput::make()->name('nullableText')->placeholder(null)),
-        Field::make()->input(NumberInput::make()->name('nullableNumber')->min(null)->max(null)->step(null)),
+        Field::make(TextInput::make()
+            ->name(fn (): string => 'title')
+            ->placeholder(fn (): string => 'Article title')
+            ->attributes([
+                'class' => 'code',
+                'data' => ['mode' => 'plain'],
+                'aria' => ['label' => 'Title'],
+            ])),
+        Field::make(NumberInput::make()
+            ->name('limit')
+            ->min(fn (): int => 0)
+            ->max(fn (): int => 100)
+            ->step(fn (): float => 0.5)),
+        Field::make(DateInput::make()->name('startDate')),
+        Field::make(TimeInput::make()->name('startTime')),
+        Field::make(TextInput::make()->name('nullableText')->placeholder(null)),
+        Field::make(NumberInput::make()->name('nullableNumber')->min(null)->max(null)->step(null)),
     ]);
 
     expect($definition->toArray())->toBe([
@@ -124,7 +120,7 @@ it('projects scalar names, attributes, placeholders, constraints, and null value
 });
 
 it('requires a local Input Name for scalar projection', function (ProjectableFormElement $component) {
-    expect(fn () => FormDefinition::make([Field::make()->input($component)])->toArray())
+    expect(fn () => FormDefinition::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
             sprintf('%s option "name" is not supported for Form Definition output.', $component::class),
@@ -141,7 +137,7 @@ it('rejects explicitly configured host-owned scalar state during projection', fu
     string $option,
 ) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', $component::class, $option),
@@ -159,7 +155,7 @@ it('rejects host-owned scalar attributes during projection', function (string $a
         ->name('setting')
         ->attributes([$attribute => 'configured']);
 
-    expect(fn () => FormDefinition::make([Field::make()->input($component)])->toArray())
+    expect(fn () => FormDefinition::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
             sprintf(
@@ -177,7 +173,7 @@ it('rejects host-owned scalar attributes during projection', function (string $a
 ]);
 
 it('rejects invalid portable scalar values', function (ProjectableFormElement $component, string $option) {
-    expect(fn () => FormDefinition::make([Field::make()->input($component)])->toArray())
+    expect(fn () => FormDefinition::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
             sprintf('%s option "%s" is not supported for Form Definition output.', $component::class, $option),
@@ -193,7 +189,7 @@ it('does not allow a semantic scalar component to change its native input type',
     expect(fn () => $component->toHtml())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "type" is not supported for HTML output.', TextInput::class),
-    )->and(fn () => FormDefinition::make([Field::make()->input($component)])->toArray())->toThrow(
+    )->and(fn () => FormDefinition::make([Field::make($component)])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "type" is not supported for Form Definition output.', TextInput::class),
     );

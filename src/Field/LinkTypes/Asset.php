@@ -71,25 +71,20 @@ class Asset extends BaseElementLinkType
 
         return [
             ...parent::settingsFormElements($readOnly),
-            Field::make()
+            Field::make(CheckboxSelect::make()
+                ->name('allowedKinds')
+                ->options($allowedKinds)
+                ->allOption('*'))
                 ->label(t('Allowed File Types'))
-                ->readOnly($readOnly)
-                ->input(
-                    CheckboxSelect::make()
-                        ->name('allowedKinds')
-                        ->options($allowedKinds)
-                        ->allOption('*'),
-                ),
-            Field::make()
+                ->readOnly($readOnly),
+            Field::make(Lightswitch::make()->name('showUnpermittedVolumes'))
                 ->label(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showUnpermittedVolumes')),
-            Field::make()
+                ->readOnly($readOnly),
+            Field::make(Lightswitch::make()->name('showUnpermittedFiles'))
                 ->label(t('Show unpermitted files'))
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showUnpermittedFiles')),
+                ->readOnly($readOnly),
         ];
     }
 

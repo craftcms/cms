@@ -22,20 +22,17 @@ beforeEach(function () {
 
 it('projects a native text setting through an explicit field container', function () {
     $definition = FormDefinition::make([
-        Field::make()
+        Field::make(TextInput::make()
+            ->name('handle')
+            ->placeholder('myComponent')
+            ->attributes([
+                'autocomplete' => 'off',
+                'data-setting' => 'handle',
+            ]))
             ->label(fn (): string => 'Handle')
             ->instructions('How templates refer to this component.')
             ->columnWidth(50)
-            ->readOnly()
-            ->input(
-                TextInput::make()
-                    ->name('handle')
-                    ->placeholder('myComponent')
-                    ->attributes([
-                        'autocomplete' => 'off',
-                        'data-setting' => 'handle',
-                    ]),
-            ),
+            ->readOnly(),
     ]);
 
     expect($definition->toArray())->toBe([
@@ -67,10 +64,10 @@ it('projects visual groups and tabs with resolved labels and stable keys', funct
         Group::make([
             Tabs::make([
                 Tab::make('content', fn (): string => 'Content', [
-                    Field::make()->input(TextInput::make()->name('title')),
+                    Field::make(TextInput::make()->name('title')),
                 ]),
                 Tab::make('metadata', 'Metadata', [
-                    Field::make()->input(TextInput::make()->name('slug')),
+                    Field::make(TextInput::make()->name('slug')),
                 ])->hasErrors(),
             ])->key('settings-tabs'),
         ])->key('settings'),
@@ -116,8 +113,8 @@ it('projects visual groups and tabs with resolved labels and stable keys', funct
 
 it('rejects duplicate sibling keys', function () {
     $definition = FormDefinition::make([
-        Group::make([Field::make()->input(TextInput::make()->name('title'))])->key('settings'),
-        Group::make([Field::make()->input(TextInput::make()->name('slug'))])->key('settings'),
+        Group::make([Field::make(TextInput::make()->name('title'))])->key('settings'),
+        Group::make([Field::make(TextInput::make()->name('slug'))])->key('settings'),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -160,9 +157,8 @@ it('rejects malformed container structures', function (ProjectableFormElement $e
 it('keeps host workflow data outside the serialized definition', function () {
     $json = json_encode(
         FormDefinition::make([
-            Field::make()
-                ->label('Handle')
-                ->input(TextInput::make()->name('handle')),
+            Field::make(TextInput::make()->name('handle'))
+                ->label('Handle'),
         ]),
         JSON_THROW_ON_ERROR,
     );
@@ -177,17 +173,16 @@ it('keeps host workflow data outside the serialized definition', function () {
 
 it('projects nested visibility comparisons and groups', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(TextInput::make()->name('enabled')),
-        Field::make()->input(TextInput::make()->name('mode')),
-        Field::make()
+        Field::make(TextInput::make()->name('enabled')),
+        Field::make(TextInput::make()->name('mode')),
+        Field::make(TextInput::make()->name('label'))
             ->visibleWhen(Condition::all(
                 Condition::equals('enabled', true),
                 Condition::any(
                     Condition::equals('mode', 'manual'),
                     Condition::notEquals('mode', 'automatic'),
                 ),
-            ))
-            ->input(TextInput::make()->name('label')),
+            )),
     ]);
 
     expect($definition->toArray()['elements'][2]['visibleWhen'])->toBe([
@@ -203,10 +198,9 @@ it('projects nested visibility comparisons and groups', function () {
 
 it('keeps callable-looking strings as visibility data', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(TextInput::make()->name('source')),
-        Field::make()
-            ->visibleWhen(Condition::equals('source', 'trim'))
-            ->input(TextInput::make()->name('target')),
+        Field::make(TextInput::make()->name('source')),
+        Field::make(TextInput::make()->name('target'))
+            ->visibleWhen(Condition::equals('source', 'trim')),
     ]);
 
     expect($definition->toArray()['elements'][1]['visibleWhen'])->toBe([
@@ -218,10 +212,9 @@ it('keeps callable-looking strings as visibility data', function () {
 
 it('projects every visibility comparison operator', function (Condition $condition, array $expected) {
     $definition = FormDefinition::make([
-        Field::make()->input(TextInput::make()->name('source')),
-        Field::make()
-            ->visibleWhen($condition)
-            ->input(TextInput::make()->name('target')),
+        Field::make(TextInput::make()->name('source')),
+        Field::make(TextInput::make()->name('target'))
+            ->visibleWhen($condition),
     ]);
 
     expect($definition->toArray()['elements'][1]['visibleWhen'])->toBe($expected);
@@ -248,7 +241,7 @@ it('rejects malformed visibility conditions with type and tree location context'
     $definition = FormDefinition::make([
         TestProjectableContainer::make()
             ->children([
-                Field::make()->input(TextInput::make()->name('target'))->toFormElementData(),
+                Field::make(TextInput::make()->name('target'))->toFormElementData(),
             ])
             ->visibility(new VisibilityConditionData($condition)),
     ]);
@@ -288,9 +281,8 @@ it('rejects malformed visibility conditions with type and tree location context'
 
 it('rejects unresolved visibility input names with type and tree location context', function () {
     $definition = FormDefinition::make([
-        Field::make()
-            ->visibleWhen(Condition::equals('missing', true))
-            ->input(TextInput::make()->name('target')),
+        Field::make(TextInput::make()->name('target'))
+            ->visibleWhen(Condition::equals('missing', true)),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -302,8 +294,8 @@ it('rejects unresolved visibility input names with type and tree location contex
 
 it('rejects duplicate input names with type and tree location context', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(TextInput::make()->name('handle')),
-        Field::make()->input(TextInput::make()->name('handle')),
+        Field::make(TextInput::make()->name('handle')),
+        Field::make(TextInput::make()->name('handle')),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -321,9 +313,8 @@ it('rejects invalid widths and non-serializable portable data', function (
         ->toThrow(InvalidArgumentException::class, $message);
 })->with([
     'invalid width' => [
-        fn () => Field::make()
-            ->columnWidth(0)
-            ->input(TextInput::make()->name('title')),
+        fn () => Field::make(TextInput::make()->name('title'))
+            ->columnWidth(0),
         'Form Element Type "craft:field" at elements[0]: width must be between 1 and 100.',
     ],
     'non-serializable props' => [
@@ -331,11 +322,9 @@ it('rejects invalid widths and non-serializable portable data', function (
         'Form Element Type "application:test-container" at elements[0]: props.bad is not serializable.',
     ],
     'non-serializable attributes' => [
-        fn () => Field::make()->input(
-            TextInput::make()
-                ->name('title')
-                ->attributes(['bad' => fn () => null]),
-        ),
+        fn () => Field::make(TextInput::make()
+            ->name('title')
+            ->attributes(['bad' => fn () => null])),
         'Form Element Type "craft:text-input" at elements[0].children[0]: attributes.bad is not serializable.',
     ],
 ]);

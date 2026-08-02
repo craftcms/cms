@@ -128,7 +128,7 @@ class FieldLayoutFormDefinitionProjector
                 ));
             }
 
-            $formElement = FieldComponent::make()->input($input);
+            $formElement = FieldComponent::make($input);
 
             if ($layoutElement instanceof BaseField) {
                 $layoutElement->configureFormElement($formElement, $context->element, $readOnly);

@@ -49,11 +49,10 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
     {
         return [
             ...parent::settingsFormElements($readOnly),
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('iconsOnly'))
                 ->label(t('Icons only'))
                 ->instructions(t('Whether buttons should only show their icons, hiding their text labels.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('iconsOnly')),
+                ->readOnly($readOnly),
         ];
     }
 

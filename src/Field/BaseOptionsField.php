@@ -285,25 +285,21 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     protected function settingsFormElements(bool $readOnly): array
     {
         $elements = [
-            FieldComponent::make()
+            FieldComponent::make(OptionRows::make()
+                ->name('options')
+                ->multipleDefaults(static::$multi)
+                ->optgroups(static::$optgroups)
+                ->icons(static::$optionIcons)
+                ->colors(static::$optionColors))
                 ->label($this->optionsSettingLabel())
                 ->instructions(t('Define the available options.'))
-                ->readOnly($readOnly)
-                ->input(
-                    OptionRows::make()
-                        ->name('options')
-                        ->multipleDefaults(static::$multi)
-                        ->optgroups(static::$optgroups)
-                        ->icons(static::$optionIcons)
-                        ->colors(static::$optionColors),
-                ),
+                ->readOnly($readOnly),
         ];
 
         if (static::$allowCustomOptions) {
-            $elements[] = FieldComponent::make()
+            $elements[] = FieldComponent::make(Lightswitch::make()->name('customOptions'))
                 ->label(t('Allow custom options'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('customOptions'));
+                ->readOnly($readOnly);
         }
 
         return $elements;

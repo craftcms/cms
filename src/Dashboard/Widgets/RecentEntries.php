@@ -74,42 +74,35 @@ class RecentEntries extends Widget
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {
-            $elements[] = Field::make()
+            $elements[] = Field::make(Select::make()
+                ->name('siteId')
+                ->options($editableSites->map(fn ($site): array => [
+                    'label' => t($site->getName(), category: 'site'),
+                    'value' => $site->id,
+                ])->all()))
                 ->label(t('Site'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('siteId')
-                        ->options($editableSites->map(fn ($site): array => [
-                            'label' => t($site->getName(), category: 'site'),
-                            'value' => $site->id,
-                        ])->all()),
-                );
+                ->readOnly($readOnly);
         }
 
-        $elements[] = Field::make()
+        $elements[] = Field::make(Select::make()
+            ->name('section')
+            ->options([
+                ['label' => t('All'), 'value' => '*'],
+                ...Sections::getAllSections()
+                    ->filter(fn ($section): bool => $section->type !== SectionType::Single)
+                    ->map(fn ($section): array => [
+                        'label' => t($section->name, category: 'site'),
+                        'value' => $section->id,
+                    ])
+                    ->values()
+                    ->all(),
+            ]))
             ->label(t('Section'))
             ->instructions(t('Which section do you want to pull recent entries from?'))
-            ->readOnly($readOnly)
-            ->input(
-                Select::make()
-                    ->name('section')
-                    ->options([
-                        ['label' => t('All'), 'value' => '*'],
-                        ...Sections::getAllSections()
-                            ->filter(fn ($section): bool => $section->type !== SectionType::Single)
-                            ->map(fn ($section): array => [
-                                'label' => t($section->name, category: 'site'),
-                                'value' => $section->id,
-                            ])
-                            ->values()
-                            ->all(),
-                    ]),
-            );
-        $elements[] = Field::make()
+            ->readOnly($readOnly);
+        $elements[] = Field::make(NumberInput::make()->name('limit'))
             ->label(t('Limit'))
-            ->readOnly($readOnly)
-            ->input(NumberInput::make()->name('limit'));
+            ->readOnly($readOnly);
 
         return FormDefinition::make($elements);
     }

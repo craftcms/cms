@@ -117,18 +117,15 @@ class Local extends Filesystem
     {
         return FormDefinition::make([
             ...$this->settingsFormElements($readOnly),
-            Field::make()
+            Field::make(Combobox::make()
+                ->name('path')
+                ->options(SelectOptions::getEnvSuggestions(true))
+                ->placeholder(t('/path/to/folder'))
+                ->allowAliases())
                 ->label(t('Base Path'))
                 ->instructions(t('The base folder path that should be used as the root of the filesystem.'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(
-                    Combobox::make()
-                        ->name('path')
-                        ->options(SelectOptions::getEnvSuggestions(true))
-                        ->placeholder(t('/path/to/folder'))
-                        ->allowAliases(),
-                ),
+                ->readOnly($readOnly),
         ]);
     }
 

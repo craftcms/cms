@@ -231,28 +231,22 @@ it('projects immutable choice option data and portable presentation', function (
     ];
 
     $definition = FormDefinition::make([
-        Field::make()->input(
-            Select::make()
-                ->name('status')
-                ->options(fn (): array => $selectOptions)
-                ->attributes(['data' => ['setting' => 'status']]),
-        ),
-        Field::make()->input(
-            Combobox::make()
-                ->name('path')
-                ->options($comboboxOptions)
-                ->placeholder('/path/to/folder')
-                ->allowAliases()
-                ->limit(25)
-                ->clearable(),
-        ),
-        Field::make()->input(
-            CheckboxSelect::make()
-                ->name('sources')
-                ->options($checkboxOptions)
-                ->allOption('*')
-                ->sortable(),
-        ),
+        Field::make(Select::make()
+            ->name('status')
+            ->options(fn (): array => $selectOptions)
+            ->attributes(['data' => ['setting' => 'status']])),
+        Field::make(Combobox::make()
+            ->name('path')
+            ->options($comboboxOptions)
+            ->placeholder('/path/to/folder')
+            ->allowAliases()
+            ->limit(25)
+            ->clearable()),
+        Field::make(CheckboxSelect::make()
+            ->name('sources')
+            ->options($checkboxOptions)
+            ->allOption('*')
+            ->sortable()),
     ]);
 
     expect($definition->toArray())->toBe([
@@ -298,7 +292,7 @@ it('projects immutable choice option data and portable presentation', function (
 });
 
 it('requires a local Input Name for choice projection', function (ProjectableFormElement $component) {
-    expect(fn () => FormDefinition::make([Field::make()->input($component)])->toArray())
+    expect(fn () => FormDefinition::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
             sprintf('%s option "name" is not supported for Form Definition output.', $component::class),
@@ -314,7 +308,7 @@ it('rejects host-owned choice state during projection', function (
     string $option,
 ) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', $component::class, $option),

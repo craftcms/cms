@@ -28,11 +28,10 @@ use function CraftCms\Cms\t;
  * field shell (label, instructions, tip/warning, errors, status) around any
  * control.
  *
- *     Field::make()
+ *     Field::make(fn () => FormFields::textHtml(['name' => 'handle']))
  *         ->label(t('Handle'))
  *         ->required()
  *         ->instructions(t('How you’ll refer to this field in the templates.'))
- *         ->input(fn () => FormFields::textHtml(['name' => 'handle']))
  *         ->errors($model->errors()->get('handle'));
  *
  * Every setter accepts a literal value or a Closure evaluated at render time
@@ -42,6 +41,19 @@ class Field extends ViewComponent implements ProjectableFormElement
 {
     use HasDisabled;
     use HasId;
+
+    #[Override]
+    public static function make(
+        string|Htmlable|Stringable|ViewComponent|Closure|null $input = null,
+    ): static {
+        $field = parent::make();
+
+        if (func_num_args() === 0) {
+            return $field;
+        }
+
+        return $field->input($input);
+    }
 
     protected string|Htmlable|Stringable|ViewComponent|Closure|null $label = null;
 

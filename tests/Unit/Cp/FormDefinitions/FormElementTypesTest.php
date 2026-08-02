@@ -37,11 +37,9 @@ it('registers and projects a plugin CP UI Component with derived ownership', fun
         ->toContain('<color-tools-map')
         ->and(ColorMapComponent::formElementType())->toBe('color-tools:color-map')
         ->and(FormDefinition::make([
-            Field::make()->input(
-                ColorMapComponent::make()
-                    ->name('palette')
-                    ->colors(['red', 'blue']),
-            ),
+            Field::make(ColorMapComponent::make()
+                ->name('palette')
+                ->colors(['red', 'blue'])),
         ])->toArray())->toBe([
             'elements' => [[
                 'type' => 'craft:field',
@@ -72,7 +70,7 @@ it('validates a complete registration batch before committing it', function () {
     ))->toThrow(InvalidArgumentException::class, 'must extend');
 
     expect(fn () => FormDefinition::make([
-        Field::make()->input(ColorMapComponent::make()->name('palette')),
+        Field::make(ColorMapComponent::make()->name('palette')),
     ])->toArray())->toThrow(InvalidArgumentException::class, 'unknown or unregistered Form Element Type');
 });
 
@@ -80,7 +78,7 @@ it('supports ownerless application component registrations', function () {
     app(FormElementTypes::class)->register(ApplicationComponent::class);
 
     expect(FormDefinition::make([
-        Field::make()->input(ApplicationComponent::make()->name('setting')),
+        Field::make(ApplicationComponent::make()->name('setting')),
     ])->toArray())->toBe([
         'elements' => [[
             'type' => 'craft:field',
@@ -163,7 +161,7 @@ it('rejects projection through a type registered to another component class', fu
     $plugin->registerFormElementTypes(ColorMapComponent::class);
 
     expect(fn () => FormDefinition::make([
-        Field::make()->input(ConflictingColorMapComponent::make()->name('palette')),
+        Field::make(ConflictingColorMapComponent::make()->name('palette')),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf(
@@ -184,7 +182,7 @@ it('rejects a component that projects a type other than its declared type', func
     $plugin->registerFormElementTypes(MismatchedTypeComponent::class);
 
     expect(fn () => FormDefinition::make([
-        Field::make()->input(MismatchedTypeComponent::make()->name('palette')),
+        Field::make(MismatchedTypeComponent::make()->name('palette')),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf(
@@ -196,7 +194,7 @@ it('rejects a component that projects a type other than its declared type', func
 
 it('identifies Craft when a component class attempts to project a core type', function () {
     expect(fn () => FormDefinition::make([
-        Field::make()->input(CoreTextInputSubclass::make()->name('title')),
+        Field::make(CoreTextInputSubclass::make()->name('title')),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf(
@@ -218,7 +216,7 @@ it('projects registered plugin containers with children', function () {
 
     expect(FormDefinition::make([
         PaletteGroupComponent::make([
-            Field::make()->input(ColorMapComponent::make()->name('palette')),
+            Field::make(ColorMapComponent::make()->name('palette')),
         ]),
     ])->toArray())->toBe([
         'elements' => [[

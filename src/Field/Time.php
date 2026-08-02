@@ -118,19 +118,16 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         );
 
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(Select::make()->name('minuteIncrement')->options($minuteIncrementOptions))
                 ->label(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
-                ->readOnly($readOnly)
-                ->input(Select::make()->name('minuteIncrement')->options($minuteIncrementOptions)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TimeInputComponent::make()->name('min'))
                 ->label(t('Min Time'))
-                ->readOnly($readOnly)
-                ->input(TimeInputComponent::make()->name('min')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(TimeInputComponent::make()->name('max'))
                 ->label(t('Max Time'))
-                ->readOnly($readOnly)
-                ->input(TimeInputComponent::make()->name('max')),
+                ->readOnly($readOnly),
         ]);
     }
 

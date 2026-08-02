@@ -90,38 +90,32 @@ class NewUsers extends Widget
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         $elements = [
-            Field::make()
+            Field::make(Select::make()
+                ->name('dateRange')
+                ->options([
+                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
+                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'value' => 'd30'],
+                    ['label' => t('Last Week'), 'value' => 'lastweek'],
+                    ['label' => t('Last Month'), 'value' => 'lastmonth'],
+                ]))
                 ->label(t('Date Range'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('dateRange')
-                        ->options([
-                            ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
-                            ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'value' => 'd30'],
-                            ['label' => t('Last Week'), 'value' => 'lastweek'],
-                            ['label' => t('Last Month'), 'value' => 'lastmonth'],
-                        ]),
-                ),
+                ->readOnly($readOnly),
         ];
 
         $userGroups = UserGroups::getAllGroups();
 
         if ($userGroups->isNotEmpty()) {
-            $elements[] = Field::make()
+            $elements[] = Field::make(Select::make()
+                ->name('userGroupId')
+                ->options([
+                    ['label' => t('All'), 'value' => null],
+                    ...$userGroups->map(fn ($userGroup): array => [
+                        'label' => t($userGroup->name, category: 'site'),
+                        'value' => $userGroup->id,
+                    ])->all(),
+                ]))
                 ->label(t('User Group'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('userGroupId')
-                        ->options([
-                            ['label' => t('All'), 'value' => null],
-                            ...$userGroups->map(fn ($userGroup): array => [
-                                'label' => t($userGroup->name, category: 'site'),
-                                'value' => $userGroup->id,
-                            ])->all(),
-                        ]),
-                );
+                ->readOnly($readOnly);
         }
 
         return FormDefinition::make($elements);

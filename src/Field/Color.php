@@ -160,15 +160,13 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(ColorPalette::make()->name('palette'))
                 ->label(t('Palette'))
                 ->instructions(t('Define the available colors to choose from.'))
-                ->readOnly($readOnly)
-                ->input(ColorPalette::make()->name('palette')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('allowCustomColors'))
                 ->label(t('Allow custom colors'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('allowCustomColors')),
+                ->readOnly($readOnly),
         ]);
     }
 

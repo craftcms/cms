@@ -50,7 +50,7 @@ it('registers and deterministically projects option rows without host-owned valu
         ->colors()
         ->attributes(['data' => ['setting' => 'options']]);
     $definition = FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ]);
     $expected = [
         'elements' => [[
@@ -80,7 +80,7 @@ it('registers and deterministically projects option rows without host-owned valu
 
 it('rejects host-owned option row state during projection', function (OptionRows $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', OptionRows::class, $option),
@@ -92,7 +92,7 @@ it('rejects host-owned option row state during projection', function (OptionRows
 
 it('rejects invalid portable option row configuration', function (OptionRows $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', OptionRows::class, $option),

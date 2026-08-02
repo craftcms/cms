@@ -68,11 +68,10 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(TextInput::make()->name('placeholder'))
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
-                ->readOnly($readOnly)
-                ->input(TextInput::make()->name('placeholder')),
+                ->readOnly($readOnly),
         ]);
     }
 

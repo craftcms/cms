@@ -182,37 +182,31 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         );
 
         return FormDefinition::make([
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('showDate'))
                 ->label(t('Show date'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showDate')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('showTime'))
                 ->label(t('Show time'))
                 ->tip(t('Time fields are better suited for managing Time-only values.'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showTime')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Select::make()->name('minuteIncrement')->options($minuteIncrementOptions))
                 ->label(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
                 ->visibleWhen(Condition::equals('showTime', true))
-                ->readOnly($readOnly)
-                ->input(Select::make()->name('minuteIncrement')->options($minuteIncrementOptions)),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(Lightswitch::make()->name('showTimeZone'))
                 ->label(t('Show Time Zone'))
                 ->instructions(t('Whether authors should be able to choose which time zone the time is in.'))
                 ->visibleWhen(Condition::equals('showTime', true))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('showTimeZone')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(DateInput::make()->name('min'))
                 ->label(t('Min Date'))
                 ->visibleWhen(Condition::equals('showDate', true))
-                ->readOnly($readOnly)
-                ->input(DateInput::make()->name('min')),
-            FieldComponent::make()
+                ->readOnly($readOnly),
+            FieldComponent::make(DateInput::make()->name('max'))
                 ->label(t('Max Date'))
                 ->visibleWhen(Condition::equals('showDate', true))
-                ->readOnly($readOnly)
-                ->input(DateInput::make()->name('max')),
+                ->readOnly($readOnly),
         ]);
     }
 

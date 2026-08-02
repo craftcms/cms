@@ -53,11 +53,10 @@ class MyDrafts extends Widget
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            Field::make()
+            Field::make(NumberInput::make()->name('limit')->min(1))
                 ->label(t('Limit'))
                 ->required()
-                ->readOnly($readOnly)
-                ->input(NumberInput::make()->name('limit')->min(1)),
+                ->readOnly($readOnly),
         ]);
     }
 

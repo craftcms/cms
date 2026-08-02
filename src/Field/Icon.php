@@ -112,26 +112,22 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         $elements = [
-            FieldComponent::make()
+            FieldComponent::make(Lightswitch::make()->name('includeProIcons'))
                 ->label(t('Include Pro icons'))
                 ->instructions(t('Should icons that are exclusive to Font Awesome Pro be selectable?'))
                 ->tip(t('View Font Awesome Pro pricing: https://fontawesome.com/plans'))
-                ->readOnly($readOnly)
-                ->input(Lightswitch::make()->name('includeProIcons')),
+                ->readOnly($readOnly),
         ];
 
         if (Cms::config()->enableGql) {
-            $elements[] = FieldComponent::make()
+            $elements[] = FieldComponent::make(Select::make()
+                ->name('fullGraphqlData')
+                ->options([
+                    ['label' => t('Full data'), 'value' => true],
+                    ['label' => t('Name only'), 'value' => false],
+                ]))
                 ->label(t('GraphQL Mode'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('fullGraphqlData')
-                        ->options([
-                            ['label' => t('Full data'), 'value' => true],
-                            ['label' => t('Name only'), 'value' => false],
-                        ]),
-                );
+                ->readOnly($readOnly);
         }
 
         return FormDefinition::make($elements);

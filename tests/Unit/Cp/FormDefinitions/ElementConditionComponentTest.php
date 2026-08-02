@@ -59,7 +59,7 @@ it('registers and deterministically projects serializable condition editor confi
         ->addRuleLabel('Add condition')
         ->attributes(['data' => ['setting' => 'selection-condition']]);
     $definition = FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ]);
     $expected = [
         'elements' => [[
@@ -87,7 +87,7 @@ it('registers and deterministically projects serializable condition editor confi
 
 it('rejects host-owned condition editor state during projection', function (ElementCondition $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', ElementCondition::class, $option),
@@ -111,7 +111,7 @@ it('rejects host-owned condition editor state during projection', function (Elem
 
 it('rejects invalid portable condition editor configuration', function (ElementCondition $component, string $option) {
     expect(fn () => FormDefinition::make([
-        Field::make()->input($component),
+        Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for Form Definition output.', ElementCondition::class, $option),

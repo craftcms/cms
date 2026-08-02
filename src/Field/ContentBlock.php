@@ -361,25 +361,19 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         $fieldLayout = $this->getFieldLayout();
 
         return FormDefinition::make([
-            FieldComponent::make()
-                ->label(t('Field Layout'))
-                ->input(
-                    FieldLayoutComponent::make()
-                        ->name("fieldLayouts.{$fieldLayout->uid}")
-                        ->availableElements($this->fieldLayoutElementOptions())
-                        ->withGeneratedFields(),
-                ),
-            FieldComponent::make()
-                ->label(t('View Mode'))
-                ->input(
-                    Select::make()
-                        ->name('viewMode')
-                        ->options([
-                            ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
-                            ['label' => t('In a pane'), 'value' => self::VIEW_MODE_PANE],
-                            ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
-                        ]),
-                ),
+            FieldComponent::make(FieldLayoutComponent::make()
+                ->name("fieldLayouts.{$fieldLayout->uid}")
+                ->availableElements($this->fieldLayoutElementOptions())
+                ->withGeneratedFields())
+                ->label(t('Field Layout')),
+            FieldComponent::make(Select::make()
+                ->name('viewMode')
+                ->options([
+                    ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
+                    ['label' => t('In a pane'), 'value' => self::VIEW_MODE_PANE],
+                    ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
+                ]))
+                ->label(t('View Mode')),
         ]);
     }
 

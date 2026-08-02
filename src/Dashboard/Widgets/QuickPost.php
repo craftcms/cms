@@ -120,31 +120,25 @@ class QuickPost extends Widget
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {
-            $elements[] = Field::make()
+            $elements[] = Field::make(Select::make()
+                ->name('siteId')
+                ->options($editableSites->map(fn ($site): array => [
+                    'label' => t($site->getName(), category: 'site'),
+                    'value' => $site->id,
+                ])->all()))
                 ->label(t('Site'))
-                ->readOnly($readOnly)
-                ->input(
-                    Select::make()
-                        ->name('siteId')
-                        ->options($editableSites->map(fn ($site): array => [
-                            'label' => t($site->getName(), category: 'site'),
-                            'value' => $site->id,
-                        ])->all()),
-                );
+                ->readOnly($readOnly);
         }
 
-        $elements[] = Field::make()
+        $elements[] = Field::make(Select::make()
+            ->name('section')
+            ->options(array_map(fn (Section $section): array => [
+                'label' => t($section->name, category: 'site'),
+                'value' => $section->id,
+            ], $sections)))
             ->label(t('Section'))
             ->instructions(t('Which section do you want to save entries to?'))
-            ->readOnly($readOnly)
-            ->input(
-                Select::make()
-                    ->name('section')
-                    ->options(array_map(fn (Section $section): array => [
-                        'label' => t($section->name, category: 'site'),
-                        'value' => $section->id,
-                    ], $sections)),
-            );
+            ->readOnly($readOnly);
 
         foreach ($sections as $section) {
             $entryTypes = $section->getEntryTypes();
@@ -154,10 +148,9 @@ class QuickPost extends Widget
                     'label' => t($entryType->name, category: 'site'),
                     'value' => $entryType->id,
                 ], $entryTypes));
-            $entryType = Field::make()
+            $entryType = Field::make($entryTypeInput)
                 ->visibleWhen(Condition::equals('section', $section->id))
-                ->readOnly($readOnly)
-                ->input($entryTypeInput);
+                ->readOnly($readOnly);
 
             if (count($entryTypes) > 1) {
                 $entryType
@@ -171,16 +164,13 @@ class QuickPost extends Widget
         }
 
         $section = $this->section() ?? $sections[0];
-        $elements[] = Field::make()
+        $elements[] = Field::make(TextInput::make()
+            ->name('customTitle')
+            ->placeholder(t('Create a new {section} entry', [
+                'section' => $section->getUiLabel(),
+            ])))
             ->label(t('Widget Title'))
-            ->readOnly($readOnly)
-            ->input(
-                TextInput::make()
-                    ->name('customTitle')
-                    ->placeholder(t('Create a new {section} entry', [
-                        'section' => $section->getUiLabel(),
-                    ])),
-            );
+            ->readOnly($readOnly);
 
         return FormDefinition::make($elements);
     }

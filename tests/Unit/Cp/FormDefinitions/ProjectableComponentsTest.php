@@ -16,8 +16,14 @@ use Illuminate\Support\HtmlString;
 
 it('projects a Field and Lightswitch alongside existing authoring objects', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(TextInput::make()->name('mode')),
-        Field::make()
+        Field::make(TextInput::make()->name('mode')),
+        Field::make(fn (): Lightswitch => Lightswitch::make()
+            ->name(fn (): string => 'enabled')
+            ->label(fn (): string => 'Feature state')
+            ->onLabel(fn (): string => 'Enabled')
+            ->offLabel(fn (): string => 'Disabled')
+            ->size(fn (): Size => Size::Small)
+            ->attributes(['data' => ['control' => 'feature']]))
             ->key('feature-toggle')
             ->columnWidth(50)
             ->label(fn (): string => 'Feature')
@@ -26,14 +32,7 @@ it('projects a Field and Lightswitch alongside existing authoring objects', func
             ->warning(fn (): string => 'Use with care.')
             ->required(fn (): bool => true)
             ->readOnly(fn (): bool => true)
-            ->visibleWhen(Condition::equals('mode', 'advanced'))
-            ->input(fn (): Lightswitch => Lightswitch::make()
-                ->name(fn (): string => 'enabled')
-                ->label(fn (): string => 'Feature state')
-                ->onLabel(fn (): string => 'Enabled')
-                ->offLabel(fn (): string => 'Disabled')
-                ->size(fn (): Size => Size::Small)
-                ->attributes(['data' => ['control' => 'feature']])),
+            ->visibleWhen(Condition::equals('mode', 'advanced')),
     ]);
 
     expect($definition->toArray())->toBe([
@@ -75,6 +74,33 @@ it('projects a Field and Lightswitch alongside existing authoring objects', func
     ]);
 });
 
+it('constructs a Field around a projectable Lightswitch through make', function () {
+    $input = Lightswitch::make()->name('enabled')->label('Feature');
+    $shorthand = Field::make($input)->label('Feature state');
+    $fluent = Field::make()->label('Feature state')->input($input);
+    $expectedDefinition = [
+        'elements' => [[
+            'type' => 'craft:field',
+            'props' => ['label' => 'Feature state'],
+            'children' => [[
+                'type' => 'craft:lightswitch-input',
+                'name' => 'enabled',
+                'props' => ['label' => 'Feature'],
+            ]],
+        ]],
+    ];
+
+    expect($shorthand->toHtml())->toBe($fluent->toHtml())
+        ->and(FormDefinition::make([$shorthand])->toArray())->toBe($expectedDefinition)
+        ->and(FormDefinition::make([$fluent])->toArray())->toBe($expectedDefinition);
+});
+
+it('preserves zero-argument Field construction and registry configuration', function () {
+    expect(Field::make()->toHtml())->toBe('<craft-field></craft-field>')
+        ->and(app(ComponentRegistry::class)->make('field', ['label' => 'Feature'])->toHtml())
+        ->toBe('<craft-field label="Feature"></craft-field>');
+});
+
 it('exposes projectable component metadata through the component and Form Element Type registries', function () {
     $components = app(ComponentRegistry::class);
     $types = app(FormElementTypes::class);
@@ -95,7 +121,7 @@ it('exposes projectable component metadata through the component and Form Elemen
 
 it('projects repeatedly without mutating either component', function () {
     $input = Lightswitch::make()->name('enabled')->label('Enabled');
-    $field = Field::make()->label('Feature')->input($input);
+    $field = Field::make($input)->label('Feature');
     $html = $field->toHtml();
 
     $first = FormDefinition::make([$field])->toArray();
@@ -107,7 +133,7 @@ it('projects repeatedly without mutating either component', function () {
 });
 
 it('keeps raw Field input available for HTML and rejects it for Form Definition output', function () {
-    $field = Field::make()->input('<input name="enabled">');
+    $field = Field::make('<input name="enabled">');
 
     expect($field->toHtml())->toContainTag('input', ['name' => 'enabled', 'slot' => 'input'])
         ->and(fn () => FormDefinition::make([$field])->toArray())
@@ -124,38 +150,35 @@ it('rejects non-projectable Field inputs and portable raw markup', function (Fie
             sprintf('%s option "%s" is not supported for Form Definition output.', Field::class, $option),
         );
 })->with([
-    'missing input' => [fn () => Field::make()->input(null), 'input'],
-    'non-projectable component' => [fn () => Field::make()->input(Button::make()), 'input'],
+    'missing input' => [fn () => Field::make(null), 'input'],
+    'non-projectable component' => [fn () => Field::make(Button::make()), 'input'],
     'multiple inputs' => [
-        fn () => Field::make()->input(fn (): array => [
+        fn () => Field::make(fn (): array => [
             Lightswitch::make()->name('first'),
             Lightswitch::make()->name('second'),
         ]),
         'input',
     ],
     'raw label markup' => [
-        fn () => Field::make()
-            ->label(new HtmlString('<strong>Feature</strong>'))
-            ->input(Lightswitch::make()->name('enabled')),
+        fn () => Field::make(Lightswitch::make()->name('enabled'))
+            ->label(new HtmlString('<strong>Feature</strong>')),
         'label',
     ],
     'unsupported label object' => [
-        fn () => Field::make()
-            ->label(fn (): stdClass => new stdClass)
-            ->input(Lightswitch::make()->name('enabled')),
+        fn () => Field::make(Lightswitch::make()->name('enabled'))
+            ->label(fn (): stdClass => new stdClass),
         'label',
     ],
     'unsupported required value' => [
-        fn () => Field::make()
-            ->required(fn (): stdClass => new stdClass)
-            ->input(Lightswitch::make()->name('enabled')),
+        fn () => Field::make(Lightswitch::make()->name('enabled'))
+            ->required(fn (): stdClass => new stdClass),
         'required',
     ],
 ]);
 
 it('requires a local Lightswitch Input Name for Form Definition output', function () {
     expect(fn () => FormDefinition::make([
-        Field::make()->input(Lightswitch::make()),
+        Field::make(Lightswitch::make()),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "name" is not supported for Form Definition output.', Lightswitch::class),
@@ -164,11 +187,9 @@ it('requires a local Lightswitch Input Name for Form Definition output', functio
 
 it('rejects executable projected attributes', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(
-            Lightswitch::make()
-                ->name('enabled')
-                ->attributes(['bad' => fn (): string => 'value']),
-        ),
+        Field::make(Lightswitch::make()
+            ->name('enabled')
+            ->attributes(['bad' => fn (): string => 'value'])),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -180,11 +201,9 @@ it('rejects executable projected attributes', function () {
 
 it('rejects host-owned Lightswitch attributes', function (string $attribute) {
     $definition = FormDefinition::make([
-        Field::make()->input(
-            Lightswitch::make()
-                ->name('enabled')
-                ->attributes([$attribute => 'configured']),
-        ),
+        Field::make(Lightswitch::make()
+            ->name('enabled')
+            ->attributes([$attribute => 'configured'])),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -205,11 +224,9 @@ it('rejects host-owned Lightswitch attributes', function (string $attribute) {
 
 it('rejects nested host-owned Lightswitch accessibility attributes', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(
-            Lightswitch::make()
-                ->name('enabled')
-                ->attributes(['aria' => ['labelledby' => 'external-label']]),
-        ),
+        Field::make(Lightswitch::make()
+            ->name('enabled')
+            ->attributes(['aria' => ['labelledby' => 'external-label']])),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -224,9 +241,7 @@ it('rejects nested host-owned Lightswitch accessibility attributes', function ()
 
 it('rejects Lightswitch sizes unsupported by the Form Definition renderer', function () {
     $definition = FormDefinition::make([
-        Field::make()->input(
-            Lightswitch::make()->name('enabled')->size(Size::Large),
-        ),
+        Field::make(Lightswitch::make()->name('enabled')->size(Size::Large)),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -267,7 +282,7 @@ it('rejects explicitly configured Lightswitch HTML-only options during projectio
 ) {
     $lightswitch->name('enabled');
 
-    expect(fn () => FormDefinition::make([Field::make()->input($lightswitch)])->toArray())
+    expect(fn () => FormDefinition::make([Field::make($lightswitch)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
             sprintf('%s option "%s" is not supported for Form Definition output.', Lightswitch::class, $option),
