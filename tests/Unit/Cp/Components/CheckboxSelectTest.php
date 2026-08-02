@@ -15,7 +15,7 @@ describe('checkbox select', function () {
             ])
             ->toHtml();
 
-        expect($html)->toContain('<craft-checkbox-select id="sources" name="sources" class="cp-checkbox-select">')
+        expect($html)->toContain('<fieldset id="sources" class="cp-checkbox-select">')
             ->and($html)->toContain('<input type="hidden" name="sources" value>')
             ->and($html)->toContain('<div class="cp-checkbox-select__item">');
     });

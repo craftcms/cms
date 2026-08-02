@@ -12,7 +12,7 @@ it('renders the component from the legacy checkboxSelect variables', function ()
         templateMode: TemplateMode::Cp,
     );
 
-    expect($html)->toContain('<craft-checkbox-select')
+    expect($html)->toContain('<fieldset')
         ->and($html)->toContain('id="s"')
         ->and($html)->toContain('class="cp-checkbox-select"')
         ->and($html)->toContain('<input type="hidden" name="sources" value>')

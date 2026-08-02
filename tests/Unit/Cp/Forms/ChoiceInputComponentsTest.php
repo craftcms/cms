@@ -134,9 +134,8 @@ it('renders checkbox selection order, all behavior, and sortable presentation', 
         ->toHtml();
 
     expect($html)->toStartWith('<craft-sortable-checkbox-select>')
-        ->and($html)->toContainTag('craft-checkbox-select', [
+        ->and($html)->toContainTag('fieldset', [
             'id' => 'sources',
-            'name' => 'sources',
             'class' => 'cp-checkbox-select',
         ])
         ->and($html)->toContain('value="documents" checked')

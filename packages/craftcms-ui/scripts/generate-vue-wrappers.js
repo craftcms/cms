@@ -96,24 +96,6 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
-    tagName: 'craft-checkbox-select',
-    className: 'CraftCheckboxSelect',
-    fileName: 'CraftCheckboxSelect',
-    modelType: 'CheckboxSelectValue',
-    modelTypeImports: [
-      'CheckboxSelectOption',
-      'CheckboxSelectOptionValue',
-      'CheckboxSelectValue',
-    ],
-    importPath: '../components/checkbox-select/checkbox-select',
-    properties: [
-      {name: 'options', type: 'CheckboxSelectOption[]'},
-      {name: 'allOption', type: 'CheckboxSelectOptionValue'},
-      {name: 'sortable', type: 'boolean'},
-    ],
-    slots: [],
-  },
-  {
     tagName: 'craft-input-money',
     className: 'CraftInputMoney',
     fileName: 'CraftInputMoney',

@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Html;
 /**
  * Checkbox select — the PHP counterpart to the legacy
  * `_includes/forms/checkboxSelect` template. Renders a
- * `craft-checkbox-select.cp-checkbox-select` of {@see Checkbox} items, with an optional
+ * `fieldset.cp-checkbox-select` of {@see Checkbox} items, with an optional
  * "All" checkbox (or an always-post hidden input) first, optionally wrapped
  * in a `<craft-sortable-checkbox-select>` for drag reordering.
  *
@@ -56,7 +56,7 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
 
     protected function tagName(): string
     {
-        return 'craft-checkbox-select';
+        return 'fieldset';
     }
 
     /** The "All" checkbox, rendered before the items. */
@@ -185,14 +185,8 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
     #[\Override]
     protected function hostAttributes(): array
     {
-        $allOption = $this->hasAllOption ? $this->evaluate($this->allOption) : null;
-
         return [
             'id' => $this->getId(),
-            'name' => $this->evaluate($this->name),
-            'all-option' => $this->hasAllOption ? $this->htmlOptionValue($allOption) : null,
-            'sortable' => (bool) $this->evaluate($this->sortable),
-            'disabled' => $this->isDisabled(),
             'class' => 'cp-checkbox-select',
             'data' => [
                 'storage-key' => $this->evaluate($this->storageKey),

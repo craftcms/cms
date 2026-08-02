@@ -1,5 +1,4 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
-import CraftCheckboxSelect from '@craftcms/ui/vue/CraftCheckboxSelect.vue';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
 import CraftFieldLayout from '@craftcms/ui/vue/CraftFieldLayout.vue';
@@ -10,7 +9,6 @@ import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
 import CraftOptionRows from '@craftcms/ui/vue/CraftOptionRows.vue';
 import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
-import '@craftcms/ui/components/checkbox-select/checkbox-select';
 import '@craftcms/ui/components/editable-table/editable-table';
 import '@craftcms/ui/components/field-layout/field-layout';
 import '@craftcms/ui/components/input/input';
@@ -20,6 +18,7 @@ import '@craftcms/ui/components/option-rows/option-rows';
 import '@craftcms/ui/components/select/select';
 import '@craftcms/ui/components/switch/switch';
 import '@/modules/icon-picker';
+import CheckboxSelectValueAdapter from './CheckboxSelectValueAdapter.vue';
 import ElementConditionRenderer from './ElementConditionRenderer.vue';
 
 const sharedContainerTypes = new Set<string>([
@@ -30,7 +29,7 @@ const sharedContainerTypes = new Set<string>([
 ]);
 
 export const nativeFormElementRenderers = {
-  'craft:checkbox-select-input': CraftCheckboxSelect,
+  'craft:checkbox-select-input': CheckboxSelectValueAdapter,
   'craft:combobox-input': CraftCombobox,
   'craft:date-input': CraftInput,
   'craft:editable-table-input': CraftEditableTable,
