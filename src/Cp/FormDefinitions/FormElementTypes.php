@@ -12,6 +12,7 @@ use CraftCms\Cms\Cp\Components\EditableTable as EditableTableComponent;
 use CraftCms\Cms\Cp\Components\ElementCondition as ElementConditionComponent;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\FieldLayout as FieldLayoutComponent;
+use CraftCms\Cms\Cp\Components\Group as GroupComponent;
 use CraftCms\Cms\Cp\Components\KeyedTable as KeyedTableComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
 use CraftCms\Cms\Cp\Components\MoneyInput as MoneyInputComponent;
@@ -19,14 +20,13 @@ use CraftCms\Cms\Cp\Components\NumberInput as NumberInputComponent;
 use CraftCms\Cms\Cp\Components\ObjectSelect as ObjectSelectComponent;
 use CraftCms\Cms\Cp\Components\OptionRows as OptionRowsComponent;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
+use CraftCms\Cms\Cp\Components\Tab as TabComponent;
+use CraftCms\Cms\Cp\Components\Tabs as TabsComponent;
 use CraftCms\Cms\Cp\Components\TextInput as TextInputComponent;
 use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Container\Attributes\Singleton;
 use InvalidArgumentException;
@@ -51,9 +51,21 @@ class FormElementTypes
                 'container' => FieldComponent::isFormElementContainer(),
                 'plugin' => null,
             ],
-            Group::type() => ['class' => Group::class, 'container' => true, 'plugin' => null],
-            Tabs::type() => ['class' => Tabs::class, 'container' => true, 'plugin' => null],
-            Tab::type() => ['class' => Tab::class, 'container' => true, 'plugin' => null],
+            GroupComponent::formElementType() => [
+                'class' => GroupComponent::class,
+                'container' => GroupComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
+            TabsComponent::formElementType() => [
+                'class' => TabsComponent::class,
+                'container' => TabsComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
+            TabComponent::formElementType() => [
+                'class' => TabComponent::class,
+                'container' => TabComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             TextInputComponent::formElementType() => [
                 'class' => TextInputComponent::class,
                 'container' => TextInputComponent::isFormElementContainer(),

@@ -497,9 +497,15 @@ describe('Form Definition renderer', () => {
     expect(
       container.querySelector('[data-form-element="craft:group"]')?.tagName
     ).toBe('CRAFT-FIELD-GROUP');
+    expect(
+      container.querySelector<HTMLElement>('[data-form-element="craft:group"]')
+        ?.dataset.container
+    ).toBe('group');
+    expect((tabsElement as HTMLElement).dataset.container).toBe('tabs');
     const metadataPanel = container.querySelector(
       '[data-form-tab-panel="metadata"]'
     )!;
+    expect(metadataPanel.tagName).toBe('CRAFT-FIELD-GROUP');
     const slugInput = container.querySelector<HTMLInputElement>(
       '[data-native-input="slug"]'
     )!;
@@ -518,6 +524,7 @@ describe('Form Definition renderer', () => {
       'Content',
       'Metadata',
     ]);
+    expect(tabs[2]!.dataset.container).toBe('tab');
     expect(
       tabs[2]!.querySelector<HTMLElementTagNameMap['craft-indicator']>(
         'craft-indicator'
@@ -590,6 +597,98 @@ describe('Form Definition renderer', () => {
 
     expect(container.querySelector('[role="tablist"]')).toBeNull();
     expect(container.querySelector('craft-input')).not.toBeNull();
+  });
+
+  it('preserves projected tab attributes, visibility, and width', async () => {
+    const registry = createCpComponentRegistry();
+    const container = document.createElement('div');
+    const values = reactive({settings: {enabled: true}});
+
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormDefinitionRenderer, {
+      definition: {
+        elements: [
+          {
+            type: 'craft:tabs',
+            children: [
+              {
+                type: 'craft:tab',
+                key: 'content',
+                width: 60,
+                attributes: {data: {container: 'content'}},
+                props: {label: 'Content'},
+                visibleWhen: {
+                  name: 'enabled',
+                  operator: 'equals',
+                  value: true,
+                },
+                children: [],
+              },
+              {
+                type: 'craft:tab',
+                key: 'metadata',
+                props: {label: 'Metadata'},
+                visibleWhen: {
+                  name: 'enabled',
+                  operator: 'equals',
+                  value: false,
+                },
+                children: [],
+              },
+              {
+                type: 'craft:tab',
+                key: 'general',
+                props: {label: 'General'},
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values,
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    await vi.waitFor(() => {
+      expect(container.querySelectorAll('craft-tab')).toHaveLength(3);
+    });
+
+    const contentTab = Array.from(
+      container.querySelectorAll<HTMLElement>('craft-tab')
+    ).find((tab) => tab.textContent?.includes('Content'))!;
+    const metadataTab = Array.from(
+      container.querySelectorAll<HTMLElement>('craft-tab')
+    ).find((tab) => tab.textContent?.includes('Metadata'))!;
+    const contentPanel = container.querySelector<HTMLElement>(
+      '[data-form-tab-panel="content"]'
+    )!;
+    const metadataPanel = container.querySelector<HTMLElement>(
+      '[data-form-tab-panel="metadata"]'
+    )!;
+
+    expect(contentTab.dataset.container).toBe('content');
+    expect(contentTab.style.display).not.toBe('none');
+    expect(metadataTab.style.display).toBe('none');
+    expect(contentPanel.style.width).toBe('60%');
+    expect(metadataPanel.style.display).toBe('none');
+
+    values.settings.enabled = false;
+    await nextTick();
+
+    expect(contentTab.style.display).toBe('none');
+    expect(contentPanel.style.display).toBe('none');
+    expect(metadataTab.style.display).not.toBe('none');
+    expect(metadataPanel.style.display).not.toBe('none');
+    expect(
+      container.querySelector<HTMLElementTagNameMap['craft-tabs']>(
+        'craft-tabs'
+      )!.selectedIndex
+    ).toBe(1);
   });
 
   it('throws for an unavailable application renderer inside a plugin container', () => {
@@ -989,6 +1088,7 @@ function tabbedDefinition(insertSubtitle: boolean) {
   const metadataTab = {
     type: 'craft:tab',
     key: 'metadata',
+    attributes: {data: {container: 'tab'}},
     props: {label: 'Metadata', hasErrors: true},
     children: [
       ...(insertSubtitle
@@ -1003,10 +1103,12 @@ function tabbedDefinition(insertSubtitle: boolean) {
       {
         type: 'craft:group',
         key: 'settings',
+        attributes: {data: {container: 'group'}},
         children: [
           {
             type: 'craft:tabs',
             key: 'settings-tabs',
+            attributes: {data: {container: 'tabs'}},
             children: insertSubtitle
               ? [
                   {

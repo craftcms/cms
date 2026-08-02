@@ -144,13 +144,15 @@
   });
 
   const attributes = computed<Record<string, JsonValue>>(() => {
+    const elementAttributes = htmlAttributes(props.element.attributes);
+
     if (!binding.value) {
-      return props.element.attributes ?? {};
+      return elementAttributes;
     }
 
     const path = scopedPath(props.context.bindingScope, binding.value.name);
     const attributes: Record<string, JsonValue> = {
-      ...props.element.attributes,
+      ...elementAttributes,
       id: props.fieldContext?.inputId ?? inputId(path),
       name: htmlInputName(path),
       readonly: binding.value.readOnly,
@@ -164,19 +166,10 @@
     return attributes;
   });
 
-  const width = computed(() =>
-    props.element.width ? `${props.element.width}%` : undefined
-  );
-  const visible = computed(() =>
-    props.element.visibleWhen
-      ? evaluateVisibilityCondition(
-          props.element.visibleWhen,
-          props.context.values,
-          props.context.bindingScope
-        )
-      : true
-  );
+  const width = computed(() => elementWidth(props.element));
+  const visible = computed(() => elementVisible(props.element));
   const tabs = computed(() => props.element.children ?? []);
+  const visibleTabs = computed(() => tabs.value.filter(elementVisible));
   const selectedTabKey = ref<string>();
   const selectedTabIndex = computed(() =>
     Math.max(
@@ -186,7 +179,7 @@
   );
 
   watch(
-    tabs,
+    visibleTabs,
     (tabs) => {
       if (!tabs.some((tab) => tab.key === selectedTabKey.value)) {
         selectedTabKey.value = tabs[0]?.key ?? undefined;
@@ -199,6 +192,53 @@
     const value = props.element.props?.[name];
 
     return typeof value === 'string' ? value : undefined;
+  }
+
+  function elementWidth(element: FormElementData): string | undefined {
+    return element.width ? `${element.width}%` : undefined;
+  }
+
+  function elementVisible(element: FormElementData): boolean {
+    return element.visibleWhen
+      ? evaluateVisibilityCondition(
+          element.visibleWhen,
+          props.context.values,
+          props.context.bindingScope
+        )
+      : true;
+  }
+
+  function htmlAttributes(
+    attributes: FormElementData['attributes']
+  ): Record<string, JsonValue> {
+    const normalized: Record<string, JsonValue> = {};
+    const groupedAttributes = [
+      'aria',
+      'data',
+      'data-hx',
+      'data-ng',
+      'hx',
+      'ng',
+    ];
+
+    for (const [name, value] of Object.entries(attributes ?? {})) {
+      if (
+        groupedAttributes.includes(name) &&
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        for (const [nestedName, nestedValue] of Object.entries(value)) {
+          normalized[`${name}-${nestedName}`] = nestedValue;
+        }
+
+        continue;
+      }
+
+      normalized[name] = value;
+    }
+
+    return normalized;
   }
 
   function updateValue(value: unknown): void {
@@ -263,6 +303,7 @@
 
   <craft-field-group
     v-else-if="element.type === 'craft:group' || element.type === 'craft:tab'"
+    v-bind="attributes"
     v-show="visible"
     :slot="hostSlot"
     :data-form-element="element.type"
@@ -278,6 +319,7 @@
 
   <craft-tabs
     v-else-if="element.type === 'craft:tabs'"
+    v-bind="attributes"
     v-show="visible"
     :slot="hostSlot"
     data-form-element="craft:tabs"
@@ -287,7 +329,8 @@
   >
     <craft-tab
       v-for="tab in tabs"
-      v-show="tabs.length > 1"
+      v-bind="htmlAttributes(tab.attributes)"
+      v-show="visibleTabs.length > 1 && elementVisible(tab)"
       :key="`tab:${tab.key}`"
       slot="tab"
     >
@@ -299,11 +342,13 @@
         data-form-tab-errors
       />
     </craft-tab>
-    <div
+    <craft-field-group
       v-for="tab in tabs"
+      v-show="elementVisible(tab)"
       :key="`panel:${tab.key}`"
       slot="panel"
       :data-form-tab-panel="tab.key"
+      :style="{width: elementWidth(tab)}"
     >
       <FormElementRenderer
         v-for="(child, index) in tab.children"
@@ -311,7 +356,7 @@
         :element="child"
         :context="context"
       />
-    </div>
+    </craft-field-group>
   </craft-tabs>
 
   <template v-else>

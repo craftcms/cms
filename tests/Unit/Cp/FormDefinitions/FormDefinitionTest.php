@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\Components\Group;
+use CraftCms\Cms\Cp\Components\Tab;
+use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 
 it('projects a native text setting through an explicit field container', function () {
@@ -115,30 +116,28 @@ it('rejects duplicate sibling keys', function () {
         );
 });
 
-it('rejects malformed container structures', function (FormElement $element, string $message) {
+it('rejects malformed container structures', function (FormElement|ProjectableFormElement $element, string $message) {
     expect(fn () => FormDefinition::make([$element])->toArray())
         ->toThrow(InvalidArgumentException::class, $message);
 })->with([
-    'tabs without tabs' => [
-        fn () => Tabs::make([TextInput::make('title')]),
-        'Form Element Type "craft:field" at elements[0].children[0]: only Tab Form Elements may be direct children of Tabs.',
-    ],
     'empty tabs' => [
         fn () => Tabs::make([]),
         'Form Element Type "craft:tabs" at elements[0]: Tabs must contain at least one Tab.',
     ],
     'tab outside tabs' => [
         fn () => Group::make([Tab::make('content', 'Content', [])]),
-        'Form Element Type "craft:tab" at elements[0].children[0]: a Tab must be a direct child of Tabs.',
+        sprintf(
+            '%s child at index 0 (%s) must be a non-Tab form element for Form Definition output.',
+            Group::class,
+            Tab::class,
+        ),
     ],
     'empty tab key' => [
         fn () => Tabs::make([Tab::make('', 'Content', [])]),
         'Form Element Type "craft:tab" at elements[0].children[0]: key cannot be empty.',
     ],
     'missing tab key' => [
-        fn () => Tabs::make([
-            TestFormElement::make('craft:tab', props: ['label' => 'Content']),
-        ]),
+        fn () => Tabs::make([Tab::make(null, 'Content')]),
         'Form Element Type "craft:tab" at elements[0].children[0]: a Tab must define a stable key.',
     ],
     'empty tab label' => [
@@ -147,7 +146,7 @@ it('rejects malformed container structures', function (FormElement $element, str
     ],
     'container inside field' => [
         fn () => TestFormElement::make('craft:field', children: [
-            Group::make([TextInput::make('title')]),
+            TestFormElement::make('craft:group', children: [TextInput::make('title')]),
         ]),
         'Form Element Type "craft:field" at elements[0]: a Field Container must contain exactly one input.',
     ],

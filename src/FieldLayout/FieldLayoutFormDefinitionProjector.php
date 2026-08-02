@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
+use CraftCms\Cms\Cp\Components\Tab;
+use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Tab;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Tabs;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;

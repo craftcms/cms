@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Tests\Legacy;
 
 use craft\base\ConfigurableComponent;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
+use CraftCms\Cms\Cp\Components\Group;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Deprecator\Deprecator as DeprecatorService;
 use CraftCms\Cms\Support\Facades\Deprecator;
