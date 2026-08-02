@@ -12,7 +12,7 @@ use CraftCms\Cms\Cp\Forms\FormElementTypes;
 it('renders editable table configuration and host values through the shared primitive', function () {
     $columns = [
         ['key' => 'title', 'label' => 'Title', 'type' => 'text'],
-        ['key' => 'published', 'label' => 'Published', 'type' => 'checkbox'],
+        ['key' => 'published', 'label' => 'Published', 'type' => 'checkbox', 'radioMode' => true],
     ];
     $value = [
         ['rowId' => 'story-row', 'title' => 'Lead story', 'published' => true],

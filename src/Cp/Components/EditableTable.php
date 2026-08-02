@@ -25,6 +25,7 @@ use Override;
  *     code?: bool,
  *     autoPopulate?: string,
  *     nestedOptions?: bool,
+ *     radioMode?: bool,
  *     options?: list<EditableTableOption>,
  * }
  */
@@ -286,7 +287,7 @@ class EditableTable extends ViewComponent implements FormElement
             $this->unsupportedOutputOption("columns[{$index}]", $output);
         }
 
-        $supported = ['key', 'label', 'type', 'width', 'class', 'code', 'autoPopulate', 'nestedOptions', 'options'];
+        $supported = ['key', 'label', 'type', 'width', 'class', 'code', 'autoPopulate', 'nestedOptions', 'radioMode', 'options'];
 
         foreach (array_keys($column) as $property) {
             if (! in_array($property, $supported, true)) {
@@ -314,7 +315,7 @@ class EditableTable extends ViewComponent implements FormElement
             }
         }
 
-        foreach (['code', 'nestedOptions'] as $property) {
+        foreach (['code', 'nestedOptions', 'radioMode'] as $property) {
             if (array_key_exists($property, $column) && ! is_bool($column[$property])) {
                 $this->unsupportedOutputOption("columns[{$index}].{$property}", $output);
             }

@@ -1,5 +1,4 @@
 import {expect, it} from 'vite-plus/test';
-import CraftColorPalette from '@craftcms/ui/vue/CraftColorPalette.vue';
 import CraftFieldLayout from '@craftcms/ui/vue/CraftFieldLayout.vue';
 import CraftKeyedTable from '@craftcms/ui/vue/CraftKeyedTable.vue';
 import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
@@ -34,7 +33,6 @@ it('pairs every native Form Element Type with its declared Vue rendering path', 
 });
 
 it.each([
-  ['craft:color-palette-input', CraftColorPalette],
   ['craft:keyed-table-input', CraftKeyedTable],
   ['craft:object-select-input', CraftObjectSelect],
   ['craft:field-layout-input', CraftFieldLayout],

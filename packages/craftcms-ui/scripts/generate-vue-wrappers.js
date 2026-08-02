@@ -235,15 +235,6 @@ const VALUE_COMPONENTS = [
     slots: ['feedback'],
   },
   {
-    tagName: 'craft-color-palette',
-    className: 'CraftColorPalette',
-    fileName: 'CraftColorPalette',
-    modelType: 'ColorPaletteRow[]',
-    modelTypeImports: ['ColorPaletteRow'],
-    modelDefault: '[]',
-    importPath: '../components/color-palette/color-palette',
-  },
-  {
     tagName: 'craft-keyed-table',
     className: 'CraftKeyedTable',
     fileName: 'CraftKeyedTable',

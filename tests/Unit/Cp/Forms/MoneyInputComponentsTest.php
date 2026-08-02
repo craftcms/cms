@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cp\Components\ColorPalette;
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\MoneyInput;
@@ -95,26 +94,7 @@ it('deprecates legacy money behavior that the shared primitive cannot preserve',
     ]);
 });
 
-it('renders color palette rows through the shared primitive without losing nullable values', function () {
-    $palette = [
-        ['color' => '#ff0000', 'label' => 'Red', 'default' => true],
-        ['color' => null, 'label' => null, 'default' => false],
-    ];
-
-    $html = ColorPalette::make()
-        ->name('palette')
-        ->value($palette)
-        ->readOnly()
-        ->toHtml();
-
-    expect($html)->toContainTag('craft-color-palette', [
-        'name' => 'palette',
-        'value' => json_encode($palette, JSON_THROW_ON_ERROR),
-        'readonly' => true,
-    ]);
-});
-
-it('registers and projects money and color palette components', function () {
+it('registers and projects the money component', function () {
     $registry = app(ComponentRegistry::class);
     $types = app(FormElementTypes::class);
     $form = Form::make([
@@ -123,15 +103,11 @@ it('registers and projects money and color palette components', function () {
             ->currency('USD')
             ->fractionDigits(2)
             ->placeholder('0.00')),
-        Field::make(ColorPalette::make()->name('palette')),
     ]);
 
     expect($registry->make('money-input'))->toBeInstanceOf(MoneyInput::class)
-        ->and($registry->make('color-palette'))->toBeInstanceOf(ColorPalette::class)
         ->and(MoneyInput::formElementType())->toBe('craft:money-input')
-        ->and(ColorPalette::formElementType())->toBe('craft:color-palette-input')
         ->and($types->isRegistered(MoneyInput::formElementType()))->toBeTrue()
-        ->and($types->isRegistered(ColorPalette::formElementType()))->toBeTrue()
         ->and($form->toArray())->toBe([
             'elements' => [[
                 'type' => 'craft:field',
@@ -144,12 +120,6 @@ it('registers and projects money and color palette components', function () {
                         'minorUnits' => true,
                         'placeholder' => '0.00',
                     ],
-                ]],
-            ], [
-                'type' => 'craft:field',
-                'children' => [[
-                    'type' => 'craft:color-palette-input',
-                    'name' => 'palette',
                 ]],
             ]],
         ]);
@@ -169,8 +139,6 @@ it('keeps host values and HTML-only options out of specialized projection', func
     'money value' => [fn () => MoneyInput::make()->name('amount')->value(null), 'value'],
     'money locale' => [fn () => MoneyInput::make()->name('amount')->formattingLocale('en-US'), 'formattingLocale'],
     'money currency label' => [fn () => MoneyInput::make()->name('amount')->currencyLabel('US dollars'), 'currencyLabel'],
-    'palette value' => [fn () => ColorPalette::make()->name('palette')->value([]), 'value'],
-    'palette read-only state' => [fn () => ColorPalette::make()->name('palette')->readOnly(false), 'readOnly'],
 ]);
 
 it('rejects invalid portable specialized configuration', function (FormElement $component, string $option) {

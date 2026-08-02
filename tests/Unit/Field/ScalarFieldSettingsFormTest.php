@@ -421,10 +421,18 @@ it('projects the complete Color settings surface', function () {
         'allowCustomColors' => true,
     ])->and($inputs)->toBe([
         'palette' => [
-            'type' => 'craft:color-palette-input',
+            'type' => 'craft:editable-table-input',
             'label' => 'Palette',
             'instructions' => 'Define the available colors to choose from.',
             'readOnly' => true,
+            'props' => [
+                'columns' => [
+                    ['key' => 'color', 'label' => 'Color', 'type' => 'color'],
+                    ['key' => 'label', 'label' => 'Label', 'type' => 'text'],
+                    ['key' => 'default', 'label' => 'Default', 'type' => 'checkbox', 'radioMode' => true],
+                ],
+                'addRowLabel' => 'Add a color',
+            ],
         ],
         'allowCustomColors' => [
             'type' => 'craft:lightswitch-input',

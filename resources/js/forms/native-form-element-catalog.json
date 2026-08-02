@@ -1,6 +1,5 @@
 [
   {"type": "craft:checkbox-select-input", "container": false},
-  {"type": "craft:color-palette-input", "container": false},
   {"type": "craft:combobox-input", "container": false},
   {"type": "craft:date-input", "container": false},
   {"type": "craft:editable-table-input", "container": false},

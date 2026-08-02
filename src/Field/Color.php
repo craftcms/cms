@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\Components\ColorPalette;
+use CraftCms\Cms\Cp\Components\EditableTable;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\FormFields;
@@ -160,7 +160,27 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function getSettingsForm(bool $readOnly): Form
     {
         return Form::make([
-            FieldComponent::make(ColorPalette::make()->name('palette'))
+            FieldComponent::make(EditableTable::make()
+                ->name('palette')
+                ->columns([
+                    [
+                        'key' => 'color',
+                        'label' => t('Color'),
+                        'type' => 'color',
+                    ],
+                    [
+                        'key' => 'label',
+                        'label' => t('Label'),
+                        'type' => 'text',
+                    ],
+                    [
+                        'key' => 'default',
+                        'label' => t('Default'),
+                        'type' => 'checkbox',
+                        'radioMode' => true,
+                    ],
+                ])
+                ->addRowLabel(t('Add a color')))
                 ->label(t('Palette'))
                 ->instructions(t('Define the available colors to choose from.'))
                 ->readOnly($readOnly),

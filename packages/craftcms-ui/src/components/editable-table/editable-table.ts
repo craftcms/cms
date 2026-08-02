@@ -44,6 +44,7 @@ export type EditableTableColumn = {
   code?: boolean;
   autoPopulate?: string;
   nestedOptions?: boolean;
+  radioMode?: boolean;
   options?: EditableTableOption[];
 };
 
@@ -116,6 +117,7 @@ function assertColumns(value: unknown): asserts value is EditableTableColumn[] {
       'code',
       'autoPopulate',
       'nestedOptions',
+      'radioMode',
       'options',
     ];
     const unsupported = Object.keys(column).find(
@@ -165,7 +167,7 @@ function assertColumns(value: unknown): asserts value is EditableTableColumn[] {
       }
     }
 
-    for (const property of ['code', 'nestedOptions'] as const) {
+    for (const property of ['code', 'nestedOptions', 'radioMode'] as const) {
       if (
         Object.hasOwn(column, property) &&
         typeof column[property] !== 'boolean'
@@ -727,6 +729,19 @@ export default class CraftEditableTable extends LitElement {
     }
 
     const changes: EditableTableRow = {[column.key]: value};
+
+    if (column.type === 'checkbox' && column.radioMode && value === true) {
+      this._updateValue(
+        this._renderedRows.map((renderedRow, rowIndex) => ({
+          renderedRow,
+          row: this._changedRow(renderedRow, {
+            [column.key]: rowIndex === index,
+          }),
+        }))
+      );
+
+      return;
+    }
 
     if (column.autoPopulate) {
       const currentSource = this._textValue(renderedRow.row[column.key]);

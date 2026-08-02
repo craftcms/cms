@@ -23,7 +23,6 @@ class ComponentRegistry
         'checkbox' => Checkbox::class,
         'checkbox-group' => CheckboxGroup::class,
         'checkbox-select' => CheckboxSelect::class,
-        'color-palette' => ColorPalette::class,
         'combobox' => Combobox::class,
         'date-input' => DateInput::class,
         'editable-table' => EditableTable::class,

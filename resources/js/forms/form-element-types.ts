@@ -1,5 +1,4 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
-import CraftColorPalette from '@craftcms/ui/vue/CraftColorPalette.vue';
 import CraftCheckboxSelect from '@craftcms/ui/vue/CraftCheckboxSelect.vue';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
@@ -13,7 +12,6 @@ import CraftOptionRows from '@craftcms/ui/vue/CraftOptionRows.vue';
 import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import '@craftcms/ui/components/checkbox-select/checkbox-select';
-import '@craftcms/ui/components/color-palette/color-palette';
 import '@craftcms/ui/components/editable-table/editable-table';
 import '@craftcms/ui/components/element-condition/element-condition';
 import '@craftcms/ui/components/field-layout/field-layout';
@@ -34,7 +32,6 @@ const sharedContainerTypes = new Set<string>([
 
 export const nativeFormElementRenderers = {
   'craft:checkbox-select-input': CraftCheckboxSelect,
-  'craft:color-palette-input': CraftColorPalette,
   'craft:combobox-input': CraftCombobox,
   'craft:date-input': CraftInput,
   'craft:editable-table-input': CraftEditableTable,

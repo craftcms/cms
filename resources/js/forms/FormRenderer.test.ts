@@ -1,9 +1,7 @@
 import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import CraftColorPalette from '@craftcms/ui/vue/CraftColorPalette.vue';
 import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
 import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-import '@craftcms/ui/components/color-palette/color-palette';
 import '@craftcms/ui/components/editable-table/editable-table';
 import '@craftcms/ui/components/input/input';
 import {createCpComponentRegistry} from '@/bootstrap/components';
@@ -137,11 +135,11 @@ describe('Form renderer', () => {
 
   it('runs a generated wrapper through the registry without setup events changing host state', async () => {
     const registry = createCpComponentRegistry();
-    const initial = [{color: '#ff0000', label: 'Red', default: true}];
+    const initial = [{label: 'Red'}];
     const values = reactive({settings: {palette: initial}});
     const container = document.createElement('div');
 
-    registry.register('color-tools:color-map', CraftColorPalette);
+    registry.register('color-tools:color-map', CraftEditableTable);
     (window as any).Cp = {$formElements: registry};
     document.body.appendChild(container);
     const app = createApp(FormRenderer, {
@@ -172,8 +170,8 @@ describe('Form renderer', () => {
     app.mount(container);
 
     const palette = container.querySelector<
-      HTMLElementTagNameMap['craft-color-palette']
-    >('craft-color-palette')!;
+      HTMLElementTagNameMap['craft-editable-table']
+    >('craft-editable-table')!;
 
     expect(palette.modelValue).toEqual(initial);
 
@@ -188,7 +186,7 @@ describe('Form renderer', () => {
 
     expect(values.settings.palette).toEqual(initial);
 
-    const edited = [{color: '#00ff00', label: 'Green', default: false}];
+    const edited = [{label: 'Green'}];
     palette.modelValue = edited;
     palette.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     await nextTick();

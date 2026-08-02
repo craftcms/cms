@@ -137,6 +137,33 @@ describe('craft-editable-table', () => {
     expect(Object.keys(element.modelValue)).toEqual(['second', 'new1']);
   });
 
+  it('keeps radio-mode checkbox columns exclusive', async () => {
+    const element = document.createElement('craft-editable-table');
+
+    element.columns = [
+      {
+        key: 'default',
+        label: 'Default',
+        type: 'checkbox',
+        radioMode: true,
+      },
+    ];
+    element.modelValue = [{default: true}, {default: false}];
+    document.body.append(element);
+    await element.updateComplete;
+
+    const checkboxes =
+      element.shadowRoot!.querySelectorAll<CraftCheckbox>('craft-checkbox');
+
+    checkboxes[1]!.checked = true;
+    checkboxes[1]!.dispatchEvent(
+      new Event('change', {bubbles: true, composed: true})
+    );
+    await element.updateComplete;
+
+    expect(element.modelValue).toEqual([{default: false}, {default: true}]);
+  });
+
   it('shares edited column definitions with a dependent table', async () => {
     const form = document.createElement('form');
     const source = document.createElement('craft-editable-table');
