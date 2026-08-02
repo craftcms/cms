@@ -23,11 +23,13 @@ use Override;
  *     width?: string|int,
  *     class?: string,
  *     code?: bool,
+ *     placeholder?: string,
  *     autoPopulate?: string,
  *     nestedOptions?: bool,
  *     radioMode?: bool,
  *     options?: list<EditableTableOption>,
  * }
+ * @phpstan-type EditableTableFixedRow array{key: string, label: string}
  */
 class EditableTable extends ViewComponent implements FormElement
 {
@@ -54,6 +56,9 @@ class EditableTable extends ViewComponent implements FormElement
 
     /** @var list<EditableTableColumn>|Closure */
     protected array|Closure $columns = [];
+
+    /** @var list<EditableTableFixedRow>|Closure */
+    protected array|Closure $fixedRows = [];
 
     protected string|Closure|null $addRowLabel = null;
 
@@ -119,6 +124,15 @@ class EditableTable extends ViewComponent implements FormElement
     {
         $this->trackConfiguration('columns');
         $this->columns = $columns;
+
+        return $this;
+    }
+
+    /** @param list<EditableTableFixedRow>|Closure $fixedRows */
+    public function fixedRows(array|Closure $fixedRows): static
+    {
+        $this->trackConfiguration('fixedRows');
+        $this->fixedRows = $fixedRows;
 
         return $this;
     }
@@ -200,6 +214,7 @@ class EditableTable extends ViewComponent implements FormElement
         }
 
         $columns = $this->resolvedColumns('Form');
+        $fixedRows = $this->resolvedFixedRows('Form');
         $defaultRow = $this->resolvedDefaultRow('Form');
         $keyed = $this->resolvedBool('keyed', $this->keyed, 'Form');
         $includeRowId = $this->resolvedBool('includeRowId', $this->includeRowId, 'Form');
@@ -210,6 +225,7 @@ class EditableTable extends ViewComponent implements FormElement
         $props = array_filter([
             'sourceName' => $this->portableText('sourceName', $this->sourceName),
             'columns' => $columns,
+            'fixedRows' => $fixedRows === [] ? null : $fixedRows,
             'addRowLabel' => $this->portableText('addRowLabel', $this->addRowLabel),
             'defaultRow' => $defaultRow === [] ? null : $defaultRow,
             'keyed' => $keyed ?: null,
@@ -230,6 +246,7 @@ class EditableTable extends ViewComponent implements FormElement
     protected function hostAttributes(): array
     {
         $columns = $this->resolvedColumns('HTML');
+        $fixedRows = $this->resolvedFixedRows('HTML');
         $defaultRow = $this->resolvedDefaultRow('HTML');
         $keyed = $this->resolvedBool('keyed', $this->keyed, 'HTML');
         $value = $this->evaluate($this->value);
@@ -241,6 +258,7 @@ class EditableTable extends ViewComponent implements FormElement
             'source-name' => $this->resolvedText('sourceName', $this->sourceName, 'HTML'),
             'value' => Json::encode($value, JSON_THROW_ON_ERROR),
             'columns' => Json::encode($columns, JSON_THROW_ON_ERROR),
+            'fixed-rows' => Json::encode($fixedRows, JSON_THROW_ON_ERROR),
             'add-row-label' => $this->resolvedText('addRowLabel', $this->addRowLabel, 'HTML'),
             'default-row' => $defaultRow === [] ? '{}' : Json::encode($defaultRow, JSON_THROW_ON_ERROR),
             'keyed' => $keyed,
@@ -267,6 +285,29 @@ class EditableTable extends ViewComponent implements FormElement
         return $columns;
     }
 
+    /** @return list<EditableTableFixedRow> */
+    private function resolvedFixedRows(string $output): array
+    {
+        $fixedRows = $this->evaluate($this->fixedRows);
+
+        if (! is_array($fixedRows) || ! array_is_list($fixedRows)) {
+            $this->unsupportedOutputOption('fixedRows', $output);
+        }
+
+        foreach ($fixedRows as $index => $row) {
+            if (
+                ! is_array($row)
+                || array_diff(array_keys($row), ['key', 'label']) !== []
+                || ! is_string($row['key'] ?? null)
+                || ! is_string($row['label'] ?? null)
+            ) {
+                $this->unsupportedOutputOption("fixedRows[{$index}]", $output);
+            }
+        }
+
+        return $fixedRows;
+    }
+
     /** @return array<string, mixed> */
     private function resolvedDefaultRow(string $output): array
     {
@@ -287,7 +328,7 @@ class EditableTable extends ViewComponent implements FormElement
             $this->unsupportedOutputOption("columns[{$index}]", $output);
         }
 
-        $supported = ['key', 'label', 'type', 'width', 'class', 'code', 'autoPopulate', 'nestedOptions', 'radioMode', 'options'];
+        $supported = ['key', 'label', 'type', 'width', 'class', 'code', 'placeholder', 'autoPopulate', 'nestedOptions', 'radioMode', 'options'];
 
         foreach (array_keys($column) as $property) {
             if (! in_array($property, $supported, true)) {
@@ -309,7 +350,7 @@ class EditableTable extends ViewComponent implements FormElement
             $this->unsupportedOutputOption("columns[{$index}].width", $output);
         }
 
-        foreach (['class', 'autoPopulate'] as $property) {
+        foreach (['class', 'placeholder', 'autoPopulate'] as $property) {
             if (array_key_exists($property, $column) && ! is_string($column[$property])) {
                 $this->unsupportedOutputOption("columns[{$index}].{$property}", $output);
             }
@@ -438,6 +479,7 @@ class EditableTable extends ViewComponent implements FormElement
                 'columns-from',
                 'default-row',
                 'defines-columns',
+                'fixed-rows',
                 'id',
                 'include-row-id',
                 'keyed',

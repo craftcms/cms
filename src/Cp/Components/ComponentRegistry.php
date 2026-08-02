@@ -35,7 +35,6 @@ class ComponentRegistry
         'input' => Input::class,
         'input-color' => InputColor::class,
         'input-password' => InputPassword::class,
-        'keyed-table' => KeyedTable::class,
         'lightswitch' => Lightswitch::class,
         'money-input' => MoneyInput::class,
         'number-input' => NumberInput::class,

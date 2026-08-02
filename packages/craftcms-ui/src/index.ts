@@ -31,6 +31,7 @@ export {default as CraftEmpty} from './components/empty/empty.js';
 export {
   default as CraftEditableTable,
   type EditableTableColumn,
+  type EditableTableFixedRow,
   type EditableTableOption,
   type EditableTableRow,
   type EditableTableValue,
@@ -46,12 +47,6 @@ export {default as CraftInputHandle} from './components/input-handle/input-handl
 export {default as CraftInputMoney} from './components/input-money/input-money.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
 export {default as CraftInput} from './components/input/input.js';
-export {
-  default as CraftKeyedTable,
-  type KeyedTableColumn,
-  type KeyedTableRow,
-  type KeyedTableValue,
-} from './components/keyed-table/keyed-table.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
 export {

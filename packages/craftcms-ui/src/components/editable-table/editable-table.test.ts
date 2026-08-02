@@ -137,6 +137,49 @@ describe('craft-editable-table', () => {
     expect(Object.keys(element.modelValue)).toEqual(['second', 'new1']);
   });
 
+  it('edits fixed keyed rows without row controls', async () => {
+    const form = document.createElement('form');
+    const element = document.createElement('craft-editable-table');
+
+    element.name = 'settings[sites]';
+    element.keyed = true;
+    element.fixedRows = [{key: 'english', label: 'English'}];
+    element.columns = [
+      {
+        key: 'uriFormat',
+        label: 'Entry URI Format',
+        type: 'text',
+        placeholder: 'Leave blank',
+      },
+    ];
+    element.modelValue = {};
+    form.append(element);
+    document.body.append(form);
+    await element.updateComplete;
+
+    const root = element.shadowRoot!;
+    const input = root.querySelector<HTMLElementTagNameMap['craft-input']>(
+      '[data-table-cell="english:uriFormat"]'
+    )!;
+
+    expect(root.querySelector('tbody th')?.textContent).toBe('English');
+    expect(root.querySelector('[data-add-row]')).toBeNull();
+    expect(root.querySelector('craft-reorder-button')).toBeNull();
+    expect(root.querySelector('[data-delete-row]')).toBeNull();
+    expect(input.placeholder).toBe('Leave blank');
+
+    input.value = 'news/{slug}';
+    input.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
+    await element.updateComplete;
+
+    expect(element.modelValue).toEqual({
+      english: {uriFormat: 'news/{slug}'},
+    });
+    expect(new FormData(form).get('settings[sites][english][uriFormat]')).toBe(
+      'news/{slug}'
+    );
+  });
+
   it('keeps radio-mode checkbox columns exclusive', async () => {
     const element = document.createElement('craft-editable-table');
 

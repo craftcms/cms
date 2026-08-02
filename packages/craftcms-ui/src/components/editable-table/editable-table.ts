@@ -42,10 +42,16 @@ export type EditableTableColumn = {
   width?: string | number;
   class?: string;
   code?: boolean;
+  placeholder?: string;
   autoPopulate?: string;
   nestedOptions?: boolean;
   radioMode?: boolean;
   options?: EditableTableOption[];
+};
+
+export type EditableTableFixedRow = {
+  key: string;
+  label: string;
 };
 
 export type EditableTableRow = Record<string, unknown>;
@@ -115,6 +121,7 @@ function assertColumns(value: unknown): asserts value is EditableTableColumn[] {
       'width',
       'class',
       'code',
+      'placeholder',
       'autoPopulate',
       'nestedOptions',
       'radioMode',
@@ -156,7 +163,7 @@ function assertColumns(value: unknown): asserts value is EditableTableColumn[] {
       );
     }
 
-    for (const property of ['class', 'autoPopulate'] as const) {
+    for (const property of ['class', 'placeholder', 'autoPopulate'] as const) {
       if (
         Object.hasOwn(column, property) &&
         typeof column[property] !== 'string'
@@ -180,6 +187,31 @@ function assertColumns(value: unknown): asserts value is EditableTableColumn[] {
 
     if (Object.hasOwn(column, 'options')) {
       assertOptions(column.options, index);
+    }
+  });
+}
+
+function assertFixedRows(
+  value: unknown
+): asserts value is EditableTableFixedRow[] {
+  if (!Array.isArray(value)) {
+    throw new TypeError('Editable table fixed rows must be a JSON array.');
+  }
+
+  value.forEach((row, index) => {
+    if (
+      !row ||
+      typeof row !== 'object' ||
+      Array.isArray(row) ||
+      Object.keys(row).some(
+        (property) => !['key', 'label'].includes(property)
+      ) ||
+      typeof row.key !== 'string' ||
+      typeof row.label !== 'string'
+    ) {
+      throw new TypeError(
+        `Editable table fixed row ${index} must define only string key and label values.`
+      );
     }
   });
 }
@@ -283,6 +315,10 @@ export default class CraftEditableTable extends LitElement {
   /** Ordered typed column definitions. */
   @property({converter: arrayConverter}) columns: EditableTableColumn[] = [];
 
+  /** Fixed keyed rows which cannot be added, deleted, or reordered. */
+  @property({attribute: 'fixed-rows', converter: arrayConverter})
+  fixedRows: EditableTableFixedRow[] = [];
+
   /** Label shown by the add-row button. */
   @property({attribute: 'add-row-label', reflect: true})
   addRowLabel: string | null = null;
@@ -334,10 +370,15 @@ export default class CraftEditableTable extends LitElement {
 
   protected override willUpdate(changedProperties: PropertyValues) {
     assertColumns(this.columns);
+    assertFixedRows(this.fixedRows);
     assertRow(this.defaultRow, 'Editable table default row');
     assertValue(this.modelValue, this.keyed);
 
-    if (changedProperties.has('modelValue') || changedProperties.has('keyed')) {
+    if (
+      changedProperties.has('modelValue') ||
+      changedProperties.has('keyed') ||
+      changedProperties.has('fixedRows')
+    ) {
       this._reconcileRows();
     }
   }
@@ -376,6 +417,11 @@ export default class CraftEditableTable extends LitElement {
       <table>
         <thead>
           <tr>
+            ${this.fixedRows.length > 0
+              ? html`<th scope="col">
+                  <craft-visually-hidden>${t('Rows')}</craft-visually-hidden>
+                </th>`
+              : nothing}
             ${repeat(
               columns,
               ({key}) => key,
@@ -385,9 +431,11 @@ export default class CraftEditableTable extends LitElement {
                 </th>
               `
             )}
-            <th scope="col">
-              <craft-visually-hidden>${t('Actions')}</craft-visually-hidden>
-            </th>
+            ${this.fixedRows.length === 0
+              ? html`<th scope="col">
+                  <craft-visually-hidden>${t('Actions')}</craft-visually-hidden>
+                </th>`
+              : nothing}
           </tr>
         </thead>
         <tbody>
@@ -398,15 +446,17 @@ export default class CraftEditableTable extends LitElement {
           )}
         </tbody>
       </table>
-      <craft-button
-        type="button"
-        size="small"
-        ?disabled=${this.readOnly || columns.length === 0}
-        data-add-row
-        @click=${this._addRow}
-      >
-        ${this.addRowLabel ?? t('Add a row')}
-      </craft-button>
+      ${this.fixedRows.length === 0
+        ? html`<craft-button
+            type="button"
+            size="small"
+            ?disabled=${this.readOnly || columns.length === 0}
+            data-add-row
+            @click=${this._addRow}
+          >
+            ${this.addRowLabel ?? t('Add a row')}
+          </craft-button>`
+        : nothing}
     `;
   }
 
@@ -415,6 +465,9 @@ export default class CraftEditableTable extends LitElement {
 
     return html`
       <tr data-editable-table-row data-row-key=${renderedRow.key}>
+        ${this.fixedRows.length > 0
+          ? html`<th scope="row">${this._fixedRowLabel(renderedRow.key)}</th>`
+          : nothing}
         ${repeat(
           columns,
           ({key}) => key,
@@ -424,28 +477,30 @@ export default class CraftEditableTable extends LitElement {
             </td>
           `
         )}
-        <td>
-          <div class="actions">
-            <craft-reorder-button
-              position=${this._position(index)}
-              label=${t('Reorder row {number}', {number: index + 1})}
-              ?disabled=${this.readOnly}
-              @reorder=${(event: CustomEvent<{direction: 'up' | 'down'}>) =>
-                this._reorderRow(index, event)}
-            ></craft-reorder-button>
-            <craft-button
-              type="button"
-              size="small"
-              variant="plain"
-              aria-label=${t('Delete row {number}', {number: index + 1})}
-              ?disabled=${this.readOnly}
-              data-delete-row
-              @click=${() => this._deleteRow(index)}
-            >
-              ${t('Delete')}
-            </craft-button>
-          </div>
-        </td>
+        ${this.fixedRows.length === 0
+          ? html`<td>
+              <div class="actions">
+                <craft-reorder-button
+                  position=${this._position(index)}
+                  label=${t('Reorder row {number}', {number: index + 1})}
+                  ?disabled=${this.readOnly}
+                  @reorder=${(event: CustomEvent<{direction: 'up' | 'down'}>) =>
+                    this._reorderRow(index, event)}
+                ></craft-reorder-button>
+                <craft-button
+                  type="button"
+                  size="small"
+                  variant="plain"
+                  aria-label=${t('Delete row {number}', {number: index + 1})}
+                  ?disabled=${this.readOnly}
+                  data-delete-row
+                  @click=${() => this._deleteRow(index)}
+                >
+                  ${t('Delete')}
+                </craft-button>
+              </div>
+            </td>`
+          : nothing}
       </tr>
       ${this._hasNestedOptions(renderedRow.row)
         ? html`<tr data-table-nested-options>
@@ -574,6 +629,7 @@ export default class CraftEditableTable extends LitElement {
       name=${ifDefined(name)}
       type=${this._inputType(column.type)}
       .modelValue=${this._textValue(value)}
+      placeholder=${ifDefined(column.placeholder)}
       ?readonly=${this.readOnly}
       class=${[column.class, column.code ? 'code' : '']
         .filter(Boolean)
@@ -592,6 +648,17 @@ export default class CraftEditableTable extends LitElement {
   }
 
   private _reconcileRows() {
+    if (this.fixedRows.length > 0) {
+      const values = Array.isArray(this.modelValue) ? {} : this.modelValue;
+
+      this._renderedRows = this.fixedRows.map(({key}) => ({
+        key,
+        row: values[key] ?? {},
+      }));
+
+      return;
+    }
+
     if (this.keyed && !Array.isArray(this.modelValue)) {
       this._renderedRows = Object.entries(this.modelValue).map(
         ([key, row]) => ({
@@ -630,6 +697,10 @@ export default class CraftEditableTable extends LitElement {
 
   private _effectiveColumns(): EditableTableColumn[] {
     return this._receivedColumns ?? this.columns;
+  }
+
+  private _fixedRowLabel(key: string): string {
+    return this.fixedRows.find((row) => row.key === key)?.label ?? key;
   }
 
   private _cellStyle(column: EditableTableColumn): Record<string, string> {
@@ -823,7 +894,11 @@ export default class CraftEditableTable extends LitElement {
   }
 
   private _addRow() {
-    if (this.readOnly || this._effectiveColumns().length === 0) {
+    if (
+      this.readOnly ||
+      this.fixedRows.length > 0 ||
+      this._effectiveColumns().length === 0
+    ) {
       return;
     }
 
@@ -840,6 +915,10 @@ export default class CraftEditableTable extends LitElement {
   }
 
   private _deleteRow(index: number) {
+    if (this.fixedRows.length > 0) {
+      return;
+    }
+
     if (this.readOnly) {
       return;
     }
@@ -856,6 +935,10 @@ export default class CraftEditableTable extends LitElement {
     event: CustomEvent<{direction: 'up' | 'down'}>
   ) {
     event.stopPropagation();
+
+    if (this.fixedRows.length > 0) {
+      return;
+    }
 
     if (this.readOnly) {
       return;
@@ -1093,6 +1176,18 @@ export default class CraftEditableTable extends LitElement {
             rowId: this._textValue(renderedRow.row.rowId) || renderedRow.key,
           }
         : renderedRow.row;
+
+      if (this.fixedRows.length > 0) {
+        this._effectiveColumns().forEach((column) => {
+          this._appendFormValue(
+            fragment,
+            `${this.name}[${rowKey}][${column.key}]`,
+            row[column.key] ?? ''
+          );
+        });
+
+        return;
+      }
 
       for (const [property, value] of Object.entries(row)) {
         this._appendFormValue(

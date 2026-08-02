@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\EditableTable;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
-use CraftCms\Cms\Cp\Components\KeyedTable;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\ObjectSelect;
@@ -591,6 +591,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $columns = [[
             'key' => 'uriFormat',
             'label' => t('Entry URI Format'),
+            'type' => 'text',
             'placeholder' => t('Leave blank if entries don’t have URLs'),
             'code' => true,
         ]];
@@ -599,21 +600,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $columns[] = [
                 'key' => 'template',
                 'label' => t('Template'),
+                'type' => 'text',
                 'code' => true,
             ];
         }
 
         array_push(
             $elements,
-            FieldComponent::make(KeyedTable::make()
+            FieldComponent::make(EditableTable::make()
                 ->name('siteSettings')
                 ->columns($columns)
-                ->rows(Collection::make(Sites::getAllSites())->map(
+                ->fixedRows(Collection::make(Sites::getAllSites())->map(
                     fn ($site): array => [
                         'key' => $site->uid,
                         'label' => t($site->name, category: 'site'),
                     ],
-                )->values()->all()))
+                )->values()->all())
+                ->keyed())
                 ->label(t('Site Settings'))
                 ->instructions(t('Choose the site-specific settings for nested entries.'))
                 ->readOnly($readOnly),

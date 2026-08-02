@@ -217,15 +217,6 @@ const VALUE_COMPONENTS = [
     slots: ['feedback'],
   },
   {
-    tagName: 'craft-keyed-table',
-    className: 'CraftKeyedTable',
-    fileName: 'CraftKeyedTable',
-    modelType: 'KeyedTableValue',
-    modelTypeImports: ['KeyedTableValue'],
-    modelDefault: '{}',
-    importPath: '../components/keyed-table/keyed-table',
-  },
-  {
     tagName: 'craft-object-select',
     className: 'CraftObjectSelect',
     fileName: 'CraftObjectSelect',
@@ -249,6 +240,7 @@ const VALUE_COMPONENTS = [
     modelType: 'EditableTableValue',
     modelTypeImports: [
       'EditableTableColumn',
+      'EditableTableFixedRow',
       'EditableTableRow',
       'EditableTableValue',
     ],
@@ -257,6 +249,11 @@ const VALUE_COMPONENTS = [
     properties: [
       {name: 'sourceName', type: 'string', defaultValue: 'undefined'},
       {name: 'columns', type: 'EditableTableColumn[]', defaultValue: '[]'},
+      {
+        name: 'fixedRows',
+        type: 'EditableTableFixedRow[]',
+        defaultValue: '[]',
+      },
       {name: 'defaultRow', type: 'EditableTableRow', defaultValue: '{}'},
       {name: 'addRowLabel', type: 'string', defaultValue: 'undefined'},
       {name: 'keyed', type: 'boolean', defaultValue: 'false'},

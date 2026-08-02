@@ -1,5 +1,4 @@
 import {expect, it} from 'vite-plus/test';
-import CraftKeyedTable from '@craftcms/ui/vue/CraftKeyedTable.vue';
 import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
 import CraftOptionRows from '@craftcms/ui/vue/CraftOptionRows.vue';
 import {createCpComponentRegistry} from '@/bootstrap/components';
@@ -33,7 +32,6 @@ it('pairs every native Form Element Type with its declared Vue rendering path', 
 });
 
 it.each([
-  ['craft:keyed-table-input', CraftKeyedTable],
   ['craft:object-select-input', CraftObjectSelect],
   ['craft:field-layout-designer', FieldLayoutDesignerValueAdapter],
   ['craft:option-rows', CraftOptionRows],

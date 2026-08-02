@@ -97,12 +97,13 @@ it('projects the complete matrix settings surface with complex values kept outsi
     ])->and($inputs['entryTypes']['type'])->toBe('craft:object-select-input')
         ->and(array_column($inputs['entryTypes']['props']['options'], 'key'))->toContain($article->uid, $page->uid)
         ->and($inputs['entryTypes']['props']['identityKey'])->toBe('uid')
-        ->and($inputs['siteSettings']['type'])->toBe('craft:keyed-table-input')
+        ->and($inputs['siteSettings']['type'])->toBe('craft:editable-table-input')
         ->and($inputs['siteSettings']['props']['columns'])->toBe([
-            ['key' => 'uriFormat', 'label' => 'Entry URI Format', 'placeholder' => 'Leave blank if entries don’t have URLs', 'code' => true],
-            ['key' => 'template', 'label' => 'Template', 'code' => true],
+            ['key' => 'uriFormat', 'label' => 'Entry URI Format', 'type' => 'text', 'placeholder' => 'Leave blank if entries don’t have URLs', 'code' => true],
+            ['key' => 'template', 'label' => 'Template', 'type' => 'text', 'code' => true],
         ])
-        ->and(array_column($inputs['siteSettings']['props']['rows'], 'key'))->toContain($secondarySite->uid)
+        ->and(array_column($inputs['siteSettings']['props']['fixedRows'], 'key'))->toContain($secondarySite->uid)
+        ->and($inputs['siteSettings']['props']['keyed'])->toBeTrue()
         ->and(nestedContentField($definition, 'propagationKeyFormat')['visibleWhen'])->toBe([
             'name' => 'propagationMethod',
             'operator' => 'equals',

@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\EditableTable;
 use CraftCms\Cms\Cp\Components\Field;
-use CraftCms\Cms\Cp\Components\KeyedTable;
 use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Forms\FormElementTypes;
 
@@ -46,37 +45,33 @@ it('renders an empty editable table default row as a JSON object', function () {
     ]);
 });
 
-it('renders keyed table configuration and host values through the shared primitive', function () {
+it('renders fixed keyed rows through the editable table', function () {
     $columns = [
-        ['key' => 'uriFormat', 'label' => 'Entry URI Format', 'placeholder' => 'Leave blank', 'code' => true],
-        ['key' => 'template', 'label' => 'Template', 'code' => true],
+        ['key' => 'uriFormat', 'label' => 'Entry URI Format', 'type' => 'text', 'placeholder' => 'Leave blank', 'code' => true],
+        ['key' => 'template', 'label' => 'Template', 'type' => 'text', 'code' => true],
     ];
     $rows = [['key' => 'english', 'label' => 'English']];
     $value = ['english' => ['uriFormat' => 'news/{slug}', 'template' => 'entries/article']];
-    $html = KeyedTable::make()
+    $html = EditableTable::make()
         ->name('siteSettings')
         ->value($value)
         ->columns($columns)
-        ->rows($rows)
+        ->fixedRows($rows)
+        ->keyed()
         ->readOnly()
         ->toHtml();
 
-    expect($html)->toContainTag('craft-keyed-table', [
+    expect($html)->toContainTag('craft-editable-table', [
         'name' => 'siteSettings',
         'value' => json_encode($value, JSON_THROW_ON_ERROR),
         'columns' => json_encode($columns, JSON_THROW_ON_ERROR),
-        'rows' => json_encode($rows, JSON_THROW_ON_ERROR),
+        'fixed-rows' => json_encode($rows, JSON_THROW_ON_ERROR),
+        'keyed' => true,
         'readonly' => true,
     ]);
 });
 
-it('renders an empty keyed table value as a JSON object', function () {
-    expect(KeyedTable::make()->toHtml())->toContainTag('craft-keyed-table', [
-        'value' => '{}',
-    ]);
-});
-
-it('registers and deterministically projects both table contracts without host state', function () {
+it('registers and deterministically projects the editable table contract without host state', function () {
     $editable = EditableTable::make()
         ->name('columns')
         ->sourceName('columnForms')
@@ -86,13 +81,8 @@ it('registers and deterministically projects both table contracts without host s
         ->keyed()
         ->definesColumns()
         ->attributes(['data' => ['setting' => 'columns']]);
-    $keyed = KeyedTable::make()
-        ->name('sites')
-        ->columns([['key' => 'uri', 'label' => 'URI']])
-        ->rows([['key' => 'english', 'label' => 'English']]);
     $form = Form::make([
         Field::make($editable),
-        Field::make($keyed),
     ]);
     $expected = [
         'elements' => [[
@@ -110,29 +100,17 @@ it('registers and deterministically projects both table contracts without host s
                 ],
                 'attributes' => ['data' => ['setting' => 'columns']],
             ]],
-        ], [
-            'type' => 'craft:field',
-            'children' => [[
-                'type' => 'craft:keyed-table-input',
-                'name' => 'sites',
-                'props' => [
-                    'columns' => [['key' => 'uri', 'label' => 'URI']],
-                    'rows' => [['key' => 'english', 'label' => 'English']],
-                ],
-            ]],
         ]],
     ];
     $firstProjection = $form->toArray();
 
     expect(app(ComponentRegistry::class)->make('editable-table'))->toBeInstanceOf(EditableTable::class)
-        ->and(app(ComponentRegistry::class)->make('keyed-table'))->toBeInstanceOf(KeyedTable::class)
         ->and(app(FormElementTypes::class)->isRegistered(EditableTable::formElementType()))->toBeTrue()
-        ->and(app(FormElementTypes::class)->isRegistered(KeyedTable::formElementType()))->toBeTrue()
         ->and($firstProjection)->toBe($expected)
         ->and($form->toArray())->toBe($firstProjection);
 });
 
-it('rejects host-owned table state during projection', function (EditableTable|KeyedTable $component, string $option) {
+it('rejects host-owned table state during projection', function (EditableTable $component, string $option) {
     expect(fn () => Form::make([
         Field::make($component),
     ])->toArray())->toThrow(
@@ -142,11 +120,9 @@ it('rejects host-owned table state during projection', function (EditableTable|K
 })->with([
     'editable values' => [fn () => EditableTable::make()->name('rows')->value([]), 'value'],
     'editable read-only state' => [fn () => EditableTable::make()->name('rows')->readOnly(false), 'readOnly'],
-    'keyed values' => [fn () => KeyedTable::make()->name('rows')->value([]), 'value'],
-    'keyed read-only state' => [fn () => KeyedTable::make()->name('rows')->readOnly(false), 'readOnly'],
 ]);
 
-it('rejects invalid portable table configuration before projection', function (EditableTable|KeyedTable $component, string $option) {
+it('rejects invalid portable table configuration before projection', function (EditableTable $component, string $option) {
     expect(fn () => Form::make([
         Field::make($component),
     ])->toArray())->toThrow(
@@ -165,22 +141,15 @@ it('rejects invalid portable table configuration before projection', function (E
         fn () => EditableTable::make()->name('rows')->defaultRow(['value' => fn () => 'value']),
         'defaultRow[value]',
     ],
-    'keyed name' => [fn () => KeyedTable::make(), 'name'],
-    'invalid keyed column' => [
-        fn () => KeyedTable::make()->name('rows')->columns([
-            ['key' => 'value', 'label' => 'Value', 'code' => 'yes'],
-        ]),
-        'columns[0].code',
-    ],
-    'invalid keyed row' => [
-        fn () => KeyedTable::make()->name('rows')->rows([
+    'invalid fixed row' => [
+        fn () => EditableTable::make()->name('rows')->fixedRows([
             ['key' => 'english', 'label' => 'English', 'unknown' => true],
         ]),
-        'rows[0].unknown',
+        'fixedRows[0]',
     ],
 ]);
 
-it('rejects unsupported HTML table configuration before rendering', function (EditableTable|KeyedTable $component, string $option) {
+it('rejects unsupported HTML table configuration before rendering', function (EditableTable $component, string $option) {
     expect(fn () => $component->toHtml())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for HTML output.', $component::class, $option),
@@ -191,11 +160,11 @@ it('rejects unsupported HTML table configuration before rendering', function (Ed
         'value[0][value]',
     ],
     'keyed value' => [
-        fn () => KeyedTable::make()->value(['english' => ['uri' => fn () => 'value']]),
+        fn () => EditableTable::make()->keyed()->value(['english' => ['uri' => fn () => 'value']]),
         'value[english][uri]',
     ],
     'ordered keyed value' => [
-        fn () => KeyedTable::make()->value([['uri' => 'news/{slug}']]),
+        fn () => EditableTable::make()->keyed()->value([['uri' => 'news/{slug}']]),
         'value',
     ],
 ]);
