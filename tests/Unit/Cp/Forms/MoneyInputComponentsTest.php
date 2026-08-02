@@ -32,6 +32,7 @@ it('renders money through the shared primitive with its structured value contrac
         'decimal-separator' => ',',
         'fraction-digits' => '2',
         'group-separator' => '.',
+        'minor-units' => true,
         'name' => 'price[value]',
         'placeholder' => '0,00',
         'readonly' => true,

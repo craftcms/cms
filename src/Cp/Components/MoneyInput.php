@@ -120,6 +120,7 @@ class MoneyInput extends ScalarInput
             'fraction-digits' => $fractionDigits,
             'group-separator' => $this->evaluate($this->groupSeparator)
                 ?? $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR),
+            'minor-units' => true,
         ];
     }
 
