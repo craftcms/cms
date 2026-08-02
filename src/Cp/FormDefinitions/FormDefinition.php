@@ -13,6 +13,28 @@ use JsonSerializable;
 
 readonly class FormDefinition implements JsonSerializable
 {
+    private const array HOST_OWNED_RENDERER_PROPS = [
+        'modelValue',
+        'model-value',
+        'readonly',
+        'name',
+        'id',
+        'required',
+        'aria-describedby',
+        'aria-labelledby',
+        'aria-required',
+    ];
+
+    private const array HOST_OWNED_RENDERER_ATTRIBUTES = [
+        'readonly',
+        'name',
+        'id',
+        'required',
+        'aria-describedby',
+        'aria-labelledby',
+        'aria-required',
+    ];
+
     /** @param list<FormElement> $elements */
     private function __construct(
         private array $elements,
@@ -108,6 +130,7 @@ readonly class FormDefinition implements JsonSerializable
             $this->fail($element, $path, 'an input must be wrapped in a Field Container.');
         }
 
+        $this->validateRendererPropOwnership($element, $path);
         $this->validateSerializable($element, $path, 'props', $element->props);
         $this->validateSerializable($element, $path, 'attributes', $element->attributes);
 
@@ -333,6 +356,33 @@ readonly class FormDefinition implements JsonSerializable
         return is_array($value)
             && array_is_list($value)
             && array_all($value, fn (mixed $item): bool => $this->isVisibilityScalar($item));
+    }
+
+    private function validateRendererPropOwnership(FormElementData $element, string $path): void
+    {
+        foreach (array_keys($element->props ?? []) as $prop) {
+            if ($element->type === 'craft:field' && $prop === 'required') {
+                continue;
+            }
+
+            if (in_array($prop, self::HOST_OWNED_RENDERER_PROPS, true)) {
+                $this->fail($element, $path, "renderer prop \"{$prop}\" is owned by the Form Definition host.");
+            }
+        }
+
+        foreach ($element->attributes ?? [] as $attribute => $value) {
+            $attributes = $attribute === 'aria' && is_array($value)
+                ? array_map(fn (string $name): string => "aria-{$name}", array_keys($value))
+                : [(string) $attribute];
+
+            foreach ($attributes as $rendererAttribute) {
+                $rendererAttribute = strtolower($rendererAttribute);
+
+                if (in_array($rendererAttribute, self::HOST_OWNED_RENDERER_ATTRIBUTES, true)) {
+                    $this->fail($element, $path, "renderer attribute \"{$rendererAttribute}\" is owned by the Form Definition host.");
+                }
+            }
+        }
     }
 
     /**

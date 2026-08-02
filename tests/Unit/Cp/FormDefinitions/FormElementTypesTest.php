@@ -57,6 +57,23 @@ it('registers and projects a plugin CP UI Component with derived ownership', fun
         ]);
 });
 
+it('rejects plugin renderer props owned by the Form Definition host', function () {
+    $plugin = TestPlugin::create([
+        'handle' => 'color-tools',
+        'name' => 'Color Tools',
+        'packageName' => 'vendor/color-tools',
+    ]);
+
+    $plugin->registerFormElementTypes(HostOwnedPropComponent::class);
+
+    expect(fn () => FormDefinition::make([
+        Field::make(HostOwnedPropComponent::make()->name('palette')),
+    ])->toArray())->toThrow(
+        InvalidArgumentException::class,
+        'Form Element Type "color-tools:host-owned-prop" at elements[0].children[0]: renderer prop "modelValue" is owned by the Form Definition host.',
+    );
+});
+
 it('validates a complete registration batch before committing it', function () {
     $plugin = TestPlugin::create([
         'handle' => 'color-tools',
@@ -319,6 +336,21 @@ class ColorMapComponent extends ScalarInput
 }
 
 class ConflictingColorMapComponent extends ColorMapComponent {}
+
+class HostOwnedPropComponent extends ColorMapComponent
+{
+    #[Override]
+    public static function formElementType(): string
+    {
+        return 'color-tools:host-owned-prop';
+    }
+
+    #[Override]
+    protected function formElementProps(): array
+    {
+        return ['modelValue' => 'configured'];
+    }
+}
 
 class MismatchedTypeComponent extends ColorMapComponent
 {

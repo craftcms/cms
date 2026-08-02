@@ -305,6 +305,64 @@ it('rejects duplicate input names with type and tree location context', function
         );
 });
 
+it('rejects host-owned renderer props with type and tree location context', function (string $prop) {
+    $definition = FormDefinition::make([
+        TestFormElementContainer::make()->children([
+            new FormElementData(
+                type: 'craft:text-input',
+                name: 'title',
+                props: [$prop => 'configured'],
+            ),
+        ]),
+    ]);
+
+    expect(fn () => $definition->toArray())
+        ->toThrow(
+            InvalidArgumentException::class,
+            "Form Element Type \"craft:text-input\" at elements[0].children[0]: renderer prop \"{$prop}\" is owned by the Form Definition host.",
+        );
+})->with([
+    'current value' => 'modelValue',
+    'kebab-case current value' => 'model-value',
+    'read-only state' => 'readonly',
+    'final name' => 'name',
+    'final ID' => 'id',
+    'required state' => 'required',
+    'description reference' => 'aria-describedby',
+    'label reference' => 'aria-labelledby',
+    'accessible required state' => 'aria-required',
+]);
+
+it('rejects host-owned renderer attributes with type and tree location context', function (
+    array $attributes,
+    string $attribute,
+) {
+    $definition = FormDefinition::make([
+        TestFormElementContainer::make()->children([
+            new FormElementData(
+                type: 'craft:text-input',
+                name: 'title',
+                attributes: $attributes,
+            ),
+        ]),
+    ]);
+
+    expect(fn () => $definition->toArray())
+        ->toThrow(
+            InvalidArgumentException::class,
+            "Form Element Type \"craft:text-input\" at elements[0].children[0]: renderer attribute \"{$attribute}\" is owned by the Form Definition host.",
+        );
+})->with([
+    'final name' => [['name' => 'configured'], 'name'],
+    'final ID' => [['id' => 'configured'], 'id'],
+    'read-only state' => [['readonly' => false], 'readonly'],
+    'required state' => [['required' => false], 'required'],
+    'description reference' => [['aria-describedby' => 'configured'], 'aria-describedby'],
+    'label reference' => [['aria-labelledby' => 'configured'], 'aria-labelledby'],
+    'accessible required state' => [['aria-required' => 'false'], 'aria-required'],
+    'grouped accessibility state' => [['aria' => ['required' => 'false']], 'aria-required'],
+]);
+
 it('rejects invalid widths and non-serializable portable data', function (
     FormElement $element,
     string $message,
