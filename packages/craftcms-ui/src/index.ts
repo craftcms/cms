@@ -58,6 +58,10 @@ export {
 } from './components/keyed-table/keyed-table.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
+export {
+  default as CraftObjectSelect,
+  type ObjectSelectOption,
+} from './components/object-select/object-select.js';
 export {default as CraftOption} from './components/option/option.js';
 export {
   default as CraftOptionRows,

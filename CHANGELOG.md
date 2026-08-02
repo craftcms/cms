@@ -7,7 +7,7 @@
 - Added native Form Definitions for core option field settings, including ordered option authoring via `CraftCms\Cms\Cp\Components\OptionRows` and `<craft-option-rows>`.
 - Added native Form Definitions for relational field settings, with typed Craft controls for sources, selection conditions, limits, view modes, and relation behavior.
 - Added native Form Definitions for Link field and link type settings, including ordered link types and reusable element source selection.
-- Added native Form Definitions for `CraftCms\Cms\Field\ContentBlock` and `CraftCms\Cms\Field\Matrix` settings, including structured Field Layout, ordered object selection, and keyed tables via `CraftCms\Cms\Cp\Components\KeyedTable` and `<craft-keyed-table>`.
+- Added native Form Definitions for `CraftCms\Cms\Field\ContentBlock` and `CraftCms\Cms\Field\Matrix` settings, including structured Field Layout, ordered object selection via `CraftCms\Cms\Cp\Components\ObjectSelect` and `<craft-object-select>`, and keyed tables via `CraftCms\Cms\Cp\Components\KeyedTable` and `<craft-keyed-table>`.
 - Added native Form Definitions for `CraftCms\Cms\Field\Addresses`, `CraftCms\Cms\Field\Markdown`, and `CraftCms\Cms\Field\Table` settings, including ordered editable tables via `CraftCms\Cms\Cp\Components\EditableTable` and `<craft-editable-table>`.
 - Added reactive Form Definition visibility conditions via `CraftCms\Cms\Cp\FormDefinitions\Condition`.
 - Added plugin-defined Form Elements via `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()` and exact `form-element:<type>` control-panel renderer registrations.

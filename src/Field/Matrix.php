@@ -10,11 +10,11 @@ use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\KeyedTable;
 use CraftCms\Cms\Cp\Components\NumberInput;
+use CraftCms\Cms\Cp\Components\ObjectSelect;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\ObjectSelectInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -556,13 +556,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $indexMode = Condition::equals('viewMode', self::VIEW_MODE_INDEX);
         $tableView = Condition::all($indexMode, Condition::equals('includeTableView', true));
         $elements = [
-            ObjectSelectInput::make('entryTypes')
+            FieldComponent::make()
                 ->label(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
-                ->options($this->entryTypeOptions())
-                ->identityKey('uid')
                 ->required()
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(
+                    ObjectSelect::make()
+                        ->name('entryTypes')
+                        ->options($this->entryTypeOptions())
+                        ->identityKey('uid'),
+                ),
         ];
 
         if (Sites::isMultiSite()) {

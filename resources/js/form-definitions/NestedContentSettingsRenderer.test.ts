@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe('nested content settings renderers', () => {
-  it('reorders object values without restricting renderer-specific host state', async () => {
+  it('updates object selections and exhausts available options without restricting host state', async () => {
     const entryTypeMarker = new Map([['source', 'host']]);
     const article = {uid: 'article', name: 'Article', marker: entryTypeMarker};
     const page = {uid: 'page', name: 'Page'};
@@ -27,16 +27,22 @@ describe('nested content settings renderers', () => {
       },
     });
     const container = mount(values);
-    const entryTypeRows = container.querySelectorAll<HTMLElement>(
-      '[data-object-select-row]'
-    );
+    const objectSelect = container.querySelector<
+      HTMLElementTagNameMap['craft-object-select']
+    >('craft-object-select')!;
 
-    entryTypeRows[0]!.querySelector('craft-reorder-button')!.dispatchEvent(
-      new CustomEvent('reorder', {
-        bubbles: true,
-        detail: {direction: 'down'},
-      })
-    );
+    await nextTick();
+    await objectSelect.updateComplete;
+    objectSelect
+      .shadowRoot!.querySelector(
+        '[data-object-select-row="article"] craft-reorder-button'
+      )!
+      .dispatchEvent(
+        new CustomEvent('reorder', {
+          bubbles: true,
+          detail: {direction: 'down'},
+        })
+      );
     await nextTick();
 
     expect(values.settings.entryTypes.map(({uid}) => uid)).toEqual([
@@ -46,6 +52,29 @@ describe('nested content settings renderers', () => {
     expect(
       (toRaw(values.settings.entryTypes[1]!) as {marker?: unknown}).marker
     ).toBe(entryTypeMarker);
+
+    const select = objectSelect.shadowRoot!.querySelector<HTMLSelectElement>(
+      '[data-object-select-available]'
+    )!;
+
+    select.value = 'news';
+    select.dispatchEvent(new Event('change', {bubbles: true}));
+    objectSelect
+      .shadowRoot!.querySelector('[data-object-select-add]')!
+      .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
+    await nextTick();
+
+    expect(values.settings.entryTypes.map(({uid}) => uid)).toEqual([
+      'page',
+      'article',
+      'news',
+    ]);
+    expect(
+      (toRaw(values.settings.entryTypes[1]!) as {marker?: unknown}).marker
+    ).toBe(entryTypeMarker);
+    expect(
+      objectSelect.shadowRoot!.querySelector('[data-object-select-add]')
+    ).toBeNull();
   });
 
   it('reorders field layout elements without changing other layout state', async () => {
@@ -284,6 +313,39 @@ describe('nested content settings renderers', () => {
       feedback.id
     );
   });
+
+  it('wires object selection errors, read-only state, and accessibility through the mounted field', async () => {
+    const container = mount(
+      {settings: {entryTypes: [{uid: 'article', name: 'Article'}]}},
+      true,
+      {'settings.entryTypes': ['Choose another entry type.']},
+      accessibleObjectSelectDefinition
+    );
+    const field =
+      container.querySelector<HTMLElementTagNameMap['craft-field']>(
+        'craft-field'
+      )!;
+    const objectSelect = container.querySelector<
+      HTMLElementTagNameMap['craft-object-select']
+    >('craft-object-select')!;
+
+    await nextTick();
+    await field.updateComplete;
+    await field.updateComplete;
+    await objectSelect.updateComplete;
+
+    const label = field.querySelector<HTMLElement>('[slot="label"]')!;
+    const feedback = field.querySelector<HTMLElement>('[slot="feedback"]')!;
+
+    expect(feedback.textContent).toContain('Choose another entry type.');
+    expect(objectSelect.readOnly).toBe(true);
+    expect(
+      objectSelect.getAttribute('aria-labelledby')?.split(/\s+/)
+    ).toContain(label.id);
+    expect(
+      objectSelect.getAttribute('aria-describedby')?.split(/\s+/)
+    ).toContain(feedback.id);
+  });
 });
 
 function mount(
@@ -412,6 +474,34 @@ const accessibleKeyedTableDefinition = {
           props: {
             columns: [{key: 'uriFormat', label: 'URI format'}],
             rows: [{key: 'english', label: 'English'}],
+          },
+        },
+      ],
+    },
+  ],
+} satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
+
+const accessibleObjectSelectDefinition = {
+  elements: [
+    {
+      type: 'craft:field',
+      props: {
+        label: 'Entry types',
+        instructions: 'Choose the available entry types.',
+      },
+      children: [
+        {
+          type: 'craft:object-select-input',
+          name: 'entryTypes',
+          props: {
+            options: [
+              {
+                key: 'article',
+                label: 'Article',
+                value: {uid: 'article'},
+              },
+            ],
+            identityKey: 'uid',
           },
         },
       ],
