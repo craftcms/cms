@@ -41,11 +41,11 @@ describe('craft-option-rows', () => {
     const listener = vi.fn();
 
     element.multipleDefaults = true;
-    element.value = [
+    element.modelValue = [
       {label: 'First Choice', value: 'firstChoice', default: true},
       {label: 'Last Choice', value: 'lastChoice', default: false},
     ];
-    element.addEventListener('input', listener);
+    element.addEventListener('model-value-changed', listener);
     document.body.append(element);
     await element.updateComplete;
 
@@ -60,7 +60,7 @@ describe('craft-option-rows', () => {
     firstLabel.dispatchEvent(new Event('input', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value[0]).toMatchObject({
+    expect(element.modelValue[0]).toMatchObject({
       label: '24 Hours',
       value: '24Hours',
     });
@@ -75,7 +75,7 @@ describe('craft-option-rows', () => {
       );
     await element.updateComplete;
 
-    expect(element.value.map((row) => row.label)).toEqual([
+    expect(element.modelValue.map((row) => row.label)).toEqual([
       'Last Choice',
       '24 Hours',
     ]);
@@ -87,18 +87,18 @@ describe('craft-option-rows', () => {
     firstDefault.dispatchEvent(new Event('change', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value.map((row) => row.default)).toEqual([true, true]);
+    expect(element.modelValue.map((row) => row.default)).toEqual([true, true]);
 
     root.querySelector<HTMLElement>('[data-add-option]')!.click();
     await element.updateComplete;
-    expect(element.value).toHaveLength(3);
+    expect(element.modelValue).toHaveLength(3);
 
     root
       .querySelector<HTMLElement>('[data-option-row="2"] [data-delete-option]')!
       .click();
     await element.updateComplete;
 
-    expect(element.value).toHaveLength(2);
+    expect(element.modelValue).toHaveLength(2);
     expect(listener).toHaveBeenCalledTimes(5);
   });
 
@@ -108,7 +108,7 @@ describe('craft-option-rows', () => {
     element.optgroups = true;
     element.icons = true;
     element.colors = true;
-    element.value = [
+    element.modelValue = [
       {optgroup: 'Published'},
       {
         label: 'News',
@@ -132,7 +132,8 @@ describe('craft-option-rows', () => {
     expect(root.querySelectorAll('[data-option-optgroup]')).toHaveLength(2);
     expect(root.querySelectorAll('[data-option-color]')).toHaveLength(2);
     expect(root.querySelectorAll('[data-option-icon]')).toHaveLength(2);
-    expect(label.getAttribute('aria-label')).toBe('Option Label for News');
+    expect(label.getAttribute('label')).toBe('Option Label for News');
+    expect(label.hasAttribute('label-sr-only')).toBe(true);
     expect(icon.getAttribute('labelled-by')).not.toBe('');
 
     icon.dispatchEvent(
@@ -150,7 +151,7 @@ describe('craft-option-rows', () => {
     color.dispatchEvent(new Event('input', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value[1]).toMatchObject({
+    expect(element.modelValue[1]).toMatchObject({
       icon: 'star',
       color: '00ff00',
     });
@@ -162,7 +163,7 @@ describe('craft-option-rows', () => {
     optgroup.dispatchEvent(new Event('change', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value[1]).toEqual({optgroup: 'News'});
+    expect(element.modelValue[1]).toEqual({optgroup: 'News'});
   });
 
   it('submits the established nested option row shape', async () => {
@@ -173,7 +174,7 @@ describe('craft-option-rows', () => {
     element.optgroups = true;
     element.icons = true;
     element.colors = true;
-    element.value = [
+    element.modelValue = [
       {optgroup: 'Published'},
       {
         label: 'News',
@@ -203,7 +204,7 @@ describe('craft-option-rows', () => {
   it('preserves unchanged row controls when values are refreshed', async () => {
     const element = document.createElement('craft-option-rows');
 
-    element.value = [
+    element.modelValue = [
       {label: 'News', value: 'news', default: true},
       {label: 'Opinion', value: 'opinion', default: false},
     ];
@@ -214,7 +215,7 @@ describe('craft-option-rows', () => {
       '[data-option-row="0"] [data-option-label]'
     );
 
-    element.value = element.value.map((row) => ({...row}));
+    element.modelValue = element.modelValue.map((row) => ({...row}));
     await element.updateComplete;
 
     expect(
@@ -230,7 +231,7 @@ describe('craft-option-rows', () => {
 
     element.name = 'options';
     element.icons = true;
-    element.value = [
+    element.modelValue = [
       {
         label: 'News',
         value: 'news',
@@ -262,7 +263,7 @@ describe('craft-option-rows', () => {
   it('keeps disabled rows intact while other rows remain editable', async () => {
     const element = document.createElement('craft-option-rows');
 
-    element.value = [
+    element.modelValue = [
       {label: 'Locked', value: 'locked', default: true, disabled: true},
       {label: 'Open', value: 'open', default: false},
     ];
@@ -284,7 +285,7 @@ describe('craft-option-rows', () => {
     lockedLabel.dispatchEvent(new Event('input', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value[0]).toEqual({
+    expect(element.modelValue[0]).toEqual({
       label: 'Locked',
       value: 'locked',
       default: true,

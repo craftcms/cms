@@ -28,7 +28,7 @@ describe('craft-editable-table', () => {
         ],
       },
     ];
-    element.value = [
+    element.modelValue = [
       {
         rowId: 'story-row',
         title: 'Lead story',
@@ -36,7 +36,7 @@ describe('craft-editable-table', () => {
         category: 'news',
       },
     ];
-    element.addEventListener('input', listener);
+    element.addEventListener('model-value-changed', listener);
     form.append(element);
     document.body.append(form);
     await element.updateComplete;
@@ -66,7 +66,7 @@ describe('craft-editable-table', () => {
     );
     await element.updateComplete;
 
-    expect(element.value).toEqual([
+    expect(element.modelValue).toEqual([
       {
         rowId: 'story-row',
         title: 'Analysis',
@@ -90,7 +90,7 @@ describe('craft-editable-table', () => {
     element.keyed = true;
     element.columns = [{key: 'label', label: 'Label', type: 'text'}];
     element.defaultRow = {label: 'New'};
-    element.value = {
+    element.modelValue = {
       first: {label: 'First'},
       second: {label: 'Second'},
     };
@@ -113,7 +113,7 @@ describe('craft-editable-table', () => {
       );
     await element.updateComplete;
 
-    expect(Object.keys(element.value)).toEqual(['second', 'first']);
+    expect(Object.keys(element.modelValue)).toEqual(['second', 'first']);
     expect(element.shadowRoot!.querySelector('[data-row-key="first"]')).toBe(
       firstRow
     );
@@ -121,7 +121,11 @@ describe('craft-editable-table', () => {
     element.shadowRoot!.querySelector<HTMLElement>('[data-add-row]')!.click();
     await element.updateComplete;
 
-    expect(Object.keys(element.value)).toEqual(['second', 'first', 'new1']);
+    expect(Object.keys(element.modelValue)).toEqual([
+      'second',
+      'first',
+      'new1',
+    ]);
 
     element
       .shadowRoot!.querySelector<HTMLElement>(
@@ -130,7 +134,7 @@ describe('craft-editable-table', () => {
       .click();
     await element.updateComplete;
 
-    expect(Object.keys(element.value)).toEqual(['second', 'new1']);
+    expect(Object.keys(element.modelValue)).toEqual(['second', 'new1']);
   });
 
   it('shares edited column definitions with a dependent table', async () => {
@@ -147,13 +151,13 @@ describe('craft-editable-table', () => {
       {key: 'handle', label: 'Handle', type: 'text'},
       {key: 'type', label: 'Type', type: 'text'},
     ];
-    source.value = {
+    source.modelValue = {
       headline: {heading: 'Headline', handle: 'headline', type: 'singleline'},
     };
     defaults.name = 'settings[defaults]';
     defaults.sourceName = 'defaults';
     defaults.columnsFrom = 'columns';
-    defaults.value = [{headline: 'Lead story'}];
+    defaults.modelValue = [{headline: 'Lead story'}];
     form.append(source, defaults);
     document.body.append(form);
     await source.updateComplete;
@@ -182,7 +186,7 @@ describe('craft-editable-table', () => {
 
     element.columns = [{key: 'title', label: 'Title', type: 'text'}];
     element.includeRowId = true;
-    element.value = [{rowId: 'draft-row', title: 'Draft'}];
+    element.modelValue = [{rowId: 'draft-row', title: 'Draft'}];
     element.readOnly = true;
     document.body.append(element);
     await element.updateComplete;
@@ -204,7 +208,7 @@ describe('craft-editable-table', () => {
       expect(control.disabled || control.readOnly).toBe(true);
     }
 
-    element.value = [{rowId: 'draft-row', title: 'Ready'}];
+    element.modelValue = [{rowId: 'draft-row', title: 'Ready'}];
     await element.updateComplete;
 
     expect(element.shadowRoot!.querySelector('[data-editable-table-row]')).toBe(
@@ -226,7 +230,7 @@ describe('craft-editable-table', () => {
 
     const invalidValue = document.createElement('craft-editable-table');
 
-    invalidValue.value = {row: {value: 'not ordered'}};
+    invalidValue.modelValue = {row: {value: 'not ordered'}};
     document.body.append(invalidValue);
 
     await expect(invalidValue.updateComplete).rejects.toThrow(

@@ -34,6 +34,8 @@ const valueConverter = {
 /**
  * @summary An ordered editor for labeled color palette rows.
  *
+ * @event model-value-changed - Emitted when the palette rows change.
+ *
  * @since 1.0
  */
 export default class CraftColorPalette extends LitElement {
@@ -43,7 +45,8 @@ export default class CraftColorPalette extends LitElement {
   @property({reflect: true}) name: string | null = null;
 
   /** Ordered palette rows. */
-  @property({converter: valueConverter}) value: ColorPaletteRow[] = [];
+  @property({attribute: 'value', converter: valueConverter})
+  modelValue: ColorPaletteRow[] = [];
 
   /** Prevents editing while preserving form submission. */
   @property({attribute: 'readonly', reflect: true, type: Boolean})
@@ -52,7 +55,7 @@ export default class CraftColorPalette extends LitElement {
   protected override updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
-    if (changedProperties.has('name') || changedProperties.has('value')) {
+    if (changedProperties.has('name') || changedProperties.has('modelValue')) {
       this._syncFormInputs();
     }
   }
@@ -71,16 +74,17 @@ export default class CraftColorPalette extends LitElement {
           </tr>
         </thead>
         <tbody>
-          ${this.value.map(
+          ${this.modelValue.map(
             (row, index) => html`
               <tr data-palette-row=${index}>
                 <td>
                   <craft-input-color
                     .modelValue=${(row.color ?? '').replace(/^#/, '')}
                     ?disabled=${this.readOnly}
-                    aria-label=${t('Color for {label}', {
+                    label=${t('Color for {label}', {
                       label: this._rowLabel(row, index),
                     })}
+                    label-sr-only
                     data-palette-color=${index}
                     @input=${(event: Event) =>
                       this._updateRow(index, 'color', event)}
@@ -90,9 +94,10 @@ export default class CraftColorPalette extends LitElement {
                   <craft-input
                     .modelValue=${row.label ?? ''}
                     ?disabled=${this.readOnly}
-                    aria-label=${t('Label for {label}', {
+                    label=${t('Label for {label}', {
                       label: this._rowLabel(row, index),
                     })}
+                    label-sr-only
                     data-palette-label=${index}
                     @input=${(event: Event) =>
                       this._updateRow(index, 'label', event)}
@@ -171,7 +176,7 @@ export default class CraftColorPalette extends LitElement {
     const offset = event.detail.direction === 'up' ? -1 : 1;
     const targetIndex = index + offset;
 
-    if (targetIndex < 0 || targetIndex >= this.value.length) {
+    if (targetIndex < 0 || targetIndex >= this.modelValue.length) {
       return;
     }
 
@@ -194,12 +199,12 @@ export default class CraftColorPalette extends LitElement {
   }
 
   private _updateValue(update: (rows: ColorPaletteRow[]) => void) {
-    const rows = this.value.map((row) => ({...row}));
+    const rows = this.modelValue.map((row) => ({...row}));
 
     update(rows);
-    this.value = rows;
+    this.modelValue = rows;
     this.dispatchEvent(
-      new InputEvent('input', {bubbles: true, composed: true})
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
   }
 
@@ -214,7 +219,7 @@ export default class CraftColorPalette extends LitElement {
 
     const fragment = document.createDocumentFragment();
 
-    this.value.forEach((row, index) => {
+    this.modelValue.forEach((row, index) => {
       for (const [property, value] of Object.entries(row)) {
         const input = document.createElement('input');
 
@@ -235,7 +240,7 @@ export default class CraftColorPalette extends LitElement {
       return 'first';
     }
 
-    return index === this.value.length - 1 ? 'last' : 'middle';
+    return index === this.modelValue.length - 1 ? 'last' : 'middle';
   }
 
   private _rowLabel(row: ColorPaletteRow, index: number): string {

@@ -2,7 +2,9 @@ import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
+import {t} from '@src/utilities/translate';
 import '../input/input.js';
+import '../visually-hidden/visually-hidden.js';
 import styles from '../table/table.styles.js';
 
 export type KeyedTableColumn = {
@@ -111,7 +113,7 @@ function assertValue(value: unknown): asserts value is KeyedTableValue {
 /**
  * @summary A fixed-row, fixed-column table editor keyed by stable row and column identifiers.
  *
- * @event input - Emitted when a cell value changes.
+ * @event model-value-changed - Emitted when a cell value changes.
  *
  * @since 1.0
  */
@@ -122,7 +124,8 @@ export default class CraftKeyedTable extends LitElement {
   @property({reflect: true}) name: string | null = null;
 
   /** Current values keyed by row and then column. */
-  @property({converter: valueConverter}) value: KeyedTableValue = {};
+  @property({attribute: 'value', converter: valueConverter})
+  modelValue: KeyedTableValue = {};
 
   /** Ordered column definitions. */
   @property({converter: arrayConverter}) columns: KeyedTableColumn[] = [];
@@ -145,7 +148,7 @@ export default class CraftKeyedTable extends LitElement {
   protected override willUpdate() {
     assertColumns(this.columns);
     assertRows(this.rows);
-    assertValue(this.value);
+    assertValue(this.modelValue);
   }
 
   protected override updated() {
@@ -162,7 +165,9 @@ export default class CraftKeyedTable extends LitElement {
       <table>
         <thead>
           <tr>
-            <th scope="col"></th>
+            <th scope="col">
+              <craft-visually-hidden>${t('Rows')}</craft-visually-hidden>
+            </th>
             ${repeat(
               this.columns,
               ({key}) => key,
@@ -206,7 +211,7 @@ export default class CraftKeyedTable extends LitElement {
   }
 
   private _cellValue(row: KeyedTableRow, column: KeyedTableColumn): string {
-    return String(this.value[row.key]?.[column.key] ?? '');
+    return String(this.modelValue[row.key]?.[column.key] ?? '');
   }
 
   private _inputName(
@@ -223,17 +228,17 @@ export default class CraftKeyedTable extends LitElement {
       return;
     }
 
-    this.value = {
-      ...this.value,
+    this.modelValue = {
+      ...this.modelValue,
       [row.key]: {
-        ...this.value[row.key],
+        ...this.modelValue[row.key],
         [column.key]: (
           event.currentTarget as HTMLElementTagNameMap['craft-input']
         ).value,
       },
     };
     this.dispatchEvent(
-      new InputEvent('input', {bubbles: true, composed: true})
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
   }
 

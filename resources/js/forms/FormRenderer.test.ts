@@ -175,11 +175,11 @@ describe('Form renderer', () => {
       HTMLElementTagNameMap['craft-color-palette']
     >('craft-color-palette')!;
 
-    expect(palette.value).toEqual(initial);
+    expect(palette.modelValue).toEqual(initial);
 
-    palette.value = [];
+    palette.modelValue = [];
     palette.dispatchEvent(
-      new CustomEvent('input', {
+      new CustomEvent('model-value-changed', {
         bubbles: true,
         detail: {initialize: true},
       })
@@ -189,8 +189,8 @@ describe('Form renderer', () => {
     expect(values.settings.palette).toEqual(initial);
 
     const edited = [{color: '#00ff00', label: 'Green', default: false}];
-    palette.value = edited;
-    palette.dispatchEvent(new Event('input', {bubbles: true}));
+    palette.modelValue = edited;
+    palette.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     await nextTick();
 
     expect(values.settings.palette).toEqual(edited);
@@ -246,7 +246,7 @@ describe('Form renderer', () => {
     >('craft-editable-table')!;
 
     expect(table.name).toBe('settings[primaryRows]');
-    expect(table.value).toEqual([{label: 'Primary'}]);
+    expect(table.modelValue).toEqual([{label: 'Primary'}]);
 
     inputName.value = 'secondaryRows';
     await nextTick();
@@ -254,7 +254,7 @@ describe('Form renderer', () => {
     expect(container.querySelector('craft-editable-table')).toBe(table);
     expect(table.name).toBe('settings[secondaryRows]');
     expect(table.id).toBe('form-element-settings--secondaryRows');
-    expect(table.value).toEqual([{label: 'Secondary'}]);
+    expect(table.modelValue).toEqual([{label: 'Secondary'}]);
   });
 
   it('shows plugin ownership when its renderer is unavailable', () => {

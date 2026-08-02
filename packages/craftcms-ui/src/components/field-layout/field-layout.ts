@@ -52,7 +52,7 @@ const arrayConverter = {
 /**
  * @summary Edits a host-owned field layout configuration.
  *
- * @event input - Emitted when the field layout changes.
+ * @event model-value-changed - Emitted when the field layout changes.
  *
  * @since 1.0
  */
@@ -108,7 +108,8 @@ export default class CraftFieldLayout extends LitElement {
   @property({reflect: true}) name: string | null = null;
 
   /** Current host-owned field layout configuration. */
-  @property({converter: objectConverter}) value: FieldLayoutValue = {};
+  @property({attribute: 'value', converter: objectConverter})
+  modelValue: FieldLayoutValue = {};
 
   /** Elements that may be added to the layout. */
   @property({attribute: 'available-elements', converter: arrayConverter})
@@ -141,18 +142,18 @@ export default class CraftFieldLayout extends LitElement {
       }
     }
 
-    if (changedProperties.has('name') || changedProperties.has('value')) {
+    if (changedProperties.has('name') || changedProperties.has('modelValue')) {
       this.syncFormInputs();
     }
   }
 
   private get tabs(): FieldLayoutTab[] {
-    return Array.isArray(this.value.tabs) ? this.value.tabs : [];
+    return Array.isArray(this.modelValue.tabs) ? this.modelValue.tabs : [];
   }
 
   private get generatedFields(): GeneratedField[] {
-    return Array.isArray(this.value.generatedFields)
-      ? this.value.generatedFields
+    return Array.isArray(this.modelValue.generatedFields)
+      ? this.modelValue.generatedFields
       : [];
   }
 
@@ -201,14 +202,14 @@ export default class CraftFieldLayout extends LitElement {
       return;
     }
 
-    this.value = value;
+    this.modelValue = value;
     this.dispatchEvent(
-      new InputEvent('input', {bubbles: true, composed: true})
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
   }
 
   private updateTabs(tabs: FieldLayoutTab[]) {
-    this.updateValue({...this.value, tabs});
+    this.updateValue({...this.modelValue, tabs});
   }
 
   private updateTab(index: number, tab: FieldLayoutTab) {
@@ -292,7 +293,7 @@ export default class CraftFieldLayout extends LitElement {
 
   private addGeneratedField() {
     this.updateValue({
-      ...this.value,
+      ...this.modelValue,
       generatedFields: [
         ...this.generatedFields,
         {uid: crypto.randomUUID(), name: '', handle: '', template: ''},
@@ -305,7 +306,7 @@ export default class CraftFieldLayout extends LitElement {
       .value;
 
     this.updateValue({
-      ...this.value,
+      ...this.modelValue,
       generatedFields: this.generatedFields.map((field, fieldIndex) =>
         fieldIndex === index ? {...field, [property]: value} : field
       ),
@@ -314,7 +315,7 @@ export default class CraftFieldLayout extends LitElement {
 
   private removeGeneratedField(index: number) {
     this.updateValue({
-      ...this.value,
+      ...this.modelValue,
       generatedFields: this.generatedFields.filter(
         (_, fieldIndex) => fieldIndex !== index
       ),
@@ -325,7 +326,7 @@ export default class CraftFieldLayout extends LitElement {
     const reordered = this.reorder(this.generatedFields, index, direction);
 
     if (reordered) {
-      this.updateValue({...this.value, generatedFields: reordered});
+      this.updateValue({...this.modelValue, generatedFields: reordered});
     }
   }
 
@@ -367,7 +368,7 @@ export default class CraftFieldLayout extends LitElement {
     }
 
     const fragment = document.createDocumentFragment();
-    this.appendFormValue(fragment, this.name, this.value);
+    this.appendFormValue(fragment, this.name, this.modelValue);
     this.append(fragment);
   }
 
@@ -424,7 +425,8 @@ export default class CraftFieldLayout extends LitElement {
                 ></craft-reorder-button>
                 <craft-input
                   .value="${String(tab.name ?? '')}"
-                  aria-label="${t('Tab name')}"
+                  label="${t('Tab name')}"
+                  label-sr-only
                   ?disabled="${this.readOnly}"
                   @input="${(event: Event) => this.renameTab(tabIndex, event)}"
                 ></craft-input>
@@ -559,7 +561,8 @@ export default class CraftFieldLayout extends LitElement {
                     <craft-input
                       .value="${String(field.name ?? '')}"
                       placeholder="${t('Name')}"
-                      aria-label="${t('Name')}"
+                      label="${t('Name')}"
+                      label-sr-only
                       ?disabled="${this.readOnly}"
                       @input="${(event: Event) =>
                         this.updateGeneratedField(index, 'name', event)}"
@@ -567,7 +570,8 @@ export default class CraftFieldLayout extends LitElement {
                     <craft-input
                       .value="${String(field.handle ?? '')}"
                       placeholder="${t('Handle')}"
-                      aria-label="${t('Handle')}"
+                      label="${t('Handle')}"
+                      label-sr-only
                       class="code"
                       ?disabled="${this.readOnly}"
                       @input="${(event: Event) =>

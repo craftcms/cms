@@ -25,7 +25,7 @@ const arrayConverter = {
 /**
  * @summary An ordered selector for objects supplied by its host.
  *
- * @event input - Emitted when the selected objects change.
+ * @event model-value-changed - Emitted when the selected objects change.
  *
  * @since 1.0
  */
@@ -36,7 +36,8 @@ export default class CraftObjectSelect extends LitElement {
   @property({reflect: true}) name: string | null = null;
 
   /** Selected objects. */
-  @property({converter: arrayConverter}) value: unknown[] = [];
+  @property({attribute: 'value', converter: arrayConverter})
+  modelValue: unknown[] = [];
 
   /** Objects available for selection. */
   @property({converter: arrayConverter}) options: ObjectSelectOption[] = [];
@@ -62,7 +63,7 @@ export default class CraftObjectSelect extends LitElement {
     super.willUpdate(changed);
 
     if (
-      (changed.has('options') || changed.has('value')) &&
+      (changed.has('options') || changed.has('modelValue')) &&
       !this.availableOptions.some(({key}) => key === this.selectedKey)
     ) {
       this.selectedKey = this.availableOptions[0]?.key ?? '';
@@ -80,7 +81,7 @@ export default class CraftObjectSelect extends LitElement {
       }
     }
 
-    if (changed.has('name') || changed.has('value')) {
+    if (changed.has('name') || changed.has('modelValue')) {
       this.syncFormInputs();
     }
   }
@@ -88,7 +89,7 @@ export default class CraftObjectSelect extends LitElement {
   private get availableOptions(): ObjectSelectOption[] {
     return this.options.filter(
       (option) =>
-        !this.value.some((value) => this.identity(value) === option.key)
+        !this.modelValue.some((value) => this.identity(value) === option.key)
     );
   }
 
@@ -131,7 +132,7 @@ export default class CraftObjectSelect extends LitElement {
       return;
     }
 
-    this.updateValue([...this.value, option.value]);
+    this.updateValue([...this.modelValue, option.value]);
   }
 
   private removeSelection(index: number) {
@@ -140,7 +141,7 @@ export default class CraftObjectSelect extends LitElement {
     }
 
     this.updateValue(
-      this.value.filter((_, valueIndex) => valueIndex !== index)
+      this.modelValue.filter((_, valueIndex) => valueIndex !== index)
     );
   }
 
@@ -151,19 +152,19 @@ export default class CraftObjectSelect extends LitElement {
 
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
 
-    if (targetIndex < 0 || targetIndex >= this.value.length) {
+    if (targetIndex < 0 || targetIndex >= this.modelValue.length) {
       return;
     }
 
-    const value = [...this.value];
+    const value = [...this.modelValue];
     [value[index], value[targetIndex]] = [value[targetIndex], value[index]];
     this.updateValue(value);
   }
 
   private updateValue(value: unknown[]) {
-    this.value = value;
+    this.modelValue = value;
     this.dispatchEvent(
-      new InputEvent('input', {bubbles: true, composed: true})
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
   }
 
@@ -178,7 +179,7 @@ export default class CraftObjectSelect extends LitElement {
 
     const fragment = document.createDocumentFragment();
 
-    this.value.forEach((value, index) => {
+    this.modelValue.forEach((value, index) => {
       this.appendFormValue(fragment, `${this.name}[${index}]`, value);
     });
     this.append(fragment);
@@ -220,7 +221,7 @@ export default class CraftObjectSelect extends LitElement {
       return 'first';
     }
 
-    if (index === this.value.length - 1) {
+    if (index === this.modelValue.length - 1) {
       return 'last';
     }
 
@@ -232,12 +233,12 @@ export default class CraftObjectSelect extends LitElement {
 
     return html`
       ${repeat(
-        this.value,
+        this.modelValue,
         (value) => this.identity(value),
         (value, index) => html`
           <div data-object-select-row="${this.identity(value)}">
             <craft-reorder-button
-              ?disabled="${this.readOnly || this.value.length < 2}"
+              ?disabled="${this.readOnly || this.modelValue.length < 2}"
               position="${this.reorderPosition(index)}"
               @reorder="${(event: CustomEvent<{direction: ReorderDirection}>) =>
                 this.reorder(index, event.detail.direction)}"

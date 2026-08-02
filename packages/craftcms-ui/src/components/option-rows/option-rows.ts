@@ -160,7 +160,7 @@ let nextHeadingId = 0;
 /**
  * @summary An ordered editor for labels, values, defaults, optgroups, icons, and colors.
  *
- * @event input - Emitted when the ordered option rows change.
+ * @event model-value-changed - Emitted when the ordered option rows change.
  *
  * @since 1.0
  */
@@ -171,7 +171,8 @@ export default class CraftOptionRows extends LitElement {
   @property({reflect: true}) name: string | null = null;
 
   /** Ordered option rows. */
-  @property({converter: valueConverter}) value: OptionRow[] = [];
+  @property({attribute: 'value', converter: valueConverter})
+  modelValue: OptionRow[] = [];
 
   /** Allows more than one row to be selected by default. */
   @property({attribute: 'multiple-defaults', reflect: true, type: Boolean})
@@ -207,8 +208,8 @@ export default class CraftOptionRows extends LitElement {
   protected override willUpdate(changedProperties: PropertyValues) {
     super.willUpdate(changedProperties);
 
-    if (changedProperties.has('value')) {
-      assertOptionRows(this.value);
+    if (changedProperties.has('modelValue')) {
+      assertOptionRows(this.modelValue);
       this._reconcileRows();
     }
   }
@@ -226,7 +227,7 @@ export default class CraftOptionRows extends LitElement {
 
     if (
       changedProperties.has('name') ||
-      changedProperties.has('value') ||
+      changedProperties.has('modelValue') ||
       changedProperties.has('optgroups') ||
       changedProperties.has('icons') ||
       changedProperties.has('colors')
@@ -303,9 +304,10 @@ export default class CraftOptionRows extends LitElement {
             type="text"
             .modelValue=${label}
             ?readonly=${disabled}
-            aria-label=${t('Option Label for {label}', {
+            label=${t('Option Label for {label}', {
               label: this._accessibleLabel(row, index),
             })}
+            label-sr-only
             aria-invalid=${this._hasErrors(optgroup ? row.optgroup : row.label)
               ? 'true'
               : nothing}
@@ -319,9 +321,10 @@ export default class CraftOptionRows extends LitElement {
             .modelValue=${this._textValue(row.value)}
             ?readonly=${disabled}
             ?disabled=${optgroup}
-            aria-label=${t('Value for {label}', {
+            label=${t('Value for {label}', {
               label: this._accessibleLabel(row, index),
             })}
+            label-sr-only
             aria-invalid=${this._hasErrors(row.value) ? 'true' : nothing}
             data-option-value
             @input=${(event: Event) => this._updateTextValue(index, event)}
@@ -408,7 +411,7 @@ export default class CraftOptionRows extends LitElement {
       ]);
     });
 
-    this._renderedRows = this.value.map((row) => {
+    this._renderedRows = this.modelValue.map((row) => {
       let key = this._rowKeys.get(row);
 
       if (key === undefined) {
@@ -598,7 +601,10 @@ export default class CraftOptionRows extends LitElement {
       return;
     }
 
-    this._updateValue([...this.value, {label: '', value: '', default: false}]);
+    this._updateValue([
+      ...this.modelValue,
+      {label: '', value: '', default: false},
+    ]);
   }
 
   private _deleteRow(index: number) {
@@ -651,9 +657,9 @@ export default class CraftOptionRows extends LitElement {
   }
 
   private _updateValue(rows: OptionRow[]) {
-    this.value = rows;
+    this.modelValue = rows;
     this.dispatchEvent(
-      new InputEvent('input', {bubbles: true, composed: true})
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
   }
 
@@ -668,7 +674,7 @@ export default class CraftOptionRows extends LitElement {
 
     const fragment = document.createDocumentFragment();
 
-    this.value.forEach((row, index) => {
+    this.modelValue.forEach((row, index) => {
       if (this._isOptgroup(row)) {
         this._appendInput(fragment, index, 'isOptgroup', '1');
         this._appendInput(fragment, index, 'label', this._rowLabel(row));

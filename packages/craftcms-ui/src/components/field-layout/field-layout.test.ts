@@ -30,7 +30,7 @@ describe('craft-field-layout', () => {
         multiple: true,
       },
     ];
-    element.value = {
+    element.modelValue = {
       tabs: [
         {
           uid: 'content-tab',
@@ -48,7 +48,7 @@ describe('craft-field-layout', () => {
       ],
       marker: 'host-owned',
     };
-    element.addEventListener('input', listener);
+    element.addEventListener('model-value-changed', listener);
     document.body.append(element);
     await element.updateComplete;
 
@@ -59,7 +59,7 @@ describe('craft-field-layout', () => {
       '[data-field-layout-element="title-element"]'
     );
 
-    element.value = structuredClone(element.value);
+    element.modelValue = structuredClone(element.modelValue);
     await element.updateComplete;
 
     expect(
@@ -79,16 +79,15 @@ describe('craft-field-layout', () => {
     );
     await element.updateComplete;
 
-    expect(element.value.tabs?.[0]?.elements?.map(({uid}) => uid)).toEqual([
-      'body-element',
-      'title-element',
-    ]);
-    expect(element.value.tabs?.[1]).toEqual({
+    expect(element.modelValue.tabs?.[0]?.elements?.map(({uid}) => uid)).toEqual(
+      ['body-element', 'title-element']
+    );
+    expect(element.modelValue.tabs?.[1]).toEqual({
       uid: 'meta-tab',
       name: 'Meta',
       elements: [],
     });
-    expect(element.value.marker).toBe('host-owned');
+    expect(element.modelValue.marker).toBe('host-owned');
 
     const metaTab = element.shadowRoot!.querySelector(
       '[data-field-layout-tab="meta-tab"]'
@@ -104,7 +103,9 @@ describe('craft-field-layout', () => {
       .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value.tabs?.[1]?.elements?.[0]?.type).toBe('HorizontalRule');
+    expect(element.modelValue.tabs?.[1]?.elements?.[0]?.type).toBe(
+      'HorizontalRule'
+    );
     element
       .shadowRoot!.querySelector(
         '[data-field-layout-element="title-element"] [data-field-layout-remove]'
@@ -112,9 +113,9 @@ describe('craft-field-layout', () => {
       .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value.tabs?.[0]?.elements?.map(({uid}) => uid)).toEqual([
-      'body-element',
-    ]);
+    expect(element.modelValue.tabs?.[0]?.elements?.map(({uid}) => uid)).toEqual(
+      ['body-element']
+    );
     expect(listener).toHaveBeenCalledTimes(3);
   });
 
@@ -124,7 +125,7 @@ describe('craft-field-layout', () => {
 
     element.name = 'settings[fieldLayout]';
     element.withGeneratedFields = true;
-    element.value = {
+    element.modelValue = {
       tabs: [{uid: 'content-tab', name: 'Content', elements: []}],
       generatedFields: [
         {
@@ -186,15 +187,17 @@ describe('craft-field-layout', () => {
     );
     await element.updateComplete;
 
-    expect(element.value.tabs?.map(({name}) => name)).toEqual([
+    expect(element.modelValue.tabs?.map(({name}) => name)).toEqual([
       'New Tab',
       'Main content',
     ]);
-    expect(element.value.generatedFields?.map(({uid}) => uid)).toEqual([
+    expect(element.modelValue.generatedFields?.map(({uid}) => uid)).toEqual([
       'summary',
       'reading-time',
     ]);
-    expect(element.value.generatedFields?.[1]?.template).toBe('words / 180');
+    expect(element.modelValue.generatedFields?.[1]?.template).toBe(
+      'words / 180'
+    );
 
     const data = new FormData(form);
 
@@ -212,7 +215,9 @@ describe('craft-field-layout', () => {
       .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value.tabs?.map(({name}) => name)).toEqual(['Main content']);
+    expect(element.modelValue.tabs?.map(({name}) => name)).toEqual([
+      'Main content',
+    ]);
 
     element
       .shadowRoot!.querySelector(
@@ -225,8 +230,8 @@ describe('craft-field-layout', () => {
       .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value.generatedFields).toHaveLength(2);
-    expect(element.value.generatedFields?.[0]?.uid).toBe('reading-time');
+    expect(element.modelValue.generatedFields).toHaveLength(2);
+    expect(element.modelValue.generatedFields?.[0]?.uid).toBe('reading-time');
   });
 
   it('exposes accessible read-only layout controls without accepting updates', async () => {
@@ -241,7 +246,7 @@ describe('craft-field-layout', () => {
         multiple: false,
       },
     ];
-    element.value = {
+    element.modelValue = {
       tabs: [
         {
           uid: 'content-tab',
@@ -253,7 +258,7 @@ describe('craft-field-layout', () => {
     element.readOnly = true;
     element.setAttribute('aria-labelledby', 'field-layout-label');
     element.setAttribute('aria-describedby', 'field-layout-errors');
-    element.addEventListener('input', listener);
+    element.addEventListener('model-value-changed', listener);
     document.body.append(element);
     await element.updateComplete;
 
@@ -289,8 +294,8 @@ describe('craft-field-layout', () => {
       .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value.tabs).toHaveLength(1);
-    expect(element.value.tabs?.[0]?.elements).toHaveLength(1);
+    expect(element.modelValue.tabs).toHaveLength(1);
+    expect(element.modelValue.tabs?.[0]?.elements).toHaveLength(1);
     expect(listener).not.toHaveBeenCalled();
   });
 });

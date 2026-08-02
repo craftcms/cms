@@ -259,7 +259,7 @@ function assertRow(
 /**
  * @summary An ordered, editable table supporting typed cells and stable row identity.
  *
- * @event input - Emitted when rows or cells change.
+ * @event model-value-changed - Emitted when rows or cells change.
  *
  * @since 1.0
  */
@@ -275,7 +275,8 @@ export default class CraftEditableTable extends LitElement {
   sourceName: string | null = null;
 
   /** Current ordered or keyed rows. */
-  @property({converter: valueConverter}) value: EditableTableValue = [];
+  @property({attribute: 'value', converter: valueConverter})
+  modelValue: EditableTableValue = [];
 
   /** Ordered typed column definitions. */
   @property({converter: arrayConverter}) columns: EditableTableColumn[] = [];
@@ -332,9 +333,9 @@ export default class CraftEditableTable extends LitElement {
   protected override willUpdate(changedProperties: PropertyValues) {
     assertColumns(this.columns);
     assertRow(this.defaultRow, 'Editable table default row');
-    assertValue(this.value, this.keyed);
+    assertValue(this.modelValue, this.keyed);
 
-    if (changedProperties.has('value') || changedProperties.has('keyed')) {
+    if (changedProperties.has('modelValue') || changedProperties.has('keyed')) {
       this._reconcileRows();
     }
   }
@@ -357,7 +358,7 @@ export default class CraftEditableTable extends LitElement {
 
     if (
       this.definesColumns &&
-      (changedProperties.has('value') ||
+      (changedProperties.has('modelValue') ||
         changedProperties.has('definesColumns') ||
         changedProperties.has('sourceName') ||
         changedProperties.has('name'))
@@ -451,9 +452,9 @@ export default class CraftEditableTable extends LitElement {
                 name=${ifDefined(
                   this._inputName(index, renderedRow, 'options')
                 )}
-                .value=${this._nestedOptions(renderedRow.row)}
+                .modelValue=${this._nestedOptions(renderedRow.row)}
                 ?readonly=${this.readOnly}
-                @input=${(event: Event) =>
+                @model-value-changed=${(event: Event) =>
                   this._updateNestedOptions(index, event)}
               ></craft-option-rows>
             </td>
@@ -589,16 +590,18 @@ export default class CraftEditableTable extends LitElement {
   }
 
   private _reconcileRows() {
-    if (this.keyed && !Array.isArray(this.value)) {
-      this._renderedRows = Object.entries(this.value).map(([key, row]) => ({
-        key,
-        row,
-      }));
+    if (this.keyed && !Array.isArray(this.modelValue)) {
+      this._renderedRows = Object.entries(this.modelValue).map(
+        ([key, row]) => ({
+          key,
+          row,
+        })
+      );
 
       return;
     }
 
-    const rows = Array.isArray(this.value) ? this.value : [];
+    const rows = Array.isArray(this.modelValue) ? this.modelValue : [];
     const previousKeys = new Map<string, string[]>();
 
     this._renderedRows.forEach(({key, row}) => {
@@ -771,7 +774,7 @@ export default class CraftEditableTable extends LitElement {
   private _updateNestedOptions(index: number, event: Event) {
     event.stopPropagation();
     this._updateRow(index, {
-      options: (event.currentTarget as CraftOptionRows).value,
+      options: (event.currentTarget as CraftOptionRows).modelValue,
     });
   }
 
@@ -896,13 +899,13 @@ export default class CraftEditableTable extends LitElement {
     rows.forEach(({renderedRow, row}) =>
       this._rowKeys.set(row, renderedRow.key)
     );
-    this.value = this.keyed
+    this.modelValue = this.keyed
       ? Object.fromEntries(
           rows.map(({renderedRow, row}) => [renderedRow.key, row])
         )
       : rows.map(({row}) => row);
     this.dispatchEvent(
-      new InputEvent('input', {bubbles: true, composed: true})
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
   }
 
@@ -1051,7 +1054,7 @@ export default class CraftEditableTable extends LitElement {
     }));
     const value = rows.map(({row}) => row);
 
-    if (JSON.stringify(value) !== JSON.stringify(this.value)) {
+    if (JSON.stringify(value) !== JSON.stringify(this.modelValue)) {
       this._updateValue(rows);
     }
   }

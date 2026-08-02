@@ -37,7 +37,7 @@ const booleanConverter = {
  *
  * @slot - Server-rendered condition builder controls.
  *
- * @event value-changed - Emitted when the serialized condition value changes.
+ * @event model-value-changed - Emitted when the serialized condition value changes.
  */
 export default class CraftElementCondition extends LitElement {
   static override styles = css`
@@ -73,7 +73,7 @@ export default class CraftElementCondition extends LitElement {
   addRuleLabel: string | null = null;
 
   /** Current serialized condition configuration. */
-  @property({attribute: false}) value: ElementConditionValue | null = null;
+  @property({attribute: false}) modelValue: ElementConditionValue | null = null;
 
   /** Prevents condition changes. */
   @property({attribute: 'readonly', reflect: true, type: Boolean})
@@ -214,7 +214,7 @@ export default class CraftElementCondition extends LitElement {
 
   private builderRequest(): FormData {
     const request = new FormData();
-    const condition = objectValue(this.value);
+    const condition = objectValue(this.modelValue);
     const conditionRules = Array.isArray(condition.conditionRules)
       ? condition.conditionRules
       : [];
@@ -289,7 +289,7 @@ export default class CraftElementCondition extends LitElement {
     );
 
     if (!isConditionValue(condition)) {
-      this.value = null;
+      this.modelValue = null;
     } else {
       if (Array.isArray(condition.conditionRules)) {
         condition.conditionRules = condition.conditionRules.filter(
@@ -298,11 +298,14 @@ export default class CraftElementCondition extends LitElement {
         );
       }
 
-      this.value = condition.conditionRules?.length ? condition : null;
+      this.modelValue = condition.conditionRules?.length ? condition : null;
     }
 
     this.dispatchEvent(
-      new CustomEvent('value-changed', {bubbles: true, composed: true})
+      new CustomEvent('model-value-changed', {
+        bubbles: true,
+        composed: true,
+      })
     );
   }
 

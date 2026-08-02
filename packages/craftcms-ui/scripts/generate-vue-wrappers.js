@@ -9,7 +9,7 @@
  *   node scripts/generate-vue-wrappers.js
  *
  * The generated wrappers handle v-model bridging between Vue's reactivity system and
- * Lion UI's modelValue/checked property + model-value-changed event pattern.
+ * each component's modelValue/checked property + model-value-changed event pattern.
  */
 
 import {mkdirSync, writeFileSync} from 'fs';
@@ -23,7 +23,7 @@ const VUE_DIR = resolve(ROOT, 'dist/vue');
 // ─── Component Definitions ──────────────────────────────────────────────────
 
 /**
- * Components that use modelValue (string-based value).
+ * Components that expose their writable state through modelValue.
  * v-model maps to `.modelValue` property and `model-value-changed` event.
  */
 const VALUE_COMPONENTS = [
@@ -230,53 +230,16 @@ const VALUE_COMPONENTS = [
     tagName: 'craft-select-color',
     className: 'CraftSelectColor',
     fileName: 'CraftSelectColor',
-    modelType: 'string',
+    modelType: 'string | null',
     importPath: '../components/select-color/select-color',
     slots: ['feedback'],
   },
-];
-
-/**
- * Components that use checked (boolean-based value).
- * v-model maps to `.checked` property and `model-value-changed` event.
- */
-const CHECKED_COMPONENTS = [
-  {
-    tagName: 'craft-switch',
-    className: 'CraftSwitch',
-    fileName: 'CraftSwitch',
-    modelType: 'boolean | null',
-    importPath: '../components/switch/switch',
-    readOnlyAsDisabled: true,
-    properties: [
-      {name: 'label', type: 'string'},
-      {name: 'onLabel', type: 'string'},
-      {name: 'offLabel', type: 'string'},
-      {name: 'size', type: "'small' | 'medium'"},
-    ],
-    slots: ['label', 'help-text', 'input', 'feedback'],
-  },
-  {
-    tagName: 'craft-checkbox',
-    className: 'CraftCheckbox',
-    fileName: 'CraftCheckbox',
-    importPath: '../components/checkbox/checkbox',
-    readOnlyAsDisabled: true,
-    slots: ['label', 'help-text', 'input'],
-  },
-];
-
-/**
- * Components whose writable state is exposed through a value property and
- * input event.
- */
-const PROPERTY_VALUE_COMPONENTS = [
   {
     tagName: 'craft-color-palette',
     className: 'CraftColorPalette',
     fileName: 'CraftColorPalette',
     modelType: 'ColorPaletteRow[]',
-    modelTypeImport: 'ColorPaletteRow',
+    modelTypeImports: ['ColorPaletteRow'],
     modelDefault: '[]',
     importPath: '../components/color-palette/color-palette',
   },
@@ -285,7 +248,7 @@ const PROPERTY_VALUE_COMPONENTS = [
     className: 'CraftKeyedTable',
     fileName: 'CraftKeyedTable',
     modelType: 'KeyedTableValue',
-    modelTypeImport: 'KeyedTableValue',
+    modelTypeImports: ['KeyedTableValue'],
     modelDefault: '{}',
     importPath: '../components/keyed-table/keyed-table',
   },
@@ -302,7 +265,7 @@ const PROPERTY_VALUE_COMPONENTS = [
     className: 'CraftFieldLayout',
     fileName: 'CraftFieldLayout',
     modelType: 'FieldLayoutValue',
-    modelTypeImport: 'FieldLayoutValue',
+    modelTypeImports: ['FieldLayoutValue'],
     modelDefault: '{}',
     importPath: '../components/field-layout/field-layout',
   },
@@ -311,7 +274,7 @@ const PROPERTY_VALUE_COMPONENTS = [
     className: 'CraftOptionRows',
     fileName: 'CraftOptionRows',
     modelType: 'OptionRow[]',
-    modelTypeImport: 'OptionRow',
+    modelTypeImports: ['OptionRow'],
     modelDefault: '[]',
     importPath: '../components/option-rows/option-rows',
   },
@@ -352,7 +315,6 @@ const PROPERTY_VALUE_COMPONENTS = [
     modelTypeImports: ['ElementConditionValue'],
     modelDefault: 'null',
     importPath: '../components/element-condition/element-condition',
-    eventName: 'value-changed',
     properties: [
       {
         name: 'builderConfig',
@@ -370,6 +332,36 @@ const PROPERTY_VALUE_COMPONENTS = [
         defaultValue: 'false',
       },
     ],
+  },
+];
+
+/**
+ * Components that use checked (boolean-based value).
+ * v-model maps to `.checked` property and `model-value-changed` event.
+ */
+const CHECKED_COMPONENTS = [
+  {
+    tagName: 'craft-switch',
+    className: 'CraftSwitch',
+    fileName: 'CraftSwitch',
+    modelType: 'boolean | null',
+    importPath: '../components/switch/switch',
+    readOnlyAsDisabled: true,
+    properties: [
+      {name: 'label', type: 'string'},
+      {name: 'onLabel', type: 'string'},
+      {name: 'offLabel', type: 'string'},
+      {name: 'size', type: "'small' | 'medium'"},
+    ],
+    slots: ['label', 'help-text', 'input', 'feedback'],
+  },
+  {
+    tagName: 'craft-checkbox',
+    className: 'CraftCheckbox',
+    fileName: 'CraftCheckbox',
+    importPath: '../components/checkbox/checkbox',
+    readOnlyAsDisabled: true,
+    slots: ['label', 'help-text', 'input'],
   },
 ];
 
@@ -468,7 +460,7 @@ function generateValueWrapper(component) {
 
   return `<!--
   Auto-generated Vue wrapper for <${component.tagName}>
-  Provides v-model support by bridging Vue's modelValue to Lion UI's modelValue property.
+  Provides v-model support by bridging Vue's modelValue to the web component's modelValue property.
   Generated by: scripts/generate-vue-wrappers.js
 -->
 <script setup lang="ts">
@@ -478,13 +470,13 @@ function generateValueWrapper(component) {
     name: '${component.className}',
   });
 
-  const model = defineModel<${component.modelType}>();
+  const model = defineModel<${component.modelType}>(${component.modelDefault === undefined ? '' : `{default: () => (${component.modelDefault})}`});
 
 ${propsDeclaration}
 
   function onModelValueChanged(event: Event) {
     // Ignore changes emitted while Vue is applying initial properties, plus
-    // Lion's non-user synchronization events. Both can otherwise clobber the
+    // non-user synchronization events. Both can otherwise clobber the
     // bound value while the component is mounting or materializing options.
     if (
       !(event.target as ${component.className}).isConnected ||
@@ -493,7 +485,7 @@ ${propsDeclaration}
     ) {
       return;
     }
-    model.value = (event.target as ${component.className})?.modelValue ?? undefined;
+    model.value = (event.target as ${component.className}).modelValue;
   }
 </script>
 
@@ -567,61 +559,6 @@ ${component.readOnlyAsDisabled ? '    .disabled="props.readonly ?? false"\n' : '
         <li>{{ error }}</li>
       </ul>
     </div>
-  </${component.tagName}>
-</template>
-`;
-}
-
-function generatePropertyValueWrapper(component) {
-  const modelTypeImports = [
-    ...(component.modelTypeImport ? [component.modelTypeImport] : []),
-    ...(component.modelTypeImports ?? []),
-  ];
-  const modelTypeImport = modelTypeImports.length
-    ? `\n  import type {${modelTypeImports.join(', ')}} from '${component.importPath}.ts.mjs';`
-    : '';
-  const properties = (component.properties ?? [])
-    .map(({name, type}) => `    ${name}?: ${type}\n`)
-    .join('');
-  const propertyBindings = (component.properties ?? [])
-    .map(
-      ({name, target, defaultValue}) =>
-        `    .${target ?? name}="props.${name}${defaultValue === undefined ? '' : ` ?? ${defaultValue}`}"\n`
-    )
-    .join('');
-  const eventName = component.eventName ?? 'input';
-
-  return `<!--
-  Auto-generated Vue wrapper for <${component.tagName}>
-  Provides v-model support by bridging Vue's modelValue to its value property.
-  Generated by: scripts/generate-vue-wrappers.js
--->
-<script setup lang="ts">
-  import type ${component.className} from '${component.importPath}.ts.mjs';${modelTypeImport}
-
-  defineOptions({
-    name: '${component.className}',
-  });
-
-  const model = defineModel<${component.modelType}>({default: () => (${component.modelDefault})});
-
-  const props = defineProps<{
-${properties}  }>();
-
-  function onInput(event: Event) {
-    if ((event as CustomEvent).detail?.initialize) {
-      return;
-    }
-    model.value = (event.currentTarget as ${component.className}).value;
-  }
-</script>
-
-<template>
-  <${component.tagName}
-${propertyBindings}    .value="model"
-    @${eventName}="onInput"
-  >
-    <slot></slot>
   </${component.tagName}>
 </template>
 `;
@@ -897,31 +834,6 @@ export default _default;
 `;
 }
 
-function generatePropertyValueDeclaration(component) {
-  const modelTypeImports = [
-    ...(component.modelTypeImport ? [component.modelTypeImport] : []),
-    ...(component.modelTypeImports ?? []),
-  ];
-  const modelTypeImport = modelTypeImports.length
-    ? `import type {${modelTypeImports.join(', ')}} from '${component.importPath}.ts.mjs';\n`
-    : '';
-  const properties = (component.properties ?? [])
-    .map(({name, type}) => `  ${name}?: ${type};\n`)
-    .join('');
-
-  return `/**
- * Auto-generated type declaration for ${component.fileName}.vue
- * Generated by: scripts/generate-vue-wrappers.js
- */
-import type {DefineComponent} from 'vue';
-${modelTypeImport}declare const _default: DefineComponent<{
-  modelValue?: ${component.modelType};
-${properties}  'onUpdate:modelValue'?: (val: ${component.modelType}) => void;
-}>;
-export default _default;
-`;
-}
-
 function generateChromeDeclaration(component) {
   return `/**
  * Auto-generated type declaration for ${component.fileName}.vue
@@ -961,8 +873,6 @@ const ALL_COMPONENTS = [
   ...VALUE_COMPONENTS,
   // Form components (checked-based)
   ...CHECKED_COMPONENTS,
-  // Form components (value-property-based)
-  ...PROPERTY_VALUE_COMPONENTS,
   // Form components (groups)
   ...GROUP_COMPONENTS,
   // Field chrome shell
@@ -1199,18 +1109,6 @@ export default function main() {
     const declContent = generateCheckedDeclaration(component);
     const declPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
     writeFileSync(declPath, declContent);
-    console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
-    count++;
-  }
-
-  // Generate value-property-based wrappers
-  for (const component of PROPERTY_VALUE_COMPONENTS) {
-    const content = generatePropertyValueWrapper(component);
-    const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
-    writeFileSync(filePath, content);
-    const declarationContent = generatePropertyValueDeclaration(component);
-    const declarationPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
-    writeFileSync(declarationPath, declarationContent);
     console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
     count++;
   }

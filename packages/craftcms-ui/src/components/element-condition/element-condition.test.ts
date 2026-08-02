@@ -30,7 +30,7 @@ describe('craft-element-condition', () => {
         <input type="hidden" name="condition[conditionRules][0][type]" value="title">
       </div>
     `;
-    element.addEventListener('value-changed', listener);
+    element.addEventListener('model-value-changed', listener);
     form.append(element);
     document.body.append(form);
     await element.updateComplete;
@@ -50,7 +50,7 @@ describe('craft-element-condition', () => {
     element.querySelector('.condition-main')!.append(rule);
 
     await vi.waitFor(() => {
-      expect(element.value?.conditionRules).toEqual([
+      expect(element.modelValue?.conditionRules).toEqual([
         {type: 'title'},
         {type: 'slug'},
       ]);
@@ -118,11 +118,11 @@ describe('craft-element-condition', () => {
     element.builderConfig = {elementType: 'craft\\elements\\Entry'};
     element.renderUrl = '/actions/conditions/render';
     element.addRuleLabel = 'Add a condition';
-    element.value = {
+    element.modelValue = {
       class: conditionClass,
       conditionRules: [{type: 'title'}],
     };
-    element.addEventListener('value-changed', listener);
+    element.addEventListener('model-value-changed', listener);
     form.append(element);
     document.body.append(form);
 
@@ -167,7 +167,7 @@ describe('craft-element-condition', () => {
     element.querySelector('[data-condition-builder]')!.append(secondRule);
 
     await vi.waitFor(() => {
-      expect(element.value?.conditionRules).toEqual([
+      expect(element.modelValue?.conditionRules).toEqual([
         {type: 'title'},
         {type: 'slug'},
       ]);

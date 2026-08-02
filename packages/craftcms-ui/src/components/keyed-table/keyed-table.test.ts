@@ -17,10 +17,10 @@ describe('craft-keyed-table', () => {
       {key: 'template', label: 'Template', placeholder: 'entries/_entry'},
     ];
     element.rows = [{key: 'english', label: 'English'}];
-    element.value = {
+    element.modelValue = {
       english: {uriFormat: 'news/{slug}', template: 'entries/article'},
     };
-    element.addEventListener('input', listener);
+    element.addEventListener('model-value-changed', listener);
     form.append(element);
     document.body.append(form);
     await element.updateComplete;
@@ -34,7 +34,7 @@ describe('craft-keyed-table', () => {
     input.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
     await element.updateComplete;
 
-    expect(element.value.english).toEqual({
+    expect(element.modelValue.english).toEqual({
       uriFormat: 'stories/{slug}',
       template: 'entries/article',
     });
@@ -55,7 +55,7 @@ describe('craft-keyed-table', () => {
 
     element.columns = [{key: 'uri', label: 'URI'}];
     element.rows = [{key: 'english', label: 'English'}];
-    element.value = {english: {uri: 'news/{slug}'}};
+    element.modelValue = {english: {uri: 'news/{slug}'}};
     element.readOnly = true;
     document.body.append(element);
     await element.updateComplete;

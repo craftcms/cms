@@ -20,11 +20,11 @@ describe('craft-color-palette', () => {
     const listener = vi.fn();
 
     element.name = 'palette';
-    element.value = [
+    element.modelValue = [
       {color: '#ff0000', label: 'Red', default: true},
       {color: null, label: null, default: false},
     ];
-    element.addEventListener('input', listener);
+    element.addEventListener('model-value-changed', listener);
     document.body.append(element);
     await element.updateComplete;
 
@@ -35,16 +35,17 @@ describe('craft-color-palette', () => {
 
     expect(root.querySelectorAll('craft-input-color')).toHaveLength(2);
     expect(root.querySelectorAll('craft-input')).toHaveLength(2);
-    expect(label.getAttribute('aria-label')).toBe('Label for Red');
+    expect(label.getAttribute('label')).toBe('Label for Red');
+    expect(label.hasAttribute('label-sr-only')).toBe(true);
     expect(
-      root.querySelector('[data-palette-color="1"]')?.getAttribute('aria-label')
+      root.querySelector('[data-palette-color="1"]')?.getAttribute('label')
     ).toBe('Color for color 2');
 
     label.value = 'Crimson';
     label.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
     await element.updateComplete;
 
-    expect(element.value).toEqual([
+    expect(element.modelValue).toEqual([
       {color: '#ff0000', label: 'Crimson', default: true},
       {color: null, label: null, default: false},
     ]);
@@ -56,7 +57,7 @@ describe('craft-color-palette', () => {
     const element = document.createElement('craft-color-palette');
 
     element.name = 'palette';
-    element.value = [
+    element.modelValue = [
       {color: '#ff0000', label: 'Red', default: true},
       {color: null, label: null, default: false},
     ];
@@ -77,7 +78,7 @@ describe('craft-color-palette', () => {
   it('disables every editing control when read-only', async () => {
     const element = document.createElement('craft-color-palette');
 
-    element.value = [{color: '#ff0000', label: 'Red', default: true}];
+    element.modelValue = [{color: '#ff0000', label: 'Red', default: true}];
     element.readOnly = true;
     document.body.append(element);
     await element.updateComplete;

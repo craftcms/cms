@@ -19,8 +19,8 @@ describe('craft-object-select', () => {
       {key: 'page', label: 'Page', value: page},
       {key: 'news', label: 'News', value: news},
     ];
-    element.value = [article, page];
-    element.addEventListener('input', listener);
+    element.modelValue = [article, page];
+    element.addEventListener('model-value-changed', listener);
     document.body.append(element);
     await element.updateComplete;
 
@@ -36,7 +36,7 @@ describe('craft-object-select', () => {
       );
     await element.updateComplete;
 
-    expect(element.value).toEqual([page, article]);
+    expect(element.modelValue).toEqual([page, article]);
 
     const select = element.shadowRoot!.querySelector<HTMLSelectElement>(
       '[data-object-select-available]'
@@ -49,7 +49,7 @@ describe('craft-object-select', () => {
       .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value).toEqual([page, article, news]);
+    expect(element.modelValue).toEqual([page, article, news]);
     expect(
       element.shadowRoot!.querySelector('[data-object-select-add]')
     ).toBeNull();
@@ -61,7 +61,7 @@ describe('craft-object-select', () => {
       .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value).toEqual([article, news]);
+    expect(element.modelValue).toEqual([article, news]);
     expect(listener).toHaveBeenCalledTimes(3);
   });
 
@@ -76,11 +76,11 @@ describe('craft-object-select', () => {
       {key: 'article', label: 'Article', value: article},
       {key: 'page', label: 'Page', value: page},
     ];
-    element.value = [article];
+    element.modelValue = [article];
     element.readOnly = true;
     element.setAttribute('aria-labelledby', 'entry-types-label');
     element.setAttribute('aria-describedby', 'entry-types-help');
-    element.addEventListener('input', listener);
+    element.addEventListener('model-value-changed', listener);
     document.body.append(element);
     await element.updateComplete;
 
@@ -102,7 +102,7 @@ describe('craft-object-select', () => {
       .dispatchEvent(new CustomEvent('activate', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.value).toEqual([article]);
+    expect(element.modelValue).toEqual([article]);
     expect(listener).not.toHaveBeenCalled();
   });
 
@@ -112,7 +112,7 @@ describe('craft-object-select', () => {
 
     element.name = 'settings[entryTypes]';
     element.identityKey = 'uid';
-    element.value = [
+    element.modelValue = [
       {uid: 'article', siteSettings: {english: {uriFormat: 'articles/{slug}'}}},
     ];
     form.append(element);
